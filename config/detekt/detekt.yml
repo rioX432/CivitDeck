@@ -11,9 +11,23 @@ complexity:
     thresholdInFiles: 30
     thresholdInClasses: 30
 
+exceptions:
+  TooGenericExceptionCaught:
+    exceptionNames:
+      - ArrayIndexOutOfBoundsException
+      - Error
+      - IllegalMonitorStateException
+      - NullPointerException
+      - IndexOutOfBoundsException
+      - RuntimeException
+      - Throwable
+
 naming:
   MatchingDeclarationName:
     active: false
+  FunctionNaming:
+    ignoreAnnotated:
+      - Composable
 
 style:
   MagicNumber:
