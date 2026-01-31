@@ -31,6 +31,9 @@ struct ModelSearchScreen: View {
             .navigationTitle("CivitDeck")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
+            .navigationDestination(for: Int64.self) { modelId in
+                ModelDetailScreen(modelId: modelId)
+            }
         }
     }
 
@@ -65,12 +68,15 @@ struct ModelSearchScreen: View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(Array(viewModel.models.enumerated()), id: \.element.id) { index, model in
-                    ModelCardView(model: model)
-                        .onAppear {
-                            if index == viewModel.models.count - 3 {
-                                viewModel.loadMore()
-                            }
+                    NavigationLink(value: model.id) {
+                        ModelCardView(model: model)
+                    }
+                    .buttonStyle(.plain)
+                    .onAppear {
+                        if index == viewModel.models.count - 3 {
+                            viewModel.loadMore()
                         }
+                    }
                 }
             }
             .padding(.horizontal, 12)

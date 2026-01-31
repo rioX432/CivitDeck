@@ -14,6 +14,8 @@
 		CD0002012D000002000CD001 /* ModelSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002002D000002000CD001 /* ModelSearchViewModel.swift */; };
 		CD0002032D000002000CD001 /* ModelSearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002022D000002000CD001 /* ModelSearchScreen.swift */; };
 		CD0002052D000002000CD001 /* ModelCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002042D000002000CD001 /* ModelCardView.swift */; };
+		CD0004012D000004000CD001 /* ModelDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0004002D000004000CD001 /* ModelDetailViewModel.swift */; };
+		CD0004032D000004000CD001 /* ModelDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0004022D000004000CD001 /* ModelDetailScreen.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +29,8 @@
 		CD0002002D000002000CD001 /* ModelSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSearchViewModel.swift; sourceTree = "<group>"; };
 		CD0002022D000002000CD001 /* ModelSearchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSearchScreen.swift; sourceTree = "<group>"; };
 		CD0002042D000002000CD001 /* ModelCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCardView.swift; sourceTree = "<group>"; };
+		CD0004002D000004000CD001 /* ModelDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailViewModel.swift; sourceTree = "<group>"; };
+		CD0004022D000004000CD001 /* ModelDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailScreen.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,8 +102,18 @@
 			isa = PBXGroup;
 			children = (
 				CD0003012D000003000CD001 /* Search */,
+				CD0004042D000004000CD001 /* Detail */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		CD0004042D000004000CD001 /* Detail */ = {
+			isa = PBXGroup;
+			children = (
+				CD0004002D000004000CD001 /* ModelDetailViewModel.swift */,
+				CD0004022D000004000CD001 /* ModelDetailScreen.swift */,
+			);
+			path = Detail;
 			sourceTree = "<group>";
 		};
 		CD0003012D000003000CD001 /* Search */ = {
@@ -210,6 +224,8 @@
 				CD0002012D000002000CD001 /* ModelSearchViewModel.swift in Sources */,
 				CD0002032D000002000CD001 /* ModelSearchScreen.swift in Sources */,
 				CD0002052D000002000CD001 /* ModelCardView.swift in Sources */,
+				CD0004012D000004000CD001 /* ModelDetailViewModel.swift in Sources */,
+				CD0004032D000004000CD001 /* ModelDetailScreen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
