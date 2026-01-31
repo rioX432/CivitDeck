@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS Placeholder (
+    id INTEGER NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM Placeholder;
