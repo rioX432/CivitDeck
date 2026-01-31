@@ -1,14 +1,17 @@
 package com.omooooori.civitdeck.di
 
 import org.koin.core.context.startKoin
-import org.koin.dsl.module
+import org.koin.core.module.Module
+import org.koin.dsl.KoinAppDeclaration
 
-val sharedModule = module {
-    // Add shared dependencies here
-}
+val sharedModules: List<Module>
+    get() = listOf(
+        domainModule,
+    )
 
-fun initKoin() {
+fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
     startKoin {
-        modules(sharedModule)
+        appDeclaration()
+        modules(sharedModules)
     }
 }
