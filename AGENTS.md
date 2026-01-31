@@ -19,9 +19,7 @@ CivitDeck is a mobile client for [CivitAI](https://civitai.com/) — the largest
 open iosApp/iosApp.xcodeproj          # Open in Xcode
 
 # Code Quality
-./gradlew ktlintCheck                 # Lint check
-./gradlew ktlintFormat                # Auto-format
-./gradlew detekt                      # Static analysis
+./gradlew detekt                      # Static analysis + auto-format (autoCorrect enabled)
 ```
 
 ## Architecture
@@ -98,6 +96,14 @@ CivitDeck/
 - iOS UI uses SwiftUI with native navigation patterns
 - Image loading: Coil (Android), AsyncImage/Kingfisher (iOS)
 - All API responses should be cached locally for offline support
+
+## Code Quality
+
+After making code changes, always run detekt with auto-correct before committing:
+
+```bash
+./gradlew detekt --auto-correct       # Auto-format + static analysis
+```
 
 ## Git Commits
 
