@@ -33,7 +33,7 @@ open iosApp/iosApp.xcodeproj          # Open in Xcode
 - SQLDelight — local database (favorites, cache)
 - Koin — dependency injection
 - Jetpack Compose (Android) / SwiftUI (iOS) — UI
-- Clean Architecture + MVI pattern
+- Clean Architecture + MVVM pattern with UDF (Unidirectional Data Flow)
 
 ### Module Structure
 
@@ -68,6 +68,11 @@ CivitDeck/
 
 ### Key Design Patterns
 
+**MVVM + UDF**
+- ViewModels are platform-specific: `androidx.lifecycle.ViewModel` (Android), `ObservableObject` (iOS)
+- Shared module exposes UseCases returning `Flow`/`StateFlow` — ViewModels subscribe to these
+- Complex screens may use sealed class Action/State for UDF; simple screens use plain StateFlow
+
 **API Client**
 - Base URL: `https://civitai.com/api/v1`
 - Auth: Optional Bearer token (API key from CivitAI account settings)
@@ -87,7 +92,8 @@ CivitDeck/
 
 - All shared logic goes in `commonMain` — platform-specific code only when necessary
 - DTOs in `data/api/` are separate from domain entities in `domain/model/`
-- Use cases should be single-responsibility (one public function per use case)
+- Use cases should be single-responsibility (one public function per use case, returns Flow)
+- ViewModels live in platform modules, not in shared — shared only provides UseCases and domain logic
 - Android UI uses Jetpack Compose with Material Design 3
 - iOS UI uses SwiftUI with native navigation patterns
 - Image loading: Coil (Android), AsyncImage/Kingfisher (iOS)
