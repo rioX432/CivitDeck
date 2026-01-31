@@ -25,6 +25,7 @@ DerivedData/
 
 ## Kotlin
 *.class
+.kotlin/
 
 ## OS
 .DS_Store
