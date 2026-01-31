@@ -99,6 +99,11 @@ CivitDeck/
 - Image loading: Coil (Android), AsyncImage/Kingfisher (iOS)
 - All API responses should be cached locally for offline support
 
+## Git Commits
+
+- Keep commit messages concise (one line)
+- Do NOT add AI stamps (e.g., `🤖 Generated with Claude Code`) or `Co-Authored-By` lines
+
 ## Language
 
 All written content in this project must be in English, including:
