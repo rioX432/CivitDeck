@@ -28,7 +28,7 @@ open iosApp/iosApp.xcodeproj          # Open in Xcode
 - Kotlin Multiplatform (KMP) — shared logic across Android & iOS
 - Ktor Client — HTTP client for CivitAI REST API
 - Kotlinx Serialization — JSON parsing
-- SQLDelight — local database (favorites, cache)
+- Room KMP — local database (favorites, cache)
 - Koin — dependency injection
 - Jetpack Compose (Android) / SwiftUI (iOS) — UI
 - Clean Architecture + MVVM pattern with UDF (Unidirectional Data Flow)
@@ -43,7 +43,7 @@ CivitDeck/
 │       │   └── kotlin/
 │       │       ├── data/
 │       │       │   ├── api/           # Ktor API client, DTOs
-│       │       │   ├── local/         # SQLDelight DAOs
+│       │       │   ├── local/         # Room database, DAOs, entities
 │       │       │   └── repository/    # Repository implementations
 │       │       ├── domain/
 │       │       │   ├── model/         # Domain entities
@@ -80,7 +80,7 @@ CivitDeck/
 **Repository Pattern**
 - Repository interfaces in `domain/repository/`
 - Implementations in `data/repository/` combining API + local cache
-- SQLDelight for offline favorites and response caching with TTL
+- Room KMP for offline favorites and response caching with TTL
 
 **Dependency Injection**
 - Koin modules defined in `shared/di/`

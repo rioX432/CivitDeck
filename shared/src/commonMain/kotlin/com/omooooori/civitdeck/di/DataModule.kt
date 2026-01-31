@@ -2,22 +2,45 @@ package com.omooooori.civitdeck.di
 
 import com.omooooori.civitdeck.data.api.CivitAiApi
 import com.omooooori.civitdeck.data.api.createHttpClient
+import com.omooooori.civitdeck.data.local.CivitDeckDatabase
+import com.omooooori.civitdeck.data.local.LocalCacheDataSource
+import com.omooooori.civitdeck.data.local.getRoomDatabase
 import com.omooooori.civitdeck.data.repository.CreatorRepositoryImpl
+import com.omooooori.civitdeck.data.repository.FavoriteRepositoryImpl
 import com.omooooori.civitdeck.data.repository.ImageRepositoryImpl
 import com.omooooori.civitdeck.data.repository.ModelRepositoryImpl
 import com.omooooori.civitdeck.data.repository.TagRepositoryImpl
 import com.omooooori.civitdeck.domain.repository.CreatorRepository
+import com.omooooori.civitdeck.domain.repository.FavoriteRepository
 import com.omooooori.civitdeck.domain.repository.ImageRepository
 import com.omooooori.civitdeck.domain.repository.ModelRepository
 import com.omooooori.civitdeck.domain.repository.TagRepository
+import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
 val dataModule = module {
     single { createHttpClient() }
     single { CivitAiApi(get()) }
+    single {
+        Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+            encodeDefaults = true
+        }
+    }
 
-    single<ModelRepository> { ModelRepositoryImpl(get()) }
-    single<ImageRepository> { ImageRepositoryImpl(get()) }
+    // Room Database
+    single<CivitDeckDatabase> { getRoomDatabase(get()) }
+    single { get<CivitDeckDatabase>().favoriteModelDao() }
+    single { get<CivitDeckDatabase>().cachedApiResponseDao() }
+
+    // Data Sources
+    single { LocalCacheDataSource(get()) }
+
+    // Repositories
+    single<ModelRepository> { ModelRepositoryImpl(get(), get(), get()) }
+    single<ImageRepository> { ImageRepositoryImpl(get(), get(), get()) }
     single<CreatorRepository> { CreatorRepositoryImpl(get()) }
     single<TagRepository> { TagRepositoryImpl(get()) }
+    single<FavoriteRepository> { FavoriteRepositoryImpl(get()) }
 }
