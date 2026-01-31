@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -59,6 +60,7 @@ import com.omooooori.civitdeck.ui.util.FormatUtils
 fun ModelDetailScreen(
     viewModel: ModelDetailViewModel,
     onBack: () -> Unit,
+    onViewImages: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -75,6 +77,7 @@ fun ModelDetailScreen(
             uiState = uiState,
             onRetry = viewModel::retry,
             onVersionSelected = viewModel::onVersionSelected,
+            onViewImages = onViewImages,
             contentPadding = padding,
         )
     }
@@ -138,6 +141,7 @@ private fun ModelDetailBody(
     uiState: ModelDetailUiState,
     onRetry: () -> Unit,
     onVersionSelected: (Int) -> Unit,
+    onViewImages: () -> Unit,
     contentPadding: PaddingValues,
 ) {
     when {
@@ -171,6 +175,7 @@ private fun ModelDetailBody(
                 model = uiState.model!!,
                 selectedVersionIndex = uiState.selectedVersionIndex,
                 onVersionSelected = onVersionSelected,
+                onViewImages = onViewImages,
                 contentPadding = contentPadding,
             )
         }
@@ -182,6 +187,7 @@ private fun ModelDetailContent(
     model: Model,
     selectedVersionIndex: Int,
     onVersionSelected: (Int) -> Unit,
+    onViewImages: () -> Unit,
     contentPadding: PaddingValues,
 ) {
     val selectedVersion = model.modelVersions.getOrNull(selectedVersionIndex)
@@ -206,6 +212,11 @@ private fun ModelDetailContent(
         // Stats row
         item {
             StatsRow(model = model)
+        }
+
+        // View Images button
+        item {
+            ViewImagesButton(onClick = onViewImages)
         }
 
         // Tags
@@ -239,6 +250,22 @@ private fun ModelDetailContent(
                 VersionDetail(version = selectedVersion)
             }
         }
+    }
+}
+
+@Composable
+private fun ViewImagesButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        ),
+    ) {
+        Text("View Community Images")
     }
 }
 
