@@ -99,10 +99,10 @@ CivitDeck/
 
 ## Code Quality
 
-After making changes, always run detekt before committing. It will auto-format code style and run static analysis:
+After making code changes, always run detekt with auto-correct before committing:
 
 ```bash
-./gradlew detekt                      # Auto-format + static analysis
+./gradlew detekt --auto-correct       # Auto-format + static analysis
 ```
 
 ## Git Commits
