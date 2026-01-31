@@ -19,7 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.omooooori.civitdeck.domain.model.Model
-import java.util.Locale
+import com.omooooori.civitdeck.ui.util.FormatUtils
 
 @Composable
 fun ModelCard(
@@ -73,15 +73,15 @@ fun ModelCard(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     StatItem(
-                        label = formatCount(model.stats.downloadCount),
+                        label = FormatUtils.formatCount(model.stats.downloadCount),
                         icon = "downloads",
                     )
                     StatItem(
-                        label = formatCount(model.stats.favoriteCount),
+                        label = FormatUtils.formatCount(model.stats.favoriteCount),
                         icon = "favorites",
                     )
                     StatItem(
-                        label = String.format(Locale.US, "%.1f", model.stats.rating),
+                        label = FormatUtils.formatRating(model.stats.rating),
                         icon = "rating",
                     )
                 }
@@ -116,10 +116,4 @@ private fun StatItem(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-}
-
-private fun formatCount(count: Int): String = when {
-    count >= 1_000_000 -> String.format(Locale.US, "%.1fM", count / 1_000_000.0)
-    count >= 1_000 -> String.format(Locale.US, "%.1fK", count / 1_000.0)
-    else -> count.toString()
 }

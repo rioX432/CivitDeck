@@ -33,10 +33,10 @@ CivitDeck fills that gap. Browse models, explore images, read prompts, and save 
 
 | Layer | Technology |
 |-------|-----------|
-| **Shared (KMP)** | Ktor Client, Kotlinx Serialization, SQLDelight, Koin |
-| **Android** | Jetpack Compose, Material Design 3, Coil |
+| **Shared (KMP)** | Ktor Client, Kotlinx Serialization, Room KMP, Koin |
+| **Android** | Jetpack Compose, Material Design 3, Navigation 3, Coil |
 | **iOS** | SwiftUI |
-| **Architecture** | Clean Architecture + MVI |
+| **Architecture** | Clean Architecture + MVVM (UDF) |
 | **CI/CD** | GitHub Actions |
 
 ## Architecture
@@ -46,7 +46,7 @@ CivitDeck fills that gap. Browse models, explore images, read prompts, and save 
 │              Shared (KMP)                │
 │                                          │
 │  ┌──────────┐ ┌──────────┐ ┌─────────┐  │
-│  │   Ktor   │ │Repository│ │SQLDelight│  │
+│  │   Ktor   │ │Repository│ │ Room KMP │  │
 │  │  Client  │ │          │ │ (Cache)  │  │
 │  └────┬─────┘ └────┬─────┘ └────┬────┘  │
 │       └──────┬─────┘            │        │
@@ -79,20 +79,18 @@ cd CivitDeck
 ./gradlew :androidApp:installDebug
 
 # iOS
-cd iosApp
-pod install
-open CivitDeck.xcworkspace
+open iosApp/iosApp.xcodeproj
 ```
 
 ## Roadmap
 
 ### Phase 1 — MVP
 - [x] Project setup (KMP + Android + iOS)
-- [ ] CivitAI API client (Ktor)
-- [ ] Model search & browse (Android)
-- [ ] Model detail screen (Android)
+- [x] CivitAI API client (Ktor)
+- [x] Model search & browse (Android)
+- [x] Model detail screen (Android)
+- [x] Local favorites & offline cache (Room KMP)
 - [ ] Image gallery & metadata viewer (Android)
-- [ ] Local favorites & offline cache
 - [ ] Documentation (README, ARCHITECTURE, CONTRIBUTING)
 
 ### Phase 2 — iOS & Polish

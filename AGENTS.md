@@ -31,6 +31,7 @@ open iosApp/iosApp.xcodeproj          # Open in Xcode
 - Room KMP — local database (favorites, cache)
 - Koin — dependency injection
 - Jetpack Compose (Android) / SwiftUI (iOS) — UI
+- Navigation 3 (`androidx.navigation3`) — Android screen navigation
 - Clean Architecture + MVVM pattern with UDF (Unidirectional Data Flow)
 
 ### Module Structure
@@ -55,9 +56,12 @@ CivitDeck/
 ├── androidApp/                # Android application (Jetpack Compose)
 │   └── src/main/
 │       └── kotlin/
-│           ├── ui/            # Compose screens & components
-│           ├── viewmodel/     # Android ViewModels
-│           └── di/            # Android DI module
+│           └── ui/
+│               ├── navigation/    # Nav3 NavDisplay & route definitions
+│               ├── search/        # Search screen + ViewModel
+│               ├── detail/        # Detail screen + ViewModel
+│               ├── components/    # Reusable Compose components
+│               └── util/          # Format utilities
 └── iosApp/                    # iOS application (SwiftUI)
     └── CivitDeck/
         ├── Views/             # SwiftUI views

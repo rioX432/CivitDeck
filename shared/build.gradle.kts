@@ -55,7 +55,7 @@ kotlin {
 
 android {
     namespace = "com.omooooori.civitdeck.shared"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
