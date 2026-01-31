@@ -10,7 +10,6 @@ Built with Kotlin Multiplatform (KMP)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-6366F1?style=flat-square)]()
 
-[English](#features) | [日本語](README.ja.md)
 
 </div>
 
