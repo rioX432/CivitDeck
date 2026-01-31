@@ -27,4 +27,19 @@ allprojects {
         buildUponDefaultConfig = true
         config.setFrom("$rootDir/config/detekt/detekt.yml")
     }
+
+    // KMP modules need explicit source set configuration for detekt
+    afterEvaluate {
+        val kmpSourceDirs = listOf(
+            "src/commonMain/kotlin",
+            "src/androidMain/kotlin",
+            "src/iosMain/kotlin",
+        ).map { file(it) }.filter { it.exists() }
+
+        if (kmpSourceDirs.isNotEmpty()) {
+            tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+                setSource(source + project.files(kmpSourceDirs))
+            }
+        }
+    }
 }

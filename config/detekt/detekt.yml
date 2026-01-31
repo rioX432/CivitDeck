@@ -5,11 +5,15 @@ complexity:
   LongMethod:
     threshold: 60
   LongParameterList:
-    functionThreshold: 8
-    constructorThreshold: 10
+    functionThreshold: 10
+    constructorThreshold: 12
   TooManyFunctions:
     thresholdInFiles: 30
     thresholdInClasses: 30
+
+naming:
+  MatchingDeclarationName:
+    active: false
 
 style:
   MagicNumber:

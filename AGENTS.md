@@ -99,6 +99,15 @@ CivitDeck/
 - Image loading: Coil (Android), AsyncImage/Kingfisher (iOS)
 - All API responses should be cached locally for offline support
 
+## Code Quality
+
+After making changes, always run lint and auto-fix before committing:
+
+```bash
+./gradlew ktlintFormat                # Auto-format code style
+./gradlew detekt                      # Run static analysis
+```
+
 ## Git Commits
 
 - Keep commit messages concise (one line)
