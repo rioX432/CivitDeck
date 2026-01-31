@@ -14,6 +14,7 @@ androidx-lifecycle = "2.9.0"
 androidx-navigation3 = "1.0.0"
 androidx-lifecycle-viewmodel-navigation3 = "1.0.0"
 detekt = "1.23.8"
+skie = "0.10.9"
 
 [libraries]
 # Ktor
@@ -66,3 +67,4 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 androidx-room = { id = "androidx.room", version.ref = "room" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+skie = { id = "co.touchlab.skie", version.ref = "skie" }

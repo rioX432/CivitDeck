@@ -54,7 +54,7 @@ import com.omooooori.civitdeck.domain.model.Model
 import com.omooooori.civitdeck.domain.model.ModelFile
 import com.omooooori.civitdeck.domain.model.ModelImage
 import com.omooooori.civitdeck.domain.model.ModelVersion
-import com.omooooori.civitdeck.ui.util.FormatUtils
+import com.omooooori.civitdeck.util.FormatUtils
 
 @Composable
 fun ModelDetailScreen(

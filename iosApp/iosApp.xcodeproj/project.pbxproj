@@ -11,16 +11,22 @@
 		058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		CD0001012D000001000CD001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0001002D000001000CD001 /* ContentView.swift */; };
+		CD0002012D000002000CD001 /* ModelSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002002D000002000CD001 /* ModelSearchViewModel.swift */; };
+		CD0002032D000002000CD001 /* ModelSearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002022D000002000CD001 /* ModelSearchScreen.swift */; };
+		CD0002052D000002000CD001 /* ModelCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002042D000002000CD001 /* ModelCardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		058557BA273AAA24004C7B11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
-		7555FF7B242A565900829871 /* CivitDeck.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CivitDeck.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7555FF7B242A565900829871 /* CivitDeck.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CivitDeck.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AB3632DC29227652001CCB65 /* Config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		CD0001002D000001000CD001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		CD0002002D000002000CD001 /* ModelSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSearchViewModel.swift; sourceTree = "<group>"; };
+		CD0002022D000002000CD001 /* ModelSearchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSearchScreen.swift; sourceTree = "<group>"; };
+		CD0002042D000002000CD001 /* ModelCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +80,7 @@
 				7555FF8C242A565B00829871 /* Info.plist */,
 				2152FB032600AC8F00CF470E /* iOSApp.swift */,
 				CD0001002D000001000CD001 /* ContentView.swift */,
+				CD0003002D000003000CD001 /* Features */,
 				058557D7273AAEEB004C7B11 /* Preview Content */,
 			);
 			path = iosApp;
@@ -85,6 +92,24 @@
 				AB3632DC29227652001CCB65 /* Config.xcconfig */,
 			);
 			path = Configuration;
+			sourceTree = "<group>";
+		};
+		CD0003002D000003000CD001 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				CD0003012D000003000CD001 /* Search */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		CD0003012D000003000CD001 /* Search */ = {
+			isa = PBXGroup;
+			children = (
+				CD0002002D000002000CD001 /* ModelSearchViewModel.swift */,
+				CD0002022D000002000CD001 /* ModelSearchScreen.swift */,
+				CD0002042D000002000CD001 /* ModelCardView.swift */,
+			);
+			path = Search;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -182,6 +207,9 @@
 			files = (
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
 				CD0001012D000001000CD001 /* ContentView.swift in Sources */,
+				CD0002012D000002000CD001 /* ModelSearchViewModel.swift in Sources */,
+				CD0002032D000002000CD001 /* ModelSearchScreen.swift in Sources */,
+				CD0002052D000002000CD001 /* ModelCardView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -315,7 +343,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
-				DEVELOPMENT_TEAM = "${TEAM_ID}";
+				DEVELOPMENT_TEAM = PKKPT79X56;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -342,7 +370,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
-				DEVELOPMENT_TEAM = "${TEAM_ID}";
+				DEVELOPMENT_TEAM = PKKPT79X56;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",

@@ -50,6 +50,7 @@ kotlin {
 dependencies {
     implementation(project(":shared"))
     implementation(compose.material3)
+    implementation(compose.materialIconsExtended)
     implementation(compose.foundation)
     implementation(compose.ui)
     implementation(libs.androidx.activity.compose)

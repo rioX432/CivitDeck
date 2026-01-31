@@ -1,25 +1,33 @@
 package com.omooooori.civitdeck.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.omooooori.civitdeck.domain.model.Model
-import com.omooooori.civitdeck.ui.util.FormatUtils
+import com.omooooori.civitdeck.util.FormatUtils
 
 @Composable
 fun ModelCard(
@@ -30,6 +38,11 @@ fun ModelCard(
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
     ) {
         Column {
             val thumbnailUrl = model.modelVersions
@@ -42,50 +55,55 @@ fun ModelCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(1f)
-                        .clip(MaterialTheme.shapes.medium),
+                        .aspectRatio(1f),
                 )
             }
 
-            Column(
-                modifier = Modifier.padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(
-                    text = model.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+            ModelCardInfo(model = model)
+        }
+    }
+}
 
-                SuggestionChip(
-                    onClick = {},
-                    label = {
-                        Text(
-                            text = model.type.name,
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                    },
-                )
+@Composable
+private fun ModelCardInfo(model: Model) {
+    Column(
+        modifier = Modifier.padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = model.name,
+            style = MaterialTheme.typography.titleSmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    StatItem(
-                        label = FormatUtils.formatCount(model.stats.downloadCount),
-                        icon = "downloads",
-                    )
-                    StatItem(
-                        label = FormatUtils.formatCount(model.stats.favoriteCount),
-                        icon = "favorites",
-                    )
-                    StatItem(
-                        label = FormatUtils.formatRating(model.stats.rating),
-                        icon = "rating",
-                    )
-                }
-            }
+        Text(
+            text = model.type.name,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(50),
+                )
+                .padding(horizontal = 6.dp, vertical = 2.dp),
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            StatItem(
+                label = FormatUtils.formatCount(model.stats.downloadCount),
+                icon = Icons.Outlined.Download,
+            )
+            StatItem(
+                label = FormatUtils.formatCount(model.stats.favoriteCount),
+                icon = Icons.Outlined.FavoriteBorder,
+            )
+            StatItem(
+                label = FormatUtils.formatRating(model.stats.rating),
+                icon = Icons.Outlined.Star,
+            )
         }
     }
 }
@@ -93,7 +111,7 @@ fun ModelCard(
 @Composable
 private fun StatItem(
     label: String,
-    icon: String,
+    icon: ImageVector,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -101,14 +119,11 @@ private fun StatItem(
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = when (icon) {
-                "downloads" -> "\u2B07"
-                "favorites" -> "\u2764"
-                "rating" -> "\u2B50"
-                else -> ""
-            },
-            style = MaterialTheme.typography.labelSmall,
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(12.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
             text = label,
