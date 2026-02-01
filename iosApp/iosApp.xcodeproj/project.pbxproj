@@ -156,7 +156,7 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1130;
 				LastUpgradeCheck = 1540;
-				ORGANIZATIONNAME = omooooori;
+				ORGANIZATIONNAME = riox432;
 				TargetAttributes = {
 					7555FF7A242A565900829871 = {
 						CreatedOnToolsVersion = 11.3.1;

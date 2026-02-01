@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.omooooori.civitdeck"
+    namespace = "com.riox432.civitdeck"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.omooooori.civitdeck"
+        applicationId = "com.riox432.civitdeck"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

@@ -55,7 +55,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.omooooori.civitdeck.shared"
+    namespace = "com.riox432.civitdeck.shared"
     compileSdk = 36
 
     defaultConfig {
