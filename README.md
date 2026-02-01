@@ -72,7 +72,7 @@ CivitDeck fills that gap. Browse models, explore images, read prompts, and save 
 
 ```bash
 # Clone
-git clone https://github.com/omooooori/CivitDeck.git
+git clone https://github.com/rioX432/CivitDeck.git
 cd CivitDeck
 
 # Android
@@ -118,6 +118,6 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 ## Author
 
-**RIO** ([@omooooori](https://github.com/omooooori))
+**RIO** ([@rioX432](https://github.com/rioX432))
 
 Mobile App Developer based in Tokyo — Android | iOS | KMP
