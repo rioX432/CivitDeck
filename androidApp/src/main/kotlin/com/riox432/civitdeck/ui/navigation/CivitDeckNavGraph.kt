@@ -20,7 +20,7 @@ data object SearchRoute
 
 data class DetailRoute(val modelId: Long)
 
-data class ImageGalleryRoute(val modelId: Long)
+data class ImageGalleryRoute(val modelVersionId: Long)
 
 @Composable
 fun CivitDeckNavGraph() {
@@ -48,13 +48,13 @@ fun CivitDeckNavGraph() {
                 ModelDetailScreen(
                     viewModel = viewModel,
                     onBack = { backStack.removeLastOrNull() },
-                    onViewImages = { backStack.add(ImageGalleryRoute(key.modelId)) },
+                    onViewImages = { modelVersionId -> backStack.add(ImageGalleryRoute(modelVersionId)) },
                 )
             }
             entry<ImageGalleryRoute> { key ->
                 val viewModel: ImageGalleryViewModel = koinViewModel(
-                    key = "gallery_${key.modelId}",
-                ) { parametersOf(key.modelId) }
+                    key = "gallery_${key.modelVersionId}",
+                ) { parametersOf(key.modelVersionId) }
                 ImageGalleryScreen(
                     viewModel = viewModel,
                     onBack = { backStack.removeLastOrNull() },

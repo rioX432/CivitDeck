@@ -16,6 +16,10 @@
 		CD0002052D000002000CD001 /* ModelCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002042D000002000CD001 /* ModelCardView.swift */; };
 		CD0004012D000004000CD001 /* ModelDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0004002D000004000CD001 /* ModelDetailViewModel.swift */; };
 		CD0004032D000004000CD001 /* ModelDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0004022D000004000CD001 /* ModelDetailScreen.swift */; };
+		CD0005012D000005000CD001 /* ImageGalleryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005002D000005000CD001 /* ImageGalleryViewModel.swift */; };
+		CD0005032D000005000CD001 /* ImageGalleryScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005022D000005000CD001 /* ImageGalleryScreen.swift */; };
+		CD0005052D000005000CD001 /* ImageViewerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005042D000005000CD001 /* ImageViewerScreen.swift */; };
+		CD0005072D000005000CD001 /* MetadataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005062D000005000CD001 /* MetadataSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +35,10 @@
 		CD0002042D000002000CD001 /* ModelCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCardView.swift; sourceTree = "<group>"; };
 		CD0004002D000004000CD001 /* ModelDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailViewModel.swift; sourceTree = "<group>"; };
 		CD0004022D000004000CD001 /* ModelDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailScreen.swift; sourceTree = "<group>"; };
+		CD0005002D000005000CD001 /* ImageGalleryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageGalleryViewModel.swift; sourceTree = "<group>"; };
+		CD0005022D000005000CD001 /* ImageGalleryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageGalleryScreen.swift; sourceTree = "<group>"; };
+		CD0005042D000005000CD001 /* ImageViewerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewerScreen.swift; sourceTree = "<group>"; };
+		CD0005062D000005000CD001 /* MetadataSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,8 +111,20 @@
 			children = (
 				CD0003012D000003000CD001 /* Search */,
 				CD0004042D000004000CD001 /* Detail */,
+				CD0005082D000005000CD001 /* Gallery */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		CD0005082D000005000CD001 /* Gallery */ = {
+			isa = PBXGroup;
+			children = (
+				CD0005002D000005000CD001 /* ImageGalleryViewModel.swift */,
+				CD0005022D000005000CD001 /* ImageGalleryScreen.swift */,
+				CD0005042D000005000CD001 /* ImageViewerScreen.swift */,
+				CD0005062D000005000CD001 /* MetadataSheet.swift */,
+			);
+			path = Gallery;
 			sourceTree = "<group>";
 		};
 		CD0004042D000004000CD001 /* Detail */ = {
@@ -226,6 +246,10 @@
 				CD0002052D000002000CD001 /* ModelCardView.swift in Sources */,
 				CD0004012D000004000CD001 /* ModelDetailViewModel.swift in Sources */,
 				CD0004032D000004000CD001 /* ModelDetailScreen.swift in Sources */,
+				CD0005012D000005000CD001 /* ImageGalleryViewModel.swift in Sources */,
+				CD0005032D000005000CD001 /* ImageGalleryScreen.swift in Sources */,
+				CD0005052D000005000CD001 /* ImageViewerScreen.swift in Sources */,
+				CD0005072D000005000CD001 /* MetadataSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

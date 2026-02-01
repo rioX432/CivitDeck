@@ -29,7 +29,7 @@ data class ImageGalleryUiState(
 )
 
 class ImageGalleryViewModel(
-    private val modelId: Long,
+    private val modelVersionId: Long,
     private val getImagesUseCase: GetImagesUseCase,
 ) : ViewModel() {
 
@@ -112,7 +112,7 @@ class ImageGalleryViewModel(
                 val state = _uiState.value
                 val nsfwLevel = if (state.showNsfw) NsfwLevel.Soft else NsfwLevel.None
                 val result = getImagesUseCase(
-                    modelId = modelId,
+                    modelVersionId = modelVersionId,
                     sort = state.selectedSort,
                     period = state.selectedPeriod,
                     nsfwLevel = nsfwLevel,

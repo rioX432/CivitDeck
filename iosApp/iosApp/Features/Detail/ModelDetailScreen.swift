@@ -51,7 +51,9 @@ struct ModelDetailScreen: View {
                 imageCarousel(model: model)
                 modelHeader(model: model)
                 statsRow(model: model)
-                viewImagesButton
+                if let version = viewModel.selectedVersion {
+                    viewImagesButton(modelVersionId: version.id)
+                }
                 tagsSection(tags: model.tags)
                 descriptionSection(description: model.description_)
                 versionSelector(model: model)
@@ -170,9 +172,9 @@ struct ModelDetailScreen: View {
 
     // MARK: - View Images Button
 
-    private var viewImagesButton: some View {
-        Button {
-            // Will navigate to image gallery in future issue
+    private func viewImagesButton(modelVersionId: Int64) -> some View {
+        NavigationLink {
+            ImageGalleryScreen(modelVersionId: modelVersionId)
         } label: {
             Text("View Community Images")
                 .frame(maxWidth: .infinity)

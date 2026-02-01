@@ -60,7 +60,7 @@ import com.riox432.civitdeck.util.FormatUtils
 fun ModelDetailScreen(
     viewModel: ModelDetailViewModel,
     onBack: () -> Unit,
-    onViewImages: () -> Unit = {},
+    onViewImages: (Long) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -141,7 +141,7 @@ private fun ModelDetailBody(
     uiState: ModelDetailUiState,
     onRetry: () -> Unit,
     onVersionSelected: (Int) -> Unit,
-    onViewImages: () -> Unit,
+    onViewImages: (Long) -> Unit,
     contentPadding: PaddingValues,
 ) {
     when {
@@ -187,7 +187,7 @@ private fun ModelDetailContent(
     model: Model,
     selectedVersionIndex: Int,
     onVersionSelected: (Int) -> Unit,
-    onViewImages: () -> Unit,
+    onViewImages: (Long) -> Unit,
     contentPadding: PaddingValues,
 ) {
     val selectedVersion = model.modelVersions.getOrNull(selectedVersionIndex)
@@ -216,7 +216,9 @@ private fun ModelDetailContent(
 
         // View Images button
         item {
-            ViewImagesButton(onClick = onViewImages)
+            if (selectedVersion != null) {
+                ViewImagesButton(onClick = { onViewImages(selectedVersion.id) })
+            }
         }
 
         // Tags
