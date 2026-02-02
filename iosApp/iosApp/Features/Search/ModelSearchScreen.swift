@@ -5,8 +5,8 @@ struct ModelSearchScreen: View {
     @StateObject private var viewModel = ModelSearchViewModel()
 
     private let columns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: Spacing.sm),
+        GridItem(.flexible(), spacing: Spacing.sm),
     ]
 
     var body: some View {
@@ -40,7 +40,7 @@ struct ModelSearchScreen: View {
     private var searchBar: some View {
         HStack {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
+                .foregroundColor(.civitOnSurfaceVariant)
             TextField("Search models...", text: $viewModel.query)
                 .submitLabel(.search)
                 .onSubmit {
@@ -51,22 +51,22 @@ struct ModelSearchScreen: View {
                     viewModel.query = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.civitOnSurfaceVariant)
                 }
             }
         }
         .padding(10)
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color(.systemGray4), lineWidth: 1)
+            RoundedRectangle(cornerRadius: CornerRadius.searchBar)
+                .stroke(Color.civitOutlineVariant, lineWidth: 1)
         )
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .padding(.horizontal, Spacing.lg)
+        .padding(.vertical, Spacing.sm)
     }
 
     private var modelGrid: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 12) {
+            LazyVGrid(columns: columns, spacing: Spacing.sm) {
                 ForEach(Array(viewModel.models.enumerated()), id: \.element.id) { index, model in
                     NavigationLink(value: model.id) {
                         ModelCardView(model: model)
@@ -79,7 +79,7 @@ struct ModelSearchScreen: View {
                     }
                 }
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, Spacing.md)
 
             if viewModel.isLoadingMore {
                 ProgressView()
@@ -93,7 +93,7 @@ struct ModelSearchScreen: View {
 
     private var typeFilterChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: Spacing.sm) {
                 chipButton(label: "All", isSelected: viewModel.selectedType == nil) {
                     viewModel.onTypeSelected(nil)
                 }
@@ -103,32 +103,32 @@ struct ModelSearchScreen: View {
                     }
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.sm)
         }
     }
 
     private func chipButton(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
-                .font(.caption)
+                .font(.civitLabelMedium)
                 .fontWeight(isSelected ? .semibold : .regular)
-                .padding(.horizontal, 12)
+                .padding(.horizontal, Spacing.md)
                 .padding(.vertical, 6)
                 .background(
                     isSelected
-                        ? Color.accentColor.opacity(0.2)
-                        : Color(.systemGray5)
+                        ? Color.civitPrimary.opacity(0.2)
+                        : Color.civitSurfaceVariant
                 )
-                .foregroundColor(isSelected ? .accentColor : .primary)
+                .foregroundColor(isSelected ? .civitPrimary : .civitOnSurface)
                 .clipShape(Capsule())
         }
     }
 
     private func errorView(message: String) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.lg) {
             Text(message)
-                .foregroundColor(.red)
+                .foregroundColor(.civitError)
                 .multilineTextAlignment(.center)
             Button("Retry") {
                 viewModel.refresh()
@@ -139,12 +139,12 @@ struct ModelSearchScreen: View {
     }
 
     private var emptyView: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.sm) {
             Image(systemName: "magnifyingglass")
                 .font(.largeTitle)
-                .foregroundColor(.secondary)
+                .foregroundColor(.civitOnSurfaceVariant)
             Text("No models found")
-                .foregroundColor(.secondary)
+                .foregroundColor(.civitOnSurfaceVariant)
         }
     }
 }

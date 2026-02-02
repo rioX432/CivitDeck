@@ -37,7 +37,7 @@ struct ModelDetailScreen: View {
                     viewModel.onFavoriteToggle()
                 } label: {
                     Image(systemName: viewModel.isFavorite ? "heart.fill" : "heart")
-                        .foregroundColor(viewModel.isFavorite ? .red : .primary)
+                        .foregroundColor(viewModel.isFavorite ? .civitError : .civitOnSurface)
                 }
             }
         }
@@ -47,7 +47,7 @@ struct ModelDetailScreen: View {
 
     private func modelContent(model: Model) -> some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: Spacing.lg) {
                 imageCarousel(model: model)
                 modelHeader(model: model)
                 statsRow(model: model)
@@ -99,38 +99,38 @@ struct ModelDetailScreen: View {
 
     private var imagePlaceholder: some View {
         Rectangle()
-            .fill(Color(.systemGray5))
+            .fill(Color.civitSurfaceVariant)
             .overlay {
                 Image(systemName: "photo")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.civitOnSurfaceVariant)
             }
     }
 
     // MARK: - Model Header
 
     private func modelHeader(model: Model) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             Text(model.name)
-                .font(.title2)
+                .font(.civitHeadlineSmall)
                 .fontWeight(.bold)
 
-            HStack(spacing: 8) {
+            HStack(spacing: Spacing.sm) {
                 Text(model.type.name)
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color(.systemGray5))
+                    .font(.civitLabelMedium)
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, Spacing.xs)
+                    .background(Color.civitSurfaceVariant)
                     .clipShape(Capsule())
 
                 if let creator = model.creator {
                     Text("by \(creator.username)")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(.civitBodyMedium)
+                        .foregroundColor(.civitOnSurfaceVariant)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Spacing.lg)
     }
 
     // MARK: - Stats Row
@@ -157,16 +157,16 @@ struct ModelDetailScreen: View {
                 label: "Comments"
             )
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Spacing.lg)
     }
 
     private func statColumn(value: String, label: String) -> some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.headline)
+                .font(.civitTitleMedium)
             Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(.civitLabelSmall)
+                .foregroundColor(.civitOnSurfaceVariant)
         }
     }
 
@@ -180,7 +180,7 @@ struct ModelDetailScreen: View {
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.bordered)
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Spacing.lg)
     }
 
     // MARK: - Tags Section
@@ -188,15 +188,14 @@ struct ModelDetailScreen: View {
     @ViewBuilder
     private func tagsSection(tags: [String]) -> some View {
         if !tags.isEmpty {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 Text("Tags")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
+                    .font(.civitTitleSmall)
 
                 WrappingHStack(tags: tags)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, Spacing.lg)
         }
     }
 
@@ -205,17 +204,16 @@ struct ModelDetailScreen: View {
     @ViewBuilder
     private func descriptionSection(description: String?) -> some View {
         if let description, !description.isEmpty {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 Divider()
                 Text("Description")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
+                    .font(.civitTitleSmall)
                 Text(htmlToPlainText(description))
-                    .font(.body)
-                    .foregroundColor(.secondary)
+                    .font(.civitBodyMedium)
+                    .foregroundColor(.civitOnSurfaceVariant)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, Spacing.lg)
         }
     }
 
@@ -225,40 +223,39 @@ struct ModelDetailScreen: View {
     private func versionSelector(model: Model) -> some View {
         let versions = model.modelVersions
         if versions.count > 1 {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 Divider()
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, Spacing.lg)
 
                 Text("Versions")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .padding(.horizontal, 16)
+                    .font(.civitTitleSmall)
+                    .padding(.horizontal, Spacing.lg)
 
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: Spacing.sm) {
                         ForEach(Array(versions.enumerated()), id: \.offset) { index, version in
                             Button {
                                 viewModel.onVersionSelected(index)
                             } label: {
                                 Text(version.name)
-                                    .font(.caption)
+                                    .font(.civitLabelMedium)
                                     .fontWeight(index == viewModel.selectedVersionIndex ? .semibold : .regular)
-                                    .padding(.horizontal, 12)
+                                    .padding(.horizontal, Spacing.md)
                                     .padding(.vertical, 6)
                                     .background(
                                         index == viewModel.selectedVersionIndex
-                                            ? Color.accentColor.opacity(0.2)
-                                            : Color(.systemGray5)
+                                            ? Color.civitPrimary.opacity(0.2)
+                                            : Color.civitSurfaceVariant
                                     )
                                     .foregroundColor(
                                         index == viewModel.selectedVersionIndex
-                                            ? .accentColor : .primary
+                                            ? .civitPrimary : .civitOnSurface
                                     )
                                     .clipShape(Capsule())
                             }
                         }
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, Spacing.lg)
                 }
             }
         }
@@ -269,33 +266,31 @@ struct ModelDetailScreen: View {
     @ViewBuilder
     private var versionDetail: some View {
         if let version = viewModel.selectedVersion {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 if let baseModel = version.baseModel {
                     HStack {
                         Text("Base Model")
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.civitOnSurfaceVariant)
                         Spacer()
                         Text(baseModel)
                     }
-                    .font(.subheadline)
+                    .font(.civitBodyMedium)
                 }
 
                 let trainedWords = version.trainedWords
                 if !trainedWords.isEmpty {
                     Text("Trained Words")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+                        .font(.civitTitleSmall)
                     Text(trainedWords.joined(separator: ", "))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(.civitBodySmall)
+                        .foregroundColor(.civitOnSurfaceVariant)
                 }
 
                 let files = version.files
                 if !files.isEmpty {
                     Text("Files")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .padding(.top, 4)
+                        .font(.civitTitleSmall)
+                        .padding(.top, Spacing.xs)
 
                     ForEach(Array(files.enumerated()), id: \.offset) { _, file in
                         fileInfoRow(file: file)
@@ -303,30 +298,30 @@ struct ModelDetailScreen: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 16)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.bottom, Spacing.lg)
         }
     }
 
     private func fileInfoRow(file: ModelFile) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(file.name)
-                .font(.caption)
+                .font(.civitBodySmall)
                 .lineLimit(1)
 
-            HStack(spacing: 8) {
+            HStack(spacing: Spacing.sm) {
                 Text(FormatUtils.shared.formatFileSize(sizeKB: file.sizeKB))
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(.civitLabelSmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
                 if let format = file.format {
                     Text(format)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .font(.civitLabelSmall)
+                        .foregroundColor(.civitOnSurfaceVariant)
                 }
                 if let fp = file.fp {
                     Text(fp)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .font(.civitLabelSmall)
+                        .foregroundColor(.civitOnSurfaceVariant)
                 }
             }
         }
@@ -336,9 +331,9 @@ struct ModelDetailScreen: View {
     // MARK: - Error View
 
     private func errorView(message: String) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.lg) {
             Text(message)
-                .foregroundColor(.red)
+                .foregroundColor(.civitError)
                 .multilineTextAlignment(.center)
             Button("Retry") {
                 viewModel.retry()
@@ -373,16 +368,16 @@ private struct WrappingHStack: View {
 
     var body: some View {
         LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 80), spacing: 8)],
+            columns: [GridItem(.adaptive(minimum: 80), spacing: Spacing.sm)],
             alignment: .leading,
-            spacing: 8
+            spacing: Spacing.sm
         ) {
             ForEach(tags, id: \.self) { tag in
                 Text(tag)
-                    .font(.caption)
+                    .font(.civitLabelMedium)
                     .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(Color(.systemGray5))
+                    .padding(.vertical, Spacing.xs)
+                    .background(Color.civitSurfaceVariant)
                     .clipShape(Capsule())
             }
         }
