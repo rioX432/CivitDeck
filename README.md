@@ -7,9 +7,11 @@
 Built with Kotlin Multiplatform (KMP)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-6366F1?style=flat-square)]()
+[![CI](https://github.com/rioX432/CivitDeck/actions/workflows/ci.yml/badge.svg)](https://github.com/rioX432/CivitDeck/actions/workflows/ci.yml)
 
+[English](README.md) | [日本語](README.ja.md)
 
 </div>
 
@@ -20,6 +22,16 @@ Built with Kotlin Multiplatform (KMP)
 [CivitAI](https://civitai.com/) is the largest open-source generative AI community — hosting hundreds of thousands of models, LoRAs, and AI-generated images. But there's **no official mobile app**.
 
 CivitDeck fills that gap. Browse models, explore images, read prompts, and save your favorites — all from your phone.
+
+## Screenshots
+
+<!-- TODO: Add actual screenshots -->
+
+| Android | iOS |
+|---------|-----|
+| ![Android Search](docs/screenshots/android_search.png) | ![iOS Search](docs/screenshots/ios_search.png) |
+| ![Android Detail](docs/screenshots/android_detail.png) | ![iOS Detail](docs/screenshots/ios_detail.png) |
+| ![Android Gallery](docs/screenshots/android_gallery.png) | ![iOS Gallery](docs/screenshots/ios_gallery.png) |
 
 ## Features
 
@@ -40,6 +52,8 @@ CivitDeck fills that gap. Browse models, explore images, read prompts, and save 
 | **CI/CD** | GitHub Actions |
 
 ## Architecture
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed documentation.
 
 ```
 ┌──────────────────────────────────────────┐
@@ -90,11 +104,13 @@ open iosApp/iosApp.xcodeproj
 - [x] Model search & browse (Android)
 - [x] Model detail screen (Android)
 - [x] Local favorites & offline cache (Room KMP)
-- [ ] Image gallery & metadata viewer (Android)
-- [ ] Documentation (README, ARCHITECTURE, CONTRIBUTING)
+- [x] Image gallery & metadata viewer (Android)
+- [x] Documentation (README, ARCHITECTURE, CONTRIBUTING)
 
 ### Phase 2 — iOS & Polish
-- [ ] iOS screens (SwiftUI) — Model search, detail, gallery
+- [x] iOS model search screen (SwiftUI)
+- [x] iOS model detail screen (SwiftUI)
+- [x] iOS image gallery screen (SwiftUI)
 - [ ] CivitAI account integration (API Key auth)
 - [ ] Creator profiles
 - [ ] Tag-based exploration
