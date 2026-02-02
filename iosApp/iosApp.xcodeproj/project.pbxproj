@@ -20,6 +20,10 @@
 		CD0005032D000005000CD001 /* ImageGalleryScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005022D000005000CD001 /* ImageGalleryScreen.swift */; };
 		CD0005052D000005000CD001 /* ImageViewerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005042D000005000CD001 /* ImageViewerScreen.swift */; };
 		CD0005072D000005000CD001 /* MetadataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005062D000005000CD001 /* MetadataSheet.swift */; };
+		CD0006012D000006000CD001 /* CivitDeckColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006002D000006000CD001 /* CivitDeckColors.swift */; };
+		CD0006032D000006000CD001 /* CivitDeckFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006022D000006000CD001 /* CivitDeckFonts.swift */; };
+		CD0006052D000006000CD001 /* CivitDeckSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006042D000006000CD001 /* CivitDeckSpacing.swift */; };
+		CD0006072D000006000CD001 /* CivitDeckShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006062D000006000CD001 /* CivitDeckShapes.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +43,10 @@
 		CD0005022D000005000CD001 /* ImageGalleryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageGalleryScreen.swift; sourceTree = "<group>"; };
 		CD0005042D000005000CD001 /* ImageViewerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewerScreen.swift; sourceTree = "<group>"; };
 		CD0005062D000005000CD001 /* MetadataSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataSheet.swift; sourceTree = "<group>"; };
+		CD0006002D000006000CD001 /* CivitDeckColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckColors.swift; sourceTree = "<group>"; };
+		CD0006022D000006000CD001 /* CivitDeckFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckFonts.swift; sourceTree = "<group>"; };
+		CD0006042D000006000CD001 /* CivitDeckSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckSpacing.swift; sourceTree = "<group>"; };
+		CD0006062D000006000CD001 /* CivitDeckShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckShapes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +100,7 @@
 				7555FF8C242A565B00829871 /* Info.plist */,
 				2152FB032600AC8F00CF470E /* iOSApp.swift */,
 				CD0001002D000001000CD001 /* ContentView.swift */,
+				CD0006082D000006000CD001 /* DesignSystem */,
 				CD0003002D000003000CD001 /* Features */,
 				058557D7273AAEEB004C7B11 /* Preview Content */,
 			);
@@ -104,6 +113,17 @@
 				AB3632DC29227652001CCB65 /* Config.xcconfig */,
 			);
 			path = Configuration;
+			sourceTree = "<group>";
+		};
+		CD0006082D000006000CD001 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				CD0006002D000006000CD001 /* CivitDeckColors.swift */,
+				CD0006022D000006000CD001 /* CivitDeckFonts.swift */,
+				CD0006042D000006000CD001 /* CivitDeckSpacing.swift */,
+				CD0006062D000006000CD001 /* CivitDeckShapes.swift */,
+			);
+			path = DesignSystem;
 			sourceTree = "<group>";
 		};
 		CD0003002D000003000CD001 /* Features */ = {
@@ -250,6 +270,10 @@
 				CD0005032D000005000CD001 /* ImageGalleryScreen.swift in Sources */,
 				CD0005052D000005000CD001 /* ImageViewerScreen.swift in Sources */,
 				CD0005072D000005000CD001 /* MetadataSheet.swift in Sources */,
+				CD0006012D000006000CD001 /* CivitDeckColors.swift in Sources */,
+				CD0006032D000006000CD001 /* CivitDeckFonts.swift in Sources */,
+				CD0006052D000006000CD001 /* CivitDeckSpacing.swift in Sources */,
+				CD0006072D000006000CD001 /* CivitDeckShapes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -5,8 +5,8 @@ struct ImageGalleryScreen: View {
     @StateObject private var viewModel: ImageGalleryViewModel
 
     private let columns = [
-        GridItem(.flexible(), spacing: 8),
-        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: Spacing.sm),
+        GridItem(.flexible(), spacing: Spacing.sm),
     ]
 
     init(modelVersionId: Int64) {
@@ -34,17 +34,17 @@ struct ImageGalleryScreen: View {
     // MARK: - Filter Bar
 
     private var filterBar: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: Spacing.xs) {
             sortChips
             periodAndNsfwRow
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.sm)
     }
 
     private var sortChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: Spacing.sm) {
                 ForEach(sortOptions, id: \.self) { sort in
                     chipButton(
                         label: sortLabel(sort),
@@ -60,7 +60,7 @@ struct ImageGalleryScreen: View {
     private var periodAndNsfwRow: some View {
         HStack {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                HStack(spacing: Spacing.sm) {
                     ForEach(periodOptions, id: \.self) { period in
                         chipButton(
                             label: periodLabel(period),
@@ -72,12 +72,12 @@ struct ImageGalleryScreen: View {
                 }
             }
 
-            Spacer(minLength: 8)
+            Spacer(minLength: Spacing.sm)
 
-            HStack(spacing: 4) {
+            HStack(spacing: Spacing.xs) {
                 Text("NSFW")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(.civitLabelSmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
                 Toggle("", isOn: Binding(
                     get: { viewModel.showNsfw },
                     set: { _ in viewModel.onNsfwToggle() }
@@ -114,7 +114,7 @@ struct ImageGalleryScreen: View {
 
     private var imageGrid: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 8) {
+            LazyVGrid(columns: columns, spacing: Spacing.sm) {
                 ForEach(Array(viewModel.images.enumerated()), id: \.element.id) { index, image in
                     imageCell(image: image, index: index)
                         .onAppear {
@@ -124,7 +124,7 @@ struct ImageGalleryScreen: View {
                         }
                 }
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, Spacing.sm)
 
             if viewModel.isLoadingMore {
                 ProgressView()
@@ -149,14 +149,14 @@ struct ImageGalleryScreen: View {
                         .scaledToFill()
                 case .failure:
                     Rectangle()
-                        .fill(Color(.systemGray5))
+                        .fill(Color.civitSurfaceVariant)
                         .overlay {
                             SwiftUI.Image(systemName: "photo")
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.civitOnSurfaceVariant)
                         }
                 case .empty:
                     Rectangle()
-                        .fill(Color(.systemGray6))
+                        .fill(Color.civitSurfaceContainerHigh)
                         .overlay { ProgressView() }
                 @unknown default:
                     EmptyView()
@@ -164,7 +164,7 @@ struct ImageGalleryScreen: View {
             }
             .aspectRatio(aspectRatio, contentMode: .fill)
             .clipped()
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
         }
         .buttonStyle(.plain)
     }
@@ -172,9 +172,9 @@ struct ImageGalleryScreen: View {
     // MARK: - States
 
     private func errorView(message: String) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.lg) {
             Text(message)
-                .foregroundColor(.red)
+                .foregroundColor(.civitError)
                 .multilineTextAlignment(.center)
             Button("Retry") {
                 viewModel.retry()
@@ -185,12 +185,12 @@ struct ImageGalleryScreen: View {
     }
 
     private var emptyView: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.sm) {
             SwiftUI.Image(systemName: "photo.on.rectangle")
                 .font(.largeTitle)
-                .foregroundColor(.secondary)
+                .foregroundColor(.civitOnSurfaceVariant)
             Text("No images found")
-                .foregroundColor(.secondary)
+                .foregroundColor(.civitOnSurfaceVariant)
         }
     }
 
@@ -199,16 +199,16 @@ struct ImageGalleryScreen: View {
     private func chipButton(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
-                .font(.caption)
+                .font(.civitLabelMedium)
                 .fontWeight(isSelected ? .semibold : .regular)
-                .padding(.horizontal, 12)
+                .padding(.horizontal, Spacing.md)
                 .padding(.vertical, 6)
                 .background(
                     isSelected
-                        ? Color.accentColor.opacity(0.2)
-                        : Color(.systemGray5)
+                        ? Color.civitPrimary.opacity(0.2)
+                        : Color.civitSurfaceVariant
                 )
-                .foregroundColor(isSelected ? .accentColor : .primary)
+                .foregroundColor(isSelected ? .civitPrimary : .civitOnSurface)
                 .clipShape(Capsule())
         }
     }

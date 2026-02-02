@@ -47,13 +47,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
+import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.util.FormatUtils
 
 @Composable
@@ -163,7 +163,7 @@ private fun ModelDetailBody(
                         text = uiState.error ?: "Unknown error",
                         color = MaterialTheme.colorScheme.error,
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(Spacing.lg))
                     Button(onClick = onRetry) {
                         Text("Retry")
                     }
@@ -196,7 +196,7 @@ private fun ModelDetailContent(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(
             top = contentPadding.calculateTopPadding(),
-            bottom = contentPadding.calculateBottomPadding() + 16.dp,
+            bottom = contentPadding.calculateBottomPadding() + Spacing.lg,
         ),
     ) {
         // Image carousel
@@ -261,7 +261,7 @@ private fun ViewImagesButton(onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
             contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -299,7 +299,7 @@ private fun ImageCarousel(images: List<ModelImage>) {
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .padding(top = 8.dp),
+                    .padding(top = Spacing.sm),
             )
         }
     }
@@ -307,15 +307,15 @@ private fun ImageCarousel(images: List<ModelImage>) {
 
 @Composable
 private fun ModelHeader(model: Model) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+    Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.md)) {
         Text(
             text = model.name,
             style = MaterialTheme.typography.headlineSmall,
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(Spacing.xs))
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         ) {
             SuggestionChip(
                 onClick = {},
@@ -342,7 +342,7 @@ private fun StatsRow(model: Model) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         StatColumn(
@@ -382,15 +382,15 @@ private fun StatColumn(value: String, label: String) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TagsSection(tags: List<String>) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+    Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
         Text(
             text = "Tags",
             style = MaterialTheme.typography.titleSmall,
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(Spacing.sm))
         FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+            verticalArrangement = Arrangement.spacedBy(Spacing.xs),
         ) {
             tags.forEach { tag ->
                 SuggestionChip(
@@ -404,13 +404,13 @@ private fun TagsSection(tags: List<String>) {
 
 @Composable
 private fun DescriptionSection(description: String) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-        HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
+    Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
+        HorizontalDivider(modifier = Modifier.padding(bottom = Spacing.sm))
         Text(
             text = "Description",
             style = MaterialTheme.typography.titleSmall,
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(Spacing.sm))
         val plainText = Html.fromHtml(description, Html.FROM_HTML_MODE_COMPACT).toString()
         Text(
             text = AnnotatedString(plainText),
@@ -425,17 +425,17 @@ private fun VersionSelector(
     selectedIndex: Int,
     onVersionSelected: (Int) -> Unit,
 ) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+    Column(modifier = Modifier.padding(vertical = Spacing.sm)) {
+        HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm))
         Text(
             text = "Versions",
             style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier.padding(horizontal = Spacing.lg),
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(Spacing.sm))
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(horizontal = Spacing.lg),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         ) {
             itemsIndexed(versions) { index, version ->
                 FilterChip(
@@ -450,18 +450,18 @@ private fun VersionSelector(
 
 @Composable
 private fun VersionDetail(version: ModelVersion) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+    Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
         if (version.baseModel != null) {
             DetailRow(label = "Base Model", value = version.baseModel!!)
         }
 
         if (version.trainedWords.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Spacing.sm))
             Text(
                 text = "Trained Words",
                 style = MaterialTheme.typography.titleSmall,
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(Spacing.xs))
             Text(
                 text = version.trainedWords.joinToString(", "),
                 style = MaterialTheme.typography.bodySmall,
@@ -470,15 +470,15 @@ private fun VersionDetail(version: ModelVersion) {
         }
 
         if (version.files.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Spacing.md))
             Text(
                 text = "Files",
                 style = MaterialTheme.typography.titleSmall,
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(Spacing.xs))
             version.files.forEach { file ->
                 FileInfoRow(file = file)
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(Spacing.xs))
             }
         }
     }
@@ -507,7 +507,7 @@ private fun FileInfoRow(file: ModelFile) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = Spacing.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
@@ -517,7 +517,7 @@ private fun FileInfoRow(file: ModelFile) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                 Text(
                     text = FormatUtils.formatFileSize(file.sizeKB),
                     style = MaterialTheme.typography.labelSmall,

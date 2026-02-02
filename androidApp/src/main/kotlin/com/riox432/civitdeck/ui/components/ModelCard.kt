@@ -27,6 +27,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.IconSize
+import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.util.FormatUtils
 
 @Composable
@@ -38,7 +41,7 @@ fun ModelCard(
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(CornerRadius.card),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -67,8 +70,8 @@ fun ModelCard(
 @Composable
 private fun ModelCardInfo(model: Model) {
     Column(
-        modifier = Modifier.padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.padding(Spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
         Text(
             text = model.name,
@@ -89,7 +92,7 @@ private fun ModelCardInfo(model: Model) {
         )
 
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             StatItem(
@@ -122,7 +125,7 @@ private fun StatItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(12.dp),
+            modifier = Modifier.size(IconSize.statIcon),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(

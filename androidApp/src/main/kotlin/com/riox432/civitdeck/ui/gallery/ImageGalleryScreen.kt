@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -38,12 +39,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
 fun ImageGalleryScreen(
@@ -138,12 +140,12 @@ private fun FilterBar(
     onPeriodSelected: (TimePeriod) -> Unit,
     onNsfwToggle: () -> Unit,
 ) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+    Column(modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.sm)) {
         SortFilterRow(
             selectedSort = uiState.selectedSort,
             onSortSelected = onSortSelected,
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(Spacing.xs))
         PeriodAndNsfwRow(
             selectedPeriod = uiState.selectedPeriod,
             showNsfw = uiState.showNsfw,
@@ -158,7 +160,7 @@ private fun SortFilterRow(
     selectedSort: SortOrder,
     onSortSelected: (SortOrder) -> Unit,
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         SortOrder.entries.forEach { sort ->
             FilterChip(
                 selected = sort == selectedSort,
@@ -181,7 +183,7 @@ private fun PeriodAndNsfwRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             TimePeriod.entries.forEach { period ->
                 FilterChip(
                     selected = period == selectedPeriod,
@@ -194,7 +196,7 @@ private fun PeriodAndNsfwRow(
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
         ) {
             Text("NSFW", style = MaterialTheme.typography.labelSmall)
             Switch(checked = showNsfw, onCheckedChange = { onNsfwToggle() })
@@ -220,7 +222,7 @@ private fun ErrorState(error: String, onRetry: () -> Unit) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = error, color = MaterialTheme.colorScheme.error)
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Spacing.lg))
             Button(onClick = onRetry) { Text("Retry") }
         }
     }
@@ -249,9 +251,9 @@ private fun ImageGrid(
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(2),
         state = gridState,
-        contentPadding = PaddingValues(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalItemSpacing = 8.dp,
+        contentPadding = PaddingValues(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalItemSpacing = Spacing.sm,
         modifier = Modifier.fillMaxSize(),
     ) {
         itemsIndexed(images, key = { _, image -> image.id }) { index, image ->
@@ -263,7 +265,7 @@ private fun ImageGrid(
         if (isLoadingMore) {
             item {
                 Box(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
                     contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()
@@ -288,7 +290,7 @@ private fun ImageGridItem(image: Image, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(aspectRatio)
-            .clip(MaterialTheme.shapes.medium)
+            .clip(RoundedCornerShape(CornerRadius.image))
             .clickable(onClick = onClick),
     )
 }

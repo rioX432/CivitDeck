@@ -48,6 +48,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.ui.components.ModelCard
+import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,7 +117,7 @@ private fun SearchBar(
         onValueChange = onQueryChange,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
         placeholder = { Text("Search models...") },
         trailingIcon = {
             if (query.isNotEmpty()) {
@@ -158,8 +160,8 @@ private fun TypeFilterChips(
     )
 
     LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = Spacing.lg),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
         items(filterTypes) { type ->
             val isSelected = selectedType == type
@@ -177,7 +179,7 @@ private fun TypeFilterChips(
                     MaterialTheme.colorScheme.onSurface
                 },
                 modifier = Modifier
-                    .clip(RoundedCornerShape(50))
+                    .clip(RoundedCornerShape(CornerRadius.chip))
                     .background(
                         if (isSelected) {
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
@@ -186,7 +188,7 @@ private fun TypeFilterChips(
                         },
                     )
                     .clickable { onTypeSelected(type) }
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                    .padding(horizontal = Spacing.md, vertical = 6.dp),
             )
         }
     }
@@ -245,13 +247,13 @@ private fun ModelGrid(
         columns = GridCells.Fixed(2),
         state = gridState,
         contentPadding = PaddingValues(
-            start = 16.dp,
-            end = 16.dp,
-            top = 16.dp,
-            bottom = 16.dp + bottomPadding,
+            start = Spacing.md,
+            end = Spacing.md,
+            top = Spacing.sm,
+            bottom = Spacing.lg + bottomPadding,
         ),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
         items(items = models, key = { it.id }) { model ->
             ModelCard(
@@ -262,7 +264,7 @@ private fun ModelGrid(
         if (isLoadingMore) {
             item(span = { GridItemSpan(2) }) {
                 Box(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
                     contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()

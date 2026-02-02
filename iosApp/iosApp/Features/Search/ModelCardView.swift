@@ -8,25 +8,24 @@ struct ModelCardView: View {
         VStack(alignment: .leading, spacing: 0) {
             thumbnailImage
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(model.name)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(.civitTitleSmall)
                     .lineLimit(1)
 
                 Text(model.type.name)
-                    .font(.caption2)
+                    .font(.civitLabelSmall)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(Color(.systemGray5))
+                    .background(Color.civitSurfaceVariant)
                     .clipShape(Capsule())
 
                 statsRow
             }
-            .padding(8)
+            .padding(Spacing.sm)
         }
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(Color.civitSurface)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.card))
         .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
 
@@ -34,7 +33,7 @@ struct ModelCardView: View {
         Group {
             let url = model.modelVersions.first?.images.first?.url
             if let urlString = url, let imageUrl = URL(string: urlString) {
-                Color(.systemGray5)
+                Color.civitSurfaceVariant
                     .aspectRatio(1, contentMode: .fit)
                     .overlay {
                         AsyncImage(url: imageUrl) { phase in
@@ -45,12 +44,12 @@ struct ModelCardView: View {
                                     .scaledToFill()
                             case .failure:
                                 Image(systemName: "photo")
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.civitOnSurfaceVariant)
                             case .empty:
                                 ProgressView()
                             @unknown default:
                                 Image(systemName: "photo")
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.civitOnSurfaceVariant)
                             }
                         }
                     }
@@ -63,16 +62,16 @@ struct ModelCardView: View {
 
     private var imagePlaceholder: some View {
         Rectangle()
-            .fill(Color(.systemGray5))
+            .fill(Color.civitSurfaceVariant)
             .aspectRatio(1, contentMode: .fit)
             .overlay {
                 Image(systemName: "photo")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.civitOnSurfaceVariant)
             }
     }
 
     private var statsRow: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Spacing.sm) {
             statItem(
                 icon: "arrow.down.circle",
                 value: FormatUtils.shared.formatCount(count: model.stats.downloadCount)
@@ -91,10 +90,10 @@ struct ModelCardView: View {
     private func statItem(icon: String, value: String) -> some View {
         HStack(spacing: 2) {
             Image(systemName: icon)
-                .font(.system(size: 9))
+                .font(.system(size: IconSize.statIcon))
             Text(value)
-                .font(.caption2)
+                .font(.civitLabelSmall)
         }
-        .foregroundColor(.secondary)
+        .foregroundColor(.civitOnSurfaceVariant)
     }
 }
