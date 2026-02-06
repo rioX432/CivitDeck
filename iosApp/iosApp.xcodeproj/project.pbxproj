@@ -24,6 +24,7 @@
 		CD0006032D000006000CD001 /* CivitDeckFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006022D000006000CD001 /* CivitDeckFonts.swift */; };
 		CD0006052D000006000CD001 /* CivitDeckSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006042D000006000CD001 /* CivitDeckSpacing.swift */; };
 		CD0006072D000006000CD001 /* CivitDeckShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006062D000006000CD001 /* CivitDeckShapes.swift */; };
+		CD00060B2D000006000CD001 /* CivitDeckMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00060A2D000006000CD001 /* CivitDeckMotion.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +48,7 @@
 		CD0006022D000006000CD001 /* CivitDeckFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckFonts.swift; sourceTree = "<group>"; };
 		CD0006042D000006000CD001 /* CivitDeckSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckSpacing.swift; sourceTree = "<group>"; };
 		CD0006062D000006000CD001 /* CivitDeckShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckShapes.swift; sourceTree = "<group>"; };
+		CD00060A2D000006000CD001 /* CivitDeckMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckMotion.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,6 +124,7 @@
 				CD0006022D000006000CD001 /* CivitDeckFonts.swift */,
 				CD0006042D000006000CD001 /* CivitDeckSpacing.swift */,
 				CD0006062D000006000CD001 /* CivitDeckShapes.swift */,
+				CD00060A2D000006000CD001 /* CivitDeckMotion.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -274,6 +277,7 @@
 				CD0006032D000006000CD001 /* CivitDeckFonts.swift in Sources */,
 				CD0006052D000006000CD001 /* CivitDeckSpacing.swift in Sources */,
 				CD0006072D000006000CD001 /* CivitDeckShapes.swift in Sources */,
+				CD00060B2D000006000CD001 /* CivitDeckMotion.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
