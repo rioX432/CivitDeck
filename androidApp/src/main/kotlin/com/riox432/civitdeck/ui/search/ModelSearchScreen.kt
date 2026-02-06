@@ -1,5 +1,12 @@
 package com.riox432.civitdeck.ui.search
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +56,8 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.ui.components.ModelCard
 import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.Duration
+import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -137,61 +146,85 @@ private fun SearchBar(
     )
 }
 
+private val filterTypes = listOf(null) + listOf(
+    ModelType.Checkpoint,
+    ModelType.LORA,
+    ModelType.LoCon,
+    ModelType.Controlnet,
+    ModelType.TextualInversion,
+    ModelType.Hypernetwork,
+    ModelType.Upscaler,
+    ModelType.VAE,
+    ModelType.Poses,
+    ModelType.Wildcards,
+    ModelType.Workflows,
+    ModelType.MotionModule,
+    ModelType.AestheticGradient,
+    ModelType.Other,
+)
+
 @Composable
 private fun TypeFilterChips(
     selectedType: ModelType?,
     onTypeSelected: (ModelType?) -> Unit,
 ) {
-    val filterTypes = listOf(null) + listOf(
-        ModelType.Checkpoint,
-        ModelType.LORA,
-        ModelType.LoCon,
-        ModelType.Controlnet,
-        ModelType.TextualInversion,
-        ModelType.Hypernetwork,
-        ModelType.Upscaler,
-        ModelType.VAE,
-        ModelType.Poses,
-        ModelType.Wildcards,
-        ModelType.Workflows,
-        ModelType.MotionModule,
-        ModelType.AestheticGradient,
-        ModelType.Other,
-    )
-
     LazyRow(
         contentPadding = PaddingValues(horizontal = Spacing.lg),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
         items(filterTypes) { type ->
-            val isSelected = selectedType == type
-            Text(
-                text = type?.name ?: "All",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = if (isSelected) {
-                    androidx.compose.ui.text.font.FontWeight.SemiBold
-                } else {
-                    androidx.compose.ui.text.font.FontWeight.Normal
-                },
-                color = if (isSelected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
-                modifier = Modifier
-                    .clip(RoundedCornerShape(CornerRadius.chip))
-                    .background(
-                        if (isSelected) {
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant
-                        },
-                    )
-                    .clickable { onTypeSelected(type) }
-                    .padding(horizontal = Spacing.md, vertical = 6.dp),
+            FilterChipItem(
+                label = type?.name ?: "All",
+                isSelected = selectedType == type,
+                onClick = { onTypeSelected(type) },
             )
         }
     }
+}
+
+@Composable
+private fun FilterChipItem(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+) {
+    val colorTween = tween<androidx.compose.ui.graphics.Color>(
+        durationMillis = Duration.fast,
+        easing = Easing.standard,
+    )
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isSelected) {
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        },
+        animationSpec = colorTween,
+        label = "chipBg",
+    )
+    val textColor by animateColorAsState(
+        targetValue = if (isSelected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        },
+        animationSpec = colorTween,
+        label = "chipText",
+    )
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = if (isSelected) {
+            androidx.compose.ui.text.font.FontWeight.SemiBold
+        } else {
+            androidx.compose.ui.text.font.FontWeight.Normal
+        },
+        color = textColor,
+        modifier = Modifier
+            .clip(RoundedCornerShape(CornerRadius.chip))
+            .background(backgroundColor)
+            .clickable(onClick = onClick)
+            .padding(horizontal = Spacing.md, vertical = 6.dp),
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -203,33 +236,48 @@ private fun ModelSearchContent(
     onModelClick: (Long) -> Unit,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
 ) {
+    val stateKey = when {
+        uiState.isLoading && uiState.models.isEmpty() -> "loading"
+        uiState.error != null && uiState.models.isEmpty() -> "error"
+        else -> "content"
+    }
+
     PullToRefreshBox(
         isRefreshing = uiState.isRefreshing,
         onRefresh = onRefresh,
         modifier = Modifier.fillMaxSize(),
     ) {
-        when {
-            uiState.isLoading && uiState.models.isEmpty() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+        androidx.compose.animation.Crossfade(
+            targetState = stateKey,
+            animationSpec = tween(
+                durationMillis = Duration.normal,
+                easing = Easing.standard,
+            ),
+            label = "searchContent",
+        ) { state ->
+            when (state) {
+                "loading" -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
                 }
-            }
-            uiState.error != null && uiState.models.isEmpty() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = uiState.error ?: "Unknown error",
-                        color = MaterialTheme.colorScheme.error,
+                "error" -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = uiState.error ?: "Unknown error",
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+                else -> {
+                    ModelGrid(
+                        models = uiState.models,
+                        gridState = gridState,
+                        isLoadingMore = uiState.isLoadingMore,
+                        onModelClick = onModelClick,
+                        bottomPadding = bottomPadding,
                     )
                 }
-            }
-            else -> {
-                ModelGrid(
-                    models = uiState.models,
-                    gridState = gridState,
-                    isLoadingMore = uiState.isLoadingMore,
-                    onModelClick = onModelClick,
-                    bottomPadding = bottomPadding,
-                )
             }
         }
     }
@@ -259,10 +307,15 @@ private fun ModelGrid(
             ModelCard(
                 model = model,
                 onClick = { onModelClick(model.id) },
+                modifier = Modifier.animateItem(),
             )
         }
-        if (isLoadingMore) {
-            item(span = { GridItemSpan(2) }) {
+        item(span = { GridItemSpan(2) }) {
+            AnimatedVisibility(
+                visible = isLoadingMore,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically(),
+            ) {
                 Box(
                     modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
                     contentAlignment = Alignment.Center,

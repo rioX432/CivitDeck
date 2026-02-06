@@ -8,16 +8,23 @@ struct ModelDetailScreen: View {
         _viewModel = StateObject(wrappedValue: ModelDetailViewModel(modelId: modelId))
     }
 
+    @State private var isDescriptionExpanded = false
+
     var body: some View {
         Group {
             if viewModel.isLoading && viewModel.model == nil {
                 ProgressView()
+                    .transition(.opacity)
             } else if let error = viewModel.error, viewModel.model == nil {
                 errorView(message: error)
+                    .transition(.opacity)
             } else if let model = viewModel.model {
                 modelContent(model: model)
+                    .transition(.opacity)
             }
         }
+        .animation(MotionAnimation.standard, value: viewModel.isLoading)
+        .animation(MotionAnimation.standard, value: viewModel.model != nil)
         .navigationTitle(viewModel.model?.name ?? "")
         .navigationBarTitleDisplayMode(.inline)
         .task {
@@ -214,6 +221,15 @@ struct ModelDetailScreen: View {
                 Text(htmlToPlainText(description))
                     .font(.civitBodyMedium)
                     .foregroundColor(.civitOnSurfaceVariant)
+                    .lineLimit(isDescriptionExpanded ? nil : 4)
+                    .animation(MotionAnimation.standard, value: isDescriptionExpanded)
+                Button {
+                    isDescriptionExpanded.toggle()
+                } label: {
+                    Text(isDescriptionExpanded ? "Show less" : "Show more")
+                        .font(.civitLabelMedium)
+                        .foregroundColor(.civitPrimary)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, Spacing.lg)
@@ -237,24 +253,25 @@ struct ModelDetailScreen: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Spacing.sm) {
                         ForEach(Array(versions.enumerated()), id: \.offset) { index, version in
+                            let selected = index == viewModel.selectedVersionIndex
                             Button {
                                 viewModel.onVersionSelected(index)
                             } label: {
                                 Text(version.name)
                                     .font(.civitLabelMedium)
-                                    .fontWeight(index == viewModel.selectedVersionIndex ? .semibold : .regular)
+                                    .fontWeight(selected ? .semibold : .regular)
                                     .padding(.horizontal, Spacing.md)
                                     .padding(.vertical, 6)
                                     .background(
-                                        index == viewModel.selectedVersionIndex
+                                        selected
                                             ? Color.civitPrimary.opacity(0.2)
                                             : Color.civitSurfaceVariant
                                     )
                                     .foregroundColor(
-                                        index == viewModel.selectedVersionIndex
-                                            ? .civitPrimary : .civitOnSurface
+                                        selected ? .civitPrimary : .civitOnSurface
                                     )
                                     .clipShape(Capsule())
+                                    .animation(MotionAnimation.spring, value: selected)
                             }
                         }
                     }

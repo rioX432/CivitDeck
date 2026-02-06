@@ -1,5 +1,7 @@
 package com.riox432.civitdeck.ui.gallery
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,6 +51,7 @@ import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
+import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
 
@@ -121,13 +124,25 @@ private fun ImageGalleryBody(
             onNsfwToggle = onNsfwToggle,
         )
 
-        when {
-            uiState.isLoading -> LoadingState()
-            uiState.error != null && uiState.images.isEmpty() -> {
-                ErrorState(error = uiState.error!!, onRetry = onRetry)
-            }
-            else -> {
-                ImageGrid(
+        val stateKey = when {
+            uiState.isLoading -> "loading"
+            uiState.error != null && uiState.images.isEmpty() -> "error"
+            else -> "content"
+        }
+
+        Crossfade(
+            targetState = stateKey,
+            animationSpec = tween(
+                durationMillis = Duration.normal,
+                easing = Easing.standard,
+            ),
+            label = "galleryContent",
+            modifier = Modifier.weight(1f),
+        ) { state ->
+            when (state) {
+                "loading" -> LoadingState()
+                "error" -> ErrorState(error = uiState.error ?: "", onRetry = onRetry)
+                else -> ImageGrid(
                     images = uiState.images,
                     isLoadingMore = uiState.isLoadingMore,
                     onImageClick = onImageClick,
@@ -265,6 +280,7 @@ private fun ImageGrid(
             ImageGridItem(
                 image = image,
                 onClick = { onImageClick(index) },
+                modifier = Modifier.animateItem(),
             )
         }
         if (isLoadingMore) {
@@ -281,7 +297,11 @@ private fun ImageGrid(
 }
 
 @Composable
-private fun ImageGridItem(image: Image, onClick: () -> Unit) {
+private fun ImageGridItem(
+    image: Image,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val aspectRatio = if (image.width > 0 && image.height > 0) {
         image.width.toFloat() / image.height.toFloat()
     } else {
@@ -295,7 +315,7 @@ private fun ImageGridItem(image: Image, onClick: () -> Unit) {
             .build(),
         contentDescription = null,
         contentScale = ContentScale.Crop,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .aspectRatio(aspectRatio)
             .clip(RoundedCornerShape(CornerRadius.image))
