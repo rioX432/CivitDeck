@@ -93,21 +93,29 @@ struct ImageGalleryScreen: View {
 
     @ViewBuilder
     private var contentArea: some View {
-        if viewModel.isLoading && viewModel.images.isEmpty {
-            Spacer()
-            ProgressView()
-            Spacer()
-        } else if let error = viewModel.error, viewModel.images.isEmpty {
-            Spacer()
-            errorView(message: error)
-            Spacer()
-        } else if viewModel.images.isEmpty && !viewModel.isLoading {
-            Spacer()
-            emptyView
-            Spacer()
-        } else {
-            imageGrid
+        Group {
+            if viewModel.isLoading && viewModel.images.isEmpty {
+                Spacer()
+                ProgressView()
+                    .transition(.opacity)
+                Spacer()
+            } else if let error = viewModel.error, viewModel.images.isEmpty {
+                Spacer()
+                errorView(message: error)
+                    .transition(.opacity)
+                Spacer()
+            } else if viewModel.images.isEmpty && !viewModel.isLoading {
+                Spacer()
+                emptyView
+                    .transition(.opacity)
+                Spacer()
+            } else {
+                imageGrid
+                    .transition(.opacity)
+            }
         }
+        .animation(MotionAnimation.standard, value: viewModel.isLoading)
+        .animation(MotionAnimation.standard, value: viewModel.error == nil)
     }
 
     // MARK: - Image Grid
@@ -211,6 +219,7 @@ struct ImageGalleryScreen: View {
                 )
                 .foregroundColor(isSelected ? .civitPrimary : .civitOnSurface)
                 .clipShape(Capsule())
+                .animation(MotionAnimation.spring, value: isSelected)
         }
     }
 

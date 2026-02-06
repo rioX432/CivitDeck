@@ -1,6 +1,10 @@
 package com.riox432.civitdeck.ui.gallery
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
@@ -22,13 +26,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -40,6 +43,8 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.ui.theme.Duration
+import com.riox432.civitdeck.ui.theme.Spring
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,23 +57,35 @@ fun ImageViewerOverlay(
 
     val pagerState = rememberPagerState(initialPage = initialIndex) { images.size }
     var showMetadata by remember { mutableStateOf(false) }
+    var controlsVisible by remember { mutableStateOf(true) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(Color.Black)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { controlsVisible = !controlsVisible },
+                )
+            },
     ) {
         ImagePager(
             images = images,
             pagerState = pagerState,
         )
 
-        ViewerControls(
-            onDismiss = onDismiss,
-            onInfoClick = { showMetadata = true },
-            hasMetadata = images.getOrNull(pagerState.currentPage)?.meta != null,
-        )
+        AnimatedVisibility(
+            visible = controlsVisible,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            ViewerControls(
+                onDismiss = onDismiss,
+                onInfoClick = { showMetadata = true },
+                hasMetadata = images.getOrNull(pagerState.currentPage)?.meta != null,
+            )
+        }
     }
 
     if (showMetadata) {
@@ -134,15 +151,22 @@ private fun ViewerControls(
 
 @Composable
 private fun ZoomableImage(imageUrl: String) {
-    var scale by remember { mutableFloatStateOf(1f) }
-    var offset by remember { mutableStateOf(Offset.Zero) }
+    val scale = remember { Animatable(1f) }
+    val offsetX = remember { Animatable(0f) }
+    val offsetY = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
 
     val transformableState = rememberTransformableState { zoomChange, panChange, _ ->
-        scale = (scale * zoomChange).coerceIn(MIN_ZOOM, MAX_ZOOM)
-        offset = if (scale > 1f) {
-            offset + panChange
-        } else {
-            Offset.Zero
+        scope.launch {
+            val newScale = (scale.value * zoomChange).coerceIn(MIN_ZOOM, MAX_ZOOM)
+            scale.snapTo(newScale)
+            if (newScale > 1f) {
+                offsetX.snapTo(offsetX.value + panChange.x)
+                offsetY.snapTo(offsetY.value + panChange.y)
+            } else {
+                offsetX.snapTo(0f)
+                offsetY.snapTo(0f)
+            }
         }
     }
 
@@ -158,21 +182,24 @@ private fun ZoomableImage(imageUrl: String) {
             .pointerInput(Unit) {
                 detectTapGestures(
                     onDoubleTap = {
-                        if (scale > 1f) {
-                            scale = 1f
-                            offset = Offset.Zero
-                        } else {
-                            scale = DOUBLE_TAP_ZOOM
+                        scope.launch {
+                            if (scale.value > 1f) {
+                                launch { scale.animateTo(1f, Spring.bouncy) }
+                                launch { offsetX.animateTo(0f, Spring.bouncy) }
+                                launch { offsetY.animateTo(0f, Spring.bouncy) }
+                            } else {
+                                scale.animateTo(DOUBLE_TAP_ZOOM, Spring.bouncy)
+                            }
                         }
                     },
                 )
             }
             .transformable(state = transformableState)
             .graphicsLayer(
-                scaleX = scale,
-                scaleY = scale,
-                translationX = offset.x,
-                translationY = offset.y,
+                scaleX = scale.value,
+                scaleY = scale.value,
+                translationX = offsetX.value,
+                translationY = offsetY.value,
             ),
         loading = {
             Box(

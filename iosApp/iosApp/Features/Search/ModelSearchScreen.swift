@@ -18,14 +18,20 @@ struct ModelSearchScreen: View {
                 ZStack {
                     if viewModel.isLoading && viewModel.models.isEmpty {
                         ProgressView()
+                            .transition(.opacity)
                     } else if let error = viewModel.error, viewModel.models.isEmpty {
                         errorView(message: error)
+                            .transition(.opacity)
                     } else if viewModel.models.isEmpty && !viewModel.isLoading {
                         emptyView
+                            .transition(.opacity)
                     } else {
                         modelGrid
+                            .transition(.opacity)
                     }
                 }
+                .animation(MotionAnimation.standard, value: viewModel.isLoading)
+                .animation(MotionAnimation.standard, value: viewModel.error == nil)
                 .frame(maxHeight: .infinity)
             }
             .navigationTitle("CivitDeck")
@@ -72,6 +78,7 @@ struct ModelSearchScreen: View {
                         ModelCardView(model: model)
                     }
                     .buttonStyle(.plain)
+                    .transition(.opacity.combined(with: .offset(y: 20)))
                     .onAppear {
                         if index == viewModel.models.count - 3 {
                             viewModel.loadMore()
@@ -83,9 +90,11 @@ struct ModelSearchScreen: View {
 
             if viewModel.isLoadingMore {
                 ProgressView()
+                    .transition(.opacity)
                     .padding()
             }
         }
+        .animation(MotionAnimation.standard, value: viewModel.isLoadingMore)
         .refreshable {
             viewModel.refresh()
         }
@@ -122,6 +131,7 @@ struct ModelSearchScreen: View {
                 )
                 .foregroundColor(isSelected ? .civitPrimary : .civitOnSurface)
                 .clipShape(Capsule())
+                .animation(MotionAnimation.spring, value: isSelected)
         }
     }
 

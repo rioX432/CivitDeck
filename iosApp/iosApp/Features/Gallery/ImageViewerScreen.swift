@@ -6,6 +6,7 @@ struct ImageViewerScreen: View {
     @Binding var selectedIndex: Int?
 
     @State private var showMetadata = false
+    @State private var controlsVisible = true
 
     var body: some View {
         if let index = selectedIndex {
@@ -23,7 +24,14 @@ struct ImageViewerScreen: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))
 
-                viewerControls(currentIndex: index)
+                if controlsVisible {
+                    viewerControls(currentIndex: index)
+                        .transition(.opacity)
+                }
+            }
+            .animation(MotionAnimation.fast, value: controlsVisible)
+            .onTapGesture {
+                controlsVisible.toggle()
             }
             .sheet(isPresented: $showMetadata) {
                 if let meta = images[safe: index]?.meta {
@@ -97,7 +105,7 @@ private struct ZoomableImageView: View {
                         .gesture(zoomGesture)
                         .gesture(panGesture)
                         .onTapGesture(count: 2) {
-                            withAnimation(.easeInOut(duration: 0.25)) {
+                            withAnimation(MotionAnimation.springBouncy) {
                                 if scale > 1.0 {
                                     scale = 1.0
                                     lastScale = 1.0
@@ -133,7 +141,7 @@ private struct ZoomableImageView: View {
             .onEnded { value in
                 lastScale = scale
                 if scale < 1.0 {
-                    withAnimation(.easeInOut(duration: 0.2)) {
+                    withAnimation(MotionAnimation.springBouncy) {
                         scale = 1.0
                         lastScale = 1.0
                         offset = .zero

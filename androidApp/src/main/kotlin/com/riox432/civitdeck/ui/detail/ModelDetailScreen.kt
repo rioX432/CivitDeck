@@ -2,6 +2,10 @@ package com.riox432.civitdeck.ui.detail
 
 import android.content.Intent
 import android.text.Html
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +44,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,6 +63,7 @@ import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.ui.theme.Duration
+import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
 import com.riox432.civitdeck.util.FormatUtils
@@ -148,40 +156,58 @@ private fun ModelDetailBody(
     onViewImages: (Long) -> Unit,
     contentPadding: PaddingValues,
 ) {
-    when {
-        uiState.isLoading -> {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(contentPadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator()
+    val stateKey = when {
+        uiState.isLoading -> "loading"
+        uiState.error != null -> "error"
+        uiState.model != null -> "content"
+        else -> "loading"
+    }
+
+    Crossfade(
+        targetState = stateKey,
+        animationSpec = tween(
+            durationMillis = Duration.normal,
+            easing = Easing.standard,
+        ),
+        label = "detailBody",
+    ) { state ->
+        when (state) {
+            "loading" -> {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(contentPadding),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
+                }
             }
-        }
-        uiState.error != null -> {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(contentPadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = uiState.error ?: "Unknown error",
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                    Spacer(modifier = Modifier.height(Spacing.lg))
-                    Button(onClick = onRetry) {
-                        Text("Retry")
+            "error" -> {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(contentPadding),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = uiState.error ?: "Unknown error",
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                        Spacer(modifier = Modifier.height(Spacing.lg))
+                        Button(onClick = onRetry) {
+                            Text("Retry")
+                        }
                     }
                 }
             }
-        }
-        uiState.model != null -> {
-            ModelDetailContent(
-                model = uiState.model!!,
-                selectedVersionIndex = uiState.selectedVersionIndex,
-                onVersionSelected = onVersionSelected,
-                onViewImages = onViewImages,
-                contentPadding = contentPadding,
-            )
+            else -> {
+                if (uiState.model != null) {
+                    ModelDetailContent(
+                        model = uiState.model!!,
+                        selectedVersionIndex = uiState.selectedVersionIndex,
+                        onVersionSelected = onVersionSelected,
+                        onViewImages = onViewImages,
+                        contentPadding = contentPadding,
+                    )
+                }
+            }
         }
     }
 }
@@ -419,6 +445,11 @@ private fun TagsSection(tags: List<String>) {
 
 @Composable
 private fun DescriptionSection(description: String) {
+    var isExpanded by remember { mutableStateOf(false) }
+    val plainText = remember(description) {
+        Html.fromHtml(description, Html.FROM_HTML_MODE_COMPACT).toString()
+    }
+
     Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
         HorizontalDivider(modifier = Modifier.padding(bottom = Spacing.sm))
         Text(
@@ -426,13 +457,30 @@ private fun DescriptionSection(description: String) {
             style = MaterialTheme.typography.titleSmall,
         )
         Spacer(modifier = Modifier.height(Spacing.sm))
-        val plainText = Html.fromHtml(description, Html.FROM_HTML_MODE_COMPACT).toString()
         Text(
             text = AnnotatedString(plainText),
             style = MaterialTheme.typography.bodyMedium,
+            maxLines = if (isExpanded) Int.MAX_VALUE else DESCRIPTION_COLLAPSED_LINES,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.animateContentSize(
+                animationSpec = tween(
+                    durationMillis = Duration.normal,
+                    easing = Easing.standard,
+                ),
+            ),
+        )
+        Text(
+            text = if (isExpanded) "Show less" else "Show more",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .clickable { isExpanded = !isExpanded }
+                .padding(vertical = Spacing.xs),
         )
     }
 }
+
+private const val DESCRIPTION_COLLAPSED_LINES = 4
 
 @Composable
 private fun VersionSelector(
