@@ -13,6 +13,7 @@ final class ModelDetailViewModel: ObservableObject {
     private let getModelDetailUseCase: GetModelDetailUseCase
     private let observeIsFavoriteUseCase: ObserveIsFavoriteUseCase
     private let toggleFavoriteUseCase: ToggleFavoriteUseCase
+    private let trackModelViewUseCase: TrackModelViewUseCase
 
     var selectedVersion: ModelVersion? {
         guard let model else { return nil }
@@ -26,6 +27,7 @@ final class ModelDetailViewModel: ObservableObject {
         self.getModelDetailUseCase = KoinHelper.shared.getModelDetailUseCase()
         self.observeIsFavoriteUseCase = KoinHelper.shared.getObserveIsFavoriteUseCase()
         self.toggleFavoriteUseCase = KoinHelper.shared.getToggleFavoriteUseCase()
+        self.trackModelViewUseCase = KoinHelper.shared.getTrackModelViewUseCase()
         loadModel()
     }
 
@@ -59,6 +61,12 @@ final class ModelDetailViewModel: ObservableObject {
                 let result = try await getModelDetailUseCase.invoke(modelId: modelId)
                 model = result
                 isLoading = false
+                try? await trackModelViewUseCase.invoke(
+                    modelId: result.id,
+                    modelType: result.type.name,
+                    creatorName: result.creator?.username,
+                    tags: result.tags
+                )
             } catch is CancellationError {
                 return
             } catch {

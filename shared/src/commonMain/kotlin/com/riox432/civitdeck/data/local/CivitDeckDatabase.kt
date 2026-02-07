@@ -8,11 +8,13 @@ import androidx.room.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
+import com.riox432.civitdeck.data.local.dao.BrowsingHistoryDao
 import com.riox432.civitdeck.data.local.dao.CachedApiResponseDao
 import com.riox432.civitdeck.data.local.dao.FavoriteModelDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
 import com.riox432.civitdeck.data.local.dao.SearchHistoryDao
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
+import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
 import com.riox432.civitdeck.data.local.entity.CachedApiResponseEntity
 import com.riox432.civitdeck.data.local.entity.FavoriteModelEntity
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
@@ -28,6 +30,7 @@ import kotlinx.coroutines.IO
         UserPreferencesEntity::class,
         SavedPromptEntity::class,
         SearchHistoryEntity::class,
+        BrowsingHistoryEntity::class,
     ],
     version = 2,
 )
@@ -38,6 +41,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun userPreferencesDao(): UserPreferencesDao
     abstract fun savedPromptDao(): SavedPromptDao
     abstract fun searchHistoryDao(): SearchHistoryDao
+    abstract fun browsingHistoryDao(): BrowsingHistoryDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -71,6 +75,15 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
             "CREATE TABLE IF NOT EXISTS `search_history` " +
                 "(`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                 "`query` TEXT NOT NULL, `searchedAt` INTEGER NOT NULL)",
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `browsing_history` " +
+                "(`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`modelId` INTEGER NOT NULL, " +
+                "`modelType` TEXT NOT NULL, " +
+                "`creatorName` TEXT, " +
+                "`tags` TEXT NOT NULL, " +
+                "`viewedAt` INTEGER NOT NULL)",
         )
     }
 }

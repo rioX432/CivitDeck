@@ -5,6 +5,7 @@ import com.riox432.civitdeck.data.api.createHttpClient
 import com.riox432.civitdeck.data.local.CivitDeckDatabase
 import com.riox432.civitdeck.data.local.LocalCacheDataSource
 import com.riox432.civitdeck.data.local.getRoomDatabase
+import com.riox432.civitdeck.data.repository.BrowsingHistoryRepositoryImpl
 import com.riox432.civitdeck.data.repository.CreatorRepositoryImpl
 import com.riox432.civitdeck.data.repository.FavoriteRepositoryImpl
 import com.riox432.civitdeck.data.repository.ImageRepositoryImpl
@@ -13,6 +14,7 @@ import com.riox432.civitdeck.data.repository.SavedPromptRepositoryImpl
 import com.riox432.civitdeck.data.repository.SearchHistoryRepositoryImpl
 import com.riox432.civitdeck.data.repository.TagRepositoryImpl
 import com.riox432.civitdeck.data.repository.UserPreferencesRepositoryImpl
+import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.CreatorRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.ImageRepository
@@ -42,6 +44,7 @@ val dataModule = module {
     single { get<CivitDeckDatabase>().userPreferencesDao() }
     single { get<CivitDeckDatabase>().savedPromptDao() }
     single { get<CivitDeckDatabase>().searchHistoryDao() }
+    single { get<CivitDeckDatabase>().browsingHistoryDao() }
 
     // Data Sources
     single { LocalCacheDataSource(get()) }
@@ -55,4 +58,5 @@ val dataModule = module {
     single<UserPreferencesRepository> { UserPreferencesRepositoryImpl(get()) }
     single<SavedPromptRepository> { SavedPromptRepositoryImpl(get()) }
     single<SearchHistoryRepository> { SearchHistoryRepositoryImpl(get()) }
+    single<BrowsingHistoryRepository> { BrowsingHistoryRepositoryImpl(get()) }
 }

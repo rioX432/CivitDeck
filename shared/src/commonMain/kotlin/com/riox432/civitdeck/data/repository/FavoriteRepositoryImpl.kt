@@ -36,4 +36,10 @@ class FavoriteRepositoryImpl(
     override suspend fun removeFavorite(modelId: Long) {
         dao.deleteById(modelId)
     }
+
+    override suspend fun getAllFavoriteIds(): Set<Long> =
+        dao.getAllIds().toSet()
+
+    override suspend fun getFavoriteTypeCounts(): Map<String, Int> =
+        dao.getTypeCounts().associate { it.type to it.cnt }
 }

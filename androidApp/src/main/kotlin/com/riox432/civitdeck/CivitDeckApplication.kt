@@ -23,9 +23,9 @@ class CivitDeckApplication : Application() {
 }
 
 val androidModule = module {
-    viewModel { ModelSearchViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { ModelSearchViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { FavoritesViewModel(get()) }
-    viewModel { params -> ModelDetailViewModel(params.get(), get(), get(), get()) }
+    viewModel { params -> ModelDetailViewModel(params.get(), get(), get(), get(), get()) }
     viewModel { params -> CreatorProfileViewModel(params.get(), get()) }
     viewModel { params -> ImageGalleryViewModel(params.get(), get(), get()) }
     viewModel { SavedPromptsViewModel(get(), get()) }

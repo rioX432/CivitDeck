@@ -159,6 +159,10 @@ struct ModelSearchScreen: View {
 
     private var modelGrid: some View {
         ScrollView {
+            if !viewModel.recommendations.isEmpty {
+                recommendationSections
+            }
+
             LazyVGrid(columns: columns, spacing: Spacing.sm) {
                 ForEach(Array(viewModel.models.enumerated()), id: \.element.id) { index, model in
                     NavigationLink(value: model.id) {
@@ -278,6 +282,34 @@ struct ModelSearchScreen: View {
                 .foregroundColor(.civitOnSurfaceVariant)
             Text("No models found")
                 .foregroundColor(.civitOnSurfaceVariant)
+        }
+    }
+
+    private var recommendationSections: some View {
+        ForEach(viewModel.recommendations, id: \.title) { section in
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(section.title)
+                    .font(.civitTitleMedium)
+                    .padding(.horizontal, Spacing.md)
+                Text(section.reason)
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+                    .padding(.horizontal, Spacing.md)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: Spacing.sm) {
+                        ForEach(section.models, id: \.id) { model in
+                            NavigationLink(value: model.id) {
+                                ModelCardView(model: model)
+                                    .frame(width: 160, height: 220)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, Spacing.md)
+                }
+            }
+            .padding(.bottom, Spacing.sm)
         }
     }
 }
