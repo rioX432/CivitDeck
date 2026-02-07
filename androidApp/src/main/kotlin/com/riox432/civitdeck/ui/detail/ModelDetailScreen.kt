@@ -68,6 +68,8 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
+import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
+import com.riox432.civitdeck.ui.gallery.ViewerImage
 import com.riox432.civitdeck.ui.navigation.LocalSharedTransitionScope
 import com.riox432.civitdeck.ui.navigation.SharedElementKeys
 import com.riox432.civitdeck.ui.theme.Duration
@@ -177,6 +179,7 @@ private fun ModelDetailBody(
     val model = uiState.model
     val selectedVersion = model?.modelVersions?.getOrNull(uiState.selectedVersionIndex)
     val images = selectedVersion?.images ?: emptyList()
+    var selectedCarouselIndex by remember { mutableStateOf<Int?>(null) }
 
     Column(
         modifier = Modifier
@@ -189,6 +192,7 @@ private fun ModelDetailBody(
                 ImageCarousel(
                     images = images,
                     modelId = modelId,
+                    onImageClick = { index -> selectedCarouselIndex = index },
                 )
             }
             initialThumbnailUrl != null -> {
@@ -208,6 +212,14 @@ private fun ModelDetailBody(
             onCreatorClick = onCreatorClick,
             bottomPadding = contentPadding.calculateBottomPadding(),
             modifier = Modifier.weight(1f),
+        )
+    }
+
+    if (selectedCarouselIndex != null && images.isNotEmpty()) {
+        ImageViewerOverlay(
+            images = images.map { ViewerImage(url = it.url, meta = it.meta) },
+            initialIndex = selectedCarouselIndex!!,
+            onDismiss = { selectedCarouselIndex = null },
         )
     }
 }
@@ -415,6 +427,7 @@ private fun ViewImagesButton(onClick: () -> Unit) {
 private fun ImageCarousel(
     images: List<ModelImage>,
     modelId: Long,
+    onImageClick: (Int) -> Unit = {},
 ) {
     if (images.isEmpty()) return
 
@@ -429,6 +442,7 @@ private fun ImageCarousel(
                 image = images[page],
                 modelId = modelId,
                 applySharedElement = page == pagerState.currentPage,
+                onClick = { onImageClick(page) },
             )
         }
 
@@ -450,6 +464,7 @@ private fun CarouselPage(
     image: ModelImage,
     modelId: Long,
     applySharedElement: Boolean,
+    onClick: () -> Unit = {},
 ) {
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedContentScope = LocalNavAnimatedContentScope.current
@@ -482,7 +497,8 @@ private fun CarouselPage(
         contentDescription = null,
         contentScale = ContentScale.Fit,
         modifier = pageModifier
-            .background(MaterialTheme.colorScheme.surfaceContainerLow),
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .clickable(onClick = onClick),
         loading = {
             Box(
                 modifier = Modifier

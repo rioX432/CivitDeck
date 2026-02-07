@@ -81,7 +81,7 @@ fun ImageGalleryScreen(
 
     if (uiState.selectedImageIndex != null) {
         ImageViewerOverlay(
-            images = uiState.images,
+            images = uiState.images.map { ViewerImage(url = it.url, meta = it.meta) },
             initialIndex = uiState.selectedImageIndex!!,
             onDismiss = viewModel::onDismissViewer,
             onSavePrompt = viewModel::savePrompt,
