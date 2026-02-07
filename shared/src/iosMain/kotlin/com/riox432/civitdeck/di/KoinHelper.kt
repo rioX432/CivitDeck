@@ -5,6 +5,8 @@ import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import org.koin.mp.KoinPlatform.getKoin
 
@@ -15,4 +17,6 @@ object KoinHelper {
     fun getToggleFavoriteUseCase(): ToggleFavoriteUseCase = getKoin().get()
     fun getObserveFavoritesUseCase(): ObserveFavoritesUseCase = getKoin().get()
     fun getObserveIsFavoriteUseCase(): ObserveIsFavoriteUseCase = getKoin().get()
+    fun getObserveNsfwFilterUseCase(): ObserveNsfwFilterUseCase = getKoin().get()
+    fun getSetNsfwFilterUseCase(): SetNsfwFilterUseCase = getKoin().get()
 }

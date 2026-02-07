@@ -38,6 +38,22 @@ struct ModelSearchScreen: View {
             .navigationTitle("CivitDeck")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    HStack(spacing: 4) {
+                        Text("NSFW")
+                            .font(.civitLabelSmall)
+                        Toggle("", isOn: Binding(
+                            get: { viewModel.nsfwFilterLevel != .off },
+                            set: { _ in viewModel.onNsfwFilterToggle() }
+                        ))
+                        .labelsHidden()
+                    }
+                }
+            }
+            .task {
+                await viewModel.observeNsfwFilter()
+            }
             .navigationDestination(for: Int64.self) { modelId in
                 ModelDetailScreen(modelId: modelId)
             }

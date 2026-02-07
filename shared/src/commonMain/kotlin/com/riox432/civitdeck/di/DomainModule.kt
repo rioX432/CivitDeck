@@ -5,6 +5,8 @@ import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import org.koin.dsl.module
 
@@ -15,4 +17,6 @@ val domainModule = module {
     factory { ToggleFavoriteUseCase(get()) }
     factory { ObserveFavoritesUseCase(get()) }
     factory { ObserveIsFavoriteUseCase(get()) }
+    factory { ObserveNsfwFilterUseCase(get()) }
+    factory { SetNsfwFilterUseCase(get()) }
 }

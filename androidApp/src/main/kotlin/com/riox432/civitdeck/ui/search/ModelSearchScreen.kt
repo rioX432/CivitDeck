@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -52,9 +53,11 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material3.Switch
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
+import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.ui.components.ModelCard
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
@@ -83,7 +86,24 @@ fun ModelSearchScreen(
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("CivitDeck") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("CivitDeck") },
+                actions = {
+                    NsfwToggle(
+                        nsfwFilterLevel = uiState.nsfwFilterLevel,
+                        onToggle = {
+                            val newLevel = if (uiState.nsfwFilterLevel == NsfwFilterLevel.Off) {
+                                NsfwFilterLevel.All
+                            } else {
+                                NsfwFilterLevel.Off
+                            }
+                            viewModel.onNsfwFilterChanged(newLevel)
+                        },
+                    )
+                },
+            )
+        },
     ) { padding ->
         val layoutDirection = LocalLayoutDirection.current
         Column(
@@ -116,6 +136,24 @@ fun ModelSearchScreen(
                 bottomPadding = padding.calculateBottomPadding(),
             )
         }
+    }
+}
+
+@Composable
+private fun NsfwToggle(
+    nsfwFilterLevel: NsfwFilterLevel,
+    onToggle: () -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+        modifier = Modifier.padding(end = Spacing.sm),
+    ) {
+        Text("NSFW", style = MaterialTheme.typography.labelSmall)
+        Switch(
+            checked = nsfwFilterLevel != NsfwFilterLevel.Off,
+            onCheckedChange = { onToggle() },
+        )
     }
 }
 

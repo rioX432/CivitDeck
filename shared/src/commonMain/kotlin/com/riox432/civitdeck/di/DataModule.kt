@@ -10,11 +10,13 @@ import com.riox432.civitdeck.data.repository.FavoriteRepositoryImpl
 import com.riox432.civitdeck.data.repository.ImageRepositoryImpl
 import com.riox432.civitdeck.data.repository.ModelRepositoryImpl
 import com.riox432.civitdeck.data.repository.TagRepositoryImpl
+import com.riox432.civitdeck.data.repository.UserPreferencesRepositoryImpl
 import com.riox432.civitdeck.domain.repository.CreatorRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.ImageRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.domain.repository.TagRepository
+import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
@@ -33,6 +35,7 @@ val dataModule = module {
     single<CivitDeckDatabase> { getRoomDatabase(get()) }
     single { get<CivitDeckDatabase>().favoriteModelDao() }
     single { get<CivitDeckDatabase>().cachedApiResponseDao() }
+    single { get<CivitDeckDatabase>().userPreferencesDao() }
 
     // Data Sources
     single { LocalCacheDataSource(get()) }
@@ -43,4 +46,5 @@ val dataModule = module {
     single<CreatorRepository> { CreatorRepositoryImpl(get()) }
     single<TagRepository> { TagRepositoryImpl(get()) }
     single<FavoriteRepository> { FavoriteRepositoryImpl(get()) }
+    single<UserPreferencesRepository> { UserPreferencesRepositoryImpl(get()) }
 }

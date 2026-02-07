@@ -7,12 +7,15 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var query: String = ""
     @Published var selectedType: ModelType? = nil
     @Published var selectedBaseModels: Set<BaseModel> = []
+    @Published var nsfwFilterLevel: NsfwFilterLevel = .off
     @Published var isLoading: Bool = false
     @Published var isLoadingMore: Bool = false
     @Published var error: String? = nil
     @Published var hasMore: Bool = true
 
     private let getModelsUseCase: GetModelsUseCase
+    private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
+    private let setNsfwFilterUseCase: SetNsfwFilterUseCase
     private var nextCursor: String? = nil
     private var loadTask: Task<Void, Never>? = nil
 
@@ -20,6 +23,28 @@ final class ModelSearchViewModel: ObservableObject {
 
     init() {
         self.getModelsUseCase = KoinHelper.shared.getModelsUseCase()
+        self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
+        self.setNsfwFilterUseCase = KoinHelper.shared.getSetNsfwFilterUseCase()
+        loadModels()
+    }
+
+    func observeNsfwFilter() async {
+        let flow = SkieSwiftFlow<NsfwFilterLevel>(observeNsfwFilterUseCase.invoke())
+        for await value in flow {
+            nsfwFilterLevel = value
+        }
+    }
+
+    func onNsfwFilterToggle() {
+        let newLevel: NsfwFilterLevel = nsfwFilterLevel == .off ? .all : .off
+        nsfwFilterLevel = newLevel
+        Task {
+            try? await setNsfwFilterUseCase.invoke(level: newLevel)
+        }
+        loadTask?.cancel()
+        models = []
+        nextCursor = nil
+        hasMore = true
         loadModels()
     }
 
@@ -89,7 +114,10 @@ final class ModelSearchViewModel: ObservableObject {
 
                 guard !Task.isCancelled else { return }
 
-                let newModels = result.items.compactMap { $0 as? Model }
+                let allModels = result.items.compactMap { $0 as? Model }
+                let newModels = nsfwFilterLevel == .off
+                    ? allModels.filter { !$0.nsfw }
+                    : allModels
                 if isLoadMore {
                     models.append(contentsOf: newModels)
                 } else {
