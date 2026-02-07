@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.riox432.civitdeck.domain.model.Image
+import com.riox432.civitdeck.domain.model.ViewableImage
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Spring
 import kotlinx.coroutines.launch
@@ -49,7 +49,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImageViewerOverlay(
-    images: List<Image>,
+    images: List<ViewableImage>,
     initialIndex: Int,
     onDismiss: () -> Unit,
 ) {
@@ -102,7 +102,7 @@ fun ImageViewerOverlay(
 
 @Composable
 private fun ImagePager(
-    images: List<Image>,
+    images: List<ViewableImage>,
     pagerState: androidx.compose.foundation.pager.PagerState,
 ) {
     HorizontalPager(

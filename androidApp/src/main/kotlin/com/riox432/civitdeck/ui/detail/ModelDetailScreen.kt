@@ -68,6 +68,8 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
+import com.riox432.civitdeck.domain.model.toViewable
+import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.navigation.LocalSharedTransitionScope
 import com.riox432.civitdeck.ui.navigation.SharedElementKeys
 import com.riox432.civitdeck.ui.theme.Duration
@@ -85,6 +87,7 @@ fun ModelDetailScreen(
     onViewImages: (Long) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var selectedCarouselIndex by remember { mutableStateOf<Int?>(null) }
 
     Scaffold(
         topBar = {
@@ -102,7 +105,18 @@ fun ModelDetailScreen(
             onRetry = viewModel::retry,
             onVersionSelected = viewModel::onVersionSelected,
             onViewImages = onViewImages,
+            onCarouselImageClick = { selectedCarouselIndex = it },
             contentPadding = padding,
+        )
+    }
+
+    val images = uiState.model?.modelVersions
+        ?.getOrNull(uiState.selectedVersionIndex)?.images
+    if (selectedCarouselIndex != null && !images.isNullOrEmpty()) {
+        ImageViewerOverlay(
+            images = images.map { it.toViewable() },
+            initialIndex = selectedCarouselIndex!!,
+            onDismiss = { selectedCarouselIndex = null },
         )
     }
 }
@@ -169,6 +183,7 @@ private fun ModelDetailBody(
     onRetry: () -> Unit,
     onVersionSelected: (Int) -> Unit,
     onViewImages: (Long) -> Unit,
+    onCarouselImageClick: (Int) -> Unit,
     contentPadding: PaddingValues,
 ) {
     val model = uiState.model
@@ -186,6 +201,7 @@ private fun ModelDetailBody(
                 ImageCarousel(
                     images = images,
                     modelId = modelId,
+                    onImageClick = onCarouselImageClick,
                 )
             }
             initialThumbnailUrl != null -> {
@@ -408,6 +424,7 @@ private fun ViewImagesButton(onClick: () -> Unit) {
 private fun ImageCarousel(
     images: List<ModelImage>,
     modelId: Long,
+    onImageClick: (Int) -> Unit,
 ) {
     if (images.isEmpty()) return
 
@@ -422,6 +439,7 @@ private fun ImageCarousel(
                 image = images[page],
                 modelId = modelId,
                 applySharedElement = page == pagerState.currentPage,
+                onClick = { onImageClick(page) },
             )
         }
 
@@ -443,6 +461,7 @@ private fun CarouselPage(
     image: ModelImage,
     modelId: Long,
     applySharedElement: Boolean,
+    onClick: () -> Unit,
 ) {
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedContentScope = LocalNavAnimatedContentScope.current
@@ -475,6 +494,7 @@ private fun CarouselPage(
         contentDescription = null,
         contentScale = ContentScale.Fit,
         modifier = pageModifier
+            .clickable(onClick = onClick)
             .background(MaterialTheme.colorScheme.surfaceContainerLow),
         loading = {
             Box(

@@ -9,6 +9,7 @@ struct ModelDetailScreen: View {
     }
 
     @State private var isDescriptionExpanded = false
+    @State private var selectedCarouselIndex: Int?
 
     var body: some View {
         Group {
@@ -48,6 +49,18 @@ struct ModelDetailScreen: View {
                 }
             }
         }
+        .fullScreenCover(isPresented: Binding(
+            get: { selectedCarouselIndex != nil },
+            set: { if !$0 { selectedCarouselIndex = nil } }
+        )) {
+            if let images = viewModel.selectedVersion?.images,
+               !images.isEmpty {
+                CarouselImageViewer(
+                    images: images,
+                    selectedIndex: $selectedCarouselIndex
+                )
+            }
+        }
     }
 
     // MARK: - Content
@@ -76,7 +89,7 @@ struct ModelDetailScreen: View {
         return Group {
             if !images.isEmpty {
                 TabView {
-                    ForEach(Array(images.enumerated()), id: \.offset) { _, image in
+                    ForEach(Array(images.enumerated()), id: \.offset) { index, image in
                         if let url = URL(string: image.url) {
                             AsyncImage(url: url) { phase in
                                 switch phase {
@@ -98,6 +111,9 @@ struct ModelDetailScreen: View {
                             .frame(maxWidth: .infinity)
                             .aspectRatio(1, contentMode: .fit)
                             .clipped()
+                            .onTapGesture {
+                                selectedCarouselIndex = index
+                            }
                         }
                     }
                 }
@@ -378,6 +394,87 @@ struct ModelDetailScreen: View {
             return html
         }
         return attributedString.string
+    }
+}
+
+// MARK: - Carousel Image Viewer
+
+private struct CarouselImageViewer: View {
+    let images: [ModelImage]
+    @Binding var selectedIndex: Int?
+
+    @State private var showMetadata = false
+    @State private var controlsVisible = true
+
+    var body: some View {
+        if let index = selectedIndex {
+            ZStack {
+                Color.black.ignoresSafeArea()
+
+                TabView(selection: Binding(
+                    get: { index },
+                    set: { selectedIndex = $0 }
+                )) {
+                    ForEach(Array(images.enumerated()), id: \.offset) { i, image in
+                        ZoomableImageView(url: image.url)
+                            .tag(i)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .automatic))
+
+                if controlsVisible {
+                    viewerControls(currentIndex: index)
+                        .transition(.opacity)
+                }
+            }
+            .animation(MotionAnimation.fast, value: controlsVisible)
+            .onTapGesture {
+                controlsVisible.toggle()
+            }
+            .sheet(isPresented: $showMetadata) {
+                if let meta = images[safe: index]?.meta {
+                    MetadataSheet(meta: meta)
+                        .presentationDetents([.medium, .large])
+                }
+            }
+        }
+    }
+
+    private func viewerControls(currentIndex: Int) -> some View {
+        VStack {
+            HStack {
+                Button {
+                    selectedIndex = nil
+                } label: {
+                    SwiftUI.Image(systemName: "xmark")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .padding(10)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
+                Spacer()
+            }
+            .padding(16)
+
+            Spacer()
+
+            if images[safe: currentIndex]?.meta != nil {
+                HStack {
+                    Spacer()
+                    Button {
+                        showMetadata = true
+                    } label: {
+                        SwiftUI.Image(systemName: "info.circle")
+                            .font(.title3)
+                            .foregroundColor(.white)
+                            .padding(10)
+                            .background(.ultraThinMaterial, in: Circle())
+                    }
+                }
+                .padding(16)
+            }
+        }
     }
 }
 

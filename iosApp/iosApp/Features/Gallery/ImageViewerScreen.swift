@@ -84,7 +84,7 @@ struct ImageViewerScreen: View {
 
 // MARK: - Zoomable Image
 
-private struct ZoomableImageView: View {
+struct ZoomableImageView: View {
     let url: String
 
     @State private var scale: CGFloat = 1.0
@@ -169,7 +169,7 @@ private struct ZoomableImageView: View {
 
 // MARK: - Safe Array Access
 
-private extension Array {
+extension Array {
     subscript(safe index: Int) -> Element? {
         indices.contains(index) ? self[index] : nil
     }
