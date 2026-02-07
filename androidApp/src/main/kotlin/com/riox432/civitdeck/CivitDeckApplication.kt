@@ -3,6 +3,7 @@ package com.riox432.civitdeck
 import android.app.Application
 import com.riox432.civitdeck.di.initKoin
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
+import com.riox432.civitdeck.ui.favorites.FavoritesViewModel
 import com.riox432.civitdeck.ui.gallery.ImageGalleryViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import org.koin.android.ext.koin.androidContext
@@ -21,6 +22,7 @@ class CivitDeckApplication : Application() {
 
 val androidModule = module {
     viewModel { ModelSearchViewModel(get(), get(), get()) }
+    viewModel { FavoritesViewModel(get()) }
     viewModel { params -> ModelDetailViewModel(params.get(), get(), get(), get()) }
     viewModel { params -> ImageGalleryViewModel(params.get(), get()) }
 }

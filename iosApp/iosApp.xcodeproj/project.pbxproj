@@ -26,6 +26,8 @@
 		CD0006072D000006000CD001 /* CivitDeckShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006062D000006000CD001 /* CivitDeckShapes.swift */; };
 		CD00060B2D000006000CD001 /* CivitDeckMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00060A2D000006000CD001 /* CivitDeckMotion.swift */; };
 		CD0006112D000036000CD001 /* ShimmerModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006102D000036000CD001 /* ShimmerModifier.swift */; };
+		CD0007012D000007000CD001 /* FavoritesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0007002D000007000CD001 /* FavoritesViewModel.swift */; };
+		CD0007032D000007000CD001 /* FavoritesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0007022D000007000CD001 /* FavoritesScreen.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +53,8 @@
 		CD0006062D000006000CD001 /* CivitDeckShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckShapes.swift; sourceTree = "<group>"; };
 		CD00060A2D000006000CD001 /* CivitDeckMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckMotion.swift; sourceTree = "<group>"; };
 		CD0006102D000036000CD001 /* ShimmerModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmerModifier.swift; sourceTree = "<group>"; };
+		CD0007002D000007000CD001 /* FavoritesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesViewModel.swift; sourceTree = "<group>"; };
+		CD0007022D000007000CD001 /* FavoritesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesScreen.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,10 +140,20 @@
 			isa = PBXGroup;
 			children = (
 				CD0003012D000003000CD001 /* Search */,
+				CD0007042D000007000CD001 /* Favorites */,
 				CD0004042D000004000CD001 /* Detail */,
 				CD0005082D000005000CD001 /* Gallery */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		CD0007042D000007000CD001 /* Favorites */ = {
+			isa = PBXGroup;
+			children = (
+				CD0007002D000007000CD001 /* FavoritesViewModel.swift */,
+				CD0007022D000007000CD001 /* FavoritesScreen.swift */,
+			);
+			path = Favorites;
 			sourceTree = "<group>";
 		};
 		CD0005082D000005000CD001 /* Gallery */ = {
@@ -282,6 +296,8 @@
 				CD0006072D000006000CD001 /* CivitDeckShapes.swift in Sources */,
 				CD00060B2D000006000CD001 /* CivitDeckMotion.swift in Sources */,
 				CD0006112D000036000CD001 /* ShimmerModifier.swift in Sources */,
+				CD0007012D000007000CD001 /* FavoritesViewModel.swift in Sources */,
+				CD0007032D000007000CD001 /* FavoritesScreen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

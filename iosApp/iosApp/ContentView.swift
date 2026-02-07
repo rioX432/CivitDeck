@@ -2,6 +2,16 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        ModelSearchScreen()
+        TabView {
+            ModelSearchScreen()
+                .tabItem {
+                    Label("Search", systemImage: "magnifyingglass")
+                }
+
+            FavoritesScreen()
+                .tabItem {
+                    Label("Favorites", systemImage: "heart")
+                }
+        }
     }
 }
