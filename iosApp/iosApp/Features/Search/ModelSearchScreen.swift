@@ -14,6 +14,7 @@ struct ModelSearchScreen: View {
             VStack(spacing: 0) {
                 searchBar
                 typeFilterChips
+                sortAndPeriodChips
 
                 ZStack {
                     if viewModel.isLoading && viewModel.models.isEmpty {
@@ -117,6 +118,25 @@ struct ModelSearchScreen: View {
         }
     }
 
+    private var sortAndPeriodChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.sm) {
+                ForEach(sortOptions, id: \.self) { sort in
+                    chipButton(label: sort.name, isSelected: viewModel.selectedSort == sort) {
+                        viewModel.onSortSelected(sort)
+                    }
+                }
+                ForEach(periodOptions, id: \.self) { period in
+                    chipButton(label: period.name, isSelected: viewModel.selectedPeriod == period) {
+                        viewModel.onPeriodSelected(period)
+                    }
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+            .padding(.bottom, Spacing.sm)
+        }
+    }
+
     private func chipButton(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
@@ -158,6 +178,9 @@ struct ModelSearchScreen: View {
         }
     }
 }
+
+private let sortOptions: [SortOrder] = [.highestRated, .mostDownloaded, .newest]
+private let periodOptions: [TimePeriod] = [.allTime, .year, .month, .week, .day]
 
 private let modelTypeOptions: [ModelType] = [
     .checkpoint, .lora, .loCon, .controlnet,

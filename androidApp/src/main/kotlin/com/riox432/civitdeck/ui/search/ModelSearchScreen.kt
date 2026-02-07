@@ -54,6 +54,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
+import com.riox432.civitdeck.domain.model.SortOrder
+import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.ui.components.ModelCard
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
@@ -102,6 +104,12 @@ fun ModelSearchScreen(
             TypeFilterChips(
                 selectedType = uiState.selectedType,
                 onTypeSelected = viewModel::onTypeSelected,
+            )
+            SortAndPeriodChips(
+                selectedSort = uiState.selectedSort,
+                selectedPeriod = uiState.selectedPeriod,
+                onSortSelected = viewModel::onSortSelected,
+                onPeriodSelected = viewModel::onPeriodSelected,
             )
             ModelSearchContent(
                 uiState = uiState,
@@ -177,6 +185,35 @@ private fun TypeFilterChips(
                 label = type?.name ?: "All",
                 isSelected = selectedType == type,
                 onClick = { onTypeSelected(type) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun SortAndPeriodChips(
+    selectedSort: SortOrder,
+    selectedPeriod: TimePeriod,
+    onSortSelected: (SortOrder) -> Unit,
+    onPeriodSelected: (TimePeriod) -> Unit,
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = Spacing.lg),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        items(SortOrder.entries.toList()) { sort ->
+            FilterChipItem(
+                label = sort.name,
+                isSelected = selectedSort == sort,
+                onClick = { onSortSelected(sort) },
+            )
+        }
+
+        items(TimePeriod.entries.toList()) { period ->
+            FilterChipItem(
+                label = period.name,
+                isSelected = selectedPeriod == period,
+                onClick = { onPeriodSelected(period) },
             )
         }
     }
