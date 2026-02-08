@@ -179,16 +179,18 @@ private fun SearchFilters(
     onPeriodSelected: (TimePeriod) -> Unit,
     onFreshFindToggled: () -> Unit,
 ) {
-    TypeFilterChips(selectedType = uiState.selectedType, onTypeSelected = onTypeSelected)
-    BaseModelFilterChips(selectedBaseModels = uiState.selectedBaseModels, onBaseModelToggled = onBaseModelToggled)
-    SortAndPeriodFilters(
-        selectedSort = uiState.selectedSort,
-        selectedPeriod = uiState.selectedPeriod,
-        isFreshFindEnabled = uiState.isFreshFindEnabled,
-        onSortSelected = onSortSelected,
-        onPeriodSelected = onPeriodSelected,
-        onFreshFindToggled = onFreshFindToggled,
-    )
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        TypeFilterChips(selectedType = uiState.selectedType, onTypeSelected = onTypeSelected)
+        BaseModelFilterChips(selectedBaseModels = uiState.selectedBaseModels, onBaseModelToggled = onBaseModelToggled)
+        SortAndPeriodFilters(
+            selectedSort = uiState.selectedSort,
+            selectedPeriod = uiState.selectedPeriod,
+            isFreshFindEnabled = uiState.isFreshFindEnabled,
+            onSortSelected = onSortSelected,
+            onPeriodSelected = onPeriodSelected,
+            onFreshFindToggled = onFreshFindToggled,
+        )
+    }
 }
 
 @Composable
