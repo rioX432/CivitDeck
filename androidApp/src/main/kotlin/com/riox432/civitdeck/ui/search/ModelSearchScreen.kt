@@ -2,6 +2,7 @@ package com.riox432.civitdeck.ui.search
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -48,17 +49,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
@@ -71,6 +82,29 @@ import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
+
+private class CollapsibleHeaderState {
+    var headerHeightPx by mutableFloatStateOf(0f)
+    var offsetPx by mutableFloatStateOf(0f)
+    val animatable = Animatable(0f)
+
+    val nestedScrollConnection = object : NestedScrollConnection {
+        override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+            if (headerHeightPx <= 0f) return Offset.Zero
+            val newOffset = (offsetPx + available.y).coerceIn(-headerHeightPx, 0f)
+            val consumed = newOffset - offsetPx
+            offsetPx = newOffset
+            return Offset(0f, consumed)
+        }
+    }
+}
+
+@Composable
+private fun rememberCollapsibleHeaderState(): CollapsibleHeaderState {
+    return remember { CollapsibleHeaderState() }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,6 +117,7 @@ fun ModelSearchScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
     val gridState = rememberLazyGridState()
+    val headerState = rememberCollapsibleHeaderState()
 
     val shouldLoadMore by remember {
         derivedStateOf {
@@ -96,6 +131,8 @@ fun ModelSearchScreen(
         if (shouldLoadMore) viewModel.loadMore()
     }
 
+    HeaderSnapEffect(gridState = gridState, headerState = headerState)
+
     Scaffold(
         topBar = {
             SearchTopBar(
@@ -104,40 +141,123 @@ fun ModelSearchScreen(
             )
         },
     ) { padding ->
-        val layoutDirection = LocalLayoutDirection.current
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    top = padding.calculateTopPadding(),
-                    start = padding.calculateLeftPadding(layoutDirection),
-                    end = padding.calculateRightPadding(layoutDirection),
-                ),
-        ) {
-            SearchBarWithHistory(
-                query = uiState.query,
-                onQueryChange = viewModel::onQueryChange,
-                onSearch = viewModel::onSearch,
-                searchHistory = searchHistory,
-                onHistoryItemClick = viewModel::onHistoryItemClick,
-                onClearHistory = viewModel::clearSearchHistory,
+        SearchScreenBody(
+            padding = padding,
+            headerState = headerState,
+            uiState = uiState,
+            searchHistory = searchHistory,
+            gridState = gridState,
+            viewModel = viewModel,
+            onModelClick = onModelClick,
+        )
+    }
+}
+
+@Composable
+private fun HeaderSnapEffect(gridState: LazyGridState, headerState: CollapsibleHeaderState) {
+    LaunchedEffect(gridState) {
+        snapshotFlow { gridState.isScrollInProgress }
+            .drop(1)
+            .collectLatest { scrolling ->
+                if (!scrolling && headerState.headerHeightPx > 0f) {
+                    val threshold = -headerState.headerHeightPx / 2f
+                    val target = if (headerState.offsetPx < threshold) {
+                        -headerState.headerHeightPx
+                    } else {
+                        0f
+                    }
+                    headerState.animatable.snapTo(headerState.offsetPx)
+                    headerState.animatable.animateTo(
+                        targetValue = target,
+                        animationSpec = tween(
+                            durationMillis = Duration.fast,
+                            easing = Easing.standard,
+                        ),
+                    ) {
+                        headerState.offsetPx = value
+                    }
+                }
+            }
+    }
+}
+
+@Composable
+private fun SearchScreenBody(
+    padding: PaddingValues,
+    headerState: CollapsibleHeaderState,
+    uiState: ModelSearchUiState,
+    searchHistory: List<String>,
+    gridState: LazyGridState,
+    viewModel: ModelSearchViewModel,
+    onModelClick: (Long, String?, String) -> Unit,
+) {
+    val layoutDirection = LocalLayoutDirection.current
+    val density = LocalDensity.current
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                top = padding.calculateTopPadding(),
+                start = padding.calculateLeftPadding(layoutDirection),
+                end = padding.calculateRightPadding(layoutDirection),
             )
-            SearchFilters(
-                uiState = uiState,
-                onTypeSelected = viewModel::onTypeSelected,
-                onBaseModelToggled = viewModel::onBaseModelToggled,
-                onSortSelected = viewModel::onSortSelected,
-                onPeriodSelected = viewModel::onPeriodSelected,
-                onFreshFindToggled = viewModel::onFreshFindToggled,
-            )
-            ModelSearchContent(
-                uiState = uiState,
-                gridState = gridState,
-                onRefresh = viewModel::refresh,
-                onModelClick = onModelClick,
-                bottomPadding = padding.calculateBottomPadding(),
-            )
-        }
+            .nestedScroll(headerState.nestedScrollConnection),
+    ) {
+        val visibleHeaderHeightPx =
+            (headerState.headerHeightPx + headerState.offsetPx).coerceAtLeast(0f)
+        val topPadding = with(density) { visibleHeaderHeightPx.toDp() }
+
+        ModelSearchContent(
+            uiState = uiState,
+            gridState = gridState,
+            onRefresh = viewModel::refresh,
+            onModelClick = onModelClick,
+            topPadding = topPadding,
+            bottomPadding = padding.calculateBottomPadding(),
+        )
+
+        CollapsibleHeader(
+            headerState = headerState,
+            uiState = uiState,
+            searchHistory = searchHistory,
+            viewModel = viewModel,
+        )
+    }
+}
+
+@Composable
+private fun CollapsibleHeader(
+    headerState: CollapsibleHeaderState,
+    uiState: ModelSearchUiState,
+    searchHistory: List<String>,
+    viewModel: ModelSearchViewModel,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .zIndex(1f)
+            .graphicsLayer { translationY = headerState.offsetPx }
+            .onGloballyPositioned { coordinates ->
+                headerState.headerHeightPx = coordinates.size.height.toFloat()
+            }
+            .background(MaterialTheme.colorScheme.surface),
+    ) {
+        SearchBarWithHistory(
+            query = uiState.query,
+            onQueryChange = viewModel::onQueryChange,
+            onSearch = viewModel::onSearch,
+            searchHistory = searchHistory,
+            onHistoryItemClick = viewModel::onHistoryItemClick,
+            onClearHistory = viewModel::clearSearchHistory,
+        )
+        SearchFilters(
+            uiState = uiState,
+            onTypeSelected = viewModel::onTypeSelected,
+            onBaseModelToggled = viewModel::onBaseModelToggled,
+            onSortSelected = viewModel::onSortSelected,
+            onPeriodSelected = viewModel::onPeriodSelected,
+            onFreshFindToggled = viewModel::onFreshFindToggled,
+        )
     }
 }
 
@@ -438,6 +558,7 @@ private fun ModelSearchContent(
     gridState: LazyGridState,
     onRefresh: () -> Unit,
     onModelClick: (Long, String?, String) -> Unit,
+    topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
 ) {
     val isInitialLoading = uiState.models.isEmpty() &&
@@ -482,6 +603,7 @@ private fun ModelSearchContent(
                         gridState = gridState,
                         isLoadingMore = uiState.isLoadingMore,
                         onModelClick = onModelClick,
+                        topPadding = topPadding,
                         bottomPadding = bottomPadding,
                     )
                 }
@@ -497,6 +619,7 @@ private fun ModelGrid(
     gridState: LazyGridState,
     isLoadingMore: Boolean,
     onModelClick: (Long, String?, String) -> Unit,
+    topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
 ) {
     LazyVerticalGrid(
@@ -505,7 +628,7 @@ private fun ModelGrid(
         contentPadding = PaddingValues(
             start = Spacing.md,
             end = Spacing.md,
-            top = Spacing.sm,
+            top = Spacing.sm + topPadding,
             bottom = Spacing.lg + bottomPadding,
         ),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
