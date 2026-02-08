@@ -31,8 +31,7 @@ final class ModelDetailViewModel: ObservableObject {
 
     /// Called from SwiftUI .task modifier — observes favorite state reactively via SKIE Flow.
     func observeFavorite() async {
-        let flow = SkieSwiftFlow<KotlinBoolean>(observeIsFavoriteUseCase.invoke(modelId: modelId))
-        for await value in flow {
+        for await value in observeIsFavoriteUseCase.invoke(modelId: modelId) {
             isFavorite = value.boolValue
         }
     }
