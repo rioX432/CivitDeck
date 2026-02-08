@@ -1,10 +1,20 @@
 import SwiftUI
 import Shared
 
+private struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 struct ModelSearchScreen: View {
     @StateObject private var viewModel = ModelSearchViewModel()
     @FocusState private var isSearchFocused: Bool
     @State private var showHistory: Bool = false
+    @State private var headerVisible: Bool = true
+    @State private var headerHeight: CGFloat = 0
+    @State private var lastScrollOffset: CGFloat = 0
 
     private let columns = [
         GridItem(.flexible(), spacing: Spacing.sm),
@@ -14,11 +24,7 @@ struct ModelSearchScreen: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                searchBar
-                searchHistoryDropdown
-                typeFilterChips
-                baseModelFilterChips
-                sortAndPeriodChips
+                collapsibleHeader
 
                 ZStack {
                     if viewModel.isLoading && viewModel.models.isEmpty {
@@ -69,6 +75,30 @@ struct ModelSearchScreen: View {
             }
             .task { await viewModel.observeSearchHistory() }
         }
+    }
+
+    private var collapsibleHeader: some View {
+        VStack(spacing: 0) {
+            searchBar
+            searchHistoryDropdown
+            typeFilterChips
+            baseModelFilterChips
+            sortAndPeriodChips
+        }
+        .background(
+            GeometryReader { geo in
+                Color.clear.preference(
+                    key: HeaderHeightPreferenceKey.self,
+                    value: geo.size.height
+                )
+            }
+        )
+        .onPreferenceChange(HeaderHeightPreferenceKey.self) { height in
+            headerHeight = height
+        }
+        .frame(height: headerVisible ? nil : 0, alignment: .top)
+        .clipped()
+        .animation(MotionAnimation.fast, value: headerVisible)
     }
 
     private var searchBar: some View {
@@ -155,6 +185,14 @@ struct ModelSearchScreen: View {
 
     private var modelGrid: some View {
         ScrollView {
+            GeometryReader { geo in
+                Color.clear.preference(
+                    key: ScrollOffsetPreferenceKey.self,
+                    value: geo.frame(in: .named("scroll")).minY
+                )
+            }
+            .frame(height: 0)
+
             if !viewModel.recommendations.isEmpty {
                 recommendationSections
             }
@@ -180,6 +218,19 @@ struct ModelSearchScreen: View {
                     .transition(.opacity)
                     .padding()
             }
+        }
+        .coordinateSpace(name: "scroll")
+        .onPreferenceChange(ScrollOffsetPreferenceKey.self) { offset in
+            let delta = offset - lastScrollOffset
+            if abs(delta) > 2 {
+                let scrollingDown = delta < 0
+                if scrollingDown && headerVisible {
+                    headerVisible = false
+                } else if !scrollingDown && !headerVisible {
+                    headerVisible = true
+                }
+            }
+            lastScrollOffset = offset
         }
         .animation(MotionAnimation.standard, value: viewModel.isLoadingMore)
         .refreshable {
@@ -310,6 +361,13 @@ struct ModelSearchScreen: View {
             }
             .padding(.bottom, Spacing.sm)
         }
+    }
+}
+
+private struct HeaderHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
 
