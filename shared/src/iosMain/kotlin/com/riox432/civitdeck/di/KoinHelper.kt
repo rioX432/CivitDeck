@@ -8,6 +8,7 @@ import com.riox432.civitdeck.domain.usecase.GetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
+import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
@@ -38,4 +39,5 @@ object KoinHelper {
     fun getClearSearchHistoryUseCase(): ClearSearchHistoryUseCase = getKoin().get()
     fun getTrackModelViewUseCase(): TrackModelViewUseCase = getKoin().get()
     fun getRecommendationsUseCase(): GetRecommendationsUseCase = getKoin().get()
+    fun getViewedModelIdsUseCase(): GetViewedModelIdsUseCase = getKoin().get()
 }

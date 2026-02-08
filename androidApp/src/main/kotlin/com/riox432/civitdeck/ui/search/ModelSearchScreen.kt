@@ -129,6 +129,7 @@ fun ModelSearchScreen(
                 onBaseModelToggled = viewModel::onBaseModelToggled,
                 onSortSelected = viewModel::onSortSelected,
                 onPeriodSelected = viewModel::onPeriodSelected,
+                onFreshFindToggled = viewModel::onFreshFindToggled,
             )
             ModelSearchContent(
                 uiState = uiState,
@@ -176,14 +177,17 @@ private fun SearchFilters(
     onBaseModelToggled: (BaseModel) -> Unit,
     onSortSelected: (SortOrder) -> Unit,
     onPeriodSelected: (TimePeriod) -> Unit,
+    onFreshFindToggled: () -> Unit,
 ) {
     TypeFilterChips(selectedType = uiState.selectedType, onTypeSelected = onTypeSelected)
     BaseModelFilterChips(selectedBaseModels = uiState.selectedBaseModels, onBaseModelToggled = onBaseModelToggled)
     SortAndPeriodFilters(
         selectedSort = uiState.selectedSort,
         selectedPeriod = uiState.selectedPeriod,
+        isFreshFindEnabled = uiState.isFreshFindEnabled,
         onSortSelected = onSortSelected,
         onPeriodSelected = onPeriodSelected,
+        onFreshFindToggled = onFreshFindToggled,
     )
 }
 
@@ -375,13 +379,22 @@ private fun BaseModelFilterChips(
 private fun SortAndPeriodFilters(
     selectedSort: SortOrder,
     selectedPeriod: TimePeriod,
+    isFreshFindEnabled: Boolean,
     onSortSelected: (SortOrder) -> Unit,
     onPeriodSelected: (TimePeriod) -> Unit,
+    onFreshFindToggled: () -> Unit,
 ) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = Spacing.lg),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
+        item {
+            FilterChipItem(
+                label = "Fresh Only",
+                isSelected = isFreshFindEnabled,
+                onClick = onFreshFindToggled,
+            )
+        }
         items(SortOrder.entries.toList()) { sort ->
             FilterChipItem(
                 label = sort.name,

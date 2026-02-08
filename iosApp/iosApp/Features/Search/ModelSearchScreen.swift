@@ -228,6 +228,9 @@ struct ModelSearchScreen: View {
     private var sortAndPeriodChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.sm) {
+                chipButton(label: "Fresh Only", isSelected: viewModel.isFreshFindEnabled) {
+                    viewModel.onFreshFindToggled()
+                }
                 ForEach(sortOptions, id: \.self) { sort in
                     chipButton(label: sortLabel(sort), isSelected: viewModel.selectedSort == sort) {
                         viewModel.onSortSelected(sort)

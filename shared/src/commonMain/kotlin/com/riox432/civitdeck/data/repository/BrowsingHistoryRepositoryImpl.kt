@@ -49,4 +49,8 @@ class BrowsingHistoryRepositoryImpl(
     override suspend fun getRecentModelIds(limit: Int): List<Long> {
         return dao.getRecentModelIds(limit)
     }
+
+    override suspend fun getAllViewedModelIds(): Set<Long> {
+        return dao.getAllModelIds().toSet()
+    }
 }

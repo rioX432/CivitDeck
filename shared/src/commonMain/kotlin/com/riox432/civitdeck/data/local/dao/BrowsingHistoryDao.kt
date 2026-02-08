@@ -17,6 +17,9 @@ interface BrowsingHistoryDao {
     @Query("SELECT DISTINCT modelId FROM browsing_history ORDER BY viewedAt DESC LIMIT :limit")
     suspend fun getRecentModelIds(limit: Int = 50): List<Long>
 
+    @Query("SELECT DISTINCT modelId FROM browsing_history")
+    suspend fun getAllModelIds(): List<Long>
+
     @Query("SELECT COUNT(*) FROM browsing_history")
     suspend fun count(): Int
 }

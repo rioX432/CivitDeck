@@ -13,6 +13,7 @@ import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
+import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
@@ -40,6 +41,7 @@ data class ModelSearchUiState(
     val error: String? = null,
     val nextCursor: String? = null,
     val hasMore: Boolean = true,
+    val isFreshFindEnabled: Boolean = false,
     val recommendations: List<RecommendationSection> = emptyList(),
     val isLoadingRecommendations: Boolean = false,
 )
@@ -52,6 +54,7 @@ class ModelSearchViewModel(
     observeSearchHistoryUseCase: ObserveSearchHistoryUseCase,
     private val addSearchHistoryUseCase: AddSearchHistoryUseCase,
     private val clearSearchHistoryUseCase: ClearSearchHistoryUseCase,
+    private val getViewedModelIdsUseCase: GetViewedModelIdsUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelSearchUiState())
@@ -161,6 +164,19 @@ class ModelSearchViewModel(
         loadModels()
     }
 
+    fun onFreshFindToggled() {
+        loadJob?.cancel()
+        _uiState.update {
+            it.copy(
+                isFreshFindEnabled = !it.isFreshFindEnabled,
+                nextCursor = null,
+                models = emptyList(),
+                hasMore = true,
+            )
+        }
+        loadModels()
+    }
+
     fun loadMore() {
         val state = _uiState.value
         if (state.isLoading || state.isLoadingMore || !state.hasMore) return
@@ -193,7 +209,11 @@ class ModelSearchViewModel(
                     cursor = if (isLoadMore) state.nextCursor else null,
                     limit = PAGE_SIZE,
                 )
-                val filteredItems = filterNsfw(result.items, state.nsfwFilterLevel)
+                var filteredItems = filterNsfw(result.items, state.nsfwFilterLevel)
+                if (state.isFreshFindEnabled) {
+                    val viewedIds = getViewedModelIdsUseCase()
+                    filteredItems = filteredItems.filter { it.id !in viewedIds }
+                }
                 _uiState.update {
                     it.copy(
                         models = if (isLoadMore) it.models + filteredItems else filteredItems,

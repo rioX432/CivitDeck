@@ -16,6 +16,7 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var hasMore: Bool = true
     @Published var searchHistory: [String] = []
     @Published var recommendations: [RecommendationSection] = []
+    @Published var isFreshFindEnabled: Bool = false
 
     private let getModelsUseCase: GetModelsUseCase
     private let getRecommendationsUseCase: GetRecommendationsUseCase
@@ -24,6 +25,7 @@ final class ModelSearchViewModel: ObservableObject {
     private let observeSearchHistoryUseCase: ObserveSearchHistoryUseCase
     private let addSearchHistoryUseCase: AddSearchHistoryUseCase
     private let clearSearchHistoryUseCase: ClearSearchHistoryUseCase
+    private let getViewedModelIdsUseCase: GetViewedModelIdsUseCase
     private var nextCursor: String? = nil
     private var loadTask: Task<Void, Never>? = nil
 
@@ -37,6 +39,7 @@ final class ModelSearchViewModel: ObservableObject {
         self.observeSearchHistoryUseCase = KoinHelper.shared.getObserveSearchHistoryUseCase()
         self.addSearchHistoryUseCase = KoinHelper.shared.getAddSearchHistoryUseCase()
         self.clearSearchHistoryUseCase = KoinHelper.shared.getClearSearchHistoryUseCase()
+        self.getViewedModelIdsUseCase = KoinHelper.shared.getViewedModelIdsUseCase()
         loadModels()
         loadRecommendations()
     }
@@ -139,6 +142,15 @@ final class ModelSearchViewModel: ObservableObject {
         loadModels()
     }
 
+    func onFreshFindToggled() {
+        loadTask?.cancel()
+        isFreshFindEnabled.toggle()
+        models = []
+        nextCursor = nil
+        hasMore = true
+        loadModels()
+    }
+
     func loadMore() {
         guard !isLoading, !isLoadingMore, hasMore else { return }
         loadModels(isLoadMore: true)
@@ -176,9 +188,13 @@ final class ModelSearchViewModel: ObservableObject {
                 guard !Task.isCancelled else { return }
 
                 let allModels = result.items.compactMap { $0 as? Model }
-                let newModels = nsfwFilterLevel == .off
+                var newModels = nsfwFilterLevel == .off
                     ? allModels.filter { !$0.nsfw }
                     : allModels
+                if isFreshFindEnabled {
+                    let viewedIds = try await getViewedModelIdsUseCase.invoke()
+                    newModels = newModels.filter { !viewedIds.contains(KotlinLong(value: $0.id)) }
+                }
                 if isLoadMore {
                     models.append(contentsOf: newModels)
                 } else {

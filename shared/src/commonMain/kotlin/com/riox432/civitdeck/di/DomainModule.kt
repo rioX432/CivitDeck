@@ -8,6 +8,7 @@ import com.riox432.civitdeck.domain.usecase.GetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
+import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
@@ -37,4 +38,5 @@ val domainModule = module {
     factory { ClearSearchHistoryUseCase(get()) }
     factory { TrackModelViewUseCase(get()) }
     factory { GetRecommendationsUseCase(get(), get(), get()) }
+    factory { GetViewedModelIdsUseCase(get()) }
 }
