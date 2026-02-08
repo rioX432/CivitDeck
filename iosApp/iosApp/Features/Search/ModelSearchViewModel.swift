@@ -6,7 +6,7 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var models: [Model] = []
     @Published var query: String = ""
     @Published var selectedType: ModelType? = nil
-    @Published var selectedSort: SortOrder = .mostDownloaded
+    @Published var selectedSort: Shared.SortOrder = .mostDownloaded
     @Published var selectedPeriod: TimePeriod = .allTime
     @Published var isLoading: Bool = false
     @Published var isLoadingMore: Bool = false
@@ -41,7 +41,7 @@ final class ModelSearchViewModel: ObservableObject {
         loadModels()
     }
 
-    func onSortSelected(_ sort: SortOrder) {
+    func onSortSelected(_ sort: Shared.SortOrder) {
         loadTask?.cancel()
         selectedSort = sort
         models = []

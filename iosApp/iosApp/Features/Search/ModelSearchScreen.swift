@@ -179,7 +179,7 @@ struct ModelSearchScreen: View {
     }
 }
 
-private let sortOptions: [SortOrder] = [.highestRated, .mostDownloaded, .newest]
+private let sortOptions: [Shared.SortOrder] = [.highestRated, .mostDownloaded, .newest]
 private let periodOptions: [TimePeriod] = [.allTime, .year, .month, .week, .day]
 
 private let modelTypeOptions: [ModelType] = [
