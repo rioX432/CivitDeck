@@ -140,7 +140,7 @@ private struct ShareSheet: UIViewControllerRepresentable {
 
 // MARK: - Zoomable Image
 
-private struct ZoomableImageView: View {
+struct ZoomableImageView: View {
     let url: String
 
     @State private var scale: CGFloat = 1.0

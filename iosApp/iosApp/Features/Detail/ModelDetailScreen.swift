@@ -9,6 +9,7 @@ struct ModelDetailScreen: View {
     }
 
     @State private var isDescriptionExpanded = false
+    @State private var selectedCarouselIndex: Int? = nil
 
     var body: some View {
         Group {
@@ -48,6 +49,68 @@ struct ModelDetailScreen: View {
                 }
             }
         }
+        .fullScreenCover(isPresented: Binding(
+            get: { selectedCarouselIndex != nil },
+            set: { if !$0 { selectedCarouselIndex = nil } }
+        )) {
+            carouselViewer
+        }
+    }
+
+    // MARK: - Carousel Viewer
+
+    @ViewBuilder
+    private var carouselViewer: some View {
+        let images = viewModel.selectedVersion?.images ?? []
+        if let startIndex = selectedCarouselIndex, !images.isEmpty {
+            ZStack {
+                Color.black.ignoresSafeArea()
+
+                TabView(selection: Binding(
+                    get: { startIndex },
+                    set: { selectedCarouselIndex = $0 }
+                )) {
+                    ForEach(Array(images.enumerated()), id: \.offset) { i, image in
+                        ZoomableImageView(url: image.url)
+                            .tag(i)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .automatic))
+
+                VStack {
+                    HStack {
+                        Button {
+                            selectedCarouselIndex = nil
+                        } label: {
+                            SwiftUI.Image(systemName: "xmark")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                                .padding(10)
+                                .background(.ultraThinMaterial, in: Circle())
+                        }
+                        Spacer()
+                    }
+                    .padding(16)
+                    Spacer()
+                    if startIndex < images.count, images[startIndex].meta != nil {
+                        HStack {
+                            Spacer()
+                            Button {
+                                // Show metadata
+                            } label: {
+                                SwiftUI.Image(systemName: "info.circle")
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                                    .padding(10)
+                                    .background(.ultraThinMaterial, in: Circle())
+                            }
+                        }
+                        .padding(16)
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - Content
@@ -76,7 +139,7 @@ struct ModelDetailScreen: View {
         return Group {
             if !images.isEmpty {
                 TabView {
-                    ForEach(Array(images.enumerated()), id: \.offset) { _, image in
+                    ForEach(Array(images.enumerated()), id: \.offset) { index, image in
                         if let url = URL(string: image.url) {
                             AsyncImage(url: url) { phase in
                                 switch phase {
@@ -98,6 +161,9 @@ struct ModelDetailScreen: View {
                             .frame(maxWidth: .infinity)
                             .aspectRatio(1, contentMode: .fit)
                             .clipped()
+                            .onTapGesture {
+                                selectedCarouselIndex = index
+                            }
                         }
                     }
                 }
