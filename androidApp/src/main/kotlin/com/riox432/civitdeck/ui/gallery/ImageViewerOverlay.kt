@@ -47,6 +47,7 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
+import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Spring
 import kotlinx.coroutines.launch
@@ -192,6 +193,35 @@ private fun ZoomableImage(imageUrl: String) {
         }
     }
 
+    ZoomableAsyncImage(
+        imageUrl = imageUrl,
+        scale = scale.value,
+        offsetX = offsetX.value,
+        offsetY = offsetY.value,
+        onDoubleTap = {
+            scope.launch {
+                if (scale.value > 1f) {
+                    launch { scale.animateTo(1f, Spring.bouncy) }
+                    launch { offsetX.animateTo(0f, Spring.bouncy) }
+                    launch { offsetY.animateTo(0f, Spring.bouncy) }
+                } else {
+                    scale.animateTo(DOUBLE_TAP_ZOOM, Spring.bouncy)
+                }
+            }
+        },
+        transformableState = transformableState,
+    )
+}
+
+@Composable
+private fun ZoomableAsyncImage(
+    imageUrl: String,
+    scale: Float,
+    offsetX: Float,
+    offsetY: Float,
+    onDoubleTap: () -> Unit,
+    transformableState: androidx.compose.foundation.gestures.TransformableState,
+) {
     SubcomposeAsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
             .data(imageUrl)
@@ -202,26 +232,14 @@ private fun ZoomableImage(imageUrl: String) {
         modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
-                detectTapGestures(
-                    onDoubleTap = {
-                        scope.launch {
-                            if (scale.value > 1f) {
-                                launch { scale.animateTo(1f, Spring.bouncy) }
-                                launch { offsetX.animateTo(0f, Spring.bouncy) }
-                                launch { offsetY.animateTo(0f, Spring.bouncy) }
-                            } else {
-                                scale.animateTo(DOUBLE_TAP_ZOOM, Spring.bouncy)
-                            }
-                        }
-                    },
-                )
+                detectTapGestures(onDoubleTap = { onDoubleTap() })
             }
             .transformable(state = transformableState)
             .graphicsLayer(
-                scaleX = scale.value,
-                scaleY = scale.value,
-                translationX = offsetX.value,
-                translationY = offsetY.value,
+                scaleX = scale,
+                scaleY = scale,
+                translationX = offsetX,
+                translationY = offsetY,
             ),
         loading = {
             Box(
@@ -230,6 +248,13 @@ private fun ZoomableImage(imageUrl: String) {
             ) {
                 CircularProgressIndicator(color = Color.White)
             }
+        },
+        error = {
+            ImageErrorPlaceholder(
+                modifier = Modifier.fillMaxSize(),
+                iconTint = Color.White,
+                backgroundColor = Color.Transparent,
+            )
         },
     )
 }

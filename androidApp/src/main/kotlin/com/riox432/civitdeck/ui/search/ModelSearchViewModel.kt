@@ -67,6 +67,7 @@ class ModelSearchViewModel(
     init {
         observeNsfwFilter()
         loadModels()
+        loadRecommendations()
     }
 
     private fun observeNsfwFilter() {

@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
+import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.IconSize
@@ -149,6 +150,13 @@ private fun FavoriteCard(
                                 .fillMaxWidth()
                                 .aspectRatio(1f)
                                 .shimmer(),
+                        )
+                    },
+                    error = {
+                        ImageErrorPlaceholder(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f),
                         )
                     },
                 )

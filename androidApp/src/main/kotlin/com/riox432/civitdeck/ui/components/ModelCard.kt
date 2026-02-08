@@ -46,6 +46,7 @@ fun ModelCard(
     model: Model,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    sharedElementSuffix: String = "",
 ) {
     Card(
         onClick = onClick,
@@ -61,51 +62,80 @@ fun ModelCard(
                 .firstOrNull()?.images?.firstOrNull()?.url
 
             if (thumbnailUrl != null) {
-                val sharedTransitionScope = LocalSharedTransitionScope.current
-                val animatedContentScope = LocalNavAnimatedContentScope.current
-
-                val imageModifier = if (sharedTransitionScope != null) {
-                    with(sharedTransitionScope) {
-                        Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .sharedElement(
-                                rememberSharedContentState(
-                                    key = SharedElementKeys.modelThumbnail(model.id),
-                                ),
-                                animatedVisibilityScope = animatedContentScope,
-                            )
-                    }
-                } else {
-                    Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                }
-
-                SubcomposeAsyncImage(
-                    model = coil3.request.ImageRequest.Builder(
-                        androidx.compose.ui.platform.LocalContext.current,
-                    )
-                        .data(thumbnailUrl)
-                        .crossfade(Duration.normal)
-                        .build(),
+                ModelCardThumbnail(
+                    thumbnailUrl = thumbnailUrl,
+                    modelId = model.id,
                     contentDescription = model.name,
-                    contentScale = ContentScale.Crop,
-                    modifier = imageModifier,
-                    loading = {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f)
-                                .shimmer(),
-                        )
-                    },
+                    sharedElementSuffix = sharedElementSuffix,
+                )
+            } else {
+                ImageErrorPlaceholder(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f),
                 )
             }
 
             ModelCardInfo(model = model)
         }
     }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun ModelCardThumbnail(
+    thumbnailUrl: String,
+    modelId: Long,
+    contentDescription: String,
+    sharedElementSuffix: String = "",
+) {
+    val sharedTransitionScope = LocalSharedTransitionScope.current
+    val animatedContentScope = LocalNavAnimatedContentScope.current
+
+    val imageModifier = if (sharedTransitionScope != null) {
+        with(sharedTransitionScope) {
+            Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .sharedElement(
+                    rememberSharedContentState(
+                        key = SharedElementKeys.modelThumbnail(modelId, sharedElementSuffix),
+                    ),
+                    animatedVisibilityScope = animatedContentScope,
+                )
+        }
+    } else {
+        Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+    }
+
+    SubcomposeAsyncImage(
+        model = coil3.request.ImageRequest.Builder(
+            androidx.compose.ui.platform.LocalContext.current,
+        )
+            .data(thumbnailUrl)
+            .crossfade(Duration.normal)
+            .build(),
+        contentDescription = contentDescription,
+        contentScale = ContentScale.Crop,
+        modifier = imageModifier,
+        loading = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .shimmer(),
+            )
+        },
+        error = {
+            ImageErrorPlaceholder(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f),
+            )
+        },
+    )
 }
 
 @Composable

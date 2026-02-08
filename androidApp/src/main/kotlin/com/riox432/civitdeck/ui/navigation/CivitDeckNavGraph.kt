@@ -50,7 +50,11 @@ data object SearchRoute
 
 data object FavoritesRoute
 
-data class DetailRoute(val modelId: Long, val thumbnailUrl: String? = null)
+data class DetailRoute(
+    val modelId: Long,
+    val thumbnailUrl: String? = null,
+    val sharedElementSuffix: String = "",
+)
 
 data class ImageGalleryRoute(val modelVersionId: Long)
 
@@ -156,8 +160,8 @@ private fun CivitDeckNavDisplay(backStack: MutableList<Any>) {
                 val viewModel: ModelSearchViewModel = koinViewModel()
                 ModelSearchScreen(
                     viewModel = viewModel,
-                    onModelClick = { modelId, thumbnailUrl ->
-                        backStack.add(DetailRoute(modelId, thumbnailUrl))
+                    onModelClick = { modelId, thumbnailUrl, suffix ->
+                        backStack.add(DetailRoute(modelId, thumbnailUrl, suffix))
                     },
                     onSavedPromptsClick = { backStack.add(SavedPromptsRoute) },
                     onSettingsClick = { backStack.add(SettingsRoute) },
@@ -203,6 +207,7 @@ private fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {
             viewModel = viewModel,
             modelId = key.modelId,
             initialThumbnailUrl = key.thumbnailUrl,
+            sharedElementSuffix = key.sharedElementSuffix,
             onBack = { backStack.removeLastOrNull() },
             onViewImages = { modelVersionId ->
                 backStack.add(ImageGalleryRoute(modelVersionId))
