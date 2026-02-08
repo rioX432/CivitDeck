@@ -6,6 +6,7 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
+import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +27,7 @@ class ModelDetailViewModel(
     private val getModelDetailUseCase: GetModelDetailUseCase,
     private val observeIsFavoriteUseCase: ObserveIsFavoriteUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val trackModelViewUseCase: TrackModelViewUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelDetailUiState())
@@ -65,6 +67,12 @@ class ModelDetailViewModel(
                 _uiState.update {
                     it.copy(model = model, isLoading = false)
                 }
+                trackModelViewUseCase(
+                    modelId = model.id,
+                    modelType = model.type.name,
+                    creatorName = model.creator?.username,
+                    tags = model.tags,
+                )
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

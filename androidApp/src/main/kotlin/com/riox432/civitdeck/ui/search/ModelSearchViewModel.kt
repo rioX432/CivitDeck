@@ -6,11 +6,13 @@ import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
+import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
@@ -38,10 +40,13 @@ data class ModelSearchUiState(
     val error: String? = null,
     val nextCursor: String? = null,
     val hasMore: Boolean = true,
+    val recommendations: List<RecommendationSection> = emptyList(),
+    val isLoadingRecommendations: Boolean = false,
 )
 
 class ModelSearchViewModel(
     private val getModelsUseCase: GetModelsUseCase,
+    private val getRecommendationsUseCase: GetRecommendationsUseCase,
     private val observeNsfwFilterUseCase: ObserveNsfwFilterUseCase,
     private val setNsfwFilterUseCase: SetNsfwFilterUseCase,
     observeSearchHistoryUseCase: ObserveSearchHistoryUseCase,
@@ -80,6 +85,21 @@ class ModelSearchViewModel(
             it.copy(nextCursor = null, models = emptyList(), hasMore = true)
         }
         loadModels()
+        loadRecommendations()
+    }
+
+    private fun loadRecommendations() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingRecommendations = true) }
+            try {
+                val sections = getRecommendationsUseCase()
+                _uiState.update {
+                    it.copy(recommendations = sections, isLoadingRecommendations = false)
+                }
+            } catch (_: Exception) {
+                _uiState.update { it.copy(isLoadingRecommendations = false) }
+            }
+        }
     }
 
     fun onQueryChange(query: String) {

@@ -26,4 +26,12 @@ interface FavoriteModelDao {
 
     @Query("SELECT COUNT(*) FROM favorite_models")
     suspend fun count(): Int
+
+    @Query("SELECT id FROM favorite_models")
+    suspend fun getAllIds(): List<Long>
+
+    @Query("SELECT type, COUNT(*) as cnt FROM favorite_models GROUP BY type")
+    suspend fun getTypeCounts(): List<TypeCount>
 }
+
+data class TypeCount(val type: String, val cnt: Int)

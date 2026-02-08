@@ -10,4 +10,6 @@ interface FavoriteRepository {
     suspend fun toggleFavorite(model: Model)
     suspend fun addFavorite(model: Model)
     suspend fun removeFavorite(modelId: Long)
+    suspend fun getAllFavoriteIds(): Set<Long>
+    suspend fun getFavoriteTypeCounts(): Map<String, Int>
 }

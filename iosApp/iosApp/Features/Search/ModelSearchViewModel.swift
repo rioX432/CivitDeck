@@ -15,8 +15,10 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var error: String? = nil
     @Published var hasMore: Bool = true
     @Published var searchHistory: [String] = []
+    @Published var recommendations: [RecommendationSection] = []
 
     private let getModelsUseCase: GetModelsUseCase
+    private let getRecommendationsUseCase: GetRecommendationsUseCase
     private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
     private let setNsfwFilterUseCase: SetNsfwFilterUseCase
     private let observeSearchHistoryUseCase: ObserveSearchHistoryUseCase
@@ -29,12 +31,25 @@ final class ModelSearchViewModel: ObservableObject {
 
     init() {
         self.getModelsUseCase = KoinHelper.shared.getModelsUseCase()
+        self.getRecommendationsUseCase = KoinHelper.shared.getRecommendationsUseCase()
         self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
         self.setNsfwFilterUseCase = KoinHelper.shared.getSetNsfwFilterUseCase()
         self.observeSearchHistoryUseCase = KoinHelper.shared.getObserveSearchHistoryUseCase()
         self.addSearchHistoryUseCase = KoinHelper.shared.getAddSearchHistoryUseCase()
         self.clearSearchHistoryUseCase = KoinHelper.shared.getClearSearchHistoryUseCase()
         loadModels()
+        loadRecommendations()
+    }
+
+    private func loadRecommendations() {
+        Task {
+            do {
+                let sections = try await getRecommendationsUseCase.invoke()
+                recommendations = sections
+            } catch {
+                // Non-critical, silently fail
+            }
+        }
     }
 
     func observeNsfwFilter() async {
