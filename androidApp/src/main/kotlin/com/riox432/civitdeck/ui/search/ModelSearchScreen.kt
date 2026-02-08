@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -577,8 +576,7 @@ private fun RecommendationRow(
                     model = model,
                     onClick = { onModelClick(model.id, thumbnailUrl, sharedElementSuffix) },
                     modifier = Modifier
-                        .width(160.dp)
-                        .height(220.dp),
+                        .width(160.dp),
                     sharedElementSuffix = sharedElementSuffix,
                 )
             }
