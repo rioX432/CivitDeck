@@ -68,6 +68,7 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
+import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
 import com.riox432.civitdeck.ui.navigation.LocalSharedTransitionScope
@@ -86,6 +87,7 @@ fun ModelDetailScreen(
     onBack: () -> Unit,
     onViewImages: (Long) -> Unit = {},
     onCreatorClick: (String) -> Unit = {},
+    sharedElementSuffix: String = "",
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -102,6 +104,7 @@ fun ModelDetailScreen(
             uiState = uiState,
             modelId = modelId,
             initialThumbnailUrl = initialThumbnailUrl,
+            sharedElementSuffix = sharedElementSuffix,
             onRetry = viewModel::retry,
             onVersionSelected = viewModel::onVersionSelected,
             onViewImages = onViewImages,
@@ -170,6 +173,7 @@ private fun ModelDetailBody(
     uiState: ModelDetailUiState,
     modelId: Long,
     initialThumbnailUrl: String?,
+    sharedElementSuffix: String,
     onRetry: () -> Unit,
     onVersionSelected: (Int) -> Unit,
     onViewImages: (Long) -> Unit,
@@ -192,6 +196,7 @@ private fun ModelDetailBody(
                 ImageCarousel(
                     images = images,
                     modelId = modelId,
+                    sharedElementSuffix = sharedElementSuffix,
                     onImageClick = { index -> selectedCarouselIndex = index },
                 )
             }
@@ -199,6 +204,7 @@ private fun ModelDetailBody(
                 SharedThumbnailPlaceholder(
                     thumbnailUrl = initialThumbnailUrl,
                     modelId = modelId,
+                    sharedElementSuffix = sharedElementSuffix,
                 )
             }
         }
@@ -298,6 +304,7 @@ private fun DetailStateContent(
 private fun SharedThumbnailPlaceholder(
     thumbnailUrl: String,
     modelId: Long,
+    sharedElementSuffix: String = "",
 ) {
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedContentScope = LocalNavAnimatedContentScope.current
@@ -309,7 +316,7 @@ private fun SharedThumbnailPlaceholder(
                 .aspectRatio(CAROUSEL_ASPECT_RATIO)
                 .sharedElement(
                     rememberSharedContentState(
-                        key = SharedElementKeys.modelThumbnail(modelId),
+                        key = SharedElementKeys.modelThumbnail(modelId, sharedElementSuffix),
                     ),
                     animatedVisibilityScope = animatedContentScope,
                 )
@@ -335,6 +342,13 @@ private fun SharedThumbnailPlaceholder(
                     .fillMaxWidth()
                     .aspectRatio(CAROUSEL_ASPECT_RATIO)
                     .shimmer(),
+            )
+        },
+        error = {
+            ImageErrorPlaceholder(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(CAROUSEL_ASPECT_RATIO),
             )
         },
     )
@@ -427,6 +441,7 @@ private fun ViewImagesButton(onClick: () -> Unit) {
 private fun ImageCarousel(
     images: List<ModelImage>,
     modelId: Long,
+    sharedElementSuffix: String = "",
     onImageClick: (Int) -> Unit = {},
 ) {
     if (images.isEmpty()) return
@@ -441,6 +456,7 @@ private fun ImageCarousel(
             CarouselPage(
                 image = images[page],
                 modelId = modelId,
+                sharedElementSuffix = sharedElementSuffix,
                 applySharedElement = page == pagerState.currentPage,
                 onClick = { onImageClick(page) },
             )
@@ -463,6 +479,7 @@ private fun ImageCarousel(
 private fun CarouselPage(
     image: ModelImage,
     modelId: Long,
+    sharedElementSuffix: String = "",
     applySharedElement: Boolean,
     onClick: () -> Unit = {},
 ) {
@@ -477,7 +494,7 @@ private fun CarouselPage(
                 .clip(MaterialTheme.shapes.medium)
                 .sharedElement(
                     rememberSharedContentState(
-                        key = SharedElementKeys.modelThumbnail(modelId),
+                        key = SharedElementKeys.modelThumbnail(modelId, sharedElementSuffix),
                     ),
                     animatedVisibilityScope = animatedContentScope,
                 )
@@ -505,6 +522,13 @@ private fun CarouselPage(
                     .fillMaxWidth()
                     .aspectRatio(CAROUSEL_ASPECT_RATIO)
                     .shimmer(),
+            )
+        },
+        error = {
+            ImageErrorPlaceholder(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(CAROUSEL_ASPECT_RATIO),
             )
         },
     )

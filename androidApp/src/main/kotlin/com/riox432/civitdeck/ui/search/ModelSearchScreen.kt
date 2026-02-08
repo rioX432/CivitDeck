@@ -76,7 +76,7 @@ import com.riox432.civitdeck.ui.theme.Spacing
 @Composable
 fun ModelSearchScreen(
     viewModel: ModelSearchViewModel,
-    onModelClick: (Long, String?) -> Unit = { _, _ -> },
+    onModelClick: (Long, String?, String) -> Unit = { _, _, _ -> },
     onSavedPromptsClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
 ) {
@@ -437,11 +437,13 @@ private fun ModelSearchContent(
     uiState: ModelSearchUiState,
     gridState: LazyGridState,
     onRefresh: () -> Unit,
-    onModelClick: (Long, String?) -> Unit,
+    onModelClick: (Long, String?, String) -> Unit,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
 ) {
+    val isInitialLoading = uiState.models.isEmpty() &&
+        (uiState.isLoading || uiState.isLoadingRecommendations)
     val stateKey = when {
-        uiState.isLoading && uiState.models.isEmpty() -> "loading"
+        isInitialLoading -> "loading"
         uiState.error != null && uiState.models.isEmpty() -> "error"
         else -> "content"
     }
@@ -494,7 +496,7 @@ private fun ModelGrid(
     recommendations: List<RecommendationSection>,
     gridState: LazyGridState,
     isLoadingMore: Boolean,
-    onModelClick: (Long, String?) -> Unit,
+    onModelClick: (Long, String?, String) -> Unit,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
 ) {
     LazyVerticalGrid(
@@ -509,13 +511,14 @@ private fun ModelGrid(
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
-        recommendations.forEach { section ->
+        recommendations.forEachIndexed { index, section ->
             item(
                 key = "rec_${section.title}",
                 span = { GridItemSpan(2) },
             ) {
                 RecommendationRow(
                     section = section,
+                    sharedElementSuffix = "rec$index",
                     onModelClick = onModelClick,
                 )
             }
@@ -525,7 +528,7 @@ private fun ModelGrid(
                 .firstOrNull()?.images?.firstOrNull()?.url
             ModelCard(
                 model = model,
-                onClick = { onModelClick(model.id, thumbnailUrl) },
+                onClick = { onModelClick(model.id, thumbnailUrl, "") },
                 modifier = Modifier.animateItem(),
             )
         }
@@ -549,7 +552,8 @@ private fun ModelGrid(
 @Composable
 private fun RecommendationRow(
     section: RecommendationSection,
-    onModelClick: (Long, String?) -> Unit,
+    sharedElementSuffix: String,
+    onModelClick: (Long, String?, String) -> Unit,
 ) {
     Column(modifier = Modifier.padding(bottom = Spacing.sm)) {
         Text(
@@ -571,10 +575,11 @@ private fun RecommendationRow(
                     .firstOrNull()?.images?.firstOrNull()?.url
                 ModelCard(
                     model = model,
-                    onClick = { onModelClick(model.id, thumbnailUrl) },
+                    onClick = { onModelClick(model.id, thumbnailUrl, sharedElementSuffix) },
                     modifier = Modifier
                         .width(160.dp)
                         .height(220.dp),
+                    sharedElementSuffix = sharedElementSuffix,
                 )
             }
         }

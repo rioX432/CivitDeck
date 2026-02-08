@@ -49,6 +49,7 @@ import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -327,6 +328,13 @@ private fun ImageGridItem(
                     .fillMaxWidth()
                     .aspectRatio(aspectRatio)
                     .shimmer(),
+            )
+        },
+        error = {
+            ImageErrorPlaceholder(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(aspectRatio),
             )
         },
     )
