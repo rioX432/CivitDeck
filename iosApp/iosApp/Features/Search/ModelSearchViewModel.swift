@@ -21,7 +21,6 @@ final class ModelSearchViewModel: ObservableObject {
     private let getModelsUseCase: GetModelsUseCase
     private let getRecommendationsUseCase: GetRecommendationsUseCase
     private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
-    private let setNsfwFilterUseCase: SetNsfwFilterUseCase
     private let observeSearchHistoryUseCase: ObserveSearchHistoryUseCase
     private let addSearchHistoryUseCase: AddSearchHistoryUseCase
     private let clearSearchHistoryUseCase: ClearSearchHistoryUseCase
@@ -35,7 +34,6 @@ final class ModelSearchViewModel: ObservableObject {
         self.getModelsUseCase = KoinHelper.shared.getModelsUseCase()
         self.getRecommendationsUseCase = KoinHelper.shared.getRecommendationsUseCase()
         self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
-        self.setNsfwFilterUseCase = KoinHelper.shared.getSetNsfwFilterUseCase()
         self.observeSearchHistoryUseCase = KoinHelper.shared.getObserveSearchHistoryUseCase()
         self.addSearchHistoryUseCase = KoinHelper.shared.getAddSearchHistoryUseCase()
         self.clearSearchHistoryUseCase = KoinHelper.shared.getClearSearchHistoryUseCase()
@@ -58,21 +56,16 @@ final class ModelSearchViewModel: ObservableObject {
     func observeNsfwFilter() async {
         let flow = SkieSwiftFlow<NsfwFilterLevel>(observeNsfwFilterUseCase.invoke())
         for await value in flow {
+            let prev = nsfwFilterLevel
             nsfwFilterLevel = value
+            if prev != value {
+                loadTask?.cancel()
+                models = []
+                nextCursor = nil
+                hasMore = true
+                loadModels()
+            }
         }
-    }
-
-    func onNsfwFilterToggle() {
-        let newLevel: NsfwFilterLevel = nsfwFilterLevel == .off ? .all : .off
-        nsfwFilterLevel = newLevel
-        Task {
-            try? await setNsfwFilterUseCase.invoke(level: newLevel)
-        }
-        loadTask?.cancel()
-        models = []
-        nextCursor = nil
-        hasMore = true
-        loadModels()
     }
 
     func observeSearchHistory() async {
