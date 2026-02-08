@@ -1,20 +1,15 @@
 import SwiftUI
 import Shared
 
-private struct ScrollOffsetPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
-
 struct ModelSearchScreen: View {
     @StateObject private var viewModel = ModelSearchViewModel()
     @FocusState private var isSearchFocused: Bool
     @State private var showHistory: Bool = false
     @State private var headerVisible: Bool = true
     @State private var headerHeight: CGFloat = 0
-    @State private var lastScrollOffset: CGFloat = 0
+    @State private var previousDragY: CGFloat = 0
+    @State private var accumulatedDelta: CGFloat = 0
+    @State private var isDraggingDown: Bool = false
 
     private let columns = [
         GridItem(.flexible(), spacing: Spacing.sm),
@@ -96,9 +91,9 @@ struct ModelSearchScreen: View {
         .onPreferenceChange(HeaderHeightPreferenceKey.self) { height in
             headerHeight = height
         }
+        .offset(y: headerVisible ? 0 : -headerHeight)
         .frame(height: headerVisible ? nil : 0, alignment: .top)
         .clipped()
-        .animation(MotionAnimation.fast, value: headerVisible)
     }
 
     private var searchBar: some View {
@@ -185,53 +180,67 @@ struct ModelSearchScreen: View {
 
     private var modelGrid: some View {
         ScrollView {
-            GeometryReader { geo in
-                Color.clear.preference(
-                    key: ScrollOffsetPreferenceKey.self,
-                    value: geo.frame(in: .named("scroll")).minY
-                )
-            }
-            .frame(height: 0)
+            VStack(spacing: 0) {
+                if !viewModel.recommendations.isEmpty {
+                    recommendationSections
+                }
 
-            if !viewModel.recommendations.isEmpty {
-                recommendationSections
-            }
-
-            LazyVGrid(columns: columns, spacing: Spacing.sm) {
-                ForEach(Array(viewModel.models.enumerated()), id: \.element.id) { index, model in
-                    NavigationLink(value: model.id) {
-                        ModelCardView(model: model)
-                    }
-                    .buttonStyle(.plain)
-                    .transition(.opacity.combined(with: .offset(y: 20)))
-                    .onAppear {
-                        if index == viewModel.models.count - 3 {
-                            viewModel.loadMore()
+                LazyVGrid(columns: columns, spacing: Spacing.sm) {
+                    ForEach(Array(viewModel.models.enumerated()), id: \.element.id) { index, model in
+                        NavigationLink(value: model.id) {
+                            ModelCardView(model: model)
+                        }
+                        .buttonStyle(.plain)
+                        .transition(.opacity.combined(with: .offset(y: 20)))
+                        .onAppear {
+                            if index == viewModel.models.count - 3 {
+                                viewModel.loadMore()
+                            }
                         }
                     }
                 }
-            }
-            .padding(.horizontal, Spacing.md)
+                .padding(.horizontal, Spacing.md)
 
-            if viewModel.isLoadingMore {
-                ProgressView()
-                    .transition(.opacity)
-                    .padding()
-            }
-        }
-        .coordinateSpace(name: "scroll")
-        .onPreferenceChange(ScrollOffsetPreferenceKey.self) { offset in
-            let delta = offset - lastScrollOffset
-            if abs(delta) > 2 {
-                let scrollingDown = delta < 0
-                if scrollingDown && headerVisible {
-                    headerVisible = false
-                } else if !scrollingDown && !headerVisible {
-                    headerVisible = true
+                if viewModel.isLoadingMore {
+                    ProgressView()
+                        .transition(.opacity)
+                        .padding()
                 }
             }
-            lastScrollOffset = offset
         }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 5)
+                .onChanged { value in
+                    let currentY = value.translation.height
+                    let delta = currentY - previousDragY
+                    previousDragY = currentY
+
+                    guard abs(delta) > 0.5 else { return }
+
+                    // delta > 0 → finger moves down → scroll up → show header
+                    // delta < 0 → finger moves up → scroll down → hide header
+                    let draggingDown = delta < 0
+
+                    if draggingDown != isDraggingDown {
+                        accumulatedDelta = 0
+                        isDraggingDown = draggingDown
+                    }
+
+                    accumulatedDelta += abs(delta)
+
+                    if draggingDown && headerVisible && accumulatedDelta > 20 {
+                        withAnimation(MotionAnimation.fast) { headerVisible = false }
+                        accumulatedDelta = 0
+                    } else if !draggingDown && !headerVisible && accumulatedDelta > 20 {
+                        withAnimation(MotionAnimation.fast) { headerVisible = true }
+                        accumulatedDelta = 0
+                    }
+                }
+                .onEnded { _ in
+                    previousDragY = 0
+                    accumulatedDelta = 0
+                }
+        )
         .animation(MotionAnimation.standard, value: viewModel.isLoadingMore)
         .refreshable {
             viewModel.refresh()
