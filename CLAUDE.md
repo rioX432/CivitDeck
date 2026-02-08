@@ -19,3 +19,12 @@ This applies to:
 - Diagnosing bugs and identifying root causes
 - Designing architecture and component structure
 - Any decision where you are not 100% certain
+
+## Language
+
+All project content must be written in English. This includes:
+- Code (comments, variable names, strings)
+- Git commit messages
+- Pull request titles and descriptions
+- GitHub Issues
+- Documentation
