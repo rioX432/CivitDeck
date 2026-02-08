@@ -16,7 +16,6 @@ import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
-import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,7 +49,6 @@ class ModelSearchViewModel(
     private val getModelsUseCase: GetModelsUseCase,
     private val getRecommendationsUseCase: GetRecommendationsUseCase,
     private val observeNsfwFilterUseCase: ObserveNsfwFilterUseCase,
-    private val setNsfwFilterUseCase: SetNsfwFilterUseCase,
     observeSearchHistoryUseCase: ObserveSearchHistoryUseCase,
     private val addSearchHistoryUseCase: AddSearchHistoryUseCase,
     private val clearSearchHistoryUseCase: ClearSearchHistoryUseCase,
@@ -74,21 +72,18 @@ class ModelSearchViewModel(
     private fun observeNsfwFilter() {
         viewModelScope.launch {
             observeNsfwFilterUseCase().collect { level ->
+                val prev = _uiState.value.nsfwFilterLevel
                 _uiState.update { it.copy(nsfwFilterLevel = level) }
+                if (prev != level) {
+                    loadJob?.cancel()
+                    _uiState.update {
+                        it.copy(nextCursor = null, models = emptyList(), hasMore = true)
+                    }
+                    loadModels()
+                    loadRecommendations()
+                }
             }
         }
-    }
-
-    fun onNsfwFilterChanged(level: NsfwFilterLevel) {
-        viewModelScope.launch {
-            setNsfwFilterUseCase(level)
-        }
-        loadJob?.cancel()
-        _uiState.update {
-            it.copy(nextCursor = null, models = emptyList(), hasMore = true)
-        }
-        loadModels()
-        loadRecommendations()
     }
 
     private fun loadRecommendations() {

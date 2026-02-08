@@ -33,6 +33,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,7 +41,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -63,7 +63,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
-import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
@@ -79,6 +78,7 @@ fun ModelSearchScreen(
     viewModel: ModelSearchViewModel,
     onModelClick: (Long, String?) -> Unit = { _, _ -> },
     onSavedPromptsClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
@@ -99,9 +99,8 @@ fun ModelSearchScreen(
     Scaffold(
         topBar = {
             SearchTopBar(
-                nsfwFilterLevel = uiState.nsfwFilterLevel,
-                onNsfwToggle = viewModel::onNsfwFilterChanged,
                 onSavedPromptsClick = onSavedPromptsClick,
+                onSettingsClick = onSettingsClick,
             )
         },
     ) { padding ->
@@ -145,9 +144,8 @@ fun ModelSearchScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchTopBar(
-    nsfwFilterLevel: NsfwFilterLevel,
-    onNsfwToggle: (NsfwFilterLevel) -> Unit,
     onSavedPromptsClick: () -> Unit,
+    onSettingsClick: () -> Unit,
 ) {
     TopAppBar(
         title = { Text("CivitDeck") },
@@ -155,17 +153,9 @@ private fun SearchTopBar(
             IconButton(onClick = onSavedPromptsClick) {
                 Icon(Icons.Outlined.BookmarkBorder, contentDescription = "Saved Prompts")
             }
-            NsfwToggle(
-                nsfwFilterLevel = nsfwFilterLevel,
-                onToggle = {
-                    val newLevel = if (nsfwFilterLevel == NsfwFilterLevel.Off) {
-                        NsfwFilterLevel.All
-                    } else {
-                        NsfwFilterLevel.Off
-                    }
-                    onNsfwToggle(newLevel)
-                },
-            )
+            IconButton(onClick = onSettingsClick) {
+                Icon(Icons.Outlined.Settings, contentDescription = "Settings")
+            }
         },
     )
 }
@@ -189,24 +179,6 @@ private fun SearchFilters(
             onSortSelected = onSortSelected,
             onPeriodSelected = onPeriodSelected,
             onFreshFindToggled = onFreshFindToggled,
-        )
-    }
-}
-
-@Composable
-private fun NsfwToggle(
-    nsfwFilterLevel: NsfwFilterLevel,
-    onToggle: () -> Unit,
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
-        modifier = Modifier.padding(end = Spacing.sm),
-    ) {
-        Text("NSFW", style = MaterialTheme.typography.labelSmall)
-        Switch(
-            checked = nsfwFilterLevel != NsfwFilterLevel.Off,
-            onCheckedChange = { onToggle() },
         )
     }
 }

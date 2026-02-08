@@ -51,14 +51,10 @@ struct ModelSearchScreen: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 4) {
-                        Text("NSFW")
-                            .font(.civitLabelSmall)
-                        Toggle("", isOn: Binding(
-                            get: { viewModel.nsfwFilterLevel != .off },
-                            set: { _ in viewModel.onNsfwFilterToggle() }
-                        ))
-                        .labelsHidden()
+                    NavigationLink {
+                        SettingsScreen()
+                    } label: {
+                        Image(systemName: "gearshape")
                     }
                 }
             }

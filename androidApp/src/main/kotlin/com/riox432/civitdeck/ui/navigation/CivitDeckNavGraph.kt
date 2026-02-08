@@ -41,6 +41,8 @@ import com.riox432.civitdeck.ui.prompts.SavedPromptsScreen
 import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchScreen
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
+import com.riox432.civitdeck.ui.settings.SettingsScreen
+import com.riox432.civitdeck.ui.settings.SettingsViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -55,6 +57,8 @@ data class ImageGalleryRoute(val modelVersionId: Long)
 data class CreatorRoute(val username: String)
 
 data object SavedPromptsRoute
+
+data object SettingsRoute
 
 private enum class Tab { Search, Favorites }
 
@@ -156,6 +160,7 @@ private fun CivitDeckNavDisplay(backStack: MutableList<Any>) {
                         backStack.add(DetailRoute(modelId, thumbnailUrl))
                     },
                     onSavedPromptsClick = { backStack.add(SavedPromptsRoute) },
+                    onSettingsClick = { backStack.add(SettingsRoute) },
                 )
             }
             entry<FavoritesRoute> {
@@ -174,6 +179,13 @@ private fun CivitDeckNavDisplay(backStack: MutableList<Any>) {
             entry<SavedPromptsRoute> {
                 val viewModel: SavedPromptsViewModel = koinViewModel()
                 SavedPromptsScreen(
+                    viewModel = viewModel,
+                    onBack = { backStack.removeLastOrNull() },
+                )
+            }
+            entry<SettingsRoute> {
+                val viewModel: SettingsViewModel = koinViewModel()
+                SettingsScreen(
                     viewModel = viewModel,
                     onBack = { backStack.removeLastOrNull() },
                 )
