@@ -8,10 +8,16 @@ final class SavedPromptsViewModel: ObservableObject {
     private let observeSavedPromptsUseCase: ObserveSavedPromptsUseCase
     private let deleteSavedPromptUseCase: DeleteSavedPromptUseCase
 
+    private var observeTask: Task<Void, Never>?
+
     init() {
         self.observeSavedPromptsUseCase = KoinHelper.shared.getObserveSavedPromptsUseCase()
         self.deleteSavedPromptUseCase = KoinHelper.shared.getDeleteSavedPromptUseCase()
-        Task { await observe() }
+        observeTask = Task { await observe() }
+    }
+
+    deinit {
+        observeTask?.cancel()
     }
 
     func observe() async {

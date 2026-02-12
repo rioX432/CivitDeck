@@ -24,6 +24,7 @@ class LocalCacheDataSource(
                 cachedAt = currentTimeMillis(),
             ),
         )
+        dao.deleteExpired(currentTimeMillis() - DEFAULT_TTL_MILLIS)
     }
 
     suspend fun clearExpired() {

@@ -116,7 +116,7 @@ private fun CreatorContent(
         }
         else -> {
             PullToRefreshBox(
-                isRefreshing = false,
+                isRefreshing = uiState.isRefreshing,
                 onRefresh = onRefresh,
                 modifier = Modifier
                     .fillMaxSize()

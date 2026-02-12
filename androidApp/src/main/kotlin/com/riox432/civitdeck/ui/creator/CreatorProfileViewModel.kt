@@ -17,6 +17,7 @@ data class CreatorProfileUiState(
     val models: List<Model> = emptyList(),
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
+    val isRefreshing: Boolean = false,
     val error: String? = null,
     val nextCursor: String? = null,
     val hasMore: Boolean = true,
@@ -45,14 +46,15 @@ class CreatorProfileViewModel(
     fun refresh() {
         loadJob?.cancel()
         _uiState.update { it.copy(nextCursor = null, hasMore = true) }
-        loadModels()
+        loadModels(isRefresh = true)
     }
 
-    private fun loadModels(isLoadMore: Boolean = false) {
+    private fun loadModels(isLoadMore: Boolean = false, isRefresh: Boolean = false) {
         loadJob = viewModelScope.launch {
             _uiState.update {
                 when {
                     isLoadMore -> it.copy(isLoadingMore = true)
+                    isRefresh -> it.copy(isRefreshing = true)
                     else -> it.copy(isLoading = true)
                 }
             }
@@ -68,6 +70,7 @@ class CreatorProfileViewModel(
                         models = if (isLoadMore) it.models + result.items else result.items,
                         isLoading = false,
                         isLoadingMore = false,
+                        isRefreshing = false,
                         error = null,
                         nextCursor = result.metadata.nextCursor,
                         hasMore = result.metadata.nextCursor != null,
@@ -80,6 +83,7 @@ class CreatorProfileViewModel(
                     it.copy(
                         isLoading = false,
                         isLoadingMore = false,
+                        isRefreshing = false,
                         error = e.message ?: "Unknown error",
                     )
                 }

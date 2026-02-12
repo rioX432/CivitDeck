@@ -186,7 +186,7 @@ private fun FavoriteCardInfo(model: FavoriteModelSummary) {
             modifier = Modifier
                 .background(
                     color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(50),
+                    shape = RoundedCornerShape(CornerRadius.chip),
                 )
                 .padding(horizontal = 6.dp, vertical = 2.dp),
         )

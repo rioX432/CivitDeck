@@ -44,21 +44,6 @@ struct CarouselViewer: View {
                     }
                     .padding(16)
                     Spacer()
-                    if startIndex < images.count, images[startIndex].meta != nil {
-                        HStack {
-                            Spacer()
-                            Button {
-                                // Show metadata
-                            } label: {
-                                SwiftUI.Image(systemName: "info.circle")
-                                    .font(.title3)
-                                    .foregroundColor(.white)
-                                    .padding(10)
-                                    .background(.ultraThinMaterial, in: Circle())
-                            }
-                        }
-                        .padding(16)
-                    }
                 }
             }
         }

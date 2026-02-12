@@ -23,7 +23,6 @@ import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
-import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import org.koin.mp.KoinPlatform.getKoin
 
 @Suppress("TooManyFunctions")
@@ -51,5 +50,4 @@ object KoinHelper {
     fun getRemoveExcludedTagUseCase(): RemoveExcludedTagUseCase = getKoin().get()
     fun getHiddenModelIdsUseCase(): GetHiddenModelIdsUseCase = getKoin().get()
     fun getHideModelUseCase(): HideModelUseCase = getKoin().get()
-    fun getUnhideModelUseCase(): UnhideModelUseCase = getKoin().get()
 }
