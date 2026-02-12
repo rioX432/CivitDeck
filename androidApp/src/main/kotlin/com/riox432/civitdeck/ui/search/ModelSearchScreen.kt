@@ -8,16 +8,21 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -31,10 +36,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -211,6 +220,7 @@ private fun SearchScreenBody(
             gridState = gridState,
             onRefresh = viewModel::refresh,
             onModelClick = onModelClick,
+            onHideModel = viewModel::onHideModel,
             topPadding = topPadding,
             bottomPadding = padding.calculateBottomPadding(),
         )
@@ -256,6 +266,8 @@ private fun CollapsibleHeader(
             onSortSelected = viewModel::onSortSelected,
             onPeriodSelected = viewModel::onPeriodSelected,
             onFreshFindToggled = viewModel::onFreshFindToggled,
+            onAddExcludedTag = viewModel::onAddExcludedTag,
+            onRemoveExcludedTag = viewModel::onRemoveExcludedTag,
         )
     }
 }
@@ -287,6 +299,8 @@ private fun SearchFilters(
     onSortSelected: (SortOrder) -> Unit,
     onPeriodSelected: (TimePeriod) -> Unit,
     onFreshFindToggled: () -> Unit,
+    onAddExcludedTag: (String) -> Unit,
+    onRemoveExcludedTag: (String) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         TypeFilterChips(selectedType = uiState.selectedType, onTypeSelected = onTypeSelected)
@@ -298,6 +312,11 @@ private fun SearchFilters(
             onSortSelected = onSortSelected,
             onPeriodSelected = onPeriodSelected,
             onFreshFindToggled = onFreshFindToggled,
+        )
+        ExcludedTagsSection(
+            excludedTags = uiState.excludedTags,
+            onAddTag = onAddExcludedTag,
+            onRemoveTag = onRemoveExcludedTag,
         )
     }
 }
@@ -505,6 +524,98 @@ private fun SortAndPeriodFilters(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ExcludedTagsSection(
+    excludedTags: List<String>,
+    onAddTag: (String) -> Unit,
+    onRemoveTag: (String) -> Unit,
+) {
+    var tagInput by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Column(
+        modifier = Modifier.padding(horizontal = Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            OutlinedTextField(
+                value = tagInput,
+                onValueChange = { tagInput = it },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Exclude tag...") },
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodySmall,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        if (tagInput.isNotBlank()) {
+                            onAddTag(tagInput)
+                            tagInput = ""
+                            keyboardController?.hide()
+                        }
+                    },
+                ),
+            )
+            IconButton(
+                onClick = {
+                    if (tagInput.isNotBlank()) {
+                        onAddTag(tagInput)
+                        tagInput = ""
+                        keyboardController?.hide()
+                    }
+                },
+                modifier = Modifier.size(36.dp),
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add tag")
+            }
+        }
+        if (excludedTags.isNotEmpty()) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+                verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+            ) {
+                excludedTags.forEach { tag ->
+                    ExcludedTagChip(tag = tag, onRemove = { onRemoveTag(tag) })
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExcludedTagChip(tag: String, onRemove: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .background(
+                MaterialTheme.colorScheme.errorContainer,
+                RoundedCornerShape(CornerRadius.chip),
+            )
+            .padding(start = Spacing.sm, end = Spacing.xs)
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+    ) {
+        Text(
+            text = tag,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onErrorContainer,
+        )
+        Icon(
+            imageVector = Icons.Default.Close,
+            contentDescription = "Remove $tag",
+            modifier = Modifier
+                .size(14.dp)
+                .clickable(onClick = onRemove),
+            tint = MaterialTheme.colorScheme.onErrorContainer,
+        )
+    }
+}
+
 @Composable
 private fun FilterChipItem(
     label: String,
@@ -557,6 +668,7 @@ private fun ModelSearchContent(
     gridState: LazyGridState,
     onRefresh: () -> Unit,
     onModelClick: (Long, String?, String) -> Unit,
+    onHideModel: (Long, String) -> Unit,
     topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
 ) {
@@ -602,6 +714,7 @@ private fun ModelSearchContent(
                         gridState = gridState,
                         isLoadingMore = uiState.isLoadingMore,
                         onModelClick = onModelClick,
+                        onHideModel = onHideModel,
                         topPadding = topPadding,
                         bottomPadding = bottomPadding,
                     )
@@ -611,6 +724,7 @@ private fun ModelSearchContent(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ModelGrid(
     models: List<Model>,
@@ -618,6 +732,7 @@ private fun ModelGrid(
     gridState: LazyGridState,
     isLoadingMore: Boolean,
     onModelClick: (Long, String?, String) -> Unit,
+    onHideModel: (Long, String) -> Unit,
     topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
 ) {
@@ -648,9 +763,10 @@ private fun ModelGrid(
         items(items = models, key = { it.id }) { model ->
             val thumbnailUrl = model.modelVersions
                 .firstOrNull()?.images?.firstOrNull()?.url
-            ModelCard(
+            ModelCardWithContextMenu(
                 model = model,
                 onClick = { onModelClick(model.id, thumbnailUrl, "") },
+                onHide = { onHideModel(model.id, model.name) },
                 modifier = Modifier.animateItem(),
             )
         }
@@ -667,6 +783,40 @@ private fun ModelGrid(
                     CircularProgressIndicator()
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun ModelCardWithContextMenu(
+    model: Model,
+    onClick: () -> Unit,
+    onHide: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier) {
+        ModelCard(
+            model = model,
+            onClick = onClick,
+            modifier = Modifier.combinedClickable(
+                onClick = onClick,
+                onLongClick = { showMenu = true },
+            ),
+        )
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text("Hide model") },
+                onClick = {
+                    showMenu = false
+                    onHide()
+                },
+            )
         }
     }
 }

@@ -17,6 +17,7 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var searchHistory: [String] = []
     @Published var recommendations: [RecommendationSection] = []
     @Published var isFreshFindEnabled: Bool = false
+    @Published var excludedTags: [String] = []
 
     private let getModelsUseCase: GetModelsUseCase
     private let getRecommendationsUseCase: GetRecommendationsUseCase
@@ -25,8 +26,14 @@ final class ModelSearchViewModel: ObservableObject {
     private let addSearchHistoryUseCase: AddSearchHistoryUseCase
     private let clearSearchHistoryUseCase: ClearSearchHistoryUseCase
     private let getViewedModelIdsUseCase: GetViewedModelIdsUseCase
+    private let getExcludedTagsUseCase: GetExcludedTagsUseCase
+    private let addExcludedTagUseCase: AddExcludedTagUseCase
+    private let removeExcludedTagUseCase: RemoveExcludedTagUseCase
+    private let getHiddenModelIdsUseCase: GetHiddenModelIdsUseCase
+    private let hideModelUseCase: HideModelUseCase
     private var nextCursor: String? = nil
     private var loadTask: Task<Void, Never>? = nil
+    private var hiddenModelIds: Set<KotlinLong> = []
 
     private let pageSize: Int32 = 20
 
@@ -38,6 +45,12 @@ final class ModelSearchViewModel: ObservableObject {
         self.addSearchHistoryUseCase = KoinHelper.shared.getAddSearchHistoryUseCase()
         self.clearSearchHistoryUseCase = KoinHelper.shared.getClearSearchHistoryUseCase()
         self.getViewedModelIdsUseCase = KoinHelper.shared.getViewedModelIdsUseCase()
+        self.getExcludedTagsUseCase = KoinHelper.shared.getExcludedTagsUseCase()
+        self.addExcludedTagUseCase = KoinHelper.shared.getAddExcludedTagUseCase()
+        self.removeExcludedTagUseCase = KoinHelper.shared.getRemoveExcludedTagUseCase()
+        self.getHiddenModelIdsUseCase = KoinHelper.shared.getHiddenModelIdsUseCase()
+        self.hideModelUseCase = KoinHelper.shared.getHideModelUseCase()
+        loadExcludedTags()
         loadModels()
         loadRecommendations()
     }
@@ -144,6 +157,47 @@ final class ModelSearchViewModel: ObservableObject {
         loadModels()
     }
 
+    func addExcludedTag(_ tag: String) {
+        let trimmed = tag.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !trimmed.isEmpty else { return }
+        Task {
+            try? await addExcludedTagUseCase.invoke(tag: trimmed)
+            loadExcludedTags()
+            reloadModels()
+        }
+    }
+
+    func removeExcludedTag(_ tag: String) {
+        Task {
+            try? await removeExcludedTagUseCase.invoke(tag: tag)
+            loadExcludedTags()
+            reloadModels()
+        }
+    }
+
+    func hideModel(_ modelId: Int64, name: String) {
+        Task {
+            try? await hideModelUseCase.invoke(modelId: modelId, modelName: name)
+            hiddenModelIds = try await getHiddenModelIdsUseCase.invoke()
+            models.removeAll { $0.id == modelId }
+        }
+    }
+
+    private func loadExcludedTags() {
+        Task {
+            excludedTags = (try? await getExcludedTagsUseCase.invoke()) ?? []
+            hiddenModelIds = (try? await getHiddenModelIdsUseCase.invoke()) ?? []
+        }
+    }
+
+    private func reloadModels() {
+        loadTask?.cancel()
+        models = []
+        nextCursor = nil
+        hasMore = true
+        loadModels()
+    }
+
     func loadMore() {
         guard !isLoading, !isLoadingMore, hasMore else { return }
         loadModels(isLoadMore: true)
@@ -187,6 +241,17 @@ final class ModelSearchViewModel: ObservableObject {
                 if isFreshFindEnabled {
                     let viewedIds = try await getViewedModelIdsUseCase.invoke()
                     newModels = newModels.filter { !viewedIds.contains(KotlinLong(value: $0.id)) }
+                }
+                if !excludedTags.isEmpty {
+                    let excluded = Set(excludedTags)
+                    newModels = newModels.filter { model in
+                        model.tags.allSatisfy { tag in
+                            !excluded.contains((tag as? String)?.lowercased() ?? "")
+                        }
+                    }
+                }
+                if !hiddenModelIds.isEmpty {
+                    newModels = newModels.filter { !hiddenModelIds.contains(KotlinLong(value: $0.id)) }
                 }
                 if isLoadMore {
                     models.append(contentsOf: newModels)
