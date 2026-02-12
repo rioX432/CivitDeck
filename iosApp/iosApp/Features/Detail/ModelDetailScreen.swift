@@ -71,8 +71,13 @@ struct ModelDetailScreen: View {
                     set: { selectedCarouselIndex = $0 }
                 )) {
                     ForEach(Array(images.enumerated()), id: \.offset) { i, image in
-                        ZoomableImageView(url: image.url)
-                            .tag(i)
+                        ZoomableImageView(
+                            url: image.url,
+                            pageIndex: i,
+                            currentPageIndex: startIndex
+                        )
+                        .ignoresSafeArea()
+                        .tag(i)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))
