@@ -4,17 +4,37 @@ import Shared
 typealias CivitSortOrder = Shared.SortOrder
 typealias CivitImage = Shared.Image
 
+enum AspectRatioFilter: String, CaseIterable {
+    case portrait = "Portrait"
+    case landscape = "Landscape"
+    case square = "Square"
+}
+
 @MainActor
 final class ImageGalleryViewModel: ObservableObject {
-    @Published var images: [CivitImage] = []
+    @Published var allImages: [CivitImage] = []
     @Published var selectedSort: CivitSortOrder = .highestRated
     @Published var selectedPeriod: TimePeriod = .allTime
     @Published var showNsfw: Bool = false
+    @Published var selectedAspectRatio: AspectRatioFilter? = nil
     @Published var isLoading: Bool = false
     @Published var isLoadingMore: Bool = false
     @Published var error: String? = nil
     @Published var hasMore: Bool = true
     @Published var selectedImageIndex: Int? = nil
+
+    var images: [CivitImage] {
+        guard let filter = selectedAspectRatio else { return allImages }
+        return allImages.filter { image in
+            guard image.width > 0, image.height > 0 else { return true }
+            let ratio = CGFloat(image.width) / CGFloat(image.height)
+            switch filter {
+            case .portrait: return ratio < 0.83
+            case .landscape: return ratio > 1.2
+            case .square: return ratio >= 0.83 && ratio <= 1.2
+            }
+        }
+    }
 
     private let modelVersionId: Int64
     private let getImagesUseCase: GetImagesUseCase
@@ -35,7 +55,7 @@ final class ImageGalleryViewModel: ObservableObject {
     func onSortSelected(_ sort: CivitSortOrder) {
         loadTask?.cancel()
         selectedSort = sort
-        images = []
+        allImages = []
         nextCursor = nil
         hasMore = true
         loadImages()
@@ -44,7 +64,7 @@ final class ImageGalleryViewModel: ObservableObject {
     func onPeriodSelected(_ period: TimePeriod) {
         loadTask?.cancel()
         selectedPeriod = period
-        images = []
+        allImages = []
         nextCursor = nil
         hasMore = true
         loadImages()
@@ -53,10 +73,14 @@ final class ImageGalleryViewModel: ObservableObject {
     func onNsfwToggle() {
         loadTask?.cancel()
         showNsfw.toggle()
-        images = []
+        allImages = []
         nextCursor = nil
         hasMore = true
         loadImages()
+    }
+
+    func onAspectRatioSelected(_ filter: AspectRatioFilter?) {
+        selectedAspectRatio = filter
     }
 
     func loadMore() {
@@ -124,9 +148,9 @@ final class ImageGalleryViewModel: ObservableObject {
 
                 let newImages = result.items.compactMap { $0 as? CivitImage }
                 if isLoadMore {
-                    images.append(contentsOf: newImages)
+                    allImages.append(contentsOf: newImages)
                 } else {
-                    images = newImages
+                    allImages = newImages
                 }
                 nextCursor = result.metadata.nextCursor
                 hasMore = result.metadata.nextCursor != nil

@@ -37,6 +37,7 @@ struct ImageGalleryScreen: View {
     private var filterBar: some View {
         VStack(spacing: Spacing.xs) {
             sortChips
+            aspectRatioChips
             periodAndNsfwRow
         }
         .padding(.horizontal, Spacing.md)
@@ -52,6 +53,27 @@ struct ImageGalleryScreen: View {
                         isSelected: viewModel.selectedSort == sort
                     ) {
                         viewModel.onSortSelected(sort)
+                    }
+                }
+            }
+        }
+    }
+
+    private var aspectRatioChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.sm) {
+                chipButton(
+                    label: "All",
+                    isSelected: viewModel.selectedAspectRatio == nil
+                ) {
+                    viewModel.onAspectRatioSelected(nil)
+                }
+                ForEach(AspectRatioFilter.allCases, id: \.self) { filter in
+                    chipButton(
+                        label: filter.rawValue,
+                        isSelected: viewModel.selectedAspectRatio == filter
+                    ) {
+                        viewModel.onAspectRatioSelected(filter)
                     }
                 }
             }
