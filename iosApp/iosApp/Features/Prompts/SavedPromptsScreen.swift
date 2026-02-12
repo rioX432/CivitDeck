@@ -19,10 +19,15 @@ struct SavedPromptsScreen: View {
     private var emptyState: some View {
         VStack(spacing: Spacing.sm) {
             SwiftUI.Image(systemName: "bookmark")
-                .font(.largeTitle)
+                .font(.system(size: 48))
                 .foregroundColor(.civitOnSurfaceVariant)
             Text("No saved prompts yet")
+                .font(.headline)
                 .foregroundColor(.civitOnSurfaceVariant)
+            Text("Save prompts from the image viewer's info panel\nto reference them later.")
+                .font(.caption)
+                .foregroundColor(.civitOnSurfaceVariant)
+                .multilineTextAlignment(.center)
         }
         .frame(maxHeight: .infinity)
     }
