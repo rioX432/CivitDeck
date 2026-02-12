@@ -11,6 +11,7 @@ struct ModelSearchScreen: View {
     @State private var accumulatedDelta: CGFloat = 0
     @State private var isDraggingDown: Bool = false
     @State private var excludeTagInput: String = ""
+    @State private var showFilterSheet: Bool = false
 
     private let columns = [
         GridItem(.flexible(), spacing: Spacing.sm),
@@ -73,14 +74,21 @@ struct ModelSearchScreen: View {
         }
     }
 
+    private var activeFilterCount: Int {
+        var count = 0
+        if viewModel.selectedType != nil { count += 1 }
+        if !viewModel.selectedBaseModels.isEmpty { count += 1 }
+        if viewModel.selectedSort != .mostDownloaded { count += 1 }
+        if viewModel.selectedPeriod != .allTime { count += 1 }
+        if viewModel.isFreshFindEnabled { count += 1 }
+        if !viewModel.excludedTags.isEmpty { count += 1 }
+        return count
+    }
+
     private var collapsibleHeader: some View {
         VStack(spacing: 0) {
-            searchBar
+            searchBarWithFilterButton
             searchHistoryDropdown
-            typeFilterChips
-            baseModelFilterChips
-            sortAndPeriodChips
-            excludedTagsSection
         }
         .background(
             GeometryReader { geo in
@@ -96,46 +104,101 @@ struct ModelSearchScreen: View {
         .offset(y: headerVisible ? 0 : -headerHeight)
         .frame(height: headerVisible ? nil : 0, alignment: .top)
         .clipped()
+        .sheet(isPresented: $showFilterSheet) {
+            filterSheet
+        }
     }
 
-    private var searchBar: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.civitOnSurfaceVariant)
-            TextField("Search models...", text: $viewModel.query)
-                .focused($isSearchFocused)
-                .submitLabel(.search)
-                .onSubmit {
-                    viewModel.onSearch()
-                    showHistory = false
+    private var searchBarWithFilterButton: some View {
+        HStack(spacing: Spacing.sm) {
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.civitOnSurfaceVariant)
+                TextField("Search models...", text: $viewModel.query)
+                    .focused($isSearchFocused)
+                    .submitLabel(.search)
+                    .onSubmit {
+                        viewModel.onSearch()
+                        showHistory = false
+                    }
+                    .onChange(of: viewModel.query) { newValue in
+                        showHistory = newValue.isEmpty
+                            && isSearchFocused
+                            && !viewModel.searchHistory.isEmpty
+                    }
+                    .onChange(of: isSearchFocused) { focused in
+                        showHistory = focused
+                            && viewModel.query.isEmpty
+                            && !viewModel.searchHistory.isEmpty
+                    }
+                if !viewModel.query.isEmpty {
+                    Button {
+                        viewModel.query = ""
+                        showHistory = isSearchFocused && !viewModel.searchHistory.isEmpty
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.civitOnSurfaceVariant)
+                    }
                 }
-                .onChange(of: viewModel.query) { newValue in
-                    showHistory = newValue.isEmpty
-                        && isSearchFocused
-                        && !viewModel.searchHistory.isEmpty
-                }
-                .onChange(of: isSearchFocused) { focused in
-                    showHistory = focused
-                        && viewModel.query.isEmpty
-                        && !viewModel.searchHistory.isEmpty
-                }
-            if !viewModel.query.isEmpty {
-                Button {
-                    viewModel.query = ""
-                    showHistory = isSearchFocused && !viewModel.searchHistory.isEmpty
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.civitOnSurfaceVariant)
+            }
+            .padding(10)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.searchBar)
+                    .stroke(Color.civitOutlineVariant, lineWidth: 1)
+            )
+
+            Button {
+                showFilterSheet = true
+            } label: {
+                ZStack(alignment: .topTrailing) {
+                    Image(systemName: "line.3.horizontal.decrease")
+                        .font(.title3)
+                        .foregroundColor(.civitOnSurface)
+                    if activeFilterCount > 0 {
+                        Text("\(activeFilterCount)")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 16, height: 16)
+                            .background(Color.civitPrimary)
+                            .clipShape(Circle())
+                            .offset(x: 4, y: -4)
+                    }
                 }
             }
         }
-        .padding(10)
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.searchBar)
-                .stroke(Color.civitOutlineVariant, lineWidth: 1)
-        )
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.sm)
+    }
+
+    private var filterSheet: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: Spacing.sm) {
+                    typeFilterChips
+                    baseModelFilterChips
+                    sortAndPeriodChips
+                    excludedTagsSection
+                }
+                .padding(.vertical, Spacing.sm)
+            }
+            .navigationTitle("Filters")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Reset") {
+                        viewModel.resetFilters()
+                        showFilterSheet = false
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        showFilterSheet = false
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
     }
 
     @ViewBuilder

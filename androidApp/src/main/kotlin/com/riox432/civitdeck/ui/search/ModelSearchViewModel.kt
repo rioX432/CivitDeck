@@ -140,6 +140,23 @@ class ModelSearchViewModel(
         viewModelScope.launch { clearSearchHistoryUseCase() }
     }
 
+    fun resetFilters() {
+        loadJob?.cancel()
+        _uiState.update {
+            it.copy(
+                selectedType = null,
+                selectedSort = SortOrder.MostDownloaded,
+                selectedPeriod = TimePeriod.AllTime,
+                selectedBaseModels = emptySet(),
+                isFreshFindEnabled = false,
+                nextCursor = null,
+                models = emptyList(),
+                hasMore = true,
+            )
+        }
+        loadModels()
+    }
+
     fun onTypeSelected(type: ModelType?) {
         loadJob?.cancel()
         _uiState.update {

@@ -40,7 +40,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -48,11 +51,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -241,6 +247,9 @@ private fun CollapsibleHeader(
     searchHistory: List<String>,
     viewModel: ModelSearchViewModel,
 ) {
+    var showFilterSheet by remember { mutableStateOf(false) }
+    val activeFilterCount = countActiveFilters(uiState)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -251,25 +260,36 @@ private fun CollapsibleHeader(
             }
             .background(MaterialTheme.colorScheme.surface),
     ) {
-        SearchBarWithHistory(
+        SearchBarWithFilterButton(
             query = uiState.query,
             onQueryChange = viewModel::onQueryChange,
             onSearch = viewModel::onSearch,
             searchHistory = searchHistory,
             onHistoryItemClick = viewModel::onHistoryItemClick,
             onClearHistory = viewModel::clearSearchHistory,
-        )
-        SearchFilters(
-            uiState = uiState,
-            onTypeSelected = viewModel::onTypeSelected,
-            onBaseModelToggled = viewModel::onBaseModelToggled,
-            onSortSelected = viewModel::onSortSelected,
-            onPeriodSelected = viewModel::onPeriodSelected,
-            onFreshFindToggled = viewModel::onFreshFindToggled,
-            onAddExcludedTag = viewModel::onAddExcludedTag,
-            onRemoveExcludedTag = viewModel::onRemoveExcludedTag,
+            activeFilterCount = activeFilterCount,
+            onFilterClick = { showFilterSheet = true },
         )
     }
+
+    if (showFilterSheet) {
+        FilterBottomSheet(
+            uiState = uiState,
+            viewModel = viewModel,
+            onDismiss = { showFilterSheet = false },
+        )
+    }
+}
+
+private fun countActiveFilters(uiState: ModelSearchUiState): Int {
+    var count = 0
+    if (uiState.selectedType != null) count++
+    if (uiState.selectedBaseModels.isNotEmpty()) count++
+    if (uiState.selectedSort != SortOrder.MostDownloaded) count++
+    if (uiState.selectedPeriod != TimePeriod.AllTime) count++
+    if (uiState.isFreshFindEnabled) count++
+    if (uiState.excludedTags.isNotEmpty()) count++
+    return count
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -292,81 +312,46 @@ private fun SearchTopBar(
 }
 
 @Composable
-private fun SearchFilters(
-    uiState: ModelSearchUiState,
-    onTypeSelected: (ModelType?) -> Unit,
-    onBaseModelToggled: (BaseModel) -> Unit,
-    onSortSelected: (SortOrder) -> Unit,
-    onPeriodSelected: (TimePeriod) -> Unit,
-    onFreshFindToggled: () -> Unit,
-    onAddExcludedTag: (String) -> Unit,
-    onRemoveExcludedTag: (String) -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        TypeFilterChips(selectedType = uiState.selectedType, onTypeSelected = onTypeSelected)
-        BaseModelFilterChips(selectedBaseModels = uiState.selectedBaseModels, onBaseModelToggled = onBaseModelToggled)
-        SortAndPeriodFilters(
-            selectedSort = uiState.selectedSort,
-            selectedPeriod = uiState.selectedPeriod,
-            isFreshFindEnabled = uiState.isFreshFindEnabled,
-            onSortSelected = onSortSelected,
-            onPeriodSelected = onPeriodSelected,
-            onFreshFindToggled = onFreshFindToggled,
-        )
-        ExcludedTagsSection(
-            excludedTags = uiState.excludedTags,
-            onAddTag = onAddExcludedTag,
-            onRemoveTag = onRemoveExcludedTag,
-        )
-    }
-}
-
-@Composable
-private fun SearchBarWithHistory(
+private fun SearchBarWithFilterButton(
     query: String,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
     searchHistory: List<String>,
     onHistoryItemClick: (String) -> Unit,
     onClearHistory: () -> Unit,
+    activeFilterCount: Int,
+    onFilterClick: () -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     var showHistory by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
-        OutlinedTextField(
-            value = query,
-            onValueChange = {
-                onQueryChange(it)
-                showHistory = it.isEmpty() && searchHistory.isNotEmpty()
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .onFocusChanged { focusState ->
-                    showHistory = focusState.isFocused &&
-                        query.isEmpty() && searchHistory.isNotEmpty()
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+        ) {
+            SearchTextField(
+                query = query,
+                onQueryChange = {
+                    onQueryChange(it)
+                    showHistory = it.isEmpty() && searchHistory.isNotEmpty()
                 },
-            placeholder = { Text("Search models...") },
-            trailingIcon = {
-                if (query.isNotEmpty()) {
-                    IconButton(onClick = {
-                        onQueryChange("")
-                        showHistory = searchHistory.isNotEmpty()
-                    }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Clear")
-                    }
-                }
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(
                 onSearch = {
                     onSearch()
                     keyboardController?.hide()
                     showHistory = false
                 },
-            ),
-        )
+                onFocusChanged = { focused ->
+                    showHistory = focused && query.isEmpty() && searchHistory.isNotEmpty()
+                },
+                onClear = {
+                    onQueryChange("")
+                    showHistory = searchHistory.isNotEmpty()
+                },
+                modifier = Modifier.weight(1f),
+            )
+            FilterIconButton(count = activeFilterCount, onClick = onFilterClick)
+        }
 
         AnimatedVisibility(visible = showHistory) {
             SearchHistoryDropdown(
@@ -382,6 +367,112 @@ private fun SearchBarWithHistory(
                 },
             )
         }
+    }
+}
+
+@Composable
+private fun SearchTextField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    onFocusChanged: (Boolean) -> Unit,
+    onClear: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier.onFocusChanged { onFocusChanged(it.isFocused) },
+        placeholder = { Text("Search models...") },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = onClear) {
+                    Icon(Icons.Default.Clear, contentDescription = "Clear")
+                }
+            }
+        },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = { onSearch() }),
+    )
+}
+
+@Composable
+private fun FilterIconButton(count: Int, onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        if (count > 0) {
+            BadgedBox(badge = { Badge { Text(count.toString()) } }) {
+                Icon(Icons.Outlined.FilterList, contentDescription = "Filters")
+            }
+        } else {
+            Icon(Icons.Outlined.FilterList, contentDescription = "Filters")
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FilterBottomSheet(
+    uiState: ModelSearchUiState,
+    viewModel: ModelSearchViewModel,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+    ) {
+        FilterSheetContent(uiState = uiState, viewModel = viewModel, onDismiss = onDismiss)
+    }
+}
+
+@Composable
+private fun FilterSheetContent(
+    uiState: ModelSearchUiState,
+    viewModel: ModelSearchViewModel,
+    onDismiss: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.padding(bottom = Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Spacing.lg),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(text = "Filters", style = MaterialTheme.typography.titleMedium)
+            TextButton(onClick = {
+                viewModel.resetFilters()
+                onDismiss()
+            }) {
+                Text("Reset")
+            }
+        }
+        TypeFilterChips(
+            selectedType = uiState.selectedType,
+            onTypeSelected = viewModel::onTypeSelected,
+        )
+        BaseModelFilterChips(
+            selectedBaseModels = uiState.selectedBaseModels,
+            onBaseModelToggled = viewModel::onBaseModelToggled,
+        )
+        SortAndPeriodFilters(
+            selectedSort = uiState.selectedSort,
+            selectedPeriod = uiState.selectedPeriod,
+            isFreshFindEnabled = uiState.isFreshFindEnabled,
+            onSortSelected = viewModel::onSortSelected,
+            onPeriodSelected = viewModel::onPeriodSelected,
+            onFreshFindToggled = viewModel::onFreshFindToggled,
+        )
+        ExcludedTagsSection(
+            excludedTags = uiState.excludedTags,
+            onAddTag = viewModel::onAddExcludedTag,
+            onRemoveTag = viewModel::onRemoveExcludedTag,
+        )
     }
 }
 

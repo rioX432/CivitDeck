@@ -157,6 +157,19 @@ final class ModelSearchViewModel: ObservableObject {
         loadModels()
     }
 
+    func resetFilters() {
+        loadTask?.cancel()
+        selectedType = nil
+        selectedSort = .mostDownloaded
+        selectedPeriod = .allTime
+        selectedBaseModels = []
+        isFreshFindEnabled = false
+        models = []
+        nextCursor = nil
+        hasMore = true
+        loadModels()
+    }
+
     func addExcludedTag(_ tag: String) {
         let trimmed = tag.trimmingCharacters(in: .whitespaces).lowercased()
         guard !trimmed.isEmpty else { return }
