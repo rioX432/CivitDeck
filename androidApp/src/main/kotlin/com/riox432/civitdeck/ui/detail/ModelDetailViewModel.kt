@@ -3,8 +3,10 @@ package com.riox432.civitdeck.ui.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import kotlinx.coroutines.CancellationException
@@ -20,6 +22,7 @@ data class ModelDetailUiState(
     val isLoading: Boolean = true,
     val error: String? = null,
     val selectedVersionIndex: Int = 0,
+    val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
 )
 
 class ModelDetailViewModel(
@@ -28,6 +31,7 @@ class ModelDetailViewModel(
     private val observeIsFavoriteUseCase: ObserveIsFavoriteUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val trackModelViewUseCase: TrackModelViewUseCase,
+    private val observeNsfwFilterUseCase: ObserveNsfwFilterUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelDetailUiState())
@@ -36,6 +40,7 @@ class ModelDetailViewModel(
     init {
         loadModel()
         observeFavorite()
+        observeNsfwFilter()
     }
 
     fun onVersionSelected(index: Int) {
@@ -87,6 +92,14 @@ class ModelDetailViewModel(
         viewModelScope.launch {
             observeIsFavoriteUseCase(modelId).collect { isFavorite ->
                 _uiState.update { it.copy(isFavorite = isFavorite) }
+            }
+        }
+    }
+
+    private fun observeNsfwFilter() {
+        viewModelScope.launch {
+            observeNsfwFilterUseCase().collect { level ->
+                _uiState.update { it.copy(nsfwFilterLevel = level) }
             }
         }
     }

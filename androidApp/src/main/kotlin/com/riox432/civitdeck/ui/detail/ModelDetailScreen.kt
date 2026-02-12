@@ -68,6 +68,7 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
+import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
@@ -182,7 +183,9 @@ private fun ModelDetailBody(
 ) {
     val model = uiState.model
     val selectedVersion = model?.modelVersions?.getOrNull(uiState.selectedVersionIndex)
-    val images = selectedVersion?.images ?: emptyList()
+    val images = (selectedVersion?.images ?: emptyList()).let { allImages ->
+        if (uiState.nsfwFilterLevel == NsfwFilterLevel.Off) allImages.filter { !it.nsfw } else allImages
+    }
     var selectedCarouselIndex by remember { mutableStateOf<Int?>(null) }
 
     Column(

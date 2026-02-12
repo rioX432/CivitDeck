@@ -43,7 +43,7 @@ val domainModule = module {
     factory { AddSearchHistoryUseCase(get()) }
     factory { ClearSearchHistoryUseCase(get()) }
     factory { TrackModelViewUseCase(get()) }
-    factory { GetRecommendationsUseCase(get(), get(), get()) }
+    factory { GetRecommendationsUseCase(get(), get(), get(), get()) }
     factory { GetViewedModelIdsUseCase(get()) }
     factory { GetExcludedTagsUseCase(get()) }
     factory { AddExcludedTagUseCase(get()) }

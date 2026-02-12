@@ -31,6 +31,9 @@ struct ModelDetailScreen: View {
         .task {
             await viewModel.observeFavorite()
         }
+        .task {
+            await viewModel.observeNsfwFilter()
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 if let model = viewModel.model,
@@ -61,7 +64,7 @@ struct ModelDetailScreen: View {
 
     @ViewBuilder
     private var carouselViewer: some View {
-        let images = viewModel.selectedVersion?.images ?? []
+        let images = filteredImages
         if let startIndex = selectedCarouselIndex, !images.isEmpty {
             ZStack {
                 Color.black.ignoresSafeArea()
@@ -139,8 +142,16 @@ struct ModelDetailScreen: View {
 
     // MARK: - Image Carousel
 
+    private var filteredImages: [ModelImage] {
+        let allImages = viewModel.selectedVersion?.images ?? []
+        if viewModel.nsfwFilterLevel == .off {
+            return allImages.filter { !$0.nsfw }
+        }
+        return Array(allImages)
+    }
+
     private func imageCarousel(model: Model) -> some View {
-        let images = viewModel.selectedVersion?.images ?? []
+        let images = filteredImages
         return Group {
             if !images.isEmpty {
                 TabView {
@@ -435,23 +446,23 @@ struct ModelDetailScreen: View {
         }
         .padding()
     }
+}
 
-    // MARK: - Helpers
+// MARK: - Helpers
 
-    private func htmlToPlainText(_ html: String) -> String {
-        guard let data = html.data(using: .utf8),
-              let attributedString = try? NSAttributedString(
-                data: data,
-                options: [
-                    .documentType: NSAttributedString.DocumentType.html,
-                    .characterEncoding: String.Encoding.utf8.rawValue,
-                ],
-                documentAttributes: nil
-              ) else {
-            return html
-        }
-        return attributedString.string
+private func htmlToPlainText(_ html: String) -> String {
+    guard let data = html.data(using: .utf8),
+          let attributedString = try? NSAttributedString(
+            data: data,
+            options: [
+                .documentType: NSAttributedString.DocumentType.html,
+                .characterEncoding: String.Encoding.utf8.rawValue,
+            ],
+            documentAttributes: nil
+          ) else {
+        return html
     }
+    return attributedString.string
 }
 
 // MARK: - Wrapping HStack for Tags

@@ -8,12 +8,14 @@ final class ModelDetailViewModel: ObservableObject {
     @Published var isLoading: Bool = true
     @Published var error: String?
     @Published var selectedVersionIndex: Int = 0
+    @Published var nsfwFilterLevel: NsfwFilterLevel = .off
 
     private let modelId: Int64
     private let getModelDetailUseCase: GetModelDetailUseCase
     private let observeIsFavoriteUseCase: ObserveIsFavoriteUseCase
     private let toggleFavoriteUseCase: ToggleFavoriteUseCase
     private let trackModelViewUseCase: TrackModelViewUseCase
+    private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
 
     var selectedVersion: ModelVersion? {
         guard let model else { return nil }
@@ -28,6 +30,7 @@ final class ModelDetailViewModel: ObservableObject {
         self.observeIsFavoriteUseCase = KoinHelper.shared.getObserveIsFavoriteUseCase()
         self.toggleFavoriteUseCase = KoinHelper.shared.getToggleFavoriteUseCase()
         self.trackModelViewUseCase = KoinHelper.shared.getTrackModelViewUseCase()
+        self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
         loadModel()
     }
 
@@ -35,6 +38,13 @@ final class ModelDetailViewModel: ObservableObject {
     func observeFavorite() async {
         for await value in observeIsFavoriteUseCase.invoke(modelId: modelId) {
             isFavorite = value.boolValue
+        }
+    }
+
+    func observeNsfwFilter() async {
+        let flow = SkieSwiftFlow<NsfwFilterLevel>(observeNsfwFilterUseCase.invoke())
+        for await value in flow {
+            nsfwFilterLevel = value
         }
     }
 
