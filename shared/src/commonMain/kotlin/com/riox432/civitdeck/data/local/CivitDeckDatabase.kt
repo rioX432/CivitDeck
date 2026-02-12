@@ -10,13 +10,17 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
 import com.riox432.civitdeck.data.local.dao.BrowsingHistoryDao
 import com.riox432.civitdeck.data.local.dao.CachedApiResponseDao
+import com.riox432.civitdeck.data.local.dao.ExcludedTagDao
 import com.riox432.civitdeck.data.local.dao.FavoriteModelDao
+import com.riox432.civitdeck.data.local.dao.HiddenModelDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
 import com.riox432.civitdeck.data.local.dao.SearchHistoryDao
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
 import com.riox432.civitdeck.data.local.entity.CachedApiResponseEntity
+import com.riox432.civitdeck.data.local.entity.ExcludedTagEntity
 import com.riox432.civitdeck.data.local.entity.FavoriteModelEntity
+import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import com.riox432.civitdeck.data.local.entity.SearchHistoryEntity
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
@@ -31,8 +35,10 @@ import kotlinx.coroutines.IO
         SavedPromptEntity::class,
         SearchHistoryEntity::class,
         BrowsingHistoryEntity::class,
+        ExcludedTagEntity::class,
+        HiddenModelEntity::class,
     ],
-    version = 2,
+    version = 3,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -42,6 +48,8 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun savedPromptDao(): SavedPromptDao
     abstract fun searchHistoryDao(): SearchHistoryDao
     abstract fun browsingHistoryDao(): BrowsingHistoryDao
+    abstract fun excludedTagDao(): ExcludedTagDao
+    abstract fun hiddenModelDao(): HiddenModelDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -88,9 +96,24 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
     }
 }
 
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `excluded_tags` " +
+                "(`tag` TEXT NOT NULL, `addedAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`tag`))",
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `hidden_models` " +
+                "(`modelId` INTEGER NOT NULL, `modelName` TEXT NOT NULL, " +
+                "`hiddenAt` INTEGER NOT NULL, PRIMARY KEY(`modelId`))",
+        )
+    }
+}
+
 fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeckDatabase {
     return builder
-        .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()

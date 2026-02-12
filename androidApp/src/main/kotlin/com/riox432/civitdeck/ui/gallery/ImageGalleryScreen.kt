@@ -46,6 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.riox432.civitdeck.domain.model.AspectRatioFilter
 import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
@@ -73,6 +74,7 @@ fun ImageGalleryScreen(
             onSortSelected = viewModel::onSortSelected,
             onPeriodSelected = viewModel::onPeriodSelected,
             onNsfwToggle = viewModel::onNsfwToggle,
+            onAspectRatioSelected = viewModel::onAspectRatioSelected,
             onImageClick = viewModel::onImageSelected,
             onLoadMore = viewModel::loadMore,
             onRetry = viewModel::retry,
@@ -109,6 +111,7 @@ private fun ImageGalleryBody(
     onSortSelected: (SortOrder) -> Unit,
     onPeriodSelected: (TimePeriod) -> Unit,
     onNsfwToggle: () -> Unit,
+    onAspectRatioSelected: (AspectRatioFilter?) -> Unit,
     onImageClick: (Int) -> Unit,
     onLoadMore: () -> Unit,
     onRetry: () -> Unit,
@@ -124,6 +127,7 @@ private fun ImageGalleryBody(
             onSortSelected = onSortSelected,
             onPeriodSelected = onPeriodSelected,
             onNsfwToggle = onNsfwToggle,
+            onAspectRatioSelected = onAspectRatioSelected,
         )
 
         val stateKey = when {
@@ -161,11 +165,17 @@ private fun FilterBar(
     onSortSelected: (SortOrder) -> Unit,
     onPeriodSelected: (TimePeriod) -> Unit,
     onNsfwToggle: () -> Unit,
+    onAspectRatioSelected: (AspectRatioFilter?) -> Unit,
 ) {
     Column(modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.sm)) {
         SortFilterRow(
             selectedSort = uiState.selectedSort,
             onSortSelected = onSortSelected,
+        )
+        Spacer(modifier = Modifier.height(Spacing.xs))
+        AspectRatioFilterRow(
+            selectedAspectRatio = uiState.selectedAspectRatio,
+            onAspectRatioSelected = onAspectRatioSelected,
         )
         Spacer(modifier = Modifier.height(Spacing.xs))
         PeriodAndNsfwRow(
@@ -188,6 +198,27 @@ private fun SortFilterRow(
                 selected = sort == selectedSort,
                 onClick = { onSortSelected(sort) },
                 label = { Text(sort.name, style = MaterialTheme.typography.labelSmall) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun AspectRatioFilterRow(
+    selectedAspectRatio: AspectRatioFilter?,
+    onAspectRatioSelected: (AspectRatioFilter?) -> Unit,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        FilterChip(
+            selected = selectedAspectRatio == null,
+            onClick = { onAspectRatioSelected(null) },
+            label = { Text("All", style = MaterialTheme.typography.labelSmall) },
+        )
+        AspectRatioFilter.entries.forEach { filter ->
+            FilterChip(
+                selected = filter == selectedAspectRatio,
+                onClick = { onAspectRatioSelected(filter) },
+                label = { Text(filter.name, style = MaterialTheme.typography.labelSmall) },
             )
         }
     }

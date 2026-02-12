@@ -9,13 +9,18 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
+import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
+import com.riox432.civitdeck.domain.usecase.GetHiddenModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
+import com.riox432.civitdeck.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
+import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,8 +48,10 @@ data class ModelSearchUiState(
     val isFreshFindEnabled: Boolean = false,
     val recommendations: List<RecommendationSection> = emptyList(),
     val isLoadingRecommendations: Boolean = false,
+    val excludedTags: List<String> = emptyList(),
 )
 
+@Suppress("LongParameterList")
 class ModelSearchViewModel(
     private val getModelsUseCase: GetModelsUseCase,
     private val getRecommendationsUseCase: GetRecommendationsUseCase,
@@ -53,6 +60,11 @@ class ModelSearchViewModel(
     private val addSearchHistoryUseCase: AddSearchHistoryUseCase,
     private val clearSearchHistoryUseCase: ClearSearchHistoryUseCase,
     private val getViewedModelIdsUseCase: GetViewedModelIdsUseCase,
+    private val getExcludedTagsUseCase: GetExcludedTagsUseCase,
+    private val addExcludedTagUseCase: AddExcludedTagUseCase,
+    private val removeExcludedTagUseCase: RemoveExcludedTagUseCase,
+    private val getHiddenModelIdsUseCase: GetHiddenModelIdsUseCase,
+    private val hideModelUseCase: HideModelUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelSearchUiState())
@@ -63,9 +75,11 @@ class ModelSearchViewModel(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private var loadJob: Job? = null
+    private var hiddenModelIds: Set<Long> = emptySet()
 
     init {
         observeNsfwFilter()
+        loadExcludedTags()
         loadModels()
         loadRecommendations()
     }
@@ -173,6 +187,46 @@ class ModelSearchViewModel(
         loadModels()
     }
 
+    fun onAddExcludedTag(tag: String) {
+        val trimmed = tag.trim().lowercase()
+        if (trimmed.isBlank()) return
+        viewModelScope.launch {
+            addExcludedTagUseCase(trimmed)
+            loadExcludedTags()
+            reloadModels()
+        }
+    }
+
+    fun onRemoveExcludedTag(tag: String) {
+        viewModelScope.launch {
+            removeExcludedTagUseCase(tag)
+            loadExcludedTags()
+            reloadModels()
+        }
+    }
+
+    fun onHideModel(modelId: Long, modelName: String) {
+        viewModelScope.launch {
+            hideModelUseCase(modelId, modelName)
+            hiddenModelIds = getHiddenModelIdsUseCase()
+            _uiState.update { it.copy(models = it.models.filter { m -> m.id != modelId }) }
+        }
+    }
+
+    private fun loadExcludedTags() {
+        viewModelScope.launch {
+            val tags = getExcludedTagsUseCase()
+            hiddenModelIds = getHiddenModelIdsUseCase()
+            _uiState.update { it.copy(excludedTags = tags) }
+        }
+    }
+
+    private fun reloadModels() {
+        loadJob?.cancel()
+        _uiState.update { it.copy(nextCursor = null, models = emptyList(), hasMore = true) }
+        loadModels()
+    }
+
     fun loadMore() {
         val state = _uiState.value
         if (state.isLoading || state.isLoadingMore || !state.hasMore) return
@@ -209,6 +263,15 @@ class ModelSearchViewModel(
                 if (state.isFreshFindEnabled) {
                     val viewedIds = getViewedModelIdsUseCase()
                     filteredItems = filteredItems.filter { it.id !in viewedIds }
+                }
+                if (state.excludedTags.isNotEmpty()) {
+                    val excluded = state.excludedTags.toSet()
+                    filteredItems = filteredItems.filter { model ->
+                        model.tags.none { it.lowercase() in excluded }
+                    }
+                }
+                if (hiddenModelIds.isNotEmpty()) {
+                    filteredItems = filteredItems.filter { it.id !in hiddenModelIds }
                 }
                 _uiState.update {
                     it.copy(

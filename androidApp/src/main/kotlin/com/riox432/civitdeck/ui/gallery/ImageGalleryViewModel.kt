@@ -2,6 +2,7 @@ package com.riox432.civitdeck.ui.gallery
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.riox432.civitdeck.domain.model.AspectRatioFilter
 import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.domain.model.NsfwLevel
@@ -18,17 +19,21 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class ImageGalleryUiState(
-    val images: List<Image> = emptyList(),
+    val allImages: List<Image> = emptyList(),
     val selectedSort: SortOrder = SortOrder.HighestRated,
     val selectedPeriod: TimePeriod = TimePeriod.AllTime,
     val showNsfw: Boolean = false,
+    val selectedAspectRatio: AspectRatioFilter? = null,
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
     val error: String? = null,
     val nextCursor: String? = null,
     val hasMore: Boolean = true,
     val selectedImageIndex: Int? = null,
-)
+) {
+    val images: List<Image>
+        get() = allImages.filterByAspectRatio(selectedAspectRatio)
+}
 
 class ImageGalleryViewModel(
     private val modelVersionId: Long,
@@ -51,7 +56,7 @@ class ImageGalleryViewModel(
             it.copy(
                 selectedSort = sort,
                 nextCursor = null,
-                images = emptyList(),
+                allImages = emptyList(),
                 hasMore = true,
             )
         }
@@ -64,7 +69,7 @@ class ImageGalleryViewModel(
             it.copy(
                 selectedPeriod = period,
                 nextCursor = null,
-                images = emptyList(),
+                allImages = emptyList(),
                 hasMore = true,
             )
         }
@@ -77,11 +82,15 @@ class ImageGalleryViewModel(
             it.copy(
                 showNsfw = !it.showNsfw,
                 nextCursor = null,
-                images = emptyList(),
+                allImages = emptyList(),
                 hasMore = true,
             )
         }
         loadImages()
+    }
+
+    fun onAspectRatioSelected(filter: AspectRatioFilter?) {
+        _uiState.update { it.copy(selectedAspectRatio = filter) }
     }
 
     fun loadMore() {
@@ -130,7 +139,7 @@ class ImageGalleryViewModel(
                 )
                 _uiState.update {
                     it.copy(
-                        images = if (isLoadMore) it.images + result.items else result.items,
+                        allImages = if (isLoadMore) it.allImages + result.items else result.items,
                         isLoading = false,
                         isLoadingMore = false,
                         error = null,
@@ -154,5 +163,18 @@ class ImageGalleryViewModel(
 
     companion object {
         private const val PAGE_SIZE = 20
+    }
+}
+
+private fun List<Image>.filterByAspectRatio(filter: AspectRatioFilter?): List<Image> {
+    if (filter == null) return this
+    return filter { image ->
+        if (image.width <= 0 || image.height <= 0) return@filter true
+        val ratio = image.width.toFloat() / image.height.toFloat()
+        when (filter) {
+            AspectRatioFilter.Portrait -> ratio < 0.83f
+            AspectRatioFilter.Landscape -> ratio > 1.2f
+            AspectRatioFilter.Square -> ratio in 0.83f..1.2f
+        }
     }
 }
