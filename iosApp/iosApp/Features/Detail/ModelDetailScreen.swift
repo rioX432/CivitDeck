@@ -10,6 +10,8 @@ struct ModelDetailScreen: View {
 
     @State private var isDescriptionExpanded = false
     @State private var selectedCarouselIndex: Int?
+    @State private var showImageGrid = false
+    @State private var gridSelectedIndex: Int?
 
     var body: some View {
         Group {
@@ -56,68 +58,26 @@ struct ModelDetailScreen: View {
             get: { selectedCarouselIndex != nil },
             set: { if !$0 { selectedCarouselIndex = nil } }
         )) {
-            carouselViewer
+            CarouselViewer(
+                images: filteredImages,
+                selectedIndex: $selectedCarouselIndex
+            )
         }
-    }
-
-    // MARK: - Carousel Viewer
-
-    @ViewBuilder
-    private var carouselViewer: some View {
-        let images = filteredImages
-        if let startIndex = selectedCarouselIndex, !images.isEmpty {
-            ZStack {
-                Color.black.ignoresSafeArea()
-
-                TabView(selection: Binding(
-                    get: { startIndex },
-                    set: { selectedCarouselIndex = $0 }
-                )) {
-                    ForEach(Array(images.enumerated()), id: \.offset) { i, image in
-                        ZoomableImageView(
-                            url: image.url,
-                            pageIndex: i,
-                            currentPageIndex: startIndex
-                        )
-                        .ignoresSafeArea()
-                        .tag(i)
-                    }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .automatic))
-
-                VStack {
-                    HStack {
-                        Button {
-                            selectedCarouselIndex = nil
-                        } label: {
-                            SwiftUI.Image(systemName: "xmark")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                                .padding(10)
-                                .background(.ultraThinMaterial, in: Circle())
-                        }
-                        Spacer()
-                    }
-                    .padding(16)
-                    Spacer()
-                    if startIndex < images.count, images[startIndex].meta != nil {
-                        HStack {
-                            Spacer()
-                            Button {
-                                // Show metadata
-                            } label: {
-                                SwiftUI.Image(systemName: "info.circle")
-                                    .font(.title3)
-                                    .foregroundColor(.white)
-                                    .padding(10)
-                                    .background(.ultraThinMaterial, in: Circle())
-                            }
-                        }
-                        .padding(16)
-                    }
-                }
-            }
+        .sheet(isPresented: $showImageGrid) {
+            ImageGridSheet(
+                images: filteredImages,
+                onDismiss: { showImageGrid = false },
+                onImageSelected: { gridSelectedIndex = $0 }
+            )
+        }
+        .fullScreenCover(isPresented: Binding(
+            get: { gridSelectedIndex != nil },
+            set: { if !$0 { gridSelectedIndex = nil } }
+        )) {
+            GridImageViewer(
+                images: filteredImages,
+                selectedIndex: $gridSelectedIndex
+            )
         }
     }
 
@@ -130,7 +90,7 @@ struct ModelDetailScreen: View {
                 modelHeader(model: model)
                 statsRow(model: model)
                 if let version = viewModel.selectedVersion {
-                    viewImagesButton(modelVersionId: version.id)
+                    imageActionsRow(modelVersionId: version.id)
                 }
                 tagsSection(tags: model.tags)
                 descriptionSection(description: model.description_)
@@ -264,16 +224,28 @@ struct ModelDetailScreen: View {
         }
     }
 
-    // MARK: - View Images Button
+    // MARK: - Image Actions Row
 
-    private func viewImagesButton(modelVersionId: Int64) -> some View {
-        NavigationLink {
-            ImageGalleryScreen(modelVersionId: modelVersionId)
-        } label: {
-            Text("View Community Images")
-                .frame(maxWidth: .infinity)
+    private func imageActionsRow(modelVersionId: Int64) -> some View {
+        HStack(spacing: Spacing.sm) {
+            NavigationLink {
+                ImageGalleryScreen(modelVersionId: modelVersionId)
+            } label: {
+                Text("View Community Images")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+
+            if !filteredImages.isEmpty {
+                Button {
+                    showImageGrid = true
+                } label: {
+                    SwiftUI.Image(systemName: "square.grid.2x2")
+                        .font(.title3)
+                }
+                .buttonStyle(.bordered)
+            }
         }
-        .buttonStyle(.bordered)
         .padding(.horizontal, Spacing.lg)
     }
 
@@ -445,45 +417,5 @@ struct ModelDetailScreen: View {
             .buttonStyle(.bordered)
         }
         .padding()
-    }
-}
-
-// MARK: - Helpers
-
-private func htmlToPlainText(_ html: String) -> String {
-    guard let data = html.data(using: .utf8),
-          let attributedString = try? NSAttributedString(
-            data: data,
-            options: [
-                .documentType: NSAttributedString.DocumentType.html,
-                .characterEncoding: String.Encoding.utf8.rawValue,
-            ],
-            documentAttributes: nil
-          ) else {
-        return html
-    }
-    return attributedString.string
-}
-
-// MARK: - Wrapping HStack for Tags
-
-private struct WrappingHStack: View {
-    let tags: [String]
-
-    var body: some View {
-        LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 80), spacing: Spacing.sm)],
-            alignment: .leading,
-            spacing: Spacing.sm
-        ) {
-            ForEach(tags, id: \.self) { tag in
-                Text(tag)
-                    .font(.civitLabelMedium)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, Spacing.xs)
-                    .background(Color.civitSurfaceVariant)
-                    .clipShape(Capsule())
-            }
-        }
     }
 }

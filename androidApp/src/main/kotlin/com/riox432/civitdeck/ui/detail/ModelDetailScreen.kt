@@ -27,12 +27,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -43,10 +48,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,6 +81,7 @@ import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
 import com.riox432.civitdeck.ui.navigation.LocalSharedTransitionScope
 import com.riox432.civitdeck.ui.navigation.SharedElementKeys
+import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -187,20 +195,21 @@ private fun ModelDetailBody(
         if (uiState.nsfwFilterLevel == NsfwFilterLevel.Off) allImages.filter { !it.nsfw } else allImages
     }
     var selectedCarouselIndex by remember { mutableStateOf<Int?>(null) }
+    var showImageGrid by remember { mutableStateOf(false) }
+    var gridSelectedIndex by remember { mutableStateOf<Int?>(null) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(top = contentPadding.calculateTopPadding()),
     ) {
-        // Shared element image — always in composition tree
         when {
             model != null -> {
                 ImageCarousel(
                     images = images,
                     modelId = modelId,
                     sharedElementSuffix = sharedElementSuffix,
-                    onImageClick = { index -> selectedCarouselIndex = index },
+                    onImageClick = { selectedCarouselIndex = it },
                 )
             }
             initialThumbnailUrl != null -> {
@@ -211,7 +220,6 @@ private fun ModelDetailBody(
                 )
             }
         }
-
         DetailStateContent(
             uiState = uiState,
             model = model,
@@ -219,16 +227,56 @@ private fun ModelDetailBody(
             onVersionSelected = onVersionSelected,
             onViewImages = onViewImages,
             onCreatorClick = onCreatorClick,
+            onShowImageGrid = { showImageGrid = true },
             bottomPadding = contentPadding.calculateBottomPadding(),
             modifier = Modifier.weight(1f),
         )
     }
 
+    DetailOverlays(
+        images = images,
+        selectedCarouselIndex = selectedCarouselIndex,
+        onDismissCarousel = { selectedCarouselIndex = null },
+        showImageGrid = showImageGrid,
+        onDismissGrid = { showImageGrid = false },
+        onGridImageClick = { gridSelectedIndex = it },
+        gridSelectedIndex = gridSelectedIndex,
+        onDismissGridViewer = { gridSelectedIndex = null },
+    )
+}
+
+@Composable
+private fun DetailOverlays(
+    images: List<ModelImage>,
+    selectedCarouselIndex: Int?,
+    onDismissCarousel: () -> Unit,
+    showImageGrid: Boolean,
+    onDismissGrid: () -> Unit,
+    onGridImageClick: (Int) -> Unit,
+    gridSelectedIndex: Int?,
+    onDismissGridViewer: () -> Unit,
+) {
     if (selectedCarouselIndex != null && images.isNotEmpty()) {
         ImageViewerOverlay(
             images = images.map { ViewerImage(url = it.url, meta = it.meta) },
-            initialIndex = selectedCarouselIndex!!,
-            onDismiss = { selectedCarouselIndex = null },
+            initialIndex = selectedCarouselIndex,
+            onDismiss = onDismissCarousel,
+        )
+    }
+
+    if (showImageGrid && images.isNotEmpty()) {
+        ImageGridBottomSheet(
+            images = images,
+            onDismiss = onDismissGrid,
+            onImageClick = onGridImageClick,
+        )
+    }
+
+    if (gridSelectedIndex != null && images.isNotEmpty()) {
+        ImageViewerOverlay(
+            images = images.map { ViewerImage(url = it.url, meta = it.meta) },
+            initialIndex = gridSelectedIndex,
+            onDismiss = onDismissGridViewer,
         )
     }
 }
@@ -241,6 +289,7 @@ private fun DetailStateContent(
     onVersionSelected: (Int) -> Unit,
     onViewImages: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
+    onShowImageGrid: () -> Unit,
     bottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
 ) {
@@ -290,10 +339,11 @@ private fun DetailStateContent(
                 if (model != null) {
                     ModelDetailContentBody(
                         model = model,
-                        selectedVersionIndex = uiState.selectedVersionIndex,
+                        uiState = uiState,
                         onVersionSelected = onVersionSelected,
                         onViewImages = onViewImages,
                         onCreatorClick = onCreatorClick,
+                        onShowImageGrid = onShowImageGrid,
                         bottomPadding = bottomPadding,
                     )
                 }
@@ -360,13 +410,17 @@ private fun SharedThumbnailPlaceholder(
 @Composable
 private fun ModelDetailContentBody(
     model: Model,
-    selectedVersionIndex: Int,
+    uiState: ModelDetailUiState,
     onVersionSelected: (Int) -> Unit,
     onViewImages: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
+    onShowImageGrid: () -> Unit,
     bottomPadding: androidx.compose.ui.unit.Dp,
 ) {
-    val selectedVersion = model.modelVersions.getOrNull(selectedVersionIndex)
+    val selectedVersion = model.modelVersions.getOrNull(uiState.selectedVersionIndex)
+    val images = (selectedVersion?.images ?: emptyList()).let { allImages ->
+        if (uiState.nsfwFilterLevel == NsfwFilterLevel.Off) allImages.filter { !it.nsfw } else allImages
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -382,10 +436,14 @@ private fun ModelDetailContentBody(
             StatsRow(model = model)
         }
 
-        // View Images button
+        // View Images + Grid button
         item {
             if (selectedVersion != null) {
-                ViewImagesButton(onClick = { onViewImages(selectedVersion.id) })
+                ImageActionsRow(
+                    onViewImages = { onViewImages(selectedVersion.id) },
+                    onShowGrid = onShowImageGrid,
+                    hasImages = images.isNotEmpty(),
+                )
             }
         }
 
@@ -408,7 +466,7 @@ private fun ModelDetailContentBody(
             item {
                 VersionSelector(
                     versions = model.modelVersions,
-                    selectedIndex = selectedVersionIndex,
+                    selectedIndex = uiState.selectedVersionIndex,
                     onVersionSelected = onVersionSelected,
                 )
             }
@@ -424,18 +482,36 @@ private fun ModelDetailContentBody(
 }
 
 @Composable
-private fun ViewImagesButton(onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
+private fun ImageActionsRow(
+    onViewImages: () -> Unit,
+    onShowGrid: () -> Unit,
+    hasImages: Boolean,
+) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        ),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("View Community Images")
+        Button(
+            onClick = onViewImages,
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            ),
+        ) {
+            Text("View Community Images")
+        }
+        if (hasImages) {
+            IconButton(onClick = onShowGrid) {
+                Icon(
+                    imageVector = Icons.Default.GridView,
+                    contentDescription = "View version images as grid",
+                )
+            }
+        }
     }
 }
 
@@ -676,6 +752,82 @@ private fun DescriptionSection(description: String) {
 
 private const val CAROUSEL_ASPECT_RATIO = 1f
 private const val DESCRIPTION_COLLAPSED_LINES = 4
+private const val IMAGE_GRID_COLUMNS = 2
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ImageGridBottomSheet(
+    images: List<ModelImage>,
+    onDismiss: () -> Unit,
+    onImageClick: (Int) -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+    ) {
+        Text(
+            text = "Version Images (${images.size})",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+        )
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Fixed(IMAGE_GRID_COLUMNS),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+            verticalItemSpacing = Spacing.sm,
+            contentPadding = PaddingValues(Spacing.sm),
+        ) {
+            itemsIndexed(images, key = { _, img -> img.url }) { index, image ->
+                ImageGridItem(
+                    image = image,
+                    onClick = { onImageClick(index) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ImageGridItem(
+    image: ModelImage,
+    onClick: () -> Unit,
+) {
+    val aspectRatio = if (image.width > 0 && image.height > 0) {
+        image.width.toFloat() / image.height.toFloat()
+    } else {
+        1f
+    }
+
+    SubcomposeAsyncImage(
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(image.url)
+            .crossfade(Duration.normal)
+            .build(),
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(aspectRatio)
+            .clip(RoundedCornerShape(CornerRadius.image))
+            .clickable(onClick = onClick),
+        loading = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(aspectRatio)
+                    .shimmer(),
+            )
+        },
+        error = {
+            ImageErrorPlaceholder(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(aspectRatio),
+            )
+        },
+    )
+}
 
 @Composable
 private fun VersionSelector(
