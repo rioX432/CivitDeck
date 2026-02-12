@@ -127,7 +127,8 @@ struct ImageViewerScreen: View {
 
         Task {
             do {
-                let (data, _) = try await URLSession.shared.data(from: url)
+                let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
+                let (data, _) = try await ImageURLSession.shared.data(for: request)
                 guard let image = UIImage(data: data) else {
                     showToast("Download failed")
                     return
@@ -396,7 +397,8 @@ final class ZoomableImageViewController: UIViewController, UIScrollViewDelegate,
 
         Task { @MainActor [weak self] in
             do {
-                let (data, _) = try await URLSession.shared.data(from: url)
+                let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
+                let (data, _) = try await ImageURLSession.shared.data(for: request)
                 self?.spinner.stopAnimating()
                 guard let image = UIImage(data: data) else { return }
                 self?.imageView.image = image

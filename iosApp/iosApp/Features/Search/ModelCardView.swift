@@ -36,7 +36,7 @@ struct ModelCardView: View {
                 Color.civitSurfaceVariant
                     .aspectRatio(1, contentMode: .fit)
                     .overlay {
-                        AsyncImage(url: imageUrl) { phase in
+                        CachedAsyncImage(url: imageUrl) { phase in
                             switch phase {
                             case .success(let image):
                                 image

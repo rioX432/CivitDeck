@@ -172,7 +172,7 @@ struct ImageGalleryScreen: View {
         return Button {
             viewModel.onImageSelected(index)
         } label: {
-            AsyncImage(url: URL(string: image.url)) { phase in
+            CachedAsyncImage(url: URL(string: image.url)) { phase in
                 switch phase {
                 case .success(let img):
                     img

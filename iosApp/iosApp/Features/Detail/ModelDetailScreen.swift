@@ -157,7 +157,7 @@ struct ModelDetailScreen: View {
                 TabView {
                     ForEach(Array(images.enumerated()), id: \.offset) { index, image in
                         if let url = URL(string: image.url) {
-                            AsyncImage(url: url) { phase in
+                            CachedAsyncImage(url: url) { phase in
                                 switch phase {
                                 case .success(let img):
                                     img
