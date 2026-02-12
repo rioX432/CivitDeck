@@ -1,0 +1,82 @@
+# SwiftLint Configuration — aligned with Detekt (config/detekt/detekt.yml)
+
+# Paths
+included:
+  - iosApp
+
+excluded:
+  - iosApp/Preview Content
+
+# Rules
+disabled_rules:
+  - trailing_comma
+  - multiple_closures_with_trailing_closure
+
+opt_in_rules:
+  - empty_count
+  - closure_spacing
+  - contains_over_first_not_nil
+  - fatal_error_message
+  - first_where
+  - modifier_order
+  - overridden_super_call
+  - private_action
+  - private_outlet
+  - sorted_first_last
+  - unneeded_parentheses_in_closure_argument
+  - vertical_whitespace_closing_braces
+
+# Rule configurations (aligned with Detekt)
+line_length:
+  warning: 120
+  error: 200
+  ignores_urls: true
+  ignores_comments: true
+  ignores_interpolated_strings: true
+
+function_body_length:
+  warning: 60
+  error: 100
+
+function_parameter_count:
+  warning: 10
+  error: 14
+
+type_body_length:
+  warning: 400
+  error: 500
+
+file_length:
+  warning: 500
+  error: 700
+
+large_tuple:
+  warning: 4
+  error: 5
+
+identifier_name:
+  min_length:
+    warning: 1
+  max_length:
+    warning: 60
+  excluded:
+    - id
+    - x
+    - y
+    - i
+
+nesting:
+  type_level: 2
+  function_level: 3
+
+cyclomatic_complexity:
+  warning: 15
+  error: 25
+
+type_name:
+  min_length:
+    warning: 3
+  max_length:
+    warning: 50
+  excluded:
+    - iOSApp

@@ -5,14 +5,14 @@ import Shared
 final class ModelSearchViewModel: ObservableObject {
     @Published var models: [Model] = []
     @Published var query: String = ""
-    @Published var selectedType: ModelType? = nil
+    @Published var selectedType: ModelType?
     @Published var selectedBaseModels: Set<BaseModel> = []
     @Published var nsfwFilterLevel: NsfwFilterLevel = .off
     @Published var selectedSort: CivitSortOrder = .mostDownloaded
     @Published var selectedPeriod: TimePeriod = .allTime
     @Published var isLoading: Bool = false
     @Published var isLoadingMore: Bool = false
-    @Published var error: String? = nil
+    @Published var error: String?
     @Published var hasMore: Bool = true
     @Published var searchHistory: [String] = []
     @Published var recommendations: [RecommendationSection] = []
@@ -31,8 +31,8 @@ final class ModelSearchViewModel: ObservableObject {
     private let removeExcludedTagUseCase: RemoveExcludedTagUseCase
     private let getHiddenModelIdsUseCase: GetHiddenModelIdsUseCase
     private let hideModelUseCase: HideModelUseCase
-    private var nextCursor: String? = nil
-    private var loadTask: Task<Void, Never>? = nil
+    private var nextCursor: String?
+    private var loadTask: Task<Void, Never>?
     private var hiddenModelIds: Set<KotlinLong> = []
 
     private let pageSize: Int32 = 20

@@ -9,7 +9,7 @@ struct ModelDetailScreen: View {
     }
 
     @State private var isDescriptionExpanded = false
-    @State private var selectedCarouselIndex: Int? = nil
+    @State private var selectedCarouselIndex: Int?
 
     var body: some View {
         Group {

@@ -312,67 +312,6 @@ struct ModelSearchScreen: View {
         }
     }
 
-    private var excludedTagsSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            HStack(spacing: Spacing.sm) {
-                TextField("Exclude tag...", text: $excludeTagInput)
-                    .font(.civitBodySmall)
-                    .submitLabel(.done)
-                    .onSubmit {
-                        if !excludeTagInput.isEmpty {
-                            viewModel.addExcludedTag(excludeTagInput)
-                            excludeTagInput = ""
-                        }
-                    }
-                    .padding(8)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.searchBar)
-                            .stroke(Color.civitOutlineVariant, lineWidth: 1)
-                    )
-                Button {
-                    if !excludeTagInput.isEmpty {
-                        viewModel.addExcludedTag(excludeTagInput)
-                        excludeTagInput = ""
-                    }
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.civitBodyMedium)
-                }
-            }
-            .padding(.horizontal, Spacing.lg)
-
-            if !viewModel.excludedTags.isEmpty {
-                excludedTagChips
-            }
-        }
-        .padding(.bottom, Spacing.sm)
-    }
-
-    private var excludedTagChips: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Spacing.xs) {
-                ForEach(viewModel.excludedTags, id: \.self) { tag in
-                    HStack(spacing: 4) {
-                        Text(tag)
-                            .font(.civitLabelSmall)
-                        Button {
-                            viewModel.removeExcludedTag(tag)
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 10, weight: .bold))
-                        }
-                    }
-                    .padding(.horizontal, Spacing.sm)
-                    .padding(.vertical, 4)
-                    .background(Color.civitError.opacity(0.15))
-                    .foregroundColor(.civitError)
-                    .clipShape(Capsule())
-                }
-            }
-            .padding(.horizontal, Spacing.lg)
-        }
-    }
-
     private func chipButton(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
@@ -413,8 +352,73 @@ struct ModelSearchScreen: View {
                 .foregroundColor(.civitOnSurfaceVariant)
         }
     }
+}
 
-    private var recommendationSections: some View {
+// MARK: - Extracted Subviews
+
+extension ModelSearchScreen {
+    var excludedTagsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack(spacing: Spacing.sm) {
+                TextField("Exclude tag...", text: $excludeTagInput)
+                    .font(.civitBodySmall)
+                    .submitLabel(.done)
+                    .onSubmit {
+                        if !excludeTagInput.isEmpty {
+                            viewModel.addExcludedTag(excludeTagInput)
+                            excludeTagInput = ""
+                        }
+                    }
+                    .padding(8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.searchBar)
+                            .stroke(Color.civitOutlineVariant, lineWidth: 1)
+                    )
+                Button {
+                    if !excludeTagInput.isEmpty {
+                        viewModel.addExcludedTag(excludeTagInput)
+                        excludeTagInput = ""
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.civitBodyMedium)
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+
+            if !viewModel.excludedTags.isEmpty {
+                excludedTagChips
+            }
+        }
+        .padding(.bottom, Spacing.sm)
+    }
+
+    var excludedTagChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.xs) {
+                ForEach(viewModel.excludedTags, id: \.self) { tag in
+                    HStack(spacing: 4) {
+                        Text(tag)
+                            .font(.civitLabelSmall)
+                        Button {
+                            viewModel.removeExcludedTag(tag)
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 10, weight: .bold))
+                        }
+                    }
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, 4)
+                    .background(Color.civitError.opacity(0.15))
+                    .foregroundColor(.civitError)
+                    .clipShape(Capsule())
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+        }
+    }
+
+    var recommendationSections: some View {
         ForEach(viewModel.recommendations, id: \.title) { section in
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(section.title)

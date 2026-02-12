@@ -16,12 +16,12 @@ final class ImageGalleryViewModel: ObservableObject {
     @Published var selectedSort: CivitSortOrder = .highestRated
     @Published var selectedPeriod: TimePeriod = .allTime
     @Published var showNsfw: Bool = false
-    @Published var selectedAspectRatio: AspectRatioFilter? = nil
+    @Published var selectedAspectRatio: AspectRatioFilter?
     @Published var isLoading: Bool = false
     @Published var isLoadingMore: Bool = false
-    @Published var error: String? = nil
+    @Published var error: String?
     @Published var hasMore: Bool = true
-    @Published var selectedImageIndex: Int? = nil
+    @Published var selectedImageIndex: Int?
 
     var images: [CivitImage] {
         guard let filter = selectedAspectRatio else { return allImages }
@@ -39,8 +39,8 @@ final class ImageGalleryViewModel: ObservableObject {
     private let modelVersionId: Int64
     private let getImagesUseCase: GetImagesUseCase
     private let savePromptUseCase: SavePromptUseCase
-    private var nextCursor: String? = nil
-    private var loadTask: Task<Void, Never>? = nil
+    private var nextCursor: String?
+    private var loadTask: Task<Void, Never>?
 
     private let pageSize: Int32 = 20
     private static let timeoutSeconds: UInt64 = 30

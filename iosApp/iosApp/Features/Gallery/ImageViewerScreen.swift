@@ -249,11 +249,11 @@ private struct ShareSheet: UIViewControllerRepresentable {
 
 struct ZoomableImageView: UIViewControllerRepresentable {
     let url: String
-    var onFocusModeChanged: ((Bool) -> Void)? = nil
-    var onDismiss: (() -> Void)? = nil
-    var onDragYChanged: ((CGFloat) -> Void)? = nil
-    var pageIndex: Int? = nil
-    var currentPageIndex: Int? = nil
+    var onFocusModeChanged: ((Bool) -> Void)?
+    var onDismiss: (() -> Void)?
+    var onDragYChanged: ((CGFloat) -> Void)?
+    var pageIndex: Int?
+    var currentPageIndex: Int?
 
     func makeUIViewController(context: Context) -> ZoomableImageViewController {
         let viewController = ZoomableImageViewController()
@@ -277,9 +277,7 @@ struct ZoomableImageView: UIViewControllerRepresentable {
 
 // MARK: - ZoomableImageViewController
 
-final class ZoomableImageViewController: UIViewController, UIScrollViewDelegate,
-    UIGestureRecognizerDelegate
-{
+final class ZoomableImageViewController: UIViewController, UIScrollViewDelegate, UIGestureRecognizerDelegate {
     private let scrollView = UIScrollView()
     private let imageView = UIImageView()
     private let doubleTapRecognizer = UITapGestureRecognizer()

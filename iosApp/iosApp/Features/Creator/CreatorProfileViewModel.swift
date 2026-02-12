@@ -6,14 +6,14 @@ final class CreatorProfileViewModel: ObservableObject {
     @Published var models: [Model] = []
     @Published var isLoading: Bool = false
     @Published var isLoadingMore: Bool = false
-    @Published var error: String? = nil
+    @Published var error: String?
     @Published var hasMore: Bool = true
 
     let username: String
 
     private let getCreatorModelsUseCase: GetCreatorModelsUseCase
-    private var nextCursor: String? = nil
-    private var loadTask: Task<Void, Never>? = nil
+    private var nextCursor: String?
+    private var loadTask: Task<Void, Never>?
 
     private let pageSize: Int32 = 20
 
