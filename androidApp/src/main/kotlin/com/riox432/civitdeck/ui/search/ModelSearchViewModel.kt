@@ -54,6 +54,7 @@ data class ModelSearchUiState(
     val recommendations: List<RecommendationSection> = emptyList(),
     val isLoadingRecommendations: Boolean = false,
     val excludedTags: List<String> = emptyList(),
+    val includedTags: List<String> = emptyList(),
 )
 
 @Suppress("LongParameterList")
@@ -175,6 +176,7 @@ class ModelSearchViewModel(
                 selectedPeriod = TimePeriod.AllTime,
                 selectedBaseModels = emptySet(),
                 isFreshFindEnabled = false,
+                includedTags = emptyList(),
                 nextCursor = null,
                 models = emptyList(),
                 hasMore = true,
@@ -228,6 +230,20 @@ class ModelSearchViewModel(
             )
         }
         loadModels()
+    }
+
+    fun onAddIncludedTag(tag: String) {
+        val trimmed = tag.trim().lowercase()
+        if (trimmed.isBlank()) return
+        val current = _uiState.value.includedTags
+        if (trimmed in current) return
+        _uiState.update { it.copy(includedTags = it.includedTags + trimmed) }
+        reloadModels()
+    }
+
+    fun onRemoveIncludedTag(tag: String) {
+        _uiState.update { it.copy(includedTags = it.includedTags - tag) }
+        reloadModels()
     }
 
     fun onAddExcludedTag(tag: String) {
@@ -296,6 +312,7 @@ class ModelSearchViewModel(
                 val nsfw = if (state.nsfwFilterLevel == NsfwFilterLevel.Off) false else null
                 val result = getModelsUseCase(
                     query = state.query.ifBlank { null },
+                    tag = state.includedTags.firstOrNull(),
                     type = state.selectedType,
                     sort = state.selectedSort,
                     period = state.selectedPeriod,
@@ -339,6 +356,13 @@ class ModelSearchViewModel(
         if (state.isFreshFindEnabled) {
             val viewedIds = getViewedModelIdsUseCase()
             filtered = filtered.filter { it.id !in viewedIds }
+        }
+        if (state.includedTags.size > 1) {
+            val remaining = state.includedTags.drop(1).map { it.lowercase() }.toSet()
+            filtered = filtered.filter { model ->
+                val modelTags = model.tags.map { it.lowercase() }.toSet()
+                modelTags.containsAll(remaining)
+            }
         }
         if (state.excludedTags.isNotEmpty()) {
             val excluded = state.excludedTags.toSet()

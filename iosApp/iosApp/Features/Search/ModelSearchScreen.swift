@@ -10,6 +10,7 @@ struct ModelSearchScreen: View {
     @State private var previousDragY: CGFloat = 0
     @State private var accumulatedDelta: CGFloat = 0
     @State private var isDraggingDown: Bool = false
+    @State private var includeTagInput: String = ""
     @State private var excludeTagInput: String = ""
     @State private var showFilterSheet: Bool = false
 
@@ -74,6 +75,7 @@ struct ModelSearchScreen: View {
         if viewModel.selectedSort != .mostDownloaded { count += 1 }
         if viewModel.selectedPeriod != .allTime { count += 1 }
         if viewModel.isFreshFindEnabled { count += 1 }
+        if !viewModel.includedTags.isEmpty { count += 1 }
         if !viewModel.excludedTags.isEmpty { count += 1 }
         return count
     }
@@ -146,6 +148,7 @@ struct ModelSearchScreen: View {
                     typeFilterChips
                     baseModelFilterChips
                     sortAndPeriodChips
+                    includedTagsSection
                     excludedTagsSection
                 }
                 .padding(.vertical, Spacing.sm)
@@ -423,6 +426,72 @@ extension ModelSearchScreen {
 // MARK: - Extracted Subviews
 
 extension ModelSearchScreen {
+    var includedTagsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text("Tags (include)")
+                .font(.civitLabelMedium)
+                .foregroundColor(.civitOnSurfaceVariant)
+                .padding(.horizontal, Spacing.lg)
+
+            HStack(spacing: Spacing.sm) {
+                TextField("Include tag...", text: $includeTagInput)
+                    .font(.civitBodySmall)
+                    .submitLabel(.done)
+                    .onSubmit {
+                        if !includeTagInput.isEmpty {
+                            viewModel.addIncludedTag(includeTagInput)
+                            includeTagInput = ""
+                        }
+                    }
+                    .padding(8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.searchBar)
+                            .stroke(Color.civitOutlineVariant, lineWidth: 1)
+                    )
+                Button {
+                    if !includeTagInput.isEmpty {
+                        viewModel.addIncludedTag(includeTagInput)
+                        includeTagInput = ""
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.civitBodyMedium)
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+
+            if !viewModel.includedTags.isEmpty {
+                includedTagChips
+            }
+        }
+        .padding(.bottom, Spacing.sm)
+    }
+
+    var includedTagChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.xs) {
+                ForEach(viewModel.includedTags, id: \.self) { tag in
+                    HStack(spacing: 4) {
+                        Text(tag)
+                            .font(.civitLabelSmall)
+                        Button {
+                            viewModel.removeIncludedTag(tag)
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 10, weight: .bold))
+                        }
+                    }
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, 4)
+                    .background(Color.civitPrimary.opacity(0.15))
+                    .foregroundColor(.civitPrimary)
+                    .clipShape(Capsule())
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+        }
+    }
+
     var excludedTagsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack(spacing: Spacing.sm) {

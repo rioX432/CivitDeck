@@ -17,6 +17,7 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var searchHistory: [String] = []
     @Published var recommendations: [RecommendationSection] = []
     @Published var isFreshFindEnabled: Bool = false
+    @Published var includedTags: [String] = []
     @Published var excludedTags: [String] = []
     @Published var gridColumns: Int32 = 2
 
@@ -189,10 +190,23 @@ final class ModelSearchViewModel: ObservableObject {
         selectedPeriod = .allTime
         selectedBaseModels = []
         isFreshFindEnabled = false
+        includedTags = []
         models = []
         nextCursor = nil
         hasMore = true
         loadModels()
+    }
+
+    func addIncludedTag(_ tag: String) {
+        let trimmed = tag.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !trimmed.isEmpty, !includedTags.contains(trimmed) else { return }
+        includedTags.append(trimmed)
+        reloadModels()
+    }
+
+    func removeIncludedTag(_ tag: String) {
+        includedTags.removeAll { $0 == tag }
+        reloadModels()
     }
 
     func addExcludedTag(_ tag: String) {
@@ -263,7 +277,7 @@ final class ModelSearchViewModel: ObservableObject {
                 let nsfw: KotlinBoolean? = nsfwFilterLevel == .off ? KotlinBoolean(bool: false) : nil
                 let result = try await getModelsUseCase.invoke(
                     query: query.isEmpty ? nil : query,
-                    tag: nil,
+                    tag: includedTags.first,
                     type: selectedType,
                     sort: selectedSort,
                     period: selectedPeriod,
@@ -280,6 +294,13 @@ final class ModelSearchViewModel: ObservableObject {
                 if isFreshFindEnabled {
                     let viewedIds = try await getViewedModelIdsUseCase.invoke()
                     newModels = newModels.filter { !viewedIds.contains(KotlinLong(value: $0.id)) }
+                }
+                if includedTags.count > 1 {
+                    let remaining = Set(includedTags.dropFirst().map { $0.lowercased() })
+                    newModels = newModels.filter { model in
+                        let modelTags = Set(model.tags.compactMap { ($0 as? String)?.lowercased() })
+                        return modelTags.isSuperset(of: remaining)
+                    }
                 }
                 if !excludedTags.isEmpty {
                     let excluded = Set(excludedTags)

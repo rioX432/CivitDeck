@@ -303,6 +303,7 @@ private fun countActiveFilters(uiState: ModelSearchUiState): Int {
     if (uiState.selectedSort != SortOrder.MostDownloaded) count++
     if (uiState.selectedPeriod != TimePeriod.AllTime) count++
     if (uiState.isFreshFindEnabled) count++
+    if (uiState.includedTags.isNotEmpty()) count++
     if (uiState.excludedTags.isNotEmpty()) count++
     return count
 }
@@ -439,6 +440,7 @@ private fun FilterBottomSheet(
     }
 }
 
+@Suppress("LongMethod")
 @Composable
 private fun FilterSheetContent(
     uiState: ModelSearchUiState,
@@ -489,10 +491,23 @@ private fun FilterSheetContent(
             isFreshFindEnabled = uiState.isFreshFindEnabled,
             onFreshFindToggled = viewModel::onFreshFindToggled,
         )
-        ExcludedTagsSection(
-            excludedTags = uiState.excludedTags,
+        TagFilterSection(
+            tags = uiState.includedTags,
+            onAddTag = viewModel::onAddIncludedTag,
+            onRemoveTag = viewModel::onRemoveIncludedTag,
+            placeholder = "Include tag...",
+            header = "Tags",
+            headerSubtitle = "(include)",
+            chipBackground = { MaterialTheme.colorScheme.primaryContainer },
+            chipForeground = { MaterialTheme.colorScheme.onPrimaryContainer },
+        )
+        TagFilterSection(
+            tags = uiState.excludedTags,
             onAddTag = viewModel::onAddExcludedTag,
             onRemoveTag = viewModel::onRemoveExcludedTag,
+            placeholder = "Exclude tag...",
+            chipBackground = { MaterialTheme.colorScheme.errorContainer },
+            chipForeground = { MaterialTheme.colorScheme.onErrorContainer },
         )
     }
 }
@@ -695,61 +710,33 @@ private fun FreshOnlyToggleRow(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ExcludedTagsSection(
-    excludedTags: List<String>,
+private fun TagFilterSection(
+    tags: List<String>,
     onAddTag: (String) -> Unit,
     onRemoveTag: (String) -> Unit,
+    placeholder: String,
+    header: String? = null,
+    headerSubtitle: String? = null,
+    chipBackground: @Composable () -> androidx.compose.ui.graphics.Color,
+    chipForeground: @Composable () -> androidx.compose.ui.graphics.Color,
 ) {
-    var tagInput by remember { mutableStateOf("") }
-    val keyboardController = LocalSoftwareKeyboardController.current
-
     Column(
         modifier = Modifier.padding(horizontal = Spacing.lg),
         verticalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            OutlinedTextField(
-                value = tagInput,
-                onValueChange = { tagInput = it },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Exclude tag...") },
-                singleLine = true,
-                textStyle = MaterialTheme.typography.bodySmall,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        if (tagInput.isNotBlank()) {
-                            onAddTag(tagInput)
-                            tagInput = ""
-                            keyboardController?.hide()
-                        }
-                    },
-                ),
-            )
-            IconButton(
-                onClick = {
-                    if (tagInput.isNotBlank()) {
-                        onAddTag(tagInput)
-                        tagInput = ""
-                        keyboardController?.hide()
-                    }
-                },
-                modifier = Modifier.size(36.dp),
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add tag")
-            }
+        if (header != null) {
+            FilterSectionHeader(header, headerSubtitle)
         }
-        if (excludedTags.isNotEmpty()) {
+        TagInputRow(placeholder = placeholder, onAddTag = onAddTag)
+        if (tags.isNotEmpty()) {
+            val bg = chipBackground()
+            val fg = chipForeground()
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
                 verticalArrangement = Arrangement.spacedBy(Spacing.xs),
             ) {
-                excludedTags.forEach { tag ->
-                    ExcludedTagChip(tag = tag, onRemove = { onRemoveTag(tag) })
+                tags.forEach { tag ->
+                    TagChip(tag = tag, onRemove = { onRemoveTag(tag) }, background = bg, foreground = fg)
                 }
             }
         }
@@ -757,30 +744,68 @@ private fun ExcludedTagsSection(
 }
 
 @Composable
-private fun ExcludedTagChip(tag: String, onRemove: () -> Unit) {
+private fun TagInputRow(placeholder: String, onAddTag: (String) -> Unit) {
+    var tagInput by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OutlinedTextField(
+            value = tagInput,
+            onValueChange = { tagInput = it },
+            modifier = Modifier.weight(1f),
+            placeholder = { Text(placeholder) },
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodySmall,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    if (tagInput.isNotBlank()) {
+                        onAddTag(tagInput)
+                        tagInput = ""
+                        keyboardController?.hide()
+                    }
+                },
+            ),
+        )
+        IconButton(
+            onClick = {
+                if (tagInput.isNotBlank()) {
+                    onAddTag(tagInput)
+                    tagInput = ""
+                    keyboardController?.hide()
+                }
+            },
+            modifier = Modifier.size(36.dp),
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Add tag")
+        }
+    }
+}
+
+@Composable
+private fun TagChip(
+    tag: String,
+    onRemove: () -> Unit,
+    background: androidx.compose.ui.graphics.Color,
+    foreground: androidx.compose.ui.graphics.Color,
+) {
     Row(
         modifier = Modifier
-            .background(
-                MaterialTheme.colorScheme.errorContainer,
-                RoundedCornerShape(CornerRadius.chip),
-            )
+            .background(background, RoundedCornerShape(CornerRadius.chip))
             .padding(start = Spacing.sm, end = Spacing.xs)
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
-        Text(
-            text = tag,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onErrorContainer,
-        )
+        Text(text = tag, style = MaterialTheme.typography.labelSmall, color = foreground)
         Icon(
             imageVector = Icons.Default.Close,
             contentDescription = "Remove $tag",
-            modifier = Modifier
-                .size(14.dp)
-                .clickable(onClick = onRemove),
-            tint = MaterialTheme.colorScheme.onErrorContainer,
+            modifier = Modifier.size(14.dp).clickable(onClick = onRemove),
+            tint = foreground,
         )
     }
 }
