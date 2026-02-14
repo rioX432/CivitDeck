@@ -89,8 +89,9 @@ final class ModelDetailViewModel: ObservableObject {
                 )
                 let metaByImageId = Dictionary(
                     uniqueKeysWithValues: result.items
-                        .compactMap { img -> (String, ImageGenerationMeta)? in
-                            guard let meta = img.meta,
+                        .compactMap { item -> (String, ImageGenerationMeta)? in
+                            guard let img = item as? Image,
+                                  let meta = img.meta,
                                   let imageId = Self.extractImageId(img.url)
                             else { return nil }
                             return (imageId, meta)
@@ -107,7 +108,7 @@ final class ModelDetailViewModel: ObservableObject {
                             nsfwLevel: image.nsfwLevel,
                             width: image.width,
                             height: image.height,
-                            hash: image.hash,
+                            hash: image.hash_,
                             meta: meta
                         )
                     }
