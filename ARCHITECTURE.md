@@ -39,39 +39,17 @@ CivitDeck/
 
 ## Data Flow
 
-```
-CivitAI REST API
-       │
-       ▼
-  ┌─────────┐     ┌──────────┐
-  │  Ktor   │────▶│   DTOs   │
-  │ Client  │     │ (data/)  │
-  └─────────┘     └────┬─────┘
-                       │ map to domain
-                       ▼
-               ┌──────────────┐     ┌───────────┐
-               │  Repository  │◀───▶│ Room KMP  │
-               │ (impl)       │     │ (cache)   │
-               └──────┬───────┘     └───────────┘
-                      │
-                      ▼
-               ┌──────────────┐
-               │   Use Case   │  ← Returns Flow<T>
-               └──────┬───────┘
-                      │
-        ┌─────────────┼─────────────┐
-        ▼                           ▼
-  ┌───────────┐              ┌───────────┐
-  │ Android   │              │   iOS     │
-  │ ViewModel │              │ ViewModel │
-  │ (Compose) │              │ (SwiftUI) │
-  └─────┬─────┘              └─────┬─────┘
-        │                          │
-        ▼                          ▼
-  ┌───────────┐              ┌───────────┐
-  │  Jetpack  │              │  SwiftUI  │
-  │  Compose  │              │   Views   │
-  └───────────┘              └───────────┘
+```mermaid
+graph TB
+    api["CivitAI REST API"] --> ktor["Ktor Client"]
+    ktor --> dto["DTOs (data/)"]
+    dto -- "map to domain" --> repo["Repository (impl)"]
+    room["Room KMP (cache)"] <--> repo
+    repo --> usecase["Use Case"]
+    usecase -- "Flow&lt;T&gt;" --> avm["Android ViewModel"]
+    usecase -- "Flow&lt;T&gt;" --> ivm["iOS ViewModel"]
+    avm --> compose["Jetpack Compose"]
+    ivm --> swiftui["SwiftUI Views"]
 ```
 
 ## Layer Responsibilities

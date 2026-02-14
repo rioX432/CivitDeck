@@ -55,23 +55,20 @@ CivitDeck fills that gap. Browse models, explore images, read prompts, and save 
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed documentation.
 
-```
-┌──────────────────────────────────────────┐
-│              Shared (KMP)                │
-│                                          │
-│  ┌──────────┐ ┌──────────┐ ┌─────────┐  │
-│  │   Ktor   │ │Repository│ │ Room KMP │  │
-│  │  Client  │ │          │ │ (Cache)  │  │
-│  └────┬─────┘ └────┬─────┘ └────┬────┘  │
-│       └──────┬─────┘            │        │
-│         ┌────▼─────┐     ┌─────▼─────┐  │
-│         │ Use Case │     │  Entity   │  │
-│         └────┬─────┘     └───────────┘  │
-├──────────────┼───────────────────────────┤
-│   Android    │          iOS              │
-│   Compose    │        SwiftUI            │
-│   ViewModel  │       ViewModel           │
-└──────────────┴───────────────────────────┘
+```mermaid
+graph TB
+    subgraph shared["Shared (KMP)"]
+        ktor["Ktor Client"] & repo["Repository"] --> usecase["Use Case"]
+        room["Room KMP (Cache)"] --> entity["Entity"]
+    end
+    subgraph android["Android"]
+        avm["ViewModel"] --> compose["Compose"]
+    end
+    subgraph ios["iOS"]
+        ivm["ViewModel"] --> swiftui["SwiftUI"]
+    end
+    usecase --> avm
+    usecase --> ivm
 ```
 
 ## Getting Started

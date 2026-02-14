@@ -55,23 +55,20 @@ CivitDeck がそのギャップを埋めます。モデルの閲覧、画像の�
 
 詳細は [ARCHITECTURE.md](ARCHITECTURE.md) を参照。
 
-```
-┌──────────────────────────────────────────┐
-│              Shared (KMP)                │
-│                                          │
-│  ┌──────────┐ ┌──────────┐ ┌─────────┐  │
-│  │   Ktor   │ │Repository│ │ Room KMP │  │
-│  │  Client  │ │          │ │ (Cache)  │  │
-│  └────┬─────┘ └────┬─────┘ └────┬────┘  │
-│       └──────┬─────┘            │        │
-│         ┌────▼─────┐     ┌─────▼─────┐  │
-│         │ Use Case │     │  Entity   │  │
-│         └────┬─────┘     └───────────┘  │
-├──────────────┼───────────────────────────┤
-│   Android    │          iOS              │
-│   Compose    │        SwiftUI            │
-│   ViewModel  │       ViewModel           │
-└──────────────┴───────────────────────────┘
+```mermaid
+graph TB
+    subgraph shared["Shared (KMP)"]
+        ktor["Ktor Client"] & repo["Repository"] --> usecase["Use Case"]
+        room["Room KMP (Cache)"] --> entity["Entity"]
+    end
+    subgraph android["Android"]
+        avm["ViewModel"] --> compose["Compose"]
+    end
+    subgraph ios["iOS"]
+        ivm["ViewModel"] --> swiftui["SwiftUI"]
+    end
+    usecase --> avm
+    usecase --> ivm
 ```
 
 ## はじめに
