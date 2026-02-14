@@ -10,10 +10,10 @@ data class ModelListResponse(
 
 @Serializable
 data class ModelResponse(
-    val id: Long,
-    val name: String,
+    val id: Long = 0,
+    val name: String = "",
     val description: String? = null,
-    val type: String,
+    val type: String = "",
     val nsfw: Boolean = false,
     val tags: List<String> = emptyList(),
     val mode: String? = null,
@@ -24,7 +24,7 @@ data class ModelResponse(
 
 @Serializable
 data class ModelCreatorDto(
-    val username: String,
+    val username: String = "",
     val image: String? = null,
 )
 

@@ -1,5 +1,9 @@
 import Foundation
+import UIKit
 import Shared
+import os
+
+private let logger = Logger(subsystem: "com.riox432.civitdeck", category: "Search")
 
 @MainActor
 final class ModelSearchViewModel: ObservableObject {
@@ -41,6 +45,7 @@ final class ModelSearchViewModel: ObservableObject {
     private var hiddenModelIds: Set<KotlinLong> = []
 
     private let pageSize: Int32 = 20
+    private let maxFetchIterations = 5
 
     init() {
         self.getModelsUseCase = KoinHelper.shared.getModelsUseCase()
@@ -61,6 +66,14 @@ final class ModelSearchViewModel: ObservableObject {
         loadExcludedTags()
         loadDefaults()
         loadRecommendations()
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            let count = self?.models.count ?? 0
+            logger.warning("Memory warning received. models.count=\(count)")
+        }
     }
 
     private func loadDefaults() {
@@ -250,8 +263,16 @@ final class ModelSearchViewModel: ObservableObject {
         loadModels()
     }
 
+    func onModelAppear(_ modelId: Int64) {
+        guard let index = models.firstIndex(where: { $0.id == modelId }) else { return }
+        if index >= models.count - 10 {
+            loadMore()
+        }
+    }
+
     func loadMore() {
         guard !isLoading, !isLoadingMore, hasMore else { return }
+        isLoadingMore = true
         loadModels(isLoadMore: true)
     }
 
@@ -275,51 +296,61 @@ final class ModelSearchViewModel: ObservableObject {
             do {
                 let baseModelList: [BaseModel]? = selectedBaseModels.isEmpty ? nil : Array(selectedBaseModels)
                 let nsfw: KotlinBoolean? = nsfwFilterLevel == .off ? KotlinBoolean(bool: false) : nil
-                let result = try await getModelsUseCase.invoke(
-                    query: query.isEmpty ? nil : query,
-                    tag: includedTags.first,
-                    type: selectedType,
-                    sort: selectedSort,
-                    period: selectedPeriod,
-                    baseModels: baseModelList,
-                    cursor: isLoadMore ? nextCursor : nil,
-                    limit: KotlinInt(int: pageSize),
-                    nsfw: nsfw
-                )
+                let viewedIds: Set<KotlinLong> = isFreshFindEnabled
+                    ? try await getViewedModelIdsUseCase.invoke()
+                    : []
+
+                var accumulated: [Model] = []
+                var accumulatedIds = Set<Int64>()
+                var currentCursor: String? = isLoadMore ? nextCursor : nil
+                var fetchedNextCursor: String? = nil
+
+                // Pre-populate IDs to avoid duplicates with existing models
+                if isLoadMore {
+                    accumulatedIds = Set(models.map { $0.id })
+                }
+
+                for iteration in 0..<maxFetchIterations {
+                    guard !Task.isCancelled else { return }
+                    if accumulated.count >= Int(pageSize) { break }
+
+                    let result = try await getModelsUseCase.invoke(
+                        query: query.isEmpty ? nil : query,
+                        tag: includedTags.first,
+                        type: selectedType,
+                        sort: selectedSort,
+                        period: selectedPeriod,
+                        baseModels: baseModelList,
+                        cursor: currentCursor,
+                        limit: KotlinInt(int: pageSize),
+                        nsfw: nsfw
+                    )
+
+                    let allModels = result.items.compactMap { $0 as? Model }
+                    let filtered = applyClientFilters(allModels, viewedIds: viewedIds)
+                    // Deduplicate within batch and against existing models
+                    for model in filtered {
+                        if !accumulatedIds.contains(model.id) {
+                            accumulated.append(model)
+                            accumulatedIds.insert(model.id)
+                        }
+                    }
+                    logger.debug("Iteration \(iteration): fetched=\(allModels.count) filtered=\(filtered.count) accumulated=\(accumulated.count)")
+                    fetchedNextCursor = result.metadata.nextCursor
+                    if fetchedNextCursor == nil || fetchedNextCursor == currentCursor { break }
+                    currentCursor = fetchedNextCursor
+                }
 
                 guard !Task.isCancelled else { return }
 
-                let allModels = result.items.compactMap { $0 as? Model }
-                var newModels = allModels.filterNsfwImages(nsfwFilterLevel)
-                if isFreshFindEnabled {
-                    let viewedIds = try await getViewedModelIdsUseCase.invoke()
-                    newModels = newModels.filter { !viewedIds.contains(KotlinLong(value: $0.id)) }
-                }
-                if includedTags.count > 1 {
-                    let remaining = Set(includedTags.dropFirst().map { $0.lowercased() })
-                    newModels = newModels.filter { model in
-                        let modelTags = Set(model.tags.compactMap { ($0 as? String)?.lowercased() })
-                        return modelTags.isSuperset(of: remaining)
-                    }
-                }
-                if !excludedTags.isEmpty {
-                    let excluded = Set(excludedTags)
-                    newModels = newModels.filter { model in
-                        model.tags.allSatisfy { tag in
-                            !excluded.contains((tag as? String)?.lowercased() ?? "")
-                        }
-                    }
-                }
-                if !hiddenModelIds.isEmpty {
-                    newModels = newModels.filter { !hiddenModelIds.contains(KotlinLong(value: $0.id)) }
-                }
                 if isLoadMore {
-                    models.append(contentsOf: newModels)
+                    models.append(contentsOf: accumulated)
                 } else {
-                    models = newModels
+                    models = accumulated
                 }
-                nextCursor = result.metadata.nextCursor
-                hasMore = result.metadata.nextCursor != nil
+                logger.debug("Load complete. total models=\(self.models.count) isLoadMore=\(isLoadMore)")
+                nextCursor = fetchedNextCursor
+                hasMore = fetchedNextCursor != nil
                 isLoading = false
                 isLoadingMore = false
             } catch is CancellationError {
@@ -331,6 +362,35 @@ final class ModelSearchViewModel: ObservableObject {
                 isLoadingMore = false
             }
         }
+    }
+
+    private func applyClientFilters(
+        _ models: [Model],
+        viewedIds: Set<KotlinLong>
+    ) -> [Model] {
+        var filtered = models.filterNsfwImages(nsfwFilterLevel)
+        if isFreshFindEnabled {
+            filtered = filtered.filter { !viewedIds.contains(KotlinLong(value: $0.id)) }
+        }
+        if includedTags.count > 1 {
+            let remaining = Set(includedTags.dropFirst().map { $0.lowercased() })
+            filtered = filtered.filter { model in
+                let modelTags = Set(model.tags.compactMap { ($0 as? String)?.lowercased() })
+                return modelTags.isSuperset(of: remaining)
+            }
+        }
+        if !excludedTags.isEmpty {
+            let excluded = Set(excludedTags)
+            filtered = filtered.filter { model in
+                model.tags.allSatisfy { tag in
+                    !excluded.contains((tag as? String)?.lowercased() ?? "")
+                }
+            }
+        }
+        if !hiddenModelIds.isEmpty {
+            filtered = filtered.filter { !hiddenModelIds.contains(KotlinLong(value: $0.id)) }
+        }
+        return filtered
     }
 }
 

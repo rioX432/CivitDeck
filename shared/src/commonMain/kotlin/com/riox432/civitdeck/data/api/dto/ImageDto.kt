@@ -11,8 +11,8 @@ data class ImageListResponse(
 
 @Serializable
 data class ImageDto(
-    val id: Long,
-    val url: String,
+    val id: Long = 0,
+    val url: String = "",
     val hash: String? = null,
     val width: Int = 0,
     val height: Int = 0,

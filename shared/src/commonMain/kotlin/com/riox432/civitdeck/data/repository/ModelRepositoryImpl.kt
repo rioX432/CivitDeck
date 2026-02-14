@@ -10,10 +10,12 @@ import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.ModelVersion
+import com.riox432.civitdeck.domain.model.PageMetadata
 import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.ModelRepository
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
 class ModelRepositoryImpl(
@@ -65,6 +67,10 @@ class ModelRepositoryImpl(
                 items = response.items.map { it.toDomain() },
                 metadata = response.metadata.toDomain(),
             )
+        } catch (@Suppress("SwallowedException") e: io.ktor.serialization.ContentConvertException) {
+            getModelsFromCacheOrEmpty(cacheKey)
+        } catch (@Suppress("SwallowedException") e: SerializationException) {
+            getModelsFromCacheOrEmpty(cacheKey)
         } catch (e: Exception) {
             val cached = localCache.getCached(cacheKey)
             if (cached != null) {
@@ -130,6 +136,19 @@ class ModelRepositoryImpl(
             } else {
                 throw e
             }
+        }
+    }
+
+    private suspend fun getModelsFromCacheOrEmpty(cacheKey: String): PaginatedResult<Model> {
+        val cached = localCache.getCached(cacheKey)
+        return if (cached != null) {
+            val response = json.decodeFromString(ModelListResponse.serializer(), cached)
+            PaginatedResult(
+                items = response.items.map { it.toDomain() },
+                metadata = response.metadata.toDomain(),
+            )
+        } else {
+            PaginatedResult(items = emptyList(), metadata = PageMetadata(null, null))
         }
     }
 }

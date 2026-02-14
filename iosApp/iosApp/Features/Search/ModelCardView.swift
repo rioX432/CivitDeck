@@ -31,8 +31,9 @@ struct ModelCardView: View {
 
     private var thumbnailImage: some View {
         Group {
-            let url = model.modelVersions.first?.images.first?.url
-            if let urlString = url, let imageUrl = URL(string: urlString) {
+            let image = model.modelVersions.first?.images.first
+            let urlString = image.flatMap { $0.thumbnailUrl(width: 450) }
+            if let urlString, let imageUrl = URL(string: urlString) {
                 Color.civitSurfaceVariant
                     .aspectRatio(1, contentMode: .fit)
                     .overlay {

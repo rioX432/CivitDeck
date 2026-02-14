@@ -223,7 +223,7 @@ struct ModelSearchScreen: View {
                 }
 
                 LazyVGrid(columns: columns, spacing: Spacing.sm) {
-                    ForEach(Array(viewModel.models.enumerated()), id: \.element.id) { index, model in
+                    ForEach(viewModel.models, id: \.id) { model in
                         NavigationLink(value: model.id) {
                             ModelCardView(model: model)
                         }
@@ -237,9 +237,7 @@ struct ModelSearchScreen: View {
                         }
                         .transition(.opacity.combined(with: .offset(y: 20)))
                         .onAppear {
-                            if index == viewModel.models.count - 3 {
-                                viewModel.loadMore()
-                            }
+                            viewModel.onModelAppear(model.id)
                         }
                     }
                 }

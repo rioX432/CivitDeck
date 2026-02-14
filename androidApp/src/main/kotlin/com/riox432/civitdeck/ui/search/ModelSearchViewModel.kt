@@ -2,6 +2,10 @@ package com.riox432.civitdeck.ui.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
@@ -9,7 +13,6 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
-import com.riox432.civitdeck.domain.model.filterNsfwImages
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
@@ -25,34 +28,41 @@ import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class ModelSearchUiState(
-    val models: List<Model> = emptyList(),
     val query: String = "",
     val selectedType: ModelType? = null,
     val selectedSort: SortOrder = SortOrder.MostDownloaded,
     val selectedPeriod: TimePeriod = TimePeriod.AllTime,
     val selectedBaseModels: Set<BaseModel> = emptySet(),
     val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
-    val isLoading: Boolean = false,
-    val isLoadingMore: Boolean = false,
-    val isRefreshing: Boolean = false,
-    val error: String? = null,
-    val nextCursor: String? = null,
-    val hasMore: Boolean = true,
     val isFreshFindEnabled: Boolean = false,
     val recommendations: List<RecommendationSection> = emptyList(),
     val isLoadingRecommendations: Boolean = false,
+    val excludedTags: List<String> = emptyList(),
+    val includedTags: List<String> = emptyList(),
+)
+
+internal data class FilterState(
+    val query: String = "",
+    val selectedType: ModelType? = null,
+    val selectedSort: SortOrder = SortOrder.MostDownloaded,
+    val selectedPeriod: TimePeriod = TimePeriod.AllTime,
+    val selectedBaseModels: Set<BaseModel> = emptySet(),
+    val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
+    val isFreshFindEnabled: Boolean = false,
     val excludedTags: List<String> = emptyList(),
     val includedTags: List<String> = emptyList(),
 )
@@ -79,6 +89,9 @@ class ModelSearchViewModel(
     private val _uiState = MutableStateFlow(ModelSearchUiState())
     val uiState: StateFlow<ModelSearchUiState> = _uiState.asStateFlow()
 
+    private val _filterState = MutableStateFlow(FilterState())
+    private val _hiddenModelIds = MutableStateFlow<Set<Long>>(emptySet())
+
     val searchHistory: StateFlow<List<String>> =
         observeSearchHistoryUseCase()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
@@ -87,9 +100,31 @@ class ModelSearchViewModel(
         observeGridColumnsUseCase()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 2)
 
-    private var loadJob: Job? = null
-    private var hiddenModelIds: Set<Long> = emptySet()
-    private var defaultsLoaded = false
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val pagingData: Flow<PagingData<Model>> = combine(
+        _filterState,
+        _hiddenModelIds,
+    ) { filters, hiddenIds ->
+        filters to hiddenIds
+    }
+        .flatMapLatest { (filters, hiddenIds) ->
+            Pager(
+                config = PagingConfig(
+                    pageSize = PAGE_SIZE,
+                    prefetchDistance = PAGE_SIZE * 2,
+                    initialLoadSize = PAGE_SIZE * 3,
+                ),
+                pagingSourceFactory = {
+                    ModelPagingSource(
+                        getModelsUseCase = getModelsUseCase,
+                        getViewedModelIdsUseCase = getViewedModelIdsUseCase,
+                        filterState = filters,
+                        hiddenModelIds = hiddenIds,
+                    )
+                },
+            ).flow
+        }
+        .cachedIn(viewModelScope)
 
     init {
         observeNsfwFilter()
@@ -106,8 +141,7 @@ class ModelSearchViewModel(
             val sort = observeSortUseCase().first()
             val period = observePeriodUseCase().first()
             _uiState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
-            defaultsLoaded = true
-            loadModels()
+            _filterState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
         }
     }
 
@@ -117,11 +151,7 @@ class ModelSearchViewModel(
                 val prev = _uiState.value.nsfwFilterLevel
                 _uiState.update { it.copy(nsfwFilterLevel = level) }
                 if (prev != level) {
-                    loadJob?.cancel()
-                    _uiState.update {
-                        it.copy(nextCursor = null, models = emptyList(), hasMore = true)
-                    }
-                    loadModels()
+                    _filterState.update { it.copy(nsfwFilterLevel = level) }
                     loadRecommendations()
                 }
             }
@@ -151,11 +181,7 @@ class ModelSearchViewModel(
         if (query.isNotBlank()) {
             viewModelScope.launch { addSearchHistoryUseCase(query.trim()) }
         }
-        loadJob?.cancel()
-        _uiState.update {
-            it.copy(nextCursor = null, models = emptyList(), hasMore = true)
-        }
-        loadModels()
+        _filterState.update { it.copy(query = query) }
     }
 
     fun onHistoryItemClick(query: String) {
@@ -168,7 +194,6 @@ class ModelSearchViewModel(
     }
 
     fun resetFilters() {
-        loadJob?.cancel()
         _uiState.update {
             it.copy(
                 selectedType = null,
@@ -177,59 +202,48 @@ class ModelSearchViewModel(
                 selectedBaseModels = emptySet(),
                 isFreshFindEnabled = false,
                 includedTags = emptyList(),
-                nextCursor = null,
-                models = emptyList(),
-                hasMore = true,
             )
         }
-        loadModels()
+        _filterState.update {
+            it.copy(
+                selectedType = null,
+                selectedSort = SortOrder.MostDownloaded,
+                selectedPeriod = TimePeriod.AllTime,
+                selectedBaseModels = emptySet(),
+                isFreshFindEnabled = false,
+                includedTags = emptyList(),
+            )
+        }
     }
 
     fun onTypeSelected(type: ModelType?) {
-        loadJob?.cancel()
-        _uiState.update {
-            it.copy(selectedType = type, nextCursor = null, models = emptyList(), hasMore = true)
-        }
-        loadModels()
+        _uiState.update { it.copy(selectedType = type) }
+        _filterState.update { it.copy(selectedType = type) }
     }
 
     fun onSortSelected(sort: SortOrder) {
-        loadJob?.cancel()
-        _uiState.update {
-            it.copy(selectedSort = sort, nextCursor = null, models = emptyList(), hasMore = true)
-        }
-        loadModels()
+        _uiState.update { it.copy(selectedSort = sort) }
+        _filterState.update { it.copy(selectedSort = sort) }
     }
 
     fun onPeriodSelected(period: TimePeriod) {
-        loadJob?.cancel()
-        _uiState.update {
-            it.copy(selectedPeriod = period, nextCursor = null, models = emptyList(), hasMore = true)
-        }
-        loadModels()
+        _uiState.update { it.copy(selectedPeriod = period) }
+        _filterState.update { it.copy(selectedPeriod = period) }
     }
 
     fun onBaseModelToggled(baseModel: BaseModel) {
-        loadJob?.cancel()
-        _uiState.update {
-            val updated = it.selectedBaseModels.toMutableSet()
-            if (baseModel in updated) updated.remove(baseModel) else updated.add(baseModel)
-            it.copy(selectedBaseModels = updated, nextCursor = null, models = emptyList(), hasMore = true)
+        val updater = { current: Set<BaseModel> ->
+            current.toMutableSet().apply {
+                if (baseModel in this) remove(baseModel) else add(baseModel)
+            }.toSet()
         }
-        loadModels()
+        _uiState.update { it.copy(selectedBaseModels = updater(it.selectedBaseModels)) }
+        _filterState.update { it.copy(selectedBaseModels = updater(it.selectedBaseModels)) }
     }
 
     fun onFreshFindToggled() {
-        loadJob?.cancel()
-        _uiState.update {
-            it.copy(
-                isFreshFindEnabled = !it.isFreshFindEnabled,
-                nextCursor = null,
-                models = emptyList(),
-                hasMore = true,
-            )
-        }
-        loadModels()
+        _uiState.update { it.copy(isFreshFindEnabled = !it.isFreshFindEnabled) }
+        _filterState.update { it.copy(isFreshFindEnabled = !it.isFreshFindEnabled) }
     }
 
     fun onAddIncludedTag(tag: String) {
@@ -238,12 +252,12 @@ class ModelSearchViewModel(
         val current = _uiState.value.includedTags
         if (trimmed in current) return
         _uiState.update { it.copy(includedTags = it.includedTags + trimmed) }
-        reloadModels()
+        _filterState.update { it.copy(includedTags = it.includedTags + trimmed) }
     }
 
     fun onRemoveIncludedTag(tag: String) {
         _uiState.update { it.copy(includedTags = it.includedTags - tag) }
-        reloadModels()
+        _filterState.update { it.copy(includedTags = it.includedTags - tag) }
     }
 
     fun onAddExcludedTag(tag: String) {
@@ -252,7 +266,6 @@ class ModelSearchViewModel(
         viewModelScope.launch {
             addExcludedTagUseCase(trimmed)
             loadExcludedTags()
-            reloadModels()
         }
     }
 
@@ -260,120 +273,25 @@ class ModelSearchViewModel(
         viewModelScope.launch {
             removeExcludedTagUseCase(tag)
             loadExcludedTags()
-            reloadModels()
         }
     }
 
     fun onHideModel(modelId: Long, modelName: String) {
         viewModelScope.launch {
             hideModelUseCase(modelId, modelName)
-            hiddenModelIds = getHiddenModelIdsUseCase()
-            _uiState.update { it.copy(models = it.models.filter { m -> m.id != modelId }) }
+            val ids = getHiddenModelIdsUseCase()
+            _hiddenModelIds.value = ids
         }
     }
 
     private fun loadExcludedTags() {
         viewModelScope.launch {
             val tags = getExcludedTagsUseCase()
-            hiddenModelIds = getHiddenModelIdsUseCase()
+            val hiddenIds = getHiddenModelIdsUseCase()
+            _hiddenModelIds.value = hiddenIds
             _uiState.update { it.copy(excludedTags = tags) }
+            _filterState.update { it.copy(excludedTags = tags) }
         }
-    }
-
-    private fun reloadModels() {
-        loadJob?.cancel()
-        _uiState.update { it.copy(nextCursor = null, models = emptyList(), hasMore = true) }
-        loadModels()
-    }
-
-    fun loadMore() {
-        val state = _uiState.value
-        if (state.isLoading || state.isLoadingMore || !state.hasMore) return
-        loadModels(isLoadMore = true)
-    }
-
-    fun refresh() {
-        loadJob?.cancel()
-        _uiState.update { it.copy(isRefreshing = true, nextCursor = null, hasMore = true) }
-        loadModels(isRefresh = true)
-    }
-
-    private fun loadModels(isLoadMore: Boolean = false, isRefresh: Boolean = false) {
-        loadJob = viewModelScope.launch {
-            _uiState.update {
-                when {
-                    isLoadMore -> it.copy(isLoadingMore = true)
-                    isRefresh -> it.copy(isRefreshing = true)
-                    else -> it.copy(isLoading = true)
-                }
-            }
-            try {
-                val state = _uiState.value
-                val nsfw = if (state.nsfwFilterLevel == NsfwFilterLevel.Off) false else null
-                val result = getModelsUseCase(
-                    query = state.query.ifBlank { null },
-                    tag = state.includedTags.firstOrNull(),
-                    type = state.selectedType,
-                    sort = state.selectedSort,
-                    period = state.selectedPeriod,
-                    baseModels = state.selectedBaseModels.toList().ifEmpty { null },
-                    cursor = if (isLoadMore) state.nextCursor else null,
-                    limit = PAGE_SIZE,
-                    nsfw = nsfw,
-                )
-                val filteredItems = applyClientFilters(result.items, state)
-                _uiState.update {
-                    it.copy(
-                        models = if (isLoadMore) it.models + filteredItems else filteredItems,
-                        isLoading = false,
-                        isLoadingMore = false,
-                        isRefreshing = false,
-                        error = null,
-                        nextCursor = result.metadata.nextCursor,
-                        hasMore = result.metadata.nextCursor != null,
-                    )
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        isLoadingMore = false,
-                        isRefreshing = false,
-                        error = e.message ?: "Unknown error",
-                    )
-                }
-            }
-        }
-    }
-
-    private suspend fun applyClientFilters(
-        models: List<Model>,
-        state: ModelSearchUiState,
-    ): List<Model> {
-        var filtered = models.filterNsfwImages(state.nsfwFilterLevel)
-        if (state.isFreshFindEnabled) {
-            val viewedIds = getViewedModelIdsUseCase()
-            filtered = filtered.filter { it.id !in viewedIds }
-        }
-        if (state.includedTags.size > 1) {
-            val remaining = state.includedTags.drop(1).map { it.lowercase() }.toSet()
-            filtered = filtered.filter { model ->
-                val modelTags = model.tags.map { it.lowercase() }.toSet()
-                modelTags.containsAll(remaining)
-            }
-        }
-        if (state.excludedTags.isNotEmpty()) {
-            val excluded = state.excludedTags.toSet()
-            filtered = filtered.filter { model ->
-                model.tags.none { it.lowercase() in excluded }
-            }
-        }
-        if (hiddenModelIds.isNotEmpty()) {
-            filtered = filtered.filter { it.id !in hiddenModelIds }
-        }
-        return filtered
     }
 
     companion object {

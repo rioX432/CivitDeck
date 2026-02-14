@@ -43,6 +43,22 @@ data class ModelImage(
     val meta: ImageGenerationMeta?,
 )
 
+/**
+ * Returns a CDN URL resized to the given [width].
+ * CivitAI CDN format: .../xG1nkqKTMzGDvpLrqFT7WA/{uuid}/width={size}/{filename}
+ */
+fun ModelImage.thumbnailUrl(width: Int = 450): String {
+    if (!url.contains("image.civitai.com")) return url
+    val parts = url.split("/").toMutableList()
+    val widthIdx = parts.indexOfFirst { it.startsWith("width=") }
+    if (widthIdx != -1) {
+        parts[widthIdx] = "width=$width"
+    } else if (parts.size > 5) {
+        parts.add(5, "width=$width")
+    }
+    return parts.joinToString("/")
+}
+
 fun ModelImage.isAllowed(filterLevel: NsfwFilterLevel): Boolean = when (filterLevel) {
     NsfwFilterLevel.Off -> nsfwLevel == NsfwLevel.None
     NsfwFilterLevel.Soft -> nsfwLevel == NsfwLevel.None || nsfwLevel == NsfwLevel.Soft

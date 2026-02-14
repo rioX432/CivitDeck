@@ -4,9 +4,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ModelVersionResponse(
-    val id: Long,
+    val id: Long = 0,
     val modelId: Long = 0,
-    val name: String,
+    val name: String = "",
     val description: String? = null,
     val createdAt: String? = null,
     val baseModel: String? = null,
@@ -50,7 +50,7 @@ data class ModelFileMetadataDto(
 
 @Serializable
 data class ModelImageDto(
-    val url: String,
+    val url: String = "",
     val nsfw: Boolean = false,
     val nsfwLevel: Int? = null,
     val width: Int = 0,

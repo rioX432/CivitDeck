@@ -33,7 +33,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -92,12 +91,17 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.components.ModelCard
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
@@ -136,20 +140,9 @@ fun ModelSearchScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
     val gridColumns by viewModel.gridColumns.collectAsStateWithLifecycle()
+    val lazyPagingItems = viewModel.pagingData.collectAsLazyPagingItems()
     val gridState = rememberLazyGridState()
     val headerState = rememberCollapsibleHeaderState()
-
-    val shouldLoadMore by remember {
-        derivedStateOf {
-            val lastVisibleItem = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            val totalItems = gridState.layoutInfo.totalItemsCount
-            lastVisibleItem >= totalItems - 6
-        }
-    }
-
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) viewModel.loadMore()
-    }
 
     HeaderSnapEffect(gridState = gridState, headerState = headerState)
 
@@ -162,6 +155,7 @@ fun ModelSearchScreen(
         viewModel = viewModel,
         onModelClick = onModelClick,
         gridColumns = gridColumns,
+        lazyPagingItems = lazyPagingItems,
     )
 }
 
@@ -204,6 +198,7 @@ private fun SearchScreenBody(
     viewModel: ModelSearchViewModel,
     onModelClick: (Long, String?, String) -> Unit,
     gridColumns: Int,
+    lazyPagingItems: LazyPagingItems<Model>,
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
@@ -234,7 +229,7 @@ private fun SearchScreenBody(
         ModelSearchContent(
             uiState = uiState,
             gridState = gridState,
-            onRefresh = viewModel::refresh,
+            lazyPagingItems = lazyPagingItems,
             onModelClick = onModelClick,
             onHideModel = viewModel::onHideModel,
             topPadding = topPadding,
@@ -893,24 +888,26 @@ private fun FilterChipItem(
 private fun ModelSearchContent(
     uiState: ModelSearchUiState,
     gridState: LazyGridState,
-    onRefresh: () -> Unit,
+    lazyPagingItems: LazyPagingItems<Model>,
     onModelClick: (Long, String?, String) -> Unit,
     onHideModel: (Long, String) -> Unit,
     topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     gridColumns: Int = 2,
 ) {
-    val isInitialLoading = uiState.models.isEmpty() &&
-        (uiState.isLoading || uiState.isLoadingRecommendations)
+    val refreshState = lazyPagingItems.loadState.refresh
+    val isInitialLoading = refreshState is LoadState.Loading ||
+        (lazyPagingItems.itemCount == 0 && uiState.isLoadingRecommendations)
+    val refreshError = (refreshState as? LoadState.Error)?.error
     val stateKey = when {
         isInitialLoading -> "loading"
-        uiState.error != null && uiState.models.isEmpty() -> "error"
+        refreshError != null && lazyPagingItems.itemCount == 0 -> "error"
         else -> "content"
     }
 
     PullToRefreshBox(
-        isRefreshing = uiState.isRefreshing,
-        onRefresh = onRefresh,
+        isRefreshing = refreshState is LoadState.Loading && lazyPagingItems.itemCount > 0,
+        onRefresh = { lazyPagingItems.refresh() },
         modifier = Modifier.fillMaxSize(),
     ) {
         androidx.compose.animation.Crossfade(
@@ -930,17 +927,16 @@ private fun ModelSearchContent(
                 "error" -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
-                            text = uiState.error ?: "Unknown error",
+                            text = refreshError?.message ?: "Unknown error",
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
                 }
                 else -> {
                     ModelGrid(
-                        models = uiState.models,
+                        lazyPagingItems = lazyPagingItems,
                         recommendations = uiState.recommendations,
                         gridState = gridState,
-                        isLoadingMore = uiState.isLoadingMore,
                         onModelClick = onModelClick,
                         onHideModel = onHideModel,
                         topPadding = topPadding,
@@ -956,16 +952,17 @@ private fun ModelSearchContent(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ModelGrid(
-    models: List<Model>,
+    lazyPagingItems: LazyPagingItems<Model>,
     recommendations: List<RecommendationSection>,
     gridState: LazyGridState,
-    isLoadingMore: Boolean,
     onModelClick: (Long, String?, String) -> Unit,
     onHideModel: (Long, String) -> Unit,
     topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     gridColumns: Int = 2,
 ) {
+    val isAppendLoading = lazyPagingItems.loadState.append is LoadState.Loading
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(gridColumns),
         state = gridState,
@@ -990,9 +987,13 @@ private fun ModelGrid(
                 )
             }
         }
-        items(items = models, key = { it.id }) { model ->
+        items(
+            count = lazyPagingItems.itemCount,
+            key = lazyPagingItems.itemKey { it.id },
+        ) { index ->
+            val model = lazyPagingItems[index] ?: return@items
             val thumbnailUrl = model.modelVersions
-                .firstOrNull()?.images?.firstOrNull()?.url
+                .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
             ModelCardWithContextMenu(
                 model = model,
                 onClick = { onModelClick(model.id, thumbnailUrl, "") },
@@ -1000,9 +1001,9 @@ private fun ModelGrid(
                 modifier = Modifier.animateItem(),
             )
         }
-        item(span = { GridItemSpan(2) }) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             AnimatedVisibility(
-                visible = isLoadingMore,
+                visible = isAppendLoading,
                 enter = fadeIn() + expandVertically(),
                 exit = fadeOut() + shrinkVertically(),
             ) {
