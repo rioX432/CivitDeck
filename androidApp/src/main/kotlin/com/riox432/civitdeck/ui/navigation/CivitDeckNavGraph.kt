@@ -18,8 +18,12 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
@@ -85,7 +89,7 @@ data object SavedPromptsRoute
 
 data object SettingsRoute
 
-private enum class Tab { Search, Favorites }
+private enum class Tab { Search, Favorites, Prompts, Settings }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -98,10 +102,14 @@ fun CivitDeckNavGraph() {
     ) { mutableStateOf(Tab.Search) }
     val searchBackStack = remember { mutableStateListOf<Any>(SearchRoute) }
     val favoritesBackStack = remember { mutableStateListOf<Any>(FavoritesRoute) }
+    val promptsBackStack = remember { mutableStateListOf<Any>(SavedPromptsRoute) }
+    val settingsBackStack = remember { mutableStateListOf<Any>(SettingsRoute) }
 
     val activeBackStack = when (selectedTab) {
         Tab.Search -> searchBackStack
         Tab.Favorites -> favoritesBackStack
+        Tab.Prompts -> promptsBackStack
+        Tab.Settings -> settingsBackStack
     }
 
     Scaffold(
@@ -110,8 +118,12 @@ fun CivitDeckNavGraph() {
                 selectedTab = selectedTab,
                 onTabSelected = { tab ->
                     if (tab == selectedTab) {
-                        // Pop to root on re-select
-                        val stack = if (tab == Tab.Search) searchBackStack else favoritesBackStack
+                        val stack = when (tab) {
+                            Tab.Search -> searchBackStack
+                            Tab.Favorites -> favoritesBackStack
+                            Tab.Prompts -> promptsBackStack
+                            Tab.Settings -> settingsBackStack
+                        }
                         while (stack.size > 1) stack.removeAt(stack.lastIndex)
                     } else {
                         selectedTab = tab
@@ -120,7 +132,7 @@ fun CivitDeckNavGraph() {
             )
         },
     ) { padding ->
-        SharedTransitionLayout(modifier = Modifier.padding(bottom = padding.calculateBottomPadding())) {
+        SharedTransitionLayout(modifier = Modifier.padding(padding)) {
             CompositionLocalProvider(LocalSharedTransitionScope provides this) {
                 CivitDeckNavDisplay(activeBackStack)
             }
@@ -157,6 +169,20 @@ private fun BottomNavBar(
                 activeIcon = Icons.Filled.Favorite,
                 inactiveIcon = Icons.Outlined.FavoriteBorder,
                 label = "Favorites",
+            )
+            BottomNavItem(
+                selected = selectedTab == Tab.Prompts,
+                onClick = { onTabSelected(Tab.Prompts) },
+                activeIcon = Icons.Outlined.Bookmarks,
+                inactiveIcon = Icons.Outlined.BookmarkBorder,
+                label = "Prompts",
+            )
+            BottomNavItem(
+                selected = selectedTab == Tab.Settings,
+                onClick = { onTabSelected(Tab.Settings) },
+                activeIcon = Icons.Filled.Settings,
+                inactiveIcon = Icons.Outlined.Settings,
+                label = "Settings",
             )
         }
     }
@@ -220,8 +246,6 @@ private fun CivitDeckNavDisplay(backStack: MutableList<Any>) {
                     onModelClick = { modelId, thumbnailUrl, suffix ->
                         backStack.add(DetailRoute(modelId, thumbnailUrl, suffix))
                     },
-                    onSavedPromptsClick = { backStack.add(SavedPromptsRoute) },
-                    onSettingsClick = { backStack.add(SettingsRoute) },
                 )
             }
             entry<FavoritesRoute> {
@@ -239,17 +263,11 @@ private fun CivitDeckNavDisplay(backStack: MutableList<Any>) {
             galleryEntry(backStack)
             entry<SavedPromptsRoute> {
                 val viewModel: SavedPromptsViewModel = koinViewModel()
-                SavedPromptsScreen(
-                    viewModel = viewModel,
-                    onBack = { backStack.removeLastOrNull() },
-                )
+                SavedPromptsScreen(viewModel = viewModel)
             }
             entry<SettingsRoute> {
                 val viewModel: SettingsViewModel = koinViewModel()
-                SettingsScreen(
-                    viewModel = viewModel,
-                    onBack = { backStack.removeLastOrNull() },
-                )
+                SettingsScreen(viewModel = viewModel)
             }
         },
     )

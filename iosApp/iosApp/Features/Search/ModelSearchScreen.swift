@@ -42,25 +42,7 @@ struct ModelSearchScreen: View {
                 .animation(MotionAnimation.standard, value: viewModel.error == nil)
                 .frame(maxHeight: .infinity)
             }
-            .navigationTitle("CivitDeck")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink {
-                        SavedPromptsScreen()
-                    } label: {
-                        Image(systemName: "bookmark")
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink {
-                        SettingsScreen()
-                    } label: {
-                        Image(systemName: "gearshape")
-                    }
-                }
-            }
+            .navigationBarHidden(true)
             .task {
                 await viewModel.observeNsfwFilter()
             }

@@ -12,6 +12,16 @@ struct ContentView: View {
                 .tabItem {
                     Label("Favorites", systemImage: "heart")
                 }
+
+            SavedPromptsScreen()
+                .tabItem {
+                    Label("Prompts", systemImage: "bookmark")
+                }
+
+            SettingsScreen()
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape")
+                }
         }
     }
 }

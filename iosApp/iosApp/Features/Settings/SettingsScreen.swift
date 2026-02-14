@@ -21,8 +21,6 @@ struct SettingsScreen: View {
                 }
             }
         }
-        .navigationTitle("Settings")
-        .navigationBarTitleDisplayMode(.inline)
         .task {
             await viewModel.observeNsfwFilter()
         }

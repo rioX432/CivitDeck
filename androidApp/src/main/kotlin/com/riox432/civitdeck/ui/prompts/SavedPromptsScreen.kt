@@ -18,18 +18,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -42,35 +38,19 @@ import com.riox432.civitdeck.domain.model.SavedPrompt
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SavedPromptsScreen(
     viewModel: SavedPromptsViewModel,
-    onBack: () -> Unit,
 ) {
     val prompts by viewModel.prompts.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Saved Prompts") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-            )
-        },
-    ) { padding ->
-        if (prompts.isEmpty()) {
-            EmptyState(modifier = Modifier.padding(padding))
-        } else {
-            PromptList(
-                prompts = prompts,
-                onDelete = viewModel::delete,
-                modifier = Modifier.padding(padding),
-            )
-        }
+    if (prompts.isEmpty()) {
+        EmptyState()
+    } else {
+        PromptList(
+            prompts = prompts,
+            onDelete = viewModel::delete,
+        )
     }
 }
 

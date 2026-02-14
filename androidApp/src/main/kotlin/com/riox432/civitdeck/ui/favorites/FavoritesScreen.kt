@@ -21,12 +21,9 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,24 +43,18 @@ import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
 import com.riox432.civitdeck.util.FormatUtils
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
     favorites: List<FavoriteModelSummary>,
     onModelClick: (Long) -> Unit,
 ) {
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Favorites") }) },
-    ) { padding ->
-        if (favorites.isEmpty()) {
-            EmptyFavorites()
-        } else {
-            FavoritesGrid(
-                favorites = favorites,
-                onModelClick = onModelClick,
-                topPadding = padding.calculateTopPadding(),
-            )
-        }
+    if (favorites.isEmpty()) {
+        EmptyFavorites()
+    } else {
+        FavoritesGrid(
+            favorites = favorites,
+            onModelClick = onModelClick,
+        )
     }
 }
 

@@ -12,8 +12,6 @@ struct SavedPromptsScreen: View {
                 promptList
             }
         }
-        .navigationTitle("Saved Prompts")
-        .navigationBarTitleDisplayMode(.inline)
     }
 
     private var emptyState: some View {
