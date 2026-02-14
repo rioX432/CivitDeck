@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -27,7 +29,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,8 +47,18 @@ import com.riox432.civitdeck.ui.theme.Spacing
 @Composable
 fun SavedPromptsScreen(
     viewModel: SavedPromptsViewModel,
+    scrollToTopTrigger: Int = 0,
 ) {
     val prompts by viewModel.prompts.collectAsStateWithLifecycle()
+    val listState = rememberLazyListState()
+
+    var lastHandledTrigger by rememberSaveable { mutableIntStateOf(scrollToTopTrigger) }
+    LaunchedEffect(scrollToTopTrigger) {
+        if (scrollToTopTrigger != lastHandledTrigger) {
+            lastHandledTrigger = scrollToTopTrigger
+            listState.animateScrollToItem(0)
+        }
+    }
 
     if (prompts.isEmpty()) {
         EmptyState()
@@ -50,6 +66,7 @@ fun SavedPromptsScreen(
         PromptList(
             prompts = prompts,
             onDelete = viewModel::delete,
+            listState = listState,
         )
     }
 }
@@ -90,10 +107,12 @@ private fun PromptList(
     prompts: List<SavedPrompt>,
     onDelete: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState(),
 ) {
     val context = LocalContext.current
     LazyColumn(
         modifier = modifier.fillMaxSize(),
+        state = listState,
         contentPadding = androidx.compose.foundation.layout.PaddingValues(Spacing.lg),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {

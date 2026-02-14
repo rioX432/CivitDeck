@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -17,9 +18,12 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,10 +38,20 @@ import com.riox432.civitdeck.ui.theme.Spacing
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onNavigateToLicenses: () -> Unit = {},
+    scrollToTopTrigger: Int = 0,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val listState = rememberLazyListState()
 
-    LazyColumn {
+    var lastHandledTrigger by rememberSaveable { mutableIntStateOf(scrollToTopTrigger) }
+    LaunchedEffect(scrollToTopTrigger) {
+        if (scrollToTopTrigger != lastHandledTrigger) {
+            lastHandledTrigger = scrollToTopTrigger
+            listState.animateScrollToItem(0)
+        }
+    }
+
+    LazyColumn(state = listState) {
         item { SectionHeader("Content Filter") }
         item { NsfwToggleRow(state.nsfwFilterLevel, viewModel::onNsfwFilterChanged) }
         item { SectionHeader("Display") }

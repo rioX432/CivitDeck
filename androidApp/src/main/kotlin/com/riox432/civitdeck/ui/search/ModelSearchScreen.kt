@@ -72,8 +72,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -134,6 +136,7 @@ private fun rememberCollapsibleHeaderState(): CollapsibleHeaderState {
 fun ModelSearchScreen(
     viewModel: ModelSearchViewModel,
     onModelClick: (Long, String?, String) -> Unit = { _, _, _ -> },
+    scrollToTopTrigger: Int = 0,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
@@ -154,6 +157,15 @@ fun ModelSearchScreen(
     }
 
     HeaderSnapEffect(gridState = gridState, headerState = headerState)
+
+    var lastHandledTrigger by rememberSaveable { mutableIntStateOf(scrollToTopTrigger) }
+    LaunchedEffect(scrollToTopTrigger) {
+        if (scrollToTopTrigger != lastHandledTrigger) {
+            lastHandledTrigger = scrollToTopTrigger
+            gridState.animateScrollToItem(0)
+            headerState.offsetPx = 0f
+        }
+    }
 
     SearchScreenBody(
         padding = PaddingValues(),

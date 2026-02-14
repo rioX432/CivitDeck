@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -102,6 +103,21 @@ data object LicensesRoute
 
 private enum class Tab { Search, Favorites, Prompts, Settings }
 
+private class TabState(
+    val backStack: MutableList<Any>,
+    scrollTrigger: Int = 0,
+) {
+    var scrollTrigger by mutableIntStateOf(scrollTrigger)
+
+    fun onReselected() {
+        if (backStack.size > 1) {
+            while (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
+        } else {
+            scrollTrigger++
+        }
+    }
+}
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun CivitDeckNavGraph() {
@@ -111,17 +127,17 @@ fun CivitDeckNavGraph() {
             restore = { Tab.valueOf(it["tab"] as String) },
         ),
     ) { mutableStateOf(Tab.Search) }
-    val searchBackStack = remember { mutableStateListOf<Any>(SearchRoute) }
-    val favoritesBackStack = remember { mutableStateListOf<Any>(FavoritesRoute) }
-    val promptsBackStack = remember { mutableStateListOf<Any>(SavedPromptsRoute) }
-    val settingsBackStack = remember { mutableStateListOf<Any>(SettingsRoute) }
 
-    val activeBackStack = when (selectedTab) {
-        Tab.Search -> searchBackStack
-        Tab.Favorites -> favoritesBackStack
-        Tab.Prompts -> promptsBackStack
-        Tab.Settings -> settingsBackStack
+    val tabs = remember {
+        mapOf(
+            Tab.Search to TabState(mutableStateListOf<Any>(SearchRoute)),
+            Tab.Favorites to TabState(mutableStateListOf<Any>(FavoritesRoute)),
+            Tab.Prompts to TabState(mutableStateListOf<Any>(SavedPromptsRoute)),
+            Tab.Settings to TabState(mutableStateListOf<Any>(SettingsRoute)),
+        )
     }
+
+    val activeTab = tabs.getValue(selectedTab)
 
     Scaffold(
         bottomBar = {
@@ -129,13 +145,7 @@ fun CivitDeckNavGraph() {
                 selectedTab = selectedTab,
                 onTabSelected = { tab ->
                     if (tab == selectedTab) {
-                        val stack = when (tab) {
-                            Tab.Search -> searchBackStack
-                            Tab.Favorites -> favoritesBackStack
-                            Tab.Prompts -> promptsBackStack
-                            Tab.Settings -> settingsBackStack
-                        }
-                        while (stack.size > 1) stack.removeAt(stack.lastIndex)
+                        tabs.getValue(tab).onReselected()
                     } else {
                         selectedTab = tab
                     }
@@ -145,7 +155,13 @@ fun CivitDeckNavGraph() {
     ) { padding ->
         SharedTransitionLayout(modifier = Modifier.padding(padding)) {
             CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                CivitDeckNavDisplay(activeBackStack)
+                CivitDeckNavDisplay(
+                    backStack = activeTab.backStack,
+                    searchScrollTrigger = tabs.getValue(Tab.Search).scrollTrigger,
+                    favoritesScrollTrigger = tabs.getValue(Tab.Favorites).scrollTrigger,
+                    promptsScrollTrigger = tabs.getValue(Tab.Prompts).scrollTrigger,
+                    settingsScrollTrigger = tabs.getValue(Tab.Settings).scrollTrigger,
+                )
             }
         }
     }
@@ -249,7 +265,13 @@ private fun slideTransition(enterOffset: (Int) -> Int, exitOffset: (Int) -> Int)
     )
 
 @Composable
-private fun CivitDeckNavDisplay(backStack: MutableList<Any>) {
+private fun CivitDeckNavDisplay(
+    backStack: MutableList<Any>,
+    searchScrollTrigger: Int = 0,
+    favoritesScrollTrigger: Int = 0,
+    promptsScrollTrigger: Int = 0,
+    settingsScrollTrigger: Int = 0,
+) {
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
@@ -267,6 +289,7 @@ private fun CivitDeckNavDisplay(backStack: MutableList<Any>) {
                     onModelClick = { modelId, thumbnailUrl, suffix ->
                         backStack.add(DetailRoute(modelId, thumbnailUrl, suffix))
                     },
+                    scrollToTopTrigger = searchScrollTrigger,
                 )
             }
             entry<FavoritesRoute> {
@@ -279,6 +302,7 @@ private fun CivitDeckNavDisplay(backStack: MutableList<Any>) {
                         backStack.add(DetailRoute(modelId))
                     },
                     gridColumns = gridColumns,
+                    scrollToTopTrigger = favoritesScrollTrigger,
                 )
             }
             detailEntry(backStack)
@@ -286,13 +310,17 @@ private fun CivitDeckNavDisplay(backStack: MutableList<Any>) {
             galleryEntry(backStack)
             entry<SavedPromptsRoute> {
                 val viewModel: SavedPromptsViewModel = koinViewModel()
-                SavedPromptsScreen(viewModel = viewModel)
+                SavedPromptsScreen(
+                    viewModel = viewModel,
+                    scrollToTopTrigger = promptsScrollTrigger,
+                )
             }
             entry<SettingsRoute> {
                 val viewModel: SettingsViewModel = koinViewModel()
                 SettingsScreen(
                     viewModel = viewModel,
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
+                    scrollToTopTrigger = settingsScrollTrigger,
                 )
             }
             entry<LicensesRoute> {

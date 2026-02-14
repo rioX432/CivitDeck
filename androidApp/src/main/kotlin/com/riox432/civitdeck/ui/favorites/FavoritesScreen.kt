@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Download
@@ -25,6 +26,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -48,7 +54,18 @@ fun FavoritesScreen(
     favorites: List<FavoriteModelSummary>,
     onModelClick: (Long) -> Unit,
     gridColumns: Int = 2,
+    scrollToTopTrigger: Int = 0,
 ) {
+    val gridState = rememberLazyGridState()
+
+    var lastHandledTrigger by rememberSaveable { mutableIntStateOf(scrollToTopTrigger) }
+    LaunchedEffect(scrollToTopTrigger) {
+        if (scrollToTopTrigger != lastHandledTrigger) {
+            lastHandledTrigger = scrollToTopTrigger
+            gridState.animateScrollToItem(0)
+        }
+    }
+
     if (favorites.isEmpty()) {
         EmptyFavorites()
     } else {
@@ -56,6 +73,7 @@ fun FavoritesScreen(
             favorites = favorites,
             onModelClick = onModelClick,
             gridColumns = gridColumns,
+            gridState = gridState,
         )
     }
 }
@@ -87,9 +105,11 @@ private fun FavoritesGrid(
     onModelClick: (Long) -> Unit,
     topPadding: Dp = 0.dp,
     gridColumns: Int = 2,
+    gridState: androidx.compose.foundation.lazy.grid.LazyGridState = rememberLazyGridState(),
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(gridColumns),
+        state = gridState,
         contentPadding = PaddingValues(
             start = Spacing.md,
             end = Spacing.md,
