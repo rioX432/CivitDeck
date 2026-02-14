@@ -59,6 +59,12 @@ fun ModelImage.thumbnailUrl(width: Int = 450): String {
     return parts.joinToString("/")
 }
 
+/** Strip CDN width parameter so raw and thumbnail URLs can be compared. */
+fun String.stripCdnWidth(): String {
+    if (!contains("image.civitai.com")) return this
+    return split("/").filter { !it.startsWith("width=") }.joinToString("/")
+}
+
 fun ModelImage.isAllowed(filterLevel: NsfwFilterLevel): Boolean = when (filterLevel) {
     NsfwFilterLevel.Off -> nsfwLevel == NsfwLevel.None
     NsfwFilterLevel.Soft -> nsfwLevel == NsfwLevel.None || nsfwLevel == NsfwLevel.Soft

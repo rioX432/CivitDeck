@@ -16,7 +16,7 @@ final class ModelDetailViewModel: ObservableObject {
     private let toggleFavoriteUseCase: ToggleFavoriteUseCase
     private let trackModelViewUseCase: TrackModelViewUseCase
     private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
-    private let getImagesUseCase: GetImagesUseCase
+    private let enrichModelImagesUseCase: EnrichModelImagesUseCase
     private var enrichedVersionIds: Set<Int64> = []
 
     var selectedVersion: ModelVersion? {
@@ -33,7 +33,7 @@ final class ModelDetailViewModel: ObservableObject {
         self.toggleFavoriteUseCase = KoinHelper.shared.getToggleFavoriteUseCase()
         self.trackModelViewUseCase = KoinHelper.shared.getTrackModelViewUseCase()
         self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
-        self.getImagesUseCase = KoinHelper.shared.getImagesUseCase()
+        self.enrichModelImagesUseCase = KoinHelper.shared.getEnrichModelImagesUseCase()
         loadModel()
     }
 
@@ -77,76 +77,32 @@ final class ModelDetailViewModel: ObservableObject {
         enrichedVersionIds.insert(versionId)
         Task {
             do {
-                let metaByImageId = try await fetchImageMeta(versionId: versionId)
-                guard !metaByImageId.isEmpty else { return }
-                applyEnrichedMeta(metaByImageId, to: version, in: model)
+                let enriched = try await enrichModelImagesUseCase.invoke(
+                    modelVersionId: versionId,
+                    images: version.images
+                )
+                guard let currentModel = self.model else { return }
+                let updatedVersions: [ModelVersion] = currentModel.modelVersions.map { v in
+                    guard v.id == versionId else { return v }
+                    return ModelVersion(
+                        id: v.id, modelId: v.modelId, name: v.name, description: v.description_,
+                        createdAt: v.createdAt, baseModel: v.baseModel, trainedWords: v.trainedWords,
+                        downloadUrl: v.downloadUrl, files: v.files, images: enriched, stats: v.stats
+                    )
+                }
+                self.model = Model(
+                    id: currentModel.id, name: currentModel.name,
+                    description: currentModel.description_,
+                    type: currentModel.type, nsfw: currentModel.nsfw, tags: currentModel.tags,
+                    mode: currentModel.mode, creator: currentModel.creator,
+                    stats: currentModel.stats, modelVersions: updatedVersions
+                )
             } catch is CancellationError {
                 return
             } catch {
                 enrichedVersionIds.remove(versionId)
             }
         }
-    }
-
-    private func fetchImageMeta(versionId: Int64) async throws -> [String: ImageGenerationMeta] {
-        let result = try await getImagesUseCase.invoke(
-            modelId: nil,
-            modelVersionId: KotlinLong(value: versionId),
-            username: nil,
-            sort: nil,
-            period: nil,
-            nsfwLevel: nil,
-            limit: KotlinInt(value: 20),
-            cursor: nil
-        )
-        return Dictionary(
-            uniqueKeysWithValues: result.items
-                .compactMap { item -> (String, ImageGenerationMeta)? in
-                    guard let img = item as? Image,
-                          let meta = img.meta,
-                          let imageId = Self.extractImageId(img.url)
-                    else { return nil }
-                    return (imageId, meta)
-                }
-        )
-    }
-
-    private func applyEnrichedMeta(
-        _ metaByImageId: [String: ImageGenerationMeta],
-        to version: ModelVersion,
-        in model: Model
-    ) {
-        let enrichedImages: [ModelImage] = version.images.map { image in
-            if image.meta == nil,
-               let imageId = Self.extractImageId(image.url),
-               let meta = metaByImageId[imageId] {
-                return ModelImage(
-                    url: image.url, nsfw: image.nsfw, nsfwLevel: image.nsfwLevel,
-                    width: image.width, height: image.height, hash: image.hash_, meta: meta
-                )
-            }
-            return image
-        }
-        let updatedVersions: [ModelVersion] = model.modelVersions.map { v in
-            guard v.id == version.id else { return v }
-            return ModelVersion(
-                id: v.id, modelId: v.modelId, name: v.name, description: v.description_,
-                createdAt: v.createdAt, baseModel: v.baseModel, trainedWords: v.trainedWords,
-                downloadUrl: v.downloadUrl, files: v.files, images: enrichedImages, stats: v.stats
-            )
-        }
-        self.model = Model(
-            id: model.id, name: model.name, description: model.description_,
-            type: model.type, nsfw: model.nsfw, tags: model.tags, mode: model.mode,
-            creator: model.creator, stats: model.stats, modelVersions: updatedVersions
-        )
-    }
-
-    // URL format: https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/{uuid}/...
-    private static func extractImageId(_ url: String) -> String? {
-        let components = url.components(separatedBy: "/")
-        guard components.count > 4 else { return nil }
-        return components[4]
     }
 
     private func loadModel() {
