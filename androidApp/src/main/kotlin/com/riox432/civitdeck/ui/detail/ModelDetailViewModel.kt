@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
@@ -32,10 +33,12 @@ class ModelDetailViewModel(
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val trackModelViewUseCase: TrackModelViewUseCase,
     private val observeNsfwFilterUseCase: ObserveNsfwFilterUseCase,
+    private val enrichModelImagesUseCase: EnrichModelImagesUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelDetailUiState())
     val uiState: StateFlow<ModelDetailUiState> = _uiState.asStateFlow()
+    private val enrichedVersionIds = mutableSetOf<Long>()
 
     init {
         loadModel()
@@ -45,6 +48,7 @@ class ModelDetailViewModel(
 
     fun onVersionSelected(index: Int) {
         _uiState.update { it.copy(selectedVersionIndex = index) }
+        enrichCurrentVersion()
     }
 
     fun onFavoriteToggle() {
@@ -72,6 +76,7 @@ class ModelDetailViewModel(
                 _uiState.update {
                     it.copy(model = model, isLoading = false)
                 }
+                enrichCurrentVersion()
                 trackModelViewUseCase(
                     modelId = model.id,
                     modelType = model.type.name,
@@ -84,6 +89,29 @@ class ModelDetailViewModel(
                 _uiState.update {
                     it.copy(isLoading = false, error = e.message ?: "Unknown error")
                 }
+            }
+        }
+    }
+
+    private fun enrichCurrentVersion() {
+        val state = _uiState.value
+        val model = state.model ?: return
+        val version = model.modelVersions.getOrNull(state.selectedVersionIndex) ?: return
+        if (!enrichedVersionIds.add(version.id)) return
+        viewModelScope.launch {
+            try {
+                val enriched = enrichModelImagesUseCase(version.id, version.images)
+                _uiState.update { current ->
+                    val currentModel = current.model ?: return@update current
+                    val updatedVersions = currentModel.modelVersions.map { v ->
+                        if (v.id == version.id) v.copy(images = enriched) else v
+                    }
+                    current.copy(model = currentModel.copy(modelVersions = updatedVersions))
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                enrichedVersionIds.remove(version.id)
             }
         }
     }

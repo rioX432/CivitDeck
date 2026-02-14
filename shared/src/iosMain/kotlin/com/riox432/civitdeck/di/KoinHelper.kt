@@ -6,6 +6,7 @@ import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteSavedPromptUseCase
+import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetCreatorModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelIdsUseCase
@@ -70,4 +71,5 @@ object KoinHelper {
     fun getHiddenModelsUseCase(): GetHiddenModelsUseCase = getKoin().get()
     fun getClearBrowsingHistoryUseCase(): ClearBrowsingHistoryUseCase = getKoin().get()
     fun getClearCacheUseCase(): ClearCacheUseCase = getKoin().get()
+    fun getEnrichModelImagesUseCase(): EnrichModelImagesUseCase = getKoin().get()
 }

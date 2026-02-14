@@ -55,7 +55,7 @@ val androidModule = module {
         )
     }
     viewModel { FavoritesViewModel(get(), get()) }
-    viewModel { params -> ModelDetailViewModel(params.get(), get(), get(), get(), get(), get()) }
+    viewModel { params -> ModelDetailViewModel(params.get(), get(), get(), get(), get(), get(), get()) }
     viewModel { params -> CreatorProfileViewModel(params.get(), get()) }
     viewModel { params -> ImageGalleryViewModel(params.get(), get(), get(), get()) }
     viewModel { SavedPromptsViewModel(get(), get()) }
