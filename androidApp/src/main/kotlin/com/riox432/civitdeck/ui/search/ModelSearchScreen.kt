@@ -8,6 +8,8 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -51,6 +53,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -74,6 +77,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
@@ -189,6 +193,7 @@ private fun HeaderSnapEffect(gridState: LazyGridState, headerState: CollapsibleH
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchScreenBody(
     padding: PaddingValues,
@@ -202,9 +207,19 @@ private fun SearchScreenBody(
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
+    var showFilterSheet by remember { mutableStateOf(false) }
+    val activeFilterCount = countActiveFilters(uiState)
+    val isFabVisible by remember {
+        derivedStateOf {
+            headerState.headerHeightPx <= 0f ||
+                headerState.offsetPx > -headerState.headerHeightPx * 0.3f
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .clipToBounds()
             .padding(
                 top = padding.calculateTopPadding(),
                 start = padding.calculateLeftPadding(layoutDirection),
@@ -233,6 +248,23 @@ private fun SearchScreenBody(
             searchHistory = searchHistory,
             viewModel = viewModel,
         )
+
+        FilterFab(
+            activeFilterCount = activeFilterCount,
+            visible = isFabVisible,
+            onClick = { showFilterSheet = true },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(Spacing.lg),
+        )
+    }
+
+    if (showFilterSheet) {
+        FilterBottomSheet(
+            uiState = uiState,
+            viewModel = viewModel,
+            onDismiss = { showFilterSheet = false },
+        )
     }
 }
 
@@ -243,9 +275,6 @@ private fun CollapsibleHeader(
     searchHistory: List<String>,
     viewModel: ModelSearchViewModel,
 ) {
-    var showFilterSheet by remember { mutableStateOf(false) }
-    val activeFilterCount = countActiveFilters(uiState)
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -263,16 +292,6 @@ private fun CollapsibleHeader(
             searchHistory = searchHistory,
             onHistoryItemClick = viewModel::onHistoryItemClick,
             onClearHistory = viewModel::clearSearchHistory,
-            activeFilterCount = activeFilterCount,
-            onFilterClick = { showFilterSheet = true },
-        )
-    }
-
-    if (showFilterSheet) {
-        FilterBottomSheet(
-            uiState = uiState,
-            viewModel = viewModel,
-            onDismiss = { showFilterSheet = false },
         )
     }
 }
@@ -296,39 +315,31 @@ private fun SearchBarWithFilterButton(
     searchHistory: List<String>,
     onHistoryItemClick: (String) -> Unit,
     onClearHistory: () -> Unit,
-    activeFilterCount: Int,
-    onFilterClick: () -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     var showHistory by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
-        ) {
-            SearchTextField(
-                query = query,
-                onQueryChange = {
-                    onQueryChange(it)
-                    showHistory = it.isEmpty() && searchHistory.isNotEmpty()
-                },
-                onSearch = {
-                    onSearch()
-                    keyboardController?.hide()
-                    showHistory = false
-                },
-                onFocusChanged = { focused ->
-                    showHistory = focused && query.isEmpty() && searchHistory.isNotEmpty()
-                },
-                onClear = {
-                    onQueryChange("")
-                    showHistory = searchHistory.isNotEmpty()
-                },
-                modifier = Modifier.weight(1f),
-            )
-            FilterIconButton(count = activeFilterCount, onClick = onFilterClick)
-        }
+        SearchTextField(
+            query = query,
+            onQueryChange = {
+                onQueryChange(it)
+                showHistory = it.isEmpty() && searchHistory.isNotEmpty()
+            },
+            onSearch = {
+                onSearch()
+                keyboardController?.hide()
+                showHistory = false
+            },
+            onFocusChanged = { focused ->
+                showHistory = focused && query.isEmpty() && searchHistory.isNotEmpty()
+            },
+            onClear = {
+                onQueryChange("")
+                showHistory = searchHistory.isNotEmpty()
+            },
+            modifier = Modifier.fillMaxWidth(),
+        )
 
         AnimatedVisibility(visible = showHistory) {
             SearchHistoryDropdown(
@@ -375,14 +386,38 @@ private fun SearchTextField(
 }
 
 @Composable
-private fun FilterIconButton(count: Int, onClick: () -> Unit) {
-    IconButton(onClick = onClick) {
-        if (count > 0) {
-            BadgedBox(badge = { Badge { Text(count.toString()) } }) {
+private fun FilterFab(
+    activeFilterCount: Int,
+    visible: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = slideInVertically(
+            initialOffsetY = { it },
+            animationSpec = tween(Duration.fast, easing = Easing.standard),
+        ) + fadeIn(animationSpec = tween(Duration.fast, easing = Easing.standard)),
+        exit = slideOutVertically(
+            targetOffsetY = { it },
+            animationSpec = tween(Duration.fast, easing = Easing.standard),
+        ) + fadeOut(animationSpec = tween(Duration.fast, easing = Easing.standard)),
+    ) {
+        BadgedBox(
+            badge = {
+                if (activeFilterCount > 0) {
+                    Badge { Text(activeFilterCount.toString()) }
+                }
+            },
+        ) {
+            FloatingActionButton(
+                onClick = onClick,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                contentColor = MaterialTheme.colorScheme.primary,
+            ) {
                 Icon(Icons.Outlined.FilterList, contentDescription = "Filters")
             }
-        } else {
-            Icon(Icons.Outlined.FilterList, contentDescription = "Filters")
         }
     }
 }

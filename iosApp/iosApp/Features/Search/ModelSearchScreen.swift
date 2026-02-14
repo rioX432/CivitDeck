@@ -22,29 +22,37 @@ struct ModelSearchScreen: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                collapsibleHeader
+            ZStack(alignment: .bottomTrailing) {
+                VStack(spacing: 0) {
+                    collapsibleHeader
 
-                ZStack {
-                    if viewModel.isLoading && viewModel.models.isEmpty {
-                        ProgressView()
-                            .transition(.opacity)
-                    } else if let error = viewModel.error, viewModel.models.isEmpty {
-                        errorView(message: error)
-                            .transition(.opacity)
-                    } else if viewModel.models.isEmpty && !viewModel.isLoading {
-                        emptyView
-                            .transition(.opacity)
-                    } else {
-                        modelGrid
-                            .transition(.opacity)
+                    ZStack {
+                        if viewModel.isLoading && viewModel.models.isEmpty {
+                            ProgressView()
+                                .transition(.opacity)
+                        } else if let error = viewModel.error, viewModel.models.isEmpty {
+                            errorView(message: error)
+                                .transition(.opacity)
+                        } else if viewModel.models.isEmpty && !viewModel.isLoading {
+                            emptyView
+                                .transition(.opacity)
+                        } else {
+                            modelGrid
+                                .transition(.opacity)
+                        }
                     }
+                    .animation(MotionAnimation.standard, value: viewModel.isLoading)
+                    .animation(MotionAnimation.standard, value: viewModel.error == nil)
+                    .frame(maxHeight: .infinity)
                 }
-                .animation(MotionAnimation.standard, value: viewModel.isLoading)
-                .animation(MotionAnimation.standard, value: viewModel.error == nil)
-                .frame(maxHeight: .infinity)
+                .clipped()
+
+                filterFab
             }
             .navigationBarHidden(true)
+            .sheet(isPresented: $showFilterSheet) {
+                filterSheet
+            }
             .task {
                 await viewModel.observeNsfwFilter()
             }
@@ -89,68 +97,44 @@ struct ModelSearchScreen: View {
         .offset(y: headerVisible ? 0 : -headerHeight)
         .frame(height: headerVisible ? nil : 0, alignment: .top)
         .clipped()
-        .sheet(isPresented: $showFilterSheet) {
-            filterSheet
-        }
     }
 
     private var searchBarWithFilterButton: some View {
-        HStack(spacing: Spacing.sm) {
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.civitOnSurfaceVariant)
-                TextField("Search models...", text: $viewModel.query)
-                    .focused($isSearchFocused)
-                    .submitLabel(.search)
-                    .onSubmit {
-                        viewModel.onSearch()
-                        showHistory = false
-                    }
-                    .onChange(of: viewModel.query) { newValue in
-                        showHistory = newValue.isEmpty
-                            && isSearchFocused
-                            && !viewModel.searchHistory.isEmpty
-                    }
-                    .onChange(of: isSearchFocused) { focused in
-                        showHistory = focused
-                            && viewModel.query.isEmpty
-                            && !viewModel.searchHistory.isEmpty
-                    }
-                if !viewModel.query.isEmpty {
-                    Button {
-                        viewModel.query = ""
-                        showHistory = isSearchFocused && !viewModel.searchHistory.isEmpty
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.civitOnSurfaceVariant)
-                    }
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.civitOnSurfaceVariant)
+            TextField("Search models...", text: $viewModel.query)
+                .focused($isSearchFocused)
+                .submitLabel(.search)
+                .onSubmit {
+                    viewModel.onSearch()
+                    showHistory = false
                 }
-            }
-            .padding(10)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.searchBar)
-                    .stroke(Color.civitOutlineVariant, lineWidth: 1)
-            )
-
-            Button {
-                showFilterSheet = true
-            } label: {
-                ZStack(alignment: .topTrailing) {
-                    Image(systemName: "line.3.horizontal.decrease")
-                        .font(.title3)
-                        .foregroundColor(.civitOnSurface)
-                    if activeFilterCount > 0 {
-                        Text("\(activeFilterCount)")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 16, height: 16)
-                            .background(Color.civitPrimary)
-                            .clipShape(Circle())
-                            .offset(x: 4, y: -4)
-                    }
+                .onChange(of: viewModel.query) { newValue in
+                    showHistory = newValue.isEmpty
+                        && isSearchFocused
+                        && !viewModel.searchHistory.isEmpty
+                }
+                .onChange(of: isSearchFocused) { focused in
+                    showHistory = focused
+                        && viewModel.query.isEmpty
+                        && !viewModel.searchHistory.isEmpty
+                }
+            if !viewModel.query.isEmpty {
+                Button {
+                    viewModel.query = ""
+                    showHistory = isSearchFocused && !viewModel.searchHistory.isEmpty
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.civitOnSurfaceVariant)
                 }
             }
         }
+        .padding(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.searchBar)
+                .stroke(Color.civitOutlineVariant, lineWidth: 1)
+        )
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.sm)
     }
@@ -400,6 +384,39 @@ struct ModelSearchScreen: View {
             Text("No models found")
                 .foregroundColor(.civitOnSurfaceVariant)
         }
+    }
+}
+
+// MARK: - Filter FAB
+
+extension ModelSearchScreen {
+    var filterFab: some View {
+        Button {
+            showFilterSheet = true
+        } label: {
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: "line.3.horizontal.decrease")
+                    .font(.title2)
+                    .foregroundColor(.civitPrimary)
+                    .frame(width: 56, height: 56)
+                    .background(Color.civitSurfaceContainerHigh)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
+
+                if activeFilterCount > 0 {
+                    Text("\(activeFilterCount)")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 18, height: 18)
+                        .background(Color.civitError)
+                        .clipShape(Circle())
+                        .offset(x: 4, y: -4)
+                }
+            }
+        }
+        .padding(Spacing.lg)
+        .opacity(headerVisible ? 1 : 0)
+        .animation(MotionAnimation.fast, value: headerVisible)
     }
 }
 
