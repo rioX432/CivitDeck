@@ -15,7 +15,7 @@ final class ImageGalleryViewModel: ObservableObject {
     @Published var allImages: [CivitImage] = []
     @Published var selectedSort: CivitSortOrder = .highestRated
     @Published var selectedPeriod: TimePeriod = .allTime
-    @Published var showNsfw: Bool = false
+    @Published var nsfwFilterLevel: NsfwFilterLevel = .off
     @Published var selectedAspectRatio: AspectRatioFilter?
     @Published var isLoading: Bool = false
     @Published var isLoadingMore: Bool = false
@@ -39,6 +39,7 @@ final class ImageGalleryViewModel: ObservableObject {
     private let modelVersionId: Int64
     private let getImagesUseCase: GetImagesUseCase
     private let savePromptUseCase: SavePromptUseCase
+    private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
     private var nextCursor: String?
     private var loadTask: Task<Void, Never>?
 
@@ -49,7 +50,23 @@ final class ImageGalleryViewModel: ObservableObject {
         self.modelVersionId = modelVersionId
         self.getImagesUseCase = KoinHelper.shared.getImagesUseCase()
         self.savePromptUseCase = KoinHelper.shared.getSavePromptUseCase()
+        self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
         loadImages()
+    }
+
+    func observeNsfwFilter() async {
+        let flow = SkieSwiftFlow<NsfwFilterLevel>(observeNsfwFilterUseCase.invoke())
+        for await value in flow {
+            let prev = nsfwFilterLevel
+            nsfwFilterLevel = value
+            if prev != value {
+                loadTask?.cancel()
+                allImages = []
+                nextCursor = nil
+                hasMore = true
+                loadImages()
+            }
+        }
     }
 
     func onSortSelected(_ sort: CivitSortOrder) {
@@ -64,15 +81,6 @@ final class ImageGalleryViewModel: ObservableObject {
     func onPeriodSelected(_ period: TimePeriod) {
         loadTask?.cancel()
         selectedPeriod = period
-        allImages = []
-        nextCursor = nil
-        hasMore = true
-        loadImages()
-    }
-
-    func onNsfwToggle() {
-        loadTask?.cancel()
-        showNsfw.toggle()
         allImages = []
         nextCursor = nil
         hasMore = true
@@ -129,7 +137,13 @@ final class ImageGalleryViewModel: ObservableObject {
             }
 
             do {
-                let nsfwLevel: NsfwLevel = showNsfw ? .soft : NsfwLevel.none
+                let nsfwLevel: NsfwLevel? = {
+                    switch nsfwFilterLevel {
+                    case .off: return NsfwLevel.none
+                    case .soft: return .soft
+                    default: return nil
+                    }
+                }()
                 let result = try await getImagesUseCase.invoke(
                     modelId: nil,
                     modelVersionId: KotlinLong(longLong: modelVersionId),

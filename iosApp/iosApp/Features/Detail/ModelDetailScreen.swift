@@ -104,10 +104,7 @@ struct ModelDetailScreen: View {
 
     private var filteredImages: [ModelImage] {
         let allImages = viewModel.selectedVersion?.images ?? []
-        if viewModel.nsfwFilterLevel == .off {
-            return allImages.filter { !$0.nsfw }
-        }
-        return Array(allImages)
+        return allImages.filter { $0.isAllowedByFilter(viewModel.nsfwFilterLevel) }
     }
 
     private func imageCarousel(model: Model) -> some View {

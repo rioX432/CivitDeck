@@ -17,6 +17,7 @@ class CivitAiApi(private val client: HttpClient) {
         const val BASE_URL = "https://civitai.com/api/v1"
     }
 
+    @Suppress("LongParameterList")
     suspend fun getModels(
         query: String? = null,
         tag: String? = null,
@@ -27,6 +28,7 @@ class CivitAiApi(private val client: HttpClient) {
         cursor: String? = null,
         limit: Int? = null,
         username: String? = null,
+        nsfw: Boolean? = null,
     ): ModelListResponse {
         return client.get("$BASE_URL/models") {
             query?.let { parameter("query", it) }
@@ -38,6 +40,7 @@ class CivitAiApi(private val client: HttpClient) {
             cursor?.let { parameter("cursor", it) }
             limit?.let { parameter("limit", it) }
             username?.let { parameter("username", it) }
+            nsfw?.let { parameter("nsfw", it) }
         }.body()
     }
 

@@ -9,6 +9,7 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.domain.model.filterNsfwImages
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
@@ -267,6 +268,7 @@ class ModelSearchViewModel(
             }
             try {
                 val state = _uiState.value
+                val nsfw = if (state.nsfwFilterLevel == NsfwFilterLevel.Off) false else null
                 val result = getModelsUseCase(
                     query = state.query.ifBlank { null },
                     type = state.selectedType,
@@ -275,21 +277,9 @@ class ModelSearchViewModel(
                     baseModels = state.selectedBaseModels.toList().ifEmpty { null },
                     cursor = if (isLoadMore) state.nextCursor else null,
                     limit = PAGE_SIZE,
+                    nsfw = nsfw,
                 )
-                var filteredItems = filterNsfw(result.items, state.nsfwFilterLevel)
-                if (state.isFreshFindEnabled) {
-                    val viewedIds = getViewedModelIdsUseCase()
-                    filteredItems = filteredItems.filter { it.id !in viewedIds }
-                }
-                if (state.excludedTags.isNotEmpty()) {
-                    val excluded = state.excludedTags.toSet()
-                    filteredItems = filteredItems.filter { model ->
-                        model.tags.none { it.lowercase() in excluded }
-                    }
-                }
-                if (hiddenModelIds.isNotEmpty()) {
-                    filteredItems = filteredItems.filter { it.id !in hiddenModelIds }
-                }
+                val filteredItems = applyClientFilters(result.items, state)
                 _uiState.update {
                     it.copy(
                         models = if (isLoadMore) it.models + filteredItems else filteredItems,
@@ -316,12 +306,26 @@ class ModelSearchViewModel(
         }
     }
 
-    private fun filterNsfw(models: List<Model>, level: NsfwFilterLevel): List<Model> =
-        when (level) {
-            NsfwFilterLevel.Off -> models.filter { !it.nsfw }
-            NsfwFilterLevel.Soft -> models
-            NsfwFilterLevel.All -> models
+    private suspend fun applyClientFilters(
+        models: List<Model>,
+        state: ModelSearchUiState,
+    ): List<Model> {
+        var filtered = models.filterNsfwImages(state.nsfwFilterLevel)
+        if (state.isFreshFindEnabled) {
+            val viewedIds = getViewedModelIdsUseCase()
+            filtered = filtered.filter { it.id !in viewedIds }
         }
+        if (state.excludedTags.isNotEmpty()) {
+            val excluded = state.excludedTags.toSet()
+            filtered = filtered.filter { model ->
+                model.tags.none { it.lowercase() in excluded }
+            }
+        }
+        if (hiddenModelIds.isNotEmpty()) {
+            filtered = filtered.filter { it.id !in hiddenModelIds }
+        }
+        return filtered
+    }
 
     companion object {
         private const val PAGE_SIZE = 20

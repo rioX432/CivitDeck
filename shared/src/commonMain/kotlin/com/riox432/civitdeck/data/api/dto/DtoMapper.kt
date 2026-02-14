@@ -73,6 +73,7 @@ fun ModelFileDto.toDomain(): ModelFile = ModelFile(
 fun ModelImageDto.toDomain(): ModelImage = ModelImage(
     url = url,
     nsfw = nsfw,
+    nsfwLevel = nsfwLevel.toNsfwLevel(),
     width = width,
     height = height,
     hash = hash,
@@ -159,3 +160,11 @@ private fun String?.toNsfwLevel(): NsfwLevel = this?.let {
         NsfwLevel.None
     }
 } ?: NsfwLevel.None
+
+private fun Int?.toNsfwLevel(): NsfwLevel = when (this) {
+    1 -> NsfwLevel.None
+    2 -> NsfwLevel.Soft
+    4 -> NsfwLevel.Mature
+    8 -> NsfwLevel.X
+    else -> NsfwLevel.None
+}

@@ -20,6 +20,9 @@ struct ImageGalleryScreen: View {
         }
         .navigationTitle("Images")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await viewModel.observeNsfwFilter()
+        }
         .fullScreenCover(isPresented: Binding(
             get: { viewModel.selectedImageIndex != nil },
             set: { if !$0 { viewModel.onDismissViewer() } }
@@ -38,7 +41,7 @@ struct ImageGalleryScreen: View {
         VStack(spacing: Spacing.xs) {
             sortChips
             aspectRatioChips
-            periodAndNsfwRow
+            periodRow
         }
         .padding(.horizontal, Spacing.md)
         .padding(.vertical, Spacing.sm)
@@ -80,35 +83,18 @@ struct ImageGalleryScreen: View {
         }
     }
 
-    private var periodAndNsfwRow: some View {
-        HStack {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: Spacing.sm) {
-                    ForEach(periodOptions, id: \.self) { period in
-                        chipButton(
-                            label: periodLabel(period),
-                            isSelected: viewModel.selectedPeriod == period
-                        ) {
-                            viewModel.onPeriodSelected(period)
-                        }
+    private var periodRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.sm) {
+                ForEach(periodOptions, id: \.self) { period in
+                    chipButton(
+                        label: periodLabel(period),
+                        isSelected: viewModel.selectedPeriod == period
+                    ) {
+                        viewModel.onPeriodSelected(period)
                     }
                 }
             }
-
-            Spacer(minLength: Spacing.sm)
-
-            HStack(spacing: Spacing.xs) {
-                Text("NSFW")
-                    .font(.civitLabelSmall)
-                    .foregroundColor(.civitOnSurfaceVariant)
-                Toggle("", isOn: Binding(
-                    get: { viewModel.showNsfw },
-                    set: { _ in viewModel.onNsfwToggle() }
-                ))
-                .labelsHidden()
-                .scaleEffect(0.8)
-            }
-            .fixedSize()
         }
     }
 

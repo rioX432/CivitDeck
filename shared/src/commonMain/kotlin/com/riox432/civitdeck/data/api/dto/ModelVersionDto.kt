@@ -52,6 +52,7 @@ data class ModelFileMetadataDto(
 data class ModelImageDto(
     val url: String,
     val nsfw: Boolean = false,
+    val nsfwLevel: Int? = null,
     val width: Int = 0,
     val height: Int = 0,
     val hash: String? = null,

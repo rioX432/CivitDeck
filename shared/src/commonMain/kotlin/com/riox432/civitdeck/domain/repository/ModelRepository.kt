@@ -9,6 +9,7 @@ import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 
 interface ModelRepository {
+    @Suppress("LongParameterList")
     suspend fun getModels(
         query: String? = null,
         tag: String? = null,
@@ -19,6 +20,7 @@ interface ModelRepository {
         cursor: String? = null,
         limit: Int? = null,
         username: String? = null,
+        nsfw: Boolean? = null,
     ): PaginatedResult<Model>
 
     suspend fun getModel(id: Long): Model

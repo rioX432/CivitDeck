@@ -18,6 +18,7 @@ class GetModelsUseCase(private val repository: ModelRepository) {
         baseModels: List<BaseModel>? = null,
         cursor: String? = null,
         limit: Int? = null,
+        nsfw: Boolean? = null,
     ): PaginatedResult<Model> = repository.getModels(
         query = query,
         tag = tag,
@@ -27,5 +28,6 @@ class GetModelsUseCase(private val repository: ModelRepository) {
         baseModels = baseModels,
         cursor = cursor,
         limit = limit,
+        nsfw = nsfw,
     )
 }

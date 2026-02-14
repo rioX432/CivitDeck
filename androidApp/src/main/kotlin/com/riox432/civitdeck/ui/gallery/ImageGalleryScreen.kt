@@ -29,7 +29,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -73,7 +72,6 @@ fun ImageGalleryScreen(
             uiState = uiState,
             onSortSelected = viewModel::onSortSelected,
             onPeriodSelected = viewModel::onPeriodSelected,
-            onNsfwToggle = viewModel::onNsfwToggle,
             onAspectRatioSelected = viewModel::onAspectRatioSelected,
             onImageClick = viewModel::onImageSelected,
             onLoadMore = viewModel::loadMore,
@@ -110,7 +108,6 @@ private fun ImageGalleryBody(
     uiState: ImageGalleryUiState,
     onSortSelected: (SortOrder) -> Unit,
     onPeriodSelected: (TimePeriod) -> Unit,
-    onNsfwToggle: () -> Unit,
     onAspectRatioSelected: (AspectRatioFilter?) -> Unit,
     onImageClick: (Int) -> Unit,
     onLoadMore: () -> Unit,
@@ -126,7 +123,6 @@ private fun ImageGalleryBody(
             uiState = uiState,
             onSortSelected = onSortSelected,
             onPeriodSelected = onPeriodSelected,
-            onNsfwToggle = onNsfwToggle,
             onAspectRatioSelected = onAspectRatioSelected,
         )
 
@@ -164,7 +160,6 @@ private fun FilterBar(
     uiState: ImageGalleryUiState,
     onSortSelected: (SortOrder) -> Unit,
     onPeriodSelected: (TimePeriod) -> Unit,
-    onNsfwToggle: () -> Unit,
     onAspectRatioSelected: (AspectRatioFilter?) -> Unit,
 ) {
     Column(modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.sm)) {
@@ -178,11 +173,9 @@ private fun FilterBar(
             onAspectRatioSelected = onAspectRatioSelected,
         )
         Spacer(modifier = Modifier.height(Spacing.xs))
-        PeriodAndNsfwRow(
+        PeriodRow(
             selectedPeriod = uiState.selectedPeriod,
-            showNsfw = uiState.showNsfw,
             onPeriodSelected = onPeriodSelected,
-            onNsfwToggle = onNsfwToggle,
         )
     }
 }
@@ -225,34 +218,19 @@ private fun AspectRatioFilterRow(
 }
 
 @Composable
-private fun PeriodAndNsfwRow(
+private fun PeriodRow(
     selectedPeriod: TimePeriod,
-    showNsfw: Boolean,
     onPeriodSelected: (TimePeriod) -> Unit,
-    onNsfwToggle: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            TimePeriod.entries.forEach { period ->
-                FilterChip(
-                    selected = period == selectedPeriod,
-                    onClick = { onPeriodSelected(period) },
-                    label = {
-                        Text(period.name, style = MaterialTheme.typography.labelSmall)
-                    },
-                )
-            }
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
-        ) {
-            Text("NSFW", style = MaterialTheme.typography.labelSmall)
-            Switch(checked = showNsfw, onCheckedChange = { onNsfwToggle() })
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        TimePeriod.entries.forEach { period ->
+            FilterChip(
+                selected = period == selectedPeriod,
+                onClick = { onPeriodSelected(period) },
+                label = {
+                    Text(period.name, style = MaterialTheme.typography.labelSmall)
+                },
+            )
         }
     }
 }

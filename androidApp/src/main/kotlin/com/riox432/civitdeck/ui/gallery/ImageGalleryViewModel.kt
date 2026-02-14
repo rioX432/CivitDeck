@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.AspectRatioFilter
 import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
+import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.usecase.GetImagesUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -22,7 +24,7 @@ data class ImageGalleryUiState(
     val allImages: List<Image> = emptyList(),
     val selectedSort: SortOrder = SortOrder.HighestRated,
     val selectedPeriod: TimePeriod = TimePeriod.AllTime,
-    val showNsfw: Boolean = false,
+    val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
     val selectedAspectRatio: AspectRatioFilter? = null,
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
@@ -39,6 +41,7 @@ class ImageGalleryViewModel(
     private val modelVersionId: Long,
     private val getImagesUseCase: GetImagesUseCase,
     private val savePromptUseCase: SavePromptUseCase,
+    private val observeNsfwFilterUseCase: ObserveNsfwFilterUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ImageGalleryUiState())
@@ -47,7 +50,24 @@ class ImageGalleryViewModel(
     private var loadJob: Job? = null
 
     init {
+        observeNsfwFilter()
         loadImages()
+    }
+
+    private fun observeNsfwFilter() {
+        viewModelScope.launch {
+            observeNsfwFilterUseCase().collect { level ->
+                val prev = _uiState.value.nsfwFilterLevel
+                _uiState.update { it.copy(nsfwFilterLevel = level) }
+                if (prev != level) {
+                    loadJob?.cancel()
+                    _uiState.update {
+                        it.copy(nextCursor = null, allImages = emptyList(), hasMore = true)
+                    }
+                    loadImages()
+                }
+            }
+        }
     }
 
     fun onSortSelected(sort: SortOrder) {
@@ -68,19 +88,6 @@ class ImageGalleryViewModel(
         _uiState.update {
             it.copy(
                 selectedPeriod = period,
-                nextCursor = null,
-                allImages = emptyList(),
-                hasMore = true,
-            )
-        }
-        loadImages()
-    }
-
-    fun onNsfwToggle() {
-        loadJob?.cancel()
-        _uiState.update {
-            it.copy(
-                showNsfw = !it.showNsfw,
                 nextCursor = null,
                 allImages = emptyList(),
                 hasMore = true,
@@ -128,7 +135,11 @@ class ImageGalleryViewModel(
             }
             try {
                 val state = _uiState.value
-                val nsfwLevel = if (state.showNsfw) NsfwLevel.Soft else NsfwLevel.None
+                val nsfwLevel = when (state.nsfwFilterLevel) {
+                    NsfwFilterLevel.Off -> NsfwLevel.None
+                    NsfwFilterLevel.Soft -> NsfwLevel.Soft
+                    NsfwFilterLevel.All -> null
+                }
                 val result = getImagesUseCase(
                     modelVersionId = modelVersionId,
                     sort = state.selectedSort,
