@@ -1,7 +1,13 @@
 package com.riox432.civitdeck.ui.navigation
 
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -67,6 +73,8 @@ import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.settings.LicensesScreen
 import com.riox432.civitdeck.ui.settings.SettingsScreen
 import com.riox432.civitdeck.ui.settings.SettingsViewModel
+import com.riox432.civitdeck.ui.theme.Duration
+import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
@@ -232,6 +240,14 @@ private fun RowScope.BottomNavItem(
     }
 }
 
+private fun slideTransition(enterOffset: (Int) -> Int, exitOffset: (Int) -> Int) =
+    ContentTransform(
+        slideInHorizontally(tween(Duration.normal, easing = Easing.standard), enterOffset) +
+            fadeIn(tween(Duration.normal, easing = Easing.standard)),
+        slideOutHorizontally(tween(Duration.normal, easing = Easing.standard), exitOffset) +
+            fadeOut(tween(Duration.normal, easing = Easing.standard)),
+    )
+
 @Composable
 private fun CivitDeckNavDisplay(backStack: MutableList<Any>) {
     NavDisplay(
@@ -241,6 +257,8 @@ private fun CivitDeckNavDisplay(backStack: MutableList<Any>) {
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
         ),
+        transitionSpec = { slideTransition(enterOffset = { it / 4 }, exitOffset = { -it / 4 }) },
+        popTransitionSpec = { slideTransition(enterOffset = { -it / 4 }, exitOffset = { it / 4 }) },
         entryProvider = entryProvider {
             entry<SearchRoute> {
                 val viewModel: ModelSearchViewModel = koinViewModel()
