@@ -27,4 +27,5 @@ object CornerRadius {
 object IconSize {
     val statIcon = 10.dp
     val errorPlaceholder = 36.dp
+    val navBar = 24.dp
 }

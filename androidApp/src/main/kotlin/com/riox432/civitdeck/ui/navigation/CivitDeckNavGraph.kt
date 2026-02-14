@@ -2,16 +2,29 @@ package com.riox432.civitdeck.ui.navigation
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -22,7 +35,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.EntryProviderScope
@@ -43,6 +62,8 @@ import com.riox432.civitdeck.ui.search.ModelSearchScreen
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.settings.SettingsScreen
 import com.riox432.civitdeck.ui.settings.SettingsViewModel
+import com.riox432.civitdeck.ui.theme.IconSize
+import com.riox432.civitdeck.ui.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -112,36 +133,72 @@ private fun BottomNavBar(
     selectedTab: Tab,
     onTabSelected: (Tab) -> Unit,
 ) {
-    NavigationBar {
-        NavigationBarItem(
-            selected = selectedTab == Tab.Search,
-            onClick = { onTabSelected(Tab.Search) },
-            icon = {
-                Icon(
-                    imageVector = if (selectedTab == Tab.Search) {
-                        Icons.Filled.Search
-                    } else {
-                        Icons.Outlined.Search
-                    },
-                    contentDescription = "Search",
-                )
-            },
-            label = { Text("Search") },
+    Surface(
+        color = NavigationBarDefaults.containerColor,
+        tonalElevation = NavigationBarDefaults.Elevation,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .height(56.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+        ) {
+            BottomNavItem(
+                selected = selectedTab == Tab.Search,
+                onClick = { onTabSelected(Tab.Search) },
+                activeIcon = Icons.Filled.Explore,
+                inactiveIcon = Icons.Outlined.Explore,
+                label = "Search",
+            )
+            BottomNavItem(
+                selected = selectedTab == Tab.Favorites,
+                onClick = { onTabSelected(Tab.Favorites) },
+                activeIcon = Icons.Filled.Favorite,
+                inactiveIcon = Icons.Outlined.FavoriteBorder,
+                label = "Favorites",
+            )
+        }
+    }
+}
+
+@Composable
+private fun RowScope.BottomNavItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    activeIcon: ImageVector,
+    inactiveIcon: ImageVector,
+    label: String,
+) {
+    val color = if (selected) {
+        MaterialTheme.colorScheme.onSurface
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .semantics { role = Role.Tab }
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
+            .height(56.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Icon(
+            modifier = Modifier.size(IconSize.navBar),
+            imageVector = if (selected) activeIcon else inactiveIcon,
+            contentDescription = label,
+            tint = color,
         )
-        NavigationBarItem(
-            selected = selectedTab == Tab.Favorites,
-            onClick = { onTabSelected(Tab.Favorites) },
-            icon = {
-                Icon(
-                    imageVector = if (selectedTab == Tab.Favorites) {
-                        Icons.Filled.Favorite
-                    } else {
-                        Icons.Outlined.FavoriteBorder
-                    },
-                    contentDescription = "Favorites",
-                )
-            },
-            label = { Text("Favorites") },
+        Text(
+            modifier = Modifier.padding(top = Spacing.xs),
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = color,
         )
     }
 }
