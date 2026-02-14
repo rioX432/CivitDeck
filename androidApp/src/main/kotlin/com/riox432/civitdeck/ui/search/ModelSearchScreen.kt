@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,11 +34,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.BookmarkBorder
@@ -48,12 +53,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -434,8 +441,11 @@ private fun FilterSheetContent(
     onDismiss: () -> Unit,
 ) {
     Column(
-        modifier = Modifier.padding(bottom = Spacing.lg),
-        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        modifier = Modifier
+            .fillMaxHeight(0.95f)
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
         Row(
             modifier = Modifier
@@ -452,20 +462,26 @@ private fun FilterSheetContent(
                 Text("Reset")
             }
         }
-        TypeFilterChips(
+        TypeFilterSection(
             selectedType = uiState.selectedType,
             onTypeSelected = viewModel::onTypeSelected,
         )
-        BaseModelFilterChips(
+        BaseModelFilterSection(
             selectedBaseModels = uiState.selectedBaseModels,
             onBaseModelToggled = viewModel::onBaseModelToggled,
         )
-        SortAndPeriodFilters(
+        HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
+        SortFilterSection(
             selectedSort = uiState.selectedSort,
-            selectedPeriod = uiState.selectedPeriod,
-            isFreshFindEnabled = uiState.isFreshFindEnabled,
             onSortSelected = viewModel::onSortSelected,
+        )
+        PeriodFilterSection(
+            selectedPeriod = uiState.selectedPeriod,
             onPeriodSelected = viewModel::onPeriodSelected,
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
+        FreshOnlyToggleRow(
+            isFreshFindEnabled = uiState.isFreshFindEnabled,
             onFreshFindToggled = viewModel::onFreshFindToggled,
         )
         ExcludedTagsSection(
@@ -540,78 +556,135 @@ private val filterTypes = listOf(null) + listOf(
     ModelType.Other,
 )
 
+private fun ModelType.displayLabel(): String = when (this) {
+    ModelType.TextualInversion -> "Textual Inv."
+    ModelType.AestheticGradient -> "Aesthetic Grad."
+    ModelType.MotionModule -> "Motion Module"
+    else -> name
+}
+
+private fun SortOrder.displayLabel(): String = when (this) {
+    SortOrder.HighestRated -> "Highest Rated"
+    SortOrder.MostDownloaded -> "Most Downloaded"
+    else -> name
+}
+
+private fun TimePeriod.displayLabel(): String = when (this) {
+    TimePeriod.AllTime -> "All Time"
+    else -> name
+}
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TypeFilterChips(
+private fun TypeFilterSection(
     selectedType: ModelType?,
     onTypeSelected: (ModelType?) -> Unit,
 ) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = Spacing.lg),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-    ) {
-        items(filterTypes) { type ->
-            FilterChipItem(
-                label = type?.name ?: "All",
-                isSelected = selectedType == type,
-                onClick = { onTypeSelected(type) },
-            )
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        FilterSectionHeader("Type")
+        FlowRow(
+            modifier = Modifier.padding(horizontal = Spacing.lg),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            filterTypes.forEach { type ->
+                FilterChipItem(
+                    label = type?.displayLabel() ?: "All",
+                    isSelected = selectedType == type,
+                    onClick = { onTypeSelected(type) },
+                )
+            }
         }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun BaseModelFilterChips(
+private fun BaseModelFilterSection(
     selectedBaseModels: Set<BaseModel>,
     onBaseModelToggled: (BaseModel) -> Unit,
 ) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = Spacing.lg),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-    ) {
-        items(BaseModel.entries.toList()) { baseModel ->
-            FilterChipItem(
-                label = baseModel.displayName,
-                isSelected = baseModel in selectedBaseModels,
-                onClick = { onBaseModelToggled(baseModel) },
-            )
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        FilterSectionHeader("Base Model", "(multiple)")
+        FlowRow(
+            modifier = Modifier.padding(horizontal = Spacing.lg),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            BaseModel.entries.forEach { baseModel ->
+                FilterChipItem(
+                    label = baseModel.displayName,
+                    isSelected = baseModel in selectedBaseModels,
+                    onClick = { onBaseModelToggled(baseModel) },
+                    showCheckmark = true,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SortFilterSection(
+    selectedSort: SortOrder,
+    onSortSelected: (SortOrder) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        FilterSectionHeader("Sort")
+        FlowRow(
+            modifier = Modifier.padding(horizontal = Spacing.lg),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            SortOrder.entries.forEach { sort ->
+                FilterChipItem(
+                    label = sort.displayLabel(),
+                    isSelected = selectedSort == sort,
+                    onClick = { onSortSelected(sort) },
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PeriodFilterSection(
+    selectedPeriod: TimePeriod,
+    onPeriodSelected: (TimePeriod) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        FilterSectionHeader("Period")
+        FlowRow(
+            modifier = Modifier.padding(horizontal = Spacing.lg),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            TimePeriod.entries.forEach { period ->
+                FilterChipItem(
+                    label = period.displayLabel(),
+                    isSelected = selectedPeriod == period,
+                    onClick = { onPeriodSelected(period) },
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun SortAndPeriodFilters(
-    selectedSort: SortOrder,
-    selectedPeriod: TimePeriod,
+private fun FreshOnlyToggleRow(
     isFreshFindEnabled: Boolean,
-    onSortSelected: (SortOrder) -> Unit,
-    onPeriodSelected: (TimePeriod) -> Unit,
     onFreshFindToggled: () -> Unit,
 ) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = Spacing.lg),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        item {
-            FilterChipItem(
-                label = "Fresh Only",
-                isSelected = isFreshFindEnabled,
-                onClick = onFreshFindToggled,
-            )
-        }
-        items(SortOrder.entries.toList()) { sort ->
-            FilterChipItem(
-                label = sort.name,
-                isSelected = selectedSort == sort,
-                onClick = { onSortSelected(sort) },
-            )
-        }
-        items(TimePeriod.entries.toList()) { period ->
-            FilterChipItem(
-                label = period.name,
-                isSelected = selectedPeriod == period,
-                onClick = { onPeriodSelected(period) },
-            )
-        }
+        Text(text = "Fresh Only", style = MaterialTheme.typography.titleSmall)
+        Switch(checked = isFreshFindEnabled, onCheckedChange = { onFreshFindToggled() })
     }
 }
 
@@ -708,10 +781,29 @@ private fun ExcludedTagChip(tag: String, onRemove: () -> Unit) {
 }
 
 @Composable
+private fun FilterSectionHeader(title: String, subtitle: String? = null) {
+    Row(
+        modifier = Modifier.padding(horizontal = Spacing.lg),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        Text(text = title, style = MaterialTheme.typography.titleSmall)
+        if (subtitle != null) {
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
 private fun FilterChipItem(
     label: String,
     isSelected: Boolean,
     onClick: () -> Unit,
+    showCheckmark: Boolean = false,
 ) {
     val colorTween = tween<androidx.compose.ui.graphics.Color>(
         durationMillis = Duration.fast,
@@ -735,21 +827,35 @@ private fun FilterChipItem(
         animationSpec = colorTween,
         label = "chipText",
     )
-    Text(
-        text = label,
-        style = MaterialTheme.typography.labelMedium,
-        fontWeight = if (isSelected) {
-            androidx.compose.ui.text.font.FontWeight.SemiBold
-        } else {
-            androidx.compose.ui.text.font.FontWeight.Normal
-        },
-        color = textColor,
+    Row(
         modifier = Modifier
+            .defaultMinSize(minHeight = 40.dp)
             .clip(RoundedCornerShape(CornerRadius.chip))
             .background(backgroundColor)
             .clickable(onClick = onClick)
-            .padding(horizontal = Spacing.md, vertical = 6.dp),
-    )
+            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+    ) {
+        if (showCheckmark && isSelected) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = textColor,
+            )
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = if (isSelected) {
+                androidx.compose.ui.text.font.FontWeight.SemiBold
+            } else {
+                androidx.compose.ui.text.font.FontWeight.Normal
+            },
+            color = textColor,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
