@@ -27,8 +27,6 @@ CivitDeck がそのギャップを埋めます。モデルの閲覧、画像の�
 
 ## スクリーンショット
 
-<!-- TODO: 実際のスクリーンショットを追加 -->
-
 | Android | iOS |
 |---------|-----|
 | ![Android Search](docs/screenshots/android_search.png) | ![iOS Search](docs/screenshots/ios_search.png) |

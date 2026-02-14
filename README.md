@@ -27,8 +27,6 @@ CivitDeck fills that gap. Browse models, explore images, read prompts, and save 
 
 ## Screenshots
 
-<!-- TODO: Add actual screenshots -->
-
 | Android | iOS |
 |---------|-----|
 | ![Android Search](docs/screenshots/android_search.png) | ![iOS Search](docs/screenshots/ios_search.png) |
