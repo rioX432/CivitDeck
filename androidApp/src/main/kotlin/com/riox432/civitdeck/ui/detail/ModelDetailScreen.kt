@@ -78,6 +78,7 @@ import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
+import com.riox432.civitdeck.domain.model.stripCdnWidth
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
@@ -187,7 +188,8 @@ private fun prepareImages(
 ): List<ModelImage> {
     val filtered = (allImages ?: emptyList()).filterByNsfwLevel(uiState.nsfwFilterLevel)
     if (initialThumbnailUrl == null || uiState.selectedVersionIndex != 0) return filtered
-    val idx = filtered.indexOfFirst { it.url == initialThumbnailUrl }
+    val normalizedThumbnail = initialThumbnailUrl.stripCdnWidth()
+    val idx = filtered.indexOfFirst { it.url.stripCdnWidth() == normalizedThumbnail }
     if (idx <= 0) return filtered
     return listOf(filtered[idx]) + filtered.subList(0, idx) + filtered.subList(idx + 1, filtered.size)
 }
