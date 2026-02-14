@@ -112,7 +112,7 @@ fun CivitDeckNavGraph() {
                     if (tab == selectedTab) {
                         // Pop to root on re-select
                         val stack = if (tab == Tab.Search) searchBackStack else favoritesBackStack
-                        while (stack.size > 1) stack.removeLast()
+                        while (stack.size > 1) stack.removeAt(stack.lastIndex)
                     } else {
                         selectedTab = tab
                     }
