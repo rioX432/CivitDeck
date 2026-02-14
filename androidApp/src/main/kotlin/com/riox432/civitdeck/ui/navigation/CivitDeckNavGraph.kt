@@ -64,6 +64,7 @@ import com.riox432.civitdeck.ui.prompts.SavedPromptsScreen
 import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchScreen
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
+import com.riox432.civitdeck.ui.settings.LicensesScreen
 import com.riox432.civitdeck.ui.settings.SettingsScreen
 import com.riox432.civitdeck.ui.settings.SettingsViewModel
 import com.riox432.civitdeck.ui.theme.IconSize
@@ -88,6 +89,8 @@ data class CreatorRoute(val username: String)
 data object SavedPromptsRoute
 
 data object SettingsRoute
+
+data object LicensesRoute
 
 private enum class Tab { Search, Favorites, Prompts, Settings }
 
@@ -251,11 +254,13 @@ private fun CivitDeckNavDisplay(backStack: MutableList<Any>) {
             entry<FavoritesRoute> {
                 val viewModel: FavoritesViewModel = koinViewModel()
                 val favorites by viewModel.favorites.collectAsStateWithLifecycle()
+                val gridColumns by viewModel.gridColumns.collectAsStateWithLifecycle()
                 FavoritesScreen(
                     favorites = favorites,
                     onModelClick = { modelId ->
                         backStack.add(DetailRoute(modelId))
                     },
+                    gridColumns = gridColumns,
                 )
             }
             detailEntry(backStack)
@@ -267,7 +272,13 @@ private fun CivitDeckNavDisplay(backStack: MutableList<Any>) {
             }
             entry<SettingsRoute> {
                 val viewModel: SettingsViewModel = koinViewModel()
-                SettingsScreen(viewModel = viewModel)
+                SettingsScreen(
+                    viewModel = viewModel,
+                    onNavigateToLicenses = { backStack.add(LicensesRoute) },
+                )
+            }
+            entry<LicensesRoute> {
+                LicensesScreen(onBack = { backStack.removeLastOrNull() })
             }
         },
     )

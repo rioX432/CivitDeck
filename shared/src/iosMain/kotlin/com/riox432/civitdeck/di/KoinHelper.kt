@@ -2,27 +2,37 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
+import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
+import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteSavedPromptUseCase
 import com.riox432.civitdeck.domain.usecase.GetCreatorModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelIdsUseCase
+import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.HideModelUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
+import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
+import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
+import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import org.koin.mp.KoinPlatform.getKoin
 
 @Suppress("TooManyFunctions")
@@ -50,4 +60,14 @@ object KoinHelper {
     fun getRemoveExcludedTagUseCase(): RemoveExcludedTagUseCase = getKoin().get()
     fun getHiddenModelIdsUseCase(): GetHiddenModelIdsUseCase = getKoin().get()
     fun getHideModelUseCase(): HideModelUseCase = getKoin().get()
+    fun getUnhideModelUseCase(): UnhideModelUseCase = getKoin().get()
+    fun getObserveDefaultSortOrderUseCase(): ObserveDefaultSortOrderUseCase = getKoin().get()
+    fun getSetDefaultSortOrderUseCase(): SetDefaultSortOrderUseCase = getKoin().get()
+    fun getObserveDefaultTimePeriodUseCase(): ObserveDefaultTimePeriodUseCase = getKoin().get()
+    fun getSetDefaultTimePeriodUseCase(): SetDefaultTimePeriodUseCase = getKoin().get()
+    fun getObserveGridColumnsUseCase(): ObserveGridColumnsUseCase = getKoin().get()
+    fun getSetGridColumnsUseCase(): SetGridColumnsUseCase = getKoin().get()
+    fun getHiddenModelsUseCase(): GetHiddenModelsUseCase = getKoin().get()
+    fun getClearBrowsingHistoryUseCase(): ClearBrowsingHistoryUseCase = getKoin().get()
+    fun getClearCacheUseCase(): ClearCacheUseCase = getKoin().get()
 }

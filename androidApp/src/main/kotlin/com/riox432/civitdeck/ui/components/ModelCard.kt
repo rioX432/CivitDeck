@@ -44,40 +44,55 @@ import com.riox432.civitdeck.util.FormatUtils
 @Composable
 fun ModelCard(
     model: Model,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     sharedElementSuffix: String = "",
 ) {
-    Card(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(CornerRadius.card),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
-    ) {
-        Column {
-            val thumbnailUrl = model.modelVersions
-                .firstOrNull()?.images?.firstOrNull()?.url
+    val cardModifier = modifier.fillMaxWidth()
+    val shape = RoundedCornerShape(CornerRadius.card)
+    val elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    val colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    if (onClick != null) {
+        Card(
+            onClick = onClick,
+            modifier = cardModifier,
+            shape = shape,
+            elevation = elevation,
+            colors = colors,
+        ) { ModelCardContent(model, sharedElementSuffix) }
+    } else {
+        Card(
+            modifier = cardModifier,
+            shape = shape,
+            elevation = elevation,
+            colors = colors,
+        ) { ModelCardContent(model, sharedElementSuffix) }
+    }
+}
 
-            if (thumbnailUrl != null) {
-                ModelCardThumbnail(
-                    thumbnailUrl = thumbnailUrl,
-                    modelId = model.id,
-                    contentDescription = model.name,
-                    sharedElementSuffix = sharedElementSuffix,
-                )
-            } else {
-                ImageErrorPlaceholder(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f),
-                )
-            }
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun ModelCardContent(model: Model, sharedElementSuffix: String) {
+    Column {
+        val thumbnailUrl = model.modelVersions
+            .firstOrNull()?.images?.firstOrNull()?.url
 
-            ModelCardInfo(model = model)
+        if (thumbnailUrl != null) {
+            ModelCardThumbnail(
+                thumbnailUrl = thumbnailUrl,
+                modelId = model.id,
+                contentDescription = model.name,
+                sharedElementSuffix = sharedElementSuffix,
+            )
+        } else {
+            ImageErrorPlaceholder(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f),
+            )
         }
+
+        ModelCardInfo(model = model)
     }
 }
 

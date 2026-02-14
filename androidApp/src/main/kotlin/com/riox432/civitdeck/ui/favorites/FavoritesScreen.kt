@@ -47,6 +47,7 @@ import com.riox432.civitdeck.util.FormatUtils
 fun FavoritesScreen(
     favorites: List<FavoriteModelSummary>,
     onModelClick: (Long) -> Unit,
+    gridColumns: Int = 2,
 ) {
     if (favorites.isEmpty()) {
         EmptyFavorites()
@@ -54,6 +55,7 @@ fun FavoritesScreen(
         FavoritesGrid(
             favorites = favorites,
             onModelClick = onModelClick,
+            gridColumns = gridColumns,
         )
     }
 }
@@ -84,9 +86,10 @@ private fun FavoritesGrid(
     favorites: List<FavoriteModelSummary>,
     onModelClick: (Long) -> Unit,
     topPadding: Dp = 0.dp,
+    gridColumns: Int = 2,
 ) {
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Fixed(gridColumns),
         contentPadding = PaddingValues(
             start = Spacing.md,
             end = Spacing.md,

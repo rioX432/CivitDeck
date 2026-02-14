@@ -53,4 +53,8 @@ class BrowsingHistoryRepositoryImpl(
     override suspend fun getAllViewedModelIds(): Set<Long> {
         return dao.getAllModelIds().toSet()
     }
+
+    override suspend fun clearAll() {
+        dao.deleteAll()
+    }
 }

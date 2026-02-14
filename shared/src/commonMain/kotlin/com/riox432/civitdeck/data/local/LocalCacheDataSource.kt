@@ -31,6 +31,10 @@ class LocalCacheDataSource(
         dao.deleteExpired(currentTimeMillis() - DEFAULT_TTL_MILLIS)
     }
 
+    suspend fun clearAll() {
+        dao.deleteAll()
+    }
+
     companion object {
         const val DEFAULT_TTL_MILLIS = 15L * 60L * 1000L // 15 minutes
     }

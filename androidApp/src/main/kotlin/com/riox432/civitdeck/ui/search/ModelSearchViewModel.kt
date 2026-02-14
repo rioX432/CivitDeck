@@ -19,6 +19,9 @@ import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.HideModelUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
@@ -28,6 +31,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -66,6 +70,9 @@ class ModelSearchViewModel(
     private val removeExcludedTagUseCase: RemoveExcludedTagUseCase,
     private val getHiddenModelIdsUseCase: GetHiddenModelIdsUseCase,
     private val hideModelUseCase: HideModelUseCase,
+    observeGridColumnsUseCase: ObserveGridColumnsUseCase,
+    observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase,
+    observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelSearchUiState())
@@ -75,14 +82,32 @@ class ModelSearchViewModel(
         observeSearchHistoryUseCase()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    val gridColumns: StateFlow<Int> =
+        observeGridColumnsUseCase()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 2)
+
     private var loadJob: Job? = null
     private var hiddenModelIds: Set<Long> = emptySet()
+    private var defaultsLoaded = false
 
     init {
         observeNsfwFilter()
         loadExcludedTags()
-        loadModels()
+        loadDefaults(observeDefaultSortOrderUseCase, observeDefaultTimePeriodUseCase)
         loadRecommendations()
+    }
+
+    private fun loadDefaults(
+        observeSortUseCase: ObserveDefaultSortOrderUseCase,
+        observePeriodUseCase: ObserveDefaultTimePeriodUseCase,
+    ) {
+        viewModelScope.launch {
+            val sort = observeSortUseCase().first()
+            val period = observePeriodUseCase().first()
+            _uiState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
+            defaultsLoaded = true
+            loadModels()
+        }
     }
 
     private fun observeNsfwFilter() {

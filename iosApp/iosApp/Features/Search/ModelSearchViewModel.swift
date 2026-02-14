@@ -18,6 +18,7 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var recommendations: [RecommendationSection] = []
     @Published var isFreshFindEnabled: Bool = false
     @Published var excludedTags: [String] = []
+    @Published var gridColumns: Int32 = 2
 
     private let getModelsUseCase: GetModelsUseCase
     private let getRecommendationsUseCase: GetRecommendationsUseCase
@@ -31,6 +32,9 @@ final class ModelSearchViewModel: ObservableObject {
     private let removeExcludedTagUseCase: RemoveExcludedTagUseCase
     private let getHiddenModelIdsUseCase: GetHiddenModelIdsUseCase
     private let hideModelUseCase: HideModelUseCase
+    private let observeGridColumnsUseCase: ObserveGridColumnsUseCase
+    private let observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase
+    private let observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase
     private var nextCursor: String?
     private var loadTask: Task<Void, Never>?
     private var hiddenModelIds: Set<KotlinLong> = []
@@ -50,9 +54,30 @@ final class ModelSearchViewModel: ObservableObject {
         self.removeExcludedTagUseCase = KoinHelper.shared.getRemoveExcludedTagUseCase()
         self.getHiddenModelIdsUseCase = KoinHelper.shared.getHiddenModelIdsUseCase()
         self.hideModelUseCase = KoinHelper.shared.getHideModelUseCase()
+        self.observeGridColumnsUseCase = KoinHelper.shared.getObserveGridColumnsUseCase()
+        self.observeDefaultSortOrderUseCase = KoinHelper.shared.getObserveDefaultSortOrderUseCase()
+        self.observeDefaultTimePeriodUseCase = KoinHelper.shared.getObserveDefaultTimePeriodUseCase()
         loadExcludedTags()
-        loadModels()
+        loadDefaults()
         loadRecommendations()
+    }
+
+    private func loadDefaults() {
+        Task {
+            if let sort = try? await observeDefaultSortOrderUseCase.invoke().first(where: { _ in true }) {
+                selectedSort = sort
+            }
+            if let period = try? await observeDefaultTimePeriodUseCase.invoke().first(where: { _ in true }) {
+                selectedPeriod = period
+            }
+            loadModels()
+        }
+    }
+
+    func observeGridColumns() async {
+        for await value in observeGridColumnsUseCase.invoke() {
+            gridColumns = value.int32Value
+        }
     }
 
     private func loadRecommendations() {

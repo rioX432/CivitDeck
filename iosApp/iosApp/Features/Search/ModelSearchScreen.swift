@@ -13,10 +13,12 @@ struct ModelSearchScreen: View {
     @State private var excludeTagInput: String = ""
     @State private var showFilterSheet: Bool = false
 
-    private let columns = [
-        GridItem(.flexible(), spacing: Spacing.sm),
-        GridItem(.flexible(), spacing: Spacing.sm),
-    ]
+    private var columns: [GridItem] {
+        Array(
+            repeating: GridItem(.flexible(), spacing: Spacing.sm),
+            count: Int(viewModel.gridColumns)
+        )
+    }
 
     var body: some View {
         NavigationStack {
@@ -53,6 +55,7 @@ struct ModelSearchScreen: View {
                 CreatorProfileScreen(username: username)
             }
             .task { await viewModel.observeSearchHistory() }
+            .task { await viewModel.observeGridColumns() }
         }
     }
 

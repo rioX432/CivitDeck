@@ -12,6 +12,9 @@ class HiddenModelRepositoryImpl(
     override suspend fun getHiddenModelIds(): Set<Long> =
         dao.getAllIds().toSet()
 
+    override suspend fun getHiddenModels(): List<HiddenModelEntity> =
+        dao.getAll()
+
     override suspend fun hideModel(modelId: Long, modelName: String) {
         dao.insert(
             HiddenModelEntity(

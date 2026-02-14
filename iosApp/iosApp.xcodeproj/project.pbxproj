@@ -36,6 +36,9 @@
 		CD0009032D000009000CD001 /* SavedPromptsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0009022D000009000CD001 /* SavedPromptsScreen.swift */; };
 		CD000A012D00000A000CD001 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD000A002D00000A000CD001 /* SettingsViewModel.swift */; };
 		CD000A032D00000A000CD001 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD000A022D00000A000CD001 /* SettingsScreen.swift */; };
+		CD000B012D00000B000CD001 /* HiddenModelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD000B002D00000B000CD001 /* HiddenModelsView.swift */; };
+		CD000B032D00000B000CD001 /* ExcludedTagsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD000B022D00000B000CD001 /* ExcludedTagsView.swift */; };
+		CD000B052D00000B000CD001 /* LicensesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD000B042D00000B000CD001 /* LicensesView.swift */; };
 		CD00CA012D0CC001000CD001 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */; };
 /* End PBXBuildFile section */
 
@@ -72,6 +75,9 @@
 		CD0009022D000009000CD001 /* SavedPromptsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedPromptsScreen.swift; sourceTree = "<group>"; };
 		CD000A002D00000A000CD001 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		CD000A022D00000A000CD001 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
+		CD000B002D00000B000CD001 /* HiddenModelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenModelsView.swift; sourceTree = "<group>"; };
+		CD000B022D00000B000CD001 /* ExcludedTagsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExcludedTagsView.swift; sourceTree = "<group>"; };
+		CD000B042D00000B000CD001 /* LicensesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicensesView.swift; sourceTree = "<group>"; };
 		CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -201,6 +207,9 @@
 			children = (
 				CD000A002D00000A000CD001 /* SettingsViewModel.swift */,
 				CD000A022D00000A000CD001 /* SettingsScreen.swift */,
+				CD000B002D00000B000CD001 /* HiddenModelsView.swift */,
+				CD000B022D00000B000CD001 /* ExcludedTagsView.swift */,
+				CD000B042D00000B000CD001 /* LicensesView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -377,6 +386,9 @@
 				CD0009032D000009000CD001 /* SavedPromptsScreen.swift in Sources */,
 				CD000A012D00000A000CD001 /* SettingsViewModel.swift in Sources */,
 				CD000A032D00000A000CD001 /* SettingsScreen.swift in Sources */,
+				CD000B012D00000B000CD001 /* HiddenModelsView.swift in Sources */,
+				CD000B032D00000B000CD001 /* ExcludedTagsView.swift in Sources */,
+				CD000B052D00000B000CD001 /* LicensesView.swift in Sources */,
 				CD00CA012D0CC001000CD001 /* CachedAsyncImage.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -19,4 +19,7 @@ interface CachedApiResponseDao {
 
     @Query("DELETE FROM cached_api_responses WHERE cachedAt < :expiryTime")
     suspend fun deleteExpired(expiryTime: Long)
+
+    @Query("DELETE FROM cached_api_responses")
+    suspend fun deleteAll()
 }

@@ -7,4 +7,7 @@ import androidx.room.PrimaryKey
 data class UserPreferencesEntity(
     @PrimaryKey val id: Int = 1,
     val nsfwFilterLevel: String = "Off",
+    val defaultSortOrder: String = "MostDownloaded",
+    val defaultTimePeriod: String = "AllTime",
+    val gridColumns: Int = 2,
 )

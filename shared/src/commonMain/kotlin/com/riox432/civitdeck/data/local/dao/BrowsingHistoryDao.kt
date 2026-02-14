@@ -22,4 +22,7 @@ interface BrowsingHistoryDao {
 
     @Query("SELECT COUNT(*) FROM browsing_history")
     suspend fun count(): Int
+
+    @Query("DELETE FROM browsing_history")
+    suspend fun deleteAll()
 }

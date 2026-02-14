@@ -4,10 +4,12 @@ import Shared
 struct FavoritesScreen: View {
     @StateObject private var viewModel = FavoritesViewModel()
 
-    private let columns = [
-        GridItem(.flexible(), spacing: Spacing.sm),
-        GridItem(.flexible(), spacing: Spacing.sm),
-    ]
+    private var columns: [GridItem] {
+        Array(
+            repeating: GridItem(.flexible(), spacing: Spacing.sm),
+            count: Int(viewModel.gridColumns)
+        )
+    }
 
     var body: some View {
         NavigationStack {
@@ -23,7 +25,7 @@ struct FavoritesScreen: View {
                 ModelDetailScreen(modelId: modelId)
             }
         }
-        // Observation starts automatically in ViewModel init
+        .task { await viewModel.observeGridColumns() }
     }
 
     private var favoritesGrid: some View {
