@@ -44,7 +44,7 @@ CivitDeck は閲覧だけでなく、生成するパワーユーザー・クリ�
 - **Fresh Find** — トレンド前の新着モデルを発見
 - **クロスプラットフォーム** — 共有 KMP コードベースからネイティブ Android（Jetpack Compose）& iOS（SwiftUI）
 
-ComfyUI 連携、モデル比較、プロンプトテンプレートなど計画中の機能は[ロードマップ](ROADMAP.md)を参照。
+ComfyUI 連携、モデル比較、プロンプトテンプレートなど計画中の機能は[ロードマップ](docs/ROADMAP.md)を参照。
 
 ## 対象ユーザー
 
@@ -64,22 +64,22 @@ ComfyUI 連携、モデル比較、プロンプトテンプレートなど計画
 
 ## アーキテクチャ
 
-詳細は [ARCHITECTURE.md](ARCHITECTURE.md) を参照。
+詳細は [ARCHITECTURE.md](docs/ARCHITECTURE.md) を参照。
 
 ```mermaid
 graph TB
     subgraph shared["Shared (KMP)"]
-        ktor["Ktor Client"] & repo["Repository"] —> usecase["Use Case"]
-        room["Room KMP (Cache)"] —> entity["Entity"]
+        ktor["Ktor Client"] & repo["Repository"] --> usecase["Use Case"]
+        room["Room KMP (Cache)"] --> entity["Entity"]
     end
     subgraph android["Android"]
-        avm["ViewModel"] —> compose["Compose"]
+        avm["ViewModel"] --> compose["Compose"]
     end
     subgraph ios["iOS"]
-        ivm["ViewModel"] —> swiftui["SwiftUI"]
+        ivm["ViewModel"] --> swiftui["SwiftUI"]
     end
-    usecase —> avm
-    usecase —> ivm
+    usecase --> avm
+    usecase --> ivm
 ```
 
 ## はじめに
@@ -106,7 +106,7 @@ open iosApp/iosApp.xcodeproj
 
 ## コントリビューション
 
-コントリビューション歓迎！ガイドラインは [CONTRIBUTING.md](CONTRIBUTING.md) を参照。
+コントリビューション歓迎！ガイドラインは [CONTRIBUTING.md](docs/CONTRIBUTING.md) を参照。
 
 特に以下の領域の貢献を歓迎:
 - **ComfyUI / SD WebUI 連携** — API クライアント、ワークフローエクスポート形式、プロトコル対応

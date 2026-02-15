@@ -44,7 +44,7 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Fresh Find** — discover recently published models before they trend
 - **Cross-Platform** — native Android (Jetpack Compose) & iOS (SwiftUI) from a shared KMP codebase
 
-See the full [Roadmap](ROADMAP.md) for planned features including ComfyUI integration, model comparison, and prompt templates.
+See the full [Roadmap](docs/ROADMAP.md) for planned features including ComfyUI integration, model comparison, and prompt templates.
 
 ## Who Is This For?
 
@@ -64,22 +64,22 @@ See the full [Roadmap](ROADMAP.md) for planned features including ComfyUI integr
 
 ## Architecture
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed documentation.
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed documentation.
 
 ```mermaid
 graph TB
     subgraph shared["Shared (KMP)"]
-        ktor["Ktor Client"] & repo["Repository"] —> usecase["Use Case"]
-        room["Room KMP (Cache)"] —> entity["Entity"]
+        ktor["Ktor Client"] & repo["Repository"] --> usecase["Use Case"]
+        room["Room KMP (Cache)"] --> entity["Entity"]
     end
     subgraph android["Android"]
-        avm["ViewModel"] —> compose["Compose"]
+        avm["ViewModel"] --> compose["Compose"]
     end
     subgraph ios["iOS"]
-        ivm["ViewModel"] —> swiftui["SwiftUI"]
+        ivm["ViewModel"] --> swiftui["SwiftUI"]
     end
-    usecase —> avm
-    usecase —> ivm
+    usecase --> avm
+    usecase --> ivm
 ```
 
 ## Getting Started
@@ -106,7 +106,7 @@ open iosApp/iosApp.xcodeproj
 
 ## Contributing
 
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome! See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
 
 We especially welcome contributions related to:
 - **ComfyUI / SD WebUI integration** — API clients, workflow export formats, protocol support
