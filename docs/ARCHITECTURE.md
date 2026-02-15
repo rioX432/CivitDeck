@@ -28,13 +28,24 @@ CivitDeck/
 │           ├── navigation/    # Navigation 3 routes & NavDisplay
 │           ├── search/        # Model search screen + ViewModel
 │           ├── detail/        # Model detail screen + ViewModel
+│           ├── creator/       # Creator profile screen
+│           ├── favorites/     # Favorites screen
 │           ├── gallery/       # Image gallery screen + ViewModel
+│           ├── prompts/       # Prompts screen
+│           ├── settings/      # Settings screen
 │           ├── components/    # Reusable Compose components
-│           └── util/          # Formatting utilities
+│           └── theme/         # Design tokens (colors, typography, spacing)
 └── iosApp/                    # iOS application
-    └── CivitDeck/
-        ├── Views/             # SwiftUI views (Search, Detail, Gallery)
-        └── ViewModels/        # iOS ViewModels (ObservableObject)
+    └── iosApp/
+        ├── Features/          # Feature-based modules
+        │   ├── Search/        # Search screen + ViewModel
+        │   ├── Detail/        # Detail screen + ViewModel
+        │   ├── Creator/       # Creator profile
+        │   ├── Favorites/     # Favorites screen
+        │   ├── Gallery/       # Image gallery
+        │   ├── Prompts/       # Prompts screen
+        │   └── Settings/      # Settings screen
+        └── DesignSystem/      # Design tokens + shared components
 ```
 
 ## Data Flow
@@ -69,7 +80,7 @@ graph TB
 ### UI Layer (Platform-specific)
 
 - **Android**: Jetpack Compose with Material Design 3. Navigation uses AndroidX Navigation 3 with type-safe routes. ViewModels extend `androidx.lifecycle.ViewModel`.
-- **iOS**: SwiftUI with native navigation (`NavigationStack`). ViewModels use `ObservableObject` protocol.
+- **iOS**: SwiftUI with native navigation (`NavigationStack`). Feature-based structure under `Features/`. ViewModels use `ObservableObject` protocol. Custom `CachedAsyncImage` for image loading (no third-party dependency). Design tokens in `DesignSystem/`.
 
 ## Key Design Decisions
 
@@ -113,6 +124,6 @@ Koin is used as the DI framework across all modules:
 GitHub Actions runs on every push to `master` and on pull requests:
 
 1. **Android job**: Shared unit tests → Detekt lint → Debug APK build
-2. **iOS job**: Xcode build for iOS Simulator
+2. **iOS job**: SwiftLint → Xcode build for iOS Simulator
 
 See `.github/workflows/ci.yml` for the full configuration.

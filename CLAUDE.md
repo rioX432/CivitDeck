@@ -6,13 +6,21 @@ Strictly follow the rules in [AGENTS.md](./AGENTS.md).
 
 Before acting, always pause and reconsider. Re-read the requirements, re-check your assumptions, and verify your approach is correct before writing any code.
 
-## Research-First Development
+## Research-First Development (No Guessing)
 
-Never design or implement based on guesses or assumptions. Always follow this order:
+**Guessing is prohibited.** Never design or implement based on assumptions. Always follow this order:
 
-1. **Identify the source of truth** — Read official documentation, inspect actual source code (JARs, library internals), or search the web to confirm API signatures, behavior, and best practices.
-2. **Verify with Codex** — Before starting design or implementation, use the Codex MCP tool to confirm that your approach, API usage, and architectural decisions are correct.
-3. **Proceed only with confirmed information** — If the source of truth is unclear or Codex raises concerns, investigate further or ask the user before writing code.
+1. **Investigate first** — Read official docs, inspect source code, or web-search to confirm API signatures, behavior, and best practices. If a library API is unfamiliar, look it up before using it.
+2. **Self-review** — After designing or implementing, verify:
+   - Consistency with existing patterns in the codebase
+   - Edge cases are handled
+   - No unverified assumptions crept in
+3. **Cross-review with Codex** — If Codex MCP (`mcp__codex__codex`) is available, use it to cross-check:
+   - New module or architecture designs
+   - Implementations that deviate from existing patterns
+   - Complex decisions where you're not fully confident
+   - Code review requests (always cross-review with Codex)
+4. **Proceed only with confirmed information** — If the source of truth is unclear, investigate further or ask the user before writing code.
 
 This applies to:
 - Choosing library APIs and their correct usage
@@ -20,11 +28,14 @@ This applies to:
 - Designing architecture and component structure
 - Any decision where you are not 100% certain
 
-## Language
+## Key Gotchas
 
-All project content must be written in English. This includes:
-- Code (comments, variable names, strings)
-- Git commit messages
-- Pull request titles and descriptions
-- GitHub Issues
-- Documentation
+- Detekt auto-correct reorders imports — run `./gradlew detekt` twice if the first run changes import order
+- Detekt LongMethod limit is 60 lines — split composables early
+- `No such module 'Shared'` in SourceKit is expected — KMP framework needs to be built first
+- Coil 3.x: `ImageRequest.Builder` needs context from `LocalContext.current`
+- Coil `crossfade` needs explicit import: `coil3.request.crossfade`
+- Navigation 3: `LocalNavAnimatedContentScope` is in `androidx.navigation3.ui`, NOT `androidx.navigation3.runtime`
+- iOS deployment target is 16.0 — `onScrollGeometryChange` is iOS 18+ only
+- iOS scroll tracking: `GeometryReader + PreferenceKey` doesn't fire during active scrolling — use `simultaneousGesture(DragGesture)` instead
+- pbxproj needs 4 entries for new files: PBXBuildFile, PBXFileReference, group children, PBXSourcesBuildPhase

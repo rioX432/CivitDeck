@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents working with this repository.
 
 ## Project Overview
 
-CivitDeck is a mobile client for [CivitAI](https://civitai.com/) — the largest open-source generative AI community. It allows users to browse models, images, and prompts natively on Android & iOS, built with Kotlin Multiplatform (KMP).
+CivitDeck is a power-user mobile client for [CivitAI](https://civitai.com/) — the largest open-source generative AI community. It provides a native Android & iOS experience for browsing models, images, creators, prompts, and galleries, built with Kotlin Multiplatform (KMP).
 
 ## Commands
 
@@ -19,7 +19,8 @@ CivitDeck is a mobile client for [CivitAI](https://civitai.com/) — the largest
 open iosApp/iosApp.xcodeproj          # Open in Xcode
 
 # Code Quality
-./gradlew detekt                      # Static analysis + auto-format (autoCorrect enabled)
+./gradlew detekt                      # Static analysis + auto-format (autoCorrect enabled in build.gradle.kts)
+cd iosApp && swiftlint --strict       # SwiftLint (config: iosApp/.swiftlint.yml)
 ```
 
 ## Architecture
@@ -60,12 +61,29 @@ CivitDeck/
 │               ├── navigation/    # Nav3 NavDisplay & route definitions
 │               ├── search/        # Search screen + ViewModel
 │               ├── detail/        # Detail screen + ViewModel
+│               ├── creator/       # Creator profile screen
+│               ├── favorites/     # Favorites screen
+│               ├── gallery/       # Gallery/image browsing
+│               ├── prompts/       # Prompts screen
+│               ├── settings/      # Settings screen
 │               ├── components/    # Reusable Compose components
-│               └── util/          # Format utilities
+│               └── theme/         # Design tokens (colors, typography, spacing)
 └── iosApp/                    # iOS application (SwiftUI)
-    └── CivitDeck/
-        ├── Views/             # SwiftUI views
-        └── ViewModels/        # iOS ViewModels
+    └── iosApp/
+        ├── Features/          # Feature-based modules
+        │   ├── Search/        # Search screen + ViewModel
+        │   ├── Detail/        # Detail screen + ViewModel
+        │   ├── Creator/       # Creator profile
+        │   ├── Favorites/     # Favorites screen
+        │   ├── Gallery/       # Gallery/image browsing
+        │   ├── Prompts/       # Prompts screen
+        │   └── Settings/      # Settings screen
+        └── DesignSystem/      # Design tokens + shared components
+            ├── CachedAsyncImage.swift   # Custom image loader (no third-party lib)
+            ├── CivitDeckColors.swift
+            ├── CivitDeckFonts.swift
+            ├── CivitDeckSpacing.swift
+            └── ShimmerModifier.swift
 ```
 
 ### Key Design Patterns
@@ -90,23 +108,20 @@ CivitDeck/
 - Koin modules defined in `shared/di/`
 - Platform-specific modules in `androidApp/di/` and `iosApp/`
 
-## Development Guidelines
-
-- All shared logic goes in `commonMain` — platform-specific code only when necessary
-- DTOs in `data/api/` are separate from domain entities in `domain/model/`
-- Use cases should be single-responsibility (one public function per use case, returns Flow)
-- ViewModels live in platform modules, not in shared — shared only provides UseCases and domain logic
-- Android UI uses Jetpack Compose with Material Design 3
-- iOS UI uses SwiftUI with native navigation patterns
-- Image loading: Coil (Android), AsyncImage/Kingfisher (iOS)
-- All API responses should be cached locally for offline support
+**Image Loading**
+- Android: Coil 3.x with `SubcomposeAsyncImage` for loading states
+- iOS: Custom `CachedAsyncImage` in `DesignSystem/` (no third-party dependency)
 
 ## Code Quality
 
-After making code changes, always run detekt with auto-correct before committing:
+After making code changes, run the appropriate linter before committing:
 
 ```bash
-./gradlew detekt --auto-correct       # Auto-format + static analysis
+# Android / shared
+./gradlew detekt                      # autoCorrect is enabled in build.gradle.kts
+
+# iOS
+cd iosApp && swiftlint --strict
 ```
 
 ## Git Commits

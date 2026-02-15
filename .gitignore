@@ -32,7 +32,7 @@ DerivedData/
 Thumbs.db
 
 ## AI Tools
-.claude/
+.claude/settings.local.json
 
 ## Misc
 *.log

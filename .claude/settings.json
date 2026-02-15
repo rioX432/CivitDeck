@@ -1,0 +1,14 @@
+{
+  "enabledPlugins": {
+    "ai-dev@rioX432/ai-dev-templates": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew *)",
+      "Bash(xcodebuild *)",
+      "Bash(cd iosApp && swiftlint *)",
+      "Bash(swiftlint *)",
+      "Bash(gh *)"
+    ]
+  }
+}
