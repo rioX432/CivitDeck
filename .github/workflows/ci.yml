@@ -11,8 +11,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      android: ${{ steps.filter.outputs.android }}
+      ios: ${{ steps.filter.outputs.ios }}
+      shared: ${{ steps.filter.outputs.shared }}
+      ci: ${{ steps.filter.outputs.ci }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            shared:
+              - 'shared/**'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+              - 'gradle.properties'
+              - 'gradle/**'
+            android:
+              - 'androidApp/**'
+              - 'config/detekt/**'
+            ios:
+              - 'iosApp/**'
+            ci:
+              - '.github/workflows/**'
+
   android:
     name: Android Build & Test
+    needs: changes
+    if: >-
+      needs.changes.outputs.android == 'true' ||
+      needs.changes.outputs.shared == 'true' ||
+      needs.changes.outputs.ci == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,17 +59,16 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Run shared tests
-        run: ./gradlew :shared:testDebugUnitTest
-
-      - name: Run detekt
-        run: ./gradlew detekt
-
-      - name: Build Android debug APK
-        run: ./gradlew :androidApp:assembleDebug
+      - name: Test, Lint & Build
+        run: ./gradlew :shared:testDebugUnitTest detekt :androidApp:assembleDebug
 
   ios:
     name: iOS Build
+    needs: changes
+    if: >-
+      needs.changes.outputs.ios == 'true' ||
+      needs.changes.outputs.shared == 'true' ||
+      needs.changes.outputs.ci == 'true'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -50,8 +82,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Install SwiftLint
-        run: brew install swiftlint
+      - name: Cache Kotlin/Native
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: konan-
 
       - name: Run SwiftLint
         run: cd iosApp && swiftlint --strict
