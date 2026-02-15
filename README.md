@@ -4,7 +4,7 @@
 
 # CivitDeck
 
-**The power user client for CivitAI -- browse, compare, and bridge to your generation workflow**
+**The power user client for CivitAI — browse, compare, and bridge to your generation workflow**
 
 Built with Kotlin Multiplatform (KMP) | Android & iOS
 
@@ -21,9 +21,9 @@ Built with Kotlin Multiplatform (KMP) | Android & iOS
 
 ## Why CivitDeck?
 
-1. **Workflow fragmentation** -- you find a model on CivitAI, then manually copy parameters into ComfyUI or A1111. There's no bridge between discovery and generation.
-2. **Metadata is buried** -- generation parameters (prompt, sampler, CFG, seed) are hidden behind multiple clicks. Comparing model versions is tedious.
-3. **Mobile web is painful** -- CivitAI's desktop site on mobile means pinch-zooming, slow loads, and no offline access.
+1. **Workflow fragmentation** — you find a model on CivitAI, then manually copy parameters into ComfyUI or A1111. There's no bridge between discovery and generation.
+2. **Metadata is buried** — generation parameters (prompt, sampler, CFG, seed) are hidden behind multiple clicks. Comparing model versions is tedious.
+3. **Mobile web is painful** — CivitAI's desktop site on mobile means pinch-zooming, slow loads, and no offline access.
 
 CivitDeck is built for power users and creators who generate, not just browse.
 
@@ -37,20 +37,20 @@ CivitDeck is built for power users and creators who generate, not just browse.
 
 ## Features
 
-- **Model Search & Browse** -- filter by type (Checkpoint, LoRA, etc.), sort, period, and tags
-- **Image Gallery** -- staggered grid with full-screen viewer and pinch-to-zoom
-- **Prompt Metadata** -- view generation parameters and copy with one tap
-- **Favorites** -- save models and images locally for offline access
-- **Fresh Find** -- discover recently published models before they trend
-- **Cross-Platform** -- native Android (Jetpack Compose) & iOS (SwiftUI) from a shared KMP codebase
+- **Model Search & Browse** — filter by type (Checkpoint, LoRA, etc.), sort, period, and tags
+- **Image Gallery** — staggered grid with full-screen viewer and pinch-to-zoom
+- **Prompt Metadata** — view generation parameters and copy with one tap
+- **Favorites** — save models and images locally for offline access
+- **Fresh Find** — discover recently published models before they trend
+- **Cross-Platform** — native Android (Jetpack Compose) & iOS (SwiftUI) from a shared KMP codebase
 
 See the full [Roadmap](ROADMAP.md) for planned features including ComfyUI integration, model comparison, and prompt templates.
 
 ## Who Is This For?
 
-- **Model hunters** -- you browse CivitAI daily looking for new checkpoints and LoRAs to try
-- **Prompt engineers** -- you study generation parameters from top-rated images to refine your own workflows
-- **ComfyUI/A1111 users** -- you want a seamless bridge between discovering models on CivitAI and using them in your local setup
+- **Model hunters** — you browse CivitAI daily looking for new checkpoints and LoRAs to try
+- **Prompt engineers** — you study generation parameters from top-rated images to refine your own workflows
+- **ComfyUI/A1111 users** — you want a seamless bridge between discovering models on CivitAI and using them in your local setup
 
 ## Tech Stack
 
@@ -69,17 +69,17 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed documentation.
 ```mermaid
 graph TB
     subgraph shared["Shared (KMP)"]
-        ktor["Ktor Client"] & repo["Repository"] --> usecase["Use Case"]
-        room["Room KMP (Cache)"] --> entity["Entity"]
+        ktor["Ktor Client"] & repo["Repository"] —> usecase["Use Case"]
+        room["Room KMP (Cache)"] —> entity["Entity"]
     end
     subgraph android["Android"]
-        avm["ViewModel"] --> compose["Compose"]
+        avm["ViewModel"] —> compose["Compose"]
     end
     subgraph ios["iOS"]
-        ivm["ViewModel"] --> swiftui["SwiftUI"]
+        ivm["ViewModel"] —> swiftui["SwiftUI"]
     end
-    usecase --> avm
-    usecase --> ivm
+    usecase —> avm
+    usecase —> ivm
 ```
 
 ## Getting Started
@@ -109,16 +109,16 @@ open iosApp/iosApp.xcodeproj
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 We especially welcome contributions related to:
-- **ComfyUI / SD WebUI integration** -- API clients, workflow export formats, protocol support
-- **Power user features** -- metadata panels, comparison tools, template systems
+- **ComfyUI / SD WebUI integration** — API clients, workflow export formats, protocol support
+- **Power user features** — metadata panels, comparison tools, template systems
 
 ## Support the Project
 
-If you find CivitDeck useful:
+If CivitDeck improves your daily CivitAI workflow, consider supporting development:
 
-- Give it a **star** -- it helps others discover the project
-- [**Sponsor**](https://github.com/sponsors/rioX432) -- support ongoing development
-- [**Open an issue**](https://github.com/rioX432/CivitDeck/issues/new/choose) -- report bugs or request features
+- Give it a **star** — it helps others discover the project
+- [**Sponsor**](https://github.com/sponsors/rioX432) — fund ongoing development and new features
+- [**Open an issue**](https://github.com/rioX432/CivitDeck/issues/new/choose) — report bugs or request features
 
 ## Disclaimer
 
@@ -126,10 +126,10 @@ CivitDeck is an unofficial, community-built client. It is not affiliated with, e
 
 ## License
 
-This project is licensed under the MIT License -- see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ## Author
 
 **RIO** ([@rioX432](https://github.com/rioX432))
 
-Mobile App Developer based in Tokyo -- Android | iOS | KMP
+Mobile App Developer based in Tokyo — Android | iOS | KMP

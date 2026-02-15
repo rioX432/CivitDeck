@@ -4,7 +4,7 @@
 
 # CivitDeck
 
-**CivitAI パワーユーザークライアント -- モデル閲覧・比較・生成ワークフローへの橋渡し**
+**CivitAI パワーユーザークライアント — モデル閲覧・比較・生成ワークフローへの橋渡し**
 
 Kotlin Multiplatform (KMP) | Android & iOS
 
@@ -21,9 +21,9 @@ Kotlin Multiplatform (KMP) | Android & iOS
 
 ## なぜ CivitDeck？
 
-1. **ワークフローの分断** -- CivitAI でモデルを見つけても、ComfyUI や A1111 にパラメータを手動コピーするしかない。発見と生成の間に橋がない。
-2. **メタデータが埋もれている** -- 生成パラメータ（プロンプト、サンプラー、CFG、シード）は何度もクリックしないと見えない。バージョン比較も面倒。
-3. **モバイル Web がつらい** -- CivitAI のデスクトップサイトをスマホで見ると、ピンチズーム・遅いロード・オフライン不可。
+1. **ワークフローの分断** — CivitAI でモデルを見つけても、ComfyUI や A1111 にパラメータを手動コピーするしかない。発見と生成の間に橋がない。
+2. **メタデータが埋もれている** — 生成パラメータ（プロンプト、サンプラー、CFG、シード）は何度もクリックしないと見えない。バージョン比較も面倒。
+3. **モバイル Web がつらい** — CivitAI のデスクトップサイトをスマホで見ると、ピンチズーム・遅いロード・オフライン不可。
 
 CivitDeck は閲覧だけでなく、生成するパワーユーザー・クリエイター向けに作られている。
 
@@ -37,20 +37,20 @@ CivitDeck は閲覧だけでなく、生成するパワーユーザー・クリ�
 
 ## 機能
 
-- **モデル検索・閲覧** -- タイプ（Checkpoint、LoRA など）、ソート、期間、タグでフィルタリング
-- **イメージギャラリー** -- スタッガードグリッドとフルスクリーンビューア、ピンチズーム対応
-- **プロンプトメタデータ** -- 生成パラメータの閲覧とワンタップコピー
-- **お気に入り** -- モデルと画像をローカルに保存してオフラインアクセス
-- **Fresh Find** -- トレンド前の新着モデルを発見
-- **クロスプラットフォーム** -- 共有 KMP コードベースからネイティブ Android（Jetpack Compose）& iOS（SwiftUI）
+- **モデル検索・閲覧** — タイプ（Checkpoint、LoRA など）、ソート、期間、タグでフィルタリング
+- **イメージギャラリー** — スタッガードグリッドとフルスクリーンビューア、ピンチズーム対応
+- **プロンプトメタデータ** — 生成パラメータの閲覧とワンタップコピー
+- **お気に入り** — モデルと画像をローカルに保存してオフラインアクセス
+- **Fresh Find** — トレンド前の新着モデルを発見
+- **クロスプラットフォーム** — 共有 KMP コードベースからネイティブ Android（Jetpack Compose）& iOS（SwiftUI）
 
 ComfyUI 連携、モデル比較、プロンプトテンプレートなど計画中の機能は[ロードマップ](ROADMAP.md)を参照。
 
 ## 対象ユーザー
 
-- **モデルハンター** -- 毎日 CivitAI で新しいチェックポイントや LoRA を探している人
-- **プロンプトエンジニア** -- 高評価画像の生成パラメータを研究して自分のワークフローを改善する人
-- **ComfyUI/A1111 ユーザー** -- CivitAI でのモデル発見とローカル環境をシームレスにつなぎたい人
+- **モデルハンター** — 毎日 CivitAI で新しいチェックポイントや LoRA を探している人
+- **プロンプトエンジニア** — 高評価画像の生成パラメータを研究して自分のワークフローを改善する人
+- **ComfyUI/A1111 ユーザー** — CivitAI でのモデル発見とローカル環境をシームレスにつなぎたい人
 
 ## 技術スタック
 
@@ -69,17 +69,17 @@ ComfyUI 連携、モデル比較、プロンプトテンプレートなど計画
 ```mermaid
 graph TB
     subgraph shared["Shared (KMP)"]
-        ktor["Ktor Client"] & repo["Repository"] --> usecase["Use Case"]
-        room["Room KMP (Cache)"] --> entity["Entity"]
+        ktor["Ktor Client"] & repo["Repository"] —> usecase["Use Case"]
+        room["Room KMP (Cache)"] —> entity["Entity"]
     end
     subgraph android["Android"]
-        avm["ViewModel"] --> compose["Compose"]
+        avm["ViewModel"] —> compose["Compose"]
     end
     subgraph ios["iOS"]
-        ivm["ViewModel"] --> swiftui["SwiftUI"]
+        ivm["ViewModel"] —> swiftui["SwiftUI"]
     end
-    usecase --> avm
-    usecase --> ivm
+    usecase —> avm
+    usecase —> ivm
 ```
 
 ## はじめに
@@ -109,16 +109,16 @@ open iosApp/iosApp.xcodeproj
 コントリビューション歓迎！ガイドラインは [CONTRIBUTING.md](CONTRIBUTING.md) を参照。
 
 特に以下の領域の貢献を歓迎:
-- **ComfyUI / SD WebUI 連携** -- API クライアント、ワークフローエクスポート形式、プロトコル対応
-- **パワーユーザー機能** -- メタデータパネル、比較ツール、テンプレートシステム
+- **ComfyUI / SD WebUI 連携** — API クライアント、ワークフローエクスポート形式、プロトコル対応
+- **パワーユーザー機能** — メタデータパネル、比較ツール、テンプレートシステム
 
 ## プロジェクトを支援
 
-CivitDeck が役に立ったら:
+CivitDeck が日々の CivitAI ワークフローを改善していたら、開発の支援を検討してください:
 
-- **スター**をお願いします -- 他の人がプロジェクトを見つける助けになります
-- [**スポンサー**](https://github.com/sponsors/rioX432) -- 開発を支援
-- [**Issue を作成**](https://github.com/rioX432/CivitDeck/issues/new/choose) -- バグ報告や機能リクエスト
+- **スター**をお願いします — 他の人がプロジェクトを見つける助けになります
+- [**スポンサー**](https://github.com/sponsors/rioX432) — 開発と新機能に投資
+- [**Issue を作成**](https://github.com/rioX432/CivitDeck/issues/new/choose) — バグ報告や機能リクエスト
 
 ## 免責事項
 
@@ -126,10 +126,10 @@ CivitDeck は非公式のコミュニティ製クライアントです。Civitai
 
 ## ライセンス
 
-このプロジェクトは MIT License の下でライセンスされています -- 詳細は [LICENSE](LICENSE) ファイルを参照。
+このプロジェクトは MIT License の下でライセンスされています — 詳細は [LICENSE](LICENSE) ファイルを参照。
 
 ## 作者
 
 **RIO** ([@rioX432](https://github.com/rioX432))
 
-東京在住のモバイルアプリ開発者 -- Android | iOS | KMP
+東京在住のモバイルアプリ開発者 — Android | iOS | KMP
