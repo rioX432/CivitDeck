@@ -19,13 +19,13 @@ Built with Kotlin Multiplatform (KMP) | Android & iOS
 
 ---
 
-## The Problem
+## Why CivitDeck?
 
-1. **No mobile app for CivitAI** -- the largest open-source generative AI community has no native mobile experience. You're stuck pinch-zooming a desktop site.
-2. **No workflow bridge** -- finding a great model on CivitAI and using it in ComfyUI or A1111 means manually copying parameters across devices.
-3. **Metadata is buried** -- generation parameters (prompt, sampler, CFG, seed) are hidden behind multiple clicks. Comparing models is tedious.
+1. **Workflow fragmentation** -- you find a model on CivitAI, then manually copy parameters into ComfyUI or A1111. There's no bridge between discovery and generation.
+2. **Metadata is buried** -- generation parameters (prompt, sampler, CFG, seed) are hidden behind multiple clicks. Comparing model versions is tedious.
+3. **Mobile web is painful** -- CivitAI's desktop site on mobile means pinch-zooming, slow loads, and no offline access.
 
-CivitDeck solves all three.
+CivitDeck is built for power users and creators who generate, not just browse.
 
 ## Screenshots
 
@@ -37,8 +37,6 @@ CivitDeck solves all three.
 
 ## Features
 
-### Available Now
-
 - **Model Search & Browse** -- filter by type (Checkpoint, LoRA, etc.), sort, period, and tags
 - **Image Gallery** -- staggered grid with full-screen viewer and pinch-to-zoom
 - **Prompt Metadata** -- view generation parameters and copy with one tap
@@ -46,15 +44,7 @@ CivitDeck solves all three.
 - **Fresh Find** -- discover recently published models before they trend
 - **Cross-Platform** -- native Android (Jetpack Compose) & iOS (SwiftUI) from a shared KMP codebase
 
-### Coming Soon
-
-- **ComfyUI integration** -- trigger workflows and export parameters directly from mobile ([#148](https://github.com/rioX432/CivitDeck/issues/148))
-- **Power user mode** -- advanced metadata panel with full generation parameters ([#150](https://github.com/rioX432/CivitDeck/issues/150))
-- **Prompt templates** -- save, organize, and reuse prompts across sessions ([#149](https://github.com/rioX432/CivitDeck/issues/149))
-- **Model comparison** -- side-by-side version comparison ([#118](https://github.com/rioX432/CivitDeck/issues/118))
-- **One-tap export** -- export to ComfyUI workflow JSON or A1111 format ([#151](https://github.com/rioX432/CivitDeck/issues/151))
-
-See the full [Roadmap](ROADMAP.md) for all planned features.
+See the full [Roadmap](ROADMAP.md) for planned features including ComfyUI integration, model comparison, and prompt templates.
 
 ## Who Is This For?
 
