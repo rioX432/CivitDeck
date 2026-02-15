@@ -19,14 +19,6 @@ Built with Kotlin Multiplatform (KMP) | Android & iOS
 
 ---
 
-## Why CivitDeck?
-
-1. **Workflow fragmentation** — you find a model on CivitAI, then manually copy parameters into ComfyUI or A1111. There's no bridge between discovery and generation.
-2. **Metadata is buried** — generation parameters (prompt, sampler, CFG, seed) are hidden behind multiple clicks. Comparing model versions is tedious.
-3. **Mobile web is painful** — CivitAI's desktop site on mobile means pinch-zooming, slow loads, and no offline access.
-
-CivitDeck is built for power users and creators who generate, not just browse.
-
 ## Screenshots
 
 | Android | iOS |
@@ -34,6 +26,14 @@ CivitDeck is built for power users and creators who generate, not just browse.
 | <img src="docs/screenshots/android_search.png" alt="Android Search" width="300"> | <img src="docs/screenshots/ios_search.png" alt="iOS Search" width="300"> |
 | <img src="docs/screenshots/android_detail.png" alt="Android Detail" width="300"> | <img src="docs/screenshots/ios_detail.png" alt="iOS Detail" width="300"> |
 | <img src="docs/screenshots/android_gallery.png" alt="Android Gallery" width="300"> | <img src="docs/screenshots/ios_gallery.png" alt="iOS Gallery" width="300"> |
+
+## Why CivitDeck?
+
+1. **Workflow fragmentation** — you find a model on CivitAI, then manually copy parameters into ComfyUI or A1111. There's no bridge between discovery and generation.
+2. **Metadata is buried** — generation parameters (prompt, sampler, CFG, seed) are hidden behind multiple clicks. Comparing model versions is tedious.
+3. **Mobile web is painful** — CivitAI's desktop site on mobile means pinch-zooming, slow loads, and no offline access.
+
+CivitDeck is built for power users and creators who generate, not just browse.
 
 ## Features
 

@@ -19,14 +19,6 @@ Kotlin Multiplatform (KMP) | Android & iOS
 
 ---
 
-## なぜ CivitDeck？
-
-1. **ワークフローの分断** — CivitAI でモデルを見つけても、ComfyUI や A1111 にパラメータを手動コピーするしかない。発見と生成の間に橋がない。
-2. **メタデータが埋もれている** — 生成パラメータ（プロンプト、サンプラー、CFG、シード）は何度もクリックしないと見えない。バージョン比較も面倒。
-3. **モバイル Web がつらい** — CivitAI のデスクトップサイトをスマホで見ると、ピンチズーム・遅いロード・オフライン不可。
-
-CivitDeck は閲覧だけでなく、生成するパワーユーザー・クリエイター向けに作られている。
-
 ## スクリーンショット
 
 | Android | iOS |
@@ -34,6 +26,14 @@ CivitDeck は閲覧だけでなく、生成するパワーユーザー・クリ�
 | <img src="docs/screenshots/android_search.png" alt="Android Search" width="300"> | <img src="docs/screenshots/ios_search.png" alt="iOS Search" width="300"> |
 | <img src="docs/screenshots/android_detail.png" alt="Android Detail" width="300"> | <img src="docs/screenshots/ios_detail.png" alt="iOS Detail" width="300"> |
 | <img src="docs/screenshots/android_gallery.png" alt="Android Gallery" width="300"> | <img src="docs/screenshots/ios_gallery.png" alt="iOS Gallery" width="300"> |
+
+## なぜ CivitDeck？
+
+1. **ワークフローの分断** — CivitAI でモデルを見つけても、ComfyUI や A1111 にパラメータを手動コピーするしかない。発見と生成の間に橋がない。
+2. **メタデータが埋もれている** — 生成パラメータ（プロンプト、サンプラー、CFG、シード）は何度もクリックしないと見えない。バージョン比較も面倒。
+3. **モバイル Web がつらい** — CivitAI のデスクトップサイトをスマホで見ると、ピンチズーム・遅いロード・オフライン不可。
+
+CivitDeck は閲覧だけでなく、生成するパワーユーザー・クリエイター向けに作られている。
 
 ## 機能
 
