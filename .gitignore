@@ -31,6 +31,9 @@ DerivedData/
 .DS_Store
 Thumbs.db
 
+## AI Tools
+.claude/
+
 ## Misc
 *.log
 *.tmp
