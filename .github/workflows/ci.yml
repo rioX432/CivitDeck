@@ -89,6 +89,9 @@ jobs:
           key: konan-${{ hashFiles('gradle/libs.versions.toml') }}
           restore-keys: konan-
 
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
       - name: Run SwiftLint
         run: cd iosApp && swiftlint --strict
 
