@@ -1,7 +1,4 @@
 {
-  "enabledPlugins": {
-    "ai-dev@rioX432/ai-dev-templates": true
-  },
   "permissions": {
     "allow": [
       "Bash(./gradlew *)",
