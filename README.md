@@ -12,6 +12,7 @@ Built with Kotlin Multiplatform (KMP) | Android & iOS
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-6366F1?style=flat-square)]()
 [![CI](https://github.com/rioX432/CivitDeck/actions/workflows/ci.yml/badge.svg)](https://github.com/rioX432/CivitDeck/actions/workflows/ci.yml)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/rioX432?style=flat-square&logo=github)](https://github.com/sponsors/rioX432)
 
 [English](README.md) | [日本語](README.ja.md)
 
