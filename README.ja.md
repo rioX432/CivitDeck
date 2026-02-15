@@ -4,9 +4,9 @@
 
 # CivitDeck
 
-**CivitAI のモデル・画像・プロンプトを Android & iOS でネイティブにブラウズ**
+**CivitAI パワーユーザークライアント -- モデル閲覧・比較・生成ワークフローへの橋渡し**
 
-Kotlin Multiplatform (KMP) で構築
+Kotlin Multiplatform (KMP) | Android & iOS
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
@@ -19,11 +19,13 @@ Kotlin Multiplatform (KMP) で構築
 
 ---
 
-## なぜ CivitDeck？
+## 課題
 
-[CivitAI](https://civitai.com/) は、数十万のモデル、LoRA、AI 生成画像をホストする、最大のオープンソース生成 AI コミュニティです。しかし **公式モバイルアプリは存在しません**。
+1. **CivitAI にモバイルアプリがない** -- 最大のオープンソース生成 AI コミュニティなのに、ネイティブモバイル体験がない。デスクトップサイトをピンチズームで見るしかない。
+2. **ワークフローへの橋渡しがない** -- CivitAI で見つけたモデルを ComfyUI や A1111 で使うには、パラメータを手動でコピーする必要がある。
+3. **メタデータが埋もれている** -- 生成パラメータ（プロンプト、サンプラー、CFG、シード）は何度もクリックしないと見えない。モデル比較も面倒。
 
-CivitDeck がそのギャップを埋めます。モデルの閲覧、画像の探索、プロンプトの確認、お気に入りの保存 — すべてスマートフォンから。
+CivitDeck がこの 3 つを解決する。
 
 ## スクリーンショット
 
@@ -35,11 +37,30 @@ CivitDeck がそのギャップを埋めます。モデルの閲覧、画像の�
 
 ## 機能
 
-- **モデル検索・閲覧** — タイプ（Checkpoint、LoRA など）、ソート、期間、タグでフィルタリング
-- **イメージギャラリー** — スタッガードグリッドとフルスクリーンビューア、ピンチズーム対応
-- **プロンプトメタデータ** — 生成パラメータ（プロンプト、モデル、サンプラー、シード）の閲覧とワンタップコピー
-- **お気に入り** — モデルと画像をローカルに保存してオフラインアクセス
-- **クロスプラットフォーム** — 共有 KMP コードベースから、ネイティブ Android（Jetpack Compose）& iOS（SwiftUI）
+### 実装済み
+
+- **モデル検索・閲覧** -- タイプ（Checkpoint、LoRA など）、ソート、期間、タグでフィルタリング
+- **イメージギャラリー** -- スタッガードグリッドとフルスクリーンビューア、ピンチズーム対応
+- **プロンプトメタデータ** -- 生成パラメータの閲覧とワンタップコピー
+- **お気に入り** -- モデルと画像をローカルに保存してオフラインアクセス
+- **Fresh Find** -- トレンド前の新着モデルを発見
+- **クロスプラットフォーム** -- 共有 KMP コードベースからネイティブ Android（Jetpack Compose）& iOS（SwiftUI）
+
+### 開発予定
+
+- **ComfyUI 連携** -- モバイルからワークフロー実行・パラメータエクスポート ([#148](https://github.com/rioX432/CivitDeck/issues/148))
+- **パワーユーザーモード** -- 全生成パラメータを表示する詳細メタデータパネル ([#150](https://github.com/rioX432/CivitDeck/issues/150))
+- **プロンプトテンプレート** -- プロンプトの保存・整理・再利用 ([#149](https://github.com/rioX432/CivitDeck/issues/149))
+- **モデル比較** -- バージョンの横並び比較 ([#118](https://github.com/rioX432/CivitDeck/issues/118))
+- **ワンタップエクスポート** -- ComfyUI ワークフロー JSON や A1111 形式への変換 ([#151](https://github.com/rioX432/CivitDeck/issues/151))
+
+全機能の計画は[ロードマップ](ROADMAP.md)を参照。
+
+## 対象ユーザー
+
+- **モデルハンター** -- 毎日 CivitAI で新しいチェックポイントや LoRA を探している人
+- **プロンプトエンジニア** -- 高評価画像の生成パラメータを研究して自分のワークフローを改善する人
+- **ComfyUI/A1111 ユーザー** -- CivitAI でのモデル発見とローカル環境をシームレスにつなぎたい人
 
 ## 技術スタック
 
@@ -93,44 +114,32 @@ cd CivitDeck
 open iosApp/iosApp.xcodeproj
 ```
 
-## ロードマップ
-
-### Phase 1 — MVP
-- [x] プロジェクトセットアップ (KMP + Android + iOS)
-- [x] CivitAI API クライアント (Ktor)
-- [x] モデル検索・閲覧 (Android)
-- [x] モデル詳細画面 (Android)
-- [x] ローカルお気に入り & オフラインキャッシュ (Room KMP)
-- [x] イメージギャラリー & メタデータビューア (Android)
-- [x] ドキュメント (README, ARCHITECTURE, CONTRIBUTING)
-
-### Phase 2 — iOS & ポリッシュ
-- [x] iOS モデル検索画面 (SwiftUI)
-- [x] iOS モデル詳細画面 (SwiftUI)
-- [x] iOS イメージギャラリー画面 (SwiftUI)
-- [ ] CivitAI アカウント連携 (API Key 認証)
-- [ ] クリエイタープロフィール
-- [ ] タグベース探索
-- [ ] グローバルリリース & マーケティング
-
-### Phase 3 — 上級機能
-- [ ] 画像比較ツール
-- [ ] プロンプトテンプレート管理
-- [ ] ComfyUI / SD WebUI 連携
-- [ ] ホーム画面ウィジェット（人気モデル）
-
 ## コントリビューション
 
-コントリビューション歓迎です！ガイドラインは [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
+コントリビューション歓迎！ガイドラインは [CONTRIBUTING.md](CONTRIBUTING.md) を参照。
 
-このプロジェクトが役に立ったら、ぜひ **スター** をお願いします — 他の人が CivitDeck を見つける助けになります。
+特に以下の領域の貢献を歓迎:
+- **ComfyUI / SD WebUI 連携** -- API クライアント、ワークフローエクスポート形式、プロトコル対応
+- **パワーユーザー機能** -- メタデータパネル、比較ツール、テンプレートシステム
+
+## プロジェクトを支援
+
+CivitDeck が役に立ったら:
+
+- **スター**をお願いします -- 他の人がプロジェクトを見つける助けになります
+- [**スポンサー**](https://github.com/sponsors/rioX432) -- 開発を支援
+- [**Issue を作成**](https://github.com/rioX432/CivitDeck/issues/new/choose) -- バグ報告や機能リクエスト
+
+## 免責事項
+
+CivitDeck は非公式のコミュニティ製クライアントです。Civitai Inc. との提携・推薦・関連はありません。CivitAI のデータはすべて公開 API を通じてアクセスしています。
 
 ## ライセンス
 
-このプロジェクトは MIT License の下でライセンスされています — 詳細は [LICENSE](LICENSE) ファイルを参照してください。
+このプロジェクトは MIT License の下でライセンスされています -- 詳細は [LICENSE](LICENSE) ファイルを参照。
 
 ## 作者
 
 **RIO** ([@rioX432](https://github.com/rioX432))
 
-東京在住のモバイルアプリ開発者 — Android | iOS | KMP
+東京在住のモバイルアプリ開発者 -- Android | iOS | KMP
