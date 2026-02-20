@@ -13,7 +13,10 @@ globs: shared/**/*.kt
 
 ## Dependencies
 - Ktor for HTTP, Kotlinx Serialization for JSON, Room KMP for local DB, Koin for DI
-- Platform-specific Koin modules in `androidApp/di/` and `iosApp/`
+- Common Koin modules in `shared/src/commonMain/di/` (DataModule, DomainModule)
+- Platform-specific Koin modules via `expect/actual` in `shared/src/androidMain/di/` and `shared/src/iosMain/di/`
+- Android ViewModels registered in `androidModule` inside `CivitDeckApplication.kt`
+- iOS accesses dependencies via `KoinHelper.shared.getXxx()` (in `shared/src/iosMain/di/KoinHelper.kt`)
 
 ## API Responses
 - All API responses should be cached locally for offline support

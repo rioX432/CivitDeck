@@ -22,3 +22,7 @@ globs: iosApp/**/*.swift
 ## Architecture
 - Feature-based structure under `Features/` — each feature has its own View + ViewModel
 - Design tokens in `DesignSystem/` — use `CivitDeckColors`, `CivitDeckFonts`, `CivitDeckSpacing`
+- Full DesignSystem components: `CivitDeckColors`, `CivitDeckFonts`, `CivitDeckSpacing`, `CivitDeckMotion`, `CivitDeckShapes`
+- `AdaptiveGrid.swift` — screen-size adaptive grid columns
+- `ShimmerModifier.swift` — loading shimmer animation
+- `CachedAsyncImage.swift` — custom image loader (no third-party lib)

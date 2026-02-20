@@ -21,3 +21,6 @@ globs: androidApp/**/*.kt, androidApp/**/*.kts
 ## Compose
 - Design tokens live in `ui/theme/` — use them instead of hardcoded values
 - Don't duplicate `Alignment` import when adding new imports to files that already have it
+
+## Adaptive Layout
+- `ui/adaptive/AdaptiveUtils.kt` — responsive grid columns and foldable posture detection using Material 3 Adaptive
