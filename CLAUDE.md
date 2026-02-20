@@ -28,6 +28,11 @@ This applies to:
 - Designing architecture and component structure
 - Any decision where you are not 100% certain
 
+## Language
+
+- All code (comments, variable names, documentation) must be written in English
+- All PR titles, descriptions, and commit messages must be written in English
+
 ## Key Gotchas
 
 - Detekt auto-correct reorders imports — run `./gradlew detekt` twice if the first run changes import order
