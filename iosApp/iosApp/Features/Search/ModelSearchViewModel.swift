@@ -284,11 +284,6 @@ final class ModelSearchViewModel: ObservableObject {
         }
     }
 
-    private func enforceSortOrder(_ models: [Model]) -> [Model] {
-        guard let watermark = sortWatermark else { return models }
-        return models.filter { sortValueOf($0) <= watermark }
-    }
-
     private func loadModels(isLoadMore: Bool = false, isRefresh: Bool = false) {
         loadTask = Task {
             if isLoadMore {
@@ -339,6 +334,7 @@ final class ModelSearchViewModel: ObservableObject {
         var accumulatedIds = Set<Int64>()
         var currentCursor: String? = isLoadMore ? nextCursor : nil
         var fetchedNextCursor: String?
+        let pageWatermark = sortWatermark
 
         if isLoadMore {
             accumulatedIds = Set(models.map { $0.id })
@@ -356,15 +352,13 @@ final class ModelSearchViewModel: ObservableObject {
             )
 
             let allModels = result.items.compactMap { $0 as? Model }
-            let filtered = applyClientFilters(allModels, viewedIds: viewedIds)
-            let sorted = enforceSortOrder(filtered)
-            for model in sorted where !accumulatedIds.contains(model.id) {
+            var filtered = applyClientFilters(allModels, viewedIds: viewedIds)
+            if let watermark = pageWatermark {
+                filtered = filtered.filter { sortValueOf($0) <= watermark }
+            }
+            for model in filtered where !accumulatedIds.contains(model.id) {
                 accumulated.append(model)
                 accumulatedIds.insert(model.id)
-            }
-            if !sorted.isEmpty {
-                let iterationMin = sorted.map { sortValueOf($0) }.min()!
-                sortWatermark = sortWatermark.map { min($0, iterationMin) } ?? iterationMin
             }
             logger.debug("Iteration \(iteration): fetched=\(allModels.count) filtered=\(filtered.count) accumulated=\(accumulated.count)")
             fetchedNextCursor = result.metadata.nextCursor
@@ -373,6 +367,10 @@ final class ModelSearchViewModel: ObservableObject {
         }
 
         accumulated.sort { sortValueOf($0) > sortValueOf($1) }
+
+        if !accumulated.isEmpty {
+            sortWatermark = accumulated.map { sortValueOf($0) }.min()!
+        }
 
         return FetchResult(models: accumulated, cursor: fetchedNextCursor)
     }

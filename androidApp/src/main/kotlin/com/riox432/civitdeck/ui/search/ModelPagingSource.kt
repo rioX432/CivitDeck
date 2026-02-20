@@ -27,9 +27,11 @@ internal class ModelPagingSource(
             }
 
             val accumulated = mutableListOf<Model>()
+            val seenIds = mutableSetOf<Long>()
             var cursor = params.key
             var nextCursor: String? = null
             val targetSize = params.loadSize
+            val pageWatermark = sortWatermark
 
             repeat(MAX_FETCH_ITERATIONS) {
                 if (accumulated.size >= targetSize) return@repeat
@@ -47,12 +49,14 @@ internal class ModelPagingSource(
                     nsfw = if (filterState.nsfwFilterLevel == NsfwFilterLevel.Off) false else null,
                 )
 
-                val filtered = applyClientFilters(result.items, viewedIds)
-                val sorted = enforceSortOrder(filtered)
-                accumulated.addAll(sorted)
-                if (sorted.isNotEmpty()) {
-                    val iterationMin = sorted.minOf { sortValueOf(it) }
-                    sortWatermark = sortWatermark?.let { minOf(it, iterationMin) } ?: iterationMin
+                var filtered = applyClientFilters(result.items, viewedIds)
+                if (pageWatermark != null) {
+                    filtered = filtered.filter { sortValueOf(it) <= pageWatermark }
+                }
+                for (model in filtered) {
+                    if (seenIds.add(model.id)) {
+                        accumulated.add(model)
+                    }
                 }
                 nextCursor = result.metadata.nextCursor
                 if (nextCursor == null || nextCursor == cursor) return@repeat
@@ -60,6 +64,10 @@ internal class ModelPagingSource(
             }
 
             accumulated.sortByDescending { sortValueOf(it) }
+
+            if (accumulated.isNotEmpty()) {
+                sortWatermark = accumulated.minOf { sortValueOf(it) }
+            }
 
             LoadResult.Page(
                 data = accumulated,
@@ -104,11 +112,6 @@ internal class ModelPagingSource(
         SortOrder.MostDownloaded -> model.stats.downloadCount.toDouble()
         SortOrder.HighestRated -> model.stats.rating
         SortOrder.Newest -> model.id.toDouble()
-    }
-
-    private fun enforceSortOrder(models: List<Model>): List<Model> {
-        val watermark = sortWatermark ?: return models
-        return models.filter { sortValueOf(it) <= watermark }
     }
 
     companion object {
