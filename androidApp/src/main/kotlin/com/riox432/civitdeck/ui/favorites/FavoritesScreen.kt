@@ -1,6 +1,8 @@
 package com.riox432.civitdeck.ui.favorites
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,11 +19,14 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,6 +34,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,6 +49,7 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
+import com.riox432.civitdeck.ui.search.ComparisonBottomBar
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.IconSize
@@ -55,6 +63,9 @@ fun FavoritesScreen(
     onModelClick: (Long) -> Unit,
     gridColumns: Int = 2,
     scrollToTopTrigger: Int = 0,
+    onCompareModel: (Long, String) -> Unit = { _, _ -> },
+    compareModelName: String? = null,
+    onCancelCompare: () -> Unit = {},
 ) {
     val gridState = rememberLazyGridState()
 
@@ -66,14 +77,23 @@ fun FavoritesScreen(
         }
     }
 
-    if (favorites.isEmpty()) {
-        EmptyFavorites()
-    } else {
-        FavoritesGrid(
-            favorites = favorites,
-            onModelClick = onModelClick,
-            gridColumns = gridColumns,
-            gridState = gridState,
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (favorites.isEmpty()) {
+            EmptyFavorites()
+        } else {
+            FavoritesGrid(
+                favorites = favorites,
+                onModelClick = onModelClick,
+                onCompareModel = onCompareModel,
+                gridColumns = gridColumns,
+                gridState = gridState,
+            )
+        }
+
+        ComparisonBottomBar(
+            compareModelName = compareModelName,
+            onCancel = onCancelCompare,
+            modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
 }
@@ -103,6 +123,7 @@ private fun EmptyFavorites() {
 private fun FavoritesGrid(
     favorites: List<FavoriteModelSummary>,
     onModelClick: (Long) -> Unit,
+    onCompareModel: (Long, String) -> Unit,
     topPadding: Dp = 0.dp,
     gridColumns: Int = 2,
     gridState: androidx.compose.foundation.lazy.grid.LazyGridState = rememberLazyGridState(),
@@ -120,10 +141,46 @@ private fun FavoritesGrid(
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
         items(items = favorites, key = { it.id }) { model ->
-            FavoriteCard(
+            FavoriteCardWithContextMenu(
                 model = model,
                 onClick = { onModelClick(model.id) },
+                onCompare = { onCompareModel(model.id, model.name) },
                 modifier = Modifier.animateItem(),
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun FavoriteCardWithContextMenu(
+    model: FavoriteModelSummary,
+    onClick: () -> Unit,
+    onCompare: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = modifier.combinedClickable(
+            onClick = onClick,
+            onLongClick = { showMenu = true },
+        ),
+    ) {
+        FavoriteCard(model = model)
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text("Compare") },
+                leadingIcon = {
+                    Icon(Icons.AutoMirrored.Filled.CompareArrows, contentDescription = null)
+                },
+                onClick = {
+                    showMenu = false
+                    onCompare()
+                },
             )
         }
     }
@@ -132,11 +189,9 @@ private fun FavoritesGrid(
 @Composable
 private fun FavoriteCard(
     model: FavoriteModelSummary,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(
-        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(CornerRadius.card),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),

@@ -41,6 +41,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
+import com.riox432.civitdeck.ui.compare.ModelCompareScreen
 import com.riox432.civitdeck.ui.creator.CreatorProfileScreen
 import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
@@ -81,6 +82,8 @@ data object SettingsRoute
 
 data object LicensesRoute
 
+data class CompareRoute(val leftModelId: Long, val rightModelId: Long)
+
 private enum class Tab(
     val label: String,
     val activeIcon: ImageVector,
@@ -107,6 +110,7 @@ private class TabState(
     }
 }
 
+@Suppress("LongMethod")
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun CivitDeckNavGraph() {
@@ -127,6 +131,9 @@ fun CivitDeckNavGraph() {
     }
 
     val activeTab = tabs.getValue(selectedTab)
+
+    var compareModelId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var compareModelName by rememberSaveable { mutableStateOf<String?>(null) }
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -161,6 +168,16 @@ fun CivitDeckNavGraph() {
                         favoritesScrollTrigger = tabs.getValue(Tab.Favorites).scrollTrigger,
                         promptsScrollTrigger = tabs.getValue(Tab.Prompts).scrollTrigger,
                         settingsScrollTrigger = tabs.getValue(Tab.Settings).scrollTrigger,
+                        compareModelId = compareModelId,
+                        compareModelName = compareModelName,
+                        onCompareModel = { id, name ->
+                            compareModelId = id
+                            compareModelName = name
+                        },
+                        onCancelCompare = {
+                            compareModelId = null
+                            compareModelName = null
+                        },
                     )
                 }
             }
@@ -176,6 +193,7 @@ private fun slideTransition(enterOffset: (Int) -> Int, exitOffset: (Int) -> Int)
             fadeOut(tween(Duration.normal, easing = Easing.standard)),
     )
 
+@Suppress("LongParameterList", "LongMethod")
 @Composable
 private fun CivitDeckNavDisplay(
     backStack: MutableList<Any>,
@@ -183,6 +201,10 @@ private fun CivitDeckNavDisplay(
     favoritesScrollTrigger: Int = 0,
     promptsScrollTrigger: Int = 0,
     settingsScrollTrigger: Int = 0,
+    compareModelId: Long? = null,
+    compareModelName: String? = null,
+    onCompareModel: (Long, String) -> Unit = { _, _ -> },
+    onCancelCompare: () -> Unit = {},
 ) {
     NavDisplay(
         backStack = backStack,
@@ -199,9 +221,18 @@ private fun CivitDeckNavDisplay(
                 ModelSearchScreen(
                     viewModel = viewModel,
                     onModelClick = { modelId, thumbnailUrl, suffix ->
-                        backStack.add(DetailRoute(modelId, thumbnailUrl, suffix))
+                        val cmpId = compareModelId
+                        if (cmpId != null) {
+                            backStack.add(CompareRoute(cmpId, modelId))
+                            onCancelCompare()
+                        } else {
+                            backStack.add(DetailRoute(modelId, thumbnailUrl, suffix))
+                        }
                     },
                     scrollToTopTrigger = searchScrollTrigger,
+                    onCompareModel = onCompareModel,
+                    compareModelName = compareModelName,
+                    onCancelCompare = onCancelCompare,
                 )
             }
             entry<FavoritesRoute> {
@@ -212,15 +243,25 @@ private fun CivitDeckNavDisplay(
                 FavoritesScreen(
                     favorites = favorites,
                     onModelClick = { modelId ->
-                        backStack.add(DetailRoute(modelId))
+                        val cmpId = compareModelId
+                        if (cmpId != null) {
+                            backStack.add(CompareRoute(cmpId, modelId))
+                            onCancelCompare()
+                        } else {
+                            backStack.add(DetailRoute(modelId))
+                        }
                     },
                     gridColumns = gridColumns,
                     scrollToTopTrigger = favoritesScrollTrigger,
+                    onCompareModel = onCompareModel,
+                    compareModelName = compareModelName,
+                    onCancelCompare = onCancelCompare,
                 )
             }
             detailEntry(backStack)
             creatorEntry(backStack)
             galleryEntry(backStack)
+            compareEntry(backStack)
             entry<SavedPromptsRoute> {
                 val viewModel: SavedPromptsViewModel = koinViewModel()
                 SavedPromptsScreen(
@@ -286,6 +327,22 @@ private fun EntryProviderScope<Any>.galleryEntry(backStack: MutableList<Any>) {
         ) { parametersOf(key.modelVersionId) }
         ImageGalleryScreen(
             viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.compareEntry(backStack: MutableList<Any>) {
+    entry<CompareRoute> { key ->
+        val leftVm: ModelDetailViewModel = koinViewModel(
+            key = "compare_left_${key.leftModelId}",
+        ) { parametersOf(key.leftModelId) }
+        val rightVm: ModelDetailViewModel = koinViewModel(
+            key = "compare_right_${key.rightModelId}",
+        ) { parametersOf(key.rightModelId) }
+        ModelCompareScreen(
+            leftViewModel = leftVm,
+            rightViewModel = rightVm,
             onBack = { backStack.removeLastOrNull() },
         )
     }
