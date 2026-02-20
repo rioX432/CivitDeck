@@ -5,6 +5,7 @@ import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import kotlinx.coroutines.flow.Flow
 
+@Suppress("TooManyFunctions")
 interface UserPreferencesRepository {
     fun observeNsfwFilterLevel(): Flow<NsfwFilterLevel>
     suspend fun setNsfwFilterLevel(level: NsfwFilterLevel)
@@ -14,4 +15,7 @@ interface UserPreferencesRepository {
     suspend fun setDefaultTimePeriod(period: TimePeriod)
     fun observeGridColumns(): Flow<Int>
     suspend fun setGridColumns(columns: Int)
+    fun observeApiKey(): Flow<String?>
+    suspend fun setApiKey(apiKey: String?)
+    suspend fun getApiKey(): String?
 }

@@ -6,10 +6,13 @@ import com.riox432.civitdeck.data.api.dto.ModelListResponse
 import com.riox432.civitdeck.data.api.dto.ModelResponse
 import com.riox432.civitdeck.data.api.dto.ModelVersionResponse
 import com.riox432.civitdeck.data.api.dto.TagListResponse
+import com.riox432.civitdeck.data.api.dto.UserMeResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.parameter
+import io.ktor.http.HttpHeaders
 
 class CivitAiApi(private val client: HttpClient) {
 
@@ -99,6 +102,12 @@ class CivitAiApi(private val client: HttpClient) {
             query?.let { parameter("query", it) }
             page?.let { parameter("page", it) }
             limit?.let { parameter("limit", it) }
+        }.body()
+    }
+
+    suspend fun getMe(apiKey: String): UserMeResponse {
+        return client.get("$BASE_URL/me") {
+            header(HttpHeaders.Authorization, "Bearer $apiKey")
         }.body()
     }
 }

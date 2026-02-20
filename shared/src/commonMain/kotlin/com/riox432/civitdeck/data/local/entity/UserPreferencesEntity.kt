@@ -10,4 +10,5 @@ data class UserPreferencesEntity(
     val defaultSortOrder: String = "MostDownloaded",
     val defaultTimePeriod: String = "AllTime",
     val gridColumns: Int = 2,
+    val apiKey: String? = null,
 )
