@@ -44,3 +44,4 @@ This applies to:
 - iOS deployment target is 16.0 — `onScrollGeometryChange` is iOS 18+ only
 - iOS scroll tracking: `GeometryReader + PreferenceKey` doesn't fire during active scrolling — use `simultaneousGesture(DragGesture)` instead
 - pbxproj needs 4 entries for new files: PBXBuildFile, PBXFileReference, group children, PBXSourcesBuildPhase
+- SKIE suspend functions: K/N adds `do` prefix to `init`-prefixed functions (e.g. `initKoin` → `doInitKoin`), but SKIE generates its own Swift async extension without the prefix. Call `KoinKt.initializeAuth()`, NOT `KoinKt.doInitializeAuth()`
