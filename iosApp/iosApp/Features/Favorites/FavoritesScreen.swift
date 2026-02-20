@@ -3,12 +3,10 @@ import Shared
 
 struct FavoritesScreen: View {
     @StateObject private var viewModel = FavoritesViewModel()
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     private var columns: [GridItem] {
-        Array(
-            repeating: GridItem(.flexible(), spacing: Spacing.sm),
-            count: Int(viewModel.gridColumns)
-        )
+        AdaptiveGrid.columns(userPreference: Int(viewModel.gridColumns), sizeClass: sizeClass)
     }
 
     var body: some View {

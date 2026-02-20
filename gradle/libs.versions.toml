@@ -14,6 +14,8 @@ androidx-activity-compose = "1.10.1"
 androidx-lifecycle = "2.9.0"
 androidx-navigation3 = "1.0.0"
 androidx-lifecycle-viewmodel-navigation3 = "2.10.0"
+material3-adaptive = "1.2.0"
+material3-adaptive-navigation-suite = "1.4.0"
 detekt = "1.23.8"
 skie = "0.10.9"
 aboutlibraries = "12.1.2"
@@ -55,6 +57,10 @@ androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-ru
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "androidx-navigation3" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "androidx-navigation3" }
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle-viewmodel-navigation3" }
+
+# Material3 Adaptive
+material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive", version.ref = "material3-adaptive" }
+material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite", version.ref = "material3-adaptive-navigation-suite" }
 
 # AboutLibraries
 aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutlibraries" }

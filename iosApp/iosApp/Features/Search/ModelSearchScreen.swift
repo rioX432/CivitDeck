@@ -3,6 +3,7 @@ import Shared
 
 struct ModelSearchScreen: View {
     @StateObject private var viewModel = ModelSearchViewModel()
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @FocusState private var isSearchFocused: Bool
     @State private var showHistory: Bool = false
     @State private var headerVisible: Bool = true
@@ -15,10 +16,7 @@ struct ModelSearchScreen: View {
     @State private var showFilterSheet: Bool = false
 
     private var columns: [GridItem] {
-        Array(
-            repeating: GridItem(.flexible(), spacing: Spacing.sm),
-            count: Int(viewModel.gridColumns)
-        )
+        AdaptiveGrid.columns(userPreference: Int(viewModel.gridColumns), sizeClass: sizeClass)
     }
 
     var body: some View {

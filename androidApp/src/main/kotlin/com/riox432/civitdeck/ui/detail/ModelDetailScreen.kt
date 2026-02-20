@@ -79,6 +79,7 @@ import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
 import com.riox432.civitdeck.domain.model.stripCdnWidth
+import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
@@ -775,7 +776,6 @@ private fun DescriptionSection(description: String) {
 
 private const val CAROUSEL_ASPECT_RATIO = 1f
 private const val DESCRIPTION_COLLAPSED_LINES = 4
-private const val IMAGE_GRID_COLUMNS = 2
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -796,7 +796,7 @@ private fun ImageGridBottomSheet(
             modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
         )
         LazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Fixed(IMAGE_GRID_COLUMNS),
+            columns = StaggeredGridCells.Fixed(adaptiveGridColumns()),
             horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
             verticalItemSpacing = Spacing.sm,
             contentPadding = PaddingValues(Spacing.sm),

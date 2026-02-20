@@ -3,11 +3,11 @@ import Shared
 
 struct ImageGalleryScreen: View {
     @StateObject private var viewModel: ImageGalleryViewModel
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
-    private let columns = [
-        GridItem(.flexible(), spacing: Spacing.sm),
-        GridItem(.flexible(), spacing: Spacing.sm),
-    ]
+    private var columns: [GridItem] {
+        AdaptiveGrid.columns(sizeClass: sizeClass)
+    }
 
     init(modelVersionId: Int64) {
         _viewModel = StateObject(wrappedValue: ImageGalleryViewModel(modelVersionId: modelVersionId))

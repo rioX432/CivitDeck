@@ -8,19 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Favorite
@@ -31,11 +19,9 @@ import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -46,19 +32,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.creator.CreatorProfileScreen
 import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
@@ -76,8 +58,6 @@ import com.riox432.civitdeck.ui.settings.SettingsScreen
 import com.riox432.civitdeck.ui.settings.SettingsViewModel
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
-import com.riox432.civitdeck.ui.theme.IconSize
-import com.riox432.civitdeck.ui.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -101,7 +81,16 @@ data object SettingsRoute
 
 data object LicensesRoute
 
-private enum class Tab { Search, Favorites, Prompts, Settings }
+private enum class Tab(
+    val label: String,
+    val activeIcon: ImageVector,
+    val inactiveIcon: ImageVector,
+) {
+    Search("Search", Icons.Filled.Explore, Icons.Outlined.Explore),
+    Favorites("Favorites", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder),
+    Prompts("Prompts", Icons.Outlined.Bookmarks, Icons.Outlined.BookmarkBorder),
+    Settings("Settings", Icons.Filled.Settings, Icons.Outlined.Settings),
+}
 
 private class TabState(
     val backStack: MutableList<Any>,
@@ -139,120 +128,43 @@ fun CivitDeckNavGraph() {
 
     val activeTab = tabs.getValue(selectedTab)
 
-    Scaffold(
-        bottomBar = {
-            BottomNavBar(
-                selectedTab = selectedTab,
-                onTabSelected = { tab ->
-                    if (tab == selectedTab) {
-                        tabs.getValue(tab).onReselected()
-                    } else {
-                        selectedTab = tab
-                    }
-                },
-            )
-        },
-    ) { padding ->
-        SharedTransitionLayout(modifier = Modifier.padding(padding)) {
-            CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                CivitDeckNavDisplay(
-                    backStack = activeTab.backStack,
-                    searchScrollTrigger = tabs.getValue(Tab.Search).scrollTrigger,
-                    favoritesScrollTrigger = tabs.getValue(Tab.Favorites).scrollTrigger,
-                    promptsScrollTrigger = tabs.getValue(Tab.Prompts).scrollTrigger,
-                    settingsScrollTrigger = tabs.getValue(Tab.Settings).scrollTrigger,
+    NavigationSuiteScaffold(
+        navigationSuiteItems = {
+            Tab.entries.forEach { tab ->
+                val selected = tab == selectedTab
+                item(
+                    selected = selected,
+                    onClick = {
+                        if (tab == selectedTab) {
+                            tabs.getValue(tab).onReselected()
+                        } else {
+                            selectedTab = tab
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = if (selected) tab.activeIcon else tab.inactiveIcon,
+                            contentDescription = tab.label,
+                        )
+                    },
+                    label = { Text(tab.label) },
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun BottomNavBar(
-    selectedTab: Tab,
-    onTabSelected: (Tab) -> Unit,
-) {
-    Surface(
-        color = NavigationBarDefaults.containerColor,
-        tonalElevation = NavigationBarDefaults.Elevation,
+        },
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.navigationBars)
-                .height(56.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
-        ) {
-            BottomNavItem(
-                selected = selectedTab == Tab.Search,
-                onClick = { onTabSelected(Tab.Search) },
-                activeIcon = Icons.Filled.Explore,
-                inactiveIcon = Icons.Outlined.Explore,
-                label = "Search",
-            )
-            BottomNavItem(
-                selected = selectedTab == Tab.Favorites,
-                onClick = { onTabSelected(Tab.Favorites) },
-                activeIcon = Icons.Filled.Favorite,
-                inactiveIcon = Icons.Outlined.FavoriteBorder,
-                label = "Favorites",
-            )
-            BottomNavItem(
-                selected = selectedTab == Tab.Prompts,
-                onClick = { onTabSelected(Tab.Prompts) },
-                activeIcon = Icons.Outlined.Bookmarks,
-                inactiveIcon = Icons.Outlined.BookmarkBorder,
-                label = "Prompts",
-            )
-            BottomNavItem(
-                selected = selectedTab == Tab.Settings,
-                onClick = { onTabSelected(Tab.Settings) },
-                activeIcon = Icons.Filled.Settings,
-                inactiveIcon = Icons.Outlined.Settings,
-                label = "Settings",
-            )
+        Scaffold { padding ->
+            SharedTransitionLayout(modifier = Modifier.padding(padding)) {
+                CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                    CivitDeckNavDisplay(
+                        backStack = activeTab.backStack,
+                        searchScrollTrigger = tabs.getValue(Tab.Search).scrollTrigger,
+                        favoritesScrollTrigger = tabs.getValue(Tab.Favorites).scrollTrigger,
+                        promptsScrollTrigger = tabs.getValue(Tab.Prompts).scrollTrigger,
+                        settingsScrollTrigger = tabs.getValue(Tab.Settings).scrollTrigger,
+                    )
+                }
+            }
         }
-    }
-}
-
-@Composable
-private fun RowScope.BottomNavItem(
-    selected: Boolean,
-    onClick: () -> Unit,
-    activeIcon: ImageVector,
-    inactiveIcon: ImageVector,
-    label: String,
-) {
-    val color = if (selected) {
-        MaterialTheme.colorScheme.onSurface
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    Column(
-        modifier = Modifier
-            .weight(1f)
-            .semantics { role = Role.Tab }
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            )
-            .height(56.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Icon(
-            modifier = Modifier.size(IconSize.navBar),
-            imageVector = if (selected) activeIcon else inactiveIcon,
-            contentDescription = label,
-            tint = color,
-        )
-        Text(
-            modifier = Modifier.padding(top = Spacing.xs),
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = color,
-        )
     }
 }
 
@@ -295,7 +207,8 @@ private fun CivitDeckNavDisplay(
             entry<FavoritesRoute> {
                 val viewModel: FavoritesViewModel = koinViewModel()
                 val favorites by viewModel.favorites.collectAsStateWithLifecycle()
-                val gridColumns by viewModel.gridColumns.collectAsStateWithLifecycle()
+                val userGridColumns by viewModel.gridColumns.collectAsStateWithLifecycle()
+                val gridColumns = adaptiveGridColumns(userGridColumns)
                 FavoritesScreen(
                     favorites = favorites,
                     onModelClick = { modelId ->

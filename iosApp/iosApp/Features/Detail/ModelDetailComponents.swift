@@ -56,15 +56,13 @@ struct ImageGridSheet: View {
     let images: [ModelImage]
     let onDismiss: () -> Void
     let onImageSelected: (Int) -> Void
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: Spacing.sm),
-                        GridItem(.flexible(), spacing: Spacing.sm),
-                    ],
+                    columns: AdaptiveGrid.columns(sizeClass: sizeClass),
                     spacing: Spacing.sm
                 ) {
                     ForEach(Array(images.enumerated()), id: \.element.url) { index, image in

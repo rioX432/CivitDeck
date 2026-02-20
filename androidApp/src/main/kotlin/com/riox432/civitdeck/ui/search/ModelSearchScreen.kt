@@ -106,6 +106,8 @@ import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.model.thumbnailUrl
+import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
+import com.riox432.civitdeck.ui.adaptive.isExpandedWidth
 import com.riox432.civitdeck.ui.components.ModelCard
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
@@ -144,7 +146,8 @@ fun ModelSearchScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
-    val gridColumns by viewModel.gridColumns.collectAsStateWithLifecycle()
+    val userGridColumns by viewModel.gridColumns.collectAsStateWithLifecycle()
+    val gridColumns = adaptiveGridColumns(userGridColumns)
     val lazyPagingItems = viewModel.pagingData.collectAsLazyPagingItems()
     val gridState = rememberLazyGridState()
     val headerState = rememberCollapsibleHeaderState()
@@ -1083,6 +1086,7 @@ private fun RecommendationRow(
     sharedElementSuffix: String,
     onModelClick: (Long, String?, String) -> Unit,
 ) {
+    val cardWidth = if (isExpandedWidth()) 200.dp else 160.dp
     Column(modifier = Modifier.padding(bottom = Spacing.sm)) {
         Text(
             text = section.title,
@@ -1105,7 +1109,7 @@ private fun RecommendationRow(
                     model = model,
                     onClick = { onModelClick(model.id, thumbnailUrl, sharedElementSuffix) },
                     modifier = Modifier
-                        .width(160.dp),
+                        .width(cardWidth),
                     sharedElementSuffix = sharedElementSuffix,
                 )
             }
