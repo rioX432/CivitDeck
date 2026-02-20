@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.data.repository
 
+import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.map
 
 class UserPreferencesRepositoryImpl(
     private val dao: UserPreferencesDao,
+    private val apiKeyProvider: ApiKeyProvider,
 ) : UserPreferencesRepository {
 
     override fun observeNsfwFilterLevel(): Flow<NsfwFilterLevel> =
@@ -53,4 +55,16 @@ class UserPreferencesRepositoryImpl(
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(gridColumns = columns))
     }
+
+    override fun observeApiKey(): Flow<String?> =
+        dao.observePreferences().map { it?.apiKey }
+
+    override suspend fun setApiKey(apiKey: String?) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(apiKey = apiKey))
+        apiKeyProvider.apiKey = apiKey
+    }
+
+    override suspend fun getApiKey(): String? =
+        dao.getPreferences()?.apiKey
 }

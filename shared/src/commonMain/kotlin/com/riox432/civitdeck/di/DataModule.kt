@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.di
 
+import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.api.CivitAiApi
 import com.riox432.civitdeck.data.api.createHttpClient
 import com.riox432.civitdeck.data.local.CivitDeckDatabase
@@ -31,7 +32,8 @@ import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
 val dataModule = module {
-    single { createHttpClient() }
+    single { ApiKeyProvider() }
+    single { createHttpClient(get()) }
     single { CivitAiApi(get()) }
     single {
         Json {
@@ -61,7 +63,7 @@ val dataModule = module {
     single<CreatorRepository> { CreatorRepositoryImpl(get()) }
     single<TagRepository> { TagRepositoryImpl(get()) }
     single<FavoriteRepository> { FavoriteRepositoryImpl(get()) }
-    single<UserPreferencesRepository> { UserPreferencesRepositoryImpl(get()) }
+    single<UserPreferencesRepository> { UserPreferencesRepositoryImpl(get(), get()) }
     single<SavedPromptRepository> { SavedPromptRepositoryImpl(get()) }
     single<SearchHistoryRepository> { SearchHistoryRepositoryImpl(get()) }
     single<BrowsingHistoryRepository> { BrowsingHistoryRepositoryImpl(get()) }

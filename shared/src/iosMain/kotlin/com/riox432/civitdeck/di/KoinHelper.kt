@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.di
 
+import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
@@ -17,6 +18,7 @@ import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.HideModelUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
@@ -27,6 +29,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
+import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
@@ -34,6 +37,7 @@ import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
+import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import org.koin.mp.KoinPlatform.getKoin
 
 @Suppress("TooManyFunctions")
@@ -72,4 +76,8 @@ object KoinHelper {
     fun getClearBrowsingHistoryUseCase(): ClearBrowsingHistoryUseCase = getKoin().get()
     fun getClearCacheUseCase(): ClearCacheUseCase = getKoin().get()
     fun getEnrichModelImagesUseCase(): EnrichModelImagesUseCase = getKoin().get()
+    fun getObserveApiKeyUseCase(): ObserveApiKeyUseCase = getKoin().get()
+    fun getSetApiKeyUseCase(): SetApiKeyUseCase = getKoin().get()
+    fun getValidateApiKeyUseCase(): ValidateApiKeyUseCase = getKoin().get()
+    fun getApiKeyProvider(): ApiKeyProvider = getKoin().get()
 }

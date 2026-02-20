@@ -7,6 +7,7 @@ struct SettingsScreen: View {
     var body: some View {
         NavigationStack {
             List {
+                accountSection
                 contentFilterSection
                 displaySection
                 dataManagementSection
@@ -14,10 +15,25 @@ struct SettingsScreen: View {
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
+            .task { await viewModel.observeApiKey() }
             .task { await viewModel.observeNsfwFilter() }
             .task { await viewModel.observeSortOrder() }
             .task { await viewModel.observeTimePeriod() }
             .task { await viewModel.observeGridColumns() }
+        }
+    }
+
+    private var accountSection: some View {
+        Section("Account") {
+            if let username = viewModel.connectedUsername, viewModel.apiKey != nil {
+                ConnectedAccountRow(username: username, onClear: viewModel.onClearApiKey)
+            } else {
+                ApiKeyInputRow(
+                    isValidating: viewModel.isValidatingApiKey,
+                    error: viewModel.apiKeyError,
+                    onValidateAndSave: viewModel.onValidateAndSaveApiKey
+                )
+            }
         }
     }
 
@@ -127,6 +143,66 @@ struct SettingsScreen: View {
             NavigationLink("Open Source Licenses") {
                 LicensesView()
             }
+        }
+    }
+}
+
+private struct ConnectedAccountRow: View {
+    let username: String
+    let onClear: () -> Void
+    @State private var showConfirmation = false
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Connected as")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+                Text(username)
+                    .font(.civitBodyMedium)
+            }
+            Spacer()
+            Button("Disconnect") { showConfirmation = true }
+                .foregroundColor(.civitError)
+        }
+        .alert("Disconnect", isPresented: $showConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Remove", role: .destructive) { onClear() }
+        } message: {
+            Text("Remove your CivitAI API key?")
+        }
+    }
+}
+
+private struct ApiKeyInputRow: View {
+    let isValidating: Bool
+    let error: String?
+    let onValidateAndSave: (String) -> Void
+    @State private var keyInput = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                SecureField("Paste API key", text: $keyInput)
+                    .textContentType(.password)
+                if isValidating {
+                    ProgressView()
+                } else {
+                    Button("Verify") {
+                        onValidateAndSave(keyInput)
+                        keyInput = ""
+                    }
+                    .disabled(keyInput.isEmpty)
+                }
+            }
+            if let error {
+                Text(error)
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitError)
+            }
+            Text("Get your key at civitai.com/user/account")
+                .font(.civitBodySmall)
+                .foregroundColor(.civitOnSurfaceVariant)
         }
     }
 }

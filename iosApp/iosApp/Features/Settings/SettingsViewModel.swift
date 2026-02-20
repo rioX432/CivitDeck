@@ -9,6 +9,10 @@ final class SettingsViewModel: ObservableObject {
     @Published var gridColumns: Int32 = 2
     @Published var hiddenModels: [HiddenModelEntity] = []
     @Published var excludedTags: [String] = []
+    @Published var apiKey: String?
+    @Published var connectedUsername: String?
+    @Published var isValidatingApiKey: Bool = false
+    @Published var apiKeyError: String?
 
     private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
     private let setNsfwFilterUseCase: SetNsfwFilterUseCase
@@ -26,6 +30,9 @@ final class SettingsViewModel: ObservableObject {
     private let clearSearchHistoryUseCase: ClearSearchHistoryUseCase
     private let clearBrowsingHistoryUseCase: ClearBrowsingHistoryUseCase
     private let clearCacheUseCase: ClearCacheUseCase
+    private let observeApiKeyUseCase: ObserveApiKeyUseCase
+    private let setApiKeyUseCase: SetApiKeyUseCase
+    private let validateApiKeyUseCase: ValidateApiKeyUseCase
 
     init() {
         self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
@@ -44,6 +51,9 @@ final class SettingsViewModel: ObservableObject {
         self.clearSearchHistoryUseCase = KoinHelper.shared.getClearSearchHistoryUseCase()
         self.clearBrowsingHistoryUseCase = KoinHelper.shared.getClearBrowsingHistoryUseCase()
         self.clearCacheUseCase = KoinHelper.shared.getClearCacheUseCase()
+        self.observeApiKeyUseCase = KoinHelper.shared.getObserveApiKeyUseCase()
+        self.setApiKeyUseCase = KoinHelper.shared.getSetApiKeyUseCase()
+        self.validateApiKeyUseCase = KoinHelper.shared.getValidateApiKeyUseCase()
         loadMutableData()
     }
 
@@ -125,10 +135,46 @@ final class SettingsViewModel: ObservableObject {
         Task { try? await clearCacheUseCase.invoke() }
     }
 
+    func observeApiKey() async {
+        for await value in observeApiKeyUseCase.invoke() {
+            apiKey = value as String?
+        }
+    }
+
+    func onValidateAndSaveApiKey(_ key: String) {
+        let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        isValidatingApiKey = true
+        apiKeyError = nil
+        Task {
+            do {
+                let username = try await validateApiKeyUseCase.invoke(apiKey: trimmed)
+                try await setApiKeyUseCase.invoke(apiKey: trimmed)
+                connectedUsername = username
+                isValidatingApiKey = false
+            } catch {
+                isValidatingApiKey = false
+                apiKeyError = error.localizedDescription
+            }
+        }
+    }
+
+    func onClearApiKey() {
+        Task {
+            try? await setApiKeyUseCase.invoke(apiKey: nil)
+            connectedUsername = nil
+            apiKeyError = nil
+        }
+    }
+
     private func loadMutableData() {
         Task {
             hiddenModels = (try? await getHiddenModelsUseCase.invoke()) ?? []
             excludedTags = (try? await getExcludedTagsUseCase.invoke()) ?? []
+        }
+        Task {
+            guard let key = try? await observeApiKeyUseCase.invoke().first(where: { _ in true }) as? String else { return }
+            connectedUsername = try? await validateApiKeyUseCase.invoke(apiKey: key)
         }
     }
 }

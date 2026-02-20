@@ -8,6 +8,7 @@ import coil3.disk.directory
 import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import com.riox432.civitdeck.di.initKoin
+import com.riox432.civitdeck.di.initializeAuth
 import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.favorites.FavoritesViewModel
@@ -15,6 +16,9 @@ import com.riox432.civitdeck.ui.gallery.ImageGalleryViewModel
 import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.settings.SettingsViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -26,6 +30,7 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory {
             androidContext(this@CivitDeckApplication)
             modules(androidModule)
         }
+        CoroutineScope(Dispatchers.IO).launch { initializeAuth() }
     }
 
     override fun newImageLoader(context: coil3.PlatformContext): ImageLoader {
@@ -63,7 +68,7 @@ val androidModule = module {
         SettingsViewModel(
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(),
+            get(), get(), get(), get(), get(), get(), get(),
         )
     }
 }

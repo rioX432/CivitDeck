@@ -18,7 +18,7 @@ private const val SOCKET_TIMEOUT_MS = 30_000L
 private const val MAX_RETRIES = 2
 private const val RETRY_BASE_DELAY_MS = 1000L
 
-fun createHttpClient(): HttpClient {
+fun createHttpClient(apiKeyProvider: ApiKeyProvider): HttpClient {
     return HttpClient {
         install(ContentNegotiation) {
             json(
@@ -45,6 +45,9 @@ fun createHttpClient(): HttpClient {
         }
         defaultRequest {
             header(HttpHeaders.Accept, "application/json")
+            apiKeyProvider.apiKey?.let {
+                header(HttpHeaders.Authorization, "Bearer $it")
+            }
         }
     }
 }
