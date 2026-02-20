@@ -3,24 +3,43 @@ import Shared
 
 struct FavoritesScreen: View {
     @StateObject private var viewModel = FavoritesViewModel()
+    @EnvironmentObject private var comparisonState: ComparisonState
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @State private var navigationPath = NavigationPath()
 
     private var columns: [GridItem] {
         AdaptiveGrid.columns(userPreference: Int(viewModel.gridColumns), sizeClass: sizeClass)
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if viewModel.favorites.isEmpty {
-                    emptyView
-                } else {
-                    favoritesGrid
+        NavigationStack(path: $navigationPath) {
+            ZStack(alignment: .bottom) {
+                Group {
+                    if viewModel.favorites.isEmpty {
+                        emptyView
+                    } else {
+                        favoritesGrid
+                    }
+                }
+
+                if comparisonState.isActive {
+                    ComparisonBottomBar(
+                        modelName: comparisonState.selectedModelName ?? "",
+                        onCancel: { comparisonState.cancel() }
+                    )
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(MotionAnimation.fast, value: comparisonState.isActive)
                 }
             }
             .navigationBarHidden(true)
             .navigationDestination(for: Int64.self) { modelId in
                 ModelDetailScreen(modelId: modelId)
+            }
+            .navigationDestination(for: CompareDestination.self) { dest in
+                ModelCompareScreen(
+                    leftModelId: dest.leftModelId,
+                    rightModelId: dest.rightModelId
+                )
             }
         }
         .task { await viewModel.observeGridColumns() }
@@ -30,10 +49,28 @@ struct FavoritesScreen: View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: Spacing.sm) {
                 ForEach(viewModel.favorites, id: \.id) { model in
-                    NavigationLink(value: model.id) {
+                    Button {
+                        if let cmpId = comparisonState.selectedModelId {
+                            navigationPath.append(
+                                CompareDestination(leftModelId: cmpId, rightModelId: model.id)
+                            )
+                            comparisonState.cancel()
+                        } else {
+                            navigationPath.append(model.id)
+                        }
+                    } label: {
                         FavoriteCardView(model: model)
                     }
                     .buttonStyle(.plain)
+                    .contextMenu {
+                        Button {
+                            comparisonState.startCompare(
+                                modelId: model.id, name: model.name
+                            )
+                        } label: {
+                            Label("Compare", systemImage: "rectangle.split.2x1")
+                        }
+                    }
                 }
             }
             .padding(.horizontal, Spacing.md)

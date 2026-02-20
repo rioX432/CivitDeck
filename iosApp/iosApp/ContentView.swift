@@ -3,13 +3,17 @@ import SwiftUI
 struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var selectedTab: SidebarTab? = .search
+    @StateObject private var comparisonState = ComparisonState()
 
     var body: some View {
-        if sizeClass == .regular {
-            sidebarLayout
-        } else {
-            tabLayout
+        Group {
+            if sizeClass == .regular {
+                sidebarLayout
+            } else {
+                tabLayout
+            }
         }
+        .environmentObject(comparisonState)
     }
 
     private var tabLayout: some View {

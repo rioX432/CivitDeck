@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.riox432.civitdeck.ui.search
 
 import androidx.compose.animation.AnimatedVisibility
@@ -41,6 +43,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
@@ -59,6 +62,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -92,6 +96,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -143,6 +148,9 @@ fun ModelSearchScreen(
     viewModel: ModelSearchViewModel,
     onModelClick: (Long, String?, String) -> Unit = { _, _, _ -> },
     scrollToTopTrigger: Int = 0,
+    onCompareModel: (Long, String) -> Unit = { _, _ -> },
+    compareModelName: String? = null,
+    onCancelCompare: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
@@ -173,6 +181,9 @@ fun ModelSearchScreen(
         onModelClick = onModelClick,
         gridColumns = gridColumns,
         lazyPagingItems = lazyPagingItems,
+        onCompareModel = onCompareModel,
+        compareModelName = compareModelName,
+        onCancelCompare = onCancelCompare,
     )
 }
 
@@ -204,6 +215,7 @@ private fun HeaderSnapEffect(gridState: LazyGridState, headerState: CollapsibleH
     }
 }
 
+@Suppress("LongParameterList", "LongMethod")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchScreenBody(
@@ -216,6 +228,9 @@ private fun SearchScreenBody(
     onModelClick: (Long, String?, String) -> Unit,
     gridColumns: Int,
     lazyPagingItems: LazyPagingItems<Model>,
+    onCompareModel: (Long, String) -> Unit = { _, _ -> },
+    compareModelName: String? = null,
+    onCancelCompare: () -> Unit = {},
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
@@ -249,6 +264,7 @@ private fun SearchScreenBody(
             lazyPagingItems = lazyPagingItems,
             onModelClick = onModelClick,
             onHideModel = viewModel::onHideModel,
+            onCompareModel = onCompareModel,
             topPadding = topPadding,
             bottomPadding = padding.calculateBottomPadding(),
             gridColumns = gridColumns,
@@ -268,6 +284,12 @@ private fun SearchScreenBody(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(Spacing.lg),
+        )
+
+        ComparisonBottomBar(
+            compareModelName = compareModelName,
+            onCancel = onCancelCompare,
+            modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
 
@@ -900,7 +922,7 @@ private fun FilterChipItem(
     }
 }
 
-@Suppress("LongMethod")
+@Suppress("LongMethod", "LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ModelSearchContent(
@@ -909,6 +931,7 @@ private fun ModelSearchContent(
     lazyPagingItems: LazyPagingItems<Model>,
     onModelClick: (Long, String?, String) -> Unit,
     onHideModel: (Long, String) -> Unit,
+    onCompareModel: (Long, String) -> Unit,
     topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     gridColumns: Int = 2,
@@ -969,6 +992,7 @@ private fun ModelSearchContent(
                         gridState = gridState,
                         onModelClick = onModelClick,
                         onHideModel = onHideModel,
+                        onCompareModel = onCompareModel,
                         topPadding = topPadding,
                         bottomPadding = bottomPadding,
                         gridColumns = gridColumns,
@@ -979,6 +1003,7 @@ private fun ModelSearchContent(
     }
 }
 
+@Suppress("LongParameterList")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ModelGrid(
@@ -987,6 +1012,7 @@ private fun ModelGrid(
     gridState: LazyGridState,
     onModelClick: (Long, String?, String) -> Unit,
     onHideModel: (Long, String) -> Unit,
+    onCompareModel: (Long, String) -> Unit,
     topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     gridColumns: Int = 2,
@@ -1028,6 +1054,7 @@ private fun ModelGrid(
                 model = model,
                 onClick = { onModelClick(model.id, thumbnailUrl, "") },
                 onHide = { onHideModel(model.id, model.name) },
+                onCompare = { onCompareModel(model.id, model.name) },
                 modifier = Modifier.animateItem(),
             )
         }
@@ -1054,6 +1081,7 @@ private fun ModelCardWithContextMenu(
     model: Model,
     onClick: () -> Unit,
     onHide: () -> Unit,
+    onCompare: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -1070,12 +1098,71 @@ private fun ModelCardWithContextMenu(
             onDismissRequest = { showMenu = false },
         ) {
             DropdownMenuItem(
+                text = { Text("Compare") },
+                leadingIcon = {
+                    Icon(Icons.AutoMirrored.Filled.CompareArrows, contentDescription = null)
+                },
+                onClick = {
+                    showMenu = false
+                    onCompare()
+                },
+            )
+            DropdownMenuItem(
                 text = { Text("Hide model") },
                 onClick = {
                     showMenu = false
                     onHide()
                 },
             )
+        }
+    }
+}
+
+@Composable
+internal fun ComparisonBottomBar(
+    compareModelName: String?,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedVisibility(
+        visible = compareModelName != null,
+        modifier = modifier,
+        enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+        exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+    ) {
+        Surface(
+            tonalElevation = 3.dp,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.CompareArrows,
+                    contentDescription = null,
+                    modifier = Modifier.padding(end = Spacing.sm),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Comparing: ${compareModelName ?: ""}",
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = "Tap another model to compare",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                TextButton(onClick = onCancel) {
+                    Text("Cancel")
+                }
+            }
         }
     }
 }

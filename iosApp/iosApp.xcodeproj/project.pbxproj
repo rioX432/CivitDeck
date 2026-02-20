@@ -42,6 +42,9 @@
 		CD000B052D00000B000CD001 /* LicensesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD000B042D00000B000CD001 /* LicensesView.swift */; };
 		CD00CA012D0CC001000CD001 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */; };
 		CD00AD012D1CC001000CD001 /* AdaptiveGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00AD002D1CC001000CD001 /* AdaptiveGrid.swift */; };
+		CD00CE012D2CC001000CD001 /* ComparisonState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CE002D2CC001000CD001 /* ComparisonState.swift */; };
+		CD00CE032D2CC001000CD001 /* ModelCompareScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CE022D2CC001000CD001 /* ModelCompareScreen.swift */; };
+		CD00CE052D2CC001000CD001 /* ModelCompareViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CE042D2CC001000CD001 /* ModelCompareViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -83,6 +86,9 @@
 		CD000B042D00000B000CD001 /* LicensesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicensesView.swift; sourceTree = "<group>"; };
 		CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
 		CD00AD002D1CC001000CD001 /* AdaptiveGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveGrid.swift; sourceTree = "<group>"; };
+		CD00CE002D2CC001000CD001 /* ComparisonState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComparisonState.swift; sourceTree = "<group>"; };
+		CD00CE022D2CC001000CD001 /* ModelCompareScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCompareScreen.swift; sourceTree = "<group>"; };
+		CD00CE042D2CC001000CD001 /* ModelCompareViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCompareViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -171,6 +177,7 @@
 			children = (
 				CD0003012D000003000CD001 /* Search */,
 				CD0007042D000007000CD001 /* Favorites */,
+				CD00CE062D2CC001000CD001 /* Compare */,
 				CD0008042D000008000CD001 /* Creator */,
 				CD0004042D000004000CD001 /* Detail */,
 				CD0005082D000005000CD001 /* Gallery */,
@@ -187,6 +194,16 @@
 				CD0007022D000007000CD001 /* FavoritesScreen.swift */,
 			);
 			path = Favorites;
+			sourceTree = "<group>";
+		};
+		CD00CE062D2CC001000CD001 /* Compare */ = {
+			isa = PBXGroup;
+			children = (
+				CD00CE002D2CC001000CD001 /* ComparisonState.swift */,
+				CD00CE022D2CC001000CD001 /* ModelCompareScreen.swift */,
+				CD00CE042D2CC001000CD001 /* ModelCompareViewModel.swift */,
+			);
+			path = Compare;
 			sourceTree = "<group>";
 		};
 		CD0008042D000008000CD001 /* Creator */ = {
@@ -398,6 +415,9 @@
 				CD000B052D00000B000CD001 /* LicensesView.swift in Sources */,
 				CD00CA012D0CC001000CD001 /* CachedAsyncImage.swift in Sources */,
 				CD00AD012D1CC001000CD001 /* AdaptiveGrid.swift in Sources */,
+				CD00CE012D2CC001000CD001 /* ComparisonState.swift in Sources */,
+				CD00CE032D2CC001000CD001 /* ModelCompareScreen.swift in Sources */,
+				CD00CE052D2CC001000CD001 /* ModelCompareViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

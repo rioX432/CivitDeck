@@ -1,8 +1,14 @@
 import SwiftUI
 import Shared
 
+struct CompareDestination: Hashable {
+    let leftModelId: Int64
+    let rightModelId: Int64
+}
+
 struct ModelSearchScreen: View {
     @StateObject private var viewModel = ModelSearchViewModel()
+    @EnvironmentObject private var comparisonState: ComparisonState
     @Environment(\.horizontalSizeClass) private var sizeClass
     @FocusState private var isSearchFocused: Bool
     @State private var showHistory: Bool = false
@@ -14,14 +20,15 @@ struct ModelSearchScreen: View {
     @State private var includeTagInput: String = ""
     @State private var excludeTagInput: String = ""
     @State private var showFilterSheet: Bool = false
+    @State private var navigationPath = NavigationPath()
 
     private var columns: [GridItem] {
         AdaptiveGrid.columns(userPreference: Int(viewModel.gridColumns), sizeClass: sizeClass)
     }
 
     var body: some View {
-        NavigationStack {
-            ZStack(alignment: .bottomTrailing) {
+        NavigationStack(path: $navigationPath) {
+            ZStack(alignment: .bottom) {
                 VStack(spacing: 0) {
                     collapsibleHeader
 
@@ -46,7 +53,19 @@ struct ModelSearchScreen: View {
                 }
                 .clipped()
 
-                filterFab
+                HStack {
+                    Spacer()
+                    filterFab
+                }
+
+                if comparisonState.isActive {
+                    ComparisonBottomBar(
+                        modelName: comparisonState.selectedModelName ?? "",
+                        onCancel: { comparisonState.cancel() }
+                    )
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(MotionAnimation.fast, value: comparisonState.isActive)
+                }
             }
             .navigationBarHidden(true)
             .sheet(isPresented: $showFilterSheet) {
@@ -60,6 +79,12 @@ struct ModelSearchScreen: View {
             }
             .navigationDestination(for: String.self) { username in
                 CreatorProfileScreen(username: username)
+            }
+            .navigationDestination(for: CompareDestination.self) { dest in
+                ModelCompareScreen(
+                    leftModelId: dest.leftModelId,
+                    rightModelId: dest.rightModelId
+                )
             }
             .task { await viewModel.observeSearchHistory() }
             .task { await viewModel.observeGridColumns() }
@@ -222,11 +247,27 @@ struct ModelSearchScreen: View {
 
                 LazyVGrid(columns: columns, spacing: Spacing.sm) {
                     ForEach(viewModel.models, id: \.id) { model in
-                        NavigationLink(value: model.id) {
+                        Button {
+                            if let cmpId = comparisonState.selectedModelId {
+                                navigationPath.append(
+                                    CompareDestination(leftModelId: cmpId, rightModelId: model.id)
+                                )
+                                comparisonState.cancel()
+                            } else {
+                                navigationPath.append(model.id)
+                            }
+                        } label: {
                             ModelCardView(model: model)
                         }
                         .buttonStyle(.plain)
                         .contextMenu {
+                            Button {
+                                comparisonState.startCompare(
+                                    modelId: model.id, name: model.name
+                                )
+                            } label: {
+                                Label("Compare", systemImage: "rectangle.split.2x1")
+                            }
                             Button(role: .destructive) {
                                 viewModel.hideModel(model.id, name: model.name)
                             } label: {
