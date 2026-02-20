@@ -49,6 +49,7 @@ import com.riox432.civitdeck.domain.model.AspectRatioFilter
 import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
@@ -279,8 +280,9 @@ private fun ImageGrid(
         if (shouldLoadMore) onLoadMore()
     }
 
+    val gridColumns = adaptiveGridColumns()
     LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Fixed(2),
+        columns = StaggeredGridCells.Fixed(gridColumns),
         state = gridState,
         contentPadding = PaddingValues(Spacing.sm),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),

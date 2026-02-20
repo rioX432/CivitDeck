@@ -3,15 +3,15 @@ import Shared
 
 struct CreatorProfileScreen: View {
     @StateObject private var viewModel: CreatorProfileViewModel
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     init(username: String) {
         _viewModel = StateObject(wrappedValue: CreatorProfileViewModel(username: username))
     }
 
-    private let columns = [
-        GridItem(.flexible(), spacing: Spacing.sm),
-        GridItem(.flexible(), spacing: Spacing.sm),
-    ]
+    private var columns: [GridItem] {
+        AdaptiveGrid.columns(sizeClass: sizeClass)
+    }
 
     var body: some View {
         Group {

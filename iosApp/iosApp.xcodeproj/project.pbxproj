@@ -41,6 +41,7 @@
 		CD000B032D00000B000CD001 /* ExcludedTagsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD000B022D00000B000CD001 /* ExcludedTagsView.swift */; };
 		CD000B052D00000B000CD001 /* LicensesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD000B042D00000B000CD001 /* LicensesView.swift */; };
 		CD00CA012D0CC001000CD001 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */; };
+		CD00AD012D1CC001000CD001 /* AdaptiveGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00AD002D1CC001000CD001 /* AdaptiveGrid.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -81,6 +82,7 @@
 		CD000B022D00000B000CD001 /* ExcludedTagsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExcludedTagsView.swift; sourceTree = "<group>"; };
 		CD000B042D00000B000CD001 /* LicensesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicensesView.swift; sourceTree = "<group>"; };
 		CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
+		CD00AD002D1CC001000CD001 /* AdaptiveGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveGrid.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -159,6 +161,7 @@
 				CD00060A2D000006000CD001 /* CivitDeckMotion.swift */,
 				CD0006102D000036000CD001 /* ShimmerModifier.swift */,
 				CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */,
+				CD00AD002D1CC001000CD001 /* AdaptiveGrid.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -394,6 +397,7 @@
 				CD000B032D00000B000CD001 /* ExcludedTagsView.swift in Sources */,
 				CD000B052D00000B000CD001 /* LicensesView.swift in Sources */,
 				CD00CA012D0CC001000CD001 /* CachedAsyncImage.swift in Sources */,
+				CD00AD012D1CC001000CD001 /* AdaptiveGrid.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

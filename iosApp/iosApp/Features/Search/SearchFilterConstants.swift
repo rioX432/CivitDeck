@@ -43,6 +43,11 @@ struct HeaderHeightPreferenceKey: PreferenceKey {
 
 struct RecommendationSectionsView: View {
     let recommendations: [RecommendationSection]
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
+    private var cardSize: CGSize {
+        sizeClass == .regular ? CGSize(width: 200, height: 270) : CGSize(width: 160, height: 220)
+    }
 
     var body: some View {
         ForEach(recommendations, id: \.title) { section in
@@ -60,7 +65,7 @@ struct RecommendationSectionsView: View {
                         ForEach(section.models, id: \.id) { model in
                             NavigationLink(value: model.id) {
                                 ModelCardView(model: model)
-                                    .frame(width: 160, height: 220)
+                                    .frame(width: cardSize.width, height: cardSize.height)
                             }
                             .buttonStyle(.plain)
                         }

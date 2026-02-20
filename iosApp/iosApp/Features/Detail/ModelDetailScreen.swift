@@ -141,7 +141,7 @@ struct ModelDetailScreen: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))
-                .frame(height: UIScreen.main.bounds.width)
+                .frame(height: min(UIScreen.main.bounds.width, 600))
             }
         }
     }

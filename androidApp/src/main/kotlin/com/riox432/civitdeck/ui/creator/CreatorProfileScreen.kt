@@ -40,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.components.ModelCard
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -140,8 +141,9 @@ private fun CreatorModelGrid(
     onModelClick: (Long, String?) -> Unit,
     bottomPadding: androidx.compose.ui.unit.Dp,
 ) {
+    val gridColumns = adaptiveGridColumns()
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Fixed(gridColumns),
         state = gridState,
         contentPadding = PaddingValues(
             start = Spacing.md,
@@ -161,7 +163,7 @@ private fun CreatorModelGrid(
                 modifier = Modifier.animateItem(),
             )
         }
-        item(span = { GridItemSpan(2) }) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             AnimatedVisibility(
                 visible = uiState.isLoadingMore,
                 enter = fadeIn() + expandVertically(),
