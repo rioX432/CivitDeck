@@ -173,7 +173,8 @@ final class SettingsViewModel: ObservableObject {
             excludedTags = (try? await getExcludedTagsUseCase.invoke()) ?? []
         }
         Task {
-            guard let key = try? await observeApiKeyUseCase.invoke().first(where: { _ in true }) as? String else { return }
+            let observed = try? await observeApiKeyUseCase.invoke().first(where: { _ in true })
+            guard let key = observed as? String else { return }
             connectedUsername = try? await validateApiKeyUseCase.invoke(apiKey: key)
         }
     }
