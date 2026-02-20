@@ -11,12 +11,12 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FolderCopy
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Explore
-import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.FolderCopy
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -40,14 +40,15 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
+import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
+import com.riox432.civitdeck.ui.collections.CollectionDetailViewModel
+import com.riox432.civitdeck.ui.collections.CollectionsScreen
+import com.riox432.civitdeck.ui.collections.CollectionsViewModel
 import com.riox432.civitdeck.ui.compare.ModelCompareScreen
 import com.riox432.civitdeck.ui.creator.CreatorProfileScreen
 import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
-import com.riox432.civitdeck.ui.favorites.FavoritesScreen
-import com.riox432.civitdeck.ui.favorites.FavoritesViewModel
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
 import com.riox432.civitdeck.ui.gallery.ImageGalleryViewModel
 import com.riox432.civitdeck.ui.prompts.SavedPromptsScreen
@@ -64,7 +65,9 @@ import org.koin.core.parameter.parametersOf
 
 data object SearchRoute
 
-data object FavoritesRoute
+data object CollectionsRoute
+
+data class CollectionDetailRoute(val collectionId: Long, val collectionName: String)
 
 data class DetailRoute(
     val modelId: Long,
@@ -90,7 +93,7 @@ private enum class Tab(
     val inactiveIcon: ImageVector,
 ) {
     Search("Search", Icons.Filled.Explore, Icons.Outlined.Explore),
-    Favorites("Favorites", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder),
+    Collections("Collections", Icons.Filled.FolderCopy, Icons.Outlined.FolderCopy),
     Prompts("Prompts", Icons.Outlined.Bookmarks, Icons.Outlined.BookmarkBorder),
     Settings("Settings", Icons.Filled.Settings, Icons.Outlined.Settings),
 }
@@ -124,7 +127,7 @@ fun CivitDeckNavGraph() {
     val tabs = remember {
         mapOf(
             Tab.Search to TabState(mutableStateListOf<Any>(SearchRoute)),
-            Tab.Favorites to TabState(mutableStateListOf<Any>(FavoritesRoute)),
+            Tab.Collections to TabState(mutableStateListOf<Any>(CollectionsRoute)),
             Tab.Prompts to TabState(mutableStateListOf<Any>(SavedPromptsRoute)),
             Tab.Settings to TabState(mutableStateListOf<Any>(SettingsRoute)),
         )
@@ -165,7 +168,6 @@ fun CivitDeckNavGraph() {
                     CivitDeckNavDisplay(
                         backStack = activeTab.backStack,
                         searchScrollTrigger = tabs.getValue(Tab.Search).scrollTrigger,
-                        favoritesScrollTrigger = tabs.getValue(Tab.Favorites).scrollTrigger,
                         promptsScrollTrigger = tabs.getValue(Tab.Prompts).scrollTrigger,
                         settingsScrollTrigger = tabs.getValue(Tab.Settings).scrollTrigger,
                         compareModelId = compareModelId,
@@ -198,7 +200,6 @@ private fun slideTransition(enterOffset: (Int) -> Int, exitOffset: (Int) -> Int)
 private fun CivitDeckNavDisplay(
     backStack: MutableList<Any>,
     searchScrollTrigger: Int = 0,
-    favoritesScrollTrigger: Int = 0,
     promptsScrollTrigger: Int = 0,
     settingsScrollTrigger: Int = 0,
     compareModelId: Long? = null,
@@ -235,29 +236,8 @@ private fun CivitDeckNavDisplay(
                     onCancelCompare = onCancelCompare,
                 )
             }
-            entry<FavoritesRoute> {
-                val viewModel: FavoritesViewModel = koinViewModel()
-                val favorites by viewModel.favorites.collectAsStateWithLifecycle()
-                val userGridColumns by viewModel.gridColumns.collectAsStateWithLifecycle()
-                val gridColumns = adaptiveGridColumns(userGridColumns)
-                FavoritesScreen(
-                    favorites = favorites,
-                    onModelClick = { modelId ->
-                        val cmpId = compareModelId
-                        if (cmpId != null) {
-                            backStack.add(CompareRoute(cmpId, modelId))
-                            onCancelCompare()
-                        } else {
-                            backStack.add(DetailRoute(modelId))
-                        }
-                    },
-                    gridColumns = gridColumns,
-                    scrollToTopTrigger = favoritesScrollTrigger,
-                    onCompareModel = onCompareModel,
-                    compareModelName = compareModelName,
-                    onCancelCompare = onCancelCompare,
-                )
-            }
+            collectionsEntry(backStack)
+            collectionDetailEntry(backStack, compareModelId, onCancelCompare)
             detailEntry(backStack)
             creatorEntry(backStack)
             galleryEntry(backStack)
@@ -282,6 +262,68 @@ private fun CivitDeckNavDisplay(
             }
         },
     )
+}
+
+private fun EntryProviderScope<Any>.collectionsEntry(backStack: MutableList<Any>) {
+    entry<CollectionsRoute> {
+        val viewModel: CollectionsViewModel = koinViewModel()
+        val collections by viewModel.collections.collectAsStateWithLifecycle()
+        CollectionsScreen(
+            collections = collections,
+            onCollectionClick = { id, name ->
+                backStack.add(CollectionDetailRoute(id, name))
+            },
+            onCreateCollection = viewModel::createCollection,
+            onRenameCollection = viewModel::renameCollection,
+            onDeleteCollection = viewModel::deleteCollection,
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.collectionDetailEntry(
+    backStack: MutableList<Any>,
+    compareModelId: Long?,
+    onCancelCompare: () -> Unit,
+) {
+    entry<CollectionDetailRoute> { key ->
+        val viewModel: CollectionDetailViewModel = koinViewModel(
+            key = "collection_${key.collectionId}",
+        ) { parametersOf(key.collectionId) }
+        val models by viewModel.displayModels.collectAsStateWithLifecycle()
+        val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
+        val typeFilter by viewModel.typeFilter.collectAsStateWithLifecycle()
+        val isSelectionMode by viewModel.isSelectionMode.collectAsStateWithLifecycle()
+        val selectedIds by viewModel.selectedModelIds.collectAsStateWithLifecycle()
+        val collections by viewModel.collections.collectAsStateWithLifecycle()
+        CollectionDetailScreen(
+            collectionName = key.collectionName,
+            models = models,
+            sortOrder = sortOrder,
+            typeFilter = typeFilter,
+            isSelectionMode = isSelectionMode,
+            selectedIds = selectedIds,
+            collections = collections,
+            collectionId = key.collectionId,
+            onBack = { backStack.removeLastOrNull() },
+            onModelClick = { modelId ->
+                val cmpId = compareModelId
+                if (cmpId != null) {
+                    backStack.add(CompareRoute(cmpId, modelId))
+                    onCancelCompare()
+                } else {
+                    backStack.add(DetailRoute(modelId))
+                }
+            },
+            onSortChange = { viewModel.sortOrder.value = it },
+            onTypeFilterChange = { viewModel.typeFilter.value = it },
+            onToggleSelection = viewModel::toggleSelection,
+            onEnterSelectionMode = viewModel::enterSelectionMode,
+            onSelectAll = viewModel::selectAll,
+            onClearSelection = viewModel::clearSelection,
+            onRemoveSelected = viewModel::removeSelected,
+            onMoveSelectedTo = viewModel::moveSelectedTo,
+        )
+    }
 }
 
 private fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {

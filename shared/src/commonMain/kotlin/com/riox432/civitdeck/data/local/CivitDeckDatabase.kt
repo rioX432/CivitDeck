@@ -10,16 +10,17 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
 import com.riox432.civitdeck.data.local.dao.BrowsingHistoryDao
 import com.riox432.civitdeck.data.local.dao.CachedApiResponseDao
+import com.riox432.civitdeck.data.local.dao.CollectionDao
 import com.riox432.civitdeck.data.local.dao.ExcludedTagDao
-import com.riox432.civitdeck.data.local.dao.FavoriteModelDao
 import com.riox432.civitdeck.data.local.dao.HiddenModelDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
 import com.riox432.civitdeck.data.local.dao.SearchHistoryDao
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
 import com.riox432.civitdeck.data.local.entity.CachedApiResponseEntity
+import com.riox432.civitdeck.data.local.entity.CollectionEntity
+import com.riox432.civitdeck.data.local.entity.CollectionModelEntity
 import com.riox432.civitdeck.data.local.entity.ExcludedTagEntity
-import com.riox432.civitdeck.data.local.entity.FavoriteModelEntity
 import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import com.riox432.civitdeck.data.local.entity.SearchHistoryEntity
@@ -29,7 +30,8 @@ import kotlinx.coroutines.IO
 
 @Database(
     entities = [
-        FavoriteModelEntity::class,
+        CollectionEntity::class,
+        CollectionModelEntity::class,
         CachedApiResponseEntity::class,
         UserPreferencesEntity::class,
         SavedPromptEntity::class,
@@ -38,11 +40,11 @@ import kotlinx.coroutines.IO
         ExcludedTagEntity::class,
         HiddenModelEntity::class,
     ],
-    version = 6,
+    version = 7,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
-    abstract fun favoriteModelDao(): FavoriteModelDao
+    abstract fun collectionDao(): CollectionDao
     abstract fun cachedApiResponseDao(): CachedApiResponseDao
     abstract fun userPreferencesDao(): UserPreferencesDao
     abstract fun savedPromptDao(): SavedPromptDao
@@ -150,9 +152,72 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
     }
 }
 
+@Suppress("LongMethod")
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(connection: SQLiteConnection) {
+        // Create collections table
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `collections` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`name` TEXT NOT NULL, " +
+                "`isDefault` INTEGER NOT NULL DEFAULT 0, " +
+                "`createdAt` INTEGER NOT NULL, " +
+                "`updatedAt` INTEGER NOT NULL)",
+        )
+        // Insert default "Favorites" collection with id=1
+        connection.execSQL(
+            "INSERT INTO `collections` (`id`, `name`, `isDefault`, `createdAt`, `updatedAt`) " +
+                "VALUES (1, 'Favorites', 1, 0, 0)",
+        )
+        // Create collection_model_entries table
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `collection_model_entries` (" +
+                "`collectionId` INTEGER NOT NULL, " +
+                "`modelId` INTEGER NOT NULL, " +
+                "`name` TEXT NOT NULL, " +
+                "`type` TEXT NOT NULL, " +
+                "`nsfw` INTEGER NOT NULL, " +
+                "`thumbnailUrl` TEXT, " +
+                "`creatorName` TEXT, " +
+                "`downloadCount` INTEGER NOT NULL, " +
+                "`favoriteCount` INTEGER NOT NULL, " +
+                "`rating` REAL NOT NULL, " +
+                "`addedAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`collectionId`, `modelId`), " +
+                "FOREIGN KEY(`collectionId`) REFERENCES `collections`(`id`) ON DELETE CASCADE)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_collection_model_entries_modelId` " +
+                "ON `collection_model_entries` (`modelId`)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_collection_model_entries_collectionId` " +
+                "ON `collection_model_entries` (`collectionId`)",
+        )
+        // Migrate existing favorites into default collection
+        connection.execSQL(
+            "INSERT INTO `collection_model_entries` " +
+                "(`collectionId`, `modelId`, `name`, `type`, `nsfw`, `thumbnailUrl`, " +
+                "`creatorName`, `downloadCount`, `favoriteCount`, `rating`, `addedAt`) " +
+                "SELECT 1, `id`, `name`, `type`, `nsfw`, `thumbnailUrl`, " +
+                "`creatorName`, `downloadCount`, `favoriteCount`, `rating`, `favoritedAt` " +
+                "FROM `favorite_models`",
+        )
+        // Drop old table
+        connection.execSQL("DROP TABLE IF EXISTS `favorite_models`")
+    }
+}
+
 fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeckDatabase {
     return builder
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+        .addMigrations(
+            MIGRATION_1_2,
+            MIGRATION_2_3,
+            MIGRATION_3_4,
+            MIGRATION_4_5,
+            MIGRATION_5_6,
+            MIGRATION_6_7,
+        )
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()

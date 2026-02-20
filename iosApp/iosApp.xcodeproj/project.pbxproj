@@ -29,8 +29,11 @@
 		CD0006072D000006000CD001 /* CivitDeckShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006062D000006000CD001 /* CivitDeckShapes.swift */; };
 		CD00060B2D000006000CD001 /* CivitDeckMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00060A2D000006000CD001 /* CivitDeckMotion.swift */; };
 		CD0006112D000036000CD001 /* ShimmerModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006102D000036000CD001 /* ShimmerModifier.swift */; };
-		CD0007012D000007000CD001 /* FavoritesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0007002D000007000CD001 /* FavoritesViewModel.swift */; };
-		CD0007032D000007000CD001 /* FavoritesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0007022D000007000CD001 /* FavoritesScreen.swift */; };
+		CD00C0012D3CC001000CD001 /* CollectionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0002D3CC001000CD001 /* CollectionsScreen.swift */; };
+		CD00C0032D3CC001000CD001 /* CollectionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0022D3CC001000CD001 /* CollectionsViewModel.swift */; };
+		CD00C0052D3CC001000CD001 /* CollectionDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0042D3CC001000CD001 /* CollectionDetailScreen.swift */; };
+		CD00C0072D3CC001000CD001 /* CollectionDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0062D3CC001000CD001 /* CollectionDetailViewModel.swift */; };
+		CD00C0092D3CC001000CD001 /* AddToCollectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0082D3CC001000CD001 /* AddToCollectionSheet.swift */; };
 		CD0008012D000008000CD001 /* CreatorProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0008002D000008000CD001 /* CreatorProfileViewModel.swift */; };
 		CD0008032D000008000CD001 /* CreatorProfileScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0008022D000008000CD001 /* CreatorProfileScreen.swift */; };
 		CD0009012D000009000CD001 /* SavedPromptsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0009002D000009000CD001 /* SavedPromptsViewModel.swift */; };
@@ -73,8 +76,11 @@
 		CD0006062D000006000CD001 /* CivitDeckShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckShapes.swift; sourceTree = "<group>"; };
 		CD00060A2D000006000CD001 /* CivitDeckMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckMotion.swift; sourceTree = "<group>"; };
 		CD0006102D000036000CD001 /* ShimmerModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmerModifier.swift; sourceTree = "<group>"; };
-		CD0007002D000007000CD001 /* FavoritesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesViewModel.swift; sourceTree = "<group>"; };
-		CD0007022D000007000CD001 /* FavoritesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesScreen.swift; sourceTree = "<group>"; };
+		CD00C0002D3CC001000CD001 /* CollectionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsScreen.swift; sourceTree = "<group>"; };
+		CD00C0022D3CC001000CD001 /* CollectionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsViewModel.swift; sourceTree = "<group>"; };
+		CD00C0042D3CC001000CD001 /* CollectionDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionDetailScreen.swift; sourceTree = "<group>"; };
+		CD00C0062D3CC001000CD001 /* CollectionDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionDetailViewModel.swift; sourceTree = "<group>"; };
+		CD00C0082D3CC001000CD001 /* AddToCollectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToCollectionSheet.swift; sourceTree = "<group>"; };
 		CD0008002D000008000CD001 /* CreatorProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatorProfileViewModel.swift; sourceTree = "<group>"; };
 		CD0008022D000008000CD001 /* CreatorProfileScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatorProfileScreen.swift; sourceTree = "<group>"; };
 		CD0009002D000009000CD001 /* SavedPromptsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedPromptsViewModel.swift; sourceTree = "<group>"; };
@@ -176,7 +182,7 @@
 			isa = PBXGroup;
 			children = (
 				CD0003012D000003000CD001 /* Search */,
-				CD0007042D000007000CD001 /* Favorites */,
+				CD00C00A2D3CC001000CD001 /* Collections */,
 				CD00CE062D2CC001000CD001 /* Compare */,
 				CD0008042D000008000CD001 /* Creator */,
 				CD0004042D000004000CD001 /* Detail */,
@@ -187,13 +193,16 @@
 			path = Features;
 			sourceTree = "<group>";
 		};
-		CD0007042D000007000CD001 /* Favorites */ = {
+		CD00C00A2D3CC001000CD001 /* Collections */ = {
 			isa = PBXGroup;
 			children = (
-				CD0007002D000007000CD001 /* FavoritesViewModel.swift */,
-				CD0007022D000007000CD001 /* FavoritesScreen.swift */,
+				CD00C0002D3CC001000CD001 /* CollectionsScreen.swift */,
+				CD00C0022D3CC001000CD001 /* CollectionsViewModel.swift */,
+				CD00C0042D3CC001000CD001 /* CollectionDetailScreen.swift */,
+				CD00C0062D3CC001000CD001 /* CollectionDetailViewModel.swift */,
+				CD00C0082D3CC001000CD001 /* AddToCollectionSheet.swift */,
 			);
-			path = Favorites;
+			path = Collections;
 			sourceTree = "<group>";
 		};
 		CD00CE062D2CC001000CD001 /* Compare */ = {
@@ -402,8 +411,11 @@
 				CD0006072D000006000CD001 /* CivitDeckShapes.swift in Sources */,
 				CD00060B2D000006000CD001 /* CivitDeckMotion.swift in Sources */,
 				CD0006112D000036000CD001 /* ShimmerModifier.swift in Sources */,
-				CD0007012D000007000CD001 /* FavoritesViewModel.swift in Sources */,
-				CD0007032D000007000CD001 /* FavoritesScreen.swift in Sources */,
+				CD00C0012D3CC001000CD001 /* CollectionsScreen.swift in Sources */,
+				CD00C0032D3CC001000CD001 /* CollectionsViewModel.swift in Sources */,
+				CD00C0052D3CC001000CD001 /* CollectionDetailScreen.swift in Sources */,
+				CD00C0072D3CC001000CD001 /* CollectionDetailViewModel.swift in Sources */,
+				CD00C0092D3CC001000CD001 /* AddToCollectionSheet.swift in Sources */,
 				CD0008012D000008000CD001 /* CreatorProfileViewModel.swift in Sources */,
 				CD0008032D000008000CD001 /* CreatorProfileScreen.swift in Sources */,
 				CD0009012D000009000CD001 /* SavedPromptsViewModel.swift in Sources */,
