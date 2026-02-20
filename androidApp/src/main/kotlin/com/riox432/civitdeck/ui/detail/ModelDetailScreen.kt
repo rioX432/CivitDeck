@@ -36,6 +36,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridView
@@ -80,6 +81,7 @@ import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
 import com.riox432.civitdeck.domain.model.stripCdnWidth
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
+import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
@@ -103,6 +105,9 @@ fun ModelDetailScreen(
     sharedElementSuffix: String = "",
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val collections by viewModel.collections.collectAsStateWithLifecycle()
+    val modelCollectionIds by viewModel.modelCollectionIds.collectAsStateWithLifecycle()
+    var showCollectionSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -110,6 +115,7 @@ fun ModelDetailScreen(
                 uiState = uiState,
                 onBack = onBack,
                 onFavoriteToggle = viewModel::onFavoriteToggle,
+                onAddToCollection = { showCollectionSheet = true },
             )
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -126,6 +132,16 @@ fun ModelDetailScreen(
             contentPadding = padding,
         )
     }
+
+    if (showCollectionSheet) {
+        AddToCollectionSheet(
+            collections = collections,
+            modelCollectionIds = modelCollectionIds,
+            onToggleCollection = viewModel::toggleCollection,
+            onCreateCollection = viewModel::createCollectionAndAdd,
+            onDismiss = { showCollectionSheet = false },
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,6 +150,7 @@ private fun ModelDetailTopBar(
     uiState: ModelDetailUiState,
     onBack: () -> Unit,
     onFavoriteToggle: () -> Unit,
+    onAddToCollection: () -> Unit,
 ) {
     val context = LocalContext.current
     TopAppBar(
@@ -151,6 +168,9 @@ private fun ModelDetailTopBar(
             }
         },
         actions = {
+            IconButton(onClick = onAddToCollection) {
+                Icon(Icons.Default.CreateNewFolder, contentDescription = "Add to collection")
+            }
             IconButton(
                 onClick = {
                     val model = uiState.model ?: return@IconButton

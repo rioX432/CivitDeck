@@ -1,10 +1,15 @@
 package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
+import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
+import com.riox432.civitdeck.domain.usecase.BulkMoveModelsUseCase
+import com.riox432.civitdeck.domain.usecase.BulkRemoveModelsUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
+import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.DeleteCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteSavedPromptUseCase
 import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetCreatorModelsUseCase
@@ -18,15 +23,20 @@ import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveCollectionModelsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
+import com.riox432.civitdeck.domain.usecase.RemoveModelFromCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.RenameCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
@@ -77,4 +87,15 @@ val domainModule = module {
     factory { ObserveApiKeyUseCase(get()) }
     factory { SetApiKeyUseCase(get()) }
     factory { ValidateApiKeyUseCase(get()) }
+    // Collection use cases
+    factory { ObserveCollectionsUseCase(get()) }
+    factory { CreateCollectionUseCase(get()) }
+    factory { RenameCollectionUseCase(get()) }
+    factory { DeleteCollectionUseCase(get()) }
+    factory { ObserveCollectionModelsUseCase(get()) }
+    factory { AddModelToCollectionUseCase(get()) }
+    factory { RemoveModelFromCollectionUseCase(get()) }
+    factory { ObserveModelCollectionsUseCase(get()) }
+    factory { BulkMoveModelsUseCase(get()) }
+    factory { BulkRemoveModelsUseCase(get()) }
 }

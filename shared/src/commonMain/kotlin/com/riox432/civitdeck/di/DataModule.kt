@@ -7,6 +7,7 @@ import com.riox432.civitdeck.data.local.CivitDeckDatabase
 import com.riox432.civitdeck.data.local.LocalCacheDataSource
 import com.riox432.civitdeck.data.local.getRoomDatabase
 import com.riox432.civitdeck.data.repository.BrowsingHistoryRepositoryImpl
+import com.riox432.civitdeck.data.repository.CollectionRepositoryImpl
 import com.riox432.civitdeck.data.repository.CreatorRepositoryImpl
 import com.riox432.civitdeck.data.repository.ExcludedTagRepositoryImpl
 import com.riox432.civitdeck.data.repository.FavoriteRepositoryImpl
@@ -18,6 +19,7 @@ import com.riox432.civitdeck.data.repository.SearchHistoryRepositoryImpl
 import com.riox432.civitdeck.data.repository.TagRepositoryImpl
 import com.riox432.civitdeck.data.repository.UserPreferencesRepositoryImpl
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
+import com.riox432.civitdeck.domain.repository.CollectionRepository
 import com.riox432.civitdeck.domain.repository.CreatorRepository
 import com.riox432.civitdeck.domain.repository.ExcludedTagRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
@@ -45,7 +47,7 @@ val dataModule = module {
 
     // Room Database
     single<CivitDeckDatabase> { getRoomDatabase(get()) }
-    single { get<CivitDeckDatabase>().favoriteModelDao() }
+    single { get<CivitDeckDatabase>().collectionDao() }
     single { get<CivitDeckDatabase>().cachedApiResponseDao() }
     single { get<CivitDeckDatabase>().userPreferencesDao() }
     single { get<CivitDeckDatabase>().savedPromptDao() }
@@ -63,6 +65,7 @@ val dataModule = module {
     single<CreatorRepository> { CreatorRepositoryImpl(get()) }
     single<TagRepository> { TagRepositoryImpl(get()) }
     single<FavoriteRepository> { FavoriteRepositoryImpl(get()) }
+    single<CollectionRepository> { CollectionRepositoryImpl(get()) }
     single<UserPreferencesRepository> { UserPreferencesRepositoryImpl(get(), get()) }
     single<SavedPromptRepository> { SavedPromptRepositoryImpl(get()) }
     single<SearchHistoryRepository> { SearchHistoryRepositoryImpl(get()) }

@@ -23,9 +23,9 @@ struct ContentView: View {
                     Label("Search", systemImage: "magnifyingglass")
                 }
 
-            FavoritesScreen()
+            CollectionsScreen()
                 .tabItem {
-                    Label("Favorites", systemImage: "heart")
+                    Label("Collections", systemImage: "folder")
                 }
 
             SavedPromptsScreen()
@@ -53,8 +53,8 @@ struct ContentView: View {
             TabView(selection: $selectedTab) {
                 ModelSearchScreen()
                     .tag(SidebarTab.search)
-                FavoritesScreen()
-                    .tag(SidebarTab.favorites)
+                CollectionsScreen()
+                    .tag(SidebarTab.collections)
                 SavedPromptsScreen()
                     .tag(SidebarTab.prompts)
                 SettingsScreen()
@@ -67,7 +67,7 @@ struct ContentView: View {
 
 private enum SidebarTab: String, CaseIterable, Identifiable {
     case search
-    case favorites
+    case collections
     case prompts
     case settings
 
@@ -76,7 +76,7 @@ private enum SidebarTab: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .search: return "Search"
-        case .favorites: return "Favorites"
+        case .collections: return "Collections"
         case .prompts: return "Prompts"
         case .settings: return "Settings"
         }
@@ -85,7 +85,7 @@ private enum SidebarTab: String, CaseIterable, Identifiable {
     var icon: String {
         switch self {
         case .search: return "magnifyingglass"
-        case .favorites: return "heart"
+        case .collections: return "folder"
         case .prompts: return "bookmark"
         case .settings: return "gearshape"
         }

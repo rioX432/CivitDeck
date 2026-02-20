@@ -12,6 +12,7 @@ struct ModelDetailScreen: View {
     @State private var selectedCarouselIndex: Int?
     @State private var showImageGrid = false
     @State private var gridSelectedIndex: Int?
+    @State private var showCollectionSheet = false
 
     var body: some View {
         Group {
@@ -38,6 +39,13 @@ struct ModelDetailScreen: View {
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showCollectionSheet = true
+                } label: {
+                    Image(systemName: "folder.badge.plus")
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
                 if let model = viewModel.model,
                    let url = URL(string: "https://civitai.com/models/\(model.id)") {
                     ShareLink(item: url) {
@@ -53,6 +61,20 @@ struct ModelDetailScreen: View {
                         .foregroundColor(viewModel.isFavorite ? .civitError : .civitOnSurface)
                 }
             }
+        }
+        .task {
+            await viewModel.observeCollections()
+        }
+        .task {
+            await viewModel.observeModelCollections()
+        }
+        .sheet(isPresented: $showCollectionSheet) {
+            AddToCollectionSheet(
+                collections: viewModel.collections,
+                modelCollectionIds: viewModel.modelCollectionIds,
+                onToggleCollection: { viewModel.toggleCollection($0) },
+                onCreateCollection: { viewModel.createCollectionAndAdd(name: $0) }
+            )
         }
         .fullScreenCover(isPresented: Binding(
             get: { selectedCarouselIndex != nil },

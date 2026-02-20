@@ -9,6 +9,8 @@ final class ModelDetailViewModel: ObservableObject {
     @Published var error: String?
     @Published var selectedVersionIndex: Int = 0
     @Published var nsfwFilterLevel: NsfwFilterLevel = .off
+    @Published var collections: [ModelCollection] = []
+    @Published var modelCollectionIds: [Int64] = []
 
     private let modelId: Int64
     private let getModelDetailUseCase: GetModelDetailUseCase
@@ -17,6 +19,11 @@ final class ModelDetailViewModel: ObservableObject {
     private let trackModelViewUseCase: TrackModelViewUseCase
     private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
     private let enrichModelImagesUseCase: EnrichModelImagesUseCase
+    private let observeCollectionsUseCase: ObserveCollectionsUseCase
+    private let observeModelCollectionsUseCase: ObserveModelCollectionsUseCase
+    private let addModelToCollectionUseCase: AddModelToCollectionUseCase
+    private let removeModelFromCollectionUseCase: RemoveModelFromCollectionUseCase
+    private let createCollectionUseCase: CreateCollectionUseCase
     private var enrichedVersionIds: Set<Int64> = []
 
     var selectedVersion: ModelVersion? {
@@ -34,6 +41,11 @@ final class ModelDetailViewModel: ObservableObject {
         self.trackModelViewUseCase = KoinHelper.shared.getTrackModelViewUseCase()
         self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
         self.enrichModelImagesUseCase = KoinHelper.shared.getEnrichModelImagesUseCase()
+        self.observeCollectionsUseCase = KoinHelper.shared.getObserveCollectionsUseCase()
+        self.observeModelCollectionsUseCase = KoinHelper.shared.getObserveModelCollectionsUseCase()
+        self.addModelToCollectionUseCase = KoinHelper.shared.getAddModelToCollectionUseCase()
+        self.removeModelFromCollectionUseCase = KoinHelper.shared.getRemoveModelFromCollectionUseCase()
+        self.createCollectionUseCase = KoinHelper.shared.getCreateCollectionUseCase()
         loadModel()
     }
 
@@ -55,6 +67,43 @@ final class ModelDetailViewModel: ObservableObject {
         guard let model else { return }
         Task {
             try? await toggleFavoriteUseCase.invoke(model: model)
+        }
+    }
+
+    func observeCollections() async {
+        for await list in observeCollectionsUseCase.invoke() {
+            collections = list.compactMap { $0 as? ModelCollection }
+        }
+    }
+
+    func observeModelCollections() async {
+        for await list in observeModelCollectionsUseCase.invoke(modelId: modelId) {
+            modelCollectionIds = list.compactMap { ($0 as? NSNumber)?.int64Value }
+        }
+    }
+
+    func toggleCollection(_ collectionId: Int64) {
+        guard let model else { return }
+        Task {
+            if modelCollectionIds.contains(collectionId) {
+                try? await removeModelFromCollectionUseCase.invoke(
+                    collectionId: collectionId, modelId: model.id
+                )
+            } else {
+                try? await addModelToCollectionUseCase.invoke(
+                    collectionId: collectionId, model: model
+                )
+            }
+        }
+    }
+
+    func createCollectionAndAdd(name: String) {
+        guard let model else { return }
+        Task {
+            let newId = try await createCollectionUseCase.invoke(name: name)
+            try? await addModelToCollectionUseCase.invoke(
+                collectionId: newId.int64Value, model: model
+            )
         }
     }
 
