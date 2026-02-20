@@ -50,6 +50,10 @@ kotlin {
 }
 
 dependencies {
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+
     implementation(project(":shared"))
     implementation(compose.material3)
     implementation(compose.materialIconsExtended)
