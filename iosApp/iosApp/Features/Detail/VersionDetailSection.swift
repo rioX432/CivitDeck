@@ -94,7 +94,7 @@ struct VersionDetailSection: View {
 
     private func advancedFileInfo(file: ModelFile) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
-            let hashes = file.hashes as? [String: String] ?? [:]
+            let hashes = file.hashes
             ForEach(Array(hashes.keys.sorted()), id: \.self) { key in
                 if let value = hashes[key] {
                     detailRow(label: key, value: value)

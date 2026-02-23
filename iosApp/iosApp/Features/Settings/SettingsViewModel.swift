@@ -148,7 +148,7 @@ final class SettingsViewModel: ObservableObject {
 
     func onPowerUserModeChanged(_ enabled: Bool) {
         powerUserMode = enabled
-        Task { try? await setPowerUserModeUseCase.invoke(enabled: KotlinBoolean(bool: enabled)) }
+        Task { try? await setPowerUserModeUseCase.invoke(enabled: enabled) }
     }
 
     func observeApiKey() async {
