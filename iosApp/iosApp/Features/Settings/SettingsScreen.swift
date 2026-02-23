@@ -69,7 +69,7 @@ struct SettingsScreen: View {
             get: { viewModel.powerUserMode },
             set: { viewModel.onPowerUserModeChanged($0) }
         )) {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Power User Mode")
                     .font(.civitBodyMedium)
                 Text("Show advanced metadata on detail screens")

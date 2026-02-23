@@ -66,7 +66,7 @@ struct VersionDetailSection: View {
     // MARK: - File Info Row
 
     private func fileInfoRow(file: ModelFile) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             Text(file.name)
                 .font(.civitBodySmall)
                 .lineLimit(1)
@@ -93,7 +93,7 @@ struct VersionDetailSection: View {
     // MARK: - Advanced File Info
 
     private func advancedFileInfo(file: ModelFile) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             let hashes = file.hashes as? [String: String] ?? [:]
             ForEach(Array(hashes.keys.sorted()), id: \.self) { key in
                 if let value = hashes[key] {
@@ -137,7 +137,7 @@ struct VersionDetailSection: View {
             }
 
             if isAdvancedExpanded {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     if !version.createdAt.isEmpty {
                         detailRow(label: "Created", value: version.createdAt)
                     }

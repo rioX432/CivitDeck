@@ -129,4 +129,19 @@ class UserPreferencesUseCasesTest {
         setUseCase(null)
         assertNull(repo.storedApiKey)
     }
+
+    // --- Power User Mode ---
+
+    @Test
+    fun observePowerUserMode_emits_false_initially() = runTest {
+        val useCase = ObservePowerUserModeUseCase(repo)
+        assertEquals(false, useCase().first())
+    }
+
+    @Test
+    fun setPowerUserMode_updates() = runTest {
+        val setUseCase = SetPowerUserModeUseCase(repo)
+        setUseCase(true)
+        assertEquals(true, repo.powerUserMode.value)
+    }
 }
