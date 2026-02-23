@@ -113,6 +113,18 @@ private fun MetadataParams(meta: ImageGenerationMeta) {
     meta.cfgScale?.let { MetadataRow("CFG Scale", it.toString()) }
     meta.seed?.let { MetadataRow("Seed", it.toString()) }
     meta.size?.let { MetadataRow("Size", it) }
+    if (meta.additionalParams.isNotEmpty()) {
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        Text(
+            text = "Advanced Parameters",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        meta.additionalParams.forEach { (key, value) ->
+            MetadataRow(key, value)
+        }
+    }
 }
 
 @Composable

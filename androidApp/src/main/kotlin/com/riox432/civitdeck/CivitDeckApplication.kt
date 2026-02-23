@@ -63,7 +63,9 @@ val androidModule = module {
     viewModel { CollectionsViewModel(get(), get(), get(), get()) }
     viewModel { params -> CollectionDetailViewModel(params.get(), get(), get(), get(), get()) }
     viewModel { params ->
-        ModelDetailViewModel(params.get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+        ModelDetailViewModel(
+            params.get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
+        )
     }
     viewModel { params -> CreatorProfileViewModel(params.get(), get()) }
     viewModel { params -> ImageGalleryViewModel(params.get(), get(), get(), get()) }
@@ -73,6 +75,7 @@ val androidModule = module {
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(), get(),
+            get(), get(),
         )
     }
 }

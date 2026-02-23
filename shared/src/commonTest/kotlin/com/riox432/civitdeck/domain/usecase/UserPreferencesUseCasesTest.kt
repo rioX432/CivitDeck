@@ -37,6 +37,10 @@ class UserPreferencesUseCasesTest {
             apiKeyFlow.value = apiKey
         }
         override suspend fun getApiKey(): String? = storedApiKey
+
+        val powerUserMode = MutableStateFlow(false)
+        override fun observePowerUserMode(): Flow<Boolean> = powerUserMode
+        override suspend fun setPowerUserMode(enabled: Boolean) { powerUserMode.value = enabled }
     }
 
     private val repo = FakeUserPreferencesRepository()

@@ -13,6 +13,7 @@ final class SettingsViewModel: ObservableObject {
     @Published var connectedUsername: String?
     @Published var isValidatingApiKey: Bool = false
     @Published var apiKeyError: String?
+    @Published var powerUserMode: Bool = false
 
     private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
     private let setNsfwFilterUseCase: SetNsfwFilterUseCase
@@ -33,6 +34,8 @@ final class SettingsViewModel: ObservableObject {
     private let observeApiKeyUseCase: ObserveApiKeyUseCase
     private let setApiKeyUseCase: SetApiKeyUseCase
     private let validateApiKeyUseCase: ValidateApiKeyUseCase
+    private let observePowerUserModeUseCase: ObservePowerUserModeUseCase
+    private let setPowerUserModeUseCase: SetPowerUserModeUseCase
 
     init() {
         self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
@@ -54,6 +57,8 @@ final class SettingsViewModel: ObservableObject {
         self.observeApiKeyUseCase = KoinHelper.shared.getObserveApiKeyUseCase()
         self.setApiKeyUseCase = KoinHelper.shared.getSetApiKeyUseCase()
         self.validateApiKeyUseCase = KoinHelper.shared.getValidateApiKeyUseCase()
+        self.observePowerUserModeUseCase = KoinHelper.shared.getObservePowerUserModeUseCase()
+        self.setPowerUserModeUseCase = KoinHelper.shared.getSetPowerUserModeUseCase()
         loadMutableData()
     }
 
@@ -133,6 +138,17 @@ final class SettingsViewModel: ObservableObject {
 
     func onClearCache() {
         Task { try? await clearCacheUseCase.invoke() }
+    }
+
+    func observePowerUserMode() async {
+        for await value in observePowerUserModeUseCase.invoke() {
+            powerUserMode = value.boolValue
+        }
+    }
+
+    func onPowerUserModeChanged(_ enabled: Bool) {
+        powerUserMode = enabled
+        Task { try? await setPowerUserModeUseCase.invoke(enabled: KotlinBoolean(bool: enabled)) }
     }
 
     func observeApiKey() async {

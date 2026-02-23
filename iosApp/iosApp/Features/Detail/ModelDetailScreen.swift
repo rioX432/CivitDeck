@@ -37,6 +37,9 @@ struct ModelDetailScreen: View {
         .task {
             await viewModel.observeNsfwFilter()
         }
+        .task {
+            await viewModel.observePowerUserMode()
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -361,66 +364,11 @@ struct ModelDetailScreen: View {
     @ViewBuilder
     private var versionDetail: some View {
         if let version = viewModel.selectedVersion {
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                if let baseModel = version.baseModel {
-                    HStack {
-                        Text("Base Model")
-                            .foregroundColor(.civitOnSurfaceVariant)
-                        Spacer()
-                        Text(baseModel)
-                    }
-                    .font(.civitBodyMedium)
-                }
-
-                let trainedWords = version.trainedWords
-                if !trainedWords.isEmpty {
-                    Text("Trained Words")
-                        .font(.civitTitleSmall)
-                    Text(trainedWords.joined(separator: ", "))
-                        .font(.civitBodySmall)
-                        .foregroundColor(.civitOnSurfaceVariant)
-                }
-
-                let files = version.files
-                if !files.isEmpty {
-                    Text("Files")
-                        .font(.civitTitleSmall)
-                        .padding(.top, Spacing.xs)
-
-                    ForEach(Array(files.enumerated()), id: \.offset) { _, file in
-                        fileInfoRow(file: file)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, Spacing.lg)
-            .padding(.bottom, Spacing.lg)
+            VersionDetailSection(
+                version: version,
+                powerUserMode: viewModel.powerUserMode
+            )
         }
-    }
-
-    private func fileInfoRow(file: ModelFile) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(file.name)
-                .font(.civitBodySmall)
-                .lineLimit(1)
-
-            HStack(spacing: Spacing.sm) {
-                Text(FormatUtils.shared.formatFileSize(sizeKB: file.sizeKB))
-                    .font(.civitLabelSmall)
-                    .foregroundColor(.civitOnSurfaceVariant)
-                if let format = file.format {
-                    Text(format)
-                        .font(.civitLabelSmall)
-                        .foregroundColor(.civitOnSurfaceVariant)
-                }
-                if let fp = file.fp {
-                    Text(fp)
-                        .font(.civitLabelSmall)
-                        .foregroundColor(.civitOnSurfaceVariant)
-                }
-            }
-        }
-        .padding(.vertical, 2)
     }
 
     // MARK: - Error View

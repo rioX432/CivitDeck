@@ -18,4 +18,6 @@ interface UserPreferencesRepository {
     fun observeApiKey(): Flow<String?>
     suspend fun setApiKey(apiKey: String?)
     suspend fun getApiKey(): String?
+    fun observePowerUserMode(): Flow<Boolean>
+    suspend fun setPowerUserMode(enabled: Boolean)
 }

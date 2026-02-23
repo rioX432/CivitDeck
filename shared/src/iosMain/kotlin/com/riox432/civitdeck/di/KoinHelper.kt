@@ -33,6 +33,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
@@ -44,6 +45,7 @@ import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
@@ -85,6 +87,8 @@ object KoinHelper {
     fun getHiddenModelsUseCase(): GetHiddenModelsUseCase = getKoin().get()
     fun getClearBrowsingHistoryUseCase(): ClearBrowsingHistoryUseCase = getKoin().get()
     fun getClearCacheUseCase(): ClearCacheUseCase = getKoin().get()
+    fun getObservePowerUserModeUseCase(): ObservePowerUserModeUseCase = getKoin().get()
+    fun getSetPowerUserModeUseCase(): SetPowerUserModeUseCase = getKoin().get()
     fun getEnrichModelImagesUseCase(): EnrichModelImagesUseCase = getKoin().get()
     fun getObserveApiKeyUseCase(): ObserveApiKeyUseCase = getKoin().get()
     fun getSetApiKeyUseCase(): SetApiKeyUseCase = getKoin().get()

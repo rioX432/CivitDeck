@@ -11,4 +11,5 @@ data class UserPreferencesEntity(
     val defaultTimePeriod: String = "AllTime",
     val gridColumns: Int = 2,
     val apiKey: String? = null,
+    val powerUserMode: Boolean = false,
 )

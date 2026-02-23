@@ -13,6 +13,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
@@ -32,6 +33,7 @@ data class ModelDetailUiState(
     val error: String? = null,
     val selectedVersionIndex: Int = 0,
     val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
+    val powerUserMode: Boolean = false,
 )
 
 @Suppress("LongParameterList")
@@ -48,6 +50,7 @@ class ModelDetailViewModel(
     private val addModelToCollectionUseCase: AddModelToCollectionUseCase,
     private val removeModelFromCollectionUseCase: RemoveModelFromCollectionUseCase,
     private val createCollectionUseCase: CreateCollectionUseCase,
+    private val observePowerUserModeUseCase: ObservePowerUserModeUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelDetailUiState())
@@ -66,6 +69,7 @@ class ModelDetailViewModel(
         loadModel()
         observeFavorite()
         observeNsfwFilter()
+        observePowerUserMode()
     }
 
     fun onVersionSelected(index: Int) {
@@ -181,6 +185,14 @@ class ModelDetailViewModel(
         viewModelScope.launch {
             observeNsfwFilterUseCase().collect { level ->
                 _uiState.update { it.copy(nsfwFilterLevel = level) }
+            }
+        }
+    }
+
+    private fun observePowerUserMode() {
+        viewModelScope.launch {
+            observePowerUserModeUseCase().collect { enabled ->
+                _uiState.update { it.copy(powerUserMode = enabled) }
             }
         }
     }

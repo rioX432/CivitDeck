@@ -17,12 +17,14 @@ import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +47,7 @@ data class SettingsUiState(
     val connectedUsername: String? = null,
     val isValidatingApiKey: Boolean = false,
     val apiKeyError: String? = null,
+    val powerUserMode: Boolean = false,
 )
 
 @Suppress("LongParameterList")
@@ -68,6 +71,8 @@ class SettingsViewModel(
     private val observeApiKeyUseCase: ObserveApiKeyUseCase,
     private val setApiKeyUseCase: SetApiKeyUseCase,
     private val validateApiKeyUseCase: ValidateApiKeyUseCase,
+    observePowerUserModeUseCase: ObservePowerUserModeUseCase,
+    private val setPowerUserModeUseCase: SetPowerUserModeUseCase,
 ) : ViewModel() {
 
     private val _mutableState = MutableStateFlow(SettingsUiState())
@@ -86,6 +91,8 @@ class SettingsViewModel(
             gridColumns = columns,
             apiKey = apiKey,
         )
+    }.combine(observePowerUserModeUseCase()) { state, powerUser ->
+        state.copy(powerUserMode = powerUser)
     }.combine(_mutableState) { observed, mutable ->
         observed.copy(
             hiddenModels = mutable.hiddenModels,
@@ -173,6 +180,10 @@ class SettingsViewModel(
 
     fun onGridColumnsChanged(columns: Int) {
         viewModelScope.launch { setGridColumnsUseCase(columns) }
+    }
+
+    fun onPowerUserModeChanged(enabled: Boolean) {
+        viewModelScope.launch { setPowerUserModeUseCase(enabled) }
     }
 
     fun onUnhideModel(modelId: Long) {
