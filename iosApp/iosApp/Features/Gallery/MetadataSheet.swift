@@ -98,9 +98,9 @@ struct MetadataSheet: View {
             Text("Advanced Parameters")
                 .font(.caption)
                 .foregroundColor(.accentColor)
-            ForEach(Array(params.allKeys), id: \.self) { key in
-                if let keyStr = key as? String, let value = params[key] as? String {
-                    paramRow(label: keyStr, value: value)
+            ForEach(Array(params.keys.sorted()), id: \.self) { key in
+                if let value = params[key] {
+                    paramRow(label: key, value: value)
                 }
             }
         }
