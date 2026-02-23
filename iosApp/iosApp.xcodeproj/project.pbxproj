@@ -48,6 +48,7 @@
 		CD00CE012D2CC001000CD001 /* ComparisonState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CE002D2CC001000CD001 /* ComparisonState.swift */; };
 		CD00CE032D2CC001000CD001 /* ModelCompareScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CE022D2CC001000CD001 /* ModelCompareScreen.swift */; };
 		CD00CE052D2CC001000CD001 /* ModelCompareViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CE042D2CC001000CD001 /* ModelCompareViewModel.swift */; };
+		CD00VD012D4CC001000CD001 /* VersionDetailSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00VD002D4CC001000CD001 /* VersionDetailSection.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -95,6 +96,7 @@
 		CD00CE002D2CC001000CD001 /* ComparisonState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComparisonState.swift; sourceTree = "<group>"; };
 		CD00CE022D2CC001000CD001 /* ModelCompareScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCompareScreen.swift; sourceTree = "<group>"; };
 		CD00CE042D2CC001000CD001 /* ModelCompareViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCompareViewModel.swift; sourceTree = "<group>"; };
+		CD00VD002D4CC001000CD001 /* VersionDetailSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionDetailSection.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -262,6 +264,7 @@
 				CD0004002D000004000CD001 /* ModelDetailViewModel.swift */,
 				CD0004022D000004000CD001 /* ModelDetailScreen.swift */,
 				CD00DC002D0DD001000CD001 /* ModelDetailComponents.swift */,
+				CD00VD002D4CC001000CD001 /* VersionDetailSection.swift */,
 			);
 			path = Detail;
 			sourceTree = "<group>";
@@ -430,6 +433,7 @@
 				CD00CE012D2CC001000CD001 /* ComparisonState.swift in Sources */,
 				CD00CE032D2CC001000CD001 /* ModelCompareScreen.swift in Sources */,
 				CD00CE052D2CC001000CD001 /* ModelCompareViewModel.swift in Sources */,
+				CD00VD012D4CC001000CD001 /* VersionDetailSection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

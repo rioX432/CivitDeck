@@ -32,4 +32,5 @@ data class ImageGenerationMeta(
     val seed: Long?,
     val model: String?,
     val size: String?,
+    val additionalParams: Map<String, String> = emptyMap(),
 )

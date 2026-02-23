@@ -68,6 +68,9 @@ fun ModelFileDto.toDomain(): ModelFile = ModelFile(
     downloadUrl = downloadUrl,
     primary = primary,
     hashes = hashes,
+    pickleScanResult = pickleScanResult,
+    virusScanResult = virusScanResult,
+    scannedAt = scannedAt,
 )
 
 fun ModelImageDto.toDomain(): ModelImage = ModelImage(
@@ -119,6 +122,7 @@ fun ImageMetaDto.toDomain(): ImageGenerationMeta = ImageGenerationMeta(
     seed = seed,
     model = model,
     size = size,
+    additionalParams = additionalParams,
 )
 
 fun CreatorDto.toDomain(): Creator = Creator(

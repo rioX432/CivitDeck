@@ -20,6 +20,7 @@ struct SettingsScreen: View {
             .task { await viewModel.observeSortOrder() }
             .task { await viewModel.observeTimePeriod() }
             .task { await viewModel.observeGridColumns() }
+            .task { await viewModel.observePowerUserMode() }
         }
     }
 
@@ -59,6 +60,22 @@ struct SettingsScreen: View {
             sortOrderPicker
             timePeriodPicker
             gridColumnsPicker
+            powerUserModeToggle
+        }
+    }
+
+    private var powerUserModeToggle: some View {
+        Toggle(isOn: Binding(
+            get: { viewModel.powerUserMode },
+            set: { viewModel.onPowerUserModeChanged($0) }
+        )) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("Power User Mode")
+                    .font(.civitBodyMedium)
+                Text("Show advanced metadata on detail screens")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+            }
         }
     }
 

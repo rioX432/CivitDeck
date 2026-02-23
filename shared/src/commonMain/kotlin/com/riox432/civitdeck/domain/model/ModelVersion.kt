@@ -31,6 +31,9 @@ data class ModelFile(
     val downloadUrl: String,
     val primary: Boolean,
     val hashes: Map<String, String>,
+    val pickleScanResult: String? = null,
+    val virusScanResult: String? = null,
+    val scannedAt: String? = null,
 )
 
 data class ModelImage(

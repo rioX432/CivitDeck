@@ -85,6 +85,25 @@ struct MetadataSheet: View {
         if let size = meta.size {
             paramRow(label: "Size", value: size)
         }
+        advancedParamsSection
+    }
+
+    // MARK: - Advanced Parameters
+
+    @ViewBuilder
+    private var advancedParamsSection: some View {
+        let params = meta.additionalParams
+        if !params.isEmpty {
+            Divider()
+            Text("Advanced Parameters")
+                .font(.caption)
+                .foregroundColor(.accentColor)
+            ForEach(Array(params.keys.sorted()), id: \.self) { key in
+                if let value = params[key] {
+                    paramRow(label: key, value: value)
+                }
+            }
+        }
     }
 
     private func paramRow(label: String, value: String) -> some View {

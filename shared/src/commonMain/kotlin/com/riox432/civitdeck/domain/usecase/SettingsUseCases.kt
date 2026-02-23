@@ -44,3 +44,11 @@ class ClearBrowsingHistoryUseCase(private val repository: BrowsingHistoryReposit
 class ClearCacheUseCase(private val cacheDataSource: LocalCacheDataSource) {
     suspend operator fun invoke() = cacheDataSource.clearAll()
 }
+
+class ObservePowerUserModeUseCase(private val repository: UserPreferencesRepository) {
+    operator fun invoke(): Flow<Boolean> = repository.observePowerUserMode()
+}
+
+class SetPowerUserModeUseCase(private val repository: UserPreferencesRepository) {
+    suspend operator fun invoke(enabled: Boolean) = repository.setPowerUserMode(enabled)
+}

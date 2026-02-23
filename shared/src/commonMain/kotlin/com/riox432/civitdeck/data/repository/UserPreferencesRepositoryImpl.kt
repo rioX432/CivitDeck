@@ -67,4 +67,12 @@ class UserPreferencesRepositoryImpl(
 
     override suspend fun getApiKey(): String? =
         dao.getPreferences()?.apiKey
+
+    override fun observePowerUserMode(): Flow<Boolean> =
+        dao.observePreferences().map { it?.powerUserMode ?: false }
+
+    override suspend fun setPowerUserMode(enabled: Boolean) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(powerUserMode = enabled))
+    }
 }

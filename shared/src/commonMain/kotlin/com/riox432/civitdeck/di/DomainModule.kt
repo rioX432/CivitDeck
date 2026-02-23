@@ -32,6 +32,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
@@ -43,6 +44,7 @@ import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
@@ -84,6 +86,8 @@ val domainModule = module {
     factory { GetHiddenModelsUseCase(get()) }
     factory { ClearBrowsingHistoryUseCase(get()) }
     factory { ClearCacheUseCase(get()) }
+    factory { ObservePowerUserModeUseCase(get()) }
+    factory { SetPowerUserModeUseCase(get()) }
     factory { ObserveApiKeyUseCase(get()) }
     factory { SetApiKeyUseCase(get()) }
     factory { ValidateApiKeyUseCase(get()) }

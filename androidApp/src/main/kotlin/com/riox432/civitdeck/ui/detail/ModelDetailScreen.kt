@@ -515,7 +515,7 @@ private fun ModelDetailContentBody(
         // Version detail
         if (selectedVersion != null) {
             item {
-                VersionDetail(version = selectedVersion)
+                VersionDetail(version = selectedVersion, powerUserMode = uiState.powerUserMode)
             }
         }
     }
@@ -902,7 +902,7 @@ private fun VersionSelector(
 }
 
 @Composable
-private fun VersionDetail(version: ModelVersion) {
+private fun VersionDetail(version: ModelVersion, powerUserMode: Boolean = false) {
     Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
         if (version.baseModel != null) {
             DetailRow(label = "Base Model", value = version.baseModel!!)
@@ -931,7 +931,76 @@ private fun VersionDetail(version: ModelVersion) {
             Spacer(modifier = Modifier.height(Spacing.xs))
             version.files.forEach { file ->
                 FileInfoRow(file = file)
+                if (powerUserMode) {
+                    AdvancedFileInfo(file = file)
+                }
                 Spacer(modifier = Modifier.height(Spacing.xs))
+            }
+        }
+
+        if (powerUserMode) {
+            AdvancedVersionInfo(version = version)
+        }
+    }
+}
+
+@Composable
+private fun AdvancedFileInfo(file: ModelFile) {
+    Column(modifier = Modifier.padding(start = Spacing.sm)) {
+        file.hashes.forEach { (algorithm, hash) ->
+            DetailRow(label = algorithm, value = hash)
+        }
+        file.pickleScanResult?.let { DetailRow(label = "Pickle Scan", value = it) }
+        file.virusScanResult?.let { DetailRow(label = "Virus Scan", value = it) }
+        file.scannedAt?.let { DetailRow(label = "Scanned At", value = it) }
+    }
+}
+
+@Composable
+private fun AdvancedVersionInfo(version: ModelVersion) {
+    var expanded by remember { mutableStateOf(false) }
+    Spacer(modifier = Modifier.height(Spacing.md))
+    HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { expanded = !expanded },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "Advanced Info",
+            style = MaterialTheme.typography.titleSmall,
+        )
+        Text(
+            text = if (expanded) "Hide" else "Show",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+    if (expanded) {
+        Column(modifier = Modifier.animateContentSize()) {
+            Spacer(modifier = Modifier.height(Spacing.sm))
+            version.createdAt.takeIf { it.isNotBlank() }?.let {
+                DetailRow(label = "Created", value = it)
+            }
+            version.stats?.let { stats ->
+                DetailRow(label = "Downloads", value = stats.downloadCount.toString())
+                DetailRow(label = "Rating", value = "${stats.rating} (${stats.ratingCount})")
+            }
+            version.description?.takeIf { it.isNotBlank() }?.let { desc ->
+                Spacer(modifier = Modifier.height(Spacing.sm))
+                Text(
+                    text = "Version Notes",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(modifier = Modifier.height(Spacing.xs))
+                Text(
+                    text = Html.fromHtml(desc, Html.FROM_HTML_MODE_COMPACT).toString(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

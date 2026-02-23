@@ -101,6 +101,8 @@ class GetRecommendationsUseCaseTest {
         override fun observeApiKey(): Flow<String?> = error("not used")
         override suspend fun setApiKey(apiKey: String?) = error("not used")
         override suspend fun getApiKey(): String? = error("not used")
+        override fun observePowerUserMode(): Flow<Boolean> = error("not used")
+        override suspend fun setPowerUserMode(enabled: Boolean) = error("not used")
     }
 
     @Test

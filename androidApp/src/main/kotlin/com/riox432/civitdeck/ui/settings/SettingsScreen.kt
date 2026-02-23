@@ -73,6 +73,7 @@ fun SettingsScreen(
         item { SortOrderRow(state.defaultSortOrder, viewModel::onSortOrderChanged) }
         item { TimePeriodRow(state.defaultTimePeriod, viewModel::onTimePeriodChanged) }
         item { GridColumnsRow(state.gridColumns, viewModel::onGridColumnsChanged) }
+        item { PowerUserModeRow(state.powerUserMode, viewModel::onPowerUserModeChanged) }
         item { SectionHeader("Data Management") }
         item { HiddenModelsRow(state.hiddenModels.size, state.hiddenModels, viewModel::onUnhideModel) }
         item { ExcludedTagsRow(state.excludedTags, viewModel::onAddExcludedTag, viewModel::onRemoveExcludedTag) }
@@ -200,6 +201,27 @@ private fun GridColumnsRow(columns: Int, onChanged: (Int) -> Unit) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PowerUserModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text("Power User Mode", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "Show advanced metadata on detail screens",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(checked = enabled, onCheckedChange = onToggle)
     }
 }
 

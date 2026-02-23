@@ -11,6 +11,7 @@ final class ModelDetailViewModel: ObservableObject {
     @Published var nsfwFilterLevel: NsfwFilterLevel = .off
     @Published var collections: [ModelCollection] = []
     @Published var modelCollectionIds: [Int64] = []
+    @Published var powerUserMode: Bool = false
 
     private let modelId: Int64
     private let getModelDetailUseCase: GetModelDetailUseCase
@@ -24,6 +25,7 @@ final class ModelDetailViewModel: ObservableObject {
     private let addModelToCollectionUseCase: AddModelToCollectionUseCase
     private let removeModelFromCollectionUseCase: RemoveModelFromCollectionUseCase
     private let createCollectionUseCase: CreateCollectionUseCase
+    private let observePowerUserModeUseCase: ObservePowerUserModeUseCase
     private var enrichedVersionIds: Set<Int64> = []
 
     var selectedVersion: ModelVersion? {
@@ -46,6 +48,7 @@ final class ModelDetailViewModel: ObservableObject {
         self.addModelToCollectionUseCase = KoinHelper.shared.getAddModelToCollectionUseCase()
         self.removeModelFromCollectionUseCase = KoinHelper.shared.getRemoveModelFromCollectionUseCase()
         self.createCollectionUseCase = KoinHelper.shared.getCreateCollectionUseCase()
+        self.observePowerUserModeUseCase = KoinHelper.shared.getObservePowerUserModeUseCase()
         loadModel()
     }
 
@@ -53,6 +56,12 @@ final class ModelDetailViewModel: ObservableObject {
     func observeFavorite() async {
         for await value in observeIsFavoriteUseCase.invoke(modelId: modelId) {
             isFavorite = value.boolValue
+        }
+    }
+
+    func observePowerUserMode() async {
+        for await value in observePowerUserModeUseCase.invoke() {
+            powerUserMode = value.boolValue
         }
     }
 
