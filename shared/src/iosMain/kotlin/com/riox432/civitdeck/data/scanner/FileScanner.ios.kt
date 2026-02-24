@@ -59,47 +59,40 @@ actual class FileScanner actual constructor() {
     }
 }
 
+@Suppress("NestedBlockDepth")
 @OptIn(ExperimentalForeignApi::class)
 private fun computeSha256(filePath: String): String {
     val ctx = nativeHeap.alloc<CC_SHA256_CTX>()
     try {
         CC_SHA256_Init(ctx.ptr)
-        readFileIntoContext(filePath, ctx)
-        return finalizeSha256(ctx)
-    } finally {
-        nativeHeap.free(ctx)
-    }
-}
 
-@OptIn(ExperimentalForeignApi::class)
-private fun readFileIntoContext(filePath: String, ctx: CC_SHA256_CTX) {
-    val inputStream = NSInputStream(fileAtPath = filePath)
-    inputStream.open()
-    val bufferSize = 8192
-    val buffer = ByteArray(bufferSize)
-    try {
-        while (inputStream.hasBytesAvailable) {
-            val bytesRead = buffer.usePinned { pinned ->
-                inputStream.read(pinned.addressOf(0).reinterpret(), bufferSize.toULong())
+        val inputStream = NSInputStream(fileAtPath = filePath)
+        inputStream.open()
+        val bufferSize = 8192
+        val buffer = ByteArray(bufferSize)
+        try {
+            while (inputStream.hasBytesAvailable) {
+                val bytesRead = buffer.usePinned { pinned ->
+                    inputStream.read(pinned.addressOf(0).reinterpret(), bufferSize.toULong())
+                }
+                if (bytesRead <= 0) break
+                buffer.usePinned { pinned ->
+                    CC_SHA256_Update(ctx.ptr, pinned.addressOf(0), bytesRead.toUInt())
+                }
             }
-            if (bytesRead <= 0) break
-            buffer.usePinned { pinned ->
-                CC_SHA256_Update(ctx.ptr, pinned.addressOf(0), bytesRead.toUInt())
-            }
+        } finally {
+            inputStream.close()
+        }
+
+        val hash = ByteArray(CC_SHA256_DIGEST_LENGTH)
+        hash.usePinned { pinned ->
+            CC_SHA256_Final(pinned.addressOf(0).reinterpret(), ctx.ptr)
+        }
+        return hash.joinToString("") { byte ->
+            val unsigned = byte.toInt() and 0xFF
+            unsigned.toString(16).padStart(2, '0')
         }
     } finally {
-        inputStream.close()
-    }
-}
-
-@OptIn(ExperimentalForeignApi::class)
-private fun finalizeSha256(ctx: CC_SHA256_CTX): String {
-    val hash = ByteArray(CC_SHA256_DIGEST_LENGTH)
-    hash.usePinned { pinned ->
-        CC_SHA256_Final(pinned.addressOf(0).reinterpret(), ctx.ptr)
-    }
-    return hash.joinToString("") { byte ->
-        val unsigned = byte.toInt() and 0xFF
-        unsigned.toString(16).padStart(2, '0')
+        nativeHeap.free(ctx)
     }
 }
