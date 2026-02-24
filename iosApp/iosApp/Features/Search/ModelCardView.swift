@@ -3,15 +3,23 @@ import Shared
 
 struct ModelCardView: View {
     let model: Model
+    var isOwned: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             thumbnailImage
 
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(model.name)
-                    .font(.civitTitleSmall)
-                    .lineLimit(1)
+                HStack(spacing: Spacing.xs) {
+                    Text(model.name)
+                        .font(.civitTitleSmall)
+                        .lineLimit(1)
+                    if isOwned {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: IconSize.statIcon))
+                            .foregroundColor(.civitPrimary)
+                    }
+                }
 
                 Text(model.type.name)
                     .font(.civitLabelSmall)

@@ -42,6 +42,7 @@ import com.riox432.civitdeck.ui.theme.Spacing
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onNavigateToLicenses: () -> Unit = {},
+    onNavigateToModelFiles: () -> Unit = {},
     scrollToTopTrigger: Int = 0,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -74,6 +75,10 @@ fun SettingsScreen(
         item { TimePeriodRow(state.defaultTimePeriod, viewModel::onTimePeriodChanged) }
         item { GridColumnsRow(state.gridColumns, viewModel::onGridColumnsChanged) }
         item { PowerUserModeRow(state.powerUserMode, viewModel::onPowerUserModeChanged) }
+        if (state.powerUserMode) {
+            item { SectionHeader("Model Files") }
+            item { NavigationRow("Model File Browser", onNavigateToModelFiles) }
+        }
         item { SectionHeader("Data Management") }
         item { HiddenModelsRow(state.hiddenModels.size, state.hiddenModels, viewModel::onUnhideModel) }
         item { ExcludedTagsRow(state.excludedTags, viewModel::onAddExcludedTag, viewModel::onRemoveExcludedTag) }

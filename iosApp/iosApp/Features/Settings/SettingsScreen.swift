@@ -10,6 +10,7 @@ struct SettingsScreen: View {
                 accountSection
                 contentFilterSection
                 displaySection
+                modelFilesSection
                 dataManagementSection
                 aboutSection
             }
@@ -110,6 +111,19 @@ struct SettingsScreen: View {
             Text("3").tag(Int32(3))
         }
         .pickerStyle(.segmented)
+    }
+
+    @ViewBuilder
+    private var modelFilesSection: some View {
+        if viewModel.powerUserMode {
+            Section("Model Files") {
+                NavigationLink {
+                    ModelFileBrowserScreen()
+                } label: {
+                    Label("Model File Browser", systemImage: "folder.badge.gearshape")
+                }
+            }
+        }
     }
 
     private var dataManagementSection: some View {

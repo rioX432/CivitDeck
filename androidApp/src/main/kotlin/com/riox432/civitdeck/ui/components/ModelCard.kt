@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Star
@@ -53,6 +54,7 @@ fun ModelCard(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     sharedElementSuffix: String = "",
+    isOwned: Boolean = false,
 ) {
     val cardModifier = modifier.fillMaxWidth()
     val shape = RoundedCornerShape(CornerRadius.card)
@@ -65,20 +67,20 @@ fun ModelCard(
             shape = shape,
             elevation = elevation,
             colors = colors,
-        ) { ModelCardContent(model, sharedElementSuffix) }
+        ) { ModelCardContent(model, sharedElementSuffix, isOwned) }
     } else {
         Card(
             modifier = cardModifier,
             shape = shape,
             elevation = elevation,
             colors = colors,
-        ) { ModelCardContent(model, sharedElementSuffix) }
+        ) { ModelCardContent(model, sharedElementSuffix, isOwned) }
     }
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun ModelCardContent(model: Model, sharedElementSuffix: String) {
+private fun ModelCardContent(model: Model, sharedElementSuffix: String, isOwned: Boolean = false) {
     Column {
         val imageUrls = model.modelVersions
             .firstOrNull()?.images?.map { it.thumbnailUrl() } ?: emptyList()
@@ -105,7 +107,7 @@ private fun ModelCardContent(model: Model, sharedElementSuffix: String) {
             )
         }
 
-        ModelCardInfo(model = model)
+        ModelCardInfo(model = model, isOwned = isOwned)
     }
 }
 
@@ -169,17 +171,31 @@ private fun ModelCardThumbnail(
 }
 
 @Composable
-private fun ModelCardInfo(model: Model) {
+private fun ModelCardInfo(model: Model, isOwned: Boolean = false) {
     Column(
         modifier = Modifier.padding(Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
-        Text(
-            text = model.name,
-            style = MaterialTheme.typography.titleSmall,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+        ) {
+            Text(
+                text = model.name,
+                style = MaterialTheme.typography.titleSmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            if (isOwned) {
+                Icon(
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = "Owned",
+                    modifier = Modifier.size(IconSize.statIcon),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
 
         Text(
             text = model.type.name,

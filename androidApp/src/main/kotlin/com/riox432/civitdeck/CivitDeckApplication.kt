@@ -14,6 +14,7 @@ import com.riox432.civitdeck.ui.collections.CollectionsViewModel
 import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.gallery.ImageGalleryViewModel
+import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserViewModel
 import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.settings.SettingsViewModel
@@ -57,7 +58,7 @@ val androidModule = module {
         ModelSearchViewModel(
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
-            get(), get(), get(),
+            get(), get(), get(), get(),
         )
     }
     viewModel { CollectionsViewModel(get(), get(), get(), get()) }
@@ -78,4 +79,5 @@ val androidModule = module {
             get(), get(),
         )
     }
+    viewModel { ModelFileBrowserViewModel(get(), get(), get(), get(), get(), get()) }
 }

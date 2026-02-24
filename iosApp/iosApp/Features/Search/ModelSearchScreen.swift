@@ -88,6 +88,7 @@ struct ModelSearchScreen: View {
             }
             .task { await viewModel.observeSearchHistory() }
             .task { await viewModel.observeGridColumns() }
+            .task { await viewModel.observeOwnedHashes() }
         }
     }
 
@@ -257,7 +258,7 @@ struct ModelSearchScreen: View {
                                 navigationPath.append(model.id)
                             }
                         } label: {
-                            ModelCardView(model: model)
+                            ModelCardView(model: model, isOwned: viewModel.isModelOwned(model))
                         }
                         .buttonStyle(.plain)
                         .contextMenu {

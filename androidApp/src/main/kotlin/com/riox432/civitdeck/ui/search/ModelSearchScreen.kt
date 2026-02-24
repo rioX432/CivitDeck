@@ -156,6 +156,7 @@ fun ModelSearchScreen(
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
     val userGridColumns by viewModel.gridColumns.collectAsStateWithLifecycle()
     val gridColumns = adaptiveGridColumns(userGridColumns)
+    val ownedHashes by viewModel.ownedHashes.collectAsStateWithLifecycle()
     val lazyPagingItems = viewModel.pagingData.collectAsLazyPagingItems()
     val gridState = rememberLazyGridState()
     val headerState = rememberCollapsibleHeaderState()
@@ -184,6 +185,7 @@ fun ModelSearchScreen(
         onCompareModel = onCompareModel,
         compareModelName = compareModelName,
         onCancelCompare = onCancelCompare,
+        ownedHashes = ownedHashes,
     )
 }
 
@@ -231,6 +233,7 @@ private fun SearchScreenBody(
     onCompareModel: (Long, String) -> Unit = { _, _ -> },
     compareModelName: String? = null,
     onCancelCompare: () -> Unit = {},
+    ownedHashes: Set<String> = emptySet(),
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
@@ -268,6 +271,7 @@ private fun SearchScreenBody(
             topPadding = topPadding,
             bottomPadding = padding.calculateBottomPadding(),
             gridColumns = gridColumns,
+            ownedHashes = ownedHashes,
         )
 
         CollapsibleHeader(
@@ -935,6 +939,7 @@ private fun ModelSearchContent(
     topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     gridColumns: Int = 2,
+    ownedHashes: Set<String> = emptySet(),
 ) {
     val refreshState = lazyPagingItems.loadState.refresh
     val isInitialLoading = refreshState is LoadState.Loading ||
@@ -996,6 +1001,7 @@ private fun ModelSearchContent(
                         topPadding = topPadding,
                         bottomPadding = bottomPadding,
                         gridColumns = gridColumns,
+                        ownedHashes = ownedHashes,
                     )
                 }
             }
@@ -1016,6 +1022,7 @@ private fun ModelGrid(
     topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     gridColumns: Int = 2,
+    ownedHashes: Set<String> = emptySet(),
 ) {
     val isAppendLoading = lazyPagingItems.loadState.append is LoadState.Loading
 
@@ -1050,12 +1057,14 @@ private fun ModelGrid(
             val model = lazyPagingItems[index] ?: return@items
             val thumbnailUrl = model.modelVersions
                 .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
+            val isOwned = ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
             ModelCardWithContextMenu(
                 model = model,
                 onClick = { onModelClick(model.id, thumbnailUrl, "") },
                 onHide = { onHideModel(model.id, model.name) },
                 onCompare = { onCompareModel(model.id, model.name) },
                 modifier = Modifier.animateItem(),
+                isOwned = isOwned,
             )
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
@@ -1083,6 +1092,7 @@ private fun ModelCardWithContextMenu(
     onHide: () -> Unit,
     onCompare: () -> Unit,
     modifier: Modifier = Modifier,
+    isOwned: Boolean = false,
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
@@ -1092,7 +1102,7 @@ private fun ModelCardWithContextMenu(
             onLongClick = { showMenu = true },
         ),
     ) {
-        ModelCard(model = model)
+        ModelCard(model = model, isOwned = isOwned)
         DropdownMenu(
             expanded = showMenu,
             onDismissRequest = { showMenu = false },
@@ -1203,3 +1213,10 @@ private fun RecommendationRow(
         }
     }
 }
+
+private fun Model.isOwnedBy(ownedHashes: Set<String>): Boolean =
+    modelVersions.any { version ->
+        version.files.any { file ->
+            file.hashes["SHA256"]?.lowercase() in ownedHashes
+        }
+    }

@@ -13,11 +13,13 @@ import com.riox432.civitdeck.data.repository.ExcludedTagRepositoryImpl
 import com.riox432.civitdeck.data.repository.FavoriteRepositoryImpl
 import com.riox432.civitdeck.data.repository.HiddenModelRepositoryImpl
 import com.riox432.civitdeck.data.repository.ImageRepositoryImpl
+import com.riox432.civitdeck.data.repository.LocalModelFileRepositoryImpl
 import com.riox432.civitdeck.data.repository.ModelRepositoryImpl
 import com.riox432.civitdeck.data.repository.SavedPromptRepositoryImpl
 import com.riox432.civitdeck.data.repository.SearchHistoryRepositoryImpl
 import com.riox432.civitdeck.data.repository.TagRepositoryImpl
 import com.riox432.civitdeck.data.repository.UserPreferencesRepositoryImpl
+import com.riox432.civitdeck.data.scanner.FileScanner
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.CollectionRepository
 import com.riox432.civitdeck.domain.repository.CreatorRepository
@@ -25,6 +27,7 @@ import com.riox432.civitdeck.domain.repository.ExcludedTagRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.HiddenModelRepository
 import com.riox432.civitdeck.domain.repository.ImageRepository
+import com.riox432.civitdeck.domain.repository.LocalModelFileRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
 import com.riox432.civitdeck.domain.repository.SearchHistoryRepository
@@ -55,6 +58,10 @@ val dataModule = module {
     single { get<CivitDeckDatabase>().browsingHistoryDao() }
     single { get<CivitDeckDatabase>().excludedTagDao() }
     single { get<CivitDeckDatabase>().hiddenModelDao() }
+    single { get<CivitDeckDatabase>().localModelFileDao() }
+
+    // File Scanner
+    single { FileScanner() }
 
     // Data Sources
     single { LocalCacheDataSource(get()) }
@@ -72,4 +79,5 @@ val dataModule = module {
     single<BrowsingHistoryRepository> { BrowsingHistoryRepositoryImpl(get()) }
     single<ExcludedTagRepository> { ExcludedTagRepositoryImpl(get()) }
     single<HiddenModelRepository> { HiddenModelRepositoryImpl(get()) }
+    single<LocalModelFileRepository> { LocalModelFileRepositoryImpl(get(), get(), get()) }
 }

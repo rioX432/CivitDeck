@@ -26,6 +26,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -84,6 +85,7 @@ class ModelSearchViewModel(
     observeGridColumnsUseCase: ObserveGridColumnsUseCase,
     observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase,
     observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase,
+    observeOwnedModelHashesUseCase: ObserveOwnedModelHashesUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelSearchUiState())
@@ -99,6 +101,10 @@ class ModelSearchViewModel(
     val gridColumns: StateFlow<Int> =
         observeGridColumnsUseCase()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 2)
+
+    val ownedHashes: StateFlow<Set<String>> =
+        observeOwnedModelHashesUseCase()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val pagingData: Flow<PagingData<Model>> = combine(

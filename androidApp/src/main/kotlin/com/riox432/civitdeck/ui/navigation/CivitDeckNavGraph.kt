@@ -51,6 +51,8 @@ import com.riox432.civitdeck.ui.detail.ModelDetailScreen
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
 import com.riox432.civitdeck.ui.gallery.ImageGalleryViewModel
+import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserScreen
+import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserViewModel
 import com.riox432.civitdeck.ui.prompts.SavedPromptsScreen
 import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchScreen
@@ -84,6 +86,8 @@ data object SavedPromptsRoute
 data object SettingsRoute
 
 data object LicensesRoute
+
+data object ModelFileBrowserRoute
 
 data class CompareRoute(val leftModelId: Long, val rightModelId: Long)
 
@@ -254,11 +258,19 @@ private fun CivitDeckNavDisplay(
                 SettingsScreen(
                     viewModel = viewModel,
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
+                    onNavigateToModelFiles = { backStack.add(ModelFileBrowserRoute) },
                     scrollToTopTrigger = settingsScrollTrigger,
                 )
             }
             entry<LicensesRoute> {
                 LicensesScreen(onBack = { backStack.removeLastOrNull() })
+            }
+            entry<ModelFileBrowserRoute> {
+                val viewModel: ModelFileBrowserViewModel = koinViewModel()
+                ModelFileBrowserScreen(
+                    viewModel = viewModel,
+                    onBack = { backStack.removeLastOrNull() },
+                )
             }
         },
     )
