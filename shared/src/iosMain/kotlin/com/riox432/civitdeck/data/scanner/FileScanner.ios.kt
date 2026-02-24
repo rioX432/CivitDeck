@@ -29,9 +29,9 @@ actual class FileScanner actual constructor() {
         onProgress: (current: Int, total: Int) -> Unit,
     ): List<ScannedFile> = withContext(Dispatchers.IO) {
         val fm = NSFileManager.defaultManager
-        val contents = fm.contentsOfDirectoryAtPath(path, null) ?: return@withContext emptyList()
+        val subpaths = fm.subpathsOfDirectoryAtPath(path, null) ?: return@withContext emptyList()
 
-        val modelFiles = contents.filterIsInstance<String>()
+        val modelFiles = subpaths.filterIsInstance<String>()
             .filter { name ->
                 val ext = name.substringAfterLast('.', "").lowercase()
                 ext in MODEL_FILE_EXTENSIONS
@@ -62,11 +62,19 @@ actual class FileScanner actual constructor() {
 @OptIn(ExperimentalForeignApi::class)
 private fun computeSha256(filePath: String): String {
     val ctx = nativeHeap.alloc<CC_SHA256_CTX>()
-    CC_SHA256_Init(ctx.ptr)
+    try {
+        CC_SHA256_Init(ctx.ptr)
+        readFileIntoContext(filePath, ctx)
+        return finalizeSha256(ctx)
+    } finally {
+        nativeHeap.free(ctx)
+    }
+}
 
+@OptIn(ExperimentalForeignApi::class)
+private fun readFileIntoContext(filePath: String, ctx: CC_SHA256_CTX) {
     val inputStream = NSInputStream(fileAtPath = filePath)
     inputStream.open()
-
     val bufferSize = 8192
     val buffer = ByteArray(bufferSize)
     try {
@@ -82,13 +90,14 @@ private fun computeSha256(filePath: String): String {
     } finally {
         inputStream.close()
     }
+}
 
+@OptIn(ExperimentalForeignApi::class)
+private fun finalizeSha256(ctx: CC_SHA256_CTX): String {
     val hash = ByteArray(CC_SHA256_DIGEST_LENGTH)
     hash.usePinned { pinned ->
         CC_SHA256_Final(pinned.addressOf(0).reinterpret(), ctx.ptr)
     }
-    nativeHeap.free(ctx)
-
     return hash.joinToString("") { byte ->
         val unsigned = byte.toInt() and 0xFF
         unsigned.toString(16).padStart(2, '0')

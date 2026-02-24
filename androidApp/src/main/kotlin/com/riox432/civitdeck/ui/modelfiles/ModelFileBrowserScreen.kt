@@ -79,7 +79,7 @@ fun ModelFileBrowserScreen(
             }
         },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             ScanProgressBar(state.scanStatus, state.scanProgress)
             if (state.directories.isEmpty()) {
                 EmptyState()

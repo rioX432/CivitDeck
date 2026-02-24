@@ -69,7 +69,6 @@ class LocalModelFileRepositoryImpl(
         try {
             currentCoroutineContext().ensureActive()
             val versionResponse = api.getModelVersionByHash(sha256Hash)
-            // Fetch full model to get name and latest version
             val modelResponse = api.getModel(versionResponse.modelId)
             val latestVersionId = modelResponse.modelVersions.firstOrNull()?.id
             dao.updateMatchInfo(
@@ -81,6 +80,8 @@ class LocalModelFileRepositoryImpl(
                 latestVersionId = latestVersionId,
                 hasUpdate = latestVersionId != null && latestVersionId != versionResponse.id,
             )
+        } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+            throw e
         } catch (_: Exception) {
             // Hash not found in CivitAI or network error — leave unmatched
         }
@@ -99,7 +100,7 @@ class LocalModelFileRepositoryImpl(
     override fun observeUpdatesAvailableCount(): Flow<Int> = dao.observeUpdatesAvailableCount()
 
     companion object {
-        const val SCAN_ALL_DIRECTORIES = -1L
+        internal const val SCAN_ALL_DIRECTORIES = -1L
     }
 }
 
