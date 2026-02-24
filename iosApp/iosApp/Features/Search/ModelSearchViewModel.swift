@@ -24,6 +24,7 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var includedTags: [String] = []
     @Published var excludedTags: [String] = []
     @Published var gridColumns: Int32 = 2
+    @Published var ownedHashes: Set<String> = []
 
     private let getModelsUseCase: GetModelsUseCase
     private let getRecommendationsUseCase: GetRecommendationsUseCase
@@ -40,6 +41,7 @@ final class ModelSearchViewModel: ObservableObject {
     private let observeGridColumnsUseCase: ObserveGridColumnsUseCase
     private let observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase
     private let observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase
+    private let observeOwnedModelHashesUseCase: ObserveOwnedModelHashesUseCase
     private var nextCursor: String?
     private var loadTask: Task<Void, Never>?
     private var hiddenModelIds: Set<KotlinLong> = []
@@ -64,6 +66,7 @@ final class ModelSearchViewModel: ObservableObject {
         self.observeGridColumnsUseCase = KoinHelper.shared.getObserveGridColumnsUseCase()
         self.observeDefaultSortOrderUseCase = KoinHelper.shared.getObserveDefaultSortOrderUseCase()
         self.observeDefaultTimePeriodUseCase = KoinHelper.shared.getObserveDefaultTimePeriodUseCase()
+        self.observeOwnedModelHashesUseCase = KoinHelper.shared.getObserveOwnedModelHashesUseCase()
         loadExcludedTags()
         loadDefaults()
         loadRecommendations()
@@ -92,6 +95,12 @@ final class ModelSearchViewModel: ObservableObject {
     func observeGridColumns() async {
         for await value in observeGridColumnsUseCase.invoke() {
             gridColumns = value.int32Value
+        }
+    }
+
+    func observeOwnedHashes() async {
+        for await value in observeOwnedModelHashesUseCase.invoke() {
+            ownedHashes = Set(value.compactMap { $0 as? String })
         }
     }
 
@@ -230,6 +239,18 @@ final class ModelSearchViewModel: ObservableObject {
             try? await hideModelUseCase.invoke(modelId: modelId, modelName: name)
             hiddenModelIds = try await getHiddenModelIdsUseCase.invoke()
             models.removeAll { $0.id == modelId }
+        }
+    }
+
+    func isModelOwned(_ model: Model) -> Bool {
+        guard !ownedHashes.isEmpty else { return false }
+        return model.modelVersions.contains { version in
+            version.files.contains { file in
+                if let sha256 = file.hashes["SHA256"] as? String {
+                    return ownedHashes.contains(sha256.lowercased())
+                }
+                return false
+            }
         }
     }
 

@@ -13,6 +13,7 @@ import com.riox432.civitdeck.data.local.dao.CachedApiResponseDao
 import com.riox432.civitdeck.data.local.dao.CollectionDao
 import com.riox432.civitdeck.data.local.dao.ExcludedTagDao
 import com.riox432.civitdeck.data.local.dao.HiddenModelDao
+import com.riox432.civitdeck.data.local.dao.LocalModelFileDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
 import com.riox432.civitdeck.data.local.dao.SearchHistoryDao
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
@@ -22,6 +23,8 @@ import com.riox432.civitdeck.data.local.entity.CollectionEntity
 import com.riox432.civitdeck.data.local.entity.CollectionModelEntity
 import com.riox432.civitdeck.data.local.entity.ExcludedTagEntity
 import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
+import com.riox432.civitdeck.data.local.entity.LocalModelFileEntity
+import com.riox432.civitdeck.data.local.entity.ModelDirectoryEntity
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import com.riox432.civitdeck.data.local.entity.SearchHistoryEntity
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
@@ -39,8 +42,10 @@ import kotlinx.coroutines.IO
         BrowsingHistoryEntity::class,
         ExcludedTagEntity::class,
         HiddenModelEntity::class,
+        ModelDirectoryEntity::class,
+        LocalModelFileEntity::class,
     ],
-    version = 8,
+    version = 9,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -52,6 +57,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun browsingHistoryDao(): BrowsingHistoryDao
     abstract fun excludedTagDao(): ExcludedTagDao
     abstract fun hiddenModelDao(): HiddenModelDao
+    abstract fun localModelFileDao(): LocalModelFileDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -216,6 +222,45 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
     }
 }
 
+@Suppress("LongMethod")
+val MIGRATION_8_9 = object : Migration(8, 9) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `model_directories` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`path` TEXT NOT NULL, " +
+                "`label` TEXT, " +
+                "`lastScannedAt` INTEGER, " +
+                "`isEnabled` INTEGER NOT NULL DEFAULT 1)",
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `local_model_files` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`directoryId` INTEGER NOT NULL, " +
+                "`filePath` TEXT NOT NULL, " +
+                "`fileName` TEXT NOT NULL, " +
+                "`sha256Hash` TEXT NOT NULL, " +
+                "`sizeBytes` INTEGER NOT NULL, " +
+                "`scannedAt` INTEGER NOT NULL, " +
+                "`matchedModelId` INTEGER, " +
+                "`matchedModelName` TEXT, " +
+                "`matchedVersionId` INTEGER, " +
+                "`matchedVersionName` TEXT, " +
+                "`latestVersionId` INTEGER, " +
+                "`hasUpdate` INTEGER NOT NULL DEFAULT 0, " +
+                "FOREIGN KEY(`directoryId`) REFERENCES `model_directories`(`id`) ON DELETE CASCADE)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_local_model_files_directoryId` " +
+                "ON `local_model_files` (`directoryId`)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_local_model_files_sha256Hash` " +
+                "ON `local_model_files` (`sha256Hash`)",
+        )
+    }
+}
+
 fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeckDatabase {
     return builder
         .addMigrations(
@@ -226,6 +271,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_5_6,
             MIGRATION_6_7,
             MIGRATION_7_8,
+            MIGRATION_8_9,
         )
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)

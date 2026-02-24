@@ -2,6 +2,7 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
+import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.BulkMoveModelsUseCase
@@ -31,15 +32,20 @@ import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveLocalModelFilesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
+import com.riox432.civitdeck.domain.usecase.RemoveModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.RenameCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
+import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
@@ -50,6 +56,7 @@ import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
+import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
 import org.koin.mp.KoinPlatform.getKoin
 
 @Suppress("TooManyFunctions")
@@ -106,4 +113,13 @@ object KoinHelper {
     fun getObserveModelCollectionsUseCase(): ObserveModelCollectionsUseCase = getKoin().get()
     fun getBulkMoveModelsUseCase(): BulkMoveModelsUseCase = getKoin().get()
     fun getBulkRemoveModelsUseCase(): BulkRemoveModelsUseCase = getKoin().get()
+
+    // Local model file use cases
+    fun getObserveModelDirectoriesUseCase(): ObserveModelDirectoriesUseCase = getKoin().get()
+    fun getAddModelDirectoryUseCase(): AddModelDirectoryUseCase = getKoin().get()
+    fun getRemoveModelDirectoryUseCase(): RemoveModelDirectoryUseCase = getKoin().get()
+    fun getObserveLocalModelFilesUseCase(): ObserveLocalModelFilesUseCase = getKoin().get()
+    fun getScanModelDirectoriesUseCase(): ScanModelDirectoriesUseCase = getKoin().get()
+    fun getVerifyModelHashUseCase(): VerifyModelHashUseCase = getKoin().get()
+    fun getObserveOwnedModelHashesUseCase(): ObserveOwnedModelHashesUseCase = getKoin().get()
 }
