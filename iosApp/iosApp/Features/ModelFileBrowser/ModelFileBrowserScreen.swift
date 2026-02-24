@@ -99,7 +99,7 @@ struct ModelFileBrowserScreen: View {
 
     // MARK: - Add Dialog
 
-    @AlertActionsBuilder
+    @ViewBuilder
     private var addDirectoryAlert: some View {
         TextField("/path/to/models", text: $newDirectoryPath)
         Button("Add") {
