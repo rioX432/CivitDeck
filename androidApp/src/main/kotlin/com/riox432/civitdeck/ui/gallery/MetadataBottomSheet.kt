@@ -3,6 +3,7 @@ package com.riox432.civitdeck.ui.gallery
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.domain.export.WorkflowExportService
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,6 +66,7 @@ private fun MetadataContent(
 
         PromptSection(meta = meta, context = context, onSavePrompt = onSavePrompt)
         MetadataParams(meta = meta)
+        ExportSection(meta = meta, context = context)
     }
 }
 
@@ -155,6 +158,39 @@ private fun MetadataRow(label: String, value: String) {
             style = MaterialTheme.typography.bodyMedium,
         )
     }
+}
+
+@Composable
+private fun ExportSection(meta: ImageGenerationMeta, context: Context) {
+    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+    Text(
+        text = "Export",
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.primary,
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedButton(onClick = {
+            val text = WorkflowExportService.generateComfyUIWorkflow(meta)
+            shareText(context, text, "Export ComfyUI Workflow")
+        }) {
+            Text("ComfyUI Workflow")
+        }
+        OutlinedButton(onClick = {
+            val text = WorkflowExportService.generateA1111Params(meta)
+            shareText(context, text, "Export A1111 Params")
+        }) {
+            Text("A1111 Params")
+        }
+    }
+}
+
+private fun shareText(context: Context, text: String, title: String) {
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, text)
+    }
+    context.startActivity(Intent.createChooser(intent, title))
 }
 
 private fun copyToClipboard(context: Context, label: String, text: String) {

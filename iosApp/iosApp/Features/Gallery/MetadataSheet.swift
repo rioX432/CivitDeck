@@ -5,17 +5,24 @@ struct MetadataSheet: View {
     let meta: ImageGenerationMeta
     var onSavePrompt: () -> Void = {}
 
+    @State private var showExportSheet = false
+    @State private var exportText = ""
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     promptSection
                     parametersSection
+                    exportSection
                 }
                 .padding(16)
             }
             .navigationTitle("Generation Info")
             .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showExportSheet) {
+                ExportShareSheet(items: [exportText])
+            }
         }
     }
 
@@ -106,6 +113,31 @@ struct MetadataSheet: View {
         }
     }
 
+    // MARK: - Export Section
+
+    @ViewBuilder
+    private var exportSection: some View {
+        Divider()
+        Text("Export")
+            .font(.caption)
+            .foregroundColor(.accentColor)
+        HStack(spacing: 8) {
+            Button("ComfyUI Workflow") {
+                exportText = WorkflowExportService.shared.generateComfyUIWorkflow(meta: meta)
+                showExportSheet = true
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+
+            Button("A1111 Params") {
+                exportText = WorkflowExportService.shared.generateA1111Params(meta: meta)
+                showExportSheet = true
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+        }
+    }
+
     private func paramRow(label: String, value: String) -> some View {
         HStack {
             Text(label)
@@ -116,4 +148,16 @@ struct MetadataSheet: View {
                 .font(.subheadline)
         }
     }
+}
+
+// MARK: - Export Share Sheet
+
+private struct ExportShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
