@@ -239,6 +239,7 @@ private fun PromptHeader(prompt: SavedPrompt, onToggleTemplate: () -> Unit) {
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.tertiary,
                 )
+                Spacer(modifier = Modifier.height(Spacing.xs))
             }
             prompt.modelName?.let {
                 Text(

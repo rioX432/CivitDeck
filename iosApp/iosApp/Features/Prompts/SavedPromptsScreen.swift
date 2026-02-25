@@ -171,9 +171,9 @@ private struct PromptCardView: View {
             prompt: prompt.prompt,
             negativePrompt: prompt.negativePrompt,
             sampler: prompt.sampler,
-            cfgScale: prompt.cfgScale.map { KotlinDouble(double: $0.doubleValue) },
-            steps: prompt.steps.map { KotlinInt(int: $0.int32Value) },
-            seed: prompt.seed.map { KotlinLong(longLong: $0.int64Value) },
+            cfgScale: prompt.cfgScale,
+            steps: prompt.steps,
+            seed: prompt.seed,
             model: prompt.modelName,
             size: prompt.size,
             additionalParams: [:]

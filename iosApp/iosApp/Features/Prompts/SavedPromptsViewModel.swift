@@ -38,7 +38,6 @@ final class SavedPromptsViewModel: ObservableObject {
     private let deleteSavedPromptUseCase: DeleteSavedPromptUseCase
     private let observeTemplatesUseCase: ObserveTemplatesUseCase
     private let toggleTemplateUseCase: ToggleTemplateUseCase
-    private let searchSavedPromptsUseCase: SearchSavedPromptsUseCase
     private let updatePromptCategoryUseCase: UpdatePromptCategoryUseCase
 
     private var observeTask: Task<Void, Never>?
@@ -49,7 +48,6 @@ final class SavedPromptsViewModel: ObservableObject {
         self.deleteSavedPromptUseCase = KoinHelper.shared.getDeleteSavedPromptUseCase()
         self.observeTemplatesUseCase = KoinHelper.shared.getObserveTemplatesUseCase()
         self.toggleTemplateUseCase = KoinHelper.shared.getToggleTemplateUseCase()
-        self.searchSavedPromptsUseCase = KoinHelper.shared.getSearchSavedPromptsUseCase()
         self.updatePromptCategoryUseCase = KoinHelper.shared.getUpdatePromptCategoryUseCase()
         observeTask = Task { await observeAll() }
         observeTemplatesTask = Task { await observeTemplates() }

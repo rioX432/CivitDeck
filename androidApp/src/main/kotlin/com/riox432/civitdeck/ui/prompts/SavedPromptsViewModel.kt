@@ -13,6 +13,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -29,11 +30,14 @@ class SavedPromptsViewModel(
     private val updatePromptCategoryUseCase: UpdatePromptCategoryUseCase,
 ) : ViewModel() {
 
-    val selectedTab = MutableStateFlow(PromptTab.All)
-    val searchQuery = MutableStateFlow("")
+    private val _selectedTab = MutableStateFlow(PromptTab.All)
+    val selectedTab: StateFlow<PromptTab> = _selectedTab.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
     val prompts: StateFlow<List<SavedPrompt>> =
-        searchQuery.flatMapLatest { query ->
+        _searchQuery.flatMapLatest { query ->
             if (query.isBlank()) {
                 observeSavedPromptsUseCase()
             } else {
@@ -46,11 +50,11 @@ class SavedPromptsViewModel(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun onTabSelected(tab: PromptTab) {
-        selectedTab.value = tab
+        _selectedTab.value = tab
     }
 
     fun onSearchQueryChanged(query: String) {
-        searchQuery.value = query
+        _searchQuery.value = query
     }
 
     fun delete(id: Long) {

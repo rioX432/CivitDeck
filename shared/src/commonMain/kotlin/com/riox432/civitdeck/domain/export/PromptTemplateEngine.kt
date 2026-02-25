@@ -9,8 +9,8 @@ object PromptTemplateEngine {
     private val variablePattern = Regex("""\{([^{}]+)\}""")
 
     fun extractVariables(template: String): List<String> {
-        val unescaped = template.replace("{{", "").replace("}}", "")
-        return variablePattern.findAll(unescaped)
+        val escaped = template.replace("{{", OPEN_PLACEHOLDER).replace("}}", CLOSE_PLACEHOLDER)
+        return variablePattern.findAll(escaped)
             .map { it.groupValues[1].trim() }
             .distinct()
             .toList()

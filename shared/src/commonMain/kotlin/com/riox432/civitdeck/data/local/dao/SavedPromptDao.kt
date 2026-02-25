@@ -27,7 +27,10 @@ interface SavedPromptDao {
     )
     fun search(query: String): Flow<List<SavedPromptEntity>>
 
-    @Query("SELECT COUNT(*) FROM saved_prompts WHERE prompt = :prompt AND modelName = :modelName")
+    @Query(
+        "SELECT COUNT(*) FROM saved_prompts WHERE prompt = :prompt " +
+            "AND (modelName = :modelName OR (modelName IS NULL AND :modelName IS NULL))",
+    )
     suspend fun countByPromptAndModel(prompt: String, modelName: String?): Int
 
     @Query("UPDATE saved_prompts SET isTemplate = :isTemplate, templateName = :templateName WHERE id = :id")
