@@ -9,6 +9,7 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.domain.usecase.AutoSavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.GetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
@@ -42,6 +43,7 @@ class ImageGalleryViewModel(
     private val getImagesUseCase: GetImagesUseCase,
     private val savePromptUseCase: SavePromptUseCase,
     private val observeNsfwFilterUseCase: ObserveNsfwFilterUseCase,
+    private val autoSavePromptUseCase: AutoSavePromptUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ImageGalleryUiState())
@@ -108,6 +110,16 @@ class ImageGalleryViewModel(
 
     fun onImageSelected(index: Int) {
         _uiState.update { it.copy(selectedImageIndex = index) }
+        autoSaveCurrentImagePrompt(index)
+    }
+
+    private fun autoSaveCurrentImagePrompt(index: Int) {
+        val images = _uiState.value.images
+        val image = images.getOrNull(index) ?: return
+        val meta = image.meta ?: return
+        viewModelScope.launch {
+            autoSavePromptUseCase(meta, image.url)
+        }
     }
 
     fun onDismissViewer() {

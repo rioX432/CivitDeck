@@ -40,6 +40,7 @@ final class ImageGalleryViewModel: ObservableObject {
     private let getImagesUseCase: GetImagesUseCase
     private let savePromptUseCase: SavePromptUseCase
     private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
+    private let autoSavePromptUseCase: AutoSavePromptUseCase
     private var nextCursor: String?
     private var loadTask: Task<Void, Never>?
 
@@ -51,6 +52,7 @@ final class ImageGalleryViewModel: ObservableObject {
         self.getImagesUseCase = KoinHelper.shared.getImagesUseCase()
         self.savePromptUseCase = KoinHelper.shared.getSavePromptUseCase()
         self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
+        self.autoSavePromptUseCase = KoinHelper.shared.getAutoSavePromptUseCase()
         loadImages()
     }
 
@@ -98,6 +100,16 @@ final class ImageGalleryViewModel: ObservableObject {
 
     func onImageSelected(_ index: Int) {
         selectedImageIndex = index
+        autoSaveCurrentImagePrompt(index: index)
+    }
+
+    private func autoSaveCurrentImagePrompt(index: Int) {
+        guard index >= 0, index < allImages.count else { return }
+        let image = allImages[index]
+        guard let meta = image.meta else { return }
+        Task {
+            try? await autoSavePromptUseCase.invoke(meta: meta, sourceImageUrl: image.url)
+        }
     }
 
     func onDismissViewer() {

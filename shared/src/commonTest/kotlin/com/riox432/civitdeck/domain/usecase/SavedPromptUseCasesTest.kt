@@ -29,11 +29,23 @@ class SavedPromptUseCasesTest {
         var lastDeletedId: Long? = null
 
         override fun observeAll(): Flow<List<SavedPrompt>> = flowOf(prompts)
+        override fun observeTemplates(): Flow<List<SavedPrompt>> =
+            flowOf(prompts.filter { it.isTemplate })
+        override fun observeHistory(): Flow<List<SavedPrompt>> =
+            flowOf(prompts.filter { it.autoSaved })
+        override fun search(query: String): Flow<List<SavedPrompt>> =
+            flowOf(prompts.filter { it.prompt.contains(query) })
         override suspend fun save(meta: ImageGenerationMeta, sourceImageUrl: String?) {
             saveCalled = true
             lastSavedMeta = meta
             lastSavedUrl = sourceImageUrl
         }
+        override suspend fun autoSave(meta: ImageGenerationMeta, sourceImageUrl: String?) {
+            saveCalled = true
+            lastSavedMeta = meta
+        }
+        override suspend fun toggleTemplate(id: Long, isTemplate: Boolean, templateName: String?) = Unit
+        override suspend fun updateCategory(id: Long, category: String?) = Unit
         override suspend fun delete(id: Long) {
             deleteCalled = true
             lastDeletedId = id

@@ -45,7 +45,7 @@ import kotlinx.coroutines.IO
         ModelDirectoryEntity::class,
         LocalModelFileEntity::class,
     ],
-    version = 9,
+    version = 10,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -261,6 +261,23 @@ val MIGRATION_8_9 = object : Migration(8, 9) {
     }
 }
 
+val MIGRATION_9_10 = object : Migration(9, 10) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "ALTER TABLE saved_prompts ADD COLUMN isTemplate INTEGER NOT NULL DEFAULT 0",
+        )
+        connection.execSQL(
+            "ALTER TABLE saved_prompts ADD COLUMN templateName TEXT",
+        )
+        connection.execSQL(
+            "ALTER TABLE saved_prompts ADD COLUMN category TEXT",
+        )
+        connection.execSQL(
+            "ALTER TABLE saved_prompts ADD COLUMN autoSaved INTEGER NOT NULL DEFAULT 0",
+        )
+    }
+}
+
 fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeckDatabase {
     return builder
         .addMigrations(
@@ -272,6 +289,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_6_7,
             MIGRATION_7_8,
             MIGRATION_8_9,
+            MIGRATION_9_10,
         )
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)

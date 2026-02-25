@@ -5,13 +5,35 @@ struct SavedPromptsScreen: View {
     @StateObject private var viewModel = SavedPromptsViewModel()
 
     var body: some View {
-        Group {
-            if viewModel.prompts.isEmpty {
+        VStack(spacing: 0) {
+            searchBar
+            tabPicker
+            if viewModel.displayedPrompts.isEmpty {
                 emptyState
             } else {
                 promptList
             }
         }
+    }
+
+    private var searchBar: some View {
+        HStack {
+            TextField("Search prompts...", text: $viewModel.searchQuery)
+                .textFieldStyle(.roundedBorder)
+        }
+        .padding(.horizontal, Spacing.lg)
+        .padding(.vertical, Spacing.sm)
+    }
+
+    private var tabPicker: some View {
+        Picker("Tab", selection: $viewModel.selectedTab) {
+            ForEach(PromptTab.allCases, id: \.self) { tab in
+                Text(tab.rawValue).tag(tab)
+            }
+        }
+        .pickerStyle(.segmented)
+        .padding(.horizontal, Spacing.lg)
+        .padding(.bottom, Spacing.sm)
     }
 
     private var emptyState: some View {
@@ -22,7 +44,7 @@ struct SavedPromptsScreen: View {
             Text("No saved prompts yet")
                 .font(.headline)
                 .foregroundColor(.civitOnSurfaceVariant)
-            Text("Save prompts from the image viewer's info panel\nto reference them later.")
+            Text("Prompts are auto-saved when you view images.\nYou can also save prompts manually.")
                 .font(.caption)
                 .foregroundColor(.civitOnSurfaceVariant)
                 .multilineTextAlignment(.center)
@@ -32,10 +54,20 @@ struct SavedPromptsScreen: View {
 
     private var promptList: some View {
         List {
-            ForEach(viewModel.prompts, id: \.id) { prompt in
-                PromptCardView(prompt: prompt) {
-                    viewModel.delete(id: prompt.id)
-                }
+            ForEach(viewModel.displayedPrompts, id: \.id) { prompt in
+                PromptCardView(
+                    prompt: prompt,
+                    onToggleTemplate: {
+                        viewModel.toggleTemplate(
+                            id: prompt.id,
+                            isTemplate: !prompt.isTemplate,
+                            templateName: prompt.templateName
+                        )
+                    },
+                    onDelete: {
+                        viewModel.delete(id: prompt.id)
+                    }
+                )
             }
         }
         .listStyle(.plain)
@@ -46,16 +78,12 @@ struct SavedPromptsScreen: View {
 
 private struct PromptCardView: View {
     let prompt: SavedPrompt
+    let onToggleTemplate: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if let modelName = prompt.modelName {
-                Text(modelName)
-                    .font(.caption)
-                    .foregroundColor(.civitPrimary)
-            }
-
+            headerRow
             Text(prompt.prompt)
                 .font(.callout)
                 .lineLimit(4)
@@ -68,25 +96,32 @@ private struct PromptCardView: View {
             }
 
             paramsText
-
-            HStack {
-                Button("Copy") {
-                    UIPasteboard.general.string = prompt.prompt
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-
-                Spacer()
-
-                Button(role: .destructive) {
-                    onDelete()
-                } label: {
-                    SwiftUI.Image(systemName: "trash")
-                }
-                .buttonStyle(.borderless)
-            }
+            actionsRow
         }
         .padding(.vertical, 4)
+    }
+
+    private var headerRow: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                if let templateName = prompt.templateName {
+                    Text(templateName)
+                        .font(.caption)
+                        .foregroundColor(.civitTertiary)
+                }
+                if let modelName = prompt.modelName {
+                    Text(modelName)
+                        .font(.caption)
+                        .foregroundColor(.civitPrimary)
+                }
+            }
+            Spacer()
+            Button(action: onToggleTemplate) {
+                SwiftUI.Image(systemName: prompt.isTemplate ? "star.fill" : "star")
+                    .foregroundColor(prompt.isTemplate ? .civitPrimary : .civitOnSurfaceVariant)
+            }
+            .buttonStyle(.borderless)
+        }
     }
 
     @ViewBuilder
@@ -104,5 +139,53 @@ private struct PromptCardView: View {
                 .font(.caption2)
                 .foregroundColor(.civitOnSurfaceVariant)
         }
+    }
+
+    private var actionsRow: some View {
+        HStack {
+            Button("Copy") {
+                UIPasteboard.general.string = prompt.prompt
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+
+            Button("Export") {
+                exportPrompt()
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+
+            Spacer()
+
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                SwiftUI.Image(systemName: "trash")
+            }
+            .buttonStyle(.borderless)
+        }
+    }
+
+    private func exportPrompt() {
+        let meta = ImageGenerationMeta(
+            prompt: prompt.prompt,
+            negativePrompt: prompt.negativePrompt,
+            sampler: prompt.sampler,
+            cfgScale: prompt.cfgScale,
+            steps: prompt.steps,
+            seed: prompt.seed,
+            model: prompt.modelName,
+            size: prompt.size,
+            additionalParams: [:]
+        )
+        let text = WorkflowExportService.shared.generateA1111Params(meta: meta)
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let root = scene.windows.first?.rootViewController else { return }
+        var topVC = root
+        while let presented = topVC.presentedViewController {
+            topVC = presented
+        }
+        let activityVC = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        topVC.present(activityVC, animated: true)
     }
 }

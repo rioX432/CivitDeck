@@ -11,6 +11,7 @@ import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.ImageRepository
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
 import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
+import com.riox432.civitdeck.domain.usecase.AutoSavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.GetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
@@ -79,7 +80,16 @@ class ImageGalleryViewModelTest {
             savedMeta = meta
         }
 
+        override suspend fun autoSave(meta: ImageGenerationMeta, sourceImageUrl: String?) {
+            savedMeta = meta
+        }
+
         override fun observeAll() = flowOf(emptyList<com.riox432.civitdeck.domain.model.SavedPrompt>())
+        override fun observeTemplates() = flowOf(emptyList<com.riox432.civitdeck.domain.model.SavedPrompt>())
+        override fun observeHistory() = flowOf(emptyList<com.riox432.civitdeck.domain.model.SavedPrompt>())
+        override fun search(query: String) = flowOf(emptyList<com.riox432.civitdeck.domain.model.SavedPrompt>())
+        override suspend fun toggleTemplate(id: Long, isTemplate: Boolean, templateName: String?) = Unit
+        override suspend fun updateCategory(id: Long, category: String?) = Unit
         override suspend fun delete(id: Long) = Unit
     }
 
@@ -108,6 +118,7 @@ class ImageGalleryViewModelTest {
         getImagesUseCase = GetImagesUseCase(imageRepo),
         savePromptUseCase = SavePromptUseCase(savedPromptRepo),
         observeNsfwFilterUseCase = ObserveNsfwFilterUseCase(prefsRepo),
+        autoSavePromptUseCase = AutoSavePromptUseCase(savedPromptRepo),
     )
 
     @Test
@@ -155,11 +166,13 @@ class ImageGalleryViewModelTest {
                 cursor: String?,
             ) = error("API error")
         }
+        val savedPromptRepo = FakeSavedPromptRepo()
         val vm = ImageGalleryViewModel(
             modelVersionId = 1L,
             getImagesUseCase = GetImagesUseCase(failingRepo),
-            savePromptUseCase = SavePromptUseCase(FakeSavedPromptRepo()),
+            savePromptUseCase = SavePromptUseCase(savedPromptRepo),
             observeNsfwFilterUseCase = ObserveNsfwFilterUseCase(fakePrefsRepo()),
+            autoSavePromptUseCase = AutoSavePromptUseCase(savedPromptRepo),
         )
         assertEquals("API error", vm.uiState.value.error)
         assertFalse(vm.uiState.value.isLoading)
