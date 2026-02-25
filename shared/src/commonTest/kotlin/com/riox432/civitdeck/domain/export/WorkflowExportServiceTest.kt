@@ -99,8 +99,8 @@ class WorkflowExportServiceTest {
     @Test
     fun a1111_handles_missing_fields() {
         val result = WorkflowExportService.generateA1111Params(minimalMeta)
-        // Should not crash, produces minimal output
-        assertTrue(result.isNotEmpty())
+        // Should not crash, produces empty output (no trailing newlines)
+        assertEquals("", result)
     }
 
     @Test

@@ -5,9 +5,6 @@ struct MetadataSheet: View {
     let meta: ImageGenerationMeta
     var onSavePrompt: () -> Void = {}
 
-    @State private var showExportSheet = false
-    @State private var exportText = ""
-
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -20,9 +17,6 @@ struct MetadataSheet: View {
             }
             .navigationTitle("Generation Info")
             .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $showExportSheet) {
-                ExportShareSheet(items: [exportText])
-            }
         }
     }
 
@@ -123,19 +117,30 @@ struct MetadataSheet: View {
             .foregroundColor(.accentColor)
         HStack(spacing: 8) {
             Button("ComfyUI Workflow") {
-                exportText = WorkflowExportService.shared.generateComfyUIWorkflow(meta: meta)
-                showExportSheet = true
+                let text = WorkflowExportService.shared.generateComfyUIWorkflow(meta: meta)
+                presentShareSheet(text: text)
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
 
             Button("A1111 Params") {
-                exportText = WorkflowExportService.shared.generateA1111Params(meta: meta)
-                showExportSheet = true
+                let text = WorkflowExportService.shared.generateA1111Params(meta: meta)
+                presentShareSheet(text: text)
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
         }
+    }
+
+    private func presentShareSheet(text: String) {
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let root = scene.windows.first?.rootViewController else { return }
+        var topVC = root
+        while let presented = topVC.presentedViewController {
+            topVC = presented
+        }
+        let activityVC = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        topVC.present(activityVC, animated: true)
     }
 
     private func paramRow(label: String, value: String) -> some View {
@@ -148,16 +153,4 @@ struct MetadataSheet: View {
                 .font(.subheadline)
         }
     }
-}
-
-// MARK: - Export Share Sheet
-
-private struct ExportShareSheet: UIViewControllerRepresentable {
-    let items: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

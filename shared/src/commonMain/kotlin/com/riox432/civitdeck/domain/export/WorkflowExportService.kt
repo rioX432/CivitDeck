@@ -45,7 +45,6 @@ object WorkflowExportService {
             appendLine()
             append("Negative prompt: $it")
         }
-        appendLine()
         val params = buildList {
             meta.steps?.let { add("Steps: $it") }
             meta.sampler?.let { add("Sampler: $it") }
@@ -55,7 +54,10 @@ object WorkflowExportService {
             meta.model?.let { add("Model: $it") }
             meta.additionalParams["Model hash"]?.let { add("Model hash: $it") }
         }
-        append(params.joinToString(", "))
+        if (params.isNotEmpty()) {
+            appendLine()
+            append(params.joinToString(", "))
+        }
     }
 
     // -- ComfyUI node builders --
