@@ -5,6 +5,7 @@ import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
+import com.riox432.civitdeck.domain.usecase.AutoSavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.BulkMoveModelsUseCase
 import com.riox432.civitdeck.domain.usecase.BulkRemoveModelsUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
@@ -40,12 +41,14 @@ import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveTemplatesUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.RenameCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
+import com.riox432.civitdeck.domain.usecase.SearchSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
@@ -53,8 +56,10 @@ import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
+import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
+import com.riox432.civitdeck.domain.usecase.UpdatePromptCategoryUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
 import org.koin.mp.KoinPlatform.getKoin
@@ -122,4 +127,11 @@ object KoinHelper {
     fun getScanModelDirectoriesUseCase(): ScanModelDirectoriesUseCase = getKoin().get()
     fun getVerifyModelHashUseCase(): VerifyModelHashUseCase = getKoin().get()
     fun getObserveOwnedModelHashesUseCase(): ObserveOwnedModelHashesUseCase = getKoin().get()
+
+    // Prompt template use cases
+    fun getAutoSavePromptUseCase(): AutoSavePromptUseCase = getKoin().get()
+    fun getToggleTemplateUseCase(): ToggleTemplateUseCase = getKoin().get()
+    fun getSearchSavedPromptsUseCase(): SearchSavedPromptsUseCase = getKoin().get()
+    fun getObserveTemplatesUseCase(): ObserveTemplatesUseCase = getKoin().get()
+    fun getUpdatePromptCategoryUseCase(): UpdatePromptCategoryUseCase = getKoin().get()
 }

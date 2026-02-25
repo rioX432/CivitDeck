@@ -17,22 +17,50 @@ class SavedPromptRepositoryImpl(
     override fun observeAll(): Flow<List<SavedPrompt>> =
         dao.observeAll().map { list -> list.map { it.toDomain() } }
 
+    override fun observeTemplates(): Flow<List<SavedPrompt>> =
+        dao.observeTemplates().map { list -> list.map { it.toDomain() } }
+
+    override fun observeHistory(): Flow<List<SavedPrompt>> =
+        dao.observeHistory().map { list -> list.map { it.toDomain() } }
+
+    override fun search(query: String): Flow<List<SavedPrompt>> =
+        dao.search(query).map { list -> list.map { it.toDomain() } }
+
     override suspend fun save(meta: ImageGenerationMeta, sourceImageUrl: String?) {
-        dao.insert(
-            SavedPromptEntity(
-                prompt = meta.prompt ?: "",
-                negativePrompt = meta.negativePrompt,
-                sampler = meta.sampler,
-                steps = meta.steps,
-                cfgScale = meta.cfgScale,
-                seed = meta.seed,
-                modelName = meta.model,
-                size = meta.size,
-                sourceImageUrl = sourceImageUrl,
-                savedAt = currentTimeMillis(),
-            ),
-        )
+        dao.insert(meta.toEntity(sourceImageUrl, autoSaved = false))
+    }
+
+    override suspend fun autoSave(meta: ImageGenerationMeta, sourceImageUrl: String?) {
+        val prompt = meta.prompt ?: return
+        val count = dao.countByPromptAndModel(prompt, meta.model)
+        if (count > 0) return
+        dao.insert(meta.toEntity(sourceImageUrl, autoSaved = true))
+    }
+
+    override suspend fun toggleTemplate(id: Long, isTemplate: Boolean, templateName: String?) {
+        dao.updateTemplate(id, isTemplate, templateName)
+    }
+
+    override suspend fun updateCategory(id: Long, category: String?) {
+        dao.updateCategory(id, category)
     }
 
     override suspend fun delete(id: Long) = dao.deleteById(id)
+
+    private fun ImageGenerationMeta.toEntity(
+        sourceImageUrl: String?,
+        autoSaved: Boolean,
+    ) = SavedPromptEntity(
+        prompt = prompt ?: "",
+        negativePrompt = negativePrompt,
+        sampler = sampler,
+        steps = steps,
+        cfgScale = cfgScale,
+        seed = seed,
+        modelName = model,
+        size = size,
+        sourceImageUrl = sourceImageUrl,
+        savedAt = currentTimeMillis(),
+        autoSaved = autoSaved,
+    )
 }

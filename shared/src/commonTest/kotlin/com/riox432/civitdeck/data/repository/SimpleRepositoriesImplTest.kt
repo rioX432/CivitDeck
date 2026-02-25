@@ -117,6 +117,30 @@ class SimpleRepositoriesImplTest {
         override fun observeAll(): Flow<List<SavedPromptEntity>> =
             updates.map { entities.sortedByDescending { it.savedAt } }
 
+        override fun observeTemplates(): Flow<List<SavedPromptEntity>> =
+            updates.map { entities.filter { it.isTemplate }.sortedByDescending { it.savedAt } }
+
+        override fun observeHistory(): Flow<List<SavedPromptEntity>> =
+            updates.map { entities.filter { it.autoSaved }.sortedByDescending { it.savedAt } }
+
+        override fun search(query: String): Flow<List<SavedPromptEntity>> =
+            updates.map { entities.filter { it.prompt.contains(query) } }
+
+        override suspend fun countByPromptAndModel(prompt: String, modelName: String?): Int =
+            entities.count { it.prompt == prompt && it.modelName == modelName }
+
+        override suspend fun updateTemplate(id: Long, isTemplate: Boolean, templateName: String?) {
+            val idx = entities.indexOfFirst { it.id == id }
+            if (idx >= 0) entities[idx] = entities[idx].copy(isTemplate = isTemplate, templateName = templateName)
+            updates.value++
+        }
+
+        override suspend fun updateCategory(id: Long, category: String?) {
+            val idx = entities.indexOfFirst { it.id == id }
+            if (idx >= 0) entities[idx] = entities[idx].copy(category = category)
+            updates.value++
+        }
+
         override suspend fun insert(entity: SavedPromptEntity) {
             entities.add(entity.copy(id = idCounter++))
             updates.value++
