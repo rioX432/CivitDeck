@@ -11,6 +11,7 @@ struct MetadataSheet: View {
                 VStack(alignment: .leading, spacing: 12) {
                     promptSection
                     parametersSection
+                    exportSection
                 }
                 .padding(16)
             }
@@ -104,6 +105,42 @@ struct MetadataSheet: View {
                 }
             }
         }
+    }
+
+    // MARK: - Export Section
+
+    @ViewBuilder
+    private var exportSection: some View {
+        Divider()
+        Text("Export")
+            .font(.caption)
+            .foregroundColor(.accentColor)
+        HStack(spacing: 8) {
+            Button("ComfyUI Workflow") {
+                let text = WorkflowExportService.shared.generateComfyUIWorkflow(meta: meta)
+                presentShareSheet(text: text)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+
+            Button("A1111 Params") {
+                let text = WorkflowExportService.shared.generateA1111Params(meta: meta)
+                presentShareSheet(text: text)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+        }
+    }
+
+    private func presentShareSheet(text: String) {
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let root = scene.windows.first?.rootViewController else { return }
+        var topVC = root
+        while let presented = topVC.presentedViewController {
+            topVC = presented
+        }
+        let activityVC = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        topVC.present(activityVC, animated: true)
     }
 
     private func paramRow(label: String, value: String) -> some View {
