@@ -3,6 +3,9 @@ import Shared
 
 struct SavedPromptsScreen: View {
     @StateObject private var viewModel = SavedPromptsViewModel()
+    @State private var templateDialogPromptId: Int64?
+    @State private var templateNameInput = ""
+    @State private var applyTemplatePrompt: SavedPrompt?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -14,6 +17,33 @@ struct SavedPromptsScreen: View {
                 promptList
             }
         }
+        .alert("Save as Template", isPresented: showTemplateAlert) {
+            TextField("Template name (optional)", text: $templateNameInput)
+            Button("Save") {
+                let name = templateNameInput.trimmingCharacters(in: .whitespaces)
+                if let promptId = templateDialogPromptId {
+                    viewModel.toggleTemplate(
+                        id: promptId,
+                        isTemplate: true,
+                        templateName: name.isEmpty ? nil : name
+                    )
+                }
+                templateDialogPromptId = nil
+            }
+            Button("Cancel", role: .cancel) {
+                templateDialogPromptId = nil
+            }
+        }
+        .sheet(item: $applyTemplatePrompt) { prompt in
+            ApplyTemplateSheet(prompt: prompt)
+        }
+    }
+
+    private var showTemplateAlert: Binding<Bool> {
+        Binding(
+            get: { templateDialogPromptId != nil },
+            set: { if !$0 { templateDialogPromptId = nil } }
+        )
     }
 
     private var searchBar: some View {
@@ -58,15 +88,28 @@ struct SavedPromptsScreen: View {
                 PromptCardView(
                     prompt: prompt,
                     onToggleTemplate: {
-                        viewModel.toggleTemplate(
-                            id: prompt.id,
-                            isTemplate: !prompt.isTemplate,
-                            templateName: prompt.templateName
-                        )
+                        if prompt.isTemplate {
+                            viewModel.toggleTemplate(
+                                id: prompt.id, isTemplate: false, templateName: nil
+                            )
+                        } else {
+                            templateNameInput = ""
+                            templateDialogPromptId = prompt.id
+                        }
                     },
                     onDelete: {
                         viewModel.delete(id: prompt.id)
-                    }
+                    },
+                    onApply: prompt.isTemplate ? {
+                        let variables = PromptTemplateEngine.shared.extractVariables(
+                            template: prompt.prompt
+                        )
+                        if variables.isEmpty {
+                            UIPasteboard.general.string = prompt.prompt
+                        } else {
+                            applyTemplatePrompt = prompt
+                        }
+                    } : nil
                 )
             }
         }
@@ -80,6 +123,7 @@ private struct PromptCardView: View {
     let prompt: SavedPrompt
     let onToggleTemplate: () -> Void
     let onDelete: () -> Void
+    var onApply: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -143,6 +187,12 @@ private struct PromptCardView: View {
 
     private var actionsRow: some View {
         HStack {
+            if let onApply {
+                Button("Apply") { onApply() }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+            }
+
             Button("Copy") {
                 UIPasteboard.general.string = prompt.prompt
             }
@@ -189,3 +239,54 @@ private struct PromptCardView: View {
         topVC.present(activityVC, animated: true)
     }
 }
+
+// MARK: - Apply Template Sheet
+
+private struct ApplyTemplateSheet: View {
+    let prompt: SavedPrompt
+    @Environment(\.dismiss) private var dismiss
+    @State private var values: [String: String] = [:]
+
+    private var variables: [String] {
+        let list = PromptTemplateEngine.shared.extractVariables(template: prompt.prompt)
+        return list.compactMap { $0 as? String }
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                ForEach(variables, id: \.self) { variable in
+                    TextField(variable, text: binding(for: variable))
+                }
+            }
+            .navigationTitle(prompt.templateName ?? "Apply Template")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Generate") {
+                        let result = PromptTemplateEngine.shared.substitute(
+                            template: prompt.prompt,
+                            values: values
+                        )
+                        UIPasteboard.general.string = result
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private func binding(for key: String) -> Binding<String> {
+        Binding(
+            get: { values[key] ?? "" },
+            set: { values[key] = $0 }
+        )
+    }
+}
+
+// MARK: - SavedPrompt + Identifiable
+
+extension SavedPrompt: @retroactive Identifiable {}

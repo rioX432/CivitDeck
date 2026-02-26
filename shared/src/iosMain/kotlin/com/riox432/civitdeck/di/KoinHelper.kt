@@ -64,7 +64,6 @@ import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
-import com.riox432.civitdeck.domain.usecase.UpdatePromptCategoryUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
 import org.koin.mp.KoinPlatform.getKoin
@@ -138,7 +137,6 @@ object KoinHelper {
     fun getToggleTemplateUseCase(): ToggleTemplateUseCase = getKoin().get()
     fun getSearchSavedPromptsUseCase(): SearchSavedPromptsUseCase = getKoin().get()
     fun getObserveTemplatesUseCase(): ObserveTemplatesUseCase = getKoin().get()
-    fun getUpdatePromptCategoryUseCase(): UpdatePromptCategoryUseCase = getKoin().get()
 
     // Notification use cases
     fun getCheckModelUpdatesUseCase(): CheckModelUpdatesUseCase = getKoin().get()

@@ -41,10 +41,6 @@ class SavedPromptRepositoryImpl(
         dao.updateTemplate(id, isTemplate, templateName)
     }
 
-    override suspend fun updateCategory(id: Long, category: String?) {
-        dao.updateCategory(id, category)
-    }
-
     override suspend fun delete(id: Long) = dao.deleteById(id)
 
     private fun ImageGenerationMeta.toEntity(

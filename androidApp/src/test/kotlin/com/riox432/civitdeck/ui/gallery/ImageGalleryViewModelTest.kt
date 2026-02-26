@@ -89,7 +89,6 @@ class ImageGalleryViewModelTest {
         override fun observeHistory() = flowOf(emptyList<com.riox432.civitdeck.domain.model.SavedPrompt>())
         override fun search(query: String) = flowOf(emptyList<com.riox432.civitdeck.domain.model.SavedPrompt>())
         override suspend fun toggleTemplate(id: Long, isTemplate: Boolean, templateName: String?) = Unit
-        override suspend fun updateCategory(id: Long, category: String?) = Unit
         override suspend fun delete(id: Long) = Unit
     }
 

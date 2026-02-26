@@ -135,11 +135,6 @@ class SimpleRepositoriesImplTest {
             updates.value++
         }
 
-        override suspend fun updateCategory(id: Long, category: String?) {
-            val idx = entities.indexOfFirst { it.id == id }
-            if (idx >= 0) entities[idx] = entities[idx].copy(category = category)
-            updates.value++
-        }
 
         override suspend fun insert(entity: SavedPromptEntity) {
             entities.add(entity.copy(id = idCounter++))
