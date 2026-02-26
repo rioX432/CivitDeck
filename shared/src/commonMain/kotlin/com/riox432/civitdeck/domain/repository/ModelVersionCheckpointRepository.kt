@@ -1,0 +1,11 @@
+package com.riox432.civitdeck.domain.repository
+
+interface ModelVersionCheckpointRepository {
+    suspend fun getCheckpoint(modelId: Long): Long?
+
+    /** Returns modelId → (lastKnownVersionId, lastCheckedAt) */
+    suspend fun getAllCheckpoints(): Map<Long, Pair<Long, Long>>
+    suspend fun saveCheckpoint(modelId: Long, versionId: Long)
+    suspend fun saveCheckpoints(checkpoints: Map<Long, Long>)
+    suspend fun deleteStaleCheckpoints(activeModelIds: Set<Long>)
+}

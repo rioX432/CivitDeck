@@ -15,6 +15,7 @@ import com.riox432.civitdeck.data.repository.HiddenModelRepositoryImpl
 import com.riox432.civitdeck.data.repository.ImageRepositoryImpl
 import com.riox432.civitdeck.data.repository.LocalModelFileRepositoryImpl
 import com.riox432.civitdeck.data.repository.ModelRepositoryImpl
+import com.riox432.civitdeck.data.repository.ModelVersionCheckpointRepositoryImpl
 import com.riox432.civitdeck.data.repository.SavedPromptRepositoryImpl
 import com.riox432.civitdeck.data.repository.SearchHistoryRepositoryImpl
 import com.riox432.civitdeck.data.repository.TagRepositoryImpl
@@ -29,6 +30,7 @@ import com.riox432.civitdeck.domain.repository.HiddenModelRepository
 import com.riox432.civitdeck.domain.repository.ImageRepository
 import com.riox432.civitdeck.domain.repository.LocalModelFileRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
+import com.riox432.civitdeck.domain.repository.ModelVersionCheckpointRepository
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
 import com.riox432.civitdeck.domain.repository.SearchHistoryRepository
 import com.riox432.civitdeck.domain.repository.TagRepository
@@ -59,6 +61,7 @@ val dataModule = module {
     single { get<CivitDeckDatabase>().excludedTagDao() }
     single { get<CivitDeckDatabase>().hiddenModelDao() }
     single { get<CivitDeckDatabase>().localModelFileDao() }
+    single { get<CivitDeckDatabase>().modelVersionCheckpointDao() }
 
     // File Scanner
     single { FileScanner() }
@@ -80,4 +83,5 @@ val dataModule = module {
     single<ExcludedTagRepository> { ExcludedTagRepositoryImpl(get()) }
     single<HiddenModelRepository> { HiddenModelRepositoryImpl(get()) }
     single<LocalModelFileRepository> { LocalModelFileRepositoryImpl(get(), get(), get()) }
+    single<ModelVersionCheckpointRepository> { ModelVersionCheckpointRepositoryImpl(get()) }
 }

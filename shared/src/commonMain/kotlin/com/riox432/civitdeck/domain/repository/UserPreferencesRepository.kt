@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.domain.repository
 
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import kotlinx.coroutines.flow.Flow
@@ -20,4 +21,8 @@ interface UserPreferencesRepository {
     suspend fun getApiKey(): String?
     fun observePowerUserMode(): Flow<Boolean>
     suspend fun setPowerUserMode(enabled: Boolean)
+    fun observeNotificationsEnabled(): Flow<Boolean>
+    suspend fun setNotificationsEnabled(enabled: Boolean)
+    fun observePollingInterval(): Flow<PollingInterval>
+    suspend fun setPollingInterval(interval: PollingInterval)
 }

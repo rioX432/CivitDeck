@@ -14,6 +14,7 @@ import com.riox432.civitdeck.data.local.dao.CollectionDao
 import com.riox432.civitdeck.data.local.dao.ExcludedTagDao
 import com.riox432.civitdeck.data.local.dao.HiddenModelDao
 import com.riox432.civitdeck.data.local.dao.LocalModelFileDao
+import com.riox432.civitdeck.data.local.dao.ModelVersionCheckpointDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
 import com.riox432.civitdeck.data.local.dao.SearchHistoryDao
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
@@ -25,6 +26,7 @@ import com.riox432.civitdeck.data.local.entity.ExcludedTagEntity
 import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
 import com.riox432.civitdeck.data.local.entity.LocalModelFileEntity
 import com.riox432.civitdeck.data.local.entity.ModelDirectoryEntity
+import com.riox432.civitdeck.data.local.entity.ModelVersionCheckpointEntity
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import com.riox432.civitdeck.data.local.entity.SearchHistoryEntity
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
@@ -44,8 +46,9 @@ import kotlinx.coroutines.IO
         HiddenModelEntity::class,
         ModelDirectoryEntity::class,
         LocalModelFileEntity::class,
+        ModelVersionCheckpointEntity::class,
     ],
-    version = 10,
+    version = 11,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -58,6 +61,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun excludedTagDao(): ExcludedTagDao
     abstract fun hiddenModelDao(): HiddenModelDao
     abstract fun localModelFileDao(): LocalModelFileDao
+    abstract fun modelVersionCheckpointDao(): ModelVersionCheckpointDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -278,6 +282,24 @@ val MIGRATION_9_10 = object : Migration(9, 10) {
     }
 }
 
+val MIGRATION_10_11 = object : Migration(10, 11) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN notificationsEnabled INTEGER NOT NULL DEFAULT 0",
+        )
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN pollingIntervalMinutes INTEGER NOT NULL DEFAULT 0",
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `model_version_checkpoints` (" +
+                "`modelId` INTEGER NOT NULL, " +
+                "`lastKnownVersionId` INTEGER NOT NULL, " +
+                "`lastCheckedAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`modelId`))",
+        )
+    }
+}
+
 fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeckDatabase {
     return builder
         .addMigrations(
@@ -290,6 +312,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_7_8,
             MIGRATION_8_9,
             MIGRATION_9_10,
+            MIGRATION_10_11,
         )
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)

@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.domain.usecase
 
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
@@ -41,6 +42,14 @@ class UserPreferencesUseCasesTest {
         val powerUserMode = MutableStateFlow(false)
         override fun observePowerUserMode(): Flow<Boolean> = powerUserMode
         override suspend fun setPowerUserMode(enabled: Boolean) { powerUserMode.value = enabled }
+
+        val notificationsEnabled = MutableStateFlow(false)
+        override fun observeNotificationsEnabled(): Flow<Boolean> = notificationsEnabled
+        override suspend fun setNotificationsEnabled(enabled: Boolean) { notificationsEnabled.value = enabled }
+
+        val pollingInterval = MutableStateFlow(PollingInterval.Off)
+        override fun observePollingInterval(): Flow<PollingInterval> = pollingInterval
+        override suspend fun setPollingInterval(interval: PollingInterval) { pollingInterval.value = interval }
     }
 
     private val repo = FakeUserPreferencesRepository()

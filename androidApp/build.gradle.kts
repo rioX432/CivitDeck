@@ -74,4 +74,5 @@ dependencies {
     implementation(libs.material3.adaptive)
     implementation(libs.material3.adaptive.navigation.suite)
     implementation(libs.aboutlibraries.compose.m3)
+    implementation(libs.androidx.work.runtime)
 }

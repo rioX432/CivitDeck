@@ -4,6 +4,7 @@ import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
@@ -74,5 +75,23 @@ class UserPreferencesRepositoryImpl(
     override suspend fun setPowerUserMode(enabled: Boolean) {
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(powerUserMode = enabled))
+    }
+
+    override fun observeNotificationsEnabled(): Flow<Boolean> =
+        dao.observePreferences().map { it?.notificationsEnabled ?: false }
+
+    override suspend fun setNotificationsEnabled(enabled: Boolean) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(notificationsEnabled = enabled))
+    }
+
+    override fun observePollingInterval(): Flow<PollingInterval> =
+        dao.observePreferences().map { entity ->
+            PollingInterval.fromMinutes(entity?.pollingIntervalMinutes ?: 0)
+        }
+
+    override suspend fun setPollingInterval(interval: PollingInterval) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(pollingIntervalMinutes = interval.minutes))
     }
 }

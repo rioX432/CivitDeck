@@ -12,4 +12,6 @@ data class UserPreferencesEntity(
     val gridColumns: Int = 2,
     val apiKey: String? = null,
     val powerUserMode: Boolean = false,
+    val notificationsEnabled: Boolean = false,
+    val pollingIntervalMinutes: Int = 0,
 )

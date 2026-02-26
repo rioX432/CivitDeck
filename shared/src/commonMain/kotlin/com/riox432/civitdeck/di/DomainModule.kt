@@ -7,6 +7,7 @@ import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.AutoSavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.BulkMoveModelsUseCase
 import com.riox432.civitdeck.domain.usecase.BulkRemoveModelsUseCase
+import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
@@ -35,8 +36,10 @@ import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveLocalModelFilesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelDirectoriesUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
+import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
@@ -52,7 +55,9 @@ import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
+import com.riox432.civitdeck.domain.usecase.SetNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
@@ -127,4 +132,10 @@ val domainModule = module {
     factory { ScanModelDirectoriesUseCase(get()) }
     factory { VerifyModelHashUseCase(get()) }
     factory { ObserveOwnedModelHashesUseCase(get()) }
+    // Notification use cases
+    factory { CheckModelUpdatesUseCase(get(), get(), get()) }
+    factory { ObserveNotificationsEnabledUseCase(get()) }
+    factory { SetNotificationsEnabledUseCase(get()) }
+    factory { ObservePollingIntervalUseCase(get()) }
+    factory { SetPollingIntervalUseCase(get()) }
 }
