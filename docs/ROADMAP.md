@@ -25,28 +25,28 @@ The foundation: browse, search, and save CivitAI models from your phone.
 
 Quality-of-life improvements and account features.
 
-- [ ] CivitAI API key authentication ([#119](https://github.com/rioX432/CivitDeck/issues/119))
-- [ ] Tag-based exploration
-- [ ] Enhanced collection management ([#121](https://github.com/rioX432/CivitDeck/issues/121))
-- [ ] Creator profiles
+- [x] CivitAI API key authentication ([#119](https://github.com/rioX432/CivitDeck/issues/119))
+- [x] Tag-based exploration
+- [x] Enhanced collection management ([#121](https://github.com/rioX432/CivitDeck/issues/121))
+- [x] Creator profiles
 - [ ] Offline browsing improvements ([#122](https://github.com/rioX432/CivitDeck/issues/122))
 
 ## Phase 2 -- Power User Expansion
 
 Advanced features for users who generate, not just browse.
 
-- [ ] Model version comparison -- side-by-side view ([#118](https://github.com/rioX432/CivitDeck/issues/118))
-- [ ] Power user mode -- toggleable advanced metadata panel
-- [ ] Prompt history and template system
+- [x] Model version comparison -- side-by-side view ([#118](https://github.com/rioX432/CivitDeck/issues/118))
+- [x] Power user mode -- toggleable advanced metadata panel
+- [x] Prompt history and template system
 - [ ] Push notifications for model updates ([#120](https://github.com/rioX432/CivitDeck/issues/120))
-- [ ] Large screen and tablet support ([#125](https://github.com/rioX432/CivitDeck/issues/125))
+- [x] Large screen and tablet support ([#125](https://github.com/rioX432/CivitDeck/issues/125))
 
 ## Phase 3 -- ComfyUI & Generation Integration
 
 The strategic core: bridge CivitAI browsing with your local generation setup.
 
 - [ ] ComfyUI remote API integration -- trigger workflows from mobile
-- [ ] One-tap workflow export to ComfyUI and A1111
+- [x] One-tap workflow export to ComfyUI and A1111
 - [ ] Live generation preview
 - [ ] Workflow template library
 - [ ] SD WebUI API support
@@ -56,7 +56,7 @@ The strategic core: bridge CivitAI browsing with your local generation setup.
 Ideas on the horizon. Subject to community feedback.
 
 - [ ] Home screen widget -- trending model/image of the day ([#124](https://github.com/rioX432/CivitDeck/issues/124))
-- [ ] Model file browser with hash verification
+- [x] Model file browser with hash verification
 - [ ] Creator follow and activity feed ([#123](https://github.com/rioX432/CivitDeck/issues/123))
 - [ ] Model download manager
 - [ ] Community features (reviews, ratings)
