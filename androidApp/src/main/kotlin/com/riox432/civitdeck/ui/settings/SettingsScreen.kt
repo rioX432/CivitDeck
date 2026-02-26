@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.BuildConfig
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -68,6 +69,21 @@ fun SettingsScreen(
                 onClear = viewModel::onClearApiKey,
             )
         }
+        item { SectionHeader("Notifications") }
+        item {
+            NotificationsToggleRow(
+                enabled = state.notificationsEnabled,
+                onToggle = viewModel::onNotificationsEnabledChanged,
+            )
+        }
+        if (state.notificationsEnabled) {
+            item {
+                PollingIntervalRow(
+                    selected = state.pollingInterval,
+                    onChanged = viewModel::onPollingIntervalChanged,
+                )
+            }
+        }
         item { SectionHeader("Content Filter") }
         item { NsfwToggleRow(state.nsfwFilterLevel, viewModel::onNsfwFilterChanged) }
         item { SectionHeader("Display") }
@@ -98,6 +114,38 @@ private fun SectionHeader(title: String) {
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+    )
+}
+
+@Composable
+private fun NotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text("Model Update Alerts", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "Notify when favorited models get new versions",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(checked = enabled, onCheckedChange = onToggle)
+    }
+}
+
+@Composable
+private fun PollingIntervalRow(selected: PollingInterval, onChanged: (PollingInterval) -> Unit) {
+    val options = PollingInterval.entries.filter { it != PollingInterval.Off }
+    DropdownSettingRow(
+        label = "Check Frequency",
+        value = selected.displayName,
+        options = options.map { it.displayName },
+        onSelected = { name -> options.find { it.displayName == name }?.let(onChanged) },
     )
 }
 

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
@@ -16,14 +17,18 @@ import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
+import com.riox432.civitdeck.domain.usecase.SetNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
@@ -48,6 +53,8 @@ data class SettingsUiState(
     val isValidatingApiKey: Boolean = false,
     val apiKeyError: String? = null,
     val powerUserMode: Boolean = false,
+    val notificationsEnabled: Boolean = false,
+    val pollingInterval: PollingInterval = PollingInterval.Off,
 )
 
 @Suppress("LongParameterList")
@@ -73,6 +80,10 @@ class SettingsViewModel(
     private val validateApiKeyUseCase: ValidateApiKeyUseCase,
     observePowerUserModeUseCase: ObservePowerUserModeUseCase,
     private val setPowerUserModeUseCase: SetPowerUserModeUseCase,
+    observeNotificationsEnabledUseCase: ObserveNotificationsEnabledUseCase,
+    private val setNotificationsEnabledUseCase: SetNotificationsEnabledUseCase,
+    observePollingIntervalUseCase: ObservePollingIntervalUseCase,
+    private val setPollingIntervalUseCase: SetPollingIntervalUseCase,
 ) : ViewModel() {
 
     private val _mutableState = MutableStateFlow(SettingsUiState())
@@ -93,6 +104,10 @@ class SettingsViewModel(
         )
     }.combine(observePowerUserModeUseCase()) { state, powerUser ->
         state.copy(powerUserMode = powerUser)
+    }.combine(observeNotificationsEnabledUseCase()) { state, enabled ->
+        state.copy(notificationsEnabled = enabled)
+    }.combine(observePollingIntervalUseCase()) { state, interval ->
+        state.copy(pollingInterval = interval)
     }.combine(_mutableState) { observed, mutable ->
         observed.copy(
             hiddenModels = mutable.hiddenModels,
@@ -222,5 +237,13 @@ class SettingsViewModel(
 
     fun onClearCache() {
         viewModelScope.launch { clearCacheUseCase() }
+    }
+
+    fun onNotificationsEnabledChanged(enabled: Boolean) {
+        viewModelScope.launch { setNotificationsEnabledUseCase(enabled) }
+    }
+
+    fun onPollingIntervalChanged(interval: PollingInterval) {
+        viewModelScope.launch { setPollingIntervalUseCase(interval) }
     }
 }

@@ -9,6 +9,10 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import com.riox432.civitdeck.di.initKoin
 import com.riox432.civitdeck.di.initializeAuth
+import com.riox432.civitdeck.domain.model.PollingInterval
+import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
+import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
+import com.riox432.civitdeck.notification.ModelUpdateScheduler
 import com.riox432.civitdeck.ui.collections.CollectionDetailViewModel
 import com.riox432.civitdeck.ui.collections.CollectionsViewModel
 import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
@@ -20,12 +24,20 @@ import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.settings.SettingsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-class CivitDeckApplication : Application(), SingletonImageLoader.Factory {
+class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinComponent {
+
+    private val observeNotificationsEnabled: ObserveNotificationsEnabledUseCase by inject()
+    private val observePollingInterval: ObservePollingIntervalUseCase by inject()
+
     override fun onCreate() {
         super.onCreate()
         initKoin {
@@ -33,6 +45,23 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory {
             modules(androidModule)
         }
         CoroutineScope(Dispatchers.IO).launch { initializeAuth() }
+        observeAndScheduleNotifications()
+    }
+
+    private fun observeAndScheduleNotifications() {
+        CoroutineScope(Dispatchers.IO).launch {
+            combine(
+                observeNotificationsEnabled(),
+                observePollingInterval(),
+            ) { enabled, interval -> enabled to interval }
+                .collectLatest { (enabled, interval) ->
+                    if (enabled && interval != PollingInterval.Off) {
+                        ModelUpdateScheduler.schedule(this@CivitDeckApplication, interval)
+                    } else {
+                        ModelUpdateScheduler.cancel(this@CivitDeckApplication)
+                    }
+                }
+        }
     }
 
     override fun newImageLoader(context: coil3.PlatformContext): ImageLoader {
@@ -76,7 +105,7 @@ val androidModule = module {
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(), get(),
-            get(), get(),
+            get(), get(), get(), get(), get(), get(),
         )
     }
     viewModel { ModelFileBrowserViewModel(get(), get(), get(), get(), get(), get()) }
