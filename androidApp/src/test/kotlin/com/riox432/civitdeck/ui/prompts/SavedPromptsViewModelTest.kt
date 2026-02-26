@@ -5,6 +5,9 @@ import com.riox432.civitdeck.domain.model.SavedPrompt
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
 import com.riox432.civitdeck.domain.usecase.DeleteSavedPromptUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveTemplatesUseCase
+import com.riox432.civitdeck.domain.usecase.SearchSavedPromptsUseCase
+import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -49,18 +52,30 @@ class SavedPromptsViewModelTest {
         var deletedId: Long? = null
 
         override fun observeAll(): Flow<List<SavedPrompt>> = flowOf(prompts)
+        override fun observeTemplates(): Flow<List<SavedPrompt>> = flowOf(emptyList())
+        override fun observeHistory(): Flow<List<SavedPrompt>> = flowOf(emptyList())
+        override fun search(query: String): Flow<List<SavedPrompt>> = flowOf(emptyList())
         override suspend fun save(meta: ImageGenerationMeta, sourceImageUrl: String?) =
+            error("not used")
+        override suspend fun autoSave(meta: ImageGenerationMeta, sourceImageUrl: String?) =
+            error("not used")
+        override suspend fun toggleTemplate(id: Long, isTemplate: Boolean, templateName: String?) =
             error("not used")
         override suspend fun delete(id: Long) { deletedId = id }
     }
 
+    private fun createViewModel(repo: FakeRepo) = SavedPromptsViewModel(
+        observeSavedPromptsUseCase = ObserveSavedPromptsUseCase(repo),
+        deleteSavedPromptUseCase = DeleteSavedPromptUseCase(repo),
+        searchSavedPromptsUseCase = SearchSavedPromptsUseCase(repo),
+        observeTemplatesUseCase = ObserveTemplatesUseCase(repo),
+        toggleTemplateUseCase = ToggleTemplateUseCase(repo),
+    )
+
     @Test
     fun prompts_flow_emits_list() = runTest(testDispatcher) {
         val repo = FakeRepo(testPrompts)
-        val vm = SavedPromptsViewModel(
-            observeSavedPromptsUseCase = ObserveSavedPromptsUseCase(repo),
-            deleteSavedPromptUseCase = DeleteSavedPromptUseCase(repo),
-        )
+        val vm = createViewModel(repo)
         val job = backgroundScope.launch(testDispatcher) { vm.prompts.collect {} }
         assertEquals(1, vm.prompts.value.size)
         assertEquals("1girl", vm.prompts.value[0].prompt)
@@ -70,10 +85,7 @@ class SavedPromptsViewModelTest {
     @Test
     fun delete_calls_use_case() {
         val repo = FakeRepo(testPrompts)
-        val vm = SavedPromptsViewModel(
-            observeSavedPromptsUseCase = ObserveSavedPromptsUseCase(repo),
-            deleteSavedPromptUseCase = DeleteSavedPromptUseCase(repo),
-        )
+        val vm = createViewModel(repo)
         vm.delete(1L)
         assertTrue(repo.deletedId == 1L)
     }

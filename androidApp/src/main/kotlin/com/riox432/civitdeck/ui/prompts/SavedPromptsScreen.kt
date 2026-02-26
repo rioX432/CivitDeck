@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,10 +35,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,6 +51,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.domain.export.PromptTemplateEngine
 import com.riox432.civitdeck.domain.export.WorkflowExportService
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.domain.model.SavedPrompt
@@ -171,6 +176,62 @@ private fun PromptList(
     listState: LazyListState = rememberLazyListState(),
 ) {
     val context = LocalContext.current
+    var templateDialogPromptId by remember { mutableStateOf<Long?>(null) }
+    var templateNameInput by remember { mutableStateOf("") }
+    var applyTemplatePrompt by remember { mutableStateOf<SavedPrompt?>(null) }
+
+    PromptLazyColumn(
+        prompts = prompts,
+        modifier = modifier,
+        listState = listState,
+        context = context,
+        onDelete = onDelete,
+        onToggleTemplate = { id, isTemplate ->
+            if (isTemplate) {
+                onToggleTemplate(id, false, null)
+            } else {
+                templateNameInput = ""
+                templateDialogPromptId = id
+            }
+        },
+        onRequestApply = { applyTemplatePrompt = it },
+    )
+
+    templateDialogPromptId?.let { promptId ->
+        TemplateNameDialog(
+            name = templateNameInput,
+            onNameChange = { templateNameInput = it },
+            onConfirm = {
+                val name = templateNameInput.trim().ifEmpty { null }
+                onToggleTemplate(promptId, true, name)
+                templateDialogPromptId = null
+            },
+            onDismiss = { templateDialogPromptId = null },
+        )
+    }
+
+    applyTemplatePrompt?.let { prompt ->
+        ApplyTemplateDialog(
+            prompt = prompt,
+            onGenerate = { result ->
+                copyToClipboard(context, result)
+                applyTemplatePrompt = null
+            },
+            onDismiss = { applyTemplatePrompt = null },
+        )
+    }
+}
+
+@Composable
+private fun PromptLazyColumn(
+    prompts: List<SavedPrompt>,
+    context: Context,
+    onDelete: (Long) -> Unit,
+    onToggleTemplate: (Long, Boolean) -> Unit,
+    onRequestApply: (SavedPrompt) -> Unit,
+    modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState(),
+) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         state = listState,
@@ -182,14 +243,52 @@ private fun PromptList(
                 prompt = prompt,
                 onCopy = { copyToClipboard(context, prompt.prompt) },
                 onDelete = { onDelete(prompt.id) },
-                onToggleTemplate = {
-                    onToggleTemplate(prompt.id, !prompt.isTemplate, prompt.templateName)
-                },
+                onToggleTemplate = { onToggleTemplate(prompt.id, prompt.isTemplate) },
                 onExport = { exportPrompt(context, prompt) },
+                onApply = if (prompt.isTemplate) {
+                    {
+                        val variables = PromptTemplateEngine.extractVariables(prompt.prompt)
+                        if (variables.isEmpty()) {
+                            copyToClipboard(context, prompt.prompt)
+                        } else {
+                            onRequestApply(prompt)
+                        }
+                    }
+                } else {
+                    null
+                },
                 modifier = Modifier.animateItem(),
             )
         }
     }
+}
+
+@Composable
+private fun TemplateNameDialog(
+    name: String,
+    onNameChange: (String) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Save as Template") },
+        text = {
+            OutlinedTextField(
+                value = name,
+                onValueChange = onNameChange,
+                label = { Text("Template name (optional)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) { Text("Save") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        },
+    )
 }
 
 @Composable
@@ -199,6 +298,7 @@ private fun PromptCard(
     onDelete: () -> Unit,
     onToggleTemplate: () -> Unit,
     onExport: () -> Unit,
+    onApply: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -220,7 +320,12 @@ private fun PromptCard(
             Spacer(modifier = Modifier.height(Spacing.sm))
             PromptParams(prompt)
             Spacer(modifier = Modifier.height(Spacing.sm))
-            PromptActions(onCopy = onCopy, onExport = onExport, onDelete = onDelete)
+            PromptActions(
+                onCopy = onCopy,
+                onExport = onExport,
+                onDelete = onDelete,
+                onApply = onApply,
+            )
         }
     }
 }
@@ -276,11 +381,21 @@ private fun NegativePromptText(text: String) {
 }
 
 @Composable
-private fun PromptActions(onCopy: () -> Unit, onExport: () -> Unit, onDelete: () -> Unit) {
+private fun PromptActions(
+    onCopy: () -> Unit,
+    onExport: () -> Unit,
+    onDelete: () -> Unit,
+    onApply: (() -> Unit)? = null,
+) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (onApply != null) {
+            OutlinedButton(onClick = onApply) {
+                Text("Apply")
+            }
+        }
         OutlinedButton(onClick = onCopy) {
             Text("Copy")
         }
@@ -314,6 +429,51 @@ private fun PromptParams(prompt: SavedPrompt) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+}
+
+@Composable
+private fun ApplyTemplateDialog(
+    prompt: SavedPrompt,
+    onGenerate: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val variables = remember(prompt.id) {
+        PromptTemplateEngine.extractVariables(prompt.prompt)
+    }
+    val values = remember(prompt.id) {
+        mutableStateOf(variables.associateWith { "" })
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(prompt.templateName ?: "Apply Template") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                variables.forEach { variable ->
+                    OutlinedTextField(
+                        value = values.value[variable] ?: "",
+                        onValueChange = { newValue ->
+                            values.value = values.value.toMutableMap().apply {
+                                put(variable, newValue)
+                            }
+                        },
+                        label = { Text(variable) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                val result = PromptTemplateEngine.substitute(prompt.prompt, values.value)
+                onGenerate(result)
+            }) { Text("Generate") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        },
+    )
 }
 
 private fun exportPrompt(context: Context, prompt: SavedPrompt) {

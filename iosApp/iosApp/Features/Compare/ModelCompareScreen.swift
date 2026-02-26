@@ -192,8 +192,10 @@ struct ModelCompareScreen: View {
             specRow(label: "Type", leftValue: left.type.name, rightValue: right.type.name)
             specRow(
                 label: "Base Model",
-                leftValue: left.modelVersions.first?.baseModel ?? "-",
-                rightValue: right.modelVersions.first?.baseModel ?? "-"
+                leftValue: selectedVersion(model: left, index: viewModel.leftSelectedVersionIndex)?
+                    .baseModel ?? "-",
+                rightValue: selectedVersion(model: right, index: viewModel.rightSelectedVersionIndex)?
+                    .baseModel ?? "-"
             )
             specRow(
                 label: "Downloads",
@@ -212,8 +214,12 @@ struct ModelCompareScreen: View {
             )
             specRow(
                 label: "File Size",
-                leftValue: primaryFileSize(model: left),
-                rightValue: primaryFileSize(model: right)
+                leftValue: primaryFileSize(
+                    model: left, versionIndex: viewModel.leftSelectedVersionIndex
+                ),
+                rightValue: primaryFileSize(
+                    model: right, versionIndex: viewModel.rightSelectedVersionIndex
+                )
             )
         }
         .padding(.bottom, Spacing.lg)
@@ -244,8 +250,12 @@ struct ModelCompareScreen: View {
         return version.images.filter { $0.isAllowedByFilter(viewModel.nsfwFilterLevel) }
     }
 
-    private func primaryFileSize(model: Model) -> String {
-        guard let version = model.modelVersions.first else { return "-" }
+    private func selectedVersion(model: Model, index: Int) -> ModelVersion? {
+        index < model.modelVersions.count ? model.modelVersions[index] : nil
+    }
+
+    private func primaryFileSize(model: Model, versionIndex: Int) -> String {
+        guard let version = selectedVersion(model: model, index: versionIndex) else { return "-" }
         let file = version.files.first { $0.primary } ?? version.files.first
         guard let file else { return "-" }
         return FormatUtils.shared.formatFileSize(sizeKB: file.sizeKB)

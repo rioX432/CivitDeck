@@ -21,7 +21,10 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -40,6 +43,7 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.CollectionDetailViewModel
 import com.riox432.civitdeck.ui.collections.CollectionsScreen
@@ -142,7 +146,17 @@ fun CivitDeckNavGraph() {
     var compareModelId by rememberSaveable { mutableStateOf<Long?>(null) }
     var compareModelName by rememberSaveable { mutableStateOf<String?>(null) }
 
+    val adaptiveInfo = currentWindowAdaptiveInfo()
+    val navLayoutType = if (
+        adaptiveInfo.windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND)
+    ) {
+        NavigationSuiteType.NavigationDrawer
+    } else {
+        NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(adaptiveInfo)
+    }
+
     NavigationSuiteScaffold(
+        layoutType = navLayoutType,
         navigationSuiteItems = {
             Tab.entries.forEach { tab ->
                 val selected = tab == selectedTab

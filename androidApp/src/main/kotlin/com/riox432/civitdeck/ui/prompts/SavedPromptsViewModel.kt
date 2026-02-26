@@ -8,7 +8,6 @@ import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveTemplatesUseCase
 import com.riox432.civitdeck.domain.usecase.SearchSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
-import com.riox432.civitdeck.domain.usecase.UpdatePromptCategoryUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,7 +26,6 @@ class SavedPromptsViewModel(
     private val searchSavedPromptsUseCase: SearchSavedPromptsUseCase,
     private val observeTemplatesUseCase: ObserveTemplatesUseCase,
     private val toggleTemplateUseCase: ToggleTemplateUseCase,
-    private val updatePromptCategoryUseCase: UpdatePromptCategoryUseCase,
 ) : ViewModel() {
 
     private val _selectedTab = MutableStateFlow(PromptTab.All)
@@ -66,12 +64,6 @@ class SavedPromptsViewModel(
     fun toggleTemplate(id: Long, isTemplate: Boolean, templateName: String? = null) {
         viewModelScope.launch {
             toggleTemplateUseCase(id, isTemplate, templateName)
-        }
-    }
-
-    fun updateCategory(id: Long, category: String?) {
-        viewModelScope.launch {
-            updatePromptCategoryUseCase(id, category)
         }
     }
 }

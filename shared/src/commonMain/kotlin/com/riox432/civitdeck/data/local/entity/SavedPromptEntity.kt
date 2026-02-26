@@ -18,6 +18,5 @@ data class SavedPromptEntity(
     val savedAt: Long,
     val isTemplate: Boolean = false,
     val templateName: String? = null,
-    val category: String? = null,
     val autoSaved: Boolean = false,
 )

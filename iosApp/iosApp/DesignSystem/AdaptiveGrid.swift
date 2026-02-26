@@ -1,8 +1,9 @@
 import SwiftUI
 
 enum AdaptiveGrid {
-    private static let mediumBonus = 0
-    private static let regularBonus = 2
+    private static let mediumBonus = 1
+    private static let expandedBonus = 2
+    private static let expandedWidthThreshold: CGFloat = 840
 
     static func columns(
         userPreference: Int,
@@ -30,7 +31,8 @@ enum AdaptiveGrid {
     private static func bonus(for sizeClass: UserInterfaceSizeClass?) -> Int {
         switch sizeClass {
         case .regular:
-            return regularBonus
+            let width = UIScreen.main.bounds.width
+            return width >= expandedWidthThreshold ? expandedBonus : mediumBonus
         default:
             return 0
         }

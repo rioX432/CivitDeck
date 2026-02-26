@@ -63,7 +63,6 @@ import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
-import com.riox432.civitdeck.domain.usecase.UpdatePromptCategoryUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
 import org.koin.dsl.module
@@ -86,7 +85,6 @@ val domainModule = module {
     factory { ToggleTemplateUseCase(get()) }
     factory { SearchSavedPromptsUseCase(get()) }
     factory { ObserveTemplatesUseCase(get()) }
-    factory { UpdatePromptCategoryUseCase(get()) }
     factory { ObserveSearchHistoryUseCase(get()) }
     factory { AddSearchHistoryUseCase(get()) }
     factory { ClearSearchHistoryUseCase(get()) }

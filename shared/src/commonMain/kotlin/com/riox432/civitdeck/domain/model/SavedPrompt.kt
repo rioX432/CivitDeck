@@ -16,7 +16,6 @@ data class SavedPrompt(
     val savedAt: Long,
     val isTemplate: Boolean = false,
     val templateName: String? = null,
-    val category: String? = null,
     val autoSaved: Boolean = false,
 )
 
@@ -34,6 +33,5 @@ fun SavedPromptEntity.toDomain(): SavedPrompt = SavedPrompt(
     savedAt = savedAt,
     isTemplate = isTemplate,
     templateName = templateName,
-    category = category,
     autoSaved = autoSaved,
 )

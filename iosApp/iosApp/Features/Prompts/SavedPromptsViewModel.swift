@@ -38,7 +38,6 @@ final class SavedPromptsViewModel: ObservableObject {
     private let deleteSavedPromptUseCase: DeleteSavedPromptUseCase
     private let observeTemplatesUseCase: ObserveTemplatesUseCase
     private let toggleTemplateUseCase: ToggleTemplateUseCase
-    private let updatePromptCategoryUseCase: UpdatePromptCategoryUseCase
 
     private var observeTask: Task<Void, Never>?
     private var observeTemplatesTask: Task<Void, Never>?
@@ -48,7 +47,6 @@ final class SavedPromptsViewModel: ObservableObject {
         self.deleteSavedPromptUseCase = KoinHelper.shared.getDeleteSavedPromptUseCase()
         self.observeTemplatesUseCase = KoinHelper.shared.getObserveTemplatesUseCase()
         self.toggleTemplateUseCase = KoinHelper.shared.getToggleTemplateUseCase()
-        self.updatePromptCategoryUseCase = KoinHelper.shared.getUpdatePromptCategoryUseCase()
         observeTask = Task { await observeAll() }
         observeTemplatesTask = Task { await observeTemplates() }
     }
@@ -81,12 +79,6 @@ final class SavedPromptsViewModel: ObservableObject {
     func toggleTemplate(id: Int64, isTemplate: Bool, templateName: String?) {
         Task {
             try await toggleTemplateUseCase.invoke(id: id, isTemplate: isTemplate, templateName: templateName)
-        }
-    }
-
-    func updateCategory(id: Int64, category: String?) {
-        Task {
-            try await updatePromptCategoryUseCase.invoke(id: id, category: category)
         }
     }
 }

@@ -142,7 +142,14 @@ private fun CompareBody(
             )
         }
         item { HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm)) }
-        item { CompareSpecsTable(leftModel = leftModel, rightModel = rightModel) }
+        item {
+            CompareSpecsTable(
+                leftModel = leftModel,
+                rightModel = rightModel,
+                leftVersionIndex = leftState.selectedVersionIndex,
+                rightVersionIndex = rightState.selectedVersionIndex,
+            )
+        }
     }
 }
 
@@ -315,6 +322,8 @@ private fun VersionChipRow(
 private fun CompareSpecsTable(
     leftModel: Model,
     rightModel: Model,
+    leftVersionIndex: Int,
+    rightVersionIndex: Int,
 ) {
     Column(modifier = Modifier.padding(horizontal = Spacing.md)) {
         Text(
@@ -323,7 +332,11 @@ private fun CompareSpecsTable(
             modifier = Modifier.padding(bottom = Spacing.sm),
         )
         SpecRow("Type", leftModel.type.name, rightModel.type.name)
-        SpecRow("Base Model", leftBaseModel(leftModel), leftBaseModel(rightModel))
+        SpecRow(
+            "Base Model",
+            baseModelForVersion(leftModel, leftVersionIndex),
+            baseModelForVersion(rightModel, rightVersionIndex),
+        )
         SpecRow(
             "Downloads",
             FormatUtils.formatCount(leftModel.stats.downloadCount),
@@ -341,18 +354,18 @@ private fun CompareSpecsTable(
         )
         SpecRow(
             "File Size",
-            primaryFileSize(leftModel),
-            primaryFileSize(rightModel),
+            primaryFileSize(leftModel, leftVersionIndex),
+            primaryFileSize(rightModel, rightVersionIndex),
         )
     }
 }
 
-private fun leftBaseModel(model: Model): String =
-    model.modelVersions.firstOrNull()?.baseModel ?: "-"
+private fun baseModelForVersion(model: Model, versionIndex: Int): String =
+    model.modelVersions.getOrNull(versionIndex)?.baseModel ?: "-"
 
-private fun primaryFileSize(model: Model): String {
-    val file = model.modelVersions.firstOrNull()?.files
-        ?.firstOrNull { it.primary } ?: model.modelVersions.firstOrNull()?.files?.firstOrNull()
+private fun primaryFileSize(model: Model, versionIndex: Int): String {
+    val version = model.modelVersions.getOrNull(versionIndex) ?: return "-"
+    val file = version.files.firstOrNull { it.primary } ?: version.files.firstOrNull()
     return if (file != null) FormatUtils.formatFileSize(file.sizeKB) else "-"
 }
 

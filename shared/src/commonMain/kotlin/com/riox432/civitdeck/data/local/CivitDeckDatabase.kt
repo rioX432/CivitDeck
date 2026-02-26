@@ -48,7 +48,7 @@ import kotlinx.coroutines.IO
         LocalModelFileEntity::class,
         ModelVersionCheckpointEntity::class,
     ],
-    version = 11,
+    version = 12,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -300,6 +300,13 @@ val MIGRATION_10_11 = object : Migration(10, 11) {
     }
 }
 
+// No-op migration: category column remains in DB but is no longer mapped to entity
+val MIGRATION_11_12 = object : Migration(11, 12) {
+    override fun migrate(connection: SQLiteConnection) {
+        // category column stays in the table; Room ignores unmapped columns
+    }
+}
+
 fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeckDatabase {
     return builder
         .addMigrations(
@@ -313,6 +320,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_8_9,
             MIGRATION_9_10,
             MIGRATION_10_11,
+            MIGRATION_11_12,
         )
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)

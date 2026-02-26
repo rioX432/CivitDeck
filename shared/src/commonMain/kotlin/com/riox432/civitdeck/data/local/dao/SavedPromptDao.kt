@@ -36,9 +36,6 @@ interface SavedPromptDao {
     @Query("UPDATE saved_prompts SET isTemplate = :isTemplate, templateName = :templateName WHERE id = :id")
     suspend fun updateTemplate(id: Long, isTemplate: Boolean, templateName: String?)
 
-    @Query("UPDATE saved_prompts SET category = :category WHERE id = :id")
-    suspend fun updateCategory(id: Long, category: String?)
-
     @Insert
     suspend fun insert(entity: SavedPromptEntity)
 

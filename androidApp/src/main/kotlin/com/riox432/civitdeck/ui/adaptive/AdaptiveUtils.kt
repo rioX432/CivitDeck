@@ -28,9 +28,3 @@ fun isExpandedWidth(): Boolean {
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     return windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND)
 }
-
-@Composable
-fun isTableTopPosture(): Boolean {
-    val posture = currentWindowAdaptiveInfo().windowPosture
-    return posture.isTabletop
-}
