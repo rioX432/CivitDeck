@@ -12,8 +12,10 @@ class ModelVersionCheckpointRepositoryImpl(
     override suspend fun getCheckpoint(modelId: Long): Long? =
         dao.getCheckpoint(modelId)?.lastKnownVersionId
 
-    override suspend fun getAllCheckpoints(): Map<Long, Long> =
-        dao.getAllCheckpoints().associate { it.modelId to it.lastKnownVersionId }
+    override suspend fun getAllCheckpoints(): Map<Long, Pair<Long, Long>> =
+        dao.getAllCheckpoints().associate {
+            it.modelId to (it.lastKnownVersionId to it.lastCheckedAt)
+        }
 
     override suspend fun saveCheckpoint(modelId: Long, versionId: Long) {
         dao.upsert(
@@ -39,8 +41,11 @@ class ModelVersionCheckpointRepositoryImpl(
     }
 
     override suspend fun deleteStaleCheckpoints(activeModelIds: Set<Long>) {
-        if (activeModelIds.isNotEmpty()) {
-            dao.deleteStaleCheckpoints(activeModelIds.toList())
+        // Compute stale IDs in Kotlin to avoid SQLite bind parameter limit (999)
+        val allCheckpoints = dao.getAllCheckpoints()
+        val staleIds = allCheckpoints.map { it.modelId }.filter { it !in activeModelIds }
+        for (id in staleIds) {
+            dao.delete(id)
         }
     }
 }

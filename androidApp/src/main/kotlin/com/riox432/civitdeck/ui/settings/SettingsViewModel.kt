@@ -240,7 +240,12 @@ class SettingsViewModel(
     }
 
     fun onNotificationsEnabledChanged(enabled: Boolean) {
-        viewModelScope.launch { setNotificationsEnabledUseCase(enabled) }
+        viewModelScope.launch {
+            setNotificationsEnabledUseCase(enabled)
+            if (enabled && uiState.value.pollingInterval == PollingInterval.Off) {
+                setPollingIntervalUseCase(PollingInterval.FifteenMinutes)
+            }
+        }
     }
 
     fun onPollingIntervalChanged(interval: PollingInterval) {

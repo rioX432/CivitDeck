@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -16,6 +17,7 @@ import com.riox432.civitdeck.domain.model.ModelUpdate
 import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlin.coroutines.cancellation.CancellationException
 
 class ModelUpdateWorker(
     appContext: Context,
@@ -31,6 +33,8 @@ class ModelUpdateWorker(
                 showNotification(updates)
             }
             Result.success()
+        } catch (e: CancellationException) {
+            throw e
         } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
             Result.retry()
         }
@@ -70,6 +74,12 @@ class ModelUpdateWorker(
     }
 
     private fun ensureNotificationChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        createNotificationChannel()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
             "Model Updates",

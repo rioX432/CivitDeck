@@ -18,7 +18,11 @@ class CheckModelUpdatesUseCase(
         if (favoriteIds.isEmpty()) return emptyList()
 
         val checkpoints = checkpointRepository.getAllCheckpoints()
-        val idsToCheck = favoriteIds.take(MAX_MODELS_PER_CHECK)
+
+        // Rotate: prioritize unchecked models, then oldest-checked first
+        val sortedIds = favoriteIds.sortedBy { checkpoints[it]?.second ?: 0L }
+        val idsToCheck = sortedIds.take(MAX_MODELS_PER_CHECK)
+
         val updates = mutableListOf<ModelUpdate>()
         val newCheckpoints = mutableMapOf<Long, Long>()
 
@@ -26,7 +30,7 @@ class CheckModelUpdatesUseCase(
             try {
                 val model = modelRepository.getModel(modelId)
                 val latestVersion = model.modelVersions.firstOrNull() ?: continue
-                val previousVersionId = checkpoints[modelId]
+                val previousVersionId = checkpoints[modelId]?.first
 
                 if (previousVersionId != null && latestVersion.id != previousVersionId) {
                     updates.add(

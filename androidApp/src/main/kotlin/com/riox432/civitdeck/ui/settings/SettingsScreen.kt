@@ -1,5 +1,9 @@
 package com.riox432.civitdeck.ui.settings
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -119,6 +123,10 @@ private fun SectionHeader(title: String) {
 
 @Composable
 private fun NotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted -> if (granted) onToggle(true) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -134,7 +142,16 @@ private fun NotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Switch(checked = enabled, onCheckedChange = onToggle)
+        Switch(
+            checked = enabled,
+            onCheckedChange = { newValue ->
+                if (newValue && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                } else {
+                    onToggle(newValue)
+                }
+            },
+        )
     }
 }
 
