@@ -17,6 +17,9 @@ struct iOSApp: App {
             ThemedContentView()
                 .environmentObject(themeManager)
                 .environmentObject(router)
+                .onAppear {
+                    ShortcutsRouter.shared.navigationRouter = router
+                }
                 .task { await themeManager.observeAccentColor() }
                 .task { await themeManager.observeAmoledDarkMode() }
                 .onOpenURL { url in

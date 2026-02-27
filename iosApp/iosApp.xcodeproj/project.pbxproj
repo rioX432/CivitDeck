@@ -82,6 +82,8 @@
 		CDSP02012E900002000CD001 /* SpotlightItemBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSP02002E900002000CD001 /* SpotlightItemBuilder.swift */; };
 		CDDL01012E900003000CD001 /* DeepLinkHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDL01002E900003000CD001 /* DeepLinkHandler.swift */; };
 		CDNR01012E900004000CD001 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDNR01002E900004000CD001 /* NavigationRouter.swift */; };
+		CDSC01012EA00001000CD001 /* ShortcutsIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSC01002EA00001000CD001 /* ShortcutsIntents.swift */; };
+		CDSC02012EA00002000CD001 /* ShortcutsRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSC02002EA00002000CD001 /* ShortcutsRouter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -163,6 +165,8 @@
 		CDSP02002E900002000CD001 /* SpotlightItemBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightItemBuilder.swift; sourceTree = "<group>"; };
 		CDDL01002E900003000CD001 /* DeepLinkHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkHandler.swift; sourceTree = "<group>"; };
 		CDNR01002E900004000CD001 /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
+		CDSC01002EA00001000CD001 /* ShortcutsIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsIntents.swift; sourceTree = "<group>"; };
+		CDSC02002EA00002000CD001 /* ShortcutsRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsRouter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -286,9 +290,19 @@
 				CD00FB042D5CC001000CD001 /* ModelFileBrowser */,
 				CD0009042D000009000CD001 /* Prompts */,
 				CD000A042D00000A000CD001 /* Settings */,
+				CDSC0A002EA00001000CD001 /* Shortcuts */,
 				CD00GT082D6CC001000CD001 /* Tutorial */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		CDSC0A002EA00001000CD001 /* Shortcuts */ = {
+			isa = PBXGroup;
+			children = (
+				CDSC01002EA00001000CD001 /* ShortcutsIntents.swift */,
+				CDSC02002EA00002000CD001 /* ShortcutsRouter.swift */,
+			);
+			path = Shortcuts;
 			sourceTree = "<group>";
 		};
 		CD00C00A2D3CC001000CD001 /* Collections */ = {
@@ -614,6 +628,8 @@
 				CDSP02012E900002000CD001 /* SpotlightItemBuilder.swift in Sources */,
 				CDDL01012E900003000CD001 /* DeepLinkHandler.swift in Sources */,
 				CDNR01012E900004000CD001 /* NavigationRouter.swift in Sources */,
+				CDSC01012EA00001000CD001 /* ShortcutsIntents.swift in Sources */,
+				CDSC02012EA00002000CD001 /* ShortcutsRouter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
