@@ -25,7 +25,7 @@
 		CD0005052D000005000CD001 /* ImageViewerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005042D000005000CD001 /* ImageViewerScreen.swift */; };
 		CD0005072D000005000CD001 /* MetadataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005062D000005000CD001 /* MetadataSheet.swift */; };
 		CD0006012D000006000CD001 /* CivitDeckColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006002D000006000CD001 /* CivitDeckColors.swift */; };
-ttCD00TM012D7CC174000CD001 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00TM002D7CC174000CD001 /* ThemeManager.swift */; };
+ttCD0071012D7CC174000CD001 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0071002D7CC174000CD001 /* ThemeManager.swift */; };
 		CD0006032D000006000CD001 /* CivitDeckFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006022D000006000CD001 /* CivitDeckFonts.swift */; };
 		CD0006052D000006000CD001 /* CivitDeckSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006042D000006000CD001 /* CivitDeckSpacing.swift */; };
 		CD0006072D000006000CD001 /* CivitDeckShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006062D000006000CD001 /* CivitDeckShapes.swift */; };
@@ -86,7 +86,7 @@ ttCD00TM012D7CC174000CD001 /* ThemeManager.swift in Sources */ = {isa = PBXBuild
 		CD0005042D000005000CD001 /* ImageViewerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewerScreen.swift; sourceTree = "<group>"; };
 		CD0005062D000005000CD001 /* MetadataSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataSheet.swift; sourceTree = "<group>"; };
 		CD0006002D000006000CD001 /* CivitDeckColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckColors.swift; sourceTree = "<group>"; };
-ttCD00TM002D7CC174000CD001 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
+ttCD0071002D7CC174000CD001 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
 		CD0006022D000006000CD001 /* CivitDeckFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckFonts.swift; sourceTree = "<group>"; };
 		CD0006042D000006000CD001 /* CivitDeckSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckSpacing.swift; sourceTree = "<group>"; };
 		CD0006062D000006000CD001 /* CivitDeckShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckShapes.swift; sourceTree = "<group>"; };
@@ -195,7 +195,7 @@ ttCD00TM002D7CC174000CD001 /* ThemeManager.swift */ = {isa = PBXFileReference; l
 			isa = PBXGroup;
 			children = (
 				CD0006002D000006000CD001 /* CivitDeckColors.swift */,
-ttttCD00TM002D7CC174000CD001 /* ThemeManager.swift */,
+ttttCD0071002D7CC174000CD001 /* ThemeManager.swift */,
 				CD0006022D000006000CD001 /* CivitDeckFonts.swift */,
 				CD0006042D000006000CD001 /* CivitDeckSpacing.swift */,
 				CD0006062D000006000CD001 /* CivitDeckShapes.swift */,
@@ -465,7 +465,7 @@ ttttCD00TM002D7CC174000CD001 /* ThemeManager.swift */,
 				CD0005052D000005000CD001 /* ImageViewerScreen.swift in Sources */,
 				CD0005072D000005000CD001 /* MetadataSheet.swift in Sources */,
 				CD0006012D000006000CD001 /* CivitDeckColors.swift in Sources */,
-ttttCD00TM012D7CC174000CD001 /* ThemeManager.swift in Sources */,
+ttttCD0071012D7CC174000CD001 /* ThemeManager.swift in Sources */,
 				CD0006032D000006000CD001 /* CivitDeckFonts.swift in Sources */,
 				CD0006052D000006000CD001 /* CivitDeckSpacing.swift in Sources */,
 				CD0006072D000006000CD001 /* CivitDeckShapes.swift in Sources */,
