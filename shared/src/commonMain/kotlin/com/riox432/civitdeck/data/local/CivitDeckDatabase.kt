@@ -11,6 +11,7 @@ import androidx.sqlite.execSQL
 import com.riox432.civitdeck.data.local.dao.BrowsingHistoryDao
 import com.riox432.civitdeck.data.local.dao.CachedApiResponseDao
 import com.riox432.civitdeck.data.local.dao.CollectionDao
+import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.data.local.dao.ExcludedTagDao
 import com.riox432.civitdeck.data.local.dao.HiddenModelDao
 import com.riox432.civitdeck.data.local.dao.LocalModelFileDao
@@ -19,6 +20,7 @@ import com.riox432.civitdeck.data.local.dao.SavedPromptDao
 import com.riox432.civitdeck.data.local.dao.SearchHistoryDao
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
+import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.data.local.entity.CachedApiResponseEntity
 import com.riox432.civitdeck.data.local.entity.CollectionEntity
 import com.riox432.civitdeck.data.local.entity.CollectionModelEntity
@@ -47,8 +49,9 @@ import kotlinx.coroutines.IO
         ModelDirectoryEntity::class,
         LocalModelFileEntity::class,
         ModelVersionCheckpointEntity::class,
+        ComfyUIConnectionEntity::class,
     ],
-    version = 16,
+    version = 17,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -62,6 +65,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun hiddenModelDao(): HiddenModelDao
     abstract fun localModelFileDao(): LocalModelFileDao
     abstract fun modelVersionCheckpointDao(): ModelVersionCheckpointDao
+    abstract fun comfyUIConnectionDao(): ComfyUIConnectionDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -356,6 +360,22 @@ val MIGRATION_15_16 = object : Migration(15, 16) {
     }
 }
 
+val MIGRATION_16_17 = object : Migration(16, 17) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `comfyui_connections` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`name` TEXT NOT NULL, " +
+                "`hostname` TEXT NOT NULL, " +
+                "`port` INTEGER NOT NULL DEFAULT 8188, " +
+                "`isActive` INTEGER NOT NULL DEFAULT 0, " +
+                "`lastTestedAt` INTEGER, " +
+                "`lastTestSuccess` INTEGER, " +
+                "`createdAt` INTEGER NOT NULL)",
+        )
+    }
+}
+
 fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeckDatabase {
     return builder
         .addMigrations(
@@ -374,6 +394,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_13_14,
             MIGRATION_14_15,
             MIGRATION_15_16,
+            MIGRATION_16_17,
         )
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
