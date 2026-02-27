@@ -5,6 +5,7 @@ import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationResult
 import kotlinx.coroutines.flow.Flow
 
+@Suppress("TooManyFunctions")
 interface ComfyUIRepository {
     // Connection management
     fun observeConnections(): Flow<List<ComfyUIConnection>>

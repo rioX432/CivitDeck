@@ -59,7 +59,7 @@ class ComfyUIRepositoryImpl(
         return try {
             api.getQueue()
             true
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
             false
         }
     }
@@ -113,63 +113,105 @@ class ComfyUIRepositoryImpl(
     @Suppress("LongMethod")
     private fun buildWorkflow(params: ComfyUIGenerationParams): JsonObject {
         return buildJsonObject {
-            put("3", buildJsonObject {
-                put("class_type", "CheckpointLoaderSimple")
-                put("inputs", buildJsonObject {
-                    put("ckpt_name", params.checkpoint)
-                })
-            })
-            put("6", buildJsonObject {
-                put("class_type", "CLIPTextEncode")
-                put("inputs", buildJsonObject {
-                    put("text", params.prompt)
-                    put("clip", nodeLink("3", 1))
-                })
-            })
-            put("7", buildJsonObject {
-                put("class_type", "CLIPTextEncode")
-                put("inputs", buildJsonObject {
-                    put("text", params.negativePrompt)
-                    put("clip", nodeLink("3", 1))
-                })
-            })
-            put("5", buildJsonObject {
-                put("class_type", "EmptyLatentImage")
-                put("inputs", buildJsonObject {
-                    put("width", params.width)
-                    put("height", params.height)
-                    put("batch_size", 1)
-                })
-            })
-            put("4", buildJsonObject {
-                put("class_type", "KSampler")
-                put("inputs", buildJsonObject {
-                    put("seed", params.seed)
-                    put("steps", params.steps)
-                    put("cfg", params.cfgScale)
-                    put("sampler_name", params.samplerName)
-                    put("scheduler", params.scheduler)
-                    put("denoise", 1.0)
-                    put("model", nodeLink("3", 0))
-                    put("positive", nodeLink("6", 0))
-                    put("negative", nodeLink("7", 0))
-                    put("latent_image", nodeLink("5", 0))
-                })
-            })
-            put("8", buildJsonObject {
-                put("class_type", "VAEDecode")
-                put("inputs", buildJsonObject {
-                    put("samples", nodeLink("4", 0))
-                    put("vae", nodeLink("3", 2))
-                })
-            })
-            put("9", buildJsonObject {
-                put("class_type", "SaveImage")
-                put("inputs", buildJsonObject {
-                    put("filename_prefix", "CivitDeck")
-                    put("images", nodeLink("8", 0))
-                })
-            })
+            put(
+                "3",
+                buildJsonObject {
+                    put("class_type", "CheckpointLoaderSimple")
+                    put(
+                        "inputs",
+                        buildJsonObject {
+                            put("ckpt_name", params.checkpoint)
+                        }
+                    )
+                }
+            )
+            put(
+                "6",
+                buildJsonObject {
+                    put("class_type", "CLIPTextEncode")
+                    put(
+                        "inputs",
+                        buildJsonObject {
+                            put("text", params.prompt)
+                            put("clip", nodeLink("3", 1))
+                        }
+                    )
+                }
+            )
+            put(
+                "7",
+                buildJsonObject {
+                    put("class_type", "CLIPTextEncode")
+                    put(
+                        "inputs",
+                        buildJsonObject {
+                            put("text", params.negativePrompt)
+                            put("clip", nodeLink("3", 1))
+                        }
+                    )
+                }
+            )
+            put(
+                "5",
+                buildJsonObject {
+                    put("class_type", "EmptyLatentImage")
+                    put(
+                        "inputs",
+                        buildJsonObject {
+                            put("width", params.width)
+                            put("height", params.height)
+                            put("batch_size", 1)
+                        }
+                    )
+                }
+            )
+            put(
+                "4",
+                buildJsonObject {
+                    put("class_type", "KSampler")
+                    put(
+                        "inputs",
+                        buildJsonObject {
+                            put("seed", params.seed)
+                            put("steps", params.steps)
+                            put("cfg", params.cfgScale)
+                            put("sampler_name", params.samplerName)
+                            put("scheduler", params.scheduler)
+                            put("denoise", 1.0)
+                            put("model", nodeLink("3", 0))
+                            put("positive", nodeLink("6", 0))
+                            put("negative", nodeLink("7", 0))
+                            put("latent_image", nodeLink("5", 0))
+                        }
+                    )
+                }
+            )
+            put(
+                "8",
+                buildJsonObject {
+                    put("class_type", "VAEDecode")
+                    put(
+                        "inputs",
+                        buildJsonObject {
+                            put("samples", nodeLink("4", 0))
+                            put("vae", nodeLink("3", 2))
+                        }
+                    )
+                }
+            )
+            put(
+                "9",
+                buildJsonObject {
+                    put("class_type", "SaveImage")
+                    put(
+                        "inputs",
+                        buildJsonObject {
+                            put("filename_prefix", "CivitDeck")
+                            put("images", nodeLink("8", 0))
+                        }
+                    )
+                }
+            )
         }
     }
 
