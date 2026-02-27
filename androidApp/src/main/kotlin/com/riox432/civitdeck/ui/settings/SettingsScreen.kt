@@ -56,6 +56,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     onNavigateToLicenses: () -> Unit = {},
     onNavigateToModelFiles: () -> Unit = {},
+    onNavigateToComfyUI: () -> Unit = {},
     scrollToTopTrigger: Int = 0,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -69,25 +70,54 @@ fun SettingsScreen(
         }
     }
 
-    SettingsContent(state, viewModel, listState, onNavigateToLicenses, onNavigateToModelFiles)
+    SettingsContent(state, viewModel, listState, onNavigateToLicenses, onNavigateToModelFiles, onNavigateToComfyUI)
 }
 
 @Composable
+@Suppress("LongParameterList")
 private fun SettingsContent(
     state: SettingsUiState,
     viewModel: SettingsViewModel,
     listState: androidx.compose.foundation.lazy.LazyListState,
     onNavigateToLicenses: () -> Unit,
     onNavigateToModelFiles: () -> Unit,
+    onNavigateToComfyUI: () -> Unit,
 ) {
     LazyColumn(state = listState) {
         if (!state.isOnline) {
             item { OfflineBanner() }
         }
         settingsAccountItems(state, viewModel)
+        if (state.powerUserMode) {
+            settingsComfyUIItem(onNavigateToComfyUI)
+        }
         settingsDisplayItems(state, viewModel, onNavigateToModelFiles)
         settingsCacheItems(state, viewModel)
         settingsDataItems(state, viewModel, onNavigateToLicenses)
+    }
+}
+
+private fun LazyListScope.settingsComfyUIItem(onNavigateToComfyUI: () -> Unit) {
+    item { SectionHeader("ComfyUI") }
+    item {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onNavigateToComfyUI)
+                .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                Text("Server Connections", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "Manage ComfyUI server connections",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text(">", style = MaterialTheme.typography.bodyLarge)
+        }
     }
 }
 

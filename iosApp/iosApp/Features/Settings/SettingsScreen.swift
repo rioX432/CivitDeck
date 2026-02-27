@@ -11,6 +11,9 @@ struct SettingsScreen: View {
                     offlineBanner
                 }
                 accountSection
+                if viewModel.powerUserMode {
+                    comfyUISection
+                }
                 themeSection
                 contentFilterSection
                 displaySection
@@ -57,6 +60,20 @@ struct SettingsScreen: View {
                     error: viewModel.apiKeyError,
                     onValidateAndSave: viewModel.onValidateAndSaveApiKey
                 )
+            }
+        }
+    }
+
+    private var comfyUISection: some View {
+        Section("ComfyUI") {
+            NavigationLink(destination: ComfyUISettingsView()) {
+                VStack(alignment: .leading, spacing: CivitDeckSpacing.xs) {
+                    Text("Server Connections")
+                        .font(.civitBody)
+                    Text("Manage ComfyUI server connections")
+                        .font(.civitBodySmall)
+                        .foregroundColor(.civitOnSurfaceVariant)
+                }
             }
         }
     }

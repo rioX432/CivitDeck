@@ -15,6 +15,8 @@ import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
 import com.riox432.civitdeck.ui.collections.CollectionDetailViewModel
 import com.riox432.civitdeck.ui.collections.CollectionsViewModel
+import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsViewModel
 import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryViewModel
@@ -116,4 +118,6 @@ val androidModule = module {
     viewModel { ModelFileBrowserViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { GestureTutorialViewModel(get(), get()) }
     viewModel { SwipeDiscoveryViewModel(get(), get()) }
+    viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { ComfyUIGenerationViewModel(get(), get(), get()) }
 }
