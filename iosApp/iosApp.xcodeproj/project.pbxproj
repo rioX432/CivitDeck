@@ -67,6 +67,8 @@
 		CD00DS072D7CC001000CD001 /* SwipeDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DS062D7CC001000CD001 /* SwipeDiscoveryView.swift */; };
 		CD00DS092D7CC001000CD001 /* DiscoverFab.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DS082D7CC001000CD001 /* DiscoverFab.swift */; };
 		CD00HF012D6CC001000CD001 /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00HF002D6CC001000CD001 /* HapticFeedback.swift */; };
+		CD00CU012D8CC001000CD001 /* ComfyUISettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU002D8CC001000CD001 /* ComfyUISettingsView.swift */; };
+		CD00CU032D8CC001000CD001 /* ComfyUISettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -133,6 +135,8 @@
 		CD00DS062D7CC001000CD001 /* SwipeDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeDiscoveryView.swift; sourceTree = "<group>"; };
 		CD00DS082D7CC001000CD001 /* DiscoverFab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverFab.swift; sourceTree = "<group>"; };
 		CD00HF002D6CC001000CD001 /* HapticFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedback.swift; sourceTree = "<group>"; };
+		CD00CU002D8CC001000CD001 /* ComfyUISettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUISettingsView.swift; sourceTree = "<group>"; };
+		CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUISettingsViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -225,6 +229,7 @@
 			children = (
 				CD0003012D000003000CD001 /* Search */,
 				CD00C00A2D3CC001000CD001 /* Collections */,
+				CD00CU0A2D8CC001000CD001 /* ComfyUI */,
 				CD00CE062D2CC001000CD001 /* Compare */,
 				CD0008042D000008000CD001 /* Creator */,
 				CD0004042D000004000CD001 /* Detail */,
@@ -357,6 +362,15 @@
 				CD00DS082D7CC001000CD001 /* DiscoverFab.swift */,
 			);
 			path = Discovery;
+			sourceTree = "<group>";
+		};
+		CD00CU0A2D8CC001000CD001 /* ComfyUI */ = {
+			isa = PBXGroup;
+			children = (
+				CD00CU002D8CC001000CD001 /* ComfyUISettingsView.swift */,
+				CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */,
+			);
+			path = ComfyUI;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -530,6 +544,8 @@
 				CD00DS072D7CC001000CD001 /* SwipeDiscoveryView.swift in Sources */,
 				CD00DS092D7CC001000CD001 /* DiscoverFab.swift in Sources */,
 				CD00HF012D6CC001000CD001 /* HapticFeedback.swift in Sources */,
+				CD00CU012D8CC001000CD001 /* ComfyUISettingsView.swift in Sources */,
+				CD00CU032D8CC001000CD001 /* ComfyUISettingsViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
