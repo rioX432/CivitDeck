@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
+import com.riox432.civitdeck.domain.usecase.ActivateComfyUIConnectionUseCase
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
@@ -13,10 +14,12 @@ import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.DeleteComfyUIConnectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteSavedPromptUseCase
 import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
+import com.riox432.civitdeck.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.domain.usecase.GetCacheInfoUseCase
 import com.riox432.civitdeck.domain.usecase.GetCreatorModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetDiscoveryModelsUseCase
@@ -30,7 +33,9 @@ import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveActiveComfyUIConnectionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveComfyUIConnectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCollectionModelsUseCase
@@ -51,6 +56,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
@@ -59,6 +65,7 @@ import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.RenameCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.SaveComfyUIConnectionUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.SearchSavedPromptsUseCase
@@ -75,7 +82,9 @@ import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SetOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
+import com.riox432.civitdeck.domain.usecase.TestComfyUIConnectionUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
@@ -182,4 +191,15 @@ object KoinHelper {
     // Tutorial use cases
     fun getObserveSeenTutorialVersionUseCase(): ObserveSeenTutorialVersionUseCase = getKoin().get()
     fun getSetSeenTutorialVersionUseCase(): SetSeenTutorialVersionUseCase = getKoin().get()
+
+    // ComfyUI use cases
+    fun getObserveComfyUIConnectionsUseCase(): ObserveComfyUIConnectionsUseCase = getKoin().get()
+    fun getObserveActiveComfyUIConnectionUseCase(): ObserveActiveComfyUIConnectionUseCase = getKoin().get()
+    fun getSaveComfyUIConnectionUseCase(): SaveComfyUIConnectionUseCase = getKoin().get()
+    fun getDeleteComfyUIConnectionUseCase(): DeleteComfyUIConnectionUseCase = getKoin().get()
+    fun getActivateComfyUIConnectionUseCase(): ActivateComfyUIConnectionUseCase = getKoin().get()
+    fun getTestComfyUIConnectionUseCase(): TestComfyUIConnectionUseCase = getKoin().get()
+    fun getFetchComfyUICheckpointsUseCase(): FetchComfyUICheckpointsUseCase = getKoin().get()
+    fun getSubmitComfyUIGenerationUseCase(): SubmitComfyUIGenerationUseCase = getKoin().get()
+    fun getPollComfyUIResultUseCase(): PollComfyUIResultUseCase = getKoin().get()
 }
