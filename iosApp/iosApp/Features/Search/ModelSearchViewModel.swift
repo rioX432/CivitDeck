@@ -25,6 +25,7 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var excludedTags: [String] = []
     @Published var gridColumns: Int32 = 2
     @Published var ownedHashes: Set<String> = []
+    @Published var favoriteIds: Set<Int64> = []
 
     private let getModelsUseCase: GetModelsUseCase
     private let getRecommendationsUseCase: GetRecommendationsUseCase
@@ -42,6 +43,8 @@ final class ModelSearchViewModel: ObservableObject {
     private let observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase
     private let observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase
     private let observeOwnedModelHashesUseCase: ObserveOwnedModelHashesUseCase
+    private let toggleFavoriteUseCase: ToggleFavoriteUseCase
+    private let observeFavoritesUseCase: ObserveFavoritesUseCase
     private var nextCursor: String?
     private var loadTask: Task<Void, Never>?
     private var hiddenModelIds: Set<KotlinLong> = []
@@ -67,6 +70,8 @@ final class ModelSearchViewModel: ObservableObject {
         self.observeDefaultSortOrderUseCase = KoinHelper.shared.getObserveDefaultSortOrderUseCase()
         self.observeDefaultTimePeriodUseCase = KoinHelper.shared.getObserveDefaultTimePeriodUseCase()
         self.observeOwnedModelHashesUseCase = KoinHelper.shared.getObserveOwnedModelHashesUseCase()
+        self.toggleFavoriteUseCase = KoinHelper.shared.getToggleFavoriteUseCase()
+        self.observeFavoritesUseCase = KoinHelper.shared.getObserveFavoritesUseCase()
         loadExcludedTags()
         loadDefaults()
         loadRecommendations()
@@ -231,6 +236,19 @@ final class ModelSearchViewModel: ObservableObject {
             try? await removeExcludedTagUseCase.invoke(tag: tag)
             loadExcludedTags()
             reloadModels()
+        }
+    }
+
+    func toggleFavorite(_ model: Model) {
+        Task {
+            try? await toggleFavoriteUseCase.invoke(model: model)
+        }
+    }
+
+    func observeFavorites() async {
+        for await list in observeFavoritesUseCase.invoke() {
+            let summaries = list.compactMap { $0 as? FavoriteModelSummary }
+            favoriteIds = Set(summaries.map { $0.id })
         }
     }
 
