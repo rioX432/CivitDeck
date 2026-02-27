@@ -73,6 +73,7 @@ class ModelRepositoryImpl(
             getModelsFromCacheOrEmpty(cacheKey)
         } catch (e: Exception) {
             val cached = localCache.getCached(cacheKey)
+                ?: localCache.getCachedIgnoringTtl(cacheKey)
             if (cached != null) {
                 val response = json.decodeFromString(ModelListResponse.serializer(), cached)
                 PaginatedResult(
@@ -92,7 +93,9 @@ class ModelRepositoryImpl(
             localCache.putCache(cacheKey, json.encodeToString(ModelResponse.serializer(), response))
             response.toDomain()
         } catch (e: Exception) {
+            // Try fresh cache first, then stale cache for offline mode
             val cached = localCache.getCached(cacheKey)
+                ?: localCache.getCachedIgnoringTtl(cacheKey)
             if (cached != null) {
                 json.decodeFromString(ModelResponse.serializer(), cached).toDomain()
             } else {
@@ -112,6 +115,7 @@ class ModelRepositoryImpl(
             response.toDomain()
         } catch (e: Exception) {
             val cached = localCache.getCached(cacheKey)
+                ?: localCache.getCachedIgnoringTtl(cacheKey)
             if (cached != null) {
                 json.decodeFromString(ModelVersionResponse.serializer(), cached).toDomain()
             } else {
@@ -131,6 +135,7 @@ class ModelRepositoryImpl(
             response.toDomain()
         } catch (e: Exception) {
             val cached = localCache.getCached(cacheKey)
+                ?: localCache.getCachedIgnoringTtl(cacheKey)
             if (cached != null) {
                 json.decodeFromString(ModelVersionResponse.serializer(), cached).toDomain()
             } else {

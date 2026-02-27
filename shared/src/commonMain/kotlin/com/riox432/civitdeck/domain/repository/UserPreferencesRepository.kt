@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.domain.repository
 
 import com.riox432.civitdeck.domain.model.AccentColor
+import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -30,4 +31,10 @@ interface UserPreferencesRepository {
     suspend fun setAccentColor(color: AccentColor)
     fun observeAmoledDarkMode(): Flow<Boolean>
     suspend fun setAmoledDarkMode(enabled: Boolean)
+    fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings>
+    suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings)
+    fun observeOfflineCacheEnabled(): Flow<Boolean>
+    suspend fun setOfflineCacheEnabled(enabled: Boolean)
+    fun observeCacheSizeLimitMb(): Flow<Int>
+    suspend fun setCacheSizeLimitMb(limitMb: Int)
 }

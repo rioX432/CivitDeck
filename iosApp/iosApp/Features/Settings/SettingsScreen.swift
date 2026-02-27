@@ -7,11 +7,15 @@ struct SettingsScreen: View {
     var body: some View {
         NavigationStack {
             List {
+                if !viewModel.isOnline {
+                    offlineBanner
+                }
                 accountSection
                 themeSection
                 contentFilterSection
                 displaySection
                 modelFilesSection
+                offlineCacheSection
                 dataManagementSection
                 aboutSection
             }
@@ -19,13 +23,28 @@ struct SettingsScreen: View {
             .navigationBarTitleDisplayMode(.inline)
             .task { await viewModel.observeApiKey() }
             .task { await viewModel.observeNsfwFilter() }
+            .task { await viewModel.observeNsfwBlurSettings() }
             .task { await viewModel.observeSortOrder() }
             .task { await viewModel.observeTimePeriod() }
             .task { await viewModel.observeGridColumns() }
             .task { await viewModel.observePowerUserMode() }
             .task { await viewModel.observeAccentColor() }
             .task { await viewModel.observeAmoledDarkMode() }
+            .task { await viewModel.observeNetworkStatus() }
+            .task { await viewModel.observeOfflineCacheEnabled() }
+            .task { await viewModel.observeCacheSizeLimit() }
         }
+    }
+
+    private var offlineBanner: some View {
+        HStack {
+            Spacer()
+            Text("You are offline — showing cached data")
+                .font(.civitBodySmall)
+                .foregroundColor(.civitOnErrorContainer)
+            Spacer()
+        }
+        .listRowBackground(Color.civitErrorContainer)
     }
 
     private var accountSection: some View {
@@ -88,6 +107,12 @@ struct SettingsScreen: View {
                         .font(.civitBodySmall)
                         .foregroundColor(.civitOnSurfaceVariant)
                 }
+            }
+            if viewModel.nsfwFilterLevel != .off {
+                NsfwBlurSettingsSection(
+                    settings: viewModel.nsfwBlurSettings,
+                    onChanged: viewModel.onNsfwBlurSettingsChanged
+                )
             }
         }
     }
@@ -159,6 +184,53 @@ struct SettingsScreen: View {
                     Label("Model File Browser", systemImage: "folder.badge.gearshape")
                 }
             }
+        }
+    }
+
+    private var offlineCacheSection: some View {
+        Section("Offline & Cache") {
+            offlineCacheToggle
+            if viewModel.offlineCacheEnabled {
+                cacheSizeLimitPicker
+            }
+            cacheInfoRow
+        }
+    }
+
+    private var offlineCacheToggle: some View {
+        Toggle(isOn: Binding(
+            get: { viewModel.offlineCacheEnabled },
+            set: { viewModel.onOfflineCacheEnabledChanged($0) }
+        )) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("Offline Cache")
+                    .font(.civitBodyMedium)
+                Text("Keep viewed models available offline")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+            }
+        }
+    }
+
+    private var cacheSizeLimitPicker: some View {
+        Picker("Cache Size Limit", selection: Binding(
+            get: { viewModel.cacheSizeLimitMb },
+            set: { viewModel.onCacheSizeLimitChanged($0) }
+        )) {
+            Text("50 MB").tag(Int32(50))
+            Text("100 MB").tag(Int32(100))
+            Text("200 MB").tag(Int32(200))
+            Text("500 MB").tag(Int32(500))
+        }
+    }
+
+    private var cacheInfoRow: some View {
+        HStack {
+            Text("Cached Entries")
+            Spacer()
+            Text("\(viewModel.cacheEntryCount) entries (\(viewModel.cacheFormattedSize))")
+                .font(.civitBodySmall)
+                .foregroundColor(.civitOnSurfaceVariant)
         }
     }
 
@@ -270,6 +342,67 @@ private struct ApiKeyInputRow: View {
             Text("Get your key at civitai.com/user/account")
                 .font(.civitBodySmall)
                 .foregroundColor(.civitOnSurfaceVariant)
+        }
+    }
+}
+
+private struct NsfwBlurSettingsSection: View {
+    let settings: NsfwBlurSettings
+    let onChanged: (NsfwBlurSettings) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("Blur Intensity")
+                .font(.civitBodySmall)
+                .foregroundColor(.civitOnSurfaceVariant)
+            BlurSliderRow(label: "Soft", intensity: Int(settings.softIntensity)) { value in
+                onChanged(NsfwBlurSettings(
+                    softIntensity: Int32(value),
+                    matureIntensity: settings.matureIntensity,
+                    explicitIntensity: settings.explicitIntensity
+                ))
+            }
+            BlurSliderRow(label: "Mature", intensity: Int(settings.matureIntensity)) { value in
+                onChanged(NsfwBlurSettings(
+                    softIntensity: settings.softIntensity,
+                    matureIntensity: Int32(value),
+                    explicitIntensity: settings.explicitIntensity
+                ))
+            }
+            BlurSliderRow(label: "Explicit", intensity: Int(settings.explicitIntensity)) { value in
+                onChanged(NsfwBlurSettings(
+                    softIntensity: settings.softIntensity,
+                    matureIntensity: settings.matureIntensity,
+                    explicitIntensity: Int32(value)
+                ))
+            }
+        }
+    }
+}
+
+private struct BlurSliderRow: View {
+    let label: String
+    let intensity: Int
+    let onChanged: (Int) -> Void
+
+    var body: some View {
+        VStack(spacing: 2) {
+            HStack {
+                Text(label)
+                    .font(.civitBodyMedium)
+                Spacer()
+                Text(intensity == 0 ? "Hidden" : "\(intensity)%")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+            }
+            Slider(
+                value: Binding(
+                    get: { Double(intensity) },
+                    set: { onChanged(Int($0)) }
+                ),
+                in: 0...100,
+                step: 25
+            )
         }
     }
 }

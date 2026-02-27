@@ -4,6 +4,8 @@ import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
 import com.riox432.civitdeck.domain.model.AccentColor
+import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity.Companion.DEFAULT_CACHE_SIZE_LIMIT_MB
+import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -113,5 +115,39 @@ class UserPreferencesRepositoryImpl(
     override suspend fun setAmoledDarkMode(enabled: Boolean) {
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(amoledDarkMode = enabled))
+    override fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings> =
+        dao.observePreferences().map { entity ->
+            NsfwBlurSettings(
+                softIntensity = entity?.nsfwBlurSoft ?: NsfwBlurSettings.DEFAULT_SOFT,
+                matureIntensity = entity?.nsfwBlurMature ?: NsfwBlurSettings.DEFAULT_MATURE,
+                explicitIntensity = entity?.nsfwBlurExplicit ?: NsfwBlurSettings.DEFAULT_EXPLICIT,
+            )
+        }
+
+    override suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(
+            existing.copy(
+                nsfwBlurSoft = settings.softIntensity,
+                nsfwBlurMature = settings.matureIntensity,
+                nsfwBlurExplicit = settings.explicitIntensity,
+            ),
+        )
+    }
+
+    override fun observeOfflineCacheEnabled(): Flow<Boolean> =
+        dao.observePreferences().map { it?.offlineCacheEnabled ?: true }
+
+    override suspend fun setOfflineCacheEnabled(enabled: Boolean) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(offlineCacheEnabled = enabled))
+    }
+
+    override fun observeCacheSizeLimitMb(): Flow<Int> =
+        dao.observePreferences().map { it?.cacheSizeLimitMb ?: DEFAULT_CACHE_SIZE_LIMIT_MB }
+
+    override suspend fun setCacheSizeLimitMb(limitMb: Int) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(cacheSizeLimitMb = limitMb))
     }
 }

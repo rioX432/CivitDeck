@@ -4,6 +4,9 @@ import Shared
 @MainActor
 final class SettingsViewModel: ObservableObject {
     @Published var nsfwFilterLevel: NsfwFilterLevel = .off
+    @Published var nsfwBlurSettings: NsfwBlurSettings = NsfwBlurSettings(
+        softIntensity: 75, matureIntensity: 25, explicitIntensity: 0
+    )
     @Published var defaultSortOrder: CivitSortOrder = .mostDownloaded
     @Published var defaultTimePeriod: TimePeriod = .allTime
     @Published var gridColumns: Int32 = 2
@@ -16,9 +19,16 @@ final class SettingsViewModel: ObservableObject {
     @Published var powerUserMode: Bool = false
     @Published var accentColor: AccentColor = .blue
     @Published var amoledDarkMode: Bool = false
+    @Published var isOnline: Bool = true
+    @Published var offlineCacheEnabled: Bool = true
+    @Published var cacheSizeLimitMb: Int32 = 200
+    @Published var cacheEntryCount: Int32 = 0
+    @Published var cacheFormattedSize: String = "0 B"
 
     private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
     private let setNsfwFilterUseCase: SetNsfwFilterUseCase
+    private let observeNsfwBlurSettingsUseCase: ObserveNsfwBlurSettingsUseCase
+    private let setNsfwBlurSettingsUseCase: SetNsfwBlurSettingsUseCase
     private let observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase
     private let setDefaultSortOrderUseCase: SetDefaultSortOrderUseCase
     private let observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase
@@ -42,10 +52,19 @@ final class SettingsViewModel: ObservableObject {
     private let setAccentColorUseCase: SetAccentColorUseCase
     private let observeAmoledDarkModeUseCase: ObserveAmoledDarkModeUseCase
     private let setAmoledDarkModeUseCase: SetAmoledDarkModeUseCase
+    private let observeNetworkStatusUseCase: ObserveNetworkStatusUseCase
+    private let observeOfflineCacheEnabledUseCase: ObserveOfflineCacheEnabledUseCase
+    private let setOfflineCacheEnabledUseCase: SetOfflineCacheEnabledUseCase
+    private let observeCacheSizeLimitUseCase: ObserveCacheSizeLimitUseCase
+    private let setCacheSizeLimitUseCase: SetCacheSizeLimitUseCase
+    private let getCacheInfoUseCase: GetCacheInfoUseCase
+    private let evictCacheUseCase: EvictCacheUseCase
 
     init() {
         self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
         self.setNsfwFilterUseCase = KoinHelper.shared.getSetNsfwFilterUseCase()
+        self.observeNsfwBlurSettingsUseCase = KoinHelper.shared.getObserveNsfwBlurSettingsUseCase()
+        self.setNsfwBlurSettingsUseCase = KoinHelper.shared.getSetNsfwBlurSettingsUseCase()
         self.observeDefaultSortOrderUseCase = KoinHelper.shared.getObserveDefaultSortOrderUseCase()
         self.setDefaultSortOrderUseCase = KoinHelper.shared.getSetDefaultSortOrderUseCase()
         self.observeDefaultTimePeriodUseCase = KoinHelper.shared.getObserveDefaultTimePeriodUseCase()
@@ -69,6 +88,13 @@ final class SettingsViewModel: ObservableObject {
         self.setAccentColorUseCase = KoinHelper.shared.getSetAccentColorUseCase()
         self.observeAmoledDarkModeUseCase = KoinHelper.shared.getObserveAmoledDarkModeUseCase()
         self.setAmoledDarkModeUseCase = KoinHelper.shared.getSetAmoledDarkModeUseCase()
+        self.observeNetworkStatusUseCase = KoinHelper.shared.getObserveNetworkStatusUseCase()
+        self.observeOfflineCacheEnabledUseCase = KoinHelper.shared.getObserveOfflineCacheEnabledUseCase()
+        self.setOfflineCacheEnabledUseCase = KoinHelper.shared.getSetOfflineCacheEnabledUseCase()
+        self.observeCacheSizeLimitUseCase = KoinHelper.shared.getObserveCacheSizeLimitUseCase()
+        self.setCacheSizeLimitUseCase = KoinHelper.shared.getSetCacheSizeLimitUseCase()
+        self.getCacheInfoUseCase = KoinHelper.shared.getCacheInfoUseCase()
+        self.evictCacheUseCase = KoinHelper.shared.getEvictCacheUseCase()
         loadMutableData()
     }
 
@@ -106,6 +132,27 @@ final class SettingsViewModel: ObservableObject {
     func observeAmoledDarkMode() async {
         for await value in observeAmoledDarkModeUseCase.invoke() {
             amoledDarkMode = value.boolValue
+    func observeNsfwBlurSettings() async {
+        for await value in observeNsfwBlurSettingsUseCase.invoke() {
+            nsfwBlurSettings = value
+        }
+    }
+
+    func observeNetworkStatus() async {
+        for await value in observeNetworkStatusUseCase.invoke() {
+            isOnline = value.boolValue
+        }
+    }
+
+    func observeOfflineCacheEnabled() async {
+        for await value in observeOfflineCacheEnabledUseCase.invoke() {
+            offlineCacheEnabled = value.boolValue
+        }
+    }
+
+    func observeCacheSizeLimit() async {
+        for await value in observeCacheSizeLimitUseCase.invoke() {
+            cacheSizeLimitMb = value.int32Value
         }
     }
 
@@ -113,6 +160,11 @@ final class SettingsViewModel: ObservableObject {
         let newLevel: NsfwFilterLevel = nsfwFilterLevel == .off ? .all : .off
         nsfwFilterLevel = newLevel
         Task { try? await setNsfwFilterUseCase.invoke(level: newLevel) }
+    }
+
+    func onNsfwBlurSettingsChanged(_ settings: NsfwBlurSettings) {
+        nsfwBlurSettings = settings
+        Task { try? await setNsfwBlurSettingsUseCase.invoke(settings: settings) }
     }
 
     func onSortOrderChanged(_ sort: CivitSortOrder) {
@@ -169,7 +221,10 @@ final class SettingsViewModel: ObservableObject {
     }
 
     func onClearCache() {
-        Task { try? await clearCacheUseCase.invoke() }
+        Task {
+            try? await clearCacheUseCase.invoke()
+            await refreshCacheInfo()
+        }
     }
 
     func observePowerUserMode() async {
@@ -215,10 +270,32 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
+    func onOfflineCacheEnabledChanged(_ enabled: Bool) {
+        offlineCacheEnabled = enabled
+        Task { try? await setOfflineCacheEnabledUseCase.invoke(enabled: enabled) }
+    }
+
+    func onCacheSizeLimitChanged(_ limitMb: Int32) {
+        cacheSizeLimitMb = limitMb
+        Task {
+            try? await setCacheSizeLimitUseCase.invoke(limitMb: limitMb)
+            try? await evictCacheUseCase.invoke(maxBytes: Int64(limitMb) * 1024 * 1024)
+            await refreshCacheInfo()
+        }
+    }
+
+    private func refreshCacheInfo() async {
+        if let info = try? await getCacheInfoUseCase.invoke() {
+            cacheEntryCount = Int32(info.entryCount)
+            cacheFormattedSize = info.formattedSize
+        }
+    }
+
     private func loadMutableData() {
         Task {
             hiddenModels = (try? await getHiddenModelsUseCase.invoke()) ?? []
             excludedTags = (try? await getExcludedTagsUseCase.invoke()) ?? []
+            await refreshCacheInfo()
         }
         Task {
             let observed = try? await observeApiKeyUseCase.invoke().first(where: { _ in true })
