@@ -151,4 +151,12 @@ class UserPreferencesRepositoryImpl(
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(cacheSizeLimitMb = limitMb))
     }
+
+    override fun observeSeenTutorialVersion(): Flow<Int> =
+        dao.observePreferences().map { it?.seenTutorialVersion ?: 0 }
+
+    override suspend fun setSeenTutorialVersion(version: Int) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(seenTutorialVersion = version))
+    }
 }

@@ -23,6 +23,7 @@ import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserViewModel
 import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.settings.SettingsViewModel
+import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -113,5 +114,6 @@ val androidModule = module {
         )
     }
     viewModel { ModelFileBrowserViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { GestureTutorialViewModel(get(), get()) }
     viewModel { SwipeDiscoveryViewModel(get(), get()) }
 }

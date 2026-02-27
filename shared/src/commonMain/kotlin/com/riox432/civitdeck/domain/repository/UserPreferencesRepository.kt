@@ -37,4 +37,6 @@ interface UserPreferencesRepository {
     suspend fun setOfflineCacheEnabled(enabled: Boolean)
     fun observeCacheSizeLimitMb(): Flow<Int>
     suspend fun setCacheSizeLimitMb(limitMb: Int)
+    fun observeSeenTutorialVersion(): Flow<Int>
+    suspend fun setSeenTutorialVersion(version: Int)
 }

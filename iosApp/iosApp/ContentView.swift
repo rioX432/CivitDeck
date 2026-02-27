@@ -4,10 +4,13 @@ struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var selectedTab: SidebarTab? = .search
     @StateObject private var comparisonState = ComparisonState()
+    @StateObject private var tutorialVm = GestureTutorialViewModel()
 
     var body: some View {
         Group {
-            if sizeClass == .regular {
+            if tutorialVm.shouldShowTutorial {
+                GestureTutorialView(onDismiss: tutorialVm.dismissTutorial)
+            } else if sizeClass == .regular {
                 sidebarLayout
             } else {
                 tabLayout

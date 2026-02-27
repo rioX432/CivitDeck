@@ -21,6 +21,7 @@ data class UserPreferencesEntity(
     val cacheSizeLimitMb: Int = DEFAULT_CACHE_SIZE_LIMIT_MB,
     val accentColor: String = "Blue",
     val amoledDarkMode: Boolean = false,
+    val seenTutorialVersion: Int = 0,
 ) {
     companion object {
         const val DEFAULT_CACHE_SIZE_LIMIT_MB = 200
