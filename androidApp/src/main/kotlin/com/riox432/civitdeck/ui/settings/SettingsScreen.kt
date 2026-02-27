@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -38,7 +39,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -56,6 +56,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     onNavigateToLicenses: () -> Unit = {},
     onNavigateToModelFiles: () -> Unit = {},
+    onNavigateToComfyUI: () -> Unit = {},
     scrollToTopTrigger: Int = 0,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -69,25 +70,54 @@ fun SettingsScreen(
         }
     }
 
-    SettingsContent(state, viewModel, listState, onNavigateToLicenses, onNavigateToModelFiles)
+    SettingsContent(state, viewModel, listState, onNavigateToLicenses, onNavigateToModelFiles, onNavigateToComfyUI)
 }
 
 @Composable
+@Suppress("LongParameterList")
 private fun SettingsContent(
     state: SettingsUiState,
     viewModel: SettingsViewModel,
     listState: androidx.compose.foundation.lazy.LazyListState,
     onNavigateToLicenses: () -> Unit,
     onNavigateToModelFiles: () -> Unit,
+    onNavigateToComfyUI: () -> Unit,
 ) {
     LazyColumn(state = listState) {
         if (!state.isOnline) {
             item { OfflineBanner() }
         }
         settingsAccountItems(state, viewModel)
+        if (state.powerUserMode) {
+            settingsComfyUIItem(onNavigateToComfyUI)
+        }
         settingsDisplayItems(state, viewModel, onNavigateToModelFiles)
         settingsCacheItems(state, viewModel)
         settingsDataItems(state, viewModel, onNavigateToLicenses)
+    }
+}
+
+private fun LazyListScope.settingsComfyUIItem(onNavigateToComfyUI: () -> Unit) {
+    item { SectionHeader("ComfyUI") }
+    item {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onNavigateToComfyUI)
+                .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                Text("Server Connections", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "Manage ComfyUI server connections",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text(">", style = MaterialTheme.typography.bodyLarge)
+        }
     }
 }
 
