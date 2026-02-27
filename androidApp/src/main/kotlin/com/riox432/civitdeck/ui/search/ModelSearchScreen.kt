@@ -115,10 +115,10 @@ import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.adaptive.isExpandedWidth
 import com.riox432.civitdeck.ui.components.LaunchStaggerAnimation
 import com.riox432.civitdeck.ui.components.ModelCard
+import com.riox432.civitdeck.ui.components.SwipeableModelCard
 import com.riox432.civitdeck.ui.components.isReducedMotionEnabled
 import com.riox432.civitdeck.ui.components.rememberGridItemScrollOffset
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
-import com.riox432.civitdeck.ui.components.staggeredEntrance
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -225,7 +225,7 @@ private fun HeaderSnapEffect(gridState: LazyGridState, headerState: CollapsibleH
     }
 }
 
-@Suppress("LongParameterList", "LongMethod", "UnusedParameter")
+@Suppress("LongParameterList", "LongMethod")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchScreenBody(
@@ -1065,7 +1065,7 @@ private fun ModelSearchContent(
 }
 
 @OptIn(ExperimentalFoundationApi::class)
-@Suppress("LongParameterList", "LongMethod", "UnusedParameter")
+@Suppress("LongParameterList", "LongMethod")
 @Composable
 private fun ModelGrid(
     lazyPagingItems: LazyPagingItems<Model>,
@@ -1111,15 +1111,22 @@ private fun ModelGrid(
             count = lazyPagingItems.itemCount,
             key = lazyPagingItems.itemKey { it.id },
         ) { index ->
-            ModelGridItem(
-                index = index,
-                lazyPagingItems = lazyPagingItems,
-                gridState = gridState,
-                onModelClick = onModelClick,
-                onHideModel = onHideModel,
-                onCompareModel = onCompareModel,
-                ownedHashes = ownedHashes,
-                reducedMotion = reducedMotion,
+            val model = lazyPagingItems[index] ?: return@items
+            val thumbnailUrl = model.modelVersions
+                .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
+            val isOwned = ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
+
+            @Suppress("UnusedPrivateProperty")
+            val parallaxOffset = rememberGridItemScrollOffset(gridState, index)
+            LaunchStaggerAnimation(index = index, reducedMotion = reducedMotion)
+            SwipeableModelCard(
+                model = model,
+                isFavorite = model.id in favoriteIds,
+                onFavoriteToggle = { onToggleFavorite(model) },
+                onHide = { onHideModel(model.id, model.name) },
+                onClick = { onModelClick(model.id, thumbnailUrl, "") },
+                modifier = Modifier.animateItem(),
+                isOwned = isOwned,
             )
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
@@ -1135,100 +1142,6 @@ private fun ModelGrid(
                     CircularProgressIndicator()
                 }
             }
-        }
-    }
-}
-
-@Suppress("LongParameterList")
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun ModelGridItem(
-    index: Int,
-    lazyPagingItems: LazyPagingItems<Model>,
-    gridState: LazyGridState,
-    onModelClick: (Long, String?, String) -> Unit,
-    onHideModel: (Long, String) -> Unit,
-    onCompareModel: (Long, String) -> Unit,
-    ownedHashes: Set<String>,
-    reducedMotion: Boolean,
-) {
-    val model = lazyPagingItems[index] ?: return
-    val thumbnailUrl = model.modelVersions
-        .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
-    val isOwned = ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
-    val parallaxOffset = rememberGridItemScrollOffset(gridState, index)
-    val staggerAlpha = remember { Animatable(0f) }
-
-    LaunchStaggerAnimation(
-        index = index,
-        animatable = staggerAlpha,
-        reducedMotion = reducedMotion,
-    )
-
-    ModelCardWithContextMenu(
-        model = model,
-        onClick = { onModelClick(model.id, thumbnailUrl, "") },
-        onHide = { onHideModel(model.id, model.name) },
-        onCompare = { onCompareModel(model.id, model.name) },
-        modifier = Modifier
-            .animateItem()
-            .staggeredEntrance(
-                animatable = staggerAlpha,
-                reducedMotion = reducedMotion,
-            ),
-        isOwned = isOwned,
-        parallaxOffset = parallaxOffset,
-        reducedMotion = reducedMotion,
-    )
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun ModelCardWithContextMenu(
-    model: Model,
-    onClick: () -> Unit,
-    onHide: () -> Unit,
-    onCompare: () -> Unit,
-    modifier: Modifier = Modifier,
-    isOwned: Boolean = false,
-    parallaxOffset: Float = 0f,
-    reducedMotion: Boolean = false,
-) {
-    var showMenu by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = modifier.combinedClickable(
-            onClick = onClick,
-            onLongClick = { showMenu = true },
-        ),
-    ) {
-        ModelCard(
-            model = model,
-            isOwned = isOwned,
-            parallaxOffset = parallaxOffset,
-            reducedMotion = reducedMotion,
-        )
-        DropdownMenu(
-            expanded = showMenu,
-            onDismissRequest = { showMenu = false },
-        ) {
-            DropdownMenuItem(
-                text = { Text("Compare") },
-                leadingIcon = {
-                    Icon(Icons.AutoMirrored.Filled.CompareArrows, contentDescription = null)
-                },
-                onClick = {
-                    showMenu = false
-                    onCompare()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text("Hide model") },
-                onClick = {
-                    showMenu = false
-                    onHide()
-                },
-            )
         }
     }
 }
