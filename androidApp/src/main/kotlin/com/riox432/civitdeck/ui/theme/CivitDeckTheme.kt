@@ -8,13 +8,17 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.riox432.civitdeck.domain.model.AccentColor
 
 @Composable
 fun CivitDeckTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    accentColor: AccentColor = AccentColor.Blue,
+    amoledDarkMode: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = if (darkTheme) CivitDeckDarkColorScheme else CivitDeckLightColorScheme
+    val baseScheme = accentColorScheme(accentColor, darkTheme)
+    val colorScheme = if (darkTheme && amoledDarkMode) baseScheme.withAmoled() else baseScheme
 
     val view = LocalView.current
     if (!view.isInEditMode) {

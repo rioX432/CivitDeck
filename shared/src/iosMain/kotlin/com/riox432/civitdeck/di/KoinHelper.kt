@@ -29,6 +29,8 @@ import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.HideModelUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCollectionModelsUseCase
@@ -59,6 +61,8 @@ import com.riox432.civitdeck.domain.usecase.RenameCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.SearchSavedPromptsUseCase
+import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
+import com.riox432.civitdeck.domain.usecase.SetAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
@@ -150,6 +154,12 @@ object KoinHelper {
     fun getToggleTemplateUseCase(): ToggleTemplateUseCase = getKoin().get()
     fun getSearchSavedPromptsUseCase(): SearchSavedPromptsUseCase = getKoin().get()
     fun getObserveTemplatesUseCase(): ObserveTemplatesUseCase = getKoin().get()
+
+    // Theme use cases
+    fun getObserveAccentColorUseCase(): ObserveAccentColorUseCase = getKoin().get()
+    fun getSetAccentColorUseCase(): SetAccentColorUseCase = getKoin().get()
+    fun getObserveAmoledDarkModeUseCase(): ObserveAmoledDarkModeUseCase = getKoin().get()
+    fun getSetAmoledDarkModeUseCase(): SetAmoledDarkModeUseCase = getKoin().get()
 
     // Notification use cases
     fun getCheckModelUpdatesUseCase(): CheckModelUpdatesUseCase = getKoin().get()

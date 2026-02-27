@@ -46,11 +46,46 @@ extension Color {
     static let civitInverseSurface = Color(light: hex(0x303034), dark: hex(0xE4E1E6))
     static let civitInverseOnSurface = Color(light: hex(0xF2F0F4), dark: hex(0x303034))
     static let civitInversePrimary = Color(light: hex(0xB8C4FF), dark: hex(0x3755C3))
+
+    // MARK: - AMOLED Dark Mode
+    static let amoledSurface = Color(red: 0, green: 0, blue: 0)
+    static let amoledSurfaceContainer = Color(red: 0.06, green: 0.06, blue: 0.06)
+    static let amoledSurfaceContainerHigh = Color(red: 0.09, green: 0.09, blue: 0.09)
+}
+
+// MARK: - Accent Color Tint
+
+/// Light/dark pair for accent color tinting in iOS.
+struct AccentColorPair {
+    let light: Color
+    let dark: Color
+}
+
+/// Curated accent tint colors matching the shared AccentColor enum.
+enum AccentTint: String, CaseIterable {
+    case blue, indigo, purple, pink, red, orange, amber, green, teal, cyan
+
+    var displayName: String { rawValue.capitalized }
+
+    var colors: AccentColorPair {
+        switch self {
+        case .blue: return AccentColorPair(light: .hex(0x3755C3), dark: .hex(0xB8C4FF))
+        case .indigo: return AccentColorPair(light: .hex(0x5856D6), dark: .hex(0xC5C0FF))
+        case .purple: return AccentColorPair(light: .hex(0x7C3AED), dark: .hex(0xD4BBFF))
+        case .pink: return AccentColorPair(light: .hex(0xDB2777), dark: .hex(0xFFB1C8))
+        case .red: return AccentColorPair(light: .hex(0xDC2626), dark: .hex(0xFFB4AB))
+        case .orange: return AccentColorPair(light: .hex(0xEA580C), dark: .hex(0xFFB68E))
+        case .amber: return AccentColorPair(light: .hex(0xD97706), dark: .hex(0xFFBB3D))
+        case .green: return AccentColorPair(light: .hex(0x16A34A), dark: .hex(0x6CE892))
+        case .teal: return AccentColorPair(light: .hex(0x0D9488), dark: .hex(0x4EDBC8))
+        case .cyan: return AccentColorPair(light: .hex(0x0891B2), dark: .hex(0x5DD5FC))
+        }
+    }
 }
 
 // MARK: - Helpers
 
-private extension Color {
+extension Color {
     init(light: Color, dark: Color) {
         self.init(uiColor: UIColor { traits in
             traits.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)

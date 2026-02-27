@@ -28,6 +28,8 @@ import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.HideModelUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCollectionModelsUseCase
@@ -58,6 +60,8 @@ import com.riox432.civitdeck.domain.usecase.RenameCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.SearchSavedPromptsUseCase
+import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
+import com.riox432.civitdeck.domain.usecase.SetAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
@@ -143,6 +147,11 @@ val domainModule = module {
     factory { ScanModelDirectoriesUseCase(get()) }
     factory { VerifyModelHashUseCase(get()) }
     factory { ObserveOwnedModelHashesUseCase(get()) }
+    // Theme use cases
+    factory { ObserveAccentColorUseCase(get()) }
+    factory { SetAccentColorUseCase(get()) }
+    factory { ObserveAmoledDarkModeUseCase(get()) }
+    factory { SetAmoledDarkModeUseCase(get()) }
     // Notification use cases
     factory { CheckModelUpdatesUseCase(get(), get(), get()) }
     factory { ObserveNotificationsEnabledUseCase(get()) }
