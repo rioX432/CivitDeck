@@ -109,6 +109,7 @@ val androidModule = module {
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(),
+            get(), get(), get(), get(),
         )
     }
     viewModel { ModelFileBrowserViewModel(get(), get(), get(), get(), get(), get()) }
