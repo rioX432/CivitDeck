@@ -43,7 +43,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.BuildConfig
-import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
@@ -84,46 +83,6 @@ private fun SettingsContent(
         if (!state.isOnline) {
             item { OfflineBanner() }
         }
-        item { SectionHeader("Notifications") }
-        item {
-            NotificationsToggleRow(
-                enabled = state.notificationsEnabled,
-                onToggle = viewModel::onNotificationsEnabledChanged,
-            )
-        }
-        if (state.notificationsEnabled) {
-            item {
-                PollingIntervalRow(
-                    selected = state.pollingInterval,
-                    onChanged = viewModel::onPollingIntervalChanged,
-                )
-            }
-        }
-        item { SectionHeader("Theme") }
-        item { AccentColorRow(state.accentColor, viewModel::onAccentColorChanged) }
-        item { AmoledDarkModeRow(state.amoledDarkMode, viewModel::onAmoledDarkModeChanged) }
-        item { SectionHeader("Content Filter") }
-        item { NsfwToggleRow(state.nsfwFilterLevel, viewModel::onNsfwFilterChanged) }
-        item { SectionHeader("Display") }
-        item { SortOrderRow(state.defaultSortOrder, viewModel::onSortOrderChanged) }
-        item { TimePeriodRow(state.defaultTimePeriod, viewModel::onTimePeriodChanged) }
-        item { GridColumnsRow(state.gridColumns, viewModel::onGridColumnsChanged) }
-        item { PowerUserModeRow(state.powerUserMode, viewModel::onPowerUserModeChanged) }
-        if (state.powerUserMode) {
-            item { SectionHeader("Model Files") }
-            item { NavigationRow("Model File Browser", onNavigateToModelFiles) }
-        }
-        dataManagementItems(state, viewModel)
-        item { SectionHeader("About") }
-        item { InfoRow("App Version", BuildConfig.VERSION_NAME) }
-        item { NavigationRow("Open Source Licenses", onNavigateToLicenses) }
-    }
-}
-
-private fun LazyListScope.dataManagementItems(
-    state: SettingsUiState,
-    viewModel: SettingsViewModel,
-) {
         settingsAccountItems(state, viewModel)
         settingsDisplayItems(state, viewModel, onNavigateToModelFiles)
         settingsCacheItems(state, viewModel)
@@ -265,19 +224,6 @@ private fun PollingIntervalRow(selected: PollingInterval, onChanged: (PollingInt
 }
 
 @Composable
-private fun AccentColorRow(selected: AccentColor, onChanged: (AccentColor) -> Unit) {
-    DropdownSettingRow(
-        label = "Accent Color",
-        value = selected.displayName,
-        options = AccentColor.entries.map { it.displayName },
-        onSelected = { name ->
-            AccentColor.entries.find { it.displayName == name }?.let(onChanged)
-        },
-    )
-}
-
-@Composable
-private fun AmoledDarkModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
 private fun OfflineBanner() {
     Row(
         modifier = Modifier
@@ -308,9 +254,6 @@ private fun OfflineCacheToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit)
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text("AMOLED Dark Mode", style = MaterialTheme.typography.bodyLarge)
-            Text(
-                "Pure black background for OLED screens",
             Text("Offline Cache", style = MaterialTheme.typography.bodyLarge)
             Text(
                 "Keep viewed models available offline",
@@ -492,27 +435,31 @@ private fun DropdownSettingRow(
     onSelected: (String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { expanded = true }
-            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyLarge)
-        Column {
-            Text(value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                options.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(option) },
-                        onClick = {
-                            onSelected(option)
-                            expanded = false
-                        },
-                    )
-                }
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = true }
+                .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(label, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onSelected(option)
+                        expanded = false
+                    },
+                )
             }
         }
     }

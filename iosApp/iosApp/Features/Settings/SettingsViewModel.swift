@@ -132,6 +132,8 @@ final class SettingsViewModel: ObservableObject {
     func observeAmoledDarkMode() async {
         for await value in observeAmoledDarkModeUseCase.invoke() {
             amoledDarkMode = value.boolValue
+        }
+    }
     func observeNsfwBlurSettings() async {
         for await value in observeNsfwBlurSettingsUseCase.invoke() {
             nsfwBlurSettings = value

@@ -318,6 +318,7 @@ class SettingsViewModel(
 
     fun onAmoledDarkModeChanged(enabled: Boolean) {
         viewModelScope.launch { setAmoledDarkModeUseCase(enabled) }
+    }
     fun onOfflineCacheEnabledChanged(enabled: Boolean) {
         viewModelScope.launch { setOfflineCacheEnabledUseCase(enabled) }
     }
