@@ -3,6 +3,7 @@ package com.riox432.civitdeck.data.repository
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
+import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -93,5 +94,25 @@ class UserPreferencesRepositoryImpl(
     override suspend fun setPollingInterval(interval: PollingInterval) {
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(pollingIntervalMinutes = interval.minutes))
+    }
+
+    override fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings> =
+        dao.observePreferences().map { entity ->
+            NsfwBlurSettings(
+                softIntensity = entity?.nsfwBlurSoft ?: NsfwBlurSettings.DEFAULT_SOFT,
+                matureIntensity = entity?.nsfwBlurMature ?: NsfwBlurSettings.DEFAULT_MATURE,
+                explicitIntensity = entity?.nsfwBlurExplicit ?: NsfwBlurSettings.DEFAULT_EXPLICIT,
+            )
+        }
+
+    override suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(
+            existing.copy(
+                nsfwBlurSoft = settings.softIntensity,
+                nsfwBlurMature = settings.matureIntensity,
+                nsfwBlurExplicit = settings.explicitIntensity,
+            ),
+        )
     }
 }

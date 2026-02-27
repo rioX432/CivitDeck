@@ -20,6 +20,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.BuildConfig
+import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -61,6 +63,17 @@ fun SettingsScreen(
         }
     }
 
+    SettingsContent(state, viewModel, listState, onNavigateToLicenses, onNavigateToModelFiles)
+}
+
+@Composable
+private fun SettingsContent(
+    state: SettingsUiState,
+    viewModel: SettingsViewModel,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    onNavigateToLicenses: () -> Unit,
+    onNavigateToModelFiles: () -> Unit,
+) {
     LazyColumn(state = listState) {
         item { SectionHeader("Account") }
         item {
@@ -90,6 +103,14 @@ fun SettingsScreen(
         }
         item { SectionHeader("Content Filter") }
         item { NsfwToggleRow(state.nsfwFilterLevel, viewModel::onNsfwFilterChanged) }
+        if (state.nsfwFilterLevel != NsfwFilterLevel.Off) {
+            item {
+                NsfwBlurSection(
+                    settings = state.nsfwBlurSettings,
+                    onSettingsChanged = viewModel::onNsfwBlurSettingsChanged,
+                )
+            }
+        }
         item { SectionHeader("Display") }
         item { SortOrderRow(state.defaultSortOrder, viewModel::onSortOrderChanged) }
         item { TimePeriodRow(state.defaultTimePeriod, viewModel::onTimePeriodChanged) }
@@ -188,6 +209,59 @@ private fun NsfwToggleRow(level: NsfwFilterLevel, onToggle: (NsfwFilterLevel) ->
             onCheckedChange = {
                 onToggle(if (level == NsfwFilterLevel.Off) NsfwFilterLevel.All else NsfwFilterLevel.Off)
             },
+        )
+    }
+}
+
+@Composable
+private fun NsfwBlurSection(
+    settings: NsfwBlurSettings,
+    onSettingsChanged: (NsfwBlurSettings) -> Unit,
+) {
+    Column(
+        modifier = Modifier.padding(horizontal = Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+    ) {
+        Text(
+            "Blur Intensity",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        BlurSliderRow("Soft", settings.softIntensity) {
+            onSettingsChanged(settings.copy(softIntensity = it))
+        }
+        BlurSliderRow("Mature", settings.matureIntensity) {
+            onSettingsChanged(settings.copy(matureIntensity = it))
+        }
+        BlurSliderRow("Explicit", settings.explicitIntensity) {
+            onSettingsChanged(settings.copy(explicitIntensity = it))
+        }
+    }
+}
+
+@Composable
+private fun BlurSliderRow(
+    label: String,
+    intensity: Int,
+    onChanged: (Int) -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(label, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = if (intensity == 0) "Hidden" else "$intensity%",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Slider(
+            value = intensity.toFloat(),
+            onValueChange = { onChanged(it.toInt()) },
+            valueRange = 0f..100f,
+            steps = 3,
         )
     }
 }

@@ -87,7 +87,7 @@ val androidModule = module {
         ModelSearchViewModel(
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(),
+            get(), get(), get(), get(), get(), get(),
         )
     }
     viewModel { CollectionsViewModel(get(), get(), get(), get()) }
@@ -98,14 +98,15 @@ val androidModule = module {
         )
     }
     viewModel { params -> CreatorProfileViewModel(params.get(), get()) }
-    viewModel { params -> ImageGalleryViewModel(params.get(), get(), get(), get(), get()) }
+    viewModel { params -> ImageGalleryViewModel(params.get(), get(), get(), get(), get(), get()) }
     viewModel { SavedPromptsViewModel(get(), get(), get(), get(), get()) }
     viewModel {
         SettingsViewModel(
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(), get(),
+            get(), get(), get(),
         )
     }
     viewModel { ModelFileBrowserViewModel(get(), get(), get(), get(), get(), get()) }

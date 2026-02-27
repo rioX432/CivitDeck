@@ -23,6 +23,9 @@ struct ImageGalleryScreen: View {
         .task {
             await viewModel.observeNsfwFilter()
         }
+        .task {
+            await viewModel.observeNsfwBlurSettings()
+        }
         .fullScreenCover(isPresented: Binding(
             get: { viewModel.selectedImageIndex != nil },
             set: { if !$0 { viewModel.onDismissViewer() } }
@@ -154,34 +157,37 @@ struct ImageGalleryScreen: View {
         let aspectRatio: CGFloat = (image.width > 0 && image.height > 0)
             ? CGFloat(image.width) / CGFloat(image.height)
             : 1.0
+        let blurRadius = CGFloat(viewModel.nsfwBlurSettings.blurRadiusFor(level: image.nsfwLevel))
 
         return Button {
             viewModel.onImageSelected(index)
         } label: {
-            CachedAsyncImage(url: URL(string: image.url)) { phase in
-                switch phase {
-                case .success(let img):
-                    img
-                        .resizable()
-                        .scaledToFill()
-                        .transition(.opacity)
-                case .failure:
-                    Rectangle()
-                        .fill(Color.civitSurfaceVariant)
-                        .overlay {
-                            SwiftUI.Image(systemName: "photo")
-                                .foregroundColor(.civitOnSurfaceVariant)
-                        }
-                case .empty:
-                    Rectangle()
-                        .fill(Color.civitSurfaceVariant)
-                        .shimmer()
-                @unknown default:
-                    EmptyView()
+            NsfwBlurView(blurRadius: blurRadius) {
+                CachedAsyncImage(url: URL(string: image.url)) { phase in
+                    switch phase {
+                    case .success(let img):
+                        img
+                            .resizable()
+                            .scaledToFill()
+                            .transition(.opacity)
+                    case .failure:
+                        Rectangle()
+                            .fill(Color.civitSurfaceVariant)
+                            .overlay {
+                                SwiftUI.Image(systemName: "photo")
+                                    .foregroundColor(.civitOnSurfaceVariant)
+                            }
+                    case .empty:
+                        Rectangle()
+                            .fill(Color.civitSurfaceVariant)
+                            .shimmer()
+                    @unknown default:
+                        EmptyView()
+                    }
                 }
+                .aspectRatio(aspectRatio, contentMode: .fill)
+                .clipped()
             }
-            .aspectRatio(aspectRatio, contentMode: .fill)
-            .clipped()
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
         }
         .buttonStyle(.plain)

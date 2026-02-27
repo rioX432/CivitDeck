@@ -38,6 +38,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveLocalModelFilesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
@@ -57,6 +58,7 @@ import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNotificationsEnabledUseCase
+import com.riox432.civitdeck.domain.usecase.SetNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
@@ -79,6 +81,8 @@ object KoinHelper {
     fun getObserveIsFavoriteUseCase(): ObserveIsFavoriteUseCase = getKoin().get()
     fun getObserveNsfwFilterUseCase(): ObserveNsfwFilterUseCase = getKoin().get()
     fun getSetNsfwFilterUseCase(): SetNsfwFilterUseCase = getKoin().get()
+    fun getObserveNsfwBlurSettingsUseCase(): ObserveNsfwBlurSettingsUseCase = getKoin().get()
+    fun getSetNsfwBlurSettingsUseCase(): SetNsfwBlurSettingsUseCase = getKoin().get()
     fun getSavePromptUseCase(): SavePromptUseCase = getKoin().get()
     fun getObserveSavedPromptsUseCase(): ObserveSavedPromptsUseCase = getKoin().get()
     fun getDeleteSavedPromptUseCase(): DeleteSavedPromptUseCase = getKoin().get()

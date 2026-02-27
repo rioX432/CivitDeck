@@ -14,4 +14,7 @@ data class UserPreferencesEntity(
     val powerUserMode: Boolean = false,
     val notificationsEnabled: Boolean = false,
     val pollingIntervalMinutes: Int = 0,
+    val nsfwBlurSoft: Int = 75,
+    val nsfwBlurMature: Int = 25,
+    val nsfwBlurExplicit: Int = 0,
 )
