@@ -115,7 +115,6 @@ import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.adaptive.isExpandedWidth
 import com.riox432.civitdeck.ui.components.LaunchStaggerAnimation
 import com.riox432.civitdeck.ui.components.ModelCard
-import com.riox432.civitdeck.ui.components.SwipeableModelCard
 import com.riox432.civitdeck.ui.components.isReducedMotionEnabled
 import com.riox432.civitdeck.ui.components.rememberGridItemScrollOffset
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
@@ -226,7 +225,7 @@ private fun HeaderSnapEffect(gridState: LazyGridState, headerState: CollapsibleH
     }
 }
 
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList", "LongMethod", "UnusedParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchScreenBody(
@@ -1066,7 +1065,7 @@ private fun ModelSearchContent(
 }
 
 @OptIn(ExperimentalFoundationApi::class)
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList", "LongMethod", "UnusedParameter")
 @Composable
 private fun ModelGrid(
     lazyPagingItems: LazyPagingItems<Model>,
