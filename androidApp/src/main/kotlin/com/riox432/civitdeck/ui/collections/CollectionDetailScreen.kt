@@ -24,6 +24,7 @@ import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -60,6 +61,7 @@ import com.riox432.civitdeck.domain.model.CollectionSortOrder
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
 import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.domain.model.ModelType
+import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
@@ -119,7 +121,11 @@ fun CollectionDetailScreen(
                 onTypeFilterChange = onTypeFilterChange,
             )
             if (models.isEmpty()) {
-                EmptyCollectionDetail()
+                EmptyStateMessage(
+                    icon = Icons.Default.Folder,
+                    title = "No models in this collection",
+                    subtitle = "Add models from the detail screen",
+                )
             } else {
                 ModelsGrid(
                     models = models,
@@ -290,27 +296,6 @@ private fun SelectionBottomBar(
             IconButton(onClick = onRemove) {
                 Icon(Icons.Default.Delete, contentDescription = "Remove")
             }
-        }
-    }
-}
-
-@Composable
-private fun EmptyCollectionDetail() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "No models in this collection",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = "Add models from the detail screen",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }

@@ -410,13 +410,7 @@ struct ModelSearchScreen: View {
     }
 
     private var emptyView: some View {
-        VStack(spacing: Spacing.sm) {
-            Image(systemName: "magnifyingglass")
-                .font(.largeTitle)
-                .foregroundColor(.civitOnSurfaceVariant)
-            Text("No models found")
-                .foregroundColor(.civitOnSurfaceVariant)
-        }
+        EmptyStateView(icon: "magnifyingglass", title: "No models found")
     }
 }
 extension ModelSearchScreen { // MARK: - Filter FAB

@@ -67,18 +67,11 @@ struct SavedPromptsScreen: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: Spacing.sm) {
-            SwiftUI.Image(systemName: "bookmark")
-                .font(.system(size: 48))
-                .foregroundColor(.civitOnSurfaceVariant)
-            Text("No saved prompts yet")
-                .font(.headline)
-                .foregroundColor(.civitOnSurfaceVariant)
-            Text("Prompts are auto-saved when you view images.\nYou can also save prompts manually.")
-                .font(.caption)
-                .foregroundColor(.civitOnSurfaceVariant)
-                .multilineTextAlignment(.center)
-        }
+        EmptyStateView(
+            icon: "bookmark",
+            title: "No saved prompts yet",
+            subtitle: "Prompts are auto-saved when you view images.\nYou can also save prompts manually."
+        )
         .frame(maxHeight: .infinity)
     }
 

@@ -208,13 +208,7 @@ struct ImageGalleryScreen: View {
     // MARK: - States
 
     private var emptyView: some View {
-        VStack(spacing: Spacing.sm) {
-            SwiftUI.Image(systemName: "photo.on.rectangle")
-                .font(.largeTitle)
-                .foregroundColor(.civitOnSurfaceVariant)
-            Text("No images found")
-                .foregroundColor(.civitOnSurfaceVariant)
-        }
+        EmptyStateView(icon: "photo.on.rectangle", title: "No images found")
     }
 
     // MARK: - Chip Button
