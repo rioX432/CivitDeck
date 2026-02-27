@@ -86,6 +86,7 @@ import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.components.FilterChipRow
 import com.riox432.civitdeck.ui.components.ModelStatsRow
+import com.riox432.civitdeck.ui.components.SectionHeader
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
@@ -737,11 +738,7 @@ private fun DescriptionSection(description: String) {
     }
 
     Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
-        HorizontalDivider(modifier = Modifier.padding(bottom = Spacing.sm))
-        Text(
-            text = "Description",
-            style = MaterialTheme.typography.titleSmall,
-        )
+        SectionHeader(title = "Description", showDivider = true)
         Spacer(modifier = Modifier.height(Spacing.sm))
         Text(
             text = AnnotatedString(plainText),
@@ -853,11 +850,10 @@ private fun VersionSelector(
     val haptic = rememberHapticFeedback()
 
     Column(modifier = Modifier.padding(vertical = Spacing.sm)) {
-        HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm))
-        Text(
-            text = "Versions",
-            style = MaterialTheme.typography.titleSmall,
+        SectionHeader(
+            title = "Versions",
             modifier = Modifier.padding(horizontal = Spacing.lg),
+            showDivider = true,
         )
         Spacer(modifier = Modifier.height(Spacing.sm))
         FilterChipRow(
@@ -882,10 +878,7 @@ private fun VersionDetail(version: ModelVersion, powerUserMode: Boolean = false)
 
         if (version.trainedWords.isNotEmpty()) {
             Spacer(modifier = Modifier.height(Spacing.sm))
-            Text(
-                text = "Trained Words",
-                style = MaterialTheme.typography.titleSmall,
-            )
+            SectionHeader(title = "Trained Words", showDivider = false)
             Spacer(modifier = Modifier.height(Spacing.xs))
             Text(
                 text = version.trainedWords.joinToString(", "),
@@ -896,10 +889,7 @@ private fun VersionDetail(version: ModelVersion, powerUserMode: Boolean = false)
 
         if (version.files.isNotEmpty()) {
             Spacer(modifier = Modifier.height(Spacing.md))
-            Text(
-                text = "Files",
-                style = MaterialTheme.typography.titleSmall,
-            )
+            SectionHeader(title = "Files", showDivider = false)
             Spacer(modifier = Modifier.height(Spacing.xs))
             version.files.forEach { file ->
                 FileInfoRow(file = file)
