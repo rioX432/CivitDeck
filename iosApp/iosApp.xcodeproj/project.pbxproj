@@ -48,6 +48,8 @@
 		CD00CE012D2CC001000CD001 /* ComparisonState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CE002D2CC001000CD001 /* ComparisonState.swift */; };
 		CD00CE032D2CC001000CD001 /* ModelCompareScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CE022D2CC001000CD001 /* ModelCompareScreen.swift */; };
 		CD00CE052D2CC001000CD001 /* ModelCompareViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CE042D2CC001000CD001 /* ModelCompareViewModel.swift */; };
+		CD00IS012D6CC001000CD001 /* ImageComparisonSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00IS002D6CC001000CD001 /* ImageComparisonSlider.swift */; };
+		CD00IO012D6CC001000CD001 /* ImageComparisonOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00IO002D6CC001000CD001 /* ImageComparisonOverlay.swift */; };
 		CD00VD012D4CC001000CD001 /* VersionDetailSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00VD002D4CC001000CD001 /* VersionDetailSection.swift */; };
 		CD00FB012D5CC001000CD001 /* ModelFileBrowserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00FB002D5CC001000CD001 /* ModelFileBrowserViewModel.swift */; };
 		CD00FB032D5CC001000CD001 /* ModelFileBrowserScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00FB022D5CC001000CD001 /* ModelFileBrowserScreen.swift */; };
@@ -98,6 +100,8 @@
 		CD00CE002D2CC001000CD001 /* ComparisonState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComparisonState.swift; sourceTree = "<group>"; };
 		CD00CE022D2CC001000CD001 /* ModelCompareScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCompareScreen.swift; sourceTree = "<group>"; };
 		CD00CE042D2CC001000CD001 /* ModelCompareViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCompareViewModel.swift; sourceTree = "<group>"; };
+		CD00IS002D6CC001000CD001 /* ImageComparisonSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComparisonSlider.swift; sourceTree = "<group>"; };
+		CD00IO002D6CC001000CD001 /* ImageComparisonOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComparisonOverlay.swift; sourceTree = "<group>"; };
 		CD00VD002D4CC001000CD001 /* VersionDetailSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionDetailSection.swift; sourceTree = "<group>"; };
 		CD00FB002D5CC001000CD001 /* ModelFileBrowserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelFileBrowserViewModel.swift; sourceTree = "<group>"; };
 		CD00FB022D5CC001000CD001 /* ModelFileBrowserScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelFileBrowserScreen.swift; sourceTree = "<group>"; };
@@ -216,6 +220,8 @@
 			isa = PBXGroup;
 			children = (
 				CD00CE002D2CC001000CD001 /* ComparisonState.swift */,
+				CD00IS002D6CC001000CD001 /* ImageComparisonSlider.swift */,
+				CD00IO002D6CC001000CD001 /* ImageComparisonOverlay.swift */,
 				CD00CE022D2CC001000CD001 /* ModelCompareScreen.swift */,
 				CD00CE042D2CC001000CD001 /* ModelCompareViewModel.swift */,
 			);
@@ -447,6 +453,8 @@
 				CD00CE012D2CC001000CD001 /* ComparisonState.swift in Sources */,
 				CD00CE032D2CC001000CD001 /* ModelCompareScreen.swift in Sources */,
 				CD00CE052D2CC001000CD001 /* ModelCompareViewModel.swift in Sources */,
+				CD00IS012D6CC001000CD001 /* ImageComparisonSlider.swift in Sources */,
+				CD00IO012D6CC001000CD001 /* ImageComparisonOverlay.swift in Sources */,
 				CD00VD012D4CC001000CD001 /* VersionDetailSection.swift in Sources */,
 				CD00FB012D5CC001000CD001 /* ModelFileBrowserViewModel.swift in Sources */,
 				CD00FB032D5CC001000CD001 /* ModelFileBrowserScreen.swift in Sources */,
