@@ -26,8 +26,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
@@ -45,7 +43,6 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -87,6 +84,7 @@ import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
+import com.riox432.civitdeck.ui.components.FilterChipRow
 import com.riox432.civitdeck.ui.components.ModelStatsRow
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
@@ -862,21 +860,16 @@ private fun VersionSelector(
             modifier = Modifier.padding(horizontal = Spacing.lg),
         )
         Spacer(modifier = Modifier.height(Spacing.sm))
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = Spacing.lg),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-        ) {
-            itemsIndexed(versions) { index, version ->
-                FilterChip(
-                    selected = index == selectedIndex,
-                    onClick = {
-                        haptic(HapticFeedbackType.Selection)
-                        onVersionSelected(index)
-                    },
-                    label = { Text(version.name) },
-                )
-            }
-        }
+        FilterChipRow(
+            options = versions,
+            selected = versions[selectedIndex],
+            onSelect = { version ->
+                haptic(HapticFeedbackType.Selection)
+                onVersionSelected(versions.indexOf(version))
+            },
+            label = { it.name },
+            modifier = Modifier.padding(horizontal = Spacing.lg),
+        )
     }
 }
 
