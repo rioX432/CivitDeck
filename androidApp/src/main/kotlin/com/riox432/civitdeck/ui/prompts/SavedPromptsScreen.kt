@@ -47,7 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.export.PromptTemplateEngine
 import com.riox432.civitdeck.domain.export.WorkflowExportService
@@ -94,10 +93,10 @@ fun SavedPromptsScreen(
         }
         if (displayedPrompts.isEmpty()) {
             EmptyStateMessage(
-                    icon = Icons.Outlined.BookmarkBorder,
-                    title = "No saved prompts yet",
-                    subtitle = "Prompts are auto-saved when you view images.\nYou can also save prompts manually.",
-                )
+                icon = Icons.Outlined.BookmarkBorder,
+                title = "No saved prompts yet",
+                subtitle = "Prompts are auto-saved when you view images.\nYou can also save prompts manually.",
+            )
         } else {
             PromptList(
                 prompts = displayedPrompts,

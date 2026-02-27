@@ -72,11 +72,11 @@ fun CollectionsScreen(
     ) { padding ->
         if (collections.isEmpty()) {
             EmptyStateMessage(
-                    icon = Icons.Default.Folder,
-                    title = "No collections yet",
-                    subtitle = "Create a collection to organize your models",
-                    modifier = Modifier.padding(padding),
-                )
+                icon = Icons.Default.Folder,
+                title = "No collections yet",
+                subtitle = "Create a collection to organize your models",
+                modifier = Modifier.padding(padding),
+            )
         } else {
             CollectionsList(
                 collections = collections,
