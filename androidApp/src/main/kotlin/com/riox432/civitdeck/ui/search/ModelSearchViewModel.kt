@@ -24,11 +24,14 @@ import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
+import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,6 +41,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -86,6 +90,8 @@ class ModelSearchViewModel(
     observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase,
     observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase,
     observeOwnedModelHashesUseCase: ObserveOwnedModelHashesUseCase,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    observeFavoritesUseCase: ObserveFavoritesUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelSearchUiState())
@@ -104,6 +110,11 @@ class ModelSearchViewModel(
 
     val ownedHashes: StateFlow<Set<String>> =
         observeOwnedModelHashesUseCase()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
+    val favoriteIds: StateFlow<Set<Long>> =
+        observeFavoritesUseCase()
+            .map { favorites -> favorites.map { it.id }.toSet() }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -287,6 +298,18 @@ class ModelSearchViewModel(
             hideModelUseCase(modelId, modelName)
             val ids = getHiddenModelIdsUseCase()
             _hiddenModelIds.value = ids
+        }
+    }
+
+    fun toggleFavorite(model: Model) {
+        viewModelScope.launch {
+            try {
+                toggleFavoriteUseCase(model)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // Favorite toggle failure is non-critical
+            }
         }
     }
 
