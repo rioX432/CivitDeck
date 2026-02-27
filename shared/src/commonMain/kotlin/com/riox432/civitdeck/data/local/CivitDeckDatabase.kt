@@ -352,11 +352,9 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_9_10,
             MIGRATION_10_11,
             MIGRATION_11_12,
-            MIGRATION_14_15,
-<<<<<<< HEAD
-=======
+            MIGRATION_12_13,
             MIGRATION_13_14,
->>>>>>> origin/master
+            MIGRATION_14_15,
         )
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
