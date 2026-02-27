@@ -325,17 +325,6 @@ val MIGRATION_12_13 = object : Migration(12, 13) {
     }
 }
 
-val MIGRATION_14_15 = object : Migration(14, 15) {
-    override fun migrate(connection: SQLiteConnection) {
-        connection.execSQL(
-            "ALTER TABLE user_preferences ADD COLUMN accentColor TEXT NOT NULL DEFAULT 'Blue'",
-        )
-        connection.execSQL(
-            "ALTER TABLE user_preferences ADD COLUMN amoledDarkMode INTEGER NOT NULL DEFAULT 0",
-        )
-    }
-}
-
 val MIGRATION_13_14 = object : Migration(13, 14) {
     override fun migrate(connection: SQLiteConnection) {
         // Add offline pinning support to cached_api_responses
@@ -352,17 +341,22 @@ val MIGRATION_13_14 = object : Migration(13, 14) {
     }
 }
 
+val MIGRATION_14_15 = object : Migration(14, 15) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN accentColor TEXT NOT NULL DEFAULT 'Blue'",
+        )
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN amoledDarkMode INTEGER NOT NULL DEFAULT 0",
+        )
+    }
+}
+
 val MIGRATION_15_16 = object : Migration(15, 16) {
     override fun migrate(connection: SQLiteConnection) {
         connection.execSQL(
             "ALTER TABLE user_preferences ADD COLUMN seenTutorialVersion INTEGER NOT NULL DEFAULT 0",
         )
-    }
-}
-
-val MIGRATION_17_18 = object : Migration(17, 18) {
-    override fun migrate(connection: SQLiteConnection) {
-        connection.execSQL("ALTER TABLE saved_prompts DROP COLUMN category")
     }
 }
 
@@ -379,6 +373,12 @@ val MIGRATION_16_17 = object : Migration(16, 17) {
                 "`lastTestSuccess` INTEGER, " +
                 "`createdAt` INTEGER NOT NULL)",
         )
+    }
+}
+
+val MIGRATION_17_18 = object : Migration(17, 18) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("ALTER TABLE saved_prompts DROP COLUMN category")
     }
 }
 

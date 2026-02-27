@@ -50,12 +50,11 @@ struct ImageGalleryScreen: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.sm) {
                 ForEach(sortOptions, id: \.self) { sort in
-                    chipButton(
+                    ChipButton(
                         label: sortLabel(sort),
-                        isSelected: viewModel.selectedSort == sort
-                    ) {
-                        viewModel.onSortSelected(sort)
-                    }
+                        isSelected: viewModel.selectedSort == sort,
+                        action: { viewModel.onSortSelected(sort) }
+                    )
                 }
             }
         }
@@ -64,19 +63,17 @@ struct ImageGalleryScreen: View {
     private var aspectRatioChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.sm) {
-                chipButton(
+                ChipButton(
                     label: "All",
-                    isSelected: viewModel.selectedAspectRatio == nil
-                ) {
-                    viewModel.onAspectRatioSelected(nil)
-                }
+                    isSelected: viewModel.selectedAspectRatio == nil,
+                    action: { viewModel.onAspectRatioSelected(nil) }
+                )
                 ForEach(AspectRatioFilter.allCases, id: \.self) { filter in
-                    chipButton(
+                    ChipButton(
                         label: filter.rawValue,
-                        isSelected: viewModel.selectedAspectRatio == filter
-                    ) {
-                        viewModel.onAspectRatioSelected(filter)
-                    }
+                        isSelected: viewModel.selectedAspectRatio == filter,
+                        action: { viewModel.onAspectRatioSelected(filter) }
+                    )
                 }
             }
         }
@@ -86,12 +83,11 @@ struct ImageGalleryScreen: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.sm) {
                 ForEach(periodOptions, id: \.self) { period in
-                    chipButton(
+                    ChipButton(
                         label: periodLabel(period),
-                        isSelected: viewModel.selectedPeriod == period
-                    ) {
-                        viewModel.onPeriodSelected(period)
-                    }
+                        isSelected: viewModel.selectedPeriod == period,
+                        action: { viewModel.onPeriodSelected(period) }
+                    )
                 }
             }
         }
@@ -103,14 +99,14 @@ struct ImageGalleryScreen: View {
     private var contentArea: some View {
         Group {
             if viewModel.isLoading && viewModel.images.isEmpty {
-                Spacer()
-                ProgressView()
+                LoadingStateView()
                     .transition(.opacity)
-                Spacer()
             } else if let error = viewModel.error, viewModel.images.isEmpty {
                 Spacer()
-                errorView(message: error)
-                    .transition(.opacity)
+                ErrorStateView(message: error) {
+                    viewModel.retry()
+                }
+                .transition(.opacity)
                 Spacer()
             } else if viewModel.images.isEmpty && !viewModel.isLoading {
                 Spacer()
@@ -207,47 +203,8 @@ struct ImageGalleryScreen: View {
 
     // MARK: - States
 
-    private func errorView(message: String) -> some View {
-        VStack(spacing: Spacing.lg) {
-            Text(message)
-                .foregroundColor(.civitError)
-                .multilineTextAlignment(.center)
-            Button("Retry") {
-                viewModel.retry()
-            }
-            .buttonStyle(.bordered)
-        }
-        .padding()
-    }
-
     private var emptyView: some View {
-        VStack(spacing: Spacing.sm) {
-            SwiftUI.Image(systemName: "photo.on.rectangle")
-                .font(.largeTitle)
-                .foregroundColor(.civitOnSurfaceVariant)
-            Text("No images found")
-                .foregroundColor(.civitOnSurfaceVariant)
-        }
-    }
-
-    // MARK: - Chip Button
-
-    private func chipButton(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(label)
-                .font(.civitLabelMedium)
-                .fontWeight(isSelected ? .semibold : .regular)
-                .padding(.horizontal, Spacing.md)
-                .padding(.vertical, 6)
-                .background(
-                    isSelected
-                        ? Color.civitPrimary.opacity(0.2)
-                        : Color.civitSurfaceVariant
-                )
-                .foregroundColor(isSelected ? .civitPrimary : .civitOnSurface)
-                .clipShape(Capsule())
-                .animation(MotionAnimation.spring, value: isSelected)
-        }
+        EmptyStateView(icon: "photo.on.rectangle", title: "No images found")
     }
 
     // MARK: - Labels

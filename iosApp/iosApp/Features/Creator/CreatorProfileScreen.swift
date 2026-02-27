@@ -16,9 +16,11 @@ struct CreatorProfileScreen: View {
     var body: some View {
         Group {
             if viewModel.isLoading && viewModel.models.isEmpty {
-                ProgressView()
+                LoadingStateView()
             } else if let error = viewModel.error, viewModel.models.isEmpty {
-                errorView(message: error)
+                ErrorStateView(message: error) {
+                    Task { await viewModel.refresh() }
+                }
             } else {
                 modelGrid
             }
@@ -52,18 +54,5 @@ struct CreatorProfileScreen: View {
         .refreshable {
             await viewModel.refresh()
         }
-    }
-
-    private func errorView(message: String) -> some View {
-        VStack(spacing: Spacing.lg) {
-            Text(message)
-                .foregroundColor(.civitError)
-                .multilineTextAlignment(.center)
-            Button("Retry") {
-                Task { await viewModel.refresh() }
-            }
-            .buttonStyle(.bordered)
-        }
-        .padding()
     }
 }

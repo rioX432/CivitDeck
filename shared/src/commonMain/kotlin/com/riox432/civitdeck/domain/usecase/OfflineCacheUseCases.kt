@@ -1,26 +1,22 @@
 package com.riox432.civitdeck.domain.usecase
 
-import com.riox432.civitdeck.data.local.LocalCacheDataSource
-import com.riox432.civitdeck.data.local.NetworkMonitor
 import com.riox432.civitdeck.domain.model.CacheInfo
+import com.riox432.civitdeck.domain.repository.CacheRepository
+import com.riox432.civitdeck.domain.repository.NetworkRepository
 import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
 
-class ObserveNetworkStatusUseCase(private val networkMonitor: NetworkMonitor) {
-    operator fun invoke(): Flow<Boolean> = networkMonitor.isOnline
+class ObserveNetworkStatusUseCase(private val repository: NetworkRepository) {
+    operator fun invoke(): Flow<Boolean> = repository.isOnline
 }
 
-class GetCacheInfoUseCase(private val cacheDataSource: LocalCacheDataSource) {
-    suspend operator fun invoke(): CacheInfo {
-        val sizeBytes = cacheDataSource.getCacheSizeBytes()
-        val entryCount = cacheDataSource.getEntryCount()
-        return CacheInfo(sizeBytes = sizeBytes, entryCount = entryCount)
-    }
+class GetCacheInfoUseCase(private val repository: CacheRepository) {
+    suspend operator fun invoke(): CacheInfo = repository.getCacheInfo()
 }
 
-class EvictCacheUseCase(private val cacheDataSource: LocalCacheDataSource) {
+class EvictCacheUseCase(private val repository: CacheRepository) {
     suspend operator fun invoke(maxBytes: Long) {
-        cacheDataSource.evictToSize(maxBytes)
+        repository.evictToSize(maxBytes)
     }
 }
 

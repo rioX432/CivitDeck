@@ -1,10 +1,10 @@
 package com.riox432.civitdeck.domain.usecase
 
-import com.riox432.civitdeck.data.local.LocalCacheDataSource
-import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
+import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
+import com.riox432.civitdeck.domain.repository.CacheRepository
 import com.riox432.civitdeck.domain.repository.HiddenModelRepository
 import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
@@ -34,15 +34,15 @@ class SetGridColumnsUseCase(private val repository: UserPreferencesRepository) {
 }
 
 class GetHiddenModelsUseCase(private val repository: HiddenModelRepository) {
-    suspend operator fun invoke(): List<HiddenModelEntity> = repository.getHiddenModels()
+    suspend operator fun invoke(): List<HiddenModel> = repository.getHiddenModels()
 }
 
 class ClearBrowsingHistoryUseCase(private val repository: BrowsingHistoryRepository) {
     suspend operator fun invoke() = repository.clearAll()
 }
 
-class ClearCacheUseCase(private val cacheDataSource: LocalCacheDataSource) {
-    suspend operator fun invoke() = cacheDataSource.clearAll()
+class ClearCacheUseCase(private val repository: CacheRepository) {
+    suspend operator fun invoke() = repository.clearAll()
 }
 
 class ObservePowerUserModeUseCase(private val repository: UserPreferencesRepository) {

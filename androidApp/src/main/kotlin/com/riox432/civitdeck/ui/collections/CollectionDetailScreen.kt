@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,10 +23,8 @@ import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.SelectAll
-import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -49,7 +46,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -60,12 +56,13 @@ import com.riox432.civitdeck.domain.model.CollectionSortOrder
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
 import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.domain.model.ModelType
+import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
+import com.riox432.civitdeck.ui.components.ModelStatsRow
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
-import com.riox432.civitdeck.util.FormatUtils
 
 @Suppress("LongParameterList")
 @Composable
@@ -119,7 +116,11 @@ fun CollectionDetailScreen(
                 onTypeFilterChange = onTypeFilterChange,
             )
             if (models.isEmpty()) {
-                EmptyCollectionDetail()
+                EmptyStateMessage(
+                    icon = Icons.Default.Folder,
+                    title = "No models in this collection",
+                    subtitle = "Add models from the detail screen",
+                )
             } else {
                 ModelsGrid(
                     models = models,
@@ -295,27 +296,6 @@ private fun SelectionBottomBar(
 }
 
 @Composable
-private fun EmptyCollectionDetail() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "No models in this collection",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = "Add models from the detail screen",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
-@Composable
 private fun ModelsGrid(
     models: List<FavoriteModelSummary>,
     isSelectionMode: Boolean,
@@ -478,43 +458,10 @@ private fun ModelCardInfo(model: FavoriteModelSummary) {
                 )
                 .padding(horizontal = 6.dp, vertical = 2.dp),
         )
-        StatsRow(model = model)
-    }
-}
-
-@Composable
-private fun StatsRow(model: FavoriteModelSummary) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        StatItem(FormatUtils.formatCount(model.downloadCount), Icons.Outlined.Download)
-        StatItem(FormatUtils.formatCount(model.favoriteCount), Icons.Outlined.FavoriteBorder)
-        StatItem(FormatUtils.formatRating(model.rating), Icons.Outlined.Star)
-    }
-}
-
-@Composable
-private fun StatItem(
-    label: String,
-    icon: ImageVector,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(com.riox432.civitdeck.ui.theme.IconSize.statIcon),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        ModelStatsRow(
+            downloadCount = model.downloadCount,
+            favoriteCount = model.favoriteCount,
+            rating = model.rating,
         )
     }
 }

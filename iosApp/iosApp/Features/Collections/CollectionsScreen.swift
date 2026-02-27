@@ -111,17 +111,11 @@ struct CollectionsScreen: View {
     }
 
     private var emptyView: some View {
-        VStack(spacing: Spacing.sm) {
-            Image(systemName: "folder")
-                .font(.largeTitle)
-                .foregroundColor(.civitOnSurfaceVariant)
-            Text("No collections yet")
-                .font(.civitTitleMedium)
-                .foregroundColor(.civitOnSurfaceVariant)
-            Text("Create a collection to organize your models")
-                .font(.civitBodyMedium)
-                .foregroundColor(.civitOnSurfaceVariant)
-        }
+        EmptyStateView(
+            icon: "folder",
+            title: "No collections yet",
+            subtitle: "Create a collection to organize your models"
+        )
     }
 }
 

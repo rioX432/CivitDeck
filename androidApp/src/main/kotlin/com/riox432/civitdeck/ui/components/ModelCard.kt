@@ -14,9 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -33,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,7 +46,6 @@ import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
-import com.riox432.civitdeck.util.FormatUtils
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -236,47 +231,10 @@ private fun ModelCardInfo(model: Model, isOwned: Boolean = false) {
                 .padding(horizontal = 6.dp, vertical = 2.dp),
         )
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            StatItem(
-                label = FormatUtils.formatCount(model.stats.downloadCount),
-                icon = Icons.Outlined.Download,
-            )
-            StatItem(
-                label = FormatUtils.formatCount(model.stats.favoriteCount),
-                icon = Icons.Outlined.FavoriteBorder,
-            )
-            StatItem(
-                label = FormatUtils.formatRating(model.stats.rating),
-                icon = Icons.Outlined.Star,
-            )
-        }
-    }
-}
-
-@Composable
-private fun StatItem(
-    label: String,
-    icon: ImageVector,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(IconSize.statIcon),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        ModelStatsRow(
+            downloadCount = model.stats.downloadCount,
+            favoriteCount = model.stats.favoriteCount,
+            rating = model.stats.rating,
         )
     }
 }

@@ -10,7 +10,7 @@ final class SettingsViewModel: ObservableObject {
     @Published var defaultSortOrder: CivitSortOrder = .mostDownloaded
     @Published var defaultTimePeriod: TimePeriod = .allTime
     @Published var gridColumns: Int32 = 2
-    @Published var hiddenModels: [HiddenModelEntity] = []
+    @Published var hiddenModels: [HiddenModel] = []
     @Published var excludedTags: [String] = []
     @Published var apiKey: String?
     @Published var connectedUsername: String?

@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.BuildConfig
 import com.riox432.civitdeck.domain.model.AccentColor
+import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
@@ -569,7 +570,7 @@ internal fun PowerUserModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
 @Composable
 internal fun HiddenModelsRow(
     count: Int,
-    models: List<com.riox432.civitdeck.data.local.entity.HiddenModelEntity>,
+    models: List<HiddenModel>,
     onUnhide: (Long) -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(false) }
@@ -581,7 +582,7 @@ internal fun HiddenModelsRow(
 
 @Composable
 internal fun HiddenModelsDialog(
-    models: List<com.riox432.civitdeck.data.local.entity.HiddenModelEntity>,
+    models: List<HiddenModel>,
     onUnhide: (Long) -> Unit,
     onDismiss: () -> Unit,
 ) {

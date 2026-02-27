@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,13 +20,10 @@ import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridS
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -51,7 +47,10 @@ import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
+import com.riox432.civitdeck.ui.components.ErrorStateView
+import com.riox432.civitdeck.ui.components.FilterChipRow
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
+import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.components.NsfwBlurOverlay
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
@@ -166,101 +165,39 @@ private fun FilterBar(
     onPeriodSelected: (TimePeriod) -> Unit,
     onAspectRatioSelected: (AspectRatioFilter?) -> Unit,
 ) {
+    val aspectRatioOptions = listOf(null) + AspectRatioFilter.entries
     Column(modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.sm)) {
-        SortFilterRow(
-            selectedSort = uiState.selectedSort,
-            onSortSelected = onSortSelected,
+        FilterChipRow(
+            options = SortOrder.entries,
+            selected = uiState.selectedSort,
+            onSelect = onSortSelected,
+            label = { it.name },
         )
         Spacer(modifier = Modifier.height(Spacing.xs))
-        AspectRatioFilterRow(
-            selectedAspectRatio = uiState.selectedAspectRatio,
-            onAspectRatioSelected = onAspectRatioSelected,
+        FilterChipRow(
+            options = aspectRatioOptions,
+            selected = uiState.selectedAspectRatio,
+            onSelect = onAspectRatioSelected,
+            label = { it?.name ?: "All" },
         )
         Spacer(modifier = Modifier.height(Spacing.xs))
-        PeriodRow(
-            selectedPeriod = uiState.selectedPeriod,
-            onPeriodSelected = onPeriodSelected,
+        FilterChipRow(
+            options = TimePeriod.entries,
+            selected = uiState.selectedPeriod,
+            onSelect = onPeriodSelected,
+            label = { it.name },
         )
-    }
-}
-
-@Composable
-private fun SortFilterRow(
-    selectedSort: SortOrder,
-    onSortSelected: (SortOrder) -> Unit,
-) {
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        SortOrder.entries.forEach { sort ->
-            FilterChip(
-                selected = sort == selectedSort,
-                onClick = { onSortSelected(sort) },
-                label = { Text(sort.name, style = MaterialTheme.typography.labelSmall) },
-            )
-        }
-    }
-}
-
-@Composable
-private fun AspectRatioFilterRow(
-    selectedAspectRatio: AspectRatioFilter?,
-    onAspectRatioSelected: (AspectRatioFilter?) -> Unit,
-) {
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        FilterChip(
-            selected = selectedAspectRatio == null,
-            onClick = { onAspectRatioSelected(null) },
-            label = { Text("All", style = MaterialTheme.typography.labelSmall) },
-        )
-        AspectRatioFilter.entries.forEach { filter ->
-            FilterChip(
-                selected = filter == selectedAspectRatio,
-                onClick = { onAspectRatioSelected(filter) },
-                label = { Text(filter.name, style = MaterialTheme.typography.labelSmall) },
-            )
-        }
-    }
-}
-
-@Composable
-private fun PeriodRow(
-    selectedPeriod: TimePeriod,
-    onPeriodSelected: (TimePeriod) -> Unit,
-) {
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        TimePeriod.entries.forEach { period ->
-            FilterChip(
-                selected = period == selectedPeriod,
-                onClick = { onPeriodSelected(period) },
-                label = {
-                    Text(period.name, style = MaterialTheme.typography.labelSmall)
-                },
-            )
-        }
     }
 }
 
 @Composable
 private fun LoadingState() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        CircularProgressIndicator()
-    }
+    LoadingStateOverlay()
 }
 
 @Composable
 private fun ErrorState(error: String, onRetry: () -> Unit) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = error, color = MaterialTheme.colorScheme.error)
-            Spacer(modifier = Modifier.height(Spacing.lg))
-            Button(onClick = onRetry) { Text("Retry") }
-        }
-    }
+    ErrorStateView(message = error, onRetry = onRetry)
 }
 
 @Composable

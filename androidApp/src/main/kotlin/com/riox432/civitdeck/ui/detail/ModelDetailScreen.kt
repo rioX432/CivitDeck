@@ -26,8 +26,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
@@ -41,11 +40,10 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -83,7 +81,13 @@ import com.riox432.civitdeck.domain.model.filterByNsfwLevel
 import com.riox432.civitdeck.domain.model.stripCdnWidth
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
+import com.riox432.civitdeck.ui.components.EmptyStateMessage
+import com.riox432.civitdeck.ui.components.ErrorStateView
+import com.riox432.civitdeck.ui.components.FilterChipRow
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
+import com.riox432.civitdeck.ui.components.LoadingStateOverlay
+import com.riox432.civitdeck.ui.components.ModelStatsRow
+import com.riox432.civitdeck.ui.components.SectionHeader
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
@@ -357,29 +361,13 @@ private fun DetailStateContent(
     ) { state ->
         when (state) {
             "loading" -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator()
-                }
+                LoadingStateOverlay()
             }
             "error" -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = uiState.error ?: "Unknown error",
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                        Spacer(modifier = Modifier.height(Spacing.lg))
-                        Button(onClick = onRetry) {
-                            Text("Retry")
-                        }
-                    }
-                }
+                ErrorStateView(
+                    message = uiState.error ?: "Unknown error",
+                    onRetry = onRetry,
+                )
             }
             else -> {
                 if (model != null) {
@@ -470,66 +458,77 @@ private fun ModelDetailContentBody(
         allImages.filterByNsfwLevel(uiState.nsfwFilterLevel)
     }
 
+    if (selectedVersion == null) {
+        EmptyStateMessage(
+            icon = Icons.Outlined.Info,
+            title = "Version not available",
+            subtitle = "The selected version is no longer available.",
+            modifier = Modifier.fillMaxSize(),
+        )
+        return
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = bottomPadding + Spacing.lg),
     ) {
-        // Image carousel (scrolls with content)
-        item { carouselContent() }
+        modelDetailItems(
+            model = model,
+            uiState = uiState,
+            selectedVersion = selectedVersion,
+            images = images,
+            onVersionSelected = onVersionSelected,
+            onViewImages = onViewImages,
+            onCreatorClick = onCreatorClick,
+            onShowImageGrid = onShowImageGrid,
+            carouselContent = carouselContent,
+        )
+    }
+}
 
-        // Model header
+private fun LazyListScope.modelDetailItems(
+    model: Model,
+    uiState: ModelDetailUiState,
+    selectedVersion: ModelVersion,
+    images: List<ModelImage>,
+    onVersionSelected: (Int) -> Unit,
+    onViewImages: (Long) -> Unit,
+    onCreatorClick: (String) -> Unit,
+    onShowImageGrid: () -> Unit,
+    carouselContent: @Composable () -> Unit,
+) {
+    item { carouselContent() }
+    item { ModelHeader(model = model, onCreatorClick = onCreatorClick) }
+    item {
+        ModelStatsRow(
+            downloadCount = model.stats.downloadCount,
+            favoriteCount = model.stats.favoriteCount,
+            rating = model.stats.rating,
+            commentCount = model.stats.commentCount,
+            modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+        )
+    }
+    item {
+        ImageActionsRow(
+            onViewImages = { onViewImages(selectedVersion.id) },
+            onShowGrid = onShowImageGrid,
+            hasImages = images.isNotEmpty(),
+        )
+    }
+    if (model.tags.isNotEmpty()) { item { TagsSection(tags = model.tags) } }
+    if (!model.description.isNullOrBlank()) {
+        item { DescriptionSection(description = model.description!!) }
+    }
+    if (model.modelVersions.size > 1) {
         item {
-            ModelHeader(model = model, onCreatorClick = onCreatorClick)
-        }
-
-        // Stats row
-        item {
-            StatsRow(model = model)
-        }
-
-        // View Images + Grid button
-        item {
-            if (selectedVersion != null) {
-                ImageActionsRow(
-                    onViewImages = { onViewImages(selectedVersion.id) },
-                    onShowGrid = onShowImageGrid,
-                    hasImages = images.isNotEmpty(),
-                )
-            }
-        }
-
-        // Tags
-        if (model.tags.isNotEmpty()) {
-            item {
-                TagsSection(tags = model.tags)
-            }
-        }
-
-        // Description
-        if (!model.description.isNullOrBlank()) {
-            item {
-                DescriptionSection(description = model.description!!)
-            }
-        }
-
-        // Version selector
-        if (model.modelVersions.size > 1) {
-            item {
-                VersionSelector(
-                    versions = model.modelVersions,
-                    selectedIndex = uiState.selectedVersionIndex,
-                    onVersionSelected = onVersionSelected,
-                )
-            }
-        }
-
-        // Version detail
-        if (selectedVersion != null) {
-            item {
-                VersionDetail(version = selectedVersion, powerUserMode = uiState.powerUserMode)
-            }
+            VersionSelector(
+                versions = model.modelVersions,
+                selectedIndex = uiState.selectedVersionIndex,
+                onVersionSelected = onVersionSelected,
+            )
         }
     }
+    item { VersionDetail(version = selectedVersion, powerUserMode = uiState.powerUserMode) }
 }
 
 @Composable
@@ -703,48 +702,6 @@ private fun ModelHeader(model: Model, onCreatorClick: (String) -> Unit) {
     }
 }
 
-@Composable
-private fun StatsRow(model: Model) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-    ) {
-        StatColumn(
-            value = FormatUtils.formatCount(model.stats.downloadCount),
-            label = "Downloads",
-        )
-        StatColumn(
-            value = FormatUtils.formatCount(model.stats.favoriteCount),
-            label = "Favorites",
-        )
-        StatColumn(
-            value = FormatUtils.formatRating(model.stats.rating),
-            label = "Rating",
-        )
-        StatColumn(
-            value = FormatUtils.formatCount(model.stats.commentCount),
-            label = "Comments",
-        )
-    }
-}
-
-@Composable
-private fun StatColumn(value: String, label: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleMedium,
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TagsSection(tags: List<String>) {
@@ -776,11 +733,7 @@ private fun DescriptionSection(description: String) {
     }
 
     Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
-        HorizontalDivider(modifier = Modifier.padding(bottom = Spacing.sm))
-        Text(
-            text = "Description",
-            style = MaterialTheme.typography.titleSmall,
-        )
+        SectionHeader(title = "Description", showDivider = true)
         Spacer(modifier = Modifier.height(Spacing.sm))
         Text(
             text = AnnotatedString(plainText),
@@ -892,28 +845,22 @@ private fun VersionSelector(
     val haptic = rememberHapticFeedback()
 
     Column(modifier = Modifier.padding(vertical = Spacing.sm)) {
-        HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm))
-        Text(
-            text = "Versions",
-            style = MaterialTheme.typography.titleSmall,
+        SectionHeader(
+            title = "Versions",
             modifier = Modifier.padding(horizontal = Spacing.lg),
+            showDivider = true,
         )
         Spacer(modifier = Modifier.height(Spacing.sm))
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = Spacing.lg),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-        ) {
-            itemsIndexed(versions) { index, version ->
-                FilterChip(
-                    selected = index == selectedIndex,
-                    onClick = {
-                        haptic(HapticFeedbackType.Selection)
-                        onVersionSelected(index)
-                    },
-                    label = { Text(version.name) },
-                )
-            }
-        }
+        FilterChipRow(
+            options = versions,
+            selected = versions[selectedIndex],
+            onSelect = { version ->
+                haptic(HapticFeedbackType.Selection)
+                onVersionSelected(versions.indexOf(version))
+            },
+            label = { it.name },
+            modifier = Modifier.padding(horizontal = Spacing.lg),
+        )
     }
 }
 
@@ -926,10 +873,7 @@ private fun VersionDetail(version: ModelVersion, powerUserMode: Boolean = false)
 
         if (version.trainedWords.isNotEmpty()) {
             Spacer(modifier = Modifier.height(Spacing.sm))
-            Text(
-                text = "Trained Words",
-                style = MaterialTheme.typography.titleSmall,
-            )
+            SectionHeader(title = "Trained Words", showDivider = false)
             Spacer(modifier = Modifier.height(Spacing.xs))
             Text(
                 text = version.trainedWords.joinToString(", "),
@@ -940,10 +884,7 @@ private fun VersionDetail(version: ModelVersion, powerUserMode: Boolean = false)
 
         if (version.files.isNotEmpty()) {
             Spacer(modifier = Modifier.height(Spacing.md))
-            Text(
-                text = "Files",
-                style = MaterialTheme.typography.titleSmall,
-            )
+            SectionHeader(title = "Files", showDivider = false)
             Spacer(modifier = Modifier.height(Spacing.xs))
             version.files.forEach { file ->
                 FileInfoRow(file = file)

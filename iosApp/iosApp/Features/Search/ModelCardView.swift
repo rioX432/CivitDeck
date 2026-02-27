@@ -86,29 +86,10 @@ struct ModelCardView: View {
     }
 
     private var statsRow: some View {
-        HStack(spacing: Spacing.sm) {
-            statItem(
-                icon: "arrow.down.circle",
-                value: FormatUtils.shared.formatCount(count: model.stats.downloadCount)
-            )
-            statItem(
-                icon: "heart",
-                value: FormatUtils.shared.formatCount(count: model.stats.favoriteCount)
-            )
-            statItem(
-                icon: "star",
-                value: FormatUtils.shared.formatRating(rating: model.stats.rating)
-            )
-        }
-    }
-
-    private func statItem(icon: String, value: String) -> some View {
-        HStack(spacing: 2) {
-            Image(systemName: icon)
-                .font(.system(size: IconSize.statIcon))
-            Text(value)
-                .font(.civitLabelSmall)
-        }
-        .foregroundColor(.civitOnSurfaceVariant)
+        ModelStatsRow(
+            downloadCount: model.stats.downloadCount,
+            favoriteCount: model.stats.favoriteCount,
+            rating: model.stats.rating
+        )
     }
 }

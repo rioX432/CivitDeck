@@ -1,8 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    alias(libs.plugins.android.application)
-    kotlin("android")
+    id("civitdeck.android.application")
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.aboutlibraries)
@@ -10,12 +7,9 @@ plugins {
 
 android {
     namespace = "com.riox432.civitdeck"
-    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.riox432.civitdeck"
-        minSdk = 24
-        targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
     }
@@ -35,17 +29,6 @@ android {
         release {
             isMinifyEnabled = false
         }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -48,6 +47,7 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.ModelCollection
+import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -71,7 +71,12 @@ fun CollectionsScreen(
         },
     ) { padding ->
         if (collections.isEmpty()) {
-            EmptyCollections(modifier = Modifier.padding(padding))
+            EmptyStateMessage(
+                icon = Icons.Default.Folder,
+                title = "No collections yet",
+                subtitle = "Create a collection to organize your models",
+                modifier = Modifier.padding(padding),
+            )
         } else {
             CollectionsList(
                 collections = collections,
@@ -89,34 +94,6 @@ fun CollectionsScreen(
                     onCreateCollection(name)
                     showCreateDialog = false
                 },
-            )
-        }
-    }
-}
-
-@Composable
-private fun EmptyCollections(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                imageVector = Icons.Default.Folder,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            Text(
-                text = "No collections yet",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = "Create a collection to organize your models",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

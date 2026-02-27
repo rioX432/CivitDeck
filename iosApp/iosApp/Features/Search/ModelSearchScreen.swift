@@ -36,11 +36,13 @@ struct ModelSearchScreen: View {
 
                     ZStack {
                         if viewModel.isLoading && viewModel.models.isEmpty {
-                            ProgressView()
+                            LoadingStateView()
                                 .transition(.opacity)
                         } else if let error = viewModel.error, viewModel.models.isEmpty {
-                            errorView(message: error)
-                                .transition(.opacity)
+                            ErrorStateView(message: error) {
+                                Task { await viewModel.refresh() }
+                            }
+                            .transition(.opacity)
                         } else if viewModel.models.isEmpty && !viewModel.isLoading {
                             emptyView
                                 .transition(.opacity)
@@ -407,27 +409,8 @@ struct ModelSearchScreen: View {
         ChipButton(label: label, isSelected: isSelected, action: action)
     }
 
-    private func errorView(message: String) -> some View {
-        VStack(spacing: Spacing.lg) {
-            Text(message)
-                .foregroundColor(.civitError)
-                .multilineTextAlignment(.center)
-            Button("Retry") {
-                Task { await viewModel.refresh() }
-            }
-            .buttonStyle(.bordered)
-        }
-        .padding()
-    }
-
     private var emptyView: some View {
-        VStack(spacing: Spacing.sm) {
-            Image(systemName: "magnifyingglass")
-                .font(.largeTitle)
-                .foregroundColor(.civitOnSurfaceVariant)
-            Text("No models found")
-                .foregroundColor(.civitOnSurfaceVariant)
-        }
+        EmptyStateView(icon: "magnifyingglass", title: "No models found")
     }
 }
 extension ModelSearchScreen { // MARK: - Filter FAB

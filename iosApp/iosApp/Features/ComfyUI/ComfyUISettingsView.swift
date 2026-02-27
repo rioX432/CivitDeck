@@ -89,6 +89,10 @@ struct ComfyUISettingsView: View {
                 ? "checkmark.circle.fill" : "circle")
                 .foregroundColor(.civitPrimary)
                 .onTapGesture { viewModel.onActivate(id: conn.id) }
+                .accessibilityLabel(conn.id == viewModel.activeConnection?.id
+                    ? "Active connection: \(conn.name)"
+                    : "Select connection: \(conn.name)")
+                .accessibilityAddTraits(.isButton)
             VStack(alignment: .leading) {
                 Text(conn.name).font(.civitBodyMedium)
                 Text("\(conn.hostname):\(conn.port)")
