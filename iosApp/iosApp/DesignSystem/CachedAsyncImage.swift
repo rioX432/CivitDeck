@@ -8,6 +8,7 @@ private let imageLogger = Logger(subsystem: "com.riox432.civitdeck", category: "
 /// with a larger URLCache for better image caching performance.
 struct CachedAsyncImage<Content: View>: View {
     let url: URL?
+    var maxPixelSize: CGFloat = defaultMaxPixelSize
     @ViewBuilder let content: (AsyncImagePhase) -> Content
 
     @State private var phase: AsyncImagePhase = .empty
@@ -35,7 +36,7 @@ struct CachedAsyncImage<Content: View>: View {
             // Use CGImageSource for memory-efficient downsampling.
             // Unlike UIImage(data:) + byPreparingThumbnail, this does NOT
             // decode the full-resolution image into memory first.
-            guard let image = Self.downsampledImage(data: data, maxPixelSize: 400) else {
+            guard let image = Self.downsampledImage(data: data, maxPixelSize: maxPixelSize) else {
                 phase = .failure(ImageLoadingError.invalidData)
                 return
             }
@@ -82,6 +83,8 @@ enum ImageURLSession {
         return URLSession(configuration: config)
     }()
 }
+
+private let defaultMaxPixelSize: CGFloat = 400
 
 private enum ImageLoadingError: Error {
     case invalidData

@@ -16,6 +16,9 @@ final class ImageGalleryViewModel: ObservableObject {
     @Published var selectedSort: CivitSortOrder = .highestRated
     @Published var selectedPeriod: TimePeriod = .allTime
     @Published var nsfwFilterLevel: NsfwFilterLevel = .off
+    @Published var nsfwBlurSettings: NsfwBlurSettings = NsfwBlurSettings(
+        softIntensity: 75, matureIntensity: 25, explicitIntensity: 0
+    )
     @Published var selectedAspectRatio: AspectRatioFilter?
     @Published var isLoading: Bool = false
     @Published var isLoadingMore: Bool = false
@@ -40,6 +43,7 @@ final class ImageGalleryViewModel: ObservableObject {
     private let getImagesUseCase: GetImagesUseCase
     private let savePromptUseCase: SavePromptUseCase
     private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
+    private let observeNsfwBlurSettingsUseCase: ObserveNsfwBlurSettingsUseCase
     private let autoSavePromptUseCase: AutoSavePromptUseCase
     private var nextCursor: String?
     private var loadTask: Task<Void, Never>?
@@ -52,8 +56,15 @@ final class ImageGalleryViewModel: ObservableObject {
         self.getImagesUseCase = KoinHelper.shared.getImagesUseCase()
         self.savePromptUseCase = KoinHelper.shared.getSavePromptUseCase()
         self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
+        self.observeNsfwBlurSettingsUseCase = KoinHelper.shared.getObserveNsfwBlurSettingsUseCase()
         self.autoSavePromptUseCase = KoinHelper.shared.getAutoSavePromptUseCase()
         loadImages()
+    }
+
+    func observeNsfwBlurSettings() async {
+        for await value in observeNsfwBlurSettingsUseCase.invoke() {
+            nsfwBlurSettings = value
+        }
     }
 
     func observeNsfwFilter() async {

@@ -1,9 +1,12 @@
+@file:Suppress("TooManyFunctions")
+
 package com.riox432.civitdeck.ui.settings
 
 import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,7 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -20,6 +25,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -37,6 +43,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.BuildConfig
+import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -61,54 +68,104 @@ fun SettingsScreen(
         }
     }
 
+    SettingsContent(state, viewModel, listState, onNavigateToLicenses, onNavigateToModelFiles)
+}
+
+@Composable
+private fun SettingsContent(
+    state: SettingsUiState,
+    viewModel: SettingsViewModel,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    onNavigateToLicenses: () -> Unit,
+    onNavigateToModelFiles: () -> Unit,
+) {
     LazyColumn(state = listState) {
-        item { SectionHeader("Account") }
-        item {
-            AccountSection(
-                apiKey = state.apiKey,
-                connectedUsername = state.connectedUsername,
-                isValidating = state.isValidatingApiKey,
-                error = state.apiKeyError,
-                onValidateAndSave = viewModel::onValidateAndSaveApiKey,
-                onClear = viewModel::onClearApiKey,
-            )
+        if (!state.isOnline) {
+            item { OfflineBanner() }
         }
-        item { SectionHeader("Notifications") }
-        item {
-            NotificationsToggleRow(
-                enabled = state.notificationsEnabled,
-                onToggle = viewModel::onNotificationsEnabledChanged,
-            )
-        }
-        if (state.notificationsEnabled) {
-            item {
-                PollingIntervalRow(
-                    selected = state.pollingInterval,
-                    onChanged = viewModel::onPollingIntervalChanged,
-                )
-            }
-        }
-        item { SectionHeader("Content Filter") }
-        item { NsfwToggleRow(state.nsfwFilterLevel, viewModel::onNsfwFilterChanged) }
-        item { SectionHeader("Display") }
-        item { SortOrderRow(state.defaultSortOrder, viewModel::onSortOrderChanged) }
-        item { TimePeriodRow(state.defaultTimePeriod, viewModel::onTimePeriodChanged) }
-        item { GridColumnsRow(state.gridColumns, viewModel::onGridColumnsChanged) }
-        item { PowerUserModeRow(state.powerUserMode, viewModel::onPowerUserModeChanged) }
-        if (state.powerUserMode) {
-            item { SectionHeader("Model Files") }
-            item { NavigationRow("Model File Browser", onNavigateToModelFiles) }
-        }
-        item { SectionHeader("Data Management") }
-        item { HiddenModelsRow(state.hiddenModels.size, state.hiddenModels, viewModel::onUnhideModel) }
-        item { ExcludedTagsRow(state.excludedTags, viewModel::onAddExcludedTag, viewModel::onRemoveExcludedTag) }
-        item { ClearActionRow("Clear Search History", viewModel::onClearSearchHistory) }
-        item { ClearActionRow("Clear Browsing History", viewModel::onClearBrowsingHistory) }
-        item { ClearActionRow("Clear Cache", viewModel::onClearCache) }
-        item { SectionHeader("About") }
-        item { InfoRow("App Version", BuildConfig.VERSION_NAME) }
-        item { NavigationRow("Open Source Licenses", onNavigateToLicenses) }
+        settingsAccountItems(state, viewModel)
+        settingsDisplayItems(state, viewModel, onNavigateToModelFiles)
+        settingsCacheItems(state, viewModel)
+        settingsDataItems(state, viewModel, onNavigateToLicenses)
     }
+}
+
+private fun LazyListScope.settingsAccountItems(
+    state: SettingsUiState,
+    viewModel: SettingsViewModel,
+) {
+    item { SectionHeader("Account") }
+    item {
+        AccountSection(
+            apiKey = state.apiKey,
+            connectedUsername = state.connectedUsername,
+            isValidating = state.isValidatingApiKey,
+            error = state.apiKeyError,
+            onValidateAndSave = viewModel::onValidateAndSaveApiKey,
+            onClear = viewModel::onClearApiKey,
+        )
+    }
+    item { SectionHeader("Notifications") }
+    item { NotificationsToggleRow(state.notificationsEnabled, viewModel::onNotificationsEnabledChanged) }
+    if (state.notificationsEnabled) {
+        item { PollingIntervalRow(state.pollingInterval, viewModel::onPollingIntervalChanged) }
+    }
+    item { SectionHeader("Content Filter") }
+    item { NsfwToggleRow(state.nsfwFilterLevel, viewModel::onNsfwFilterChanged) }
+    if (state.nsfwFilterLevel != NsfwFilterLevel.Off) {
+        item {
+            NsfwBlurSection(
+                settings = state.nsfwBlurSettings,
+                onSettingsChanged = viewModel::onNsfwBlurSettingsChanged,
+            )
+        }
+    }
+}
+
+private fun LazyListScope.settingsDisplayItems(
+    state: SettingsUiState,
+    viewModel: SettingsViewModel,
+    onNavigateToModelFiles: () -> Unit,
+) {
+    item { SectionHeader("Display") }
+    item { SortOrderRow(state.defaultSortOrder, viewModel::onSortOrderChanged) }
+    item { TimePeriodRow(state.defaultTimePeriod, viewModel::onTimePeriodChanged) }
+    item { GridColumnsRow(state.gridColumns, viewModel::onGridColumnsChanged) }
+    item { PowerUserModeRow(state.powerUserMode, viewModel::onPowerUserModeChanged) }
+    if (state.powerUserMode) {
+        item { SectionHeader("Model Files") }
+        item { NavigationRow("Model File Browser", onNavigateToModelFiles) }
+    }
+}
+
+private fun LazyListScope.settingsCacheItems(
+    state: SettingsUiState,
+    viewModel: SettingsViewModel,
+) {
+    item { SectionHeader("Offline & Cache") }
+    item { OfflineCacheToggleRow(state.offlineCacheEnabled, viewModel::onOfflineCacheEnabledChanged) }
+    if (state.offlineCacheEnabled) {
+        item {
+            CacheSizeLimitRow(state.cacheSizeLimitMb, state.cacheInfo.formattedSize, viewModel::onCacheSizeLimitChanged)
+        }
+    }
+    item { CacheInfoRow(state.cacheInfo.entryCount, state.cacheInfo.formattedSize) }
+}
+
+private fun LazyListScope.settingsDataItems(
+    state: SettingsUiState,
+    viewModel: SettingsViewModel,
+    onNavigateToLicenses: () -> Unit,
+) {
+    item { SectionHeader("Data Management") }
+    item { HiddenModelsRow(state.hiddenModels.size, state.hiddenModels, viewModel::onUnhideModel) }
+    item { ExcludedTagsRow(state.excludedTags, viewModel::onAddExcludedTag, viewModel::onRemoveExcludedTag) }
+    item { ClearActionRow("Clear Search History", viewModel::onClearSearchHistory) }
+    item { ClearActionRow("Clear Browsing History", viewModel::onClearBrowsingHistory) }
+    item { ClearActionRow("Clear Cache", viewModel::onClearCache) }
+    item { SectionHeader("About") }
+    item { InfoRow("App Version", BuildConfig.VERSION_NAME) }
+    item { NavigationRow("Open Source Licenses", onNavigateToLicenses) }
 }
 
 @Composable
@@ -167,6 +224,111 @@ private fun PollingIntervalRow(selected: PollingInterval, onChanged: (PollingInt
 }
 
 @Composable
+private fun OfflineBanner() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                MaterialTheme.colorScheme.errorContainer,
+                RoundedCornerShape(Spacing.sm),
+            )
+            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "You are offline — showing cached data",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onErrorContainer,
+        )
+    }
+}
+
+@Composable
+private fun OfflineCacheToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text("Offline Cache", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "Keep viewed models available offline",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(checked = enabled, onCheckedChange = onToggle)
+    }
+}
+
+@Composable
+private fun CacheSizeLimitRow(
+    currentLimitMb: Int,
+    currentUsage: String,
+    onChanged: (Int) -> Unit,
+) {
+    val options = listOf(50, 100, 200, 500)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("Cache Size Limit", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "$currentLimitMb MB (used: $currentUsage)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            options.forEach { mb ->
+                TextButton(onClick = { onChanged(mb) }) {
+                    Text(
+                        text = "${mb}MB",
+                        color = if (currentLimitMb == mb) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CacheInfoRow(entryCount: Int, formattedSize: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("Cached Entries", style = MaterialTheme.typography.bodyLarge)
+        Text(
+            "$entryCount entries ($formattedSize)",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
 private fun NsfwToggleRow(level: NsfwFilterLevel, onToggle: (NsfwFilterLevel) -> Unit) {
     Row(
         modifier = Modifier
@@ -188,6 +350,59 @@ private fun NsfwToggleRow(level: NsfwFilterLevel, onToggle: (NsfwFilterLevel) ->
             onCheckedChange = {
                 onToggle(if (level == NsfwFilterLevel.Off) NsfwFilterLevel.All else NsfwFilterLevel.Off)
             },
+        )
+    }
+}
+
+@Composable
+private fun NsfwBlurSection(
+    settings: NsfwBlurSettings,
+    onSettingsChanged: (NsfwBlurSettings) -> Unit,
+) {
+    Column(
+        modifier = Modifier.padding(horizontal = Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+    ) {
+        Text(
+            "Blur Intensity",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        BlurSliderRow("Soft", settings.softIntensity) {
+            onSettingsChanged(settings.copy(softIntensity = it))
+        }
+        BlurSliderRow("Mature", settings.matureIntensity) {
+            onSettingsChanged(settings.copy(matureIntensity = it))
+        }
+        BlurSliderRow("Explicit", settings.explicitIntensity) {
+            onSettingsChanged(settings.copy(explicitIntensity = it))
+        }
+    }
+}
+
+@Composable
+private fun BlurSliderRow(
+    label: String,
+    intensity: Int,
+    onChanged: (Int) -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(label, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = if (intensity == 0) "Hidden" else "$intensity%",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Slider(
+            value = intensity.toFloat(),
+            onValueChange = { onChanged(it.toInt()) },
+            valueRange = 0f..100f,
+            steps = 3,
         )
     }
 }
