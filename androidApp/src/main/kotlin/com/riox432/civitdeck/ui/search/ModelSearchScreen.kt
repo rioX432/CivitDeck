@@ -105,6 +105,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.riox432.civitdeck.domain.model.BaseModel
+import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.RecommendationSection
@@ -114,6 +115,7 @@ import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.adaptive.isExpandedWidth
 import com.riox432.civitdeck.ui.components.ModelCard
+import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -873,6 +875,7 @@ private fun FilterChipItem(
     onClick: () -> Unit,
     showCheckmark: Boolean = false,
 ) {
+    val haptic = rememberHapticFeedback()
     val colorTween = tween<androidx.compose.ui.graphics.Color>(
         durationMillis = Duration.fast,
         easing = Easing.standard,
@@ -900,7 +903,10 @@ private fun FilterChipItem(
             .defaultMinSize(minHeight = 40.dp)
             .clip(RoundedCornerShape(CornerRadius.chip))
             .background(backgroundColor)
-            .clickable(onClick = onClick)
+            .clickable {
+                haptic(HapticFeedbackType.Selection)
+                onClick()
+            }
             .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.xs),

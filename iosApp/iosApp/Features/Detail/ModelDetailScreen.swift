@@ -58,6 +58,7 @@ struct ModelDetailScreen: View {
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
+                    HapticFeedback.impact.trigger()
                     viewModel.onFavoriteToggle()
                 } label: {
                     Image(systemName: viewModel.isFavorite ? "heart.fill" : "heart")
@@ -333,6 +334,7 @@ struct ModelDetailScreen: View {
                         ForEach(Array(versions.enumerated()), id: \.offset) { index, version in
                             let selected = index == viewModel.selectedVersionIndex
                             Button {
+                                HapticFeedback.selection.trigger()
                                 viewModel.onVersionSelected(index)
                             } label: {
                                 Text(version.name)
