@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -16,7 +17,7 @@ data class SavedPromptEntity(
     val size: String?,
     val sourceImageUrl: String?,
     val savedAt: Long,
-    val isTemplate: Boolean = false,
+    @ColumnInfo(defaultValue = "0") val isTemplate: Boolean = false,
     val templateName: String? = null,
-    val autoSaved: Boolean = false,
+    @ColumnInfo(defaultValue = "0") val autoSaved: Boolean = false,
 )
