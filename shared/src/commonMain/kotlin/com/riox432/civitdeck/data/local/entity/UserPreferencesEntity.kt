@@ -14,4 +14,10 @@ data class UserPreferencesEntity(
     val powerUserMode: Boolean = false,
     val notificationsEnabled: Boolean = false,
     val pollingIntervalMinutes: Int = 0,
-)
+    val offlineCacheEnabled: Boolean = true,
+    val cacheSizeLimitMb: Int = DEFAULT_CACHE_SIZE_LIMIT_MB,
+) {
+    companion object {
+        const val DEFAULT_CACHE_SIZE_LIMIT_MB = 200
+    }
+}

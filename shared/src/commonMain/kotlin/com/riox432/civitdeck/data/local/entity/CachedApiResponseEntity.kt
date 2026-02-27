@@ -15,4 +15,5 @@ data class CachedApiResponseEntity(
     val cacheKey: String,
     val responseJson: String,
     val cachedAt: Long,
+    val isOfflinePinned: Boolean = false,
 )

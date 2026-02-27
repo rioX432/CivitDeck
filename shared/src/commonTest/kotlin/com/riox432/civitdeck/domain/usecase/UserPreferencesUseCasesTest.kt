@@ -50,6 +50,14 @@ class UserPreferencesUseCasesTest {
         val pollingInterval = MutableStateFlow(PollingInterval.Off)
         override fun observePollingInterval(): Flow<PollingInterval> = pollingInterval
         override suspend fun setPollingInterval(interval: PollingInterval) { pollingInterval.value = interval }
+
+        val offlineCacheEnabled = MutableStateFlow(true)
+        override fun observeOfflineCacheEnabled(): Flow<Boolean> = offlineCacheEnabled
+        override suspend fun setOfflineCacheEnabled(enabled: Boolean) { offlineCacheEnabled.value = enabled }
+
+        val cacheSizeLimitMb = MutableStateFlow(200)
+        override fun observeCacheSizeLimitMb(): Flow<Int> = cacheSizeLimitMb
+        override suspend fun setCacheSizeLimitMb(limitMb: Int) { cacheSizeLimitMb.value = limitMb }
     }
 
     private val repo = FakeUserPreferencesRepository()

@@ -25,4 +25,8 @@ interface UserPreferencesRepository {
     suspend fun setNotificationsEnabled(enabled: Boolean)
     fun observePollingInterval(): Flow<PollingInterval>
     suspend fun setPollingInterval(interval: PollingInterval)
+    fun observeOfflineCacheEnabled(): Flow<Boolean>
+    suspend fun setOfflineCacheEnabled(enabled: Boolean)
+    fun observeCacheSizeLimitMb(): Flow<Int>
+    suspend fun setCacheSizeLimitMb(limitMb: Int)
 }

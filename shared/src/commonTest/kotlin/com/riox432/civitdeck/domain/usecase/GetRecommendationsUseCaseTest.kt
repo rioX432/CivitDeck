@@ -107,6 +107,10 @@ class GetRecommendationsUseCaseTest {
         override suspend fun setNotificationsEnabled(enabled: Boolean) = error("not used")
         override fun observePollingInterval(): Flow<com.riox432.civitdeck.domain.model.PollingInterval> = error("not used")
         override suspend fun setPollingInterval(interval: com.riox432.civitdeck.domain.model.PollingInterval) = error("not used")
+        override fun observeOfflineCacheEnabled(): Flow<Boolean> = error("not used")
+        override suspend fun setOfflineCacheEnabled(enabled: Boolean) = error("not used")
+        override fun observeCacheSizeLimitMb(): Flow<Int> = error("not used")
+        override suspend fun setCacheSizeLimitMb(limitMb: Int) = error("not used")
     }
 
     @Test

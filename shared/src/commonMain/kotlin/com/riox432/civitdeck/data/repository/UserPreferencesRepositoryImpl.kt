@@ -3,6 +3,7 @@ package com.riox432.civitdeck.data.repository
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
+import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity.Companion.DEFAULT_CACHE_SIZE_LIMIT_MB
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -93,5 +94,21 @@ class UserPreferencesRepositoryImpl(
     override suspend fun setPollingInterval(interval: PollingInterval) {
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(pollingIntervalMinutes = interval.minutes))
+    }
+
+    override fun observeOfflineCacheEnabled(): Flow<Boolean> =
+        dao.observePreferences().map { it?.offlineCacheEnabled ?: true }
+
+    override suspend fun setOfflineCacheEnabled(enabled: Boolean) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(offlineCacheEnabled = enabled))
+    }
+
+    override fun observeCacheSizeLimitMb(): Flow<Int> =
+        dao.observePreferences().map { it?.cacheSizeLimitMb ?: DEFAULT_CACHE_SIZE_LIMIT_MB }
+
+    override suspend fun setCacheSizeLimitMb(limitMb: Int) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(cacheSizeLimitMb = limitMb))
     }
 }
