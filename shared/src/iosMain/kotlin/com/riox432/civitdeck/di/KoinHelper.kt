@@ -17,6 +17,7 @@ import com.riox432.civitdeck.domain.usecase.DeleteCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteSavedPromptUseCase
 import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetCreatorModelsUseCase
+import com.riox432.civitdeck.domain.usecase.GetDiscoveryModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
@@ -106,6 +107,7 @@ object KoinHelper {
     fun getObservePowerUserModeUseCase(): ObservePowerUserModeUseCase = getKoin().get()
     fun getSetPowerUserModeUseCase(): SetPowerUserModeUseCase = getKoin().get()
     fun getEnrichModelImagesUseCase(): EnrichModelImagesUseCase = getKoin().get()
+    fun getDiscoveryModelsUseCase(): GetDiscoveryModelsUseCase = getKoin().get()
     fun getObserveApiKeyUseCase(): ObserveApiKeyUseCase = getKoin().get()
     fun getSetApiKeyUseCase(): SetApiKeyUseCase = getKoin().get()
     fun getValidateApiKeyUseCase(): ValidateApiKeyUseCase = getKoin().get()

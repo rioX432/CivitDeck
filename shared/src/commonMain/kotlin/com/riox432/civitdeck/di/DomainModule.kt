@@ -16,6 +16,7 @@ import com.riox432.civitdeck.domain.usecase.DeleteCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteSavedPromptUseCase
 import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetCreatorModelsUseCase
+import com.riox432.civitdeck.domain.usecase.GetDiscoveryModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
@@ -73,6 +74,7 @@ val domainModule = module {
     factory { GetModelDetailUseCase(get()) }
     factory { GetImagesUseCase(get()) }
     factory { EnrichModelImagesUseCase(get()) }
+    factory { GetDiscoveryModelsUseCase(get()) }
     factory { ToggleFavoriteUseCase(get()) }
     factory { ObserveFavoritesUseCase(get()) }
     factory { ObserveIsFavoriteUseCase(get()) }

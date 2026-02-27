@@ -55,7 +55,7 @@ struct ModelSearchScreen: View {
 
                 HStack {
                     Spacer()
-                    filterFab
+                    VStack(spacing: Spacing.sm) { DiscoverFab(visible: headerVisible); filterFab }
                 }
 
                 if comparisonState.isActive {
@@ -85,6 +85,9 @@ struct ModelSearchScreen: View {
                     leftModelId: dest.leftModelId,
                     rightModelId: dest.rightModelId
                 )
+            }
+            .navigationDestination(for: DiscoveryDestination.self) { _ in
+                SwipeDiscoveryView(onModelDetail: { modelId in navigationPath.append(modelId) })
             }
             .task { await viewModel.observeSearchHistory() }
             .task { await viewModel.observeGridColumns() }
