@@ -1,3 +1,4 @@
+import CoreSpotlight
 import SwiftUI
 import Shared
 

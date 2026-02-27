@@ -1,6 +1,6 @@
 import Foundation
 
-enum DeepLink {
+enum DeepLink: Equatable {
     case modelDetail(id: Int64)
     case search(query: String)
     case favorites
