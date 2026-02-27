@@ -20,12 +20,12 @@ struct SwipeDiscoveryView: View {
     private var contentArea: some View {
         GeometryReader { geometry in
             ZStack {
-                if viewModel.isLoading && viewModel.cards.isEmpty() {
+                if viewModel.isLoading && viewModel.cards.isEmpty {
                     ProgressView()
-                } else if let error = viewModel.error, viewModel.cards.isEmpty() {
+                } else if let error = viewModel.error, viewModel.cards.isEmpty {
                     Text(error)
                         .foregroundColor(.civitError)
-                } else if viewModel.cards.isEmpty() {
+                } else if viewModel.cards.isEmpty {
                     Text("No more models to discover")
                         .font(.civitBodyMedium)
                         .foregroundColor(.civitOnSurfaceVariant)
@@ -93,7 +93,7 @@ struct SwipeDiscoveryView: View {
                     .background(Color.civitSurfaceContainerHigh)
                     .clipShape(Circle())
             }
-            .disabled(viewModel.cards.isEmpty())
+            .disabled(viewModel.cards.isEmpty)
 
             // Favorite button
             Button(action: {
@@ -108,7 +108,7 @@ struct SwipeDiscoveryView: View {
                     .background(Color.civitSurfaceContainerHigh)
                     .clipShape(Circle())
             }
-            .disabled(viewModel.cards.isEmpty())
+            .disabled(viewModel.cards.isEmpty)
         }
         .padding(.vertical, Spacing.md)
     }
