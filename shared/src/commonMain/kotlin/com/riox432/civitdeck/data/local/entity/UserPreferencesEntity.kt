@@ -19,10 +19,9 @@ data class UserPreferencesEntity(
     val nsfwBlurExplicit: Int = 0,
     val offlineCacheEnabled: Boolean = true,
     val cacheSizeLimitMb: Int = DEFAULT_CACHE_SIZE_LIMIT_MB,
+    val seenTutorialVersion: Int = 0,
 ) {
     companion object {
         const val DEFAULT_CACHE_SIZE_LIMIT_MB = 200
     }
 }
-    val seenTutorialVersion: Int = 0,
-)

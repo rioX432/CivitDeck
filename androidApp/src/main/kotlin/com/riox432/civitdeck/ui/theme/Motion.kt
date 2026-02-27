@@ -35,6 +35,23 @@ object Spring {
         dampingRatio = SpringSpec.DampingRatioNoBouncy,
         stiffness = SpringSpec.StiffnessHigh,
     )
+    val gentle = spring<Float>(
+        dampingRatio = SpringSpec.DampingRatioLowBouncy,
+        stiffness = SpringSpec.StiffnessLow,
+    )
+}
+
+// Stagger animation tokens
+object Stagger {
+    const val delayPerItemMs = 50
+    const val maxDelayMs = 300
+    const val initialOffsetY = 24f
+}
+
+// Parallax animation tokens
+object Parallax {
+    const val factor = 0.15f
+    const val maxOffsetDp = 20f
 }
 
 // Tween helper

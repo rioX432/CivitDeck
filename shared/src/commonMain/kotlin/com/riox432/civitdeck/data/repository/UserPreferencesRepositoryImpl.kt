@@ -131,6 +131,8 @@ class UserPreferencesRepositoryImpl(
     override suspend fun setCacheSizeLimitMb(limitMb: Int) {
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(cacheSizeLimitMb = limitMb))
+    }
+
     override fun observeSeenTutorialVersion(): Flow<Int> =
         dao.observePreferences().map { it?.seenTutorialVersion ?: 0 }
 

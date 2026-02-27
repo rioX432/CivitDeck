@@ -47,6 +47,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Style
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -59,6 +60,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -111,8 +113,11 @@ import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.adaptive.isExpandedWidth
+import com.riox432.civitdeck.ui.components.LaunchStaggerAnimation
 import com.riox432.civitdeck.ui.components.ModelCard
 import com.riox432.civitdeck.ui.components.SwipeableModelCard
+import com.riox432.civitdeck.ui.components.isReducedMotionEnabled
+import com.riox432.civitdeck.ui.components.rememberGridItemScrollOffset
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
@@ -150,6 +155,7 @@ fun ModelSearchScreen(
     scrollToTopTrigger: Int = 0,
     compareModelName: String? = null,
     onCancelCompare: () -> Unit = {},
+    onDiscoverClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
@@ -185,6 +191,7 @@ fun ModelSearchScreen(
         compareModelName = compareModelName,
         onCancelCompare = onCancelCompare,
         ownedHashes = ownedHashes,
+        onDiscoverClick = onDiscoverClick,
         favoriteIds = favoriteIds,
         onToggleFavorite = viewModel::toggleFavorite,
     )
@@ -234,6 +241,7 @@ private fun SearchScreenBody(
     compareModelName: String? = null,
     onCancelCompare: () -> Unit = {},
     ownedHashes: Set<String> = emptySet(),
+    onDiscoverClick: () -> Unit = {},
     favoriteIds: Set<Long> = emptySet(),
     onToggleFavorite: (Model) -> Unit = {},
 ) {
@@ -282,6 +290,14 @@ private fun SearchScreenBody(
             uiState = uiState,
             searchHistory = searchHistory,
             viewModel = viewModel,
+        )
+
+        DiscoverFab(
+            visible = isFabVisible,
+            onClick = onDiscoverClick,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 80.dp, end = Spacing.lg),
         )
 
         FilterFab(
@@ -425,6 +441,36 @@ private fun SearchTextField(
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { onSearch() }),
     )
+}
+
+@Composable
+private fun DiscoverFab(
+    visible: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = slideInVertically(
+            initialOffsetY = { it },
+            animationSpec = tween(Duration.fast, easing = Easing.standard),
+        ) + fadeIn(animationSpec = tween(Duration.fast, easing = Easing.standard)),
+        exit = slideOutVertically(
+            targetOffsetY = { it },
+            animationSpec = tween(Duration.fast, easing = Easing.standard),
+        ) + fadeOut(animationSpec = tween(Duration.fast, easing = Easing.standard)),
+    ) {
+        SmallFloatingActionButton(
+            onClick = onClick,
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        ) {
+            Icon(
+                Icons.Filled.Style,
+                contentDescription = "Discover",
+            )
+        }
+    }
 }
 
 @Composable
@@ -1035,6 +1081,7 @@ private fun ModelGrid(
     onToggleFavorite: (Model) -> Unit = {},
 ) {
     val isAppendLoading = lazyPagingItems.loadState.append is LoadState.Loading
+    val reducedMotion = isReducedMotionEnabled()
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(gridColumns),
@@ -1068,6 +1115,11 @@ private fun ModelGrid(
             val thumbnailUrl = model.modelVersions
                 .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
             val isOwned = ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
+
+            @Suppress("UnusedPrivateProperty")
+            val parallaxOffset = rememberGridItemScrollOffset(gridState, index)
+            val staggerAnimatable = remember { Animatable(0f) }
+            LaunchStaggerAnimation(index = index, animatable = staggerAnimatable, reducedMotion = reducedMotion)
             SwipeableModelCard(
                 model = model,
                 isFavorite = model.id in favoriteIds,

@@ -307,7 +307,7 @@ val MIGRATION_11_12 = object : Migration(11, 12) {
     }
 }
 
-val MIGRATION_14_15 = object : Migration(14, 15) {
+val MIGRATION_12_13 = object : Migration(12, 13) {
     override fun migrate(connection: SQLiteConnection) {
         connection.execSQL(
             "ALTER TABLE user_preferences ADD COLUMN nsfwBlurSoft INTEGER NOT NULL DEFAULT 75",
@@ -333,6 +333,13 @@ val MIGRATION_13_14 = object : Migration(13, 14) {
         )
         connection.execSQL(
             "ALTER TABLE user_preferences ADD COLUMN cacheSizeLimitMb INTEGER NOT NULL DEFAULT 200",
+        )
+    }
+}
+
+val MIGRATION_14_15 = object : Migration(14, 15) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
             "ALTER TABLE user_preferences ADD COLUMN seenTutorialVersion INTEGER NOT NULL DEFAULT 0",
         )
     }
