@@ -117,6 +117,8 @@ class GetRecommendationsUseCaseTest {
         override suspend fun setOfflineCacheEnabled(enabled: Boolean) = error("not used")
         override fun observeCacheSizeLimitMb(): Flow<Int> = error("not used")
         override suspend fun setCacheSizeLimitMb(limitMb: Int) = error("not used")
+        override fun observeSeenTutorialVersion(): Flow<Int> = error("not used")
+        override suspend fun setSeenTutorialVersion(version: Int) = error("not used")
     }
 
     @Test

@@ -71,6 +71,10 @@ class UserPreferencesUseCasesTest {
         val cacheSizeLimitMb = MutableStateFlow(200)
         override fun observeCacheSizeLimitMb(): Flow<Int> = cacheSizeLimitMb
         override suspend fun setCacheSizeLimitMb(limitMb: Int) { cacheSizeLimitMb.value = limitMb }
+
+        val seenTutorialVersion = MutableStateFlow(0)
+        override fun observeSeenTutorialVersion(): Flow<Int> = seenTutorialVersion
+        override suspend fun setSeenTutorialVersion(version: Int) { seenTutorialVersion.value = version }
     }
 
     private val repo = FakeUserPreferencesRepository()
