@@ -1,6 +1,6 @@
 package com.riox432.civitdeck.domain.usecase
 
-import com.riox432.civitdeck.data.api.CivitAiApi
+import com.riox432.civitdeck.domain.repository.AuthRepository
 import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
 
@@ -12,8 +12,8 @@ class SetApiKeyUseCase(private val repository: UserPreferencesRepository) {
     suspend operator fun invoke(apiKey: String?) = repository.setApiKey(apiKey)
 }
 
-class ValidateApiKeyUseCase(private val api: CivitAiApi) {
+class ValidateApiKeyUseCase(private val repository: AuthRepository) {
     suspend operator fun invoke(apiKey: String): String {
-        return api.getMe(apiKey).username
+        return repository.validateApiKey(apiKey)
     }
 }

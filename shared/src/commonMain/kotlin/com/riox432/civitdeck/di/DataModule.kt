@@ -8,7 +8,9 @@ import com.riox432.civitdeck.data.api.createHttpClient
 import com.riox432.civitdeck.data.local.CivitDeckDatabase
 import com.riox432.civitdeck.data.local.LocalCacheDataSource
 import com.riox432.civitdeck.data.local.getRoomDatabase
+import com.riox432.civitdeck.data.repository.AuthRepositoryImpl
 import com.riox432.civitdeck.data.repository.BrowsingHistoryRepositoryImpl
+import com.riox432.civitdeck.data.repository.CacheRepositoryImpl
 import com.riox432.civitdeck.data.repository.CollectionRepositoryImpl
 import com.riox432.civitdeck.data.repository.ComfyUIRepositoryImpl
 import com.riox432.civitdeck.data.repository.CreatorRepositoryImpl
@@ -24,7 +26,9 @@ import com.riox432.civitdeck.data.repository.SearchHistoryRepositoryImpl
 import com.riox432.civitdeck.data.repository.TagRepositoryImpl
 import com.riox432.civitdeck.data.repository.UserPreferencesRepositoryImpl
 import com.riox432.civitdeck.data.scanner.FileScanner
+import com.riox432.civitdeck.domain.repository.AuthRepository
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
+import com.riox432.civitdeck.domain.repository.CacheRepository
 import com.riox432.civitdeck.domain.repository.CollectionRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIRepository
 import com.riox432.civitdeck.domain.repository.CreatorRepository
@@ -80,6 +84,8 @@ val dataModule = module {
     single { LocalCacheDataSource(get()) }
 
     // Repositories
+    single<AuthRepository> { AuthRepositoryImpl(get()) }
+    single<CacheRepository> { CacheRepositoryImpl(get()) }
     single<ModelRepository> { ModelRepositoryImpl(get(), get(), get()) }
     single<ImageRepository> { ImageRepositoryImpl(get(), get(), get()) }
     single<CreatorRepository> { CreatorRepositoryImpl(get()) }
