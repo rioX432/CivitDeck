@@ -24,6 +24,7 @@
 		CD0005052D000005000CD001 /* ImageViewerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005042D000005000CD001 /* ImageViewerScreen.swift */; };
 		CD0005072D000005000CD001 /* MetadataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005062D000005000CD001 /* MetadataSheet.swift */; };
 		CD0006012D000006000CD001 /* CivitDeckColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006002D000006000CD001 /* CivitDeckColors.swift */; };
+		CD00TM012D7CC174000CD001 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00TM002D7CC174000CD001 /* ThemeManager.swift */; };
 		CD0006032D000006000CD001 /* CivitDeckFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006022D000006000CD001 /* CivitDeckFonts.swift */; };
 		CD0006052D000006000CD001 /* CivitDeckSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006042D000006000CD001 /* CivitDeckSpacing.swift */; };
 		CD0006072D000006000CD001 /* CivitDeckShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006062D000006000CD001 /* CivitDeckShapes.swift */; };

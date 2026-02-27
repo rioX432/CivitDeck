@@ -22,20 +22,20 @@ import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.ui.theme.Duration
 
 private val AnimationBoxSize = 200.dp
-private const val CardWidthFraction = 0.45f
-private const val CardHeightFraction = 0.55f
-private const val FingerRadius = 12f
-private const val CardCornerRadius = 16f
-private const val SwipeAmplitude = 60f
-private const val DragAmplitude = 50f
-private const val SliderAmplitude = 60f
+private const val CARD_WIDTH_FRACTION = 0.45f
+private const val CARD_HEIGHT_FRACTION = 0.55f
+private const val FINGER_RADIUS = 12f
+private const val CARD_CORNER_RADIUS = 16f
+private const val SWIPE_AMPLITUDE = 60f
+private const val DRAG_AMPLITUDE = 50f
+private const val SLIDER_AMPLITUDE = 60f
 
 @Composable
 fun SwipeDiscoveryAnimation(accentColor: Color, modifier: Modifier = Modifier) {
     val transition = rememberInfiniteTransition(label = "swipe")
     val offsetX by transition.animateFloat(
-        initialValue = -SwipeAmplitude,
-        targetValue = SwipeAmplitude,
+        initialValue = -SWIPE_AMPLITUDE,
+        targetValue = SWIPE_AMPLITUDE,
         animationSpec = infiniteRepeatable(tween(Duration.slow * 2), RepeatMode.Reverse),
         label = "swipeX",
     )
@@ -54,7 +54,7 @@ fun QuickActionsAnimation(accentColor: Color, modifier: Modifier = Modifier) {
     val transition = rememberInfiniteTransition(label = "quickAction")
     val offsetX by transition.animateFloat(
         initialValue = 0f,
-        targetValue = DragAmplitude,
+        targetValue = DRAG_AMPLITUDE,
         animationSpec = infiniteRepeatable(tween(Duration.slow * 2), RepeatMode.Reverse),
         label = "dragX",
     )
@@ -64,14 +64,14 @@ fun QuickActionsAnimation(accentColor: Color, modifier: Modifier = Modifier) {
         drawRoundRect(
             color = revealColor,
             topLeft = Offset(size.width * 0.28f, size.height * 0.18f),
-            size = Size(size.width * CardWidthFraction, size.height * CardHeightFraction),
-            cornerRadius = CornerRadius(CardCornerRadius),
+            size = Size(size.width * CARD_WIDTH_FRACTION, size.height * CARD_HEIGHT_FRACTION),
+            cornerRadius = CornerRadius(CARD_CORNER_RADIUS),
         )
         drawRoundRect(
             color = cardColor,
             topLeft = Offset(size.width * 0.28f + offsetX, size.height * 0.18f),
-            size = Size(size.width * CardWidthFraction, size.height * CardHeightFraction),
-            cornerRadius = CornerRadius(CardCornerRadius),
+            size = Size(size.width * CARD_WIDTH_FRACTION, size.height * CARD_HEIGHT_FRACTION),
+            cornerRadius = CornerRadius(CARD_CORNER_RADIUS),
         )
         drawFinger(
             center = Offset(size.width * 0.5f + offsetX, size.height * 0.72f),
@@ -84,8 +84,8 @@ fun QuickActionsAnimation(accentColor: Color, modifier: Modifier = Modifier) {
 fun ImageComparisonAnimation(accentColor: Color, modifier: Modifier = Modifier) {
     val transition = rememberInfiniteTransition(label = "slider")
     val sliderX by transition.animateFloat(
-        initialValue = -SliderAmplitude,
-        targetValue = SliderAmplitude,
+        initialValue = -SLIDER_AMPLITUDE,
+        targetValue = SLIDER_AMPLITUDE,
         animationSpec = infiniteRepeatable(tween(Duration.slow * 2), RepeatMode.Reverse),
         label = "sliderX",
     )
@@ -121,8 +121,8 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawCard(
     drawRoundRect(
         color = color,
         topLeft = Offset(canvasSize.width * 0.28f, canvasSize.height * 0.18f),
-        size = Size(canvasSize.width * CardWidthFraction, canvasSize.height * CardHeightFraction),
-        cornerRadius = CornerRadius(CardCornerRadius),
+        size = Size(canvasSize.width * CARD_WIDTH_FRACTION, canvasSize.height * CARD_HEIGHT_FRACTION),
+        cornerRadius = CornerRadius(CARD_CORNER_RADIUS),
     )
 }
 
@@ -130,6 +130,6 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawFinger(
     center: Offset,
     color: Color,
 ) {
-    drawCircle(color = color.copy(alpha = 0.25f), radius = FingerRadius * 2f, center = center)
-    drawCircle(color = color, radius = FingerRadius, center = center)
+    drawCircle(color = color.copy(alpha = 0.25f), radius = FINGER_RADIUS * 2f, center = center)
+    drawCircle(color = color, radius = FINGER_RADIUS, center = center)
 }

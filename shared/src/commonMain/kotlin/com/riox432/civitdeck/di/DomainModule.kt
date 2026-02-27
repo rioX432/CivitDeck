@@ -43,6 +43,7 @@ import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveTemplatesUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelDirectoryUseCase
@@ -59,11 +60,10 @@ import com.riox432.civitdeck.domain.usecase.SetNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
-import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
