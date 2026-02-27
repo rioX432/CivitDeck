@@ -53,6 +53,8 @@ import com.riox432.civitdeck.ui.creator.CreatorProfileScreen
 import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
+import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryScreen
+import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
 import com.riox432.civitdeck.ui.gallery.ImageGalleryViewModel
 import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserScreen
@@ -92,6 +94,8 @@ data object SettingsRoute
 data object LicensesRoute
 
 data object ModelFileBrowserRoute
+
+data object DiscoveryRoute
 
 data class CompareRoute(val leftModelId: Long, val rightModelId: Long)
 
@@ -251,6 +255,7 @@ private fun CivitDeckNavDisplay(
                     scrollToTopTrigger = searchScrollTrigger,
                     compareModelName = compareModelName,
                     onCancelCompare = onCancelCompare,
+                    onDiscoverClick = { backStack.add(DiscoveryRoute) },
                 )
             }
             collectionsEntry(backStack)
@@ -259,6 +264,7 @@ private fun CivitDeckNavDisplay(
             creatorEntry(backStack)
             galleryEntry(backStack)
             compareEntry(backStack)
+            discoveryEntry(backStack)
             entry<SavedPromptsRoute> {
                 val viewModel: SavedPromptsViewModel = koinViewModel()
                 SavedPromptsScreen(
@@ -411,6 +417,19 @@ private fun EntryProviderScope<Any>.compareEntry(backStack: MutableList<Any>) {
             leftViewModel = leftVm,
             rightViewModel = rightVm,
             onBack = { backStack.removeLastOrNull() },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.discoveryEntry(backStack: MutableList<Any>) {
+    entry<DiscoveryRoute> {
+        val viewModel: SwipeDiscoveryViewModel = koinViewModel()
+        SwipeDiscoveryScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onModelDetail = { modelId ->
+                backStack.add(DetailRoute(modelId))
+            },
         )
     }
 }
