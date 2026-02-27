@@ -21,3 +21,7 @@ globs: shared/**/*.kt
 ## API Responses
 - All API responses should be cached locally for offline support
 - Room KMP for offline favorites and response caching with TTL
+
+## Database
+- Tables with FOREIGN KEY constraints need seed data on fresh installs — Room migrations only run on upgrades, not new databases
+- Use `RoomDatabase.Callback.onOpen` with `INSERT OR IGNORE` to ensure required rows (e.g. default Favorites collection) always exist

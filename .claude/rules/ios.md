@@ -11,6 +11,11 @@ globs: iosApp/**/*.swift
 - Accumulate delta (20pt+) to avoid jitter; reset on direction change
 - `onScrollGeometryChange` is iOS 18+ only — deployment target is 16.0
 
+## Gestures in ScrollView
+- `DragGesture(minimumDistance: 0)` blocks ScrollView vertical scrolling — never use inside scrollable views
+- For press effects (e.g. `springPress`), use `onLongPressGesture(minimumDuration: .infinity, pressing:, perform:)` instead
+- Swipe-to-reveal in scrollable lists: use `.simultaneousGesture()` (not `.gesture()`) with horizontal direction check (`abs(width) > abs(height)`)
+
 ## Image Loading
 - Uses custom `CachedAsyncImage` in `DesignSystem/` — no third-party library
 - Do NOT add Kingfisher, SDWebImage, or other image loading dependencies

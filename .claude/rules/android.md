@@ -21,6 +21,8 @@ globs: androidApp/**/*.kt, androidApp/**/*.kts
 ## Compose
 - Design tokens live in `ui/theme/` — use them instead of hardcoded values
 - Don't duplicate `Alignment` import when adding new imports to files that already have it
+- `Modifier.offset { IntOffset(...) }` uses pixels — always convert dp to px via `with(LocalDensity.current) { dp.toPx() }`. Mixing dp and px causes cards to not fully animate off-screen on high-density devices
+- Use `key(id)` in `forEachIndexed` loops to prevent state leaks when items are reordered/removed
 
 ## Adaptive Layout
 - `ui/adaptive/AdaptiveUtils.kt` — responsive grid columns and foldable posture detection using Material 3 Adaptive
