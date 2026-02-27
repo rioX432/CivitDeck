@@ -178,6 +178,7 @@ object KoinHelper {
     fun getSetOfflineCacheEnabledUseCase(): SetOfflineCacheEnabledUseCase = getKoin().get()
     fun getObserveCacheSizeLimitUseCase(): ObserveCacheSizeLimitUseCase = getKoin().get()
     fun getSetCacheSizeLimitUseCase(): SetCacheSizeLimitUseCase = getKoin().get()
+
     // Tutorial use cases
     fun getObserveSeenTutorialVersionUseCase(): ObserveSeenTutorialVersionUseCase = getKoin().get()
     fun getSetSeenTutorialVersionUseCase(): SetSeenTutorialVersionUseCase = getKoin().get()
