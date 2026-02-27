@@ -1,6 +1,6 @@
 package com.riox432.civitdeck.domain.usecase
 
-import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
+import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.repository.HiddenModelRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -12,8 +12,8 @@ class HiddenModelUseCasesTest {
     private class FakeHiddenModelRepository : HiddenModelRepository {
         val hiddenIds = mutableSetOf(1L, 2L)
         val hiddenEntities = mutableListOf(
-            HiddenModelEntity(modelId = 1L, modelName = "Model A", hiddenAt = 1000L),
-            HiddenModelEntity(modelId = 2L, modelName = "Model B", hiddenAt = 2000L),
+            HiddenModel(modelId = 1L, modelName = "Model A", hiddenAt = 1000L),
+            HiddenModel(modelId = 2L, modelName = "Model B", hiddenAt = 2000L),
         )
         var hideCalled = false
         var unhideCalled = false
@@ -21,7 +21,7 @@ class HiddenModelUseCasesTest {
         var lastUnhideId: Long? = null
 
         override suspend fun getHiddenModelIds(): Set<Long> = hiddenIds.toSet()
-        override suspend fun getHiddenModels(): List<HiddenModelEntity> = hiddenEntities.toList()
+        override suspend fun getHiddenModels(): List<HiddenModel> = hiddenEntities.toList()
         override suspend fun hideModel(modelId: Long, modelName: String) {
             hideCalled = true
             lastHideId = modelId
@@ -41,7 +41,7 @@ class HiddenModelUseCasesTest {
     }
 
     @Test
-    fun getHiddenModels_returns_entities() = runTest {
+    fun getHiddenModels_returns_domain_models() = runTest {
         val useCase = GetHiddenModelsUseCase(repo)
         val result = useCase()
         assertEquals(2, result.size)

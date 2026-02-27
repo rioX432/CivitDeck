@@ -1,6 +1,6 @@
 package com.riox432.civitdeck.domain.usecase
 
-import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
+import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
@@ -34,7 +34,7 @@ class SetGridColumnsUseCase(private val repository: UserPreferencesRepository) {
 }
 
 class GetHiddenModelsUseCase(private val repository: HiddenModelRepository) {
-    suspend operator fun invoke(): List<HiddenModelEntity> = repository.getHiddenModels()
+    suspend operator fun invoke(): List<HiddenModel> = repository.getHiddenModels()
 }
 
 class ClearBrowsingHistoryUseCase(private val repository: BrowsingHistoryRepository) {

@@ -2,9 +2,9 @@ package com.riox432.civitdeck.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
 import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.domain.model.CacheInfo
+import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
@@ -63,7 +63,7 @@ data class SettingsUiState(
     val defaultSortOrder: SortOrder = SortOrder.MostDownloaded,
     val defaultTimePeriod: TimePeriod = TimePeriod.AllTime,
     val gridColumns: Int = 2,
-    val hiddenModels: List<HiddenModelEntity> = emptyList(),
+    val hiddenModels: List<HiddenModel> = emptyList(),
     val excludedTags: List<String> = emptyList(),
     val apiKey: String? = null,
     val connectedUsername: String? = null,
