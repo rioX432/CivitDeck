@@ -67,9 +67,9 @@ struct SettingsScreen: View {
     private var comfyUISection: some View {
         Section("ComfyUI") {
             NavigationLink(destination: ComfyUISettingsView()) {
-                VStack(alignment: .leading, spacing: CivitDeckSpacing.xs) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text("Server Connections")
-                        .font(.civitBody)
+                        .font(.civitBodyMedium)
                     Text("Manage ComfyUI server connections")
                         .font(.civitBodySmall)
                         .foregroundColor(.civitOnSurfaceVariant)

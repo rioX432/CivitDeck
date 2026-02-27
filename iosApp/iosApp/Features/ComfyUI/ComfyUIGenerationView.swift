@@ -6,7 +6,7 @@ struct ComfyUIGenerationView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: CivitDeckSpacing.md) {
+            VStack(spacing: Spacing.md) {
                 checkpointPicker
                 promptInputs
                 parameterControls
@@ -14,7 +14,7 @@ struct ComfyUIGenerationView: View {
                 statusSection
                 resultGrid
             }
-            .padding(CivitDeckSpacing.md)
+            .padding(Spacing.md)
         }
         .navigationTitle("txt2img")
         .navigationBarTitleDisplayMode(.inline)
@@ -22,8 +22,8 @@ struct ComfyUIGenerationView: View {
     }
 
     private var checkpointPicker: some View {
-        VStack(alignment: .leading, spacing: CivitDeckSpacing.xs) {
-            Text("Checkpoint").font(.civitLabel)
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text("Checkpoint").font(.civitLabelMedium)
             if viewModel.isLoadingCheckpoints {
                 ProgressView()
             } else {
@@ -38,7 +38,7 @@ struct ComfyUIGenerationView: View {
     }
 
     private var promptInputs: some View {
-        VStack(spacing: CivitDeckSpacing.sm) {
+        VStack(spacing: Spacing.sm) {
             TextField("Prompt", text: $viewModel.prompt, axis: .vertical)
                 .lineLimit(3...6)
                 .textFieldStyle(.roundedBorder)
@@ -49,10 +49,10 @@ struct ComfyUIGenerationView: View {
     }
 
     private var parameterControls: some View {
-        VStack(spacing: CivitDeckSpacing.sm) {
+        VStack(spacing: Spacing.sm) {
             paramSlider(label: "Steps", value: $viewModel.steps, range: 1...150, format: "%.0f")
             paramSlider(label: "CFG Scale", value: $viewModel.cfgScale, range: 1...30, format: "%.1f")
-            HStack(spacing: CivitDeckSpacing.sm) {
+            HStack(spacing: Spacing.sm) {
                 TextField("Width", text: $viewModel.width)
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
@@ -110,7 +110,7 @@ struct ComfyUIGenerationView: View {
                 .foregroundColor(.civitError)
         case .completed:
             Text("Generation complete!")
-                .font(.civitBody)
+                .font(.civitBodyMedium)
                 .foregroundColor(.civitPrimary)
         default:
             EmptyView()
@@ -121,7 +121,7 @@ struct ComfyUIGenerationView: View {
     private var resultGrid: some View {
         if !viewModel.resultImageUrls.isEmpty {
             let columns = [GridItem(.flexible()), GridItem(.flexible())]
-            LazyVGrid(columns: columns, spacing: CivitDeckSpacing.sm) {
+            LazyVGrid(columns: columns, spacing: Spacing.sm) {
                 ForEach(viewModel.resultImageUrls, id: \.self) { url in
                     CachedAsyncImage(url: URL(string: url)) { phase in
                         switch phase {

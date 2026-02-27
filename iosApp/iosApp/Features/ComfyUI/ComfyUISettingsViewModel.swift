@@ -19,13 +19,13 @@ class ComfyUISettingsViewModel: ObservableObject {
 
     func observeConnectionsList() async {
         for await list in observeConnections.invoke() {
-            self.connections = (list as? [ComfyUIConnection]) ?? []
+            self.connections = list
         }
     }
 
     func observeActiveConn() async {
         for await conn in observeActive.invoke() {
-            self.activeConnection = conn as? ComfyUIConnection
+            self.activeConnection = conn
         }
     }
 

@@ -38,11 +38,11 @@ struct ComfyUISettingsView: View {
 
     private var statusSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: CivitDeckSpacing.xs) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 HStack {
                     VStack(alignment: .leading) {
                         Text(statusLabel)
-                            .font(.civitTitle)
+                            .font(.civitTitleMedium)
                         if let active = viewModel.activeConnection {
                             Text("\(active.hostname):\(active.port)")
                                 .font(.civitBodySmall)
@@ -90,7 +90,7 @@ struct ComfyUISettingsView: View {
                 .foregroundColor(.civitPrimary)
                 .onTapGesture { viewModel.onActivate(id: conn.id) }
             VStack(alignment: .leading) {
-                Text(conn.name).font(.civitBody)
+                Text(conn.name).font(.civitBodyMedium)
                 Text("\(conn.hostname):\(conn.port)")
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
