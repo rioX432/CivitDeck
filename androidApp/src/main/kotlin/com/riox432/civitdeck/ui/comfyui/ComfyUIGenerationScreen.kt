@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.riox432.civitdeck.domain.model.GenerationStatus
+import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,7 +93,7 @@ private fun CheckpointSelector(
     Column {
         Text("Checkpoint", style = MaterialTheme.typography.labelMedium)
         if (state.isLoadingCheckpoints) {
-            CircularProgressIndicator()
+            LoadingStateOverlay()
         } else {
             TextButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
                 Text(

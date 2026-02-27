@@ -34,6 +34,7 @@
 		CD171A012E4F0171000CD001 /* AnimationModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD171A002E4F0171000CD001 /* AnimationModifiers.swift */; };
 		CDAA01012E5F0001000CD001 /* StaggeredGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDAA01002E5F0001000CD001 /* StaggeredGrid.swift */; };
 		CDBB01012E6F0001000CD001 /* HeroTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDBB01002E6F0001000CD001 /* HeroTransition.swift */; };
+		CDLS01012EFF0001000CD001 /* LoadingStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDLS01002EFF0001000CD001 /* LoadingStateView.swift */; };
 		CD00C0012D3CC001000CD001 /* CollectionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0002D3CC001000CD001 /* CollectionsScreen.swift */; };
 		CD00C0032D3CC001000CD001 /* CollectionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0022D3CC001000CD001 /* CollectionsViewModel.swift */; };
 		CD00C0052D3CC001000CD001 /* CollectionDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0042D3CC001000CD001 /* CollectionDetailScreen.swift */; };
@@ -118,6 +119,7 @@
 		CD171A002E4F0171000CD001 /* AnimationModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationModifiers.swift; sourceTree = "<group>"; };
 		CDAA01002E5F0001000CD001 /* StaggeredGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaggeredGrid.swift; sourceTree = "<group>"; };
 		CDBB01002E6F0001000CD001 /* HeroTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroTransition.swift; sourceTree = "<group>"; };
+		CDLS01002EFF0001000CD001 /* LoadingStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingStateView.swift; sourceTree = "<group>"; };
 		CD00C0002D3CC001000CD001 /* CollectionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsScreen.swift; sourceTree = "<group>"; };
 		CD00C0022D3CC001000CD001 /* CollectionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsViewModel.swift; sourceTree = "<group>"; };
 		CD00C0042D3CC001000CD001 /* CollectionDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionDetailScreen.swift; sourceTree = "<group>"; };
@@ -289,6 +291,7 @@
 				CD00HF002D6CC001000CD001 /* HapticFeedback.swift */,
 				CDAA01002E5F0001000CD001 /* StaggeredGrid.swift */,
 				CDBB01002E6F0001000CD001 /* HeroTransition.swift */,
+			CDLS01002EFF0001000CD001 /* LoadingStateView.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -597,6 +600,7 @@
 				CD171A012E4F0171000CD001 /* AnimationModifiers.swift in Sources */,
 				CDAA01012E5F0001000CD001 /* StaggeredGrid.swift in Sources */,
 				CDBB01012E6F0001000CD001 /* HeroTransition.swift in Sources */,
+			CDLS01012EFF0001000CD001 /* LoadingStateView.swift in Sources */,
 				CD00C0012D3CC001000CD001 /* CollectionsScreen.swift in Sources */,
 				CD00C0032D3CC001000CD001 /* CollectionsViewModel.swift in Sources */,
 				CD00C0052D3CC001000CD001 /* CollectionDetailScreen.swift in Sources */,

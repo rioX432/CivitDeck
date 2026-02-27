@@ -17,7 +17,7 @@ struct ModelDetailScreen: View {
     var body: some View {
         Group {
             if viewModel.isLoading && viewModel.model == nil {
-                ProgressView()
+                LoadingStateView()
                     .transition(.opacity)
             } else if let error = viewModel.error, viewModel.model == nil {
                 errorView(message: error)

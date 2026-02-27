@@ -103,10 +103,8 @@ struct ImageGalleryScreen: View {
     private var contentArea: some View {
         Group {
             if viewModel.isLoading && viewModel.images.isEmpty {
-                Spacer()
-                ProgressView()
+                LoadingStateView()
                     .transition(.opacity)
-                Spacer()
             } else if let error = viewModel.error, viewModel.images.isEmpty {
                 Spacer()
                 errorView(message: error)

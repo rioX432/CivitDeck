@@ -36,7 +36,7 @@ struct ModelSearchScreen: View {
 
                     ZStack {
                         if viewModel.isLoading && viewModel.models.isEmpty {
-                            ProgressView()
+                            LoadingStateView()
                                 .transition(.opacity)
                         } else if let error = viewModel.error, viewModel.models.isEmpty {
                             errorView(message: error)

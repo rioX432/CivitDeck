@@ -16,7 +16,7 @@ struct CreatorProfileScreen: View {
     var body: some View {
         Group {
             if viewModel.isLoading && viewModel.models.isEmpty {
-                ProgressView()
+                LoadingStateView()
             } else if let error = viewModel.error, viewModel.models.isEmpty {
                 errorView(message: error)
             } else {
