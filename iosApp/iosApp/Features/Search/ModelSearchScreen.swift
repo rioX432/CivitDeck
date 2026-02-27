@@ -392,10 +392,7 @@ struct ModelSearchScreen: View {
     }
 
     private func chipButton(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button {
-            HapticFeedback.selection.trigger()
-            action()
-        } label: {
+        Button(action: action) {
             Text(label)
                 .font(.civitLabelMedium)
                 .fontWeight(isSelected ? .semibold : .regular)
