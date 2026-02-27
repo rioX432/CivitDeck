@@ -11,6 +11,7 @@ struct SettingsScreen: View {
                     offlineBanner
                 }
                 accountSection
+                themeSection
                 contentFilterSection
                 displaySection
                 modelFilesSection
@@ -27,6 +28,8 @@ struct SettingsScreen: View {
             .task { await viewModel.observeTimePeriod() }
             .task { await viewModel.observeGridColumns() }
             .task { await viewModel.observePowerUserMode() }
+            .task { await viewModel.observeAccentColor() }
+            .task { await viewModel.observeAmoledDarkMode() }
             .task { await viewModel.observeNetworkStatus() }
             .task { await viewModel.observeOfflineCacheEnabled() }
             .task { await viewModel.observeCacheSizeLimit() }
@@ -54,6 +57,39 @@ struct SettingsScreen: View {
                     error: viewModel.apiKeyError,
                     onValidateAndSave: viewModel.onValidateAndSaveApiKey
                 )
+            }
+        }
+    }
+
+    private var themeSection: some View {
+        Section("Theme") {
+            accentColorPicker
+            amoledDarkModeToggle
+        }
+    }
+
+    private var accentColorPicker: some View {
+        Picker("Accent Color", selection: Binding(
+            get: { viewModel.accentColor },
+            set: { viewModel.onAccentColorChanged($0) }
+        )) {
+            ForEach(AccentColor.allCases, id: \.self) { color in
+                Text(color.displayName).tag(color)
+            }
+        }
+    }
+
+    private var amoledDarkModeToggle: some View {
+        Toggle(isOn: Binding(
+            get: { viewModel.amoledDarkMode },
+            set: { viewModel.onAmoledDarkModeChanged($0) }
+        )) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("AMOLED Dark Mode")
+                    .font(.civitBodyMedium)
+                Text("Pure black background for OLED screens")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
             }
         }
     }

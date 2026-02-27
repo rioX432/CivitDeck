@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.domain.usecase
 
+import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
@@ -52,6 +53,13 @@ class UserPreferencesUseCasesTest {
         override fun observePollingInterval(): Flow<PollingInterval> = pollingInterval
         override suspend fun setPollingInterval(interval: PollingInterval) { pollingInterval.value = interval }
 
+        val accentColor = MutableStateFlow(AccentColor.Blue)
+        override fun observeAccentColor(): Flow<AccentColor> = accentColor
+        override suspend fun setAccentColor(color: AccentColor) { accentColor.value = color }
+
+        val amoledDarkMode = MutableStateFlow(false)
+        override fun observeAmoledDarkMode(): Flow<Boolean> = amoledDarkMode
+        override suspend fun setAmoledDarkMode(enabled: Boolean) { amoledDarkMode.value = enabled }
         val nsfwBlurSettings = MutableStateFlow(NsfwBlurSettings())
         override fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings> = nsfwBlurSettings
         override suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings) { nsfwBlurSettings.value = settings }
