@@ -18,6 +18,7 @@ struct SettingsScreen: View {
             .navigationBarTitleDisplayMode(.inline)
             .task { await viewModel.observeApiKey() }
             .task { await viewModel.observeNsfwFilter() }
+            .task { await viewModel.observeNsfwBlurSettings() }
             .task { await viewModel.observeSortOrder() }
             .task { await viewModel.observeTimePeriod() }
             .task { await viewModel.observeGridColumns() }
@@ -52,6 +53,12 @@ struct SettingsScreen: View {
                         .font(.civitBodySmall)
                         .foregroundColor(.civitOnSurfaceVariant)
                 }
+            }
+            if viewModel.nsfwFilterLevel != .off {
+                NsfwBlurSettingsSection(
+                    settings: viewModel.nsfwBlurSettings,
+                    onChanged: viewModel.onNsfwBlurSettingsChanged
+                )
             }
         }
     }
@@ -234,6 +241,67 @@ private struct ApiKeyInputRow: View {
             Text("Get your key at civitai.com/user/account")
                 .font(.civitBodySmall)
                 .foregroundColor(.civitOnSurfaceVariant)
+        }
+    }
+}
+
+private struct NsfwBlurSettingsSection: View {
+    let settings: NsfwBlurSettings
+    let onChanged: (NsfwBlurSettings) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("Blur Intensity")
+                .font(.civitBodySmall)
+                .foregroundColor(.civitOnSurfaceVariant)
+            BlurSliderRow(label: "Soft", intensity: Int(settings.softIntensity)) { value in
+                onChanged(NsfwBlurSettings(
+                    softIntensity: Int32(value),
+                    matureIntensity: settings.matureIntensity,
+                    explicitIntensity: settings.explicitIntensity
+                ))
+            }
+            BlurSliderRow(label: "Mature", intensity: Int(settings.matureIntensity)) { value in
+                onChanged(NsfwBlurSettings(
+                    softIntensity: settings.softIntensity,
+                    matureIntensity: Int32(value),
+                    explicitIntensity: settings.explicitIntensity
+                ))
+            }
+            BlurSliderRow(label: "Explicit", intensity: Int(settings.explicitIntensity)) { value in
+                onChanged(NsfwBlurSettings(
+                    softIntensity: settings.softIntensity,
+                    matureIntensity: settings.matureIntensity,
+                    explicitIntensity: Int32(value)
+                ))
+            }
+        }
+    }
+}
+
+private struct BlurSliderRow: View {
+    let label: String
+    let intensity: Int
+    let onChanged: (Int) -> Void
+
+    var body: some View {
+        VStack(spacing: 2) {
+            HStack {
+                Text(label)
+                    .font(.civitBodyMedium)
+                Spacer()
+                Text(intensity == 0 ? "Hidden" : "\(intensity)%")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+            }
+            Slider(
+                value: Binding(
+                    get: { Double(intensity) },
+                    set: { onChanged(Int($0)) }
+                ),
+                in: 0...100,
+                step: 25
+            )
         }
     }
 }
