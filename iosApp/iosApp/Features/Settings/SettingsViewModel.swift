@@ -4,6 +4,9 @@ import Shared
 @MainActor
 final class SettingsViewModel: ObservableObject {
     @Published var nsfwFilterLevel: NsfwFilterLevel = .off
+    @Published var nsfwBlurSettings: NsfwBlurSettings = NsfwBlurSettings(
+        softIntensity: 75, matureIntensity: 25, explicitIntensity: 0
+    )
     @Published var defaultSortOrder: CivitSortOrder = .mostDownloaded
     @Published var defaultTimePeriod: TimePeriod = .allTime
     @Published var gridColumns: Int32 = 2
@@ -22,6 +25,8 @@ final class SettingsViewModel: ObservableObject {
 
     private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
     private let setNsfwFilterUseCase: SetNsfwFilterUseCase
+    private let observeNsfwBlurSettingsUseCase: ObserveNsfwBlurSettingsUseCase
+    private let setNsfwBlurSettingsUseCase: SetNsfwBlurSettingsUseCase
     private let observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase
     private let setDefaultSortOrderUseCase: SetDefaultSortOrderUseCase
     private let observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase
@@ -52,6 +57,8 @@ final class SettingsViewModel: ObservableObject {
     init() {
         self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
         self.setNsfwFilterUseCase = KoinHelper.shared.getSetNsfwFilterUseCase()
+        self.observeNsfwBlurSettingsUseCase = KoinHelper.shared.getObserveNsfwBlurSettingsUseCase()
+        self.setNsfwBlurSettingsUseCase = KoinHelper.shared.getSetNsfwBlurSettingsUseCase()
         self.observeDefaultSortOrderUseCase = KoinHelper.shared.getObserveDefaultSortOrderUseCase()
         self.setDefaultSortOrderUseCase = KoinHelper.shared.getSetDefaultSortOrderUseCase()
         self.observeDefaultTimePeriodUseCase = KoinHelper.shared.getObserveDefaultTimePeriodUseCase()
@@ -106,6 +113,12 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
+    func observeNsfwBlurSettings() async {
+        for await value in observeNsfwBlurSettingsUseCase.invoke() {
+            nsfwBlurSettings = value
+        }
+    }
+
     func observeNetworkStatus() async {
         for await value in observeNetworkStatusUseCase.invoke() {
             isOnline = value.boolValue
@@ -128,6 +141,11 @@ final class SettingsViewModel: ObservableObject {
         let newLevel: NsfwFilterLevel = nsfwFilterLevel == .off ? .all : .off
         nsfwFilterLevel = newLevel
         Task { try? await setNsfwFilterUseCase.invoke(level: newLevel) }
+    }
+
+    func onNsfwBlurSettingsChanged(_ settings: NsfwBlurSettings) {
+        nsfwBlurSettings = settings
+        Task { try? await setNsfwBlurSettingsUseCase.invoke(settings: settings) }
     }
 
     func onSortOrderChanged(_ sort: CivitSortOrder) {

@@ -213,7 +213,7 @@ private fun slideTransition(enterOffset: (Int) -> Int, exitOffset: (Int) -> Int)
             fadeOut(tween(Duration.normal, easing = Easing.standard)),
     )
 
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList", "LongMethod", "UnusedParameter")
 @Composable
 private fun CivitDeckNavDisplay(
     backStack: MutableList<Any>,
@@ -249,7 +249,6 @@ private fun CivitDeckNavDisplay(
                         }
                     },
                     scrollToTopTrigger = searchScrollTrigger,
-                    onCompareModel = onCompareModel,
                     compareModelName = compareModelName,
                     onCancelCompare = onCancelCompare,
                 )

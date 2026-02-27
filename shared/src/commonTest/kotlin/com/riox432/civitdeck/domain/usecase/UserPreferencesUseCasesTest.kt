@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.domain.usecase
 
+import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -50,6 +51,10 @@ class UserPreferencesUseCasesTest {
         val pollingInterval = MutableStateFlow(PollingInterval.Off)
         override fun observePollingInterval(): Flow<PollingInterval> = pollingInterval
         override suspend fun setPollingInterval(interval: PollingInterval) { pollingInterval.value = interval }
+
+        val nsfwBlurSettings = MutableStateFlow(NsfwBlurSettings())
+        override fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings> = nsfwBlurSettings
+        override suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings) { nsfwBlurSettings.value = settings }
 
         val offlineCacheEnabled = MutableStateFlow(true)
         override fun observeOfflineCacheEnabled(): Flow<Boolean> = offlineCacheEnabled

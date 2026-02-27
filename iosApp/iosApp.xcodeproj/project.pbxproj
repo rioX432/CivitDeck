@@ -14,6 +14,7 @@
 		CD0002012D000002000CD001 /* ModelSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002002D000002000CD001 /* ModelSearchViewModel.swift */; };
 		CD0002032D000002000CD001 /* ModelSearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002022D000002000CD001 /* ModelSearchScreen.swift */; };
 		CD0002052D000002000CD001 /* ModelCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002042D000002000CD001 /* ModelCardView.swift */; };
+		CD169A012D000169000CD001 /* SwipeableModelCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD169A002D000169000CD001 /* SwipeableModelCardView.swift */; };
 		CD00DC032D0DD003000CD001 /* SearchFilterConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC022D0DD003000CD001 /* SearchFilterConstants.swift */; };
 		CD00DC052D0DD004000CD001 /* TagFilterSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC042D0DD004000CD001 /* TagFilterSection.swift */; };
 		CD0004012D000004000CD001 /* ModelDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0004002D000004000CD001 /* ModelDetailViewModel.swift */; };
@@ -44,10 +45,13 @@
 		CD000B032D00000B000CD001 /* ExcludedTagsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD000B022D00000B000CD001 /* ExcludedTagsView.swift */; };
 		CD000B052D00000B000CD001 /* LicensesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD000B042D00000B000CD001 /* LicensesView.swift */; };
 		CD00CA012D0CC001000CD001 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */; };
+		CD17300A2D173001000CD001 /* NsfwBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD17300B2D173001000CD001 /* NsfwBlurView.swift */; };
 		CD00AD012D1CC001000CD001 /* AdaptiveGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00AD002D1CC001000CD001 /* AdaptiveGrid.swift */; };
 		CD00CE012D2CC001000CD001 /* ComparisonState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CE002D2CC001000CD001 /* ComparisonState.swift */; };
 		CD00CE032D2CC001000CD001 /* ModelCompareScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CE022D2CC001000CD001 /* ModelCompareScreen.swift */; };
 		CD00CE052D2CC001000CD001 /* ModelCompareViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CE042D2CC001000CD001 /* ModelCompareViewModel.swift */; };
+		CD00IS012D6CC001000CD001 /* ImageComparisonSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00IS002D6CC001000CD001 /* ImageComparisonSlider.swift */; };
+		CD00IO012D6CC001000CD001 /* ImageComparisonOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00IO002D6CC001000CD001 /* ImageComparisonOverlay.swift */; };
 		CD00VD012D4CC001000CD001 /* VersionDetailSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00VD002D4CC001000CD001 /* VersionDetailSection.swift */; };
 		CD00FB012D5CC001000CD001 /* ModelFileBrowserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00FB002D5CC001000CD001 /* ModelFileBrowserViewModel.swift */; };
 		CD00FB032D5CC001000CD001 /* ModelFileBrowserScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00FB022D5CC001000CD001 /* ModelFileBrowserScreen.swift */; };
@@ -64,6 +68,7 @@
 		CD0002002D000002000CD001 /* ModelSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSearchViewModel.swift; sourceTree = "<group>"; };
 		CD0002022D000002000CD001 /* ModelSearchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSearchScreen.swift; sourceTree = "<group>"; };
 		CD0002042D000002000CD001 /* ModelCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCardView.swift; sourceTree = "<group>"; };
+		CD169A002D000169000CD001 /* SwipeableModelCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeableModelCardView.swift; sourceTree = "<group>"; };
 		CD00DC022D0DD003000CD001 /* SearchFilterConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFilterConstants.swift; sourceTree = "<group>"; };
 		CD00DC042D0DD004000CD001 /* TagFilterSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagFilterSection.swift; sourceTree = "<group>"; };
 		CD0004002D000004000CD001 /* ModelDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailViewModel.swift; sourceTree = "<group>"; };
@@ -94,10 +99,13 @@
 		CD000B022D00000B000CD001 /* ExcludedTagsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExcludedTagsView.swift; sourceTree = "<group>"; };
 		CD000B042D00000B000CD001 /* LicensesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicensesView.swift; sourceTree = "<group>"; };
 		CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
+		CD17300B2D173001000CD001 /* NsfwBlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NsfwBlurView.swift; sourceTree = "<group>"; };
 		CD00AD002D1CC001000CD001 /* AdaptiveGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveGrid.swift; sourceTree = "<group>"; };
 		CD00CE002D2CC001000CD001 /* ComparisonState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComparisonState.swift; sourceTree = "<group>"; };
 		CD00CE022D2CC001000CD001 /* ModelCompareScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCompareScreen.swift; sourceTree = "<group>"; };
 		CD00CE042D2CC001000CD001 /* ModelCompareViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCompareViewModel.swift; sourceTree = "<group>"; };
+		CD00IS002D6CC001000CD001 /* ImageComparisonSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComparisonSlider.swift; sourceTree = "<group>"; };
+		CD00IO002D6CC001000CD001 /* ImageComparisonOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComparisonOverlay.swift; sourceTree = "<group>"; };
 		CD00VD002D4CC001000CD001 /* VersionDetailSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionDetailSection.swift; sourceTree = "<group>"; };
 		CD00FB002D5CC001000CD001 /* ModelFileBrowserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelFileBrowserViewModel.swift; sourceTree = "<group>"; };
 		CD00FB022D5CC001000CD001 /* ModelFileBrowserScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelFileBrowserScreen.swift; sourceTree = "<group>"; };
@@ -179,6 +187,7 @@
 				CD00060A2D000006000CD001 /* CivitDeckMotion.swift */,
 				CD0006102D000036000CD001 /* ShimmerModifier.swift */,
 				CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */,
+				CD17300B2D173001000CD001 /* NsfwBlurView.swift */,
 				CD00AD002D1CC001000CD001 /* AdaptiveGrid.swift */,
 			);
 			path = DesignSystem;
@@ -216,6 +225,8 @@
 			isa = PBXGroup;
 			children = (
 				CD00CE002D2CC001000CD001 /* ComparisonState.swift */,
+				CD00IS002D6CC001000CD001 /* ImageComparisonSlider.swift */,
+				CD00IO002D6CC001000CD001 /* ImageComparisonOverlay.swift */,
 				CD00CE022D2CC001000CD001 /* ModelCompareScreen.swift */,
 				CD00CE042D2CC001000CD001 /* ModelCompareViewModel.swift */,
 			);
@@ -280,6 +291,7 @@
 				CD0002002D000002000CD001 /* ModelSearchViewModel.swift */,
 				CD0002022D000002000CD001 /* ModelSearchScreen.swift */,
 				CD0002042D000002000CD001 /* ModelCardView.swift */,
+				CD169A002D000169000CD001 /* SwipeableModelCardView.swift */,
 				CD00DC022D0DD003000CD001 /* SearchFilterConstants.swift */,
 				CD00DC042D0DD004000CD001 /* TagFilterSection.swift */,
 			);
@@ -413,6 +425,7 @@
 				CD0002012D000002000CD001 /* ModelSearchViewModel.swift in Sources */,
 				CD0002032D000002000CD001 /* ModelSearchScreen.swift in Sources */,
 				CD0002052D000002000CD001 /* ModelCardView.swift in Sources */,
+				CD169A012D000169000CD001 /* SwipeableModelCardView.swift in Sources */,
 				CD00DC032D0DD003000CD001 /* SearchFilterConstants.swift in Sources */,
 				CD00DC052D0DD004000CD001 /* TagFilterSection.swift in Sources */,
 				CD0004012D000004000CD001 /* ModelDetailViewModel.swift in Sources */,
@@ -443,10 +456,13 @@
 				CD000B032D00000B000CD001 /* ExcludedTagsView.swift in Sources */,
 				CD000B052D00000B000CD001 /* LicensesView.swift in Sources */,
 				CD00CA012D0CC001000CD001 /* CachedAsyncImage.swift in Sources */,
+				CD17300A2D173001000CD001 /* NsfwBlurView.swift in Sources */,
 				CD00AD012D1CC001000CD001 /* AdaptiveGrid.swift in Sources */,
 				CD00CE012D2CC001000CD001 /* ComparisonState.swift in Sources */,
 				CD00CE032D2CC001000CD001 /* ModelCompareScreen.swift in Sources */,
 				CD00CE052D2CC001000CD001 /* ModelCompareViewModel.swift in Sources */,
+				CD00IS012D6CC001000CD001 /* ImageComparisonSlider.swift in Sources */,
+				CD00IO012D6CC001000CD001 /* ImageComparisonOverlay.swift in Sources */,
 				CD00VD012D4CC001000CD001 /* VersionDetailSection.swift in Sources */,
 				CD00FB012D5CC001000CD001 /* ModelFileBrowserViewModel.swift in Sources */,
 				CD00FB032D5CC001000CD001 /* ModelFileBrowserScreen.swift in Sources */,

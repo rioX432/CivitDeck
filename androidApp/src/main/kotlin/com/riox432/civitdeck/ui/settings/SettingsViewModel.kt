@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
 import com.riox432.civitdeck.domain.model.CacheInfo
+import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -23,6 +24,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNetworkStatusUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
@@ -34,6 +36,7 @@ import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNotificationsEnabledUseCase
+import com.riox432.civitdeck.domain.usecase.SetNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SetOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
@@ -51,6 +54,7 @@ import kotlinx.coroutines.launch
 
 data class SettingsUiState(
     val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
+    val nsfwBlurSettings: NsfwBlurSettings = NsfwBlurSettings(),
     val defaultSortOrder: SortOrder = SortOrder.MostDownloaded,
     val defaultTimePeriod: TimePeriod = TimePeriod.AllTime,
     val gridColumns: Int = 2,
@@ -73,6 +77,8 @@ data class SettingsUiState(
 class SettingsViewModel(
     observeNsfwFilterUseCase: ObserveNsfwFilterUseCase,
     private val setNsfwFilterUseCase: SetNsfwFilterUseCase,
+    observeNsfwBlurSettingsUseCase: ObserveNsfwBlurSettingsUseCase,
+    private val setNsfwBlurSettingsUseCase: SetNsfwBlurSettingsUseCase,
     observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase,
     private val setDefaultSortOrderUseCase: SetDefaultSortOrderUseCase,
     observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase,
@@ -128,6 +134,8 @@ class SettingsViewModel(
         state.copy(notificationsEnabled = enabled)
     }.combine(observePollingIntervalUseCase()) { state, interval ->
         state.copy(pollingInterval = interval)
+    }.combine(observeNsfwBlurSettingsUseCase()) { state, blur ->
+        state.copy(nsfwBlurSettings = blur)
     }.combine(observeNetworkStatusUseCase()) { state, online ->
         state.copy(isOnline = online)
     }.combine(observeOfflineCacheEnabledUseCase()) { state, enabled ->
@@ -213,6 +221,10 @@ class SettingsViewModel(
 
     fun onNsfwFilterChanged(level: NsfwFilterLevel) {
         viewModelScope.launch { setNsfwFilterUseCase(level) }
+    }
+
+    fun onNsfwBlurSettingsChanged(settings: NsfwBlurSettings) {
+        viewModelScope.launch { setNsfwBlurSettingsUseCase(settings) }
     }
 
     fun onSortOrderChanged(sort: SortOrder) {
