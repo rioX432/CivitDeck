@@ -47,10 +47,12 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.AspectRatioFilter
 import com.riox432.civitdeck.domain.model.Image
+import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
+import com.riox432.civitdeck.ui.components.NsfwBlurOverlay
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -147,6 +149,7 @@ private fun ImageGalleryBody(
                 "error" -> ErrorState(error = uiState.error ?: "", onRetry = onRetry)
                 else -> ImageGrid(
                     images = uiState.images,
+                    blurSettings = uiState.nsfwBlurSettings,
                     isLoadingMore = uiState.isLoadingMore,
                     onImageClick = onImageClick,
                     onLoadMore = onLoadMore,
@@ -263,6 +266,7 @@ private fun ErrorState(error: String, onRetry: () -> Unit) {
 @Composable
 private fun ImageGrid(
     images: List<Image>,
+    blurSettings: NsfwBlurSettings,
     isLoadingMore: Boolean,
     onImageClick: (Int) -> Unit,
     onLoadMore: () -> Unit,
@@ -292,6 +296,7 @@ private fun ImageGrid(
         itemsIndexed(images, key = { _, image -> image.id }) { index, image ->
             ImageGridItem(
                 image = image,
+                blurSettings = blurSettings,
                 onClick = { onImageClick(index) },
                 modifier = Modifier.animateItem(),
             )
@@ -312,6 +317,7 @@ private fun ImageGrid(
 @Composable
 private fun ImageGridItem(
     image: Image,
+    blurSettings: NsfwBlurSettings,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -321,34 +327,41 @@ private fun ImageGridItem(
         1f
     }
 
-    SubcomposeAsyncImage(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(image.url)
-            .crossfade(Duration.normal)
-            .build(),
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
+    NsfwBlurOverlay(
+        nsfwLevel = image.nsfwLevel,
+        blurSettings = blurSettings,
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(aspectRatio)
             .clip(RoundedCornerShape(CornerRadius.image))
             .clickable(onClick = onClick),
-        loading = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(aspectRatio)
-                    .shimmer(),
-            )
-        },
-        error = {
-            ImageErrorPlaceholder(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(aspectRatio),
-            )
-        },
-    )
+    ) {
+        SubcomposeAsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(image.url)
+                .crossfade(Duration.normal)
+                .build(),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(aspectRatio),
+            loading = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(aspectRatio)
+                        .shimmer(),
+                )
+            },
+            error = {
+                ImageErrorPlaceholder(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(aspectRatio),
+                )
+            },
+        )
+    }
 }
 
 private const val LOAD_MORE_THRESHOLD = 6

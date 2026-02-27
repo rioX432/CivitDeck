@@ -37,6 +37,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveLocalModelFilesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
@@ -56,6 +57,7 @@ import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNotificationsEnabledUseCase
+import com.riox432.civitdeck.domain.usecase.SetNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
@@ -78,6 +80,8 @@ val domainModule = module {
     factory { ObserveIsFavoriteUseCase(get()) }
     factory { ObserveNsfwFilterUseCase(get()) }
     factory { SetNsfwFilterUseCase(get()) }
+    factory { ObserveNsfwBlurSettingsUseCase(get()) }
+    factory { SetNsfwBlurSettingsUseCase(get()) }
     factory { SavePromptUseCase(get()) }
     factory { ObserveSavedPromptsUseCase(get()) }
     factory { DeleteSavedPromptUseCase(get()) }
