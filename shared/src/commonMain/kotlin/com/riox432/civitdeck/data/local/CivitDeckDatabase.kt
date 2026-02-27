@@ -48,7 +48,7 @@ import kotlinx.coroutines.IO
         LocalModelFileEntity::class,
         ModelVersionCheckpointEntity::class,
     ],
-    version = 13,
+    version = 15,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -307,9 +307,32 @@ val MIGRATION_11_12 = object : Migration(11, 12) {
     }
 }
 
-val MIGRATION_12_13 = object : Migration(12, 13) {
+val MIGRATION_14_15 = object : Migration(14, 15) {
     override fun migrate(connection: SQLiteConnection) {
         connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN nsfwBlurSoft INTEGER NOT NULL DEFAULT 75",
+        )
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN nsfwBlurMature INTEGER NOT NULL DEFAULT 25",
+        )
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN nsfwBlurExplicit INTEGER NOT NULL DEFAULT 0",
+        )
+    }
+}
+
+val MIGRATION_13_14 = object : Migration(13, 14) {
+    override fun migrate(connection: SQLiteConnection) {
+        // Add offline pinning support to cached_api_responses
+        connection.execSQL(
+            "ALTER TABLE cached_api_responses ADD COLUMN isOfflinePinned INTEGER NOT NULL DEFAULT 0",
+        )
+        // Add offline cache settings to user_preferences
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN offlineCacheEnabled INTEGER NOT NULL DEFAULT 1",
+        )
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN cacheSizeLimitMb INTEGER NOT NULL DEFAULT 200",
             "ALTER TABLE user_preferences ADD COLUMN seenTutorialVersion INTEGER NOT NULL DEFAULT 0",
         )
     }
@@ -329,7 +352,11 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_9_10,
             MIGRATION_10_11,
             MIGRATION_11_12,
-            MIGRATION_12_13,
+            MIGRATION_14_15,
+<<<<<<< HEAD
+=======
+            MIGRATION_13_14,
+>>>>>>> origin/master
         )
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)

@@ -5,12 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.AspectRatioFilter
 import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
+import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.usecase.AutoSavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.GetImagesUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import kotlinx.coroutines.CancellationException
@@ -26,6 +28,7 @@ data class ImageGalleryUiState(
     val selectedSort: SortOrder = SortOrder.HighestRated,
     val selectedPeriod: TimePeriod = TimePeriod.AllTime,
     val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
+    val nsfwBlurSettings: NsfwBlurSettings = NsfwBlurSettings(),
     val selectedAspectRatio: AspectRatioFilter? = null,
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
@@ -44,6 +47,7 @@ class ImageGalleryViewModel(
     private val savePromptUseCase: SavePromptUseCase,
     private val observeNsfwFilterUseCase: ObserveNsfwFilterUseCase,
     private val autoSavePromptUseCase: AutoSavePromptUseCase,
+    private val observeNsfwBlurSettingsUseCase: ObserveNsfwBlurSettingsUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ImageGalleryUiState())
@@ -53,7 +57,16 @@ class ImageGalleryViewModel(
 
     init {
         observeNsfwFilter()
+        observeBlurSettings()
         loadImages()
+    }
+
+    private fun observeBlurSettings() {
+        viewModelScope.launch {
+            observeNsfwBlurSettingsUseCase().collect { settings ->
+                _uiState.update { it.copy(nsfwBlurSettings = settings) }
+            }
+        }
     }
 
     private fun observeNsfwFilter() {
