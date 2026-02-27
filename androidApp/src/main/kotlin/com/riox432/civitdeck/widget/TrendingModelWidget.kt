@@ -1,9 +1,8 @@
 package com.riox432.civitdeck.widget
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
@@ -65,16 +64,7 @@ class TrendingModelWidget : GlanceAppWidget() {
 
     @Composable
     private fun WidgetContent(data: WidgetData) {
-        val deepLinkIntent = data.modelId?.let { modelId ->
-            Intent(Intent.ACTION_VIEW, Uri.parse("civitdeck://model/$modelId")).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            }
-        }
-        val clickAction = if (deepLinkIntent != null) {
-            actionStartActivity(deepLinkIntent)
-        } else {
-            actionStartActivity<MainActivity>()
-        }
+        val clickAction = actionStartActivity<MainActivity>()
 
         Box(
             modifier = GlanceModifier
@@ -101,10 +91,7 @@ class TrendingModelWidget : GlanceAppWidget() {
                         text = data.modelName,
                         modifier = GlanceModifier
                             .fillMaxWidth()
-                            .padding(
-                                horizontal = androidx.glance.layout.Dp(8f),
-                                vertical = androidx.glance.layout.Dp(6f),
-                            ),
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
                         style = TextDefaults.defaultTextStyle.copy(
                             fontWeight = FontWeight.Medium,
                         ),

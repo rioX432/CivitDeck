@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">CivitDeck</string>
     <string name="quick_tile_label">CivitDeck Search</string>
     <string name="widget_description">Shows trending AI models on your home screen</string>
 </resources>

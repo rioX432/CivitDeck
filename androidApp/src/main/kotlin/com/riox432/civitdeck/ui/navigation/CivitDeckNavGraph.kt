@@ -151,7 +151,7 @@ private class TabState(
 @Suppress("LongMethod")
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun CivitDeckNavGraph(initialTab: Tab = Tab.Search) {
+internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Search) {
     var selectedTab by rememberSaveable(
         stateSaver = mapSaver(
             save = { mapOf("tab" to it.name) },
