@@ -39,8 +39,10 @@ struct ModelSearchScreen: View {
                             LoadingStateView()
                                 .transition(.opacity)
                         } else if let error = viewModel.error, viewModel.models.isEmpty {
-                            errorView(message: error)
-                                .transition(.opacity)
+                            ErrorStateView(message: error) {
+                                Task { await viewModel.refresh() }
+                            }
+                            .transition(.opacity)
                         } else if viewModel.models.isEmpty && !viewModel.isLoading {
                             emptyView
                                 .transition(.opacity)
@@ -405,19 +407,6 @@ struct ModelSearchScreen: View {
 
     private func chipButton(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         ChipButton(label: label, isSelected: isSelected, action: action)
-    }
-
-    private func errorView(message: String) -> some View {
-        VStack(spacing: Spacing.lg) {
-            Text(message)
-                .foregroundColor(.civitError)
-                .multilineTextAlignment(.center)
-            Button("Retry") {
-                Task { await viewModel.refresh() }
-            }
-            .buttonStyle(.bordered)
-        }
-        .padding()
     }
 
     private var emptyView: some View {

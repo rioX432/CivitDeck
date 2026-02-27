@@ -83,6 +83,7 @@ import com.riox432.civitdeck.domain.model.stripCdnWidth
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
+import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
@@ -360,21 +361,10 @@ private fun DetailStateContent(
                 LoadingStateOverlay()
             }
             "error" -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = uiState.error ?: "Unknown error",
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                        Spacer(modifier = Modifier.height(Spacing.lg))
-                        Button(onClick = onRetry) {
-                            Text("Retry")
-                        }
-                    }
-                }
+                ErrorStateView(
+                    message = uiState.error ?: "Unknown error",
+                    onRetry = onRetry,
+                )
             }
             else -> {
                 if (model != null) {

@@ -35,6 +35,7 @@
 		CDAA01012E5F0001000CD001 /* StaggeredGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDAA01002E5F0001000CD001 /* StaggeredGrid.swift */; };
 		CDBB01012E6F0001000CD001 /* HeroTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDBB01002E6F0001000CD001 /* HeroTransition.swift */; };
 		CDLS01012EFF0001000CD001 /* LoadingStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDLS01002EFF0001000CD001 /* LoadingStateView.swift */; };
+		CDES01012EFF0001000CD001 /* ErrorStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES01002EFF0001000CD001 /* ErrorStateView.swift */; };
 		CD00C0012D3CC001000CD001 /* CollectionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0002D3CC001000CD001 /* CollectionsScreen.swift */; };
 		CD00C0032D3CC001000CD001 /* CollectionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0022D3CC001000CD001 /* CollectionsViewModel.swift */; };
 		CD00C0052D3CC001000CD001 /* CollectionDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0042D3CC001000CD001 /* CollectionDetailScreen.swift */; };
@@ -120,6 +121,7 @@
 		CDAA01002E5F0001000CD001 /* StaggeredGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaggeredGrid.swift; sourceTree = "<group>"; };
 		CDBB01002E6F0001000CD001 /* HeroTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroTransition.swift; sourceTree = "<group>"; };
 		CDLS01002EFF0001000CD001 /* LoadingStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingStateView.swift; sourceTree = "<group>"; };
+		CDES01002EFF0001000CD001 /* ErrorStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorStateView.swift; sourceTree = "<group>"; };
 		CD00C0002D3CC001000CD001 /* CollectionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsScreen.swift; sourceTree = "<group>"; };
 		CD00C0022D3CC001000CD001 /* CollectionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsViewModel.swift; sourceTree = "<group>"; };
 		CD00C0042D3CC001000CD001 /* CollectionDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionDetailScreen.swift; sourceTree = "<group>"; };
@@ -292,6 +294,7 @@
 				CDAA01002E5F0001000CD001 /* StaggeredGrid.swift */,
 				CDBB01002E6F0001000CD001 /* HeroTransition.swift */,
 			CDLS01002EFF0001000CD001 /* LoadingStateView.swift */,
+			CDES01002EFF0001000CD001 /* ErrorStateView.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -601,6 +604,7 @@
 				CDAA01012E5F0001000CD001 /* StaggeredGrid.swift in Sources */,
 				CDBB01012E6F0001000CD001 /* HeroTransition.swift in Sources */,
 			CDLS01012EFF0001000CD001 /* LoadingStateView.swift in Sources */,
+			CDES01012EFF0001000CD001 /* ErrorStateView.swift in Sources */,
 				CD00C0012D3CC001000CD001 /* CollectionsScreen.swift in Sources */,
 				CD00C0032D3CC001000CD001 /* CollectionsViewModel.swift in Sources */,
 				CD00C0052D3CC001000CD001 /* CollectionDetailScreen.swift in Sources */,

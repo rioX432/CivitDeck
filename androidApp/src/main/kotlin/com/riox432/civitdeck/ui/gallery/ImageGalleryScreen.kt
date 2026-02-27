@@ -21,7 +21,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridS
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -52,6 +51,7 @@ import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
+import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.components.NsfwBlurOverlay
 import com.riox432.civitdeck.ui.theme.CornerRadius
@@ -247,16 +247,7 @@ private fun LoadingState() {
 
 @Composable
 private fun ErrorState(error: String, onRetry: () -> Unit) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = error, color = MaterialTheme.colorScheme.error)
-            Spacer(modifier = Modifier.height(Spacing.lg))
-            Button(onClick = onRetry) { Text("Retry") }
-        }
-    }
+    ErrorStateView(message = error, onRetry = onRetry)
 }
 
 @Composable

@@ -20,8 +20,10 @@ struct ModelDetailScreen: View {
                 LoadingStateView()
                     .transition(.opacity)
             } else if let error = viewModel.error, viewModel.model == nil {
-                errorView(message: error)
-                    .transition(.opacity)
+                ErrorStateView(message: error) {
+                    viewModel.retry()
+                }
+                .transition(.opacity)
             } else if let model = viewModel.model {
                 modelContent(model: model)
                     .transition(.opacity)
@@ -373,18 +375,4 @@ struct ModelDetailScreen: View {
         }
     }
 
-    // MARK: - Error View
-
-    private func errorView(message: String) -> some View {
-        VStack(spacing: Spacing.lg) {
-            Text(message)
-                .foregroundColor(.civitError)
-                .multilineTextAlignment(.center)
-            Button("Retry") {
-                viewModel.retry()
-            }
-            .buttonStyle(.bordered)
-        }
-        .padding()
-    }
 }

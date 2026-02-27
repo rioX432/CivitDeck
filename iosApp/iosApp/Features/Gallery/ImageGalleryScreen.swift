@@ -107,8 +107,10 @@ struct ImageGalleryScreen: View {
                     .transition(.opacity)
             } else if let error = viewModel.error, viewModel.images.isEmpty {
                 Spacer()
-                errorView(message: error)
-                    .transition(.opacity)
+                ErrorStateView(message: error) {
+                    viewModel.retry()
+                }
+                .transition(.opacity)
                 Spacer()
             } else if viewModel.images.isEmpty && !viewModel.isLoading {
                 Spacer()
@@ -204,19 +206,6 @@ struct ImageGalleryScreen: View {
     }
 
     // MARK: - States
-
-    private func errorView(message: String) -> some View {
-        VStack(spacing: Spacing.lg) {
-            Text(message)
-                .foregroundColor(.civitError)
-                .multilineTextAlignment(.center)
-            Button("Retry") {
-                viewModel.retry()
-            }
-            .buttonStyle(.bordered)
-        }
-        .padding()
-    }
 
     private var emptyView: some View {
         VStack(spacing: Spacing.sm) {
