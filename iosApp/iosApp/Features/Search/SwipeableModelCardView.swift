@@ -10,6 +10,7 @@ struct SwipeableModelCardView: View {
     let onHide: () -> Void
     var isOwned: Bool = false
     var swipeThreshold: CGFloat = 0.3
+    var heroNamespace: Namespace.ID?
 
     @State private var dragOffset: CGFloat = 0
     @State private var hasTriggeredHaptic: Bool = false
@@ -21,6 +22,7 @@ struct SwipeableModelCardView: View {
             actionButtons
 
             ModelCardView(model: model, isOwned: isOwned)
+                .applyHeroSource(id: model.id, in: heroNamespace)
                 .offset(x: dragOffset)
                 .simultaneousGesture(swipeGesture)
         }

@@ -248,23 +248,12 @@ private fun ModelDetailBody(
             .fillMaxSize()
             .padding(top = contentPadding.calculateTopPadding()),
     ) {
-        when {
-            model != null -> {
-                ImageCarousel(
-                    images = images,
-                    modelId = modelId,
-                    sharedElementSuffix = sharedElementSuffix,
-                    onImageClick = { selectedCarouselIndex = it },
-                    onImageError = { url -> failedImageUrls = failedImageUrls + url },
-                )
-            }
-            initialThumbnailUrl != null -> {
-                SharedThumbnailPlaceholder(
-                    thumbnailUrl = initialThumbnailUrl,
-                    modelId = modelId,
-                    sharedElementSuffix = sharedElementSuffix,
-                )
-            }
+        if (model == null && initialThumbnailUrl != null) {
+            SharedThumbnailPlaceholder(
+                thumbnailUrl = initialThumbnailUrl,
+                modelId = modelId,
+                sharedElementSuffix = sharedElementSuffix,
+            )
         }
         DetailStateContent(
             uiState = uiState,
@@ -276,6 +265,15 @@ private fun ModelDetailBody(
             onShowImageGrid = { showImageGrid = true },
             bottomPadding = contentPadding.calculateBottomPadding(),
             modifier = Modifier.weight(1f),
+            carouselContent = {
+                ImageCarousel(
+                    images = images,
+                    modelId = modelId,
+                    sharedElementSuffix = sharedElementSuffix,
+                    onImageClick = { selectedCarouselIndex = it },
+                    onImageError = { url -> failedImageUrls = failedImageUrls + url },
+                )
+            },
         )
     }
 
@@ -327,6 +325,7 @@ private fun DetailOverlays(
     }
 }
 
+@Suppress("LongParameterList")
 @Composable
 private fun DetailStateContent(
     uiState: ModelDetailUiState,
@@ -338,6 +337,7 @@ private fun DetailStateContent(
     onShowImageGrid: () -> Unit,
     bottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
+    carouselContent: @Composable () -> Unit = {},
 ) {
     val stateKey = when {
         uiState.isLoading -> "loading"
@@ -391,6 +391,7 @@ private fun DetailStateContent(
                         onCreatorClick = onCreatorClick,
                         onShowImageGrid = onShowImageGrid,
                         bottomPadding = bottomPadding,
+                        carouselContent = carouselContent,
                     )
                 }
             }
@@ -462,6 +463,7 @@ private fun ModelDetailContentBody(
     onCreatorClick: (String) -> Unit,
     onShowImageGrid: () -> Unit,
     bottomPadding: androidx.compose.ui.unit.Dp,
+    carouselContent: @Composable () -> Unit = {},
 ) {
     val selectedVersion = model.modelVersions.getOrNull(uiState.selectedVersionIndex)
     val images = (selectedVersion?.images ?: emptyList()).let { allImages ->
@@ -472,6 +474,9 @@ private fun ModelDetailContentBody(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = bottomPadding + Spacing.lg),
     ) {
+        // Image carousel (scrolls with content)
+        item { carouselContent() }
+
         // Model header
         item {
             ModelHeader(model = model, onCreatorClick = onCreatorClick)

@@ -47,11 +47,15 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Style
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -149,6 +153,7 @@ private fun rememberCollapsibleHeaderState(): CollapsibleHeaderState {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Suppress("LongParameterList")
 fun ModelSearchScreen(
     viewModel: ModelSearchViewModel,
     onModelClick: (Long, String?, String) -> Unit = { _, _, _ -> },
@@ -156,6 +161,7 @@ fun ModelSearchScreen(
     compareModelName: String? = null,
     onCancelCompare: () -> Unit = {},
     onDiscoverClick: () -> Unit = {},
+    onCompareModel: (Long, String) -> Unit = { _, _ -> },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
@@ -194,6 +200,7 @@ fun ModelSearchScreen(
         onDiscoverClick = onDiscoverClick,
         favoriteIds = favoriteIds,
         onToggleFavorite = viewModel::toggleFavorite,
+        onCompareModel = onCompareModel,
     )
 }
 
@@ -244,6 +251,7 @@ private fun SearchScreenBody(
     onDiscoverClick: () -> Unit = {},
     favoriteIds: Set<Long> = emptySet(),
     onToggleFavorite: (Model) -> Unit = {},
+    onCompareModel: (Long, String) -> Unit = { _, _ -> },
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
@@ -283,6 +291,8 @@ private fun SearchScreenBody(
             ownedHashes = ownedHashes,
             favoriteIds = favoriteIds,
             onToggleFavorite = onToggleFavorite,
+            onCompareModel = onCompareModel,
+            isComparing = compareModelName != null,
         )
 
         CollapsibleHeader(
@@ -994,6 +1004,8 @@ private fun ModelSearchContent(
     ownedHashes: Set<String> = emptySet(),
     favoriteIds: Set<Long> = emptySet(),
     onToggleFavorite: (Model) -> Unit = {},
+    onCompareModel: (Long, String) -> Unit = { _, _ -> },
+    isComparing: Boolean = false,
 ) {
     val refreshState = lazyPagingItems.loadState.refresh
     val isInitialLoading = refreshState is LoadState.Loading ||
@@ -1057,6 +1069,8 @@ private fun ModelSearchContent(
                         ownedHashes = ownedHashes,
                         favoriteIds = favoriteIds,
                         onToggleFavorite = onToggleFavorite,
+                        onCompareModel = onCompareModel,
+                        isComparing = isComparing,
                     )
                 }
             }
@@ -1079,6 +1093,8 @@ private fun ModelGrid(
     ownedHashes: Set<String> = emptySet(),
     favoriteIds: Set<Long> = emptySet(),
     onToggleFavorite: (Model) -> Unit = {},
+    onCompareModel: (Long, String) -> Unit = { _, _ -> },
+    isComparing: Boolean = false,
 ) {
     val isAppendLoading = lazyPagingItems.loadState.append is LoadState.Loading
     val reducedMotion = isReducedMotionEnabled()
@@ -1120,14 +1136,17 @@ private fun ModelGrid(
             val parallaxOffset = rememberGridItemScrollOffset(gridState, index)
             val staggerAnimatable = remember { Animatable(0f) }
             LaunchStaggerAnimation(index = index, animatable = staggerAnimatable, reducedMotion = reducedMotion)
-            SwipeableModelCard(
+            ModelGridItem(
                 model = model,
                 isFavorite = model.id in favoriteIds,
-                onFavoriteToggle = { onToggleFavorite(model) },
-                onHide = { onHideModel(model.id, model.name) },
-                onClick = { onModelClick(model.id, thumbnailUrl, "") },
-                modifier = Modifier.animateItem(),
+                thumbnailUrl = thumbnailUrl,
                 isOwned = isOwned,
+                isComparing = isComparing,
+                onModelClick = onModelClick,
+                onHideModel = onHideModel,
+                onToggleFavorite = onToggleFavorite,
+                onCompareModel = onCompareModel,
+                modifier = Modifier.animateItem(),
             )
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
@@ -1144,6 +1163,75 @@ private fun ModelGrid(
                 }
             }
         }
+    }
+}
+
+@Suppress("LongParameterList")
+@Composable
+private fun ModelGridItem(
+    model: Model,
+    isFavorite: Boolean,
+    thumbnailUrl: String?,
+    isOwned: Boolean,
+    isComparing: Boolean,
+    onModelClick: (Long, String?, String) -> Unit,
+    onHideModel: (Long, String) -> Unit,
+    onToggleFavorite: (Model) -> Unit,
+    onCompareModel: (Long, String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var showMenu by remember { mutableStateOf(false) }
+    Box(modifier = modifier) {
+        SwipeableModelCard(
+            model = model,
+            isFavorite = isFavorite,
+            onFavoriteToggle = { onToggleFavorite(model) },
+            onHide = { onHideModel(model.id, model.name) },
+            onClick = { onModelClick(model.id, thumbnailUrl, "") },
+            onLongPress = { showMenu = true },
+            isOwned = isOwned,
+        )
+        ModelContextMenu(
+            expanded = showMenu,
+            onDismiss = { showMenu = false },
+            showCompare = !isComparing,
+            onCompare = { onCompareModel(model.id, model.name) },
+            onHide = { onHideModel(model.id, model.name) },
+        )
+    }
+}
+
+@Composable
+private fun ModelContextMenu(
+    expanded: Boolean,
+    onDismiss: () -> Unit,
+    showCompare: Boolean,
+    onCompare: () -> Unit,
+    onHide: () -> Unit,
+) {
+    DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
+        if (showCompare) {
+            DropdownMenuItem(
+                text = { Text("Compare") },
+                onClick = {
+                    onCompare()
+                    onDismiss()
+                },
+                leadingIcon = {
+                    Icon(Icons.Default.ContentCopy, contentDescription = null)
+                },
+            )
+        }
+        DropdownMenuItem(
+            text = { Text("Hide model") },
+            onClick = {
+                onHide()
+                onDismiss()
+            },
+            leadingIcon = {
+                Icon(Icons.Default.VisibilityOff, contentDescription = null)
+            },
+        )
     }
 }
 

@@ -5,10 +5,6 @@ struct ImageGalleryScreen: View {
     @StateObject private var viewModel: ImageGalleryViewModel
     @Environment(\.horizontalSizeClass) private var sizeClass
 
-    private var columns: [GridItem] {
-        AdaptiveGrid.columns(sizeClass: sizeClass)
-    }
-
     init(modelVersionId: Int64) {
         _viewModel = StateObject(wrappedValue: ImageGalleryViewModel(modelVersionId: modelVersionId))
     }
@@ -133,16 +129,16 @@ struct ImageGalleryScreen: View {
     // MARK: - Image Grid
 
     private var imageGrid: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: Spacing.sm) {
-                ForEach(Array(viewModel.images.enumerated()), id: \.element.id) { index, image in
-                    imageCell(image: image, index: index)
-                        .onAppear {
-                            if index >= viewModel.images.count - 6 {
-                                viewModel.loadMore()
-                            }
-                        }
-                }
+        let colCount = AdaptiveGrid.columnCount(sizeClass: sizeClass)
+        return ScrollView {
+            StaggeredGrid(
+                data: viewModel.images,
+                columnCount: colCount,
+                spacing: Spacing.sm,
+                id: \.id,
+                aspectRatio: imageAspectRatio
+            ) { image in
+                staggeredImageCell(image: image)
             }
             .padding(.horizontal, Spacing.sm)
 
@@ -151,6 +147,22 @@ struct ImageGalleryScreen: View {
                     .padding()
             }
         }
+    }
+
+    private func imageAspectRatio(_ image: CivitImage) -> CGFloat {
+        (image.width > 0 && image.height > 0)
+            ? CGFloat(image.width) / CGFloat(image.height)
+            : 1.0
+    }
+
+    private func staggeredImageCell(image: CivitImage) -> some View {
+        let index = viewModel.images.firstIndex(where: { $0.id == image.id }) ?? 0
+        return imageCell(image: image, index: index)
+            .onAppear {
+                if index >= viewModel.images.count - 6 {
+                    viewModel.loadMore()
+                }
+            }
     }
 
     private func imageCell(image: CivitImage, index: Int) -> some View {
