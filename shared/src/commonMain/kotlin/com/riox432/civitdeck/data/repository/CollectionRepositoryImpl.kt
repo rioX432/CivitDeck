@@ -3,11 +3,11 @@ package com.riox432.civitdeck.data.repository
 import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.CollectionDao
 import com.riox432.civitdeck.data.local.entity.CollectionEntity
+import com.riox432.civitdeck.data.local.entity.CollectionModelEntity
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelCollection
-import com.riox432.civitdeck.domain.model.toCollectionModelEntry
-import com.riox432.civitdeck.domain.model.toFavoriteModelSummary
+import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.repository.CollectionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -75,4 +75,31 @@ class CollectionRepositoryImpl(
         dao.insertEntries(newEntries)
         dao.removeEntries(fromCollectionId, modelIds)
     }
+
+    private fun CollectionModelEntity.toFavoriteModelSummary() = FavoriteModelSummary(
+        id = modelId,
+        name = name,
+        type = ModelType.entries.find { it.name == type } ?: ModelType.Checkpoint,
+        nsfw = nsfw,
+        thumbnailUrl = thumbnailUrl,
+        creatorName = creatorName,
+        downloadCount = downloadCount,
+        favoriteCount = favoriteCount,
+        rating = rating,
+        favoritedAt = addedAt,
+    )
+
+    private fun Model.toCollectionModelEntry(collectionId: Long, timestamp: Long) = CollectionModelEntity(
+        collectionId = collectionId,
+        modelId = id,
+        name = name,
+        type = type.name,
+        nsfw = nsfw,
+        thumbnailUrl = modelVersions.firstOrNull()?.images?.firstOrNull()?.url,
+        creatorName = creator?.username,
+        downloadCount = stats.downloadCount,
+        favoriteCount = stats.favoriteCount,
+        rating = stats.rating,
+        addedAt = timestamp,
+    )
 }

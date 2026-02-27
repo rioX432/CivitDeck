@@ -5,7 +5,6 @@ import com.riox432.civitdeck.data.local.dao.SavedPromptDao
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.domain.model.SavedPrompt
-import com.riox432.civitdeck.domain.model.toDomain
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -57,6 +56,23 @@ class SavedPromptRepositoryImpl(
         size = size,
         sourceImageUrl = sourceImageUrl,
         savedAt = currentTimeMillis(),
+        autoSaved = autoSaved,
+    )
+
+    private fun SavedPromptEntity.toDomain() = SavedPrompt(
+        id = id,
+        prompt = prompt,
+        negativePrompt = negativePrompt,
+        sampler = sampler,
+        steps = steps,
+        cfgScale = cfgScale,
+        seed = seed,
+        modelName = modelName,
+        size = size,
+        sourceImageUrl = sourceImageUrl,
+        savedAt = savedAt,
+        isTemplate = isTemplate,
+        templateName = templateName,
         autoSaved = autoSaved,
     )
 }
