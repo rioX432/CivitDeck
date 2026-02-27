@@ -20,6 +20,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -33,6 +34,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -96,32 +100,56 @@ private fun CompareBody(
     onRightVersionSelected: (Int) -> Unit,
     contentPadding: PaddingValues,
 ) {
-    val bothLoading = leftState.isLoading || rightState.isLoading
     val leftModel = leftState.model
     val rightModel = rightState.model
 
-    if (bothLoading && (leftModel == null || rightModel == null)) {
-        Box(
-            modifier = Modifier.fillMaxSize().padding(contentPadding),
-            contentAlignment = Alignment.Center,
-        ) {
-            CircularProgressIndicator()
-        }
+    val bothLoading = leftState.isLoading || rightState.isLoading
+    val bothMissing = leftModel == null || rightModel == null
+    if (bothLoading && bothMissing) {
+        CenteredBox(contentPadding) { CircularProgressIndicator() }
         return
     }
-
     if (leftModel == null || rightModel == null) {
-        Box(
-            modifier = Modifier.fillMaxSize().padding(contentPadding),
-            contentAlignment = Alignment.Center,
-        ) {
+        CenteredBox(contentPadding) {
             Text(
-                text = leftState.error ?: rightState.error ?: "Failed to load models",
-                color = MaterialTheme.colorScheme.error,
+                leftState.error ?: rightState.error ?: "Failed to load models",
+                color = MaterialTheme.colorScheme.error
             )
         }
         return
     }
+
+    CompareLoadedBody(
+        leftState,
+        rightState,
+        leftModel,
+        rightModel,
+        onLeftVersionSelected,
+        onRightVersionSelected,
+        contentPadding
+    )
+}
+
+@Composable
+private fun CenteredBox(padding: PaddingValues, content: @Composable () -> Unit) {
+    Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { content() }
+}
+
+@Suppress("LongParameterList")
+@Composable
+private fun CompareLoadedBody(
+    leftState: ModelDetailUiState,
+    rightState: ModelDetailUiState,
+    leftModel: Model,
+    rightModel: Model,
+    onLeftVersionSelected: (Int) -> Unit,
+    onRightVersionSelected: (Int) -> Unit,
+    contentPadding: PaddingValues,
+) {
+    var showImageComparison by remember { mutableStateOf(false) }
+    val leftImages = leftModel.selectedImages(leftState)
+    val rightImages = rightModel.selectedImages(rightState)
+    val canCompareImages = leftImages.isNotEmpty() && rightImages.isNotEmpty()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -131,24 +159,50 @@ private fun CompareBody(
         ),
     ) {
         item { ComparePanelsRow(leftState, rightState) }
+        if (canCompareImages) {
+            item { CompareImagesButton(onClick = { showImageComparison = true }) }
+        }
         item {
             CompareVersionSelectors(
-                leftModel = leftModel,
-                rightModel = rightModel,
-                leftSelectedIndex = leftState.selectedVersionIndex,
-                rightSelectedIndex = rightState.selectedVersionIndex,
-                onLeftVersionSelected = onLeftVersionSelected,
-                onRightVersionSelected = onRightVersionSelected,
+                leftModel,
+                rightModel,
+                leftState.selectedVersionIndex,
+                rightState.selectedVersionIndex,
+                onLeftVersionSelected,
+                onRightVersionSelected
             )
         }
         item { HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm)) }
         item {
             CompareSpecsTable(
-                leftModel = leftModel,
-                rightModel = rightModel,
-                leftVersionIndex = leftState.selectedVersionIndex,
-                rightVersionIndex = rightState.selectedVersionIndex,
+                leftModel,
+                rightModel,
+                leftState.selectedVersionIndex,
+                rightState.selectedVersionIndex
             )
+        }
+    }
+
+    if (showImageComparison && canCompareImages) {
+        ImageComparisonOverlay(leftImages.first().url, rightImages.first().url, leftModel.name, rightModel.name) {
+            showImageComparison = false
+        }
+    }
+}
+
+private fun Model.selectedImages(state: ModelDetailUiState): List<ModelImage> {
+    val version = modelVersions.getOrNull(state.selectedVersionIndex) ?: return emptyList()
+    return version.images.filterByNsfwLevel(state.nsfwFilterLevel)
+}
+
+@Composable
+private fun CompareImagesButton(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.md, vertical = Spacing.sm),
+        contentAlignment = Alignment.Center,
+    ) {
+        Button(onClick = onClick) {
+            Text("Compare Images")
         }
     }
 }

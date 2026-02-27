@@ -3,6 +3,7 @@ import Shared
 
 struct ModelCompareScreen: View {
     @StateObject private var viewModel: ModelCompareViewModel
+    @State private var showImageComparison = false
 
     init(leftModelId: Int64, rightModelId: Int64) {
         _viewModel = StateObject(wrappedValue: ModelCompareViewModel(
@@ -31,14 +32,47 @@ struct ModelCompareScreen: View {
     // MARK: - Content
 
     private func compareContent(left: Model, right: Model) -> some View {
-        ScrollView {
+        let leftVersion = selectedVersion(model: left, index: viewModel.leftSelectedVersionIndex)
+        let rightVersion = selectedVersion(model: right, index: viewModel.rightSelectedVersionIndex)
+        let leftImages = filteredImages(version: leftVersion)
+        let rightImages = filteredImages(version: rightVersion)
+        let canCompareImages = !leftImages.isEmpty && !rightImages.isEmpty
+
+        return ScrollView {
             VStack(spacing: 0) {
                 comparePanels(left: left, right: right)
+                if canCompareImages {
+                    compareImagesButton
+                }
                 compareVersionSelectors(left: left, right: right)
                 Divider().padding(.vertical, Spacing.sm)
                 specsTable(left: left, right: right)
             }
         }
+        .fullScreenCover(isPresented: $showImageComparison) {
+            if let leftUrl = leftImages.first?.url,
+               let rightUrl = rightImages.first?.url {
+                ImageComparisonOverlay(
+                    beforeImageUrl: leftUrl,
+                    afterImageUrl: rightUrl,
+                    beforeLabel: left.name,
+                    afterLabel: right.name,
+                    onDismiss: { showImageComparison = false }
+                )
+            }
+        }
+    }
+
+    private var compareImagesButton: some View {
+        Button {
+            showImageComparison = true
+        } label: {
+            Text("Compare Images")
+                .font(.civitLabelMedium)
+                .fontWeight(.semibold)
+        }
+        .buttonStyle(.borderedProminent)
+        .padding(.vertical, Spacing.sm)
     }
 
     // MARK: - Panels
