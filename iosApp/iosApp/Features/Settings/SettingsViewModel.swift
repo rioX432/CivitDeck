@@ -14,6 +14,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var isValidatingApiKey: Bool = false
     @Published var apiKeyError: String?
     @Published var powerUserMode: Bool = false
+    @Published var accentColor: AccentColor = .blue
+    @Published var amoledDarkMode: Bool = false
 
     private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
     private let setNsfwFilterUseCase: SetNsfwFilterUseCase
@@ -36,6 +38,10 @@ final class SettingsViewModel: ObservableObject {
     private let validateApiKeyUseCase: ValidateApiKeyUseCase
     private let observePowerUserModeUseCase: ObservePowerUserModeUseCase
     private let setPowerUserModeUseCase: SetPowerUserModeUseCase
+    private let observeAccentColorUseCase: ObserveAccentColorUseCase
+    private let setAccentColorUseCase: SetAccentColorUseCase
+    private let observeAmoledDarkModeUseCase: ObserveAmoledDarkModeUseCase
+    private let setAmoledDarkModeUseCase: SetAmoledDarkModeUseCase
 
     init() {
         self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
@@ -59,6 +65,10 @@ final class SettingsViewModel: ObservableObject {
         self.validateApiKeyUseCase = KoinHelper.shared.getValidateApiKeyUseCase()
         self.observePowerUserModeUseCase = KoinHelper.shared.getObservePowerUserModeUseCase()
         self.setPowerUserModeUseCase = KoinHelper.shared.getSetPowerUserModeUseCase()
+        self.observeAccentColorUseCase = KoinHelper.shared.getObserveAccentColorUseCase()
+        self.setAccentColorUseCase = KoinHelper.shared.getSetAccentColorUseCase()
+        self.observeAmoledDarkModeUseCase = KoinHelper.shared.getObserveAmoledDarkModeUseCase()
+        self.setAmoledDarkModeUseCase = KoinHelper.shared.getSetAmoledDarkModeUseCase()
         loadMutableData()
     }
 
@@ -87,6 +97,18 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
+    func observeAccentColor() async {
+        for await value in observeAccentColorUseCase.invoke() {
+            accentColor = value
+        }
+    }
+
+    func observeAmoledDarkMode() async {
+        for await value in observeAmoledDarkModeUseCase.invoke() {
+            amoledDarkMode = value.boolValue
+        }
+    }
+
     func onNsfwFilterToggle() {
         let newLevel: NsfwFilterLevel = nsfwFilterLevel == .off ? .all : .off
         nsfwFilterLevel = newLevel
@@ -103,6 +125,16 @@ final class SettingsViewModel: ObservableObject {
 
     func onGridColumnsChanged(_ columns: Int32) {
         Task { try? await setGridColumnsUseCase.invoke(columns: columns) }
+    }
+
+    func onAccentColorChanged(_ color: AccentColor) {
+        accentColor = color
+        Task { try? await setAccentColorUseCase.invoke(color: color) }
+    }
+
+    func onAmoledDarkModeChanged(_ enabled: Bool) {
+        amoledDarkMode = enabled
+        Task { try? await setAmoledDarkModeUseCase.invoke(enabled: enabled) }
     }
 
     func onUnhideModel(_ modelId: Int64) {

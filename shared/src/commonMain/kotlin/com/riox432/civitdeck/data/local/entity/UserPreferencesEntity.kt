@@ -14,4 +14,6 @@ data class UserPreferencesEntity(
     val powerUserMode: Boolean = false,
     val notificationsEnabled: Boolean = false,
     val pollingIntervalMinutes: Int = 0,
+    val accentColor: String = "Blue",
+    val amoledDarkMode: Boolean = false,
 )

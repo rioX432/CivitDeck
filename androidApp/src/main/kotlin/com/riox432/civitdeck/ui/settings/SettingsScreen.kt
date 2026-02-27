@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.BuildConfig
+import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -88,6 +90,9 @@ fun SettingsScreen(
                 )
             }
         }
+        item { SectionHeader("Theme") }
+        item { AccentColorRow(state.accentColor, viewModel::onAccentColorChanged) }
+        item { AmoledDarkModeRow(state.amoledDarkMode, viewModel::onAmoledDarkModeChanged) }
         item { SectionHeader("Content Filter") }
         item { NsfwToggleRow(state.nsfwFilterLevel, viewModel::onNsfwFilterChanged) }
         item { SectionHeader("Display") }
@@ -99,16 +104,23 @@ fun SettingsScreen(
             item { SectionHeader("Model Files") }
             item { NavigationRow("Model File Browser", onNavigateToModelFiles) }
         }
-        item { SectionHeader("Data Management") }
-        item { HiddenModelsRow(state.hiddenModels.size, state.hiddenModels, viewModel::onUnhideModel) }
-        item { ExcludedTagsRow(state.excludedTags, viewModel::onAddExcludedTag, viewModel::onRemoveExcludedTag) }
-        item { ClearActionRow("Clear Search History", viewModel::onClearSearchHistory) }
-        item { ClearActionRow("Clear Browsing History", viewModel::onClearBrowsingHistory) }
-        item { ClearActionRow("Clear Cache", viewModel::onClearCache) }
+        dataManagementItems(state, viewModel)
         item { SectionHeader("About") }
         item { InfoRow("App Version", BuildConfig.VERSION_NAME) }
         item { NavigationRow("Open Source Licenses", onNavigateToLicenses) }
     }
+}
+
+private fun LazyListScope.dataManagementItems(
+    state: SettingsUiState,
+    viewModel: SettingsViewModel,
+) {
+    item { SectionHeader("Data Management") }
+    item { HiddenModelsRow(state.hiddenModels.size, state.hiddenModels, viewModel::onUnhideModel) }
+    item { ExcludedTagsRow(state.excludedTags, viewModel::onAddExcludedTag, viewModel::onRemoveExcludedTag) }
+    item { ClearActionRow("Clear Search History", viewModel::onClearSearchHistory) }
+    item { ClearActionRow("Clear Browsing History", viewModel::onClearBrowsingHistory) }
+    item { ClearActionRow("Clear Cache", viewModel::onClearCache) }
 }
 
 @Composable
@@ -164,6 +176,39 @@ private fun PollingIntervalRow(selected: PollingInterval, onChanged: (PollingInt
         options = options.map { it.displayName },
         onSelected = { name -> options.find { it.displayName == name }?.let(onChanged) },
     )
+}
+
+@Composable
+private fun AccentColorRow(selected: AccentColor, onChanged: (AccentColor) -> Unit) {
+    DropdownSettingRow(
+        label = "Accent Color",
+        value = selected.displayName,
+        options = AccentColor.entries.map { it.displayName },
+        onSelected = { name ->
+            AccentColor.entries.find { it.displayName == name }?.let(onChanged)
+        },
+    )
+}
+
+@Composable
+private fun AmoledDarkModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text("AMOLED Dark Mode", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "Pure black background for OLED screens",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(checked = enabled, onCheckedChange = onToggle)
+    }
 }
 
 @Composable

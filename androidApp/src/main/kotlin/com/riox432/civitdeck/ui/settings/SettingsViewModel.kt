@@ -3,6 +3,7 @@ package com.riox432.civitdeck.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
+import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -13,6 +14,8 @@ import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
@@ -22,6 +25,8 @@ import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
+import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
+import com.riox432.civitdeck.domain.usecase.SetAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
@@ -55,6 +60,8 @@ data class SettingsUiState(
     val powerUserMode: Boolean = false,
     val notificationsEnabled: Boolean = false,
     val pollingInterval: PollingInterval = PollingInterval.Off,
+    val accentColor: AccentColor = AccentColor.Blue,
+    val amoledDarkMode: Boolean = false,
 )
 
 @Suppress("LongParameterList")
@@ -84,6 +91,10 @@ class SettingsViewModel(
     private val setNotificationsEnabledUseCase: SetNotificationsEnabledUseCase,
     observePollingIntervalUseCase: ObservePollingIntervalUseCase,
     private val setPollingIntervalUseCase: SetPollingIntervalUseCase,
+    observeAccentColorUseCase: ObserveAccentColorUseCase,
+    private val setAccentColorUseCase: SetAccentColorUseCase,
+    observeAmoledDarkModeUseCase: ObserveAmoledDarkModeUseCase,
+    private val setAmoledDarkModeUseCase: SetAmoledDarkModeUseCase,
 ) : ViewModel() {
 
     private val _mutableState = MutableStateFlow(SettingsUiState())
@@ -108,6 +119,10 @@ class SettingsViewModel(
         state.copy(notificationsEnabled = enabled)
     }.combine(observePollingIntervalUseCase()) { state, interval ->
         state.copy(pollingInterval = interval)
+    }.combine(observeAccentColorUseCase()) { state, accent ->
+        state.copy(accentColor = accent)
+    }.combine(observeAmoledDarkModeUseCase()) { state, amoled ->
+        state.copy(amoledDarkMode = amoled)
     }.combine(_mutableState) { observed, mutable ->
         observed.copy(
             hiddenModels = mutable.hiddenModels,
@@ -250,5 +265,13 @@ class SettingsViewModel(
 
     fun onPollingIntervalChanged(interval: PollingInterval) {
         viewModelScope.launch { setPollingIntervalUseCase(interval) }
+    }
+
+    fun onAccentColorChanged(color: AccentColor) {
+        viewModelScope.launch { setAccentColorUseCase(color) }
+    }
+
+    fun onAmoledDarkModeChanged(enabled: Boolean) {
+        viewModelScope.launch { setAmoledDarkModeUseCase(enabled) }
     }
 }

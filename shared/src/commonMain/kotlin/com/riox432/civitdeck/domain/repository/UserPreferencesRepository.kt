@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.domain.repository
 
+import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -25,4 +26,8 @@ interface UserPreferencesRepository {
     suspend fun setNotificationsEnabled(enabled: Boolean)
     fun observePollingInterval(): Flow<PollingInterval>
     suspend fun setPollingInterval(interval: PollingInterval)
+    fun observeAccentColor(): Flow<AccentColor>
+    suspend fun setAccentColor(color: AccentColor)
+    fun observeAmoledDarkMode(): Flow<Boolean>
+    suspend fun setAmoledDarkMode(enabled: Boolean)
 }

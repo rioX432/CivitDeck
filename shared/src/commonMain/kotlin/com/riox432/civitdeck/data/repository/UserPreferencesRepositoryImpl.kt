@@ -3,6 +3,7 @@ package com.riox432.civitdeck.data.repository
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
+import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -93,5 +94,24 @@ class UserPreferencesRepositoryImpl(
     override suspend fun setPollingInterval(interval: PollingInterval) {
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(pollingIntervalMinutes = interval.minutes))
+    }
+
+    override fun observeAccentColor(): Flow<AccentColor> =
+        dao.observePreferences().map { entity ->
+            runCatching { AccentColor.valueOf(entity?.accentColor ?: "") }
+                .getOrDefault(AccentColor.Blue)
+        }
+
+    override suspend fun setAccentColor(color: AccentColor) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(accentColor = color.name))
+    }
+
+    override fun observeAmoledDarkMode(): Flow<Boolean> =
+        dao.observePreferences().map { it?.amoledDarkMode ?: false }
+
+    override suspend fun setAmoledDarkMode(enabled: Boolean) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(amoledDarkMode = enabled))
     }
 }

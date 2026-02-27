@@ -48,7 +48,7 @@ import kotlinx.coroutines.IO
         LocalModelFileEntity::class,
         ModelVersionCheckpointEntity::class,
     ],
-    version = 12,
+    version = 13,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -307,6 +307,17 @@ val MIGRATION_11_12 = object : Migration(11, 12) {
     }
 }
 
+val MIGRATION_12_13 = object : Migration(12, 13) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN accentColor TEXT NOT NULL DEFAULT 'Blue'",
+        )
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN amoledDarkMode INTEGER NOT NULL DEFAULT 0",
+        )
+    }
+}
+
 fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeckDatabase {
     return builder
         .addMigrations(
@@ -321,6 +332,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_9_10,
             MIGRATION_10_11,
             MIGRATION_11_12,
+            MIGRATION_12_13,
         )
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
