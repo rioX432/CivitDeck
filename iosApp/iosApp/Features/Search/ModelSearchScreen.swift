@@ -21,6 +21,7 @@ struct ModelSearchScreen: View {
     @State private var excludeTagInput: String = ""
     @State private var showFilterSheet: Bool = false
     @State private var navigationPath = NavigationPath()
+    @Namespace private var heroNamespace
 
     private var columns: [GridItem] {
         AdaptiveGrid.columns(userPreference: Int(viewModel.gridColumns), sizeClass: sizeClass)
@@ -76,6 +77,7 @@ struct ModelSearchScreen: View {
             }
             .navigationDestination(for: Int64.self) { modelId in
                 ModelDetailScreen(modelId: modelId)
+                    .heroDestination(id: modelId, in: heroNamespace)
             }
             .navigationDestination(for: String.self) { username in
                 CreatorProfileScreen(username: username)
@@ -257,7 +259,8 @@ struct ModelSearchScreen: View {
                             isFavorite: viewModel.favoriteIds.contains(model.id),
                             onFavoriteToggle: { viewModel.toggleFavorite(model) },
                             onHide: { viewModel.hideModel(model.id, name: model.name) },
-                            isOwned: viewModel.isModelOwned(model)
+                            isOwned: viewModel.isModelOwned(model),
+                            heroNamespace: heroNamespace
                         )
                         .onTapGesture {
                             if let cmpId = comparisonState.selectedModelId {
@@ -421,8 +424,7 @@ struct ModelSearchScreen: View {
         }
     }
 }
-// MARK: - Filter FAB
-extension ModelSearchScreen {
+extension ModelSearchScreen { // MARK: - Filter FAB
     var filterFab: some View {
         Button {
             showFilterSheet = true
@@ -451,8 +453,7 @@ extension ModelSearchScreen {
         .animation(MotionAnimation.fast, value: headerVisible)
     }
 }
-// MARK: - Extracted Subviews
-extension ModelSearchScreen {
+extension ModelSearchScreen { // MARK: - Extracted Subviews
     var includedTagsSection: some View {
         TagFilterSection(
             title: "Tags (include)",

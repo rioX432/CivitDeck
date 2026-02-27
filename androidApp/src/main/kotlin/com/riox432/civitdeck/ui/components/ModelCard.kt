@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,9 +54,11 @@ import com.riox432.civitdeck.util.FormatUtils
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
+@Suppress("LongParameterList")
 fun ModelCard(
     model: Model,
     onClick: (() -> Unit)? = null,
+    onLongPress: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     sharedElementSuffix: String = "",
     isOwned: Boolean = false,
@@ -63,6 +66,8 @@ fun ModelCard(
     reducedMotion: Boolean = false,
 ) {
     var pressed by remember { mutableStateOf(false) }
+    val currentOnClick by rememberUpdatedState(onClick)
+    val currentOnLongPress by rememberUpdatedState(onLongPress)
     val cardModifier = modifier
         .fillMaxWidth()
         .springScale(pressed = pressed, reducedMotion = reducedMotion)
@@ -73,27 +78,19 @@ fun ModelCard(
                     tryAwaitRelease()
                     pressed = false
                 },
+                onTap = { currentOnClick?.invoke() },
+                onLongPress = { currentOnLongPress?.invoke() },
             )
         }
     val shape = RoundedCornerShape(CornerRadius.card)
     val elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     val colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    if (onClick != null) {
-        Card(
-            onClick = onClick,
-            modifier = cardModifier,
-            shape = shape,
-            elevation = elevation,
-            colors = colors,
-        ) { ModelCardContent(model, sharedElementSuffix, isOwned, parallaxOffset, reducedMotion) }
-    } else {
-        Card(
-            modifier = cardModifier,
-            shape = shape,
-            elevation = elevation,
-            colors = colors,
-        ) { ModelCardContent(model, sharedElementSuffix, isOwned, parallaxOffset, reducedMotion) }
-    }
+    Card(
+        modifier = cardModifier,
+        shape = shape,
+        elevation = elevation,
+        colors = colors,
+    ) { ModelCardContent(model, sharedElementSuffix, isOwned, parallaxOffset, reducedMotion) }
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)

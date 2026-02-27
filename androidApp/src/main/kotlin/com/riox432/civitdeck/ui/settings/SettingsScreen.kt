@@ -7,23 +7,32 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
@@ -40,10 +49,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.BuildConfig
+import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
@@ -91,6 +103,7 @@ private fun SettingsContent(
         if (state.powerUserMode) {
             settingsComfyUIItem(onNavigateToComfyUI)
         }
+        settingsThemeItems(state, viewModel)
         settingsDisplayItems(state, viewModel, onNavigateToModelFiles)
         settingsCacheItems(state, viewModel)
         settingsDataItems(state, viewModel, onNavigateToLicenses)
@@ -118,6 +131,91 @@ private fun LazyListScope.settingsComfyUIItem(onNavigateToComfyUI: () -> Unit) {
             }
             Text(">", style = MaterialTheme.typography.bodyLarge)
         }
+    }
+}
+
+private fun LazyListScope.settingsThemeItems(
+    state: SettingsUiState,
+    viewModel: SettingsViewModel,
+) {
+    item { SectionHeader("Theme") }
+    item { AccentColorRow(state.accentColor, viewModel::onAccentColorChanged) }
+    item { AmoledDarkModeRow(state.amoledDarkMode, viewModel::onAmoledDarkModeChanged) }
+}
+
+@Composable
+private fun AccentColorRow(
+    selected: AccentColor,
+    onChanged: (AccentColor) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+    ) {
+        Text("Accent Color", style = MaterialTheme.typography.bodyLarge)
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            items(AccentColor.entries.toList()) { color ->
+                AccentColorSwatch(color = color, isSelected = color == selected) {
+                    onChanged(color)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AccentColorSwatch(
+    color: AccentColor,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+) {
+    val swatchColor = Color(color.seedHex)
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(swatchColor)
+            .then(
+                if (isSelected) {
+                    Modifier.border(2.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                } else {
+                    Modifier
+                },
+            )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (isSelected) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Selected",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun AmoledDarkModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text("AMOLED Dark Mode", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "Use pure black background in dark mode",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(checked = enabled, onCheckedChange = onToggle)
     }
 }
 

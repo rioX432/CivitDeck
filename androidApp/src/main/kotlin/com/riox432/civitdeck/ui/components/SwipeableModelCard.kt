@@ -56,6 +56,7 @@ fun SwipeableModelCard(
     onFavoriteToggle: () -> Unit,
     onHide: () -> Unit,
     onClick: (() -> Unit)? = null,
+    onLongPress: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     isOwned: Boolean = false,
     swipeThreshold: Float = DEFAULT_SWIPE_THRESHOLD,
@@ -83,7 +84,7 @@ fun SwipeableModelCard(
         },
         modifier = modifier,
     ) {
-        ModelCard(model = model, onClick = onClick, isOwned = isOwned)
+        ModelCard(model = model, onClick = onClick, onLongPress = onLongPress, isOwned = isOwned)
     }
 }
 

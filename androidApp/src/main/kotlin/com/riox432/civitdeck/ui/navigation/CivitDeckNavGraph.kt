@@ -264,6 +264,7 @@ private fun CivitDeckNavDisplay(
                     compareModelName = compareModelName,
                     onCancelCompare = onCancelCompare,
                     onDiscoverClick = { backStack.add(DiscoveryRoute) },
+                    onCompareModel = onCompareModel,
                 )
             }
             collectionsEntry(backStack)
