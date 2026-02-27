@@ -14,4 +14,5 @@ data class UserPreferencesEntity(
     val powerUserMode: Boolean = false,
     val notificationsEnabled: Boolean = false,
     val pollingIntervalMinutes: Int = 0,
+    val seenTutorialVersion: Int = 0,
 )

@@ -63,6 +63,8 @@ import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
+import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
@@ -144,4 +146,8 @@ object KoinHelper {
     fun getSetNotificationsEnabledUseCase(): SetNotificationsEnabledUseCase = getKoin().get()
     fun getObservePollingIntervalUseCase(): ObservePollingIntervalUseCase = getKoin().get()
     fun getSetPollingIntervalUseCase(): SetPollingIntervalUseCase = getKoin().get()
+
+    // Tutorial use cases
+    fun getObserveSeenTutorialVersionUseCase(): ObserveSeenTutorialVersionUseCase = getKoin().get()
+    fun getSetSeenTutorialVersionUseCase(): SetSeenTutorialVersionUseCase = getKoin().get()
 }

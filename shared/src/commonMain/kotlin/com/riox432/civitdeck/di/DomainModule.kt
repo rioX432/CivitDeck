@@ -62,6 +62,8 @@ import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
+import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
@@ -136,4 +138,7 @@ val domainModule = module {
     factory { SetNotificationsEnabledUseCase(get()) }
     factory { ObservePollingIntervalUseCase(get()) }
     factory { SetPollingIntervalUseCase(get()) }
+    // Tutorial use cases
+    factory { ObserveSeenTutorialVersionUseCase(get()) }
+    factory { SetSeenTutorialVersionUseCase(get()) }
 }

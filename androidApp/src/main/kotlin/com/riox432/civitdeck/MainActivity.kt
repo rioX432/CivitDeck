@@ -5,8 +5,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.ui.navigation.CivitDeckNavGraph
 import com.riox432.civitdeck.ui.theme.CivitDeckTheme
+import com.riox432.civitdeck.ui.tutorial.GestureTutorialScreen
+import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,7 +22,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             CivitDeckTheme {
-                CivitDeckNavGraph()
+                val tutorialVm: GestureTutorialViewModel = koinViewModel()
+                val showTutorial by tutorialVm.shouldShowTutorial.collectAsStateWithLifecycle()
+
+                if (showTutorial) {
+                    GestureTutorialScreen(onDismiss = tutorialVm::dismissTutorial)
+                } else {
+                    CivitDeckNavGraph()
+                }
             }
         }
     }

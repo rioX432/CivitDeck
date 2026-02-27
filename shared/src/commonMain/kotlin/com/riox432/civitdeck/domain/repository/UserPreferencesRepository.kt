@@ -25,4 +25,6 @@ interface UserPreferencesRepository {
     suspend fun setNotificationsEnabled(enabled: Boolean)
     fun observePollingInterval(): Flow<PollingInterval>
     suspend fun setPollingInterval(interval: PollingInterval)
+    fun observeSeenTutorialVersion(): Flow<Int>
+    suspend fun setSeenTutorialVersion(version: Int)
 }
