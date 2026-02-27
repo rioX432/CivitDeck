@@ -5,7 +5,7 @@ struct ErrorStateView: View {
     var onRetry: (() -> Void)? = nil
 
     var body: some View {
-        VStack(spacing: CivitDeckSpacing.lg) {
+        VStack(spacing: Spacing.lg) {
             Text(message)
                 .foregroundColor(.civitError)
                 .multilineTextAlignment(.center)
