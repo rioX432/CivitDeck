@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -83,6 +84,7 @@ import com.riox432.civitdeck.domain.model.stripCdnWidth
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
+import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
@@ -453,6 +455,16 @@ private fun ModelDetailContentBody(
     val selectedVersion = model.modelVersions.getOrNull(uiState.selectedVersionIndex)
     val images = (selectedVersion?.images ?: emptyList()).let { allImages ->
         allImages.filterByNsfwLevel(uiState.nsfwFilterLevel)
+    }
+
+    if (selectedVersion == null) {
+        EmptyStateMessage(
+            icon = Icons.Outlined.Info,
+            title = "Version not available",
+            subtitle = "The selected version is no longer available.",
+            modifier = Modifier.fillMaxSize(),
+        )
+        return
     }
 
     LazyColumn(

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -213,6 +214,15 @@ private fun PromptLazyColumn(
         contentPadding = androidx.compose.foundation.layout.PaddingValues(Spacing.lg),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
+        if (prompts.isEmpty()) {
+            item {
+                EmptyStateMessage(
+                    icon = Icons.Outlined.SearchOff,
+                    title = "No results",
+                    subtitle = "Try adjusting your search filters",
+                )
+            }
+        }
         items(prompts, key = { it.id }) { prompt ->
             PromptCard(
                 prompt = prompt,
