@@ -75,4 +75,6 @@ dependencies {
     implementation(libs.material3.adaptive.navigation.suite)
     implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
 }

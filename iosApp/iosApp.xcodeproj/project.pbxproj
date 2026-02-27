@@ -73,6 +73,18 @@
 		CD00CU032D8CC001000CD001 /* ComfyUISettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */; };
 		CD00CU052D8CC001000CD001 /* ComfyUIGenerationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */; };
 		CD00CU072D8CC001000CD001 /* ComfyUIGenerationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */; };
+		CD00SS012E208001000CD001 /* AppearanceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS002E208001000CD001 /* AppearanceSettingsView.swift */; };
+		CD00SS032E208001000CD001 /* ContentFilterSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS022E208001000CD001 /* ContentFilterSettingsView.swift */; };
+		CD00SS052E208001000CD001 /* NotificationsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS042E208001000CD001 /* NotificationsSettingsView.swift */; };
+		CD00SS072E208001000CD001 /* StorageSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS062E208001000CD001 /* StorageSettingsView.swift */; };
+		CD00SS092E208001000CD001 /* AdvancedSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS082E208001000CD001 /* AdvancedSettingsView.swift */; };
+		CDSP01012E900001000CD001 /* SpotlightIndexManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSP01002E900001000CD001 /* SpotlightIndexManager.swift */; };
+		CDSP02012E900002000CD001 /* SpotlightItemBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSP02002E900002000CD001 /* SpotlightItemBuilder.swift */; };
+		CDDL01012E900003000CD001 /* DeepLinkHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDL01002E900003000CD001 /* DeepLinkHandler.swift */; };
+		CDNR01012E900004000CD001 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDNR01002E900004000CD001 /* NavigationRouter.swift */; };
+		CDSC01012EA00001000CD001 /* ShortcutsIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSC01002EA00001000CD001 /* ShortcutsIntents.swift */; };
+		CDSC02012EA00002000CD001 /* ShortcutsRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSC02002EA00002000CD001 /* ShortcutsRouter.swift */; };
+		CDWD01012EBB0001000CD001 /* WidgetDataWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDWD01002EBB0001000CD001 /* WidgetDataWriter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -117,6 +129,11 @@
 		CD0009022D000009000CD001 /* SavedPromptsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedPromptsScreen.swift; sourceTree = "<group>"; };
 		CD000A002D00000A000CD001 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		CD000A022D00000A000CD001 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
+		CD00SS002E208001000CD001 /* AppearanceSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettingsView.swift; sourceTree = "<group>"; };
+		CD00SS022E208001000CD001 /* ContentFilterSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentFilterSettingsView.swift; sourceTree = "<group>"; };
+		CD00SS042E208001000CD001 /* NotificationsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsSettingsView.swift; sourceTree = "<group>"; };
+		CD00SS062E208001000CD001 /* StorageSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageSettingsView.swift; sourceTree = "<group>"; };
+		CD00SS082E208001000CD001 /* AdvancedSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSettingsView.swift; sourceTree = "<group>"; };
 		CD000B002D00000B000CD001 /* HiddenModelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenModelsView.swift; sourceTree = "<group>"; };
 		CD000B022D00000B000CD001 /* ExcludedTagsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExcludedTagsView.swift; sourceTree = "<group>"; };
 		CD000B042D00000B000CD001 /* LicensesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicensesView.swift; sourceTree = "<group>"; };
@@ -145,6 +162,16 @@
 		CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUISettingsViewModel.swift; sourceTree = "<group>"; };
 		CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIGenerationView.swift; sourceTree = "<group>"; };
 		CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIGenerationViewModel.swift; sourceTree = "<group>"; };
+		CDSP01002E900001000CD001 /* SpotlightIndexManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightIndexManager.swift; sourceTree = "<group>"; };
+		CDSP02002E900002000CD001 /* SpotlightItemBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightItemBuilder.swift; sourceTree = "<group>"; };
+		CDDL01002E900003000CD001 /* DeepLinkHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkHandler.swift; sourceTree = "<group>"; };
+		CDNR01002E900004000CD001 /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
+		CDSC01002EA00001000CD001 /* ShortcutsIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsIntents.swift; sourceTree = "<group>"; };
+		CDSC02002EA00002000CD001 /* ShortcutsRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsRouter.swift; sourceTree = "<group>"; };
+		CDWD01002EBB0001000CD001 /* WidgetDataWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataWriter.swift; sourceTree = "<group>"; };
+		CDWG01002EBB0002000CD001 /* CivitDeckWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckWidget.swift; sourceTree = "<group>"; };
+		CDWG02002EBB0002000CD001 /* CivitDeckWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckWidgetBundle.swift; sourceTree = "<group>"; };
+		CDWG03002EBB0002000CD001 /* WidgetConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetConstants.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -178,6 +205,7 @@
 			children = (
 				AB1DB47929225F7C00F7AF9C /* Configuration */,
 				7555FF7D242A565900829871 /* iosApp */,
+				CDWG0A002EBB0002000CD001 /* CivitDeckWidget */,
 				7555FF7C242A565900829871 /* Products */,
 				42799AB246E5F90AF97AA0EF /* Frameworks */,
 			);
@@ -200,9 +228,30 @@
 				CD0001002D000001000CD001 /* ContentView.swift */,
 				CD0006082D000006000CD001 /* DesignSystem */,
 				CD0003002D000003000CD001 /* Features */,
+				CDSP0A002E900001000CD001 /* Services */,
+				CDDL0A002E900003000CD001 /* Utils */,
 				058557D7273AAEEB004C7B11 /* Preview Content */,
 			);
 			path = iosApp;
+			sourceTree = "<group>";
+		};
+		CDSP0A002E900001000CD001 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				CDSP01002E900001000CD001 /* SpotlightIndexManager.swift */,
+				CDSP02002E900002000CD001 /* SpotlightItemBuilder.swift */,
+				CDWD01002EBB0001000CD001 /* WidgetDataWriter.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		CDDL0A002E900003000CD001 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				CDDL01002E900003000CD001 /* DeepLinkHandler.swift */,
+				CDNR01002E900004000CD001 /* NavigationRouter.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 		AB1DB47929225F7C00F7AF9C /* Configuration */ = {
@@ -211,6 +260,16 @@
 				AB3632DC29227652001CCB65 /* Config.xcconfig */,
 			);
 			path = Configuration;
+			sourceTree = "<group>";
+		};
+		CDWG0A002EBB0002000CD001 /* CivitDeckWidget */ = {
+			isa = PBXGroup;
+			children = (
+				CDWG01002EBB0002000CD001 /* CivitDeckWidget.swift */,
+				CDWG02002EBB0002000CD001 /* CivitDeckWidgetBundle.swift */,
+				CDWG03002EBB0002000CD001 /* WidgetConstants.swift */,
+			);
+			path = CivitDeckWidget;
 			sourceTree = "<group>";
 		};
 		CD0006082D000006000CD001 /* DesignSystem */ = {
@@ -248,9 +307,19 @@
 				CD00FB042D5CC001000CD001 /* ModelFileBrowser */,
 				CD0009042D000009000CD001 /* Prompts */,
 				CD000A042D00000A000CD001 /* Settings */,
+				CDSC0A002EA00001000CD001 /* Shortcuts */,
 				CD00GT082D6CC001000CD001 /* Tutorial */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		CDSC0A002EA00001000CD001 /* Shortcuts */ = {
+			isa = PBXGroup;
+			children = (
+				CDSC01002EA00001000CD001 /* ShortcutsIntents.swift */,
+				CDSC02002EA00002000CD001 /* ShortcutsRouter.swift */,
+			);
+			path = Shortcuts;
 			sourceTree = "<group>";
 		};
 		CD00C00A2D3CC001000CD001 /* Collections */ = {
@@ -303,6 +372,11 @@
 				CD000B002D00000B000CD001 /* HiddenModelsView.swift */,
 				CD000B022D00000B000CD001 /* ExcludedTagsView.swift */,
 				CD000B042D00000B000CD001 /* LicensesView.swift */,
+				CD00SS002E208001000CD001 /* AppearanceSettingsView.swift */,
+				CD00SS022E208001000CD001 /* ContentFilterSettingsView.swift */,
+				CD00SS042E208001000CD001 /* NotificationsSettingsView.swift */,
+				CD00SS062E208001000CD001 /* StorageSettingsView.swift */,
+				CD00SS082E208001000CD001 /* AdvancedSettingsView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -562,6 +636,18 @@
 				CD00CU032D8CC001000CD001 /* ComfyUISettingsViewModel.swift in Sources */,
 				CD00CU052D8CC001000CD001 /* ComfyUIGenerationView.swift in Sources */,
 				CD00CU072D8CC001000CD001 /* ComfyUIGenerationViewModel.swift in Sources */,
+				CD00SS012E208001000CD001 /* AppearanceSettingsView.swift in Sources */,
+				CD00SS032E208001000CD001 /* ContentFilterSettingsView.swift in Sources */,
+				CD00SS052E208001000CD001 /* NotificationsSettingsView.swift in Sources */,
+				CD00SS072E208001000CD001 /* StorageSettingsView.swift in Sources */,
+				CD00SS092E208001000CD001 /* AdvancedSettingsView.swift in Sources */,
+				CDSP01012E900001000CD001 /* SpotlightIndexManager.swift in Sources */,
+				CDSP02012E900002000CD001 /* SpotlightItemBuilder.swift in Sources */,
+				CDDL01012E900003000CD001 /* DeepLinkHandler.swift in Sources */,
+				CDNR01012E900004000CD001 /* NavigationRouter.swift in Sources */,
+				CDSC01012EA00001000CD001 /* ShortcutsIntents.swift in Sources */,
+				CDSC02012EA00002000CD001 /* ShortcutsRouter.swift in Sources */,
+				CDWD01012EBB0001000CD001 /* WidgetDataWriter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

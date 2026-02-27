@@ -67,9 +67,14 @@ import com.riox432.civitdeck.ui.prompts.SavedPromptsScreen
 import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchScreen
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
+import com.riox432.civitdeck.ui.settings.AdvancedSettingsScreen
+import com.riox432.civitdeck.ui.settings.AppearanceSettingsScreen
+import com.riox432.civitdeck.ui.settings.ContentFilterSettingsScreen
 import com.riox432.civitdeck.ui.settings.LicensesScreen
+import com.riox432.civitdeck.ui.settings.NotificationsSettingsScreen
 import com.riox432.civitdeck.ui.settings.SettingsScreen
 import com.riox432.civitdeck.ui.settings.SettingsViewModel
+import com.riox432.civitdeck.ui.settings.StorageSettingsScreen
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import org.koin.compose.viewmodel.koinViewModel
@@ -107,7 +112,17 @@ data object ComfyUISettingsRoute
 
 data object ComfyUIGenerationRoute
 
-private enum class Tab(
+data object AppearanceSettingsRoute
+
+data object ContentFilterSettingsRoute
+
+data object NotificationsSettingsRoute
+
+data object StorageSettingsRoute
+
+data object AdvancedSettingsRoute
+
+internal enum class Tab(
     val label: String,
     val activeIcon: ImageVector,
     val inactiveIcon: ImageVector,
@@ -136,13 +151,13 @@ private class TabState(
 @Suppress("LongMethod")
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun CivitDeckNavGraph() {
+internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Search) {
     var selectedTab by rememberSaveable(
         stateSaver = mapSaver(
             save = { mapOf("tab" to it.name) },
             restore = { Tab.valueOf(it["tab"] as String) },
         ),
-    ) { mutableStateOf(Tab.Search) }
+    ) { mutableStateOf(initialTab) }
 
     val tabs = remember {
         mapOf(
@@ -285,12 +300,16 @@ private fun CivitDeckNavDisplay(
                 val viewModel: SettingsViewModel = koinViewModel()
                 SettingsScreen(
                     viewModel = viewModel,
+                    onNavigateToAppearance = { backStack.add(AppearanceSettingsRoute) },
+                    onNavigateToContentFilter = { backStack.add(ContentFilterSettingsRoute) },
+                    onNavigateToNotifications = { backStack.add(NotificationsSettingsRoute) },
+                    onNavigateToStorage = { backStack.add(StorageSettingsRoute) },
+                    onNavigateToAdvanced = { backStack.add(AdvancedSettingsRoute) },
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
-                    onNavigateToModelFiles = { backStack.add(ModelFileBrowserRoute) },
-                    onNavigateToComfyUI = { backStack.add(ComfyUISettingsRoute) },
                     scrollToTopTrigger = settingsScrollTrigger,
                 )
             }
+            settingsSubScreenEntries(backStack)
             entry<LicensesRoute> {
                 LicensesScreen(onBack = { backStack.removeLastOrNull() })
             }
@@ -441,6 +460,46 @@ private fun EntryProviderScope<Any>.discoveryEntry(backStack: MutableList<Any>) 
             onModelDetail = { modelId ->
                 backStack.add(DetailRoute(modelId))
             },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.settingsSubScreenEntries(backStack: MutableList<Any>) {
+    entry<AppearanceSettingsRoute> {
+        val viewModel: SettingsViewModel = koinViewModel()
+        AppearanceSettingsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+    entry<ContentFilterSettingsRoute> {
+        val viewModel: SettingsViewModel = koinViewModel()
+        ContentFilterSettingsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+    entry<NotificationsSettingsRoute> {
+        val viewModel: SettingsViewModel = koinViewModel()
+        NotificationsSettingsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+    entry<StorageSettingsRoute> {
+        val viewModel: SettingsViewModel = koinViewModel()
+        StorageSettingsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+    entry<AdvancedSettingsRoute> {
+        val viewModel: SettingsViewModel = koinViewModel()
+        AdvancedSettingsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onNavigateToComfyUI = { backStack.add(ComfyUISettingsRoute) },
+            onNavigateToModelFiles = { backStack.add(ModelFileBrowserRoute) },
         )
     }
 }

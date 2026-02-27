@@ -11,6 +11,7 @@ import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
 import com.riox432.civitdeck.ui.navigation.CivitDeckNavGraph
+import com.riox432.civitdeck.ui.navigation.Tab
 import com.riox432.civitdeck.ui.theme.CivitDeckTheme
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialScreen
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
@@ -22,6 +23,12 @@ class MainActivity : ComponentActivity(), KoinComponent {
 
     private val observeAccentColor: ObserveAccentColorUseCase by inject()
     private val observeAmoledDarkMode: ObserveAmoledDarkModeUseCase by inject()
+
+    companion object {
+        const val EXTRA_INITIAL_ROUTE = "extra_initial_route"
+        const val ROUTE_SEARCH = "search"
+        const val ROUTE_SETTINGS = "settings"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -45,7 +52,13 @@ class MainActivity : ComponentActivity(), KoinComponent {
                 if (showTutorial) {
                     GestureTutorialScreen(onDismiss = tutorialVm::dismissTutorial)
                 } else {
-                    CivitDeckNavGraph()
+                    val initialTab = when (
+                        intent.getStringExtra(EXTRA_INITIAL_ROUTE)
+                    ) {
+                        ROUTE_SETTINGS -> Tab.Settings
+                        else -> Tab.Search
+                    }
+                    CivitDeckNavGraph(initialTab = initialTab)
                 }
             }
         }

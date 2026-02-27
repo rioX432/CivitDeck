@@ -24,6 +24,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var cacheSizeLimitMb: Int32 = 200
     @Published var cacheEntryCount: Int32 = 0
     @Published var cacheFormattedSize: String = "0 B"
+    @Published var notificationsEnabled: Bool = false
+    @Published var pollingInterval: PollingInterval = .off
 
     private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
     private let setNsfwFilterUseCase: SetNsfwFilterUseCase
@@ -59,6 +61,10 @@ final class SettingsViewModel: ObservableObject {
     private let setCacheSizeLimitUseCase: SetCacheSizeLimitUseCase
     private let getCacheInfoUseCase: GetCacheInfoUseCase
     private let evictCacheUseCase: EvictCacheUseCase
+    private let observeNotificationsEnabledUseCase: ObserveNotificationsEnabledUseCase
+    private let setNotificationsEnabledUseCase: SetNotificationsEnabledUseCase
+    private let observePollingIntervalUseCase: ObservePollingIntervalUseCase
+    private let setPollingIntervalUseCase: SetPollingIntervalUseCase
 
     init() {
         self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
@@ -95,6 +101,10 @@ final class SettingsViewModel: ObservableObject {
         self.setCacheSizeLimitUseCase = KoinHelper.shared.getSetCacheSizeLimitUseCase()
         self.getCacheInfoUseCase = KoinHelper.shared.getCacheInfoUseCase()
         self.evictCacheUseCase = KoinHelper.shared.getEvictCacheUseCase()
+        self.observeNotificationsEnabledUseCase = KoinHelper.shared.getObserveNotificationsEnabledUseCase()
+        self.setNotificationsEnabledUseCase = KoinHelper.shared.getSetNotificationsEnabledUseCase()
+        self.observePollingIntervalUseCase = KoinHelper.shared.getObservePollingIntervalUseCase()
+        self.setPollingIntervalUseCase = KoinHelper.shared.getSetPollingIntervalUseCase()
         loadMutableData()
     }
 
@@ -233,6 +243,34 @@ final class SettingsViewModel: ObservableObject {
         for await value in observePowerUserModeUseCase.invoke() {
             powerUserMode = value.boolValue
         }
+    }
+
+    func observeNotificationsEnabled() async {
+        for await value in observeNotificationsEnabledUseCase.invoke() {
+            notificationsEnabled = value.boolValue
+        }
+    }
+
+    func observePollingInterval() async {
+        let flow = SkieSwiftFlow<PollingInterval>(observePollingIntervalUseCase.invoke())
+        for await value in flow {
+            pollingInterval = value
+        }
+    }
+
+    func onNotificationsEnabledChanged(_ enabled: Bool) {
+        notificationsEnabled = enabled
+        Task {
+            try? await setNotificationsEnabledUseCase.invoke(enabled: enabled)
+            if enabled && pollingInterval == .off {
+                try? await setPollingIntervalUseCase.invoke(interval: .fifteenMinutes)
+            }
+        }
+    }
+
+    func onPollingIntervalChanged(_ interval: PollingInterval) {
+        pollingInterval = interval
+        Task { try? await setPollingIntervalUseCase.invoke(interval: interval) }
     }
 
     func onPowerUserModeChanged(_ enabled: Bool) {
