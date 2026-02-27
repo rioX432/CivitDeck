@@ -28,4 +28,8 @@ interface UserPreferencesRepository {
     suspend fun setPollingInterval(interval: PollingInterval)
     fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings>
     suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings)
+    fun observeOfflineCacheEnabled(): Flow<Boolean>
+    suspend fun setOfflineCacheEnabled(enabled: Boolean)
+    fun observeCacheSizeLimitMb(): Flow<Int>
+    suspend fun setCacheSizeLimitMb(limitMb: Int)
 }

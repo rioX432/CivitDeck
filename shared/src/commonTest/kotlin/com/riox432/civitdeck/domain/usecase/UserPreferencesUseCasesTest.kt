@@ -55,6 +55,14 @@ class UserPreferencesUseCasesTest {
         val nsfwBlurSettings = MutableStateFlow(NsfwBlurSettings())
         override fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings> = nsfwBlurSettings
         override suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings) { nsfwBlurSettings.value = settings }
+
+        val offlineCacheEnabled = MutableStateFlow(true)
+        override fun observeOfflineCacheEnabled(): Flow<Boolean> = offlineCacheEnabled
+        override suspend fun setOfflineCacheEnabled(enabled: Boolean) { offlineCacheEnabled.value = enabled }
+
+        val cacheSizeLimitMb = MutableStateFlow(200)
+        override fun observeCacheSizeLimitMb(): Flow<Int> = cacheSizeLimitMb
+        override suspend fun setCacheSizeLimitMb(limitMb: Int) { cacheSizeLimitMb.value = limitMb }
     }
 
     private val repo = FakeUserPreferencesRepository()

@@ -7,10 +7,14 @@ struct SettingsScreen: View {
     var body: some View {
         NavigationStack {
             List {
+                if !viewModel.isOnline {
+                    offlineBanner
+                }
                 accountSection
                 contentFilterSection
                 displaySection
                 modelFilesSection
+                offlineCacheSection
                 dataManagementSection
                 aboutSection
             }
@@ -23,7 +27,21 @@ struct SettingsScreen: View {
             .task { await viewModel.observeTimePeriod() }
             .task { await viewModel.observeGridColumns() }
             .task { await viewModel.observePowerUserMode() }
+            .task { await viewModel.observeNetworkStatus() }
+            .task { await viewModel.observeOfflineCacheEnabled() }
+            .task { await viewModel.observeCacheSizeLimit() }
         }
+    }
+
+    private var offlineBanner: some View {
+        HStack {
+            Spacer()
+            Text("You are offline — showing cached data")
+                .font(.civitBodySmall)
+                .foregroundColor(.civitOnErrorContainer)
+            Spacer()
+        }
+        .listRowBackground(Color.civitErrorContainer)
     }
 
     private var accountSection: some View {
@@ -130,6 +148,53 @@ struct SettingsScreen: View {
                     Label("Model File Browser", systemImage: "folder.badge.gearshape")
                 }
             }
+        }
+    }
+
+    private var offlineCacheSection: some View {
+        Section("Offline & Cache") {
+            offlineCacheToggle
+            if viewModel.offlineCacheEnabled {
+                cacheSizeLimitPicker
+            }
+            cacheInfoRow
+        }
+    }
+
+    private var offlineCacheToggle: some View {
+        Toggle(isOn: Binding(
+            get: { viewModel.offlineCacheEnabled },
+            set: { viewModel.onOfflineCacheEnabledChanged($0) }
+        )) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("Offline Cache")
+                    .font(.civitBodyMedium)
+                Text("Keep viewed models available offline")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+            }
+        }
+    }
+
+    private var cacheSizeLimitPicker: some View {
+        Picker("Cache Size Limit", selection: Binding(
+            get: { viewModel.cacheSizeLimitMb },
+            set: { viewModel.onCacheSizeLimitChanged($0) }
+        )) {
+            Text("50 MB").tag(Int32(50))
+            Text("100 MB").tag(Int32(100))
+            Text("200 MB").tag(Int32(200))
+            Text("500 MB").tag(Int32(500))
+        }
+    }
+
+    private var cacheInfoRow: some View {
+        HStack {
+            Text("Cached Entries")
+            Spacer()
+            Text("\(viewModel.cacheEntryCount) entries (\(viewModel.cacheFormattedSize))")
+                .font(.civitBodySmall)
+                .foregroundColor(.civitOnSurfaceVariant)
         }
     }
 
