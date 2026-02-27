@@ -74,6 +74,7 @@ import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
@@ -83,6 +84,7 @@ import com.riox432.civitdeck.domain.model.stripCdnWidth
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
+import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
 import com.riox432.civitdeck.ui.navigation.LocalSharedTransitionScope
@@ -108,13 +110,17 @@ fun ModelDetailScreen(
     val collections by viewModel.collections.collectAsStateWithLifecycle()
     val modelCollectionIds by viewModel.modelCollectionIds.collectAsStateWithLifecycle()
     var showCollectionSheet by remember { mutableStateOf(false) }
+    val haptic = rememberHapticFeedback()
 
     Scaffold(
         topBar = {
             ModelDetailTopBar(
                 uiState = uiState,
                 onBack = onBack,
-                onFavoriteToggle = viewModel::onFavoriteToggle,
+                onFavoriteToggle = {
+                    haptic(HapticFeedbackType.Impact)
+                    viewModel.onFavoriteToggle()
+                },
                 onAddToCollection = { showCollectionSheet = true },
             )
         },
@@ -878,6 +884,8 @@ private fun VersionSelector(
     selectedIndex: Int,
     onVersionSelected: (Int) -> Unit,
 ) {
+    val haptic = rememberHapticFeedback()
+
     Column(modifier = Modifier.padding(vertical = Spacing.sm)) {
         HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm))
         Text(
@@ -893,7 +901,10 @@ private fun VersionSelector(
             itemsIndexed(versions) { index, version ->
                 FilterChip(
                     selected = index == selectedIndex,
-                    onClick = { onVersionSelected(index) },
+                    onClick = {
+                        haptic(HapticFeedbackType.Selection)
+                        onVersionSelected(index)
+                    },
                     label = { Text(version.name) },
                 )
             }

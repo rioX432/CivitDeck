@@ -34,6 +34,7 @@ struct MetadataSheet: View {
 
                 HStack(spacing: 8) {
                     Button("Copy Prompt") {
+                        HapticFeedback.success.trigger()
                         UIPasteboard.general.string = prompt
                     }
                     .buttonStyle(.bordered)

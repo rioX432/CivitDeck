@@ -25,7 +25,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.export.WorkflowExportService
+import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
+import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,6 +78,8 @@ private fun PromptSection(
     context: Context,
     onSavePrompt: () -> Unit,
 ) {
+    val haptic = rememberHapticFeedback()
+
     meta.prompt?.let { prompt ->
         MetadataLabel("Prompt")
         Text(
@@ -85,7 +89,10 @@ private fun PromptSection(
         Spacer(modifier = Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(
-                onClick = { copyToClipboard(context, "Prompt", prompt) },
+                onClick = {
+                    haptic(HapticFeedbackType.Success)
+                    copyToClipboard(context, "Prompt", prompt)
+                },
             ) {
                 Text("Copy Prompt")
             }

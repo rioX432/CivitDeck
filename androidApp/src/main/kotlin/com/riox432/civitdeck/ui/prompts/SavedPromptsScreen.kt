@@ -53,8 +53,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.export.PromptTemplateEngine
 import com.riox432.civitdeck.domain.export.WorkflowExportService
+import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.domain.model.SavedPrompt
+import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -232,6 +234,8 @@ private fun PromptLazyColumn(
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
 ) {
+    val haptic = rememberHapticFeedback()
+
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         state = listState,
@@ -241,7 +245,10 @@ private fun PromptLazyColumn(
         items(prompts, key = { it.id }) { prompt ->
             PromptCard(
                 prompt = prompt,
-                onCopy = { copyToClipboard(context, prompt.prompt) },
+                onCopy = {
+                    haptic(HapticFeedbackType.Success)
+                    copyToClipboard(context, prompt.prompt)
+                },
                 onDelete = { onDelete(prompt.id) },
                 onToggleTemplate = { onToggleTemplate(prompt.id, prompt.isTemplate) },
                 onExport = { exportPrompt(context, prompt) },
@@ -249,6 +256,7 @@ private fun PromptLazyColumn(
                     {
                         val variables = PromptTemplateEngine.extractVariables(prompt.prompt)
                         if (variables.isEmpty()) {
+                            haptic(HapticFeedbackType.Success)
                             copyToClipboard(context, prompt.prompt)
                         } else {
                             onRequestApply(prompt)

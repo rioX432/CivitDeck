@@ -105,6 +105,7 @@ struct SavedPromptsScreen: View {
                             template: prompt.prompt
                         )
                         if variables.isEmpty {
+                            HapticFeedback.success.trigger()
                             UIPasteboard.general.string = prompt.prompt
                         } else {
                             applyTemplatePrompt = prompt
@@ -194,6 +195,7 @@ private struct PromptCardView: View {
             }
 
             Button("Copy") {
+                HapticFeedback.success.trigger()
                 UIPasteboard.general.string = prompt.prompt
             }
             .buttonStyle(.bordered)
@@ -271,6 +273,7 @@ private struct ApplyTemplateSheet: View {
                             template: prompt.prompt,
                             values: values
                         )
+                        HapticFeedback.success.trigger()
                         UIPasteboard.general.string = result
                         dismiss()
                     }
