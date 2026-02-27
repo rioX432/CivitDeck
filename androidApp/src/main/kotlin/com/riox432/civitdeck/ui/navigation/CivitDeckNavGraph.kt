@@ -48,6 +48,10 @@ import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.CollectionDetailViewModel
 import com.riox432.civitdeck.ui.collections.CollectionsScreen
 import com.riox432.civitdeck.ui.collections.CollectionsViewModel
+import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationScreen
+import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsScreen
+import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsViewModel
 import com.riox432.civitdeck.ui.compare.ModelCompareScreen
 import com.riox432.civitdeck.ui.creator.CreatorProfileScreen
 import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
@@ -98,6 +102,10 @@ data object ModelFileBrowserRoute
 data object DiscoveryRoute
 
 data class CompareRoute(val leftModelId: Long, val rightModelId: Long)
+
+data object ComfyUISettingsRoute
+
+data object ComfyUIGenerationRoute
 
 private enum class Tab(
     val label: String,
@@ -278,6 +286,7 @@ private fun CivitDeckNavDisplay(
                     viewModel = viewModel,
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
                     onNavigateToModelFiles = { backStack.add(ModelFileBrowserRoute) },
+                    onNavigateToComfyUI = { backStack.add(ComfyUISettingsRoute) },
                     scrollToTopTrigger = settingsScrollTrigger,
                 )
             }
@@ -291,6 +300,7 @@ private fun CivitDeckNavDisplay(
                     onBack = { backStack.removeLastOrNull() },
                 )
             }
+            comfyUIEntries(backStack)
         },
     )
 }
@@ -430,6 +440,24 @@ private fun EntryProviderScope<Any>.discoveryEntry(backStack: MutableList<Any>) 
             onModelDetail = { modelId ->
                 backStack.add(DetailRoute(modelId))
             },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>) {
+    entry<ComfyUISettingsRoute> {
+        val viewModel: ComfyUISettingsViewModel = koinViewModel()
+        ComfyUISettingsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onNavigateToGeneration = { backStack.add(ComfyUIGenerationRoute) },
+        )
+    }
+    entry<ComfyUIGenerationRoute> {
+        val viewModel: ComfyUIGenerationViewModel = koinViewModel()
+        ComfyUIGenerationScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
         )
     }
 }

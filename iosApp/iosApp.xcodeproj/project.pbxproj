@@ -69,6 +69,8 @@
 		CD00HF012D6CC001000CD001 /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00HF002D6CC001000CD001 /* HapticFeedback.swift */; };
 		CD00CU012D8CC001000CD001 /* ComfyUISettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU002D8CC001000CD001 /* ComfyUISettingsView.swift */; };
 		CD00CU032D8CC001000CD001 /* ComfyUISettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */; };
+		CD00CU052D8CC001000CD001 /* ComfyUIGenerationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */; };
+		CD00CU072D8CC001000CD001 /* ComfyUIGenerationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -137,6 +139,8 @@
 		CD00HF002D6CC001000CD001 /* HapticFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedback.swift; sourceTree = "<group>"; };
 		CD00CU002D8CC001000CD001 /* ComfyUISettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUISettingsView.swift; sourceTree = "<group>"; };
 		CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUISettingsViewModel.swift; sourceTree = "<group>"; };
+		CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIGenerationView.swift; sourceTree = "<group>"; };
+		CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIGenerationViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -369,6 +373,8 @@
 			children = (
 				CD00CU002D8CC001000CD001 /* ComfyUISettingsView.swift */,
 				CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */,
+				CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */,
+				CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */,
 			);
 			path = ComfyUI;
 			sourceTree = "<group>";
@@ -546,6 +552,8 @@
 				CD00HF012D6CC001000CD001 /* HapticFeedback.swift in Sources */,
 				CD00CU012D8CC001000CD001 /* ComfyUISettingsView.swift in Sources */,
 				CD00CU032D8CC001000CD001 /* ComfyUISettingsViewModel.swift in Sources */,
+				CD00CU052D8CC001000CD001 /* ComfyUIGenerationView.swift in Sources */,
+				CD00CU072D8CC001000CD001 /* ComfyUIGenerationViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
