@@ -1118,7 +1118,8 @@ private fun ModelGrid(
 
             @Suppress("UnusedPrivateProperty")
             val parallaxOffset = rememberGridItemScrollOffset(gridState, index)
-            LaunchStaggerAnimation(index = index, reducedMotion = reducedMotion)
+            val staggerAnimatable = remember { Animatable(0f) }
+            LaunchStaggerAnimation(index = index, animatable = staggerAnimatable, reducedMotion = reducedMotion)
             SwipeableModelCard(
                 model = model,
                 isFavorite = model.id in favoriteIds,
