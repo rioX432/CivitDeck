@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -63,17 +64,20 @@ import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.ui.theme.Spacing
 
+@Suppress("LongParameterList")
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
+    onNavigateToAppearance: () -> Unit = {},
+    onNavigateToContentFilter: () -> Unit = {},
+    onNavigateToNotifications: () -> Unit = {},
+    onNavigateToStorage: () -> Unit = {},
+    onNavigateToAdvanced: () -> Unit = {},
     onNavigateToLicenses: () -> Unit = {},
-    onNavigateToModelFiles: () -> Unit = {},
-    onNavigateToComfyUI: () -> Unit = {},
     scrollToTopTrigger: Int = 0,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
-
     var lastHandledTrigger by rememberSaveable { mutableIntStateOf(scrollToTopTrigger) }
     LaunchedEffect(scrollToTopTrigger) {
         if (scrollToTopTrigger != lastHandledTrigger) {
@@ -81,70 +85,77 @@ fun SettingsScreen(
             listState.animateScrollToItem(0)
         }
     }
-
-    SettingsContent(state, viewModel, listState, onNavigateToLicenses, onNavigateToModelFiles, onNavigateToComfyUI)
-}
-
-@Composable
-@Suppress("LongParameterList")
-private fun SettingsContent(
-    state: SettingsUiState,
-    viewModel: SettingsViewModel,
-    listState: androidx.compose.foundation.lazy.LazyListState,
-    onNavigateToLicenses: () -> Unit,
-    onNavigateToModelFiles: () -> Unit,
-    onNavigateToComfyUI: () -> Unit,
-) {
     LazyColumn(state = listState) {
         if (!state.isOnline) {
             item { OfflineBanner() }
         }
         settingsAccountItems(state, viewModel)
-        if (state.powerUserMode) {
-            settingsComfyUIItem(onNavigateToComfyUI)
-        }
-        settingsThemeItems(state, viewModel)
-        settingsDisplayItems(state, viewModel, onNavigateToModelFiles)
-        settingsCacheItems(state, viewModel)
-        settingsDataItems(state, viewModel, onNavigateToLicenses)
+        item { SectionHeader("Appearance") }
+        item { SubScreenRow("Appearance", onNavigateToAppearance) }
+        item { SectionHeader("Content & Filters") }
+        item { SubScreenRow("Content & Filters", onNavigateToContentFilter) }
+        item { SectionHeader("Notifications") }
+        item { SubScreenRow("Notifications", onNavigateToNotifications) }
+        item { SectionHeader("Storage") }
+        item { SubScreenRow("Storage", onNavigateToStorage) }
+        item { SectionHeader("Advanced") }
+        item { SubScreenRow("Advanced", onNavigateToAdvanced) }
+        item { SectionHeader("About") }
+        item { InfoRow("App Version", BuildConfig.VERSION_NAME) }
+        item { NavigationRow("Open Source Licenses", onNavigateToLicenses) }
     }
-}
-
-private fun LazyListScope.settingsComfyUIItem(onNavigateToComfyUI: () -> Unit) {
-    item { SectionHeader("ComfyUI") }
-    item {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onNavigateToComfyUI)
-                .padding(horizontal = Spacing.lg, vertical = Spacing.md),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column {
-                Text("Server Connections", style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    "Manage ComfyUI server connections",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Text(">", style = MaterialTheme.typography.bodyLarge)
-        }
-    }
-}
-
-private fun LazyListScope.settingsThemeItems(
-    state: SettingsUiState,
-    viewModel: SettingsViewModel,
-) {
-    item { SectionHeader("Theme") }
-    item { AccentColorRow(state.accentColor, viewModel::onAccentColorChanged) }
-    item { AmoledDarkModeRow(state.amoledDarkMode, viewModel::onAmoledDarkModeChanged) }
 }
 
 @Composable
-private fun AccentColorRow(
+internal fun SubScreenRow(label: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, style = MaterialTheme.typography.bodyLarge)
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    HorizontalDivider()
+}
+
+internal fun LazyListScope.settingsAccountItems(
+    state: SettingsUiState,
+    viewModel: SettingsViewModel,
+) {
+    item { SectionHeader("Account") }
+    item {
+        AccountSection(
+            apiKey = state.apiKey,
+            connectedUsername = state.connectedUsername,
+            isValidating = state.isValidatingApiKey,
+            error = state.apiKeyError,
+            onValidateAndSave = viewModel::onValidateAndSaveApiKey,
+            onClear = viewModel::onClearApiKey,
+        )
+    }
+}
+
+@Composable
+internal fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+    )
+}
+
+@Composable
+internal fun AccentColorRow(
     selected: AccentColor,
     onChanged: (AccentColor) -> Unit,
 ) {
@@ -166,7 +177,7 @@ private fun AccentColorRow(
 }
 
 @Composable
-private fun AccentColorSwatch(
+internal fun AccentColorSwatch(
     color: AccentColor,
     isSelected: Boolean,
     onClick: () -> Unit,
@@ -199,7 +210,7 @@ private fun AccentColorSwatch(
 }
 
 @Composable
-private fun AmoledDarkModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+internal fun AmoledDarkModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -219,96 +230,8 @@ private fun AmoledDarkModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
     }
 }
 
-private fun LazyListScope.settingsAccountItems(
-    state: SettingsUiState,
-    viewModel: SettingsViewModel,
-) {
-    item { SectionHeader("Account") }
-    item {
-        AccountSection(
-            apiKey = state.apiKey,
-            connectedUsername = state.connectedUsername,
-            isValidating = state.isValidatingApiKey,
-            error = state.apiKeyError,
-            onValidateAndSave = viewModel::onValidateAndSaveApiKey,
-            onClear = viewModel::onClearApiKey,
-        )
-    }
-    item { SectionHeader("Notifications") }
-    item { NotificationsToggleRow(state.notificationsEnabled, viewModel::onNotificationsEnabledChanged) }
-    if (state.notificationsEnabled) {
-        item { PollingIntervalRow(state.pollingInterval, viewModel::onPollingIntervalChanged) }
-    }
-    item { SectionHeader("Content Filter") }
-    item { NsfwToggleRow(state.nsfwFilterLevel, viewModel::onNsfwFilterChanged) }
-    if (state.nsfwFilterLevel != NsfwFilterLevel.Off) {
-        item {
-            NsfwBlurSection(
-                settings = state.nsfwBlurSettings,
-                onSettingsChanged = viewModel::onNsfwBlurSettingsChanged,
-            )
-        }
-    }
-}
-
-private fun LazyListScope.settingsDisplayItems(
-    state: SettingsUiState,
-    viewModel: SettingsViewModel,
-    onNavigateToModelFiles: () -> Unit,
-) {
-    item { SectionHeader("Display") }
-    item { SortOrderRow(state.defaultSortOrder, viewModel::onSortOrderChanged) }
-    item { TimePeriodRow(state.defaultTimePeriod, viewModel::onTimePeriodChanged) }
-    item { GridColumnsRow(state.gridColumns, viewModel::onGridColumnsChanged) }
-    item { PowerUserModeRow(state.powerUserMode, viewModel::onPowerUserModeChanged) }
-    if (state.powerUserMode) {
-        item { SectionHeader("Model Files") }
-        item { NavigationRow("Model File Browser", onNavigateToModelFiles) }
-    }
-}
-
-private fun LazyListScope.settingsCacheItems(
-    state: SettingsUiState,
-    viewModel: SettingsViewModel,
-) {
-    item { SectionHeader("Offline & Cache") }
-    item { OfflineCacheToggleRow(state.offlineCacheEnabled, viewModel::onOfflineCacheEnabledChanged) }
-    if (state.offlineCacheEnabled) {
-        item {
-            CacheSizeLimitRow(state.cacheSizeLimitMb, state.cacheInfo.formattedSize, viewModel::onCacheSizeLimitChanged)
-        }
-    }
-    item { CacheInfoRow(state.cacheInfo.entryCount, state.cacheInfo.formattedSize) }
-}
-
-private fun LazyListScope.settingsDataItems(
-    state: SettingsUiState,
-    viewModel: SettingsViewModel,
-    onNavigateToLicenses: () -> Unit,
-) {
-    item { SectionHeader("Data Management") }
-    item { HiddenModelsRow(state.hiddenModels.size, state.hiddenModels, viewModel::onUnhideModel) }
-    item { ExcludedTagsRow(state.excludedTags, viewModel::onAddExcludedTag, viewModel::onRemoveExcludedTag) }
-    item { ClearActionRow("Clear Search History", viewModel::onClearSearchHistory) }
-    item { ClearActionRow("Clear Browsing History", viewModel::onClearBrowsingHistory) }
-    item { ClearActionRow("Clear Cache", viewModel::onClearCache) }
-    item { SectionHeader("About") }
-    item { InfoRow("App Version", BuildConfig.VERSION_NAME) }
-    item { NavigationRow("Open Source Licenses", onNavigateToLicenses) }
-}
-
 @Composable
-private fun SectionHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
-    )
-}
-
-@Composable
-private fun NotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+internal fun NotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted -> if (granted) onToggle(true) }
@@ -342,7 +265,7 @@ private fun NotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit
 }
 
 @Composable
-private fun PollingIntervalRow(selected: PollingInterval, onChanged: (PollingInterval) -> Unit) {
+internal fun PollingIntervalRow(selected: PollingInterval, onChanged: (PollingInterval) -> Unit) {
     val options = PollingInterval.entries.filter { it != PollingInterval.Off }
     DropdownSettingRow(
         label = "Check Frequency",
@@ -353,7 +276,7 @@ private fun PollingIntervalRow(selected: PollingInterval, onChanged: (PollingInt
 }
 
 @Composable
-private fun OfflineBanner() {
+internal fun OfflineBanner() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -374,7 +297,7 @@ private fun OfflineBanner() {
 }
 
 @Composable
-private fun OfflineCacheToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+internal fun OfflineCacheToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -395,7 +318,7 @@ private fun OfflineCacheToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit)
 }
 
 @Composable
-private fun CacheSizeLimitRow(
+internal fun CacheSizeLimitRow(
     currentLimitMb: Int,
     currentUsage: String,
     onChanged: (Int) -> Unit,
@@ -440,7 +363,7 @@ private fun CacheSizeLimitRow(
 }
 
 @Composable
-private fun CacheInfoRow(entryCount: Int, formattedSize: String) {
+internal fun CacheInfoRow(entryCount: Int, formattedSize: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -458,7 +381,7 @@ private fun CacheInfoRow(entryCount: Int, formattedSize: String) {
 }
 
 @Composable
-private fun NsfwToggleRow(level: NsfwFilterLevel, onToggle: (NsfwFilterLevel) -> Unit) {
+internal fun NsfwToggleRow(level: NsfwFilterLevel, onToggle: (NsfwFilterLevel) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -484,7 +407,7 @@ private fun NsfwToggleRow(level: NsfwFilterLevel, onToggle: (NsfwFilterLevel) ->
 }
 
 @Composable
-private fun NsfwBlurSection(
+internal fun NsfwBlurSection(
     settings: NsfwBlurSettings,
     onSettingsChanged: (NsfwBlurSettings) -> Unit,
 ) {
@@ -510,7 +433,7 @@ private fun NsfwBlurSection(
 }
 
 @Composable
-private fun BlurSliderRow(
+internal fun BlurSliderRow(
     label: String,
     intensity: Int,
     onChanged: (Int) -> Unit,
@@ -537,7 +460,7 @@ private fun BlurSliderRow(
 }
 
 @Composable
-private fun SortOrderRow(selected: SortOrder, onChanged: (SortOrder) -> Unit) {
+internal fun SortOrderRow(selected: SortOrder, onChanged: (SortOrder) -> Unit) {
     DropdownSettingRow(
         label = "Default Sort",
         value = selected.name,
@@ -547,7 +470,7 @@ private fun SortOrderRow(selected: SortOrder, onChanged: (SortOrder) -> Unit) {
 }
 
 @Composable
-private fun TimePeriodRow(selected: TimePeriod, onChanged: (TimePeriod) -> Unit) {
+internal fun TimePeriodRow(selected: TimePeriod, onChanged: (TimePeriod) -> Unit) {
     DropdownSettingRow(
         label = "Default Period",
         value = selected.name,
@@ -557,7 +480,7 @@ private fun TimePeriodRow(selected: TimePeriod, onChanged: (TimePeriod) -> Unit)
 }
 
 @Composable
-private fun DropdownSettingRow(
+internal fun DropdownSettingRow(
     label: String,
     value: String,
     options: List<String>,
@@ -595,7 +518,7 @@ private fun DropdownSettingRow(
 }
 
 @Composable
-private fun GridColumnsRow(columns: Int, onChanged: (Int) -> Unit) {
+internal fun GridColumnsRow(columns: Int, onChanged: (Int) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -623,7 +546,7 @@ private fun GridColumnsRow(columns: Int, onChanged: (Int) -> Unit) {
 }
 
 @Composable
-private fun PowerUserModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+internal fun PowerUserModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -644,7 +567,7 @@ private fun PowerUserModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
 }
 
 @Composable
-private fun HiddenModelsRow(
+internal fun HiddenModelsRow(
     count: Int,
     models: List<com.riox432.civitdeck.data.local.entity.HiddenModelEntity>,
     onUnhide: (Long) -> Unit,
@@ -657,7 +580,7 @@ private fun HiddenModelsRow(
 }
 
 @Composable
-private fun HiddenModelsDialog(
+internal fun HiddenModelsDialog(
     models: List<com.riox432.civitdeck.data.local.entity.HiddenModelEntity>,
     onUnhide: (Long) -> Unit,
     onDismiss: () -> Unit,
@@ -681,7 +604,7 @@ private fun HiddenModelsDialog(
 }
 
 @Composable
-private fun HiddenModelItem(name: String, onUnhide: () -> Unit) {
+internal fun HiddenModelItem(name: String, onUnhide: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.xs),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -693,7 +616,11 @@ private fun HiddenModelItem(name: String, onUnhide: () -> Unit) {
 }
 
 @Composable
-private fun ExcludedTagsRow(tags: List<String>, onAdd: (String) -> Unit, onRemove: (String) -> Unit) {
+internal fun ExcludedTagsRow(
+    tags: List<String>,
+    onAdd: (String) -> Unit,
+    onRemove: (String) -> Unit,
+) {
     var showDialog by remember { mutableStateOf(false) }
     SettingsClickRow(label = "Excluded Tags", detail = "${tags.size} tags") { showDialog = true }
     if (showDialog) {
@@ -702,7 +629,7 @@ private fun ExcludedTagsRow(tags: List<String>, onAdd: (String) -> Unit, onRemov
 }
 
 @Composable
-private fun ExcludedTagsDialog(
+internal fun ExcludedTagsDialog(
     tags: List<String>,
     onAdd: (String) -> Unit,
     onRemove: (String) -> Unit,
@@ -735,7 +662,7 @@ private fun ExcludedTagsDialog(
 }
 
 @Composable
-private fun ExcludedTagInput(value: String, onValueChange: (String) -> Unit, onAdd: () -> Unit) {
+internal fun ExcludedTagInput(value: String, onValueChange: (String) -> Unit, onAdd: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -753,7 +680,7 @@ private fun ExcludedTagInput(value: String, onValueChange: (String) -> Unit, onA
 }
 
 @Composable
-private fun ExcludedTagItem(tag: String, onRemove: () -> Unit) {
+internal fun ExcludedTagItem(tag: String, onRemove: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.xs),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -765,7 +692,7 @@ private fun ExcludedTagItem(tag: String, onRemove: () -> Unit) {
 }
 
 @Composable
-private fun ClearActionRow(label: String, onConfirm: () -> Unit) {
+internal fun ClearActionRow(label: String, onConfirm: () -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
     SettingsClickRow(label = label) { showDialog = true }
     if (showDialog) {
@@ -787,7 +714,7 @@ private fun ClearActionRow(label: String, onConfirm: () -> Unit) {
 }
 
 @Composable
-private fun SettingsClickRow(label: String, detail: String? = null, onClick: () -> Unit) {
+internal fun SettingsClickRow(label: String, detail: String? = null, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -804,7 +731,7 @@ private fun SettingsClickRow(label: String, detail: String? = null, onClick: () 
 }
 
 @Composable
-private fun InfoRow(label: String, value: String) {
+internal fun InfoRow(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -818,7 +745,7 @@ private fun InfoRow(label: String, value: String) {
 }
 
 @Composable
-private fun AccountSection(
+internal fun AccountSection(
     apiKey: String?,
     connectedUsername: String?,
     isValidating: Boolean,
@@ -834,7 +761,7 @@ private fun AccountSection(
 }
 
 @Composable
-private fun ConnectedAccountRow(username: String, onClear: () -> Unit) {
+internal fun ConnectedAccountRow(username: String, onClear: () -> Unit) {
     var showConfirmation by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
@@ -847,7 +774,7 @@ private fun ConnectedAccountRow(username: String, onClear: () -> Unit) {
             Text(
                 "Connected as",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(username, style = MaterialTheme.typography.bodyLarge)
         }
@@ -874,7 +801,7 @@ private fun ConnectedAccountRow(username: String, onClear: () -> Unit) {
 }
 
 @Composable
-private fun ApiKeyInputRow(
+internal fun ApiKeyInputRow(
     isValidating: Boolean,
     error: String?,
     onValidateAndSave: (String) -> Unit,
@@ -919,7 +846,7 @@ private fun ApiKeyInputRow(
 }
 
 @Composable
-private fun NavigationRow(label: String, onClick: () -> Unit) {
+internal fun NavigationRow(label: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
