@@ -73,7 +73,7 @@ struct SettingsScreen: View {
             get: { viewModel.accentColor },
             set: { viewModel.onAccentColorChanged($0) }
         )) {
-            ForEach(AccentColor.entries, id: \.self) { color in
+            ForEach(AccentColor.allCases, id: \.self) { color in
                 Text(color.displayName).tag(color)
             }
         }
