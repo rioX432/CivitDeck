@@ -78,6 +78,10 @@
 		CD00SS052E208001000CD001 /* NotificationsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS042E208001000CD001 /* NotificationsSettingsView.swift */; };
 		CD00SS072E208001000CD001 /* StorageSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS062E208001000CD001 /* StorageSettingsView.swift */; };
 		CD00SS092E208001000CD001 /* AdvancedSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS082E208001000CD001 /* AdvancedSettingsView.swift */; };
+		CDSP01012E900001000CD001 /* SpotlightIndexManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSP01002E900001000CD001 /* SpotlightIndexManager.swift */; };
+		CDSP02012E900002000CD001 /* SpotlightItemBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSP02002E900002000CD001 /* SpotlightItemBuilder.swift */; };
+		CDDL01012E900003000CD001 /* DeepLinkHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDL01002E900003000CD001 /* DeepLinkHandler.swift */; };
+		CDNR01012E900004000CD001 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDNR01002E900004000CD001 /* NavigationRouter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -155,6 +159,10 @@
 		CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUISettingsViewModel.swift; sourceTree = "<group>"; };
 		CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIGenerationView.swift; sourceTree = "<group>"; };
 		CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIGenerationViewModel.swift; sourceTree = "<group>"; };
+		CDSP01002E900001000CD001 /* SpotlightIndexManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightIndexManager.swift; sourceTree = "<group>"; };
+		CDSP02002E900002000CD001 /* SpotlightItemBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightItemBuilder.swift; sourceTree = "<group>"; };
+		CDDL01002E900003000CD001 /* DeepLinkHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkHandler.swift; sourceTree = "<group>"; };
+		CDNR01002E900004000CD001 /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -210,9 +218,29 @@
 				CD0001002D000001000CD001 /* ContentView.swift */,
 				CD0006082D000006000CD001 /* DesignSystem */,
 				CD0003002D000003000CD001 /* Features */,
+				CDSP0A002E900001000CD001 /* Services */,
+				CDDL0A002E900003000CD001 /* Utils */,
 				058557D7273AAEEB004C7B11 /* Preview Content */,
 			);
 			path = iosApp;
+			sourceTree = "<group>";
+		};
+		CDSP0A002E900001000CD001 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				CDSP01002E900001000CD001 /* SpotlightIndexManager.swift */,
+				CDSP02002E900002000CD001 /* SpotlightItemBuilder.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		CDDL0A002E900003000CD001 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				CDDL01002E900003000CD001 /* DeepLinkHandler.swift */,
+				CDNR01002E900004000CD001 /* NavigationRouter.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 		AB1DB47929225F7C00F7AF9C /* Configuration */ = {
@@ -582,6 +610,10 @@
 				CD00SS052E208001000CD001 /* NotificationsSettingsView.swift in Sources */,
 				CD00SS072E208001000CD001 /* StorageSettingsView.swift in Sources */,
 				CD00SS092E208001000CD001 /* AdvancedSettingsView.swift in Sources */,
+				CDSP01012E900001000CD001 /* SpotlightIndexManager.swift in Sources */,
+				CDSP02012E900002000CD001 /* SpotlightItemBuilder.swift in Sources */,
+				CDDL01012E900003000CD001 /* DeepLinkHandler.swift in Sources */,
+				CDNR01012E900004000CD001 /* NavigationRouter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -9,6 +9,7 @@ struct CompareDestination: Hashable {
 struct ModelSearchScreen: View {
     @StateObject private var viewModel = ModelSearchViewModel()
     @EnvironmentObject private var comparisonState: ComparisonState
+    @EnvironmentObject private var router: NavigationRouter
     @Environment(\.horizontalSizeClass) private var sizeClass
     @FocusState private var isSearchFocused: Bool
     @State private var showHistory: Bool = false
@@ -95,6 +96,11 @@ struct ModelSearchScreen: View {
             .task { await viewModel.observeGridColumns() }
             .task { await viewModel.observeOwnedHashes() }
             .task { await viewModel.observeFavorites() }
+            .onChange(of: router.pendingDeepLink) { link in
+                guard case .modelDetail(let id) = link else { return }
+                navigationPath.append(id)
+                _ = router.consume()
+            }
         }
     }
 
@@ -478,23 +484,5 @@ extension ModelSearchScreen { // MARK: - Extracted Subviews
     }
     var recommendationSections: some View {
         RecommendationSectionsView(recommendations: viewModel.recommendations)
-    }
-}
-private struct ChipButton: View {
-    let label: String
-    let isSelected: Bool
-    let action: () -> Void
-    var body: some View {
-        Button(action: { HapticFeedback.selection.trigger(); action() }) {
-            Text(label)
-                .font(.civitLabelMedium)
-                .fontWeight(isSelected ? .semibold : .regular)
-                .padding(.horizontal, Spacing.md)
-                .padding(.vertical, 6)
-                .background(isSelected ? Color.civitPrimary.opacity(0.2) : Color.civitSurfaceVariant)
-                .foregroundColor(isSelected ? .civitPrimary : .civitOnSurface)
-                .clipShape(Capsule())
-                .animation(MotionAnimation.spring, value: isSelected)
-        }
     }
 }

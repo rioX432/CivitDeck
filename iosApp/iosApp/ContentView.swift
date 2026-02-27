@@ -5,6 +5,7 @@ struct ContentView: View {
     @State private var selectedTab: SidebarTab? = .search
     @StateObject private var comparisonState = ComparisonState()
     @StateObject private var tutorialVm = GestureTutorialViewModel()
+    @EnvironmentObject private var router: NavigationRouter
 
     var body: some View {
         Group {
@@ -17,29 +18,47 @@ struct ContentView: View {
             }
         }
         .environmentObject(comparisonState)
+        .onChange(of: router.pendingDeepLink) { link in
+            guard let link else { return }
+            switch link {
+            case .favorites:
+                selectedTab = .collections
+                _ = router.consume()
+            case .trending, .search:
+                selectedTab = .search
+                _ = router.consume()
+            case .modelDetail:
+                selectedTab = .search
+                // DeepLink is consumed by ModelSearchScreen
+            }
+        }
     }
 
     private var tabLayout: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             ModelSearchScreen()
                 .tabItem {
                     Label("Search", systemImage: "magnifyingglass")
                 }
+                .tag(SidebarTab.search as SidebarTab?)
 
             CollectionsScreen()
                 .tabItem {
                     Label("Collections", systemImage: "folder")
                 }
+                .tag(SidebarTab.collections as SidebarTab?)
 
             SavedPromptsScreen()
                 .tabItem {
                     Label("Prompts", systemImage: "bookmark")
                 }
+                .tag(SidebarTab.prompts as SidebarTab?)
 
             SettingsScreen()
                 .tabItem {
                     Label("Settings", systemImage: "gearshape")
                 }
+                .tag(SidebarTab.settings as SidebarTab?)
         }
     }
 
@@ -55,13 +74,13 @@ struct ContentView: View {
         } detail: {
             TabView(selection: $selectedTab) {
                 ModelSearchScreen()
-                    .tag(SidebarTab.search)
+                    .tag(SidebarTab.search as SidebarTab?)
                 CollectionsScreen()
-                    .tag(SidebarTab.collections)
+                    .tag(SidebarTab.collections as SidebarTab?)
                 SavedPromptsScreen()
-                    .tag(SidebarTab.prompts)
+                    .tag(SidebarTab.prompts as SidebarTab?)
                 SettingsScreen()
-                    .tag(SidebarTab.settings)
+                    .tag(SidebarTab.settings as SidebarTab?)
             }
             .toolbar(.hidden, for: .tabBar)
         }
