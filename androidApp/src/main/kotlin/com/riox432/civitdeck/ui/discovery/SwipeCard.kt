@@ -14,6 +14,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
@@ -34,25 +35,26 @@ fun SwipeCard(
     content: @Composable () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-    val swipeThresholdPx = screenWidth.value * SWIPE_THRESHOLD_FRACTION
-    val upThresholdPx = screenHeight.value * UP_SWIPE_THRESHOLD_FRACTION
+    val density = LocalDensity.current
+    val screenWidthPx = with(density) { LocalConfiguration.current.screenWidthDp.dp.toPx() }
+    val screenHeightPx = with(density) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
+    val swipeThresholdPx = screenWidthPx * SWIPE_THRESHOLD_FRACTION
+    val upThresholdPx = screenHeightPx * UP_SWIPE_THRESHOLD_FRACTION
     val offset = remember { Animatable(Offset.Zero, Offset.VectorConverter) }
 
     Box(
         modifier = modifier
             .offset { IntOffset(offset.value.x.roundToInt(), offset.value.y.roundToInt()) }
             .graphicsLayer {
-                rotationZ = (offset.value.x / screenWidth.value) * MAX_ROTATION_DEGREES
+                rotationZ = (offset.value.x / screenWidthPx) * MAX_ROTATION_DEGREES
             }
             .swipeGesture(
                 scope,
                 offset,
                 swipeThresholdPx,
                 upThresholdPx,
-                screenWidth.value,
-                screenHeight.value,
+                screenWidthPx,
+                screenHeightPx,
                 onSwiped
             ),
     ) {

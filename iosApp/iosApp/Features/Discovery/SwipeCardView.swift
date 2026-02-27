@@ -18,6 +18,7 @@ struct SwipeCardView: View {
 
     @State private var offset: CGSize = .zero
     @State private var isDragging = false
+    @State private var isDismissing = false
 
     private var swipeThreshold: CGFloat { screenWidth * swipeThresholdFraction }
 
@@ -36,10 +37,12 @@ struct SwipeCardView: View {
     private var dragGesture: some Gesture {
         DragGesture()
             .onChanged { value in
+                guard !isDismissing else { return }
                 isDragging = true
                 offset = value.translation
             }
             .onEnded { value in
+                guard !isDismissing else { return }
                 isDragging = false
                 let translation = value.translation
                 let upThreshold = screenWidth * upSwipeThresholdFraction
@@ -57,6 +60,9 @@ struct SwipeCardView: View {
     }
 
     private func dismissCard(direction: SwipeDirection) {
+        guard !isDismissing else { return }
+        isDismissing = true
+
         let targetOffset: CGSize
         switch direction {
         case .left:

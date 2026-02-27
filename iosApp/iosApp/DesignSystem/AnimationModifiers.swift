@@ -77,11 +77,9 @@ struct SpringPressModifier: ViewModifier {
             content
                 .scaleEffect(isPressed ? 0.96 : 1.0)
                 .animation(MotionAnimation.springBouncy, value: isPressed)
-                .simultaneousGesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { _ in isPressed = true }
-                        .onEnded { _ in isPressed = false }
-                )
+                .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
+                    isPressed = pressing
+                }, perform: {})
         }
     }
 }

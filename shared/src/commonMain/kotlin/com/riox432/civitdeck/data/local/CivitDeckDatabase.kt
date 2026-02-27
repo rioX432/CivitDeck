@@ -382,6 +382,16 @@ val MIGRATION_16_17 = object : Migration(16, 17) {
     }
 }
 
+private val defaultCollectionCallback = object : RoomDatabase.Callback() {
+    override fun onOpen(connection: SQLiteConnection) {
+        super.onOpen(connection)
+        connection.execSQL(
+            "INSERT OR IGNORE INTO `collections` (`id`, `name`, `isDefault`, `createdAt`, `updatedAt`) " +
+                "VALUES (1, 'Favorites', 1, 0, 0)",
+        )
+    }
+}
+
 fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeckDatabase {
     return builder
         .addMigrations(
@@ -403,6 +413,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_16_17,
             MIGRATION_17_18,
         )
+        .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()

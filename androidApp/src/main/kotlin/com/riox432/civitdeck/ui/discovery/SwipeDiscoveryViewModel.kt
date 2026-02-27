@@ -32,6 +32,7 @@ class SwipeDiscoveryViewModel(
     val state: StateFlow<SwipeDiscoveryState> = _state.asStateFlow()
 
     private val prefetchThreshold = 3
+    private val dismissedIds = mutableSetOf<Long>()
 
     init {
         loadModels()
@@ -43,7 +44,12 @@ class SwipeDiscoveryViewModel(
             _state.update { it.copy(isLoading = true, error = null) }
             try {
                 val models = getDiscoveryModels()
-                _state.update { it.copy(cards = it.cards + models, isLoading = false) }
+                _state.update { current ->
+                    val existingIds = current.cards.map { it.id }.toSet()
+                    val allSeenIds = existingIds + dismissedIds
+                    val newModels = models.filterNot { it.id in allSeenIds }
+                    current.copy(cards = current.cards + newModels, isLoading = false)
+                }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = e.message) }
             }
@@ -78,6 +84,7 @@ class SwipeDiscoveryViewModel(
     }
 
     private fun removeTopCard(model: Model, wasFavorited: Boolean) {
+        dismissedIds.add(model.id)
         _state.update {
             it.copy(
                 cards = it.cards.filterNot { card -> card.id == model.id },

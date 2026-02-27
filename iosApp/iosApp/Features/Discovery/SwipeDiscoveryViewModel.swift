@@ -19,6 +19,7 @@ final class SwipeDiscoveryViewModel: ObservableObject {
     private let getDiscoveryModels: GetDiscoveryModelsUseCase
     private let toggleFavorite: ToggleFavoriteUseCase
     private let prefetchThreshold = 3
+    private var dismissedIds: Set<Int64> = []
 
     init() {
         self.getDiscoveryModels = KoinHelper.shared.getDiscoveryModelsUseCase()
@@ -37,7 +38,10 @@ final class SwipeDiscoveryViewModel: ObservableObject {
                     cursor: nil,
                     limit: 20
                 )
-                self.cards.append(contentsOf: models)
+                let existingIds = Set(self.cards.map { $0.id })
+                let allSeenIds = existingIds.union(self.dismissedIds)
+                let newModels = models.filter { !allSeenIds.contains($0.id) }
+                self.cards.append(contentsOf: newModels)
                 self.isLoading = false
             } catch {
                 logger.error("Failed to load discovery models: \(error)")
@@ -85,6 +89,7 @@ final class SwipeDiscoveryViewModel: ObservableObject {
 
     private func removeTopCard(_ model: Model, wasFavorited: Bool) {
         cards.removeAll { $0.id == model.id }
+        dismissedIds.insert(model.id)
         lastDismissed = DismissedCard(model: model, wasFavorited: wasFavorited)
 
         if cards.count <= prefetchThreshold {

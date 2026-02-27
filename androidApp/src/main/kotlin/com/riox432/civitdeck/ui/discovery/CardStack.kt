@@ -11,6 +11,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -50,15 +51,17 @@ fun CardStack(
             val offsetY = cardIndex * CARD_OFFSET_STEP
 
             if (cardIndex == 0) {
-                SwipeCard(
-                    onSwiped = { direction -> onSwiped(model, direction) },
-                    modifier = Modifier.graphicsLayer {
-                        translationY = offsetY
-                        scaleX = scale
-                        scaleY = scale
-                    },
-                ) {
-                    DiscoveryCard(model = model)
+                key(model.id) {
+                    SwipeCard(
+                        onSwiped = { direction -> onSwiped(model, direction) },
+                        modifier = Modifier.graphicsLayer {
+                            translationY = offsetY
+                            scaleX = scale
+                            scaleY = scale
+                        },
+                    ) {
+                        DiscoveryCard(model = model)
+                    }
                 }
             } else {
                 Box(

@@ -22,7 +22,7 @@ struct SwipeableModelCardView: View {
 
             ModelCardView(model: model, isOwned: isOwned)
                 .offset(x: dragOffset)
-                .gesture(swipeGesture)
+                .simultaneousGesture(swipeGesture)
         }
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.card))
     }
@@ -57,6 +57,9 @@ struct SwipeableModelCardView: View {
     private var swipeGesture: some Gesture {
         DragGesture(minimumDistance: 20, coordinateSpace: .local)
             .onChanged { value in
+                // Only engage if primarily horizontal (left swipe)
+                guard abs(value.translation.width) > abs(value.translation.height) else { return }
+
                 let translation = value.translation.width
                 let newOffset = min(0, max(-actionAreaWidth, translation))
                 dragOffset = newOffset
@@ -74,7 +77,8 @@ struct SwipeableModelCardView: View {
             .onEnded { value in
                 let thresholdPx = actionAreaWidth * swipeThreshold
                 withAnimation(MotionAnimation.spring) {
-                    if -value.translation.width >= thresholdPx {
+                    if abs(value.translation.width) > abs(value.translation.height)
+                        && -value.translation.width >= thresholdPx {
                         dragOffset = -actionAreaWidth
                     } else {
                         dragOffset = 0
