@@ -395,21 +395,7 @@ struct ModelSearchScreen: View {
     }
 
     private func chipButton(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: { HapticFeedback.selection.trigger(); action() }) {
-            Text(label)
-                .font(.civitLabelMedium)
-                .fontWeight(isSelected ? .semibold : .regular)
-                .padding(.horizontal, Spacing.md)
-                .padding(.vertical, 6)
-                .background(
-                    isSelected
-                        ? Color.civitPrimary.opacity(0.2)
-                        : Color.civitSurfaceVariant
-                )
-                .foregroundColor(isSelected ? .civitPrimary : .civitOnSurface)
-                .clipShape(Capsule())
-                .animation(MotionAnimation.spring, value: isSelected)
-        }
+        ChipButton(label: label, isSelected: isSelected, action: action)
     }
 
     private func errorView(message: String) -> some View {
@@ -435,9 +421,7 @@ struct ModelSearchScreen: View {
         }
     }
 }
-
 // MARK: - Filter FAB
-
 extension ModelSearchScreen {
     var filterFab: some View {
         Button {
@@ -451,7 +435,6 @@ extension ModelSearchScreen {
                     .background(Color.civitSurfaceContainerHigh)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
-
                 if activeFilterCount > 0 {
                     Text("\(activeFilterCount)")
                         .font(.system(size: 11, weight: .bold))
@@ -468,9 +451,7 @@ extension ModelSearchScreen {
         .animation(MotionAnimation.fast, value: headerVisible)
     }
 }
-
 // MARK: - Extracted Subviews
-
 extension ModelSearchScreen {
     var includedTagsSection: some View {
         TagFilterSection(
@@ -483,7 +464,6 @@ extension ModelSearchScreen {
             onRemove: { viewModel.removeIncludedTag($0) }
         )
     }
-
     var excludedTagsSection: some View {
         TagFilterSection(
             title: nil,
@@ -495,8 +475,25 @@ extension ModelSearchScreen {
             onRemove: { viewModel.removeExcludedTag($0) }
         )
     }
-
     var recommendationSections: some View {
         RecommendationSectionsView(recommendations: viewModel.recommendations)
+    }
+}
+private struct ChipButton: View {
+    let label: String
+    let isSelected: Bool
+    let action: () -> Void
+    var body: some View {
+        Button(action: { HapticFeedback.selection.trigger(); action() }) {
+            Text(label)
+                .font(.civitLabelMedium)
+                .fontWeight(isSelected ? .semibold : .regular)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, 6)
+                .background(isSelected ? Color.civitPrimary.opacity(0.2) : Color.civitSurfaceVariant)
+                .foregroundColor(isSelected ? .civitPrimary : .civitOnSurface)
+                .clipShape(Capsule())
+                .animation(MotionAnimation.spring, value: isSelected)
+        }
     }
 }
