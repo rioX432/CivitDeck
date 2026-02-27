@@ -56,6 +56,11 @@ ttCD00TM012D7CC174000CD001 /* ThemeManager.swift in Sources */ = {isa = PBXBuild
 		CD00VD012D4CC001000CD001 /* VersionDetailSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00VD002D4CC001000CD001 /* VersionDetailSection.swift */; };
 		CD00FB012D5CC001000CD001 /* ModelFileBrowserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00FB002D5CC001000CD001 /* ModelFileBrowserViewModel.swift */; };
 		CD00FB032D5CC001000CD001 /* ModelFileBrowserScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00FB022D5CC001000CD001 /* ModelFileBrowserScreen.swift */; };
+		CD00DS012D7CC001000CD001 /* SwipeDiscoveryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DS002D7CC001000CD001 /* SwipeDiscoveryViewModel.swift */; };
+		CD00DS032D7CC001000CD001 /* SwipeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DS022D7CC001000CD001 /* SwipeCardView.swift */; };
+		CD00DS052D7CC001000CD001 /* DiscoveryCardContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DS042D7CC001000CD001 /* DiscoveryCardContent.swift */; };
+		CD00DS072D7CC001000CD001 /* SwipeDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DS062D7CC001000CD001 /* SwipeDiscoveryView.swift */; };
+		CD00DS092D7CC001000CD001 /* DiscoverFab.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DS082D7CC001000CD001 /* DiscoverFab.swift */; };
 		CD00HF012D6CC001000CD001 /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00HF002D6CC001000CD001 /* HapticFeedback.swift */; };
 /* End PBXBuildFile section */
 
@@ -112,6 +117,11 @@ ttCD00TM002D7CC174000CD001 /* ThemeManager.swift */ = {isa = PBXFileReference; l
 		CD00VD002D4CC001000CD001 /* VersionDetailSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionDetailSection.swift; sourceTree = "<group>"; };
 		CD00FB002D5CC001000CD001 /* ModelFileBrowserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelFileBrowserViewModel.swift; sourceTree = "<group>"; };
 		CD00FB022D5CC001000CD001 /* ModelFileBrowserScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelFileBrowserScreen.swift; sourceTree = "<group>"; };
+		CD00DS002D7CC001000CD001 /* SwipeDiscoveryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeDiscoveryViewModel.swift; sourceTree = "<group>"; };
+		CD00DS022D7CC001000CD001 /* SwipeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeCardView.swift; sourceTree = "<group>"; };
+		CD00DS042D7CC001000CD001 /* DiscoveryCardContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryCardContent.swift; sourceTree = "<group>"; };
+		CD00DS062D7CC001000CD001 /* SwipeDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeDiscoveryView.swift; sourceTree = "<group>"; };
+		CD00DS082D7CC001000CD001 /* DiscoverFab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverFab.swift; sourceTree = "<group>"; };
 		CD00HF002D6CC001000CD001 /* HapticFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedback.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -207,6 +217,7 @@ ttttCD00TM002D7CC174000CD001 /* ThemeManager.swift */,
 				CD00CE062D2CC001000CD001 /* Compare */,
 				CD0008042D000008000CD001 /* Creator */,
 				CD0004042D000004000CD001 /* Detail */,
+				CD00DS0A2D7CC001000CD001 /* Discovery */,
 				CD0005082D000005000CD001 /* Gallery */,
 				CD00FB042D5CC001000CD001 /* ModelFileBrowser */,
 				CD0009042D000009000CD001 /* Prompts */,
@@ -311,6 +322,18 @@ ttttCD00TM002D7CC174000CD001 /* ThemeManager.swift */,
 				CD00FB022D5CC001000CD001 /* ModelFileBrowserScreen.swift */,
 			);
 			path = ModelFileBrowser;
+			sourceTree = "<group>";
+		};
+		CD00DS0A2D7CC001000CD001 /* Discovery */ = {
+			isa = PBXGroup;
+			children = (
+				CD00DS002D7CC001000CD001 /* SwipeDiscoveryViewModel.swift */,
+				CD00DS022D7CC001000CD001 /* SwipeCardView.swift */,
+				CD00DS042D7CC001000CD001 /* DiscoveryCardContent.swift */,
+				CD00DS062D7CC001000CD001 /* SwipeDiscoveryView.swift */,
+				CD00DS082D7CC001000CD001 /* DiscoverFab.swift */,
+			);
+			path = Discovery;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -473,6 +496,11 @@ ttttCD00TM012D7CC174000CD001 /* ThemeManager.swift in Sources */,
 				CD00VD012D4CC001000CD001 /* VersionDetailSection.swift in Sources */,
 				CD00FB012D5CC001000CD001 /* ModelFileBrowserViewModel.swift in Sources */,
 				CD00FB032D5CC001000CD001 /* ModelFileBrowserScreen.swift in Sources */,
+				CD00DS012D7CC001000CD001 /* SwipeDiscoveryViewModel.swift in Sources */,
+				CD00DS032D7CC001000CD001 /* SwipeCardView.swift in Sources */,
+				CD00DS052D7CC001000CD001 /* DiscoveryCardContent.swift in Sources */,
+				CD00DS072D7CC001000CD001 /* SwipeDiscoveryView.swift in Sources */,
+				CD00DS092D7CC001000CD001 /* DiscoverFab.swift in Sources */,
 				CD00HF012D6CC001000CD001 /* HapticFeedback.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
