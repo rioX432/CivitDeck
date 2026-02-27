@@ -60,6 +60,7 @@
 		CD00GT032D6CC001000CD001 /* GestureTutorialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00GT022D6CC001000CD001 /* GestureTutorialView.swift */; };
 		CD00GT052D6CC001000CD001 /* TutorialStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00GT042D6CC001000CD001 /* TutorialStep.swift */; };
 		CD00GT072D6CC001000CD001 /* GestureAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00GT062D6CC001000CD001 /* GestureAnimationView.swift */; };
+		CD00HF012D6CC001000CD001 /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00HF002D6CC001000CD001 /* HapticFeedback.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -118,6 +119,7 @@
 		CD00GT022D6CC001000CD001 /* GestureTutorialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GestureTutorialView.swift; sourceTree = "<group>"; };
 		CD00GT042D6CC001000CD001 /* TutorialStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialStep.swift; sourceTree = "<group>"; };
 		CD00GT062D6CC001000CD001 /* GestureAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GestureAnimationView.swift; sourceTree = "<group>"; };
+		CD00HF002D6CC001000CD001 /* HapticFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedback.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -198,6 +200,7 @@
 				CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */,
 				CD17300B2D173001000CD001 /* NsfwBlurView.swift */,
 				CD00AD002D1CC001000CD001 /* AdaptiveGrid.swift */,
+				CD00HF002D6CC001000CD001 /* HapticFeedback.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -491,6 +494,7 @@
 				CD00GT032D6CC001000CD001 /* GestureTutorialView.swift in Sources */,
 				CD00GT052D6CC001000CD001 /* TutorialStep.swift in Sources */,
 				CD00GT072D6CC001000CD001 /* GestureAnimationView.swift in Sources */,
+				CD00HF012D6CC001000CD001 /* HapticFeedback.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
