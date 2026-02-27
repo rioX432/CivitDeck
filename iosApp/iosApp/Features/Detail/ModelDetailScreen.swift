@@ -116,7 +116,13 @@ struct ModelDetailScreen: View {
             VStack(spacing: Spacing.lg) {
                 imageCarousel(model: model)
                 modelHeader(model: model)
-                statsRow(model: model)
+                ModelStatsRow(
+                    downloadCount: model.stats.downloadCount,
+                    favoriteCount: model.stats.favoriteCount,
+                    rating: model.stats.rating,
+                    commentCount: model.stats.commentCount
+                )
+                .padding(.horizontal, Spacing.lg)
                 if let version = viewModel.selectedVersion {
                     imageActionsRow(modelVersionId: version.id)
                 }
@@ -210,43 +216,6 @@ struct ModelDetailScreen: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, Spacing.lg)
-    }
-
-    // MARK: - Stats Row
-
-    private func statsRow(model: Model) -> some View {
-        HStack {
-            statColumn(
-                value: FormatUtils.shared.formatCount(count: model.stats.downloadCount),
-                label: "Downloads"
-            )
-            Spacer()
-            statColumn(
-                value: FormatUtils.shared.formatCount(count: model.stats.favoriteCount),
-                label: "Favorites"
-            )
-            Spacer()
-            statColumn(
-                value: FormatUtils.shared.formatRating(rating: model.stats.rating),
-                label: "Rating"
-            )
-            Spacer()
-            statColumn(
-                value: FormatUtils.shared.formatCount(count: model.stats.commentCount),
-                label: "Comments"
-            )
-        }
-        .padding(.horizontal, Spacing.lg)
-    }
-
-    private func statColumn(value: String, label: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.civitTitleMedium)
-            Text(label)
-                .font(.civitLabelSmall)
-                .foregroundColor(.civitOnSurfaceVariant)
-        }
     }
 
     // MARK: - Image Actions Row

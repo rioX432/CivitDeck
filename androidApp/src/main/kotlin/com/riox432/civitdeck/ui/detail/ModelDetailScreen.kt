@@ -87,6 +87,7 @@ import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
+import com.riox432.civitdeck.ui.components.ModelStatsRow
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
@@ -481,7 +482,13 @@ private fun ModelDetailContentBody(
 
         // Stats row
         item {
-            StatsRow(model = model)
+            ModelStatsRow(
+                downloadCount = model.stats.downloadCount,
+                favoriteCount = model.stats.favoriteCount,
+                rating = model.stats.rating,
+                commentCount = model.stats.commentCount,
+                modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+            )
         }
 
         // View Images + Grid button
@@ -700,47 +707,6 @@ private fun ModelHeader(model: Model, onCreatorClick: (String) -> Unit) {
     }
 }
 
-@Composable
-private fun StatsRow(model: Model) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-    ) {
-        StatColumn(
-            value = FormatUtils.formatCount(model.stats.downloadCount),
-            label = "Downloads",
-        )
-        StatColumn(
-            value = FormatUtils.formatCount(model.stats.favoriteCount),
-            label = "Favorites",
-        )
-        StatColumn(
-            value = FormatUtils.formatRating(model.stats.rating),
-            label = "Rating",
-        )
-        StatColumn(
-            value = FormatUtils.formatCount(model.stats.commentCount),
-            label = "Comments",
-        )
-    }
-}
-
-@Composable
-private fun StatColumn(value: String, label: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleMedium,
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
