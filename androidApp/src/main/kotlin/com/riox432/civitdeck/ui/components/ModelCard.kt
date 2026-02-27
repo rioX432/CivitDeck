@@ -2,6 +2,7 @@ package com.riox432.civitdeck.ui.components
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,11 +26,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -55,8 +59,22 @@ fun ModelCard(
     modifier: Modifier = Modifier,
     sharedElementSuffix: String = "",
     isOwned: Boolean = false,
+    parallaxOffset: Float = 0f,
+    reducedMotion: Boolean = false,
 ) {
-    val cardModifier = modifier.fillMaxWidth()
+    var pressed by remember { mutableStateOf(false) }
+    val cardModifier = modifier
+        .fillMaxWidth()
+        .springScale(pressed = pressed, reducedMotion = reducedMotion)
+        .pointerInput(Unit) {
+            detectTapGestures(
+                onPress = {
+                    pressed = true
+                    tryAwaitRelease()
+                    pressed = false
+                },
+            )
+        }
     val shape = RoundedCornerShape(CornerRadius.card)
     val elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     val colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -67,20 +85,26 @@ fun ModelCard(
             shape = shape,
             elevation = elevation,
             colors = colors,
-        ) { ModelCardContent(model, sharedElementSuffix, isOwned) }
+        ) { ModelCardContent(model, sharedElementSuffix, isOwned, parallaxOffset, reducedMotion) }
     } else {
         Card(
             modifier = cardModifier,
             shape = shape,
             elevation = elevation,
             colors = colors,
-        ) { ModelCardContent(model, sharedElementSuffix, isOwned) }
+        ) { ModelCardContent(model, sharedElementSuffix, isOwned, parallaxOffset, reducedMotion) }
     }
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun ModelCardContent(model: Model, sharedElementSuffix: String, isOwned: Boolean = false) {
+private fun ModelCardContent(
+    model: Model,
+    sharedElementSuffix: String,
+    isOwned: Boolean = false,
+    parallaxOffset: Float = 0f,
+    reducedMotion: Boolean = false,
+) {
     Column {
         val imageUrls = model.modelVersions
             .firstOrNull()?.images?.map { it.thumbnailUrl() } ?: emptyList()
@@ -93,6 +117,8 @@ private fun ModelCardContent(model: Model, sharedElementSuffix: String, isOwned:
                 modelId = model.id,
                 contentDescription = model.name,
                 sharedElementSuffix = sharedElementSuffix,
+                parallaxOffset = parallaxOffset,
+                reducedMotion = reducedMotion,
                 onError = {
                     if (currentImageIndex + 1 < imageUrls.size) {
                         currentImageIndex++
@@ -118,27 +144,29 @@ private fun ModelCardThumbnail(
     modelId: Long,
     contentDescription: String,
     sharedElementSuffix: String = "",
+    parallaxOffset: Float = 0f,
+    reducedMotion: Boolean = false,
     onError: () -> Unit = {},
 ) {
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedContentScope = LocalNavAnimatedContentScope.current
 
+    val baseModifier = Modifier
+        .fillMaxWidth()
+        .aspectRatio(1f)
+        .clipToBounds()
+
     val imageModifier = if (sharedTransitionScope != null) {
         with(sharedTransitionScope) {
-            Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-                .sharedElement(
-                    rememberSharedContentState(
-                        key = SharedElementKeys.modelThumbnail(modelId, sharedElementSuffix),
-                    ),
-                    animatedVisibilityScope = animatedContentScope,
-                )
+            baseModifier.sharedElement(
+                rememberSharedContentState(
+                    key = SharedElementKeys.modelThumbnail(modelId, sharedElementSuffix),
+                ),
+                animatedVisibilityScope = animatedContentScope,
+            )
         }
     } else {
-        Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
+        baseModifier
     }
 
     SubcomposeAsyncImage(
@@ -150,7 +178,10 @@ private fun ModelCardThumbnail(
             .build(),
         contentDescription = contentDescription,
         contentScale = ContentScale.Crop,
-        modifier = imageModifier,
+        modifier = imageModifier.parallaxEffect(
+            scrollOffset = parallaxOffset,
+            reducedMotion = reducedMotion,
+        ),
         loading = {
             Box(
                 modifier = Modifier

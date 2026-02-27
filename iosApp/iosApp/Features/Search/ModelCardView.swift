@@ -4,6 +4,7 @@ import Shared
 struct ModelCardView: View {
     let model: Model
     var isOwned: Bool = false
+    var parallaxOffset: CGFloat = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -35,6 +36,7 @@ struct ModelCardView: View {
         .background(Color.civitSurface)
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.card))
         .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .springPress()
     }
 
     private var thumbnailImage: some View {
@@ -51,6 +53,7 @@ struct ModelCardView: View {
                                 image
                                     .resizable()
                                     .scaledToFill()
+                                    .parallaxEffect(offset: parallaxOffset)
                                     .transition(.opacity)
                             case .failure:
                                 Image(systemName: "photo")

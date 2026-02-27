@@ -113,8 +113,11 @@ import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.adaptive.isExpandedWidth
+import com.riox432.civitdeck.ui.components.LaunchStaggerAnimation
 import com.riox432.civitdeck.ui.components.ModelCard
 import com.riox432.civitdeck.ui.components.SwipeableModelCard
+import com.riox432.civitdeck.ui.components.isReducedMotionEnabled
+import com.riox432.civitdeck.ui.components.rememberGridItemScrollOffset
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
@@ -1078,6 +1081,7 @@ private fun ModelGrid(
     onToggleFavorite: (Model) -> Unit = {},
 ) {
     val isAppendLoading = lazyPagingItems.loadState.append is LoadState.Loading
+    val reducedMotion = isReducedMotionEnabled()
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(gridColumns),
@@ -1111,6 +1115,11 @@ private fun ModelGrid(
             val thumbnailUrl = model.modelVersions
                 .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
             val isOwned = ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
+
+            @Suppress("UnusedPrivateProperty")
+            val parallaxOffset = rememberGridItemScrollOffset(gridState, index)
+            val staggerAnimatable = remember { Animatable(0f) }
+            LaunchStaggerAnimation(index = index, animatable = staggerAnimatable, reducedMotion = reducedMotion)
             SwipeableModelCard(
                 model = model,
                 isFavorite = model.id in favoriteIds,

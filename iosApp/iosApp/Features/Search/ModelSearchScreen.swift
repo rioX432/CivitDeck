@@ -251,7 +251,7 @@ struct ModelSearchScreen: View {
                 }
 
                 LazyVGrid(columns: columns, spacing: Spacing.sm) {
-                    ForEach(viewModel.models, id: \.id) { model in
+                    ForEach(Array(viewModel.models.enumerated()), id: \.element.id) { index, model in
                         SwipeableModelCardView(
                             model: model,
                             isFavorite: viewModel.favoriteIds.contains(model.id),
@@ -283,7 +283,7 @@ struct ModelSearchScreen: View {
                                 Label("Hide model", systemImage: "eye.slash")
                             }
                         }
-                        .transition(.opacity.combined(with: .offset(y: 20)))
+                        .staggeredEntrance(index: index)
                         .onAppear {
                             viewModel.onModelAppear(model.id)
                         }
