@@ -343,5 +343,4 @@ struct ModelDetailScreen: View {
             )
         }
     }
-
 }

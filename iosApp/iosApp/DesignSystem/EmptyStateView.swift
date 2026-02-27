@@ -3,9 +3,9 @@ import SwiftUI
 struct EmptyStateView: View {
     let icon: String
     let title: String
-    var subtitle: String? = nil
-    var actionLabel: String? = nil
-    var onAction: (() -> Void)? = nil
+    var subtitle: String?
+    var actionLabel: String?
+    var onAction: (() -> Void)?
 
     var body: some View {
         VStack(spacing: Spacing.sm) {

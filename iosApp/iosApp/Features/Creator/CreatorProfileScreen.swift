@@ -55,5 +55,4 @@ struct CreatorProfileScreen: View {
             await viewModel.refresh()
         }
     }
-
 }
