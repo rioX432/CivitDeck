@@ -1,6 +1,11 @@
 package com.riox432.civitdeck
 
 import android.app.Application
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.disk.DiskCache
@@ -26,6 +31,7 @@ import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.settings.SettingsViewModel
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
+import com.riox432.civitdeck.widget.WidgetRefreshWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -36,6 +42,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import java.util.concurrent.TimeUnit
 
 class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinComponent {
 
@@ -50,6 +57,21 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
         }
         CoroutineScope(Dispatchers.IO).launch { initializeAuth() }
         observeAndScheduleNotifications()
+        scheduleWidgetRefresh()
+    }
+
+    private fun scheduleWidgetRefresh() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+        val request = PeriodicWorkRequestBuilder<WidgetRefreshWorker>(1, TimeUnit.DAYS)
+            .setConstraints(constraints)
+            .build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            WidgetRefreshWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            request,
+        )
     }
 
     private fun observeAndScheduleNotifications() {

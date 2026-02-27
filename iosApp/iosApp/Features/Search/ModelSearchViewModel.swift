@@ -114,6 +114,7 @@ final class ModelSearchViewModel: ObservableObject {
             do {
                 let sections = try await getRecommendationsUseCase.invoke()
                 recommendations = sections
+                WidgetDataWriter.writeTrendingModel(from: sections)
             } catch {
                 // Non-critical, silently fail
             }
