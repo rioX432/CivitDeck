@@ -92,6 +92,7 @@ struct ModelSearchScreen: View {
             .task { await viewModel.observeSearchHistory() }
             .task { await viewModel.observeGridColumns() }
             .task { await viewModel.observeOwnedHashes() }
+            .task { await viewModel.observeFavorites() }
         }
     }
 
@@ -251,7 +252,14 @@ struct ModelSearchScreen: View {
 
                 LazyVGrid(columns: columns, spacing: Spacing.sm) {
                     ForEach(viewModel.models, id: \.id) { model in
-                        Button {
+                        SwipeableModelCardView(
+                            model: model,
+                            isFavorite: viewModel.favoriteIds.contains(model.id),
+                            onFavoriteToggle: { viewModel.toggleFavorite(model) },
+                            onHide: { viewModel.hideModel(model.id, name: model.name) },
+                            isOwned: viewModel.isModelOwned(model)
+                        )
+                        .onTapGesture {
                             if let cmpId = comparisonState.selectedModelId {
                                 navigationPath.append(
                                     CompareDestination(leftModelId: cmpId, rightModelId: model.id)
@@ -260,10 +268,7 @@ struct ModelSearchScreen: View {
                             } else {
                                 navigationPath.append(model.id)
                             }
-                        } label: {
-                            ModelCardView(model: model, isOwned: viewModel.isModelOwned(model))
                         }
-                        .buttonStyle(.plain)
                         .contextMenu {
                             Button {
                                 comparisonState.startCompare(
@@ -390,7 +395,7 @@ struct ModelSearchScreen: View {
     }
 
     private func chipButton(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        Button(action: { HapticFeedback.selection.trigger(); action() }) {
             Text(label)
                 .font(.civitLabelMedium)
                 .fontWeight(isSelected ? .semibold : .regular)

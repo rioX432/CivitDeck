@@ -15,7 +15,6 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,8 +52,6 @@ import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -107,6 +104,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.riox432.civitdeck.domain.model.BaseModel
+import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.RecommendationSection
@@ -116,6 +114,8 @@ import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.adaptive.isExpandedWidth
 import com.riox432.civitdeck.ui.components.ModelCard
+import com.riox432.civitdeck.ui.components.SwipeableModelCard
+import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -150,7 +150,6 @@ fun ModelSearchScreen(
     viewModel: ModelSearchViewModel,
     onModelClick: (Long, String?, String) -> Unit = { _, _, _ -> },
     scrollToTopTrigger: Int = 0,
-    onCompareModel: (Long, String) -> Unit = { _, _ -> },
     compareModelName: String? = null,
     onCancelCompare: () -> Unit = {},
     onDiscoverClick: () -> Unit = {},
@@ -160,6 +159,7 @@ fun ModelSearchScreen(
     val userGridColumns by viewModel.gridColumns.collectAsStateWithLifecycle()
     val gridColumns = adaptiveGridColumns(userGridColumns)
     val ownedHashes by viewModel.ownedHashes.collectAsStateWithLifecycle()
+    val favoriteIds by viewModel.favoriteIds.collectAsStateWithLifecycle()
     val lazyPagingItems = viewModel.pagingData.collectAsLazyPagingItems()
     val gridState = rememberLazyGridState()
     val headerState = rememberCollapsibleHeaderState()
@@ -185,11 +185,12 @@ fun ModelSearchScreen(
         onModelClick = onModelClick,
         gridColumns = gridColumns,
         lazyPagingItems = lazyPagingItems,
-        onCompareModel = onCompareModel,
         compareModelName = compareModelName,
         onCancelCompare = onCancelCompare,
         ownedHashes = ownedHashes,
         onDiscoverClick = onDiscoverClick,
+        favoriteIds = favoriteIds,
+        onToggleFavorite = viewModel::toggleFavorite,
     )
 }
 
@@ -234,11 +235,12 @@ private fun SearchScreenBody(
     onModelClick: (Long, String?, String) -> Unit,
     gridColumns: Int,
     lazyPagingItems: LazyPagingItems<Model>,
-    onCompareModel: (Long, String) -> Unit = { _, _ -> },
     compareModelName: String? = null,
     onCancelCompare: () -> Unit = {},
     ownedHashes: Set<String> = emptySet(),
     onDiscoverClick: () -> Unit = {},
+    favoriteIds: Set<Long> = emptySet(),
+    onToggleFavorite: (Model) -> Unit = {},
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
@@ -272,11 +274,12 @@ private fun SearchScreenBody(
             lazyPagingItems = lazyPagingItems,
             onModelClick = onModelClick,
             onHideModel = viewModel::onHideModel,
-            onCompareModel = onCompareModel,
             topPadding = topPadding,
             bottomPadding = padding.calculateBottomPadding(),
             gridColumns = gridColumns,
             ownedHashes = ownedHashes,
+            favoriteIds = favoriteIds,
+            onToggleFavorite = onToggleFavorite,
         )
 
         CollapsibleHeader(
@@ -916,6 +919,7 @@ private fun FilterChipItem(
     onClick: () -> Unit,
     showCheckmark: Boolean = false,
 ) {
+    val haptic = rememberHapticFeedback()
     val colorTween = tween<androidx.compose.ui.graphics.Color>(
         durationMillis = Duration.fast,
         easing = Easing.standard,
@@ -943,7 +947,10 @@ private fun FilterChipItem(
             .defaultMinSize(minHeight = 40.dp)
             .clip(RoundedCornerShape(CornerRadius.chip))
             .background(backgroundColor)
-            .clickable(onClick = onClick)
+            .clickable {
+                haptic(HapticFeedbackType.Selection)
+                onClick()
+            }
             .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
@@ -978,11 +985,12 @@ private fun ModelSearchContent(
     lazyPagingItems: LazyPagingItems<Model>,
     onModelClick: (Long, String?, String) -> Unit,
     onHideModel: (Long, String) -> Unit,
-    onCompareModel: (Long, String) -> Unit,
     topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     gridColumns: Int = 2,
     ownedHashes: Set<String> = emptySet(),
+    favoriteIds: Set<Long> = emptySet(),
+    onToggleFavorite: (Model) -> Unit = {},
 ) {
     val refreshState = lazyPagingItems.loadState.refresh
     val isInitialLoading = refreshState is LoadState.Loading ||
@@ -1040,11 +1048,12 @@ private fun ModelSearchContent(
                         gridState = gridState,
                         onModelClick = onModelClick,
                         onHideModel = onHideModel,
-                        onCompareModel = onCompareModel,
                         topPadding = topPadding,
                         bottomPadding = bottomPadding,
                         gridColumns = gridColumns,
                         ownedHashes = ownedHashes,
+                        favoriteIds = favoriteIds,
+                        onToggleFavorite = onToggleFavorite,
                     )
                 }
             }
@@ -1052,8 +1061,8 @@ private fun ModelSearchContent(
     }
 }
 
-@Suppress("LongParameterList")
 @OptIn(ExperimentalFoundationApi::class)
+@Suppress("LongParameterList", "LongMethod")
 @Composable
 private fun ModelGrid(
     lazyPagingItems: LazyPagingItems<Model>,
@@ -1061,11 +1070,12 @@ private fun ModelGrid(
     gridState: LazyGridState,
     onModelClick: (Long, String?, String) -> Unit,
     onHideModel: (Long, String) -> Unit,
-    onCompareModel: (Long, String) -> Unit,
     topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     gridColumns: Int = 2,
     ownedHashes: Set<String> = emptySet(),
+    favoriteIds: Set<Long> = emptySet(),
+    onToggleFavorite: (Model) -> Unit = {},
 ) {
     val isAppendLoading = lazyPagingItems.loadState.append is LoadState.Loading
 
@@ -1101,11 +1111,12 @@ private fun ModelGrid(
             val thumbnailUrl = model.modelVersions
                 .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
             val isOwned = ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
-            ModelCardWithContextMenu(
+            SwipeableModelCard(
                 model = model,
-                onClick = { onModelClick(model.id, thumbnailUrl, "") },
+                isFavorite = model.id in favoriteIds,
+                onFavoriteToggle = { onToggleFavorite(model) },
                 onHide = { onHideModel(model.id, model.name) },
-                onCompare = { onCompareModel(model.id, model.name) },
+                onClick = { onModelClick(model.id, thumbnailUrl, "") },
                 modifier = Modifier.animateItem(),
                 isOwned = isOwned,
             )
@@ -1123,50 +1134,6 @@ private fun ModelGrid(
                     CircularProgressIndicator()
                 }
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun ModelCardWithContextMenu(
-    model: Model,
-    onClick: () -> Unit,
-    onHide: () -> Unit,
-    onCompare: () -> Unit,
-    modifier: Modifier = Modifier,
-    isOwned: Boolean = false,
-) {
-    var showMenu by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = modifier.combinedClickable(
-            onClick = onClick,
-            onLongClick = { showMenu = true },
-        ),
-    ) {
-        ModelCard(model = model, isOwned = isOwned)
-        DropdownMenu(
-            expanded = showMenu,
-            onDismissRequest = { showMenu = false },
-        ) {
-            DropdownMenuItem(
-                text = { Text("Compare") },
-                leadingIcon = {
-                    Icon(Icons.AutoMirrored.Filled.CompareArrows, contentDescription = null)
-                },
-                onClick = {
-                    showMenu = false
-                    onCompare()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text("Hide model") },
-                onClick = {
-                    showMenu = false
-                    onHide()
-                },
-            )
         }
     }
 }

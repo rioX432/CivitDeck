@@ -15,6 +15,8 @@ import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteSavedPromptUseCase
 import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
+import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
+import com.riox432.civitdeck.domain.usecase.GetCacheInfoUseCase
 import com.riox432.civitdeck.domain.usecase.GetCreatorModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetDiscoveryModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
@@ -27,6 +29,7 @@ import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCollectionModelsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
@@ -37,8 +40,11 @@ import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveLocalModelFilesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelDirectoriesUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNetworkStatusUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
@@ -53,11 +59,14 @@ import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.SearchSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
+import com.riox432.civitdeck.domain.usecase.SetCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNotificationsEnabledUseCase
+import com.riox432.civitdeck.domain.usecase.SetNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.SetOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
@@ -80,6 +89,8 @@ val domainModule = module {
     factory { ObserveIsFavoriteUseCase(get()) }
     factory { ObserveNsfwFilterUseCase(get()) }
     factory { SetNsfwFilterUseCase(get()) }
+    factory { ObserveNsfwBlurSettingsUseCase(get()) }
+    factory { SetNsfwBlurSettingsUseCase(get()) }
     factory { SavePromptUseCase(get()) }
     factory { ObserveSavedPromptsUseCase(get()) }
     factory { DeleteSavedPromptUseCase(get()) }
@@ -138,4 +149,12 @@ val domainModule = module {
     factory { SetNotificationsEnabledUseCase(get()) }
     factory { ObservePollingIntervalUseCase(get()) }
     factory { SetPollingIntervalUseCase(get()) }
+    // Offline cache use cases
+    factory { ObserveNetworkStatusUseCase(get()) }
+    factory { GetCacheInfoUseCase(get()) }
+    factory { EvictCacheUseCase(get()) }
+    factory { ObserveOfflineCacheEnabledUseCase(get()) }
+    factory { SetOfflineCacheEnabledUseCase(get()) }
+    factory { ObserveCacheSizeLimitUseCase(get()) }
+    factory { SetCacheSizeLimitUseCase(get()) }
 }
