@@ -29,6 +29,7 @@
 		CD0006072D000006000CD001 /* CivitDeckShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006062D000006000CD001 /* CivitDeckShapes.swift */; };
 		CD00060B2D000006000CD001 /* CivitDeckMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00060A2D000006000CD001 /* CivitDeckMotion.swift */; };
 		CD0006112D000036000CD001 /* ShimmerModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006102D000036000CD001 /* ShimmerModifier.swift */; };
+		CD171A012E4F0171000CD001 /* AnimationModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD171A002E4F0171000CD001 /* AnimationModifiers.swift */; };
 		CD00C0012D3CC001000CD001 /* CollectionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0002D3CC001000CD001 /* CollectionsScreen.swift */; };
 		CD00C0032D3CC001000CD001 /* CollectionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0022D3CC001000CD001 /* CollectionsViewModel.swift */; };
 		CD00C0052D3CC001000CD001 /* CollectionDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0042D3CC001000CD001 /* CollectionDetailScreen.swift */; };
@@ -79,6 +80,7 @@
 		CD0006062D000006000CD001 /* CivitDeckShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckShapes.swift; sourceTree = "<group>"; };
 		CD00060A2D000006000CD001 /* CivitDeckMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckMotion.swift; sourceTree = "<group>"; };
 		CD0006102D000036000CD001 /* ShimmerModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmerModifier.swift; sourceTree = "<group>"; };
+		CD171A002E4F0171000CD001 /* AnimationModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationModifiers.swift; sourceTree = "<group>"; };
 		CD00C0002D3CC001000CD001 /* CollectionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsScreen.swift; sourceTree = "<group>"; };
 		CD00C0022D3CC001000CD001 /* CollectionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsViewModel.swift; sourceTree = "<group>"; };
 		CD00C0042D3CC001000CD001 /* CollectionDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionDetailScreen.swift; sourceTree = "<group>"; };
@@ -180,6 +182,7 @@
 				CD0006102D000036000CD001 /* ShimmerModifier.swift */,
 				CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */,
 				CD00AD002D1CC001000CD001 /* AdaptiveGrid.swift */,
+				CD171A002E4F0171000CD001 /* AnimationModifiers.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -428,6 +431,7 @@
 				CD0006072D000006000CD001 /* CivitDeckShapes.swift in Sources */,
 				CD00060B2D000006000CD001 /* CivitDeckMotion.swift in Sources */,
 				CD0006112D000036000CD001 /* ShimmerModifier.swift in Sources */,
+				CD171A012E4F0171000CD001 /* AnimationModifiers.swift in Sources */,
 				CD00C0012D3CC001000CD001 /* CollectionsScreen.swift in Sources */,
 				CD00C0032D3CC001000CD001 /* CollectionsViewModel.swift in Sources */,
 				CD00C0052D3CC001000CD001 /* CollectionDetailScreen.swift in Sources */,
