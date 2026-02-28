@@ -9,8 +9,13 @@ Want to influence priorities? [Open an issue](https://github.com/rioX432/CivitDe
 ## Positioning
 
 CivitDeck is the only native iOS/Android client for CivitAI.
-Focus: **Browse → Curate → Prepare** (not Generate).
+Focus: **Browse → Curate → Generate-ready** (not an on-device generator).
 Local-first design hedges against CivitAI platform risk.
+
+The core loop:
+1. **Browse** CivitAI models and images on mobile
+2. **Curate** — save, collect, and compare what you want to use
+3. **Prepare** — build a training dataset and export it, ready for kohya-ss
 
 ---
 
@@ -49,66 +54,124 @@ Advanced features for users who generate, not just browse.
 - [x] Large screen and tablet support ([#125](https://github.com/rioX432/CivitDeck/issues/125))
 - [ ] Push notifications for model updates ([#120](https://github.com/rioX432/CivitDeck/issues/120)) -- moved to Phase 5 backlog
 
-## Phase 3 -- ComfyUI & Generation Integration (Complete)
+## Phase 3 -- Generation Server Integration (Complete)
 
-The strategic core: bridge CivitAI browsing with your local generation setup.
+Bridge CivitAI browsing with your local generation setup.
 
-- [x] One-tap workflow export to ComfyUI and A1111
+- [x] ComfyUI connection management and workflow export
 - [x] Home screen widget -- trending model/image of the day ([#124](https://github.com/rioX432/CivitDeck/issues/124))
 - [x] Model file browser with hash verification
 - [x] SD WebUI (Automatic1111/Forge) API support ([#178](https://github.com/rioX432/CivitDeck/issues/178))
-- [ ] Live generation preview
+- [x] Civitai Link integration -- one-tap send model to PC ([#179](https://github.com/rioX432/CivitDeck/issues/179))
+
+**Backlog (Phase 3 scope, not yet scheduled):**
+- [ ] Live generation preview in-app
 - [ ] Workflow template library
+- [ ] Remote queue management (send prompt, interrupt, monitor status) -- see note below
+
+> **Note — Remote Execution Epic**: If the goal extends to fully operating ComfyUI from mobile (submit prompt, queue/interrupt, real-time progress), that warrants a dedicated epic covering: authenticated connection (Tailscale / reverse proxy), Prompt API, Queue API, and `/ws` live status. This is not yet scoped as a separate issue but is the natural next step after Phase 4.
 
 ---
 
-## Phase 4 -- ComfyUI Remote & Local Generation Management
+## Phase 4 -- ComfyUI Output Gallery (Next)
 
-Manage your local ComfyUI output from mobile. View generated images, inspect full metadata, and save results to collections.
+Retrieve and browse locally generated ComfyUI output images from mobile. Bridge generation results into collections and the dataset pipeline.
 
-- [ ] ComfyUI `/history` API integration -- retrieve generated image list and output files
-- [ ] Remote output gallery browsing -- browse by timeline or workflow
-- [ ] Generation metadata viewer -- prompt, seed, sampler, LoRA, CFG scale
-- [ ] Secure remote connection UI -- Tailscale / local endpoint configuration (ports 8188 / 8000)
-- [ ] Live generation status via WebSocket (`/ws`) -- real-time progress (optional)
+Epic: [#270](https://github.com/rioX432/CivitDeck/issues/270) ComfyUI Output Gallery Integration
 
-**DoD**: `/history` image list retrieval → detail metadata display → save to favorites / collections
+- [ ] [#277](https://github.com/rioX432/CivitDeck/issues/277) KMP: `/history` API client + `FetchComfyUIHistoryUseCase`
+- [ ] [#278](https://github.com/rioX432/CivitDeck/issues/278) Android: Output gallery screen + generation metadata detail
+- [ ] [#279](https://github.com/rioX432/CivitDeck/issues/279) iOS: Output gallery screen + generation metadata detail
 
-## Phase 5 -- Dataset Collection & Curation (CRITICAL)
+**DoD**: `/history` image list retrieval → full metadata detail (prompt, seed, sampler, LoRA, CFG) → save to favorites / collections
 
-Enable LoRA training dataset collection, organization, and management directly from mobile.
+---
 
-- [ ] `DatasetCollection` entity -- independent domain concept separate from Favorites ([new issue](https://github.com/rioX432/CivitDeck/issues))
-- [ ] Image tagging system -- custom tags with batch editing
-- [ ] Caption editor -- per-image and bulk caption editing
-- [ ] License & source tracking -- CivitAI / Local / Generated provenance management
-- [ ] Quality filtering -- resolution filter, duplicate detection, broken image exclusion UI
-- [ ] Dataset manifest generation -- JSONL / CSV format export
-- [ ] Generated image → dataset pipeline -- one-tap add from ComfyUI / SDWebUI output
-- [ ] Creator follow and activity feed ([#120](https://github.com/rioX432/CivitDeck/issues/120)) -- nice to have
+## Phase 5 -- Dataset Collection & Curation
 
-**DoD**: Group images → edit captions → export in training-ready format
+Enable LoRA training dataset collection, organization, and quality control directly from mobile.
 
-## Phase 6 -- Training Pipeline Integration (Preparation Layer)
+### 5a. Core Dataset Structure
 
-No on-device training -- but export datasets in formats compatible with kohya-ss / sd-scripts for seamless handoff to your training machine.
+Epic: [#271](https://github.com/rioX432/CivitDeck/issues/271) Dataset Collection System (Core)
 
-- [ ] Dataset export -- zip + per-image `caption.txt` files
-- [ ] kohya-ss / sd-scripts compatible format -- `caption.txt` + `tags.txt`, correct archive path structure
-- [ ] Auto caption placeholder -- empty field scaffolding for WD14 / BLIP annotation workflows
-- [ ] ComfyUI output → dataset pipeline -- generated images added to dataset with one tap
+- [ ] [#280](https://github.com/rioX432/CivitDeck/issues/280) KMP: Domain models (`DatasetCollection`, `DatasetImage`, `ImageSource`)
+- [ ] [#281](https://github.com/rioX432/CivitDeck/issues/281) KMP: Room entities + DAOs + migration + Repository + UseCases
+- [ ] [#282](https://github.com/rioX432/CivitDeck/issues/282) Android: Dataset list screen (CRUD)
+- [ ] [#283](https://github.com/rioX432/CivitDeck/issues/283) iOS: Dataset list screen (CRUD)
 
-**DoD**: Generated images directly added to dataset → one-click training zip generation
+### 5b. Caption & Tag Editing
 
-## Phase 7 -- AI-Assisted Curation (Claude/MCP Synergy)
+Epic: [#272](https://github.com/rioX432/CivitDeck/issues/272) Caption & Tag Batch Editor
 
-Advanced curation using Claude API integration. Future phase.
+- [ ] [#284](https://github.com/rioX432/CivitDeck/issues/284) KMP: Tag/Caption domain + `BatchEditTagsUseCase` + `EditCaptionUseCase`
+- [ ] [#285](https://github.com/rioX432/CivitDeck/issues/285) Android: Caption editor + batch tag editor
+- [ ] [#286](https://github.com/rioX432/CivitDeck/issues/286) iOS: Caption editor + batch tag editor
+
+### 5c. Generated Image → Dataset Pipeline
+
+Epic: [#274](https://github.com/rioX432/CivitDeck/issues/274) Generated Image → Dataset Pipeline *(depends on #270, #271)*
+
+- [ ] [#290](https://github.com/rioX432/CivitDeck/issues/290) Android: One-tap add to dataset from ComfyUI / SD WebUI gallery
+- [ ] [#291](https://github.com/rioX432/CivitDeck/issues/291) iOS: One-tap add to dataset from ComfyUI / SD WebUI gallery
+
+### 5d. License & Source Tracking
+
+Epic: [#275](https://github.com/rioX432/CivitDeck/issues/275) License & Source Tracking System *(depends on #271)*
+
+- [ ] [#292](https://github.com/rioX432/CivitDeck/issues/292) KMP: `ImageSource` domain extension + `trainable` flag + export warning logic
+- [ ] [#293](https://github.com/rioX432/CivitDeck/issues/293) Android + iOS: Source badge + trainable toggle UI
+
+### 5e. Duplicate & Quality Filtering
+
+Epic: [#276](https://github.com/rioX432/CivitDeck/issues/276) Duplicate & Quality Filtering *(depends on #271)*
+
+- [ ] [#294](https://github.com/rioX432/CivitDeck/issues/294) KMP: pHash duplicate detection + resolution filter UseCase
+- [ ] [#295](https://github.com/rioX432/CivitDeck/issues/295) Android: Duplicate review UI + resolution filter settings
+- [ ] [#296](https://github.com/rioX432/CivitDeck/issues/296) iOS: Duplicate review UI + resolution filter settings
+
+**DoD**: Group images into a dataset → edit captions and tags → flag non-trainable content → filter duplicates and low-quality images
+
+---
+
+## Phase 6 -- Training Pipeline Export
+
+Export datasets in formats compatible with kohya-ss / sd-scripts for handoff to a training machine. No on-device training.
+
+Epic: [#273](https://github.com/rioX432/CivitDeck/issues/273) Dataset Export for LoRA Training *(depends on #271, #272)*
+
+- [ ] [#287](https://github.com/rioX432/CivitDeck/issues/287) KMP: `ExportRepository` + `ExportDatasetUseCase` (zip + JSONL manifest)
+- [ ] [#288](https://github.com/rioX432/CivitDeck/issues/288) Android: Export UI + share sheet
+- [ ] [#289](https://github.com/rioX432/CivitDeck/issues/289) iOS: Export UI + share sheet
+
+**DoD**: Select dataset → one-click zip generation → share to training machine; format loadable by kohya-ss with correct `caption.txt` directory structure
+
+---
+
+## Phase 7 -- AI-Assisted Curation (Future)
+
+Advanced curation using Claude API integration.
 
 - [ ] Claude-powered automatic tag generation -- image content analysis + tag suggestions
 - [ ] Prompt clustering -- group similar prompts automatically
 - [ ] Style grouping -- auto-classify by visual style
 - [ ] Duplicate semantic detection -- hash + embedding-based deduplication
 - [ ] Auto dataset suggestion -- derive training sets from collections automatically
+
+---
+
+## Dependency Graph
+
+```
+Phase 4: #270
+           │
+Phase 5:  #271 ──── #272 ──── #275
+           │                   │
+           └──── #274          └──── #276
+                 (also needs #270)
+Phase 6:         #273
+                 (needs #271, #272)
+```
 
 ---
 
