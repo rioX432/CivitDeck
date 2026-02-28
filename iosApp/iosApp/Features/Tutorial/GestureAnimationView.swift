@@ -23,7 +23,7 @@ struct SwipeDiscoveryAnimationView: View {
             fingerCircle(x: offsetX, y: Layout.fingerY)
         }
         .frame(width: Layout.frameSize, height: Layout.frameSize)
-        .onAppear { startAnimation() }
+        .task { startAnimation() }
     }
 
     private var cardShape: some View {
@@ -77,7 +77,7 @@ struct QuickActionsAnimationView: View {
             fingerCircle
         }
         .frame(width: Layout.frameSize, height: Layout.frameSize)
-        .onAppear { startAnimation() }
+        .task { startAnimation() }
     }
 
     private var revealArea: some View {
@@ -142,7 +142,7 @@ struct ImageComparisonAnimationView: View {
             fingerCircle
         }
         .frame(width: Layout.frameSize, height: Layout.frameSize)
-        .onAppear { startAnimation() }
+        .task { startAnimation() }
     }
 
     private var comparisonArea: some View {
