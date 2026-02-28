@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -37,6 +36,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.riox432.civitdeck.R
+import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.Duration
 import kotlin.math.roundToInt
 
@@ -138,11 +138,11 @@ private fun SliderDivider(
         when (orientation) {
             SliderOrientation.Horizontal -> {
                 val x = size.width * fraction
-                drawLine(Color.White, Offset(x, 0f), Offset(x, size.height.toFloat()), DIVIDER_PX)
+                drawLine(CivitDeckColors.onScrim, Offset(x, 0f), Offset(x, size.height.toFloat()), DIVIDER_PX)
             }
             SliderOrientation.Vertical -> {
                 val y = size.height * fraction
-                drawLine(Color.White, Offset(0f, y), Offset(size.width.toFloat(), y), DIVIDER_PX)
+                drawLine(CivitDeckColors.onScrim, Offset(0f, y), Offset(size.width.toFloat(), y), DIVIDER_PX)
             }
         }
     }
@@ -170,7 +170,7 @@ private fun SliderHandle(
             .offset { IntOffset(ox, oy) }
             .size(HANDLE_DP.dp)
             .clip(CircleShape)
-            .background(Color.White.copy(alpha = HANDLE_ALPHA))
+            .background(CivitDeckColors.onScrim.copy(alpha = HANDLE_ALPHA))
             .pointerInput(Unit) { detectDragGestures { _, d -> onDrag(d) } },
         contentAlignment = Alignment.Center,
     ) {

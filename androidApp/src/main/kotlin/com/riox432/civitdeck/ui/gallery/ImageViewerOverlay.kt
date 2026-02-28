@@ -56,6 +56,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
+import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.Duration
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -100,7 +101,7 @@ private fun ImageViewerContent(
 
     Box(Modifier.fillMaxSize()) {
         // Layer 1: Background (stays in place, fades with drag)
-        Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = backgroundAlpha(currentDragY))))
+        Box(Modifier.fillMaxSize().background(CivitDeckColors.scrim.copy(alpha = backgroundAlpha(currentDragY))))
 
         // Layer 2: Image pager
         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
@@ -183,13 +184,13 @@ private fun ZoomableImage(
             },
         loading = {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Color.White)
+                CircularProgressIndicator(color = CivitDeckColors.onScrim)
             }
         },
         error = {
             ImageErrorPlaceholder(
                 modifier = Modifier.fillMaxSize(),
-                iconTint = Color.White,
+                iconTint = CivitDeckColors.onScrim,
                 backgroundColor = Color.Transparent,
             )
         },
@@ -303,7 +304,7 @@ private fun ViewerControls(
         IconButton(
             onClick = onDismiss,
             modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
-            colors = IconButtonDefaults.iconButtonColors(contentColor = Color.White),
+            colors = IconButtonDefaults.iconButtonColors(contentColor = CivitDeckColors.onScrim),
         ) {
             Icon(Icons.Default.Close, contentDescription = "Close")
         }
