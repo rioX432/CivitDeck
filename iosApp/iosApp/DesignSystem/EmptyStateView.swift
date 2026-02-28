@@ -12,6 +12,7 @@ struct EmptyStateView: View {
             Image(systemName: icon)
                 .font(.largeTitle)
                 .foregroundColor(.civitOnSurfaceVariant)
+                .accessibilityHidden(true)
             Text(title)
                 .font(.civitTitleMedium)
                 .foregroundColor(.civitOnSurfaceVariant)

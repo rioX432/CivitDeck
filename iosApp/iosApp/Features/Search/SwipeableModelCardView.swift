@@ -40,6 +40,7 @@ struct SwipeableModelCardView: View {
                     .font(.civitIconMedium)
                     .foregroundColor(isFavorite ? .red : .white)
                     .frame(width: 44, height: 44)
+                    .accessibilityLabel(isFavorite ? "Remove from favorites" : "Add to favorites")
             }
             Button {
                 onHide()
@@ -49,6 +50,7 @@ struct SwipeableModelCardView: View {
                     .font(.civitIconMedium)
                     .foregroundColor(.white)
                     .frame(width: 44, height: 44)
+                    .accessibilityLabel("Hide model")
             }
         }
         .padding(.trailing, Spacing.sm)
