@@ -120,6 +120,9 @@ class GetRecommendationsUseCaseTest {
         override suspend fun setCacheSizeLimitMb(limitMb: Int) = error("not used")
         override fun observeSeenTutorialVersion(): Flow<Int> = error("not used")
         override suspend fun setSeenTutorialVersion(version: Int) = error("not used")
+        override fun observeCivitaiLinkKey(): Flow<String?> = error("not used")
+        override suspend fun getCivitaiLinkKey(): String? = error("not used")
+        override suspend fun setCivitaiLinkKey(key: String?) = error("not used")
     }
 
     @Test

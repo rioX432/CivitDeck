@@ -75,6 +75,11 @@ class UserPreferencesUseCasesTest {
         val seenTutorialVersion = MutableStateFlow(0)
         override fun observeSeenTutorialVersion(): Flow<Int> = seenTutorialVersion
         override suspend fun setSeenTutorialVersion(version: Int) { seenTutorialVersion.value = version }
+
+        val civitaiLinkKey = MutableStateFlow<String?>(null)
+        override fun observeCivitaiLinkKey(): Flow<String?> = civitaiLinkKey
+        override suspend fun getCivitaiLinkKey(): String? = civitaiLinkKey.value
+        override suspend fun setCivitaiLinkKey(key: String?) { civitaiLinkKey.value = key }
     }
 
     private val repo = FakeUserPreferencesRepository()

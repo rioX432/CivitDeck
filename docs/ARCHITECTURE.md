@@ -40,7 +40,9 @@ CivitDeck/
 │   ├── feature-collections/  # User model collections (create, rename, bulk manage)
 │   ├── feature-prompts/      # Saved prompts + template library (built-in & user-created)
 │   ├── feature-settings/     # App settings (NSFW, appearance, notifications, storage)
-│   └── feature-comfyui/      # ComfyUI integration: generation, queue, LoRA/ControlNet, workflow import
+│   ├── feature-comfyui/      # ComfyUI integration: generation, queue, LoRA/ControlNet, workflow import
+│   ├── feature-dataset/      # (Phase 5-6) Dataset collection, tagging, caption editor
+│   └── feature-export/       # (Phase 6) Dataset export UI (zip, kohya-ss format)
 ├── androidApp/               # Android app entry point
 │   └── src/main/kotlin/
 │       ├── CivitDeckApplication.kt   # Koin init + ViewModel DI
@@ -84,6 +86,37 @@ graph TB
 - **API** (`core-network`): Ktor HTTP client targeting `https://civitai.com/api/v1`. Endpoints include `/models`, `/models/:id`, `/model-versions/:id`, `/images`, `/creators`, and `/tags`. Pagination is cursor-based for images and page-based for others. Also includes a ComfyUI API client for local generation workflows.
 - **Local** (`core-database`): Room KMP database (version 19) for offline favorites, user collections, saved prompts, and response caching with TTL. Migrations tracked sequentially from version 1.
 - **Repository Implementations**: Combine remote API calls with local cache. Return domain models, not DTOs.
+
+#### Phase 5-6 Domain Extensions (planned)
+
+New domain models for dataset curation and training pipeline preparation:
+
+| Model | Description |
+|---|---|
+| `DatasetCollection` | Top-level dataset group (independent of Favorites) |
+| `DatasetImage` | Single image within a dataset — references a FavoriteImage or ComfyUI output |
+| `ImageTag` | Custom tag supporting batch editing across multiple images |
+| `Caption` | Per-image training caption (plain text, maps to `caption.txt` in kohya format) |
+| `ExportManifest` | Metadata definition for JSONL/CSV export |
+| `ImageSource` | Provenance enum: `CivitAI`, `Local`, `Generated` |
+
+New repository interfaces (to be added to `core-domain`):
+
+| Repository | Responsibility |
+|---|---|
+| `DatasetCollectionRepository` | CRUD + add/remove images within a dataset |
+| `ImageTagRepository` | Batch tag operations across multiple images |
+| `ExportRepository` | Zip generation and manifest output |
+| `ComfyUIHistoryRepository` | ComfyUI `/history` API wrapper (extends existing `ComfyUIRepository`) |
+
+New use cases (to be added to `core-domain`):
+
+- `CreateDatasetCollectionUseCase`
+- `AddImageToDatasetUseCase`
+- `BatchEditTagsUseCase`
+- `EditCaptionUseCase`
+- `ExportDatasetUseCase`
+- `FetchComfyUIHistoryUseCase`
 
 ### Domain Layer (`core/core-domain/`)
 

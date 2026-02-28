@@ -49,6 +49,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
@@ -71,6 +72,8 @@ import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.riox432.civitdeck.domain.model.CivitaiLinkResource
+import com.riox432.civitdeck.domain.model.CivitaiLinkStatus
 import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelFile
@@ -78,6 +81,7 @@ import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
 import com.riox432.civitdeck.domain.model.stripCdnWidth
+import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailUiState
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
@@ -102,6 +106,7 @@ import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
 import com.riox432.civitdeck.util.FormatUtils
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ModelDetailScreen(
@@ -125,6 +130,7 @@ fun ModelDetailScreen(
     val collections by viewModel.collections.collectAsStateWithLifecycle()
     val modelCollectionIds by viewModel.modelCollectionIds.collectAsStateWithLifecycle()
     var showCollectionSheet by remember { mutableStateOf(false) }
+    var showSendToPCSheet by remember { mutableStateOf(false) }
     val haptic = rememberHapticFeedback()
 
     Scaffold(
@@ -151,7 +157,16 @@ fun ModelDetailScreen(
             onViewImages = onViewImages,
             onCreatorClick = onCreatorClick,
             onTryInComfyUI = onTryInComfyUI,
+            onSendToPC = { showSendToPCSheet = true },
             contentPadding = padding,
+        )
+    }
+
+    if (showSendToPCSheet) {
+        CivitaiLinkSendSheet(
+            model = uiState.model,
+            selectedVersionIndex = uiState.selectedVersionIndex,
+            onDismiss = { showSendToPCSheet = false },
         )
     }
 
@@ -251,6 +266,7 @@ private fun ModelDetailBody(
     onCreatorClick: (String) -> Unit,
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
+    onSendToPC: () -> Unit = {},
     contentPadding: PaddingValues,
 ) {
     val model = uiState.model
@@ -283,6 +299,7 @@ private fun ModelDetailBody(
             onCreatorClick = onCreatorClick,
             onShowImageGrid = { showImageGrid = true },
             onTryInComfyUI = onTryInComfyUI,
+            onSendToPC = onSendToPC,
             bottomPadding = contentPadding.calculateBottomPadding(),
             modifier = Modifier.weight(1f),
             carouselContent = {
@@ -357,6 +374,7 @@ private fun DetailStateContent(
     onShowImageGrid: () -> Unit,
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
+    onSendToPC: () -> Unit = {},
     bottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
     carouselContent: @Composable () -> Unit = {},
@@ -397,6 +415,7 @@ private fun DetailStateContent(
                         onCreatorClick = onCreatorClick,
                         onShowImageGrid = onShowImageGrid,
                         onTryInComfyUI = onTryInComfyUI,
+                        onSendToPC = onSendToPC,
                         bottomPadding = bottomPadding,
                         carouselContent = carouselContent,
                     )
@@ -461,6 +480,7 @@ private fun SharedThumbnailPlaceholder(
     )
 }
 
+@Suppress("LongParameterList")
 @Composable
 private fun ModelDetailContentBody(
     model: Model,
@@ -471,6 +491,7 @@ private fun ModelDetailContentBody(
     onShowImageGrid: () -> Unit,
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
+    onSendToPC: () -> Unit = {},
     bottomPadding: androidx.compose.ui.unit.Dp,
     carouselContent: @Composable () -> Unit = {},
 ) {
@@ -503,6 +524,7 @@ private fun ModelDetailContentBody(
             onCreatorClick = onCreatorClick,
             onShowImageGrid = onShowImageGrid,
             onTryInComfyUI = onTryInComfyUI,
+            onSendToPC = onSendToPC,
             carouselContent = carouselContent,
         )
     }
@@ -520,6 +542,7 @@ private fun LazyListScope.modelDetailItems(
     onShowImageGrid: () -> Unit,
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
+    onSendToPC: () -> Unit = {},
     carouselContent: @Composable () -> Unit,
 ) {
     item { carouselContent() }
@@ -547,6 +570,7 @@ private fun LazyListScope.modelDetailItems(
                     onTryInComfyUI(sha256, model.name, sampleMeta)
                 }
             },
+            onSendToPC = onSendToPC,
         )
     }
     if (model.tags.isNotEmpty()) { item { TagsSection(tags = model.tags) } }
@@ -572,6 +596,7 @@ private fun ImageActionsRow(
     hasImages: Boolean,
     showTryInComfyUI: Boolean = false,
     onTryInComfyUI: () -> Unit = {},
+    onSendToPC: () -> Unit = {},
 ) {
     Row(
         modifier = Modifier
@@ -589,6 +614,9 @@ private fun ImageActionsRow(
             ),
         ) {
             Text("View Community Images")
+        }
+        OutlinedButton(onClick = onSendToPC) {
+            Text("Send to PC")
         }
         if (showTryInComfyUI) {
             Button(
@@ -971,6 +999,86 @@ private fun AdvancedVersionInfo(version: ModelVersion) {
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CivitaiLinkSendSheet(
+    model: Model?,
+    selectedVersionIndex: Int,
+    onDismiss: () -> Unit,
+) {
+    val sendViewModel: CivitaiLinkSendViewModel = koinViewModel()
+    val status by sendViewModel.status.collectAsStateWithLifecycle()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        CivitaiLinkSendSheetContent(
+            model = model,
+            selectedVersionIndex = selectedVersionIndex,
+            status = status,
+            onSend = { resource ->
+                sendViewModel.sendToPC(resource)
+                onDismiss()
+            },
+        )
+    }
+}
+
+@Composable
+private fun CivitaiLinkSendSheetContent(
+    model: Model?,
+    selectedVersionIndex: Int,
+    status: CivitaiLinkStatus,
+    onSend: (CivitaiLinkResource) -> Unit,
+) {
+    if (status != CivitaiLinkStatus.Connected) {
+        CivitaiLinkNotConnectedMessage()
+        return
+    }
+    val safeModel = model ?: return
+    val version = safeModel.modelVersions.getOrNull(selectedVersionIndex) ?: return
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        Text("Send to PC", style = MaterialTheme.typography.titleMedium)
+        Button(
+            onClick = {
+                onSend(
+                    CivitaiLinkResource(
+                        versionId = version.id,
+                        modelId = safeModel.id,
+                        versionName = version.name,
+                        downloadUrl = "https://civitai.com/api/download/models/${version.id}",
+                    )
+                )
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Send ${version.name} to PC")
+        }
+    }
+}
+
+@Composable
+private fun CivitaiLinkNotConnectedMessage() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text("Civitai Link not configured", style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = "Set up Civitai Link in Settings \u2192 Advanced to send models to your PC",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

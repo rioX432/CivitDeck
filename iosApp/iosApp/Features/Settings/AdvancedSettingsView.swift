@@ -21,6 +21,28 @@ struct AdvancedSettingsView: View {
                         }
                     }
                 }
+                Section("SD WebUI") {
+                    NavigationLink(destination: SDWebUISettingsView()) {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text("SD WebUI Connections")
+                                .font(.civitBodyMedium)
+                            Text("Manage Automatic1111/Forge server connections")
+                                .font(.civitBodySmall)
+                                .foregroundColor(.civitOnSurfaceVariant)
+                        }
+                    }
+                }
+                Section("Civitai Link") {
+                    NavigationLink(destination: CivitaiLinkSettingsView()) {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text("Civitai Link Setup")
+                                .font(.civitBodyMedium)
+                            Text("Send models directly to your PC")
+                                .font(.civitBodySmall)
+                                .foregroundColor(.civitOnSurfaceVariant)
+                        }
+                    }
+                }
                 Section("Model Files") {
                     NavigationLink {
                         ModelFileBrowserScreen()

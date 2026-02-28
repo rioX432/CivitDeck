@@ -14,6 +14,7 @@ import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+@Suppress("TooManyFunctions")
 class UserPreferencesRepositoryImpl(
     private val dao: UserPreferencesDao,
     private val apiKeyProvider: ApiKeyProvider,
@@ -159,5 +160,16 @@ class UserPreferencesRepositoryImpl(
     override suspend fun setSeenTutorialVersion(version: Int) {
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(seenTutorialVersion = version))
+    }
+
+    override fun observeCivitaiLinkKey(): Flow<String?> =
+        dao.observePreferences().map { it?.civitaiLinkKey }
+
+    override suspend fun getCivitaiLinkKey(): String? =
+        dao.getPreferences()?.civitaiLinkKey
+
+    override suspend fun setCivitaiLinkKey(key: String?) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(civitaiLinkKey = key))
     }
 }

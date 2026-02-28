@@ -1,0 +1,40 @@
+package com.riox432.civitdeck.data.local.dao
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
+import com.riox432.civitdeck.data.local.entity.SDWebUIConnectionEntity
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface SDWebUIConnectionDao {
+    @Query("SELECT * FROM sdwebui_connections ORDER BY createdAt DESC")
+    fun observeAll(): Flow<List<SDWebUIConnectionEntity>>
+
+    @Query("SELECT * FROM sdwebui_connections WHERE isActive = 1 LIMIT 1")
+    fun observeActive(): Flow<SDWebUIConnectionEntity?>
+
+    @Query("SELECT * FROM sdwebui_connections WHERE isActive = 1 LIMIT 1")
+    suspend fun getActive(): SDWebUIConnectionEntity?
+
+    @Insert
+    suspend fun insert(entity: SDWebUIConnectionEntity): Long
+
+    @Update
+    suspend fun update(entity: SDWebUIConnectionEntity)
+
+    @Query("UPDATE sdwebui_connections SET isActive = 0")
+    suspend fun deactivateAll()
+
+    @Query("UPDATE sdwebui_connections SET isActive = 1 WHERE id = :id")
+    suspend fun activate(id: Long)
+
+    @Query(
+        "UPDATE sdwebui_connections SET lastTestedAt = :testedAt, lastTestSuccess = :success WHERE id = :id",
+    )
+    suspend fun updateTestResult(id: Long, testedAt: Long, success: Boolean)
+
+    @Query("DELETE FROM sdwebui_connections WHERE id = :id")
+    suspend fun deleteById(id: Long)
+}
