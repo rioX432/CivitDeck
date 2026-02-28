@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.domain.usecase
+package com.riox432.civitdeck.feature.search.domain.usecase
 
 import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.repository.HiddenModelRepository
@@ -38,14 +38,6 @@ class HiddenModelUseCasesTest {
     fun getHiddenModelIds_returns_set() = runTest {
         val useCase = GetHiddenModelIdsUseCase(repo)
         assertEquals(setOf(1L, 2L), useCase())
-    }
-
-    @Test
-    fun getHiddenModels_returns_domain_models() = runTest {
-        val useCase = GetHiddenModelsUseCase(repo)
-        val result = useCase()
-        assertEquals(2, result.size)
-        assertEquals("Model A", result[0].modelName)
     }
 
     @Test

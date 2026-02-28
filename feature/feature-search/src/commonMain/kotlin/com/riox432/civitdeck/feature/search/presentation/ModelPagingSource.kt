@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.search
+package com.riox432.civitdeck.feature.search.presentation
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
@@ -6,8 +6,8 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.filterNsfwImages
-import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 
 internal class ModelPagingSource(
     private val getModelsUseCase: GetModelsUseCase,

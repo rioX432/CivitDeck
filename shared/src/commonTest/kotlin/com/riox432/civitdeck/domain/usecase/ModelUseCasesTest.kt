@@ -9,6 +9,7 @@ import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.testModel
 import com.riox432.civitdeck.testPaginatedResult
 import kotlinx.coroutines.test.runTest

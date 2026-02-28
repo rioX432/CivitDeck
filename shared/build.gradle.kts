@@ -29,6 +29,7 @@ kotlin {
             api(project(":feature:feature-collections"))
             api(project(":feature:feature-detail"))
             api(project(":feature:feature-comfyui"))
+            api(project(":feature:feature-search"))
             api(libs.androidx.lifecycle.viewmodel)
             implementation(libs.ktor.client.core)
             implementation(libs.kotlinx.serialization.json)

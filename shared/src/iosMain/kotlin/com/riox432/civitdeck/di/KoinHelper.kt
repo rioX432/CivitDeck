@@ -1,24 +1,15 @@
 package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
-import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
-import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
-import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
 import com.riox432.civitdeck.domain.usecase.GetCacheInfoUseCase
-import com.riox432.civitdeck.domain.usecase.GetDiscoveryModelsUseCase
-import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
-import com.riox432.civitdeck.domain.usecase.GetHiddenModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
-import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
-import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
-import com.riox432.civitdeck.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
@@ -38,9 +29,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
-import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
@@ -59,7 +48,6 @@ import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
-import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.AddModelToCollectionUseCase
@@ -91,6 +79,18 @@ import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveTemplatesUseC
 import com.riox432.civitdeck.feature.prompts.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.SearchSavedPromptsUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.ToggleTemplateUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.AddExcludedTagUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.ClearSearchHistoryUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.GetDiscoveryModelsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.GetExcludedTagsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.RemoveExcludedTagUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
 import org.koin.mp.KoinPlatform.getKoin
 

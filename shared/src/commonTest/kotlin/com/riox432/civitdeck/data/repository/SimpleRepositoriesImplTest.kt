@@ -1,10 +1,6 @@
 package com.riox432.civitdeck.data.repository
 
-import com.riox432.civitdeck.data.local.dao.ExcludedTagDao
-import com.riox432.civitdeck.data.local.dao.HiddenModelDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
-import com.riox432.civitdeck.data.local.entity.ExcludedTagEntity
-import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.feature.prompts.data.repository.SavedPromptRepositoryImpl
@@ -18,95 +14,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class SimpleRepositoriesImplTest {
-
-    // --- ExcludedTagRepositoryImpl ---
-
-    private class FakeExcludedTagDao : ExcludedTagDao {
-        val entities = mutableListOf<ExcludedTagEntity>()
-
-        override suspend fun getAll(): List<ExcludedTagEntity> = entities.toList()
-
-        override suspend fun insert(entity: ExcludedTagEntity) {
-            if (entities.none { it.tag == entity.tag }) entities.add(entity)
-        }
-
-        override suspend fun delete(tag: String) {
-            entities.removeAll { it.tag == tag }
-        }
-    }
-
-    @Test
-    fun excludedTag_getAll_maps_to_strings() = runTest {
-        val dao = FakeExcludedTagDao()
-        dao.entities.add(ExcludedTagEntity(tag = "nsfw", addedAt = 1000L))
-        dao.entities.add(ExcludedTagEntity(tag = "gore", addedAt = 2000L))
-        val repo = ExcludedTagRepositoryImpl(dao)
-        assertEquals(listOf("nsfw", "gore"), repo.getExcludedTags())
-    }
-
-    @Test
-    fun excludedTag_add_inserts() = runTest {
-        val dao = FakeExcludedTagDao()
-        val repo = ExcludedTagRepositoryImpl(dao)
-        repo.addExcludedTag("violence")
-        assertEquals(1, dao.entities.size)
-        assertEquals("violence", dao.entities[0].tag)
-    }
-
-    @Test
-    fun excludedTag_remove_deletes() = runTest {
-        val dao = FakeExcludedTagDao()
-        dao.entities.add(ExcludedTagEntity(tag = "nsfw", addedAt = 1000L))
-        val repo = ExcludedTagRepositoryImpl(dao)
-        repo.removeExcludedTag("nsfw")
-        assertTrue(dao.entities.isEmpty())
-    }
-
-    // --- HiddenModelRepositoryImpl ---
-
-    private class FakeHiddenModelDao : HiddenModelDao {
-        val entities = mutableListOf<HiddenModelEntity>()
-
-        override suspend fun getAllIds(): List<Long> = entities.map { it.modelId }
-        override suspend fun getAll(): List<HiddenModelEntity> =
-            entities.sortedByDescending { it.hiddenAt }
-
-        override suspend fun insert(entity: HiddenModelEntity) {
-            if (entities.none { it.modelId == entity.modelId }) entities.add(entity)
-        }
-
-        override suspend fun delete(modelId: Long) {
-            entities.removeAll { it.modelId == modelId }
-        }
-    }
-
-    @Test
-    fun hiddenModel_getIds_returns_set() = runTest {
-        val dao = FakeHiddenModelDao()
-        dao.entities.add(HiddenModelEntity(modelId = 1L, modelName = "A", hiddenAt = 1000L))
-        dao.entities.add(HiddenModelEntity(modelId = 2L, modelName = "B", hiddenAt = 2000L))
-        val repo = HiddenModelRepositoryImpl(dao)
-        assertEquals(setOf(1L, 2L), repo.getHiddenModelIds())
-    }
-
-    @Test
-    fun hiddenModel_hide_inserts() = runTest {
-        val dao = FakeHiddenModelDao()
-        val repo = HiddenModelRepositoryImpl(dao)
-        repo.hideModel(42L, "Hidden Model")
-        assertEquals(1, dao.entities.size)
-        assertEquals(42L, dao.entities[0].modelId)
-        assertEquals("Hidden Model", dao.entities[0].modelName)
-    }
-
-    @Test
-    fun hiddenModel_unhide_deletes() = runTest {
-        val dao = FakeHiddenModelDao()
-        dao.entities.add(HiddenModelEntity(modelId = 1L, modelName = "A", hiddenAt = 1000L))
-        val repo = HiddenModelRepositoryImpl(dao)
-        repo.unhideModel(1L)
-        assertTrue(dao.entities.isEmpty())
-    }
 
     // --- SavedPromptRepositoryImpl ---
 

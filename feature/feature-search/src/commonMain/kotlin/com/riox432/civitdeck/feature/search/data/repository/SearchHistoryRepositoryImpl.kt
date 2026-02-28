@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.data.repository
+package com.riox432.civitdeck.feature.search.data.repository
 
 import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.SearchHistoryDao

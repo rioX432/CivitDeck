@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.glance.appwidget.updateAll
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.coroutines.cancellation.CancellationException
