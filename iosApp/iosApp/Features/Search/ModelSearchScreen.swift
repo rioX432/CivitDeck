@@ -140,43 +140,25 @@ struct ModelSearchScreen: View {
     }
 
     private var searchBarWithFilterButton: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.civitOnSurfaceVariant)
-            TextField("Search models...", text: $viewModel.query)
-                .focused($isSearchFocused)
-                .submitLabel(.search)
-                .onSubmit {
-                    viewModel.onSearch()
-                    showHistory = false
-                }
-                .onChange(of: viewModel.query) { newValue in
-                    showHistory = newValue.isEmpty
-                        && isSearchFocused
-                        && !viewModel.searchHistory.isEmpty
-                }
-                .onChange(of: isSearchFocused) { focused in
-                    showHistory = focused
-                        && viewModel.query.isEmpty
-                        && !viewModel.searchHistory.isEmpty
-                }
-            if !viewModel.query.isEmpty {
-                Button {
-                    viewModel.query = ""
-                    showHistory = isSearchFocused && !viewModel.searchHistory.isEmpty
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.civitOnSurfaceVariant)
-                }
-            }
-        }
-        .padding(Spacing.smPlus)
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.searchBar)
-                .stroke(Color.civitOutlineVariant, lineWidth: 1)
+        SearchBarView(
+            text: $viewModel.query,
+            placeholder: "Search models...",
+            onSubmit: {
+                viewModel.onSearch()
+                showHistory = false
+            },
+            isFocused: $isSearchFocused
         )
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.sm)
+        .onChange(of: viewModel.query) { newValue in
+            showHistory = newValue.isEmpty
+                && isSearchFocused
+                && !viewModel.searchHistory.isEmpty
+        }
+        .onChange(of: isSearchFocused) { focused in
+            showHistory = focused
+                && viewModel.query.isEmpty
+                && !viewModel.searchHistory.isEmpty
+        }
     }
 
     private var filterSheet: some View {

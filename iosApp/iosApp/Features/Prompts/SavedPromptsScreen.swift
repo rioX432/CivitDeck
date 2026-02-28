@@ -47,12 +47,7 @@ struct SavedPromptsScreen: View {
     }
 
     private var searchBar: some View {
-        HStack {
-            TextField("Search prompts...", text: $viewModel.searchQuery)
-                .textFieldStyle(.roundedBorder)
-        }
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.sm)
+        SearchBarView(text: $viewModel.searchQuery, placeholder: "Search prompts...")
     }
 
     private var tabPicker: some View {
