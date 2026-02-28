@@ -44,6 +44,12 @@
 	<array>
 		<string>CSSearchableItemActionType</string>
 	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- Allow HTTP to local ComfyUI / SD WebUI / Tailscale connections (same as Android usesCleartextTraffic) -->
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UIRequiredDeviceCapabilities</key>
