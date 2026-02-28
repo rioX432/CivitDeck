@@ -39,13 +39,18 @@ CivitDeck is built for power users and creators who generate, not just browse.
 ## Features
 
 - **Model Search & Browse** — filter by type (Checkpoint, LoRA, etc.), sort, period, and tags
-- **Image Gallery** — staggered grid with full-screen viewer and pinch-to-zoom
+- **Swipe Discovery** — swipe-card stack for fast model browsing with gesture quick-actions
+- **Image Gallery** — staggered grid with full-screen viewer, pinch-to-zoom, and NSFW blur control
 - **Prompt Metadata** — view generation parameters and copy with one tap
-- **Favorites** — save models and images locally for offline access
+- **Prompt Templates** — built-in and user-created templates with variable support
+- **Favorites & Collections** — organize saved models into named collections
+- **ComfyUI Integration** — send models to ComfyUI, manage the queue, import custom workflows, and use LoRA/ControlNet support
+- **Model Comparison** — compare two models side-by-side
+- **Model File Browser** — detect local model files with CivitAI hash matching
 - **Fresh Find** — discover recently published models before they trend
 - **Cross-Platform** — native Android (Jetpack Compose) & iOS (SwiftUI) from a shared KMP codebase
 
-See the full [Roadmap](docs/ROADMAP.md) for planned features including ComfyUI integration, model comparison, and prompt templates.
+See the full [Roadmap](docs/ROADMAP.md) for planned features.
 
 ## Who Is This For?
 
@@ -105,9 +110,15 @@ cd CivitDeck
 open iosApp/iosApp.xcodeproj
 ```
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a full list of changes.
+
 ## Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
+
+For security issues, see [SECURITY.md](SECURITY.md).
 
 We especially welcome contributions related to:
 - **ComfyUI / SD WebUI integration** — API clients, workflow export formats, protocol support

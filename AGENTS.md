@@ -39,51 +39,29 @@ cd iosApp && swiftlint --strict       # SwiftLint (config: iosApp/.swiftlint.yml
 
 ```
 CivitDeck/
-├── shared/                    # KMP shared module
-│   └── src/
-│       ├── commonMain/        # Shared code (API, domain, DI)
-│       │   └── kotlin/
-│       │       ├── data/
-│       │       │   ├── api/           # Ktor API client, DTOs
-│       │       │   ├── local/         # Room database, DAOs, entities
-│       │       │   └── repository/    # Repository implementations
-│       │       ├── domain/
-│       │       │   ├── model/         # Domain entities
-│       │       │   ├── repository/    # Repository interfaces
-│       │       │   └── usecase/       # Use cases
-│       │       └── di/               # Koin modules
-│       ├── androidMain/       # Android-specific implementations
-│       └── iosMain/           # iOS-specific implementations
-├── androidApp/                # Android application (Jetpack Compose)
-│   └── src/main/
-│       └── kotlin/
-│           └── ui/
-│               ├── navigation/    # Nav3 NavDisplay & route definitions
-│               ├── search/        # Search screen + ViewModel
-│               ├── detail/        # Detail screen + ViewModel
-│               ├── creator/       # Creator profile screen
-│               ├── favorites/     # Favorites screen
-│               ├── gallery/       # Gallery/image browsing
-│               ├── prompts/       # Prompts screen
-│               ├── settings/      # Settings screen
-│               ├── components/    # Reusable Compose components
-│               └── theme/         # Design tokens (colors, typography, spacing)
-└── iosApp/                    # iOS application (SwiftUI)
+├── build-logic/              # Convention Plugins (civitdeck.kmp.library, civitdeck.kmp.feature, civitdeck.android.application)
+├── shared/                   # KMP coordinator — re-exports core modules via api(); KoinHelper for iOS
+├── core/
+│   ├── core-domain/          # Domain layer: models, repository interfaces, use cases, DomainModule (Koin)
+│   ├── core-network/         # Network layer: Ktor client, DTOs (CivitAI + ComfyUI), NetworkModule (Koin)
+│   ├── core-database/        # Database layer: Room KMP entities/DAOs/migrations (v19), DatabaseModule (Koin)
+│   └── core-ui/              # Shared Compose components + design tokens (Android-only)
+├── feature/
+│   ├── feature-search/       # Model search & swipe discovery
+│   ├── feature-detail/       # Model detail + model comparison
+│   ├── feature-gallery/      # Image gallery with NSFW blur and prompt extraction
+│   ├── feature-creator/      # Creator profile browser
+│   ├── feature-collections/  # User model collections (create, rename, bulk manage)
+│   ├── feature-prompts/      # Saved prompts + template library (built-in & user-created)
+│   ├── feature-settings/     # App settings (NSFW, appearance, notifications, storage)
+│   └── feature-comfyui/      # ComfyUI integration: generation, queue, LoRA/ControlNet, workflow import
+├── androidApp/               # Android app entry point, Navigation 3, ModelCard, widgets, tiles
+└── iosApp/                   # iOS app entry point (SwiftUI)
     └── iosApp/
-        ├── Features/          # Feature-based modules
-        │   ├── Search/        # Search screen + ViewModel
-        │   ├── Detail/        # Detail screen + ViewModel
-        │   ├── Creator/       # Creator profile
-        │   ├── Favorites/     # Favorites screen
-        │   ├── Gallery/       # Gallery/image browsing
-        │   ├── Prompts/       # Prompts screen
-        │   └── Settings/      # Settings screen
-        └── DesignSystem/      # Design tokens + shared components
-            ├── CachedAsyncImage.swift   # Custom image loader (no third-party lib)
-            ├── CivitDeckColors.swift
-            ├── CivitDeckFonts.swift
-            ├── CivitDeckSpacing.swift
-            └── ShimmerModifier.swift
+        ├── Features/         # Feature screens + ViewModels (Search, Detail, Gallery, Creator, Collections,
+        │                     #   Prompts, Settings, ComfyUI, Compare, ModelFileBrowser, Tutorial)
+        └── DesignSystem/     # Design tokens (CivitDeckColors, CivitDeckFonts, CivitDeckSpacing,
+                              #   CivitDeckMotion, CivitDeckShapes) + CachedAsyncImage, ShimmerModifier
 ```
 
 ### Key Design Patterns
@@ -105,8 +83,10 @@ CivitDeck/
 - Room KMP for offline favorites and response caching with TTL
 
 **Dependency Injection**
-- Koin modules defined in `shared/di/`
-- Platform-specific modules in `androidApp/di/` and `iosApp/`
+- Koin modules per core layer: `NetworkModule` (core-network), `DatabaseModule` (core-database), `DomainModule` (core-domain)
+- `shared/src/commonMain/di/` re-exports core modules; `ViewModelModule` for SettingsViewModel
+- Android: `CivitDeckApplication.kt` registers platform ViewModels
+- iOS: `KoinHelper.shared.getXxx()` in `shared/src/iosMain/di/KoinHelper.kt`
 
 **Image Loading**
 - Android: Coil 3.x with `SubcomposeAsyncImage` for loading states
