@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.domain.usecase
+package com.riox432.civitdeck.feature.comfyui.domain.usecase
 
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams

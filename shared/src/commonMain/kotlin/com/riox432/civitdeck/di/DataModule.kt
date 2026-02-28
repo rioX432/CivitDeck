@@ -3,7 +3,6 @@ package com.riox432.civitdeck.di
 import com.riox432.civitdeck.data.repository.AuthRepositoryImpl
 import com.riox432.civitdeck.data.repository.BrowsingHistoryRepositoryImpl
 import com.riox432.civitdeck.data.repository.CacheRepositoryImpl
-import com.riox432.civitdeck.data.repository.ComfyUIRepositoryImpl
 import com.riox432.civitdeck.data.repository.ExcludedTagRepositoryImpl
 import com.riox432.civitdeck.data.repository.FavoriteRepositoryImpl
 import com.riox432.civitdeck.data.repository.HiddenModelRepositoryImpl
@@ -16,7 +15,6 @@ import com.riox432.civitdeck.data.scanner.FileScanner
 import com.riox432.civitdeck.domain.repository.AuthRepository
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.CacheRepository
-import com.riox432.civitdeck.domain.repository.ComfyUIRepository
 import com.riox432.civitdeck.domain.repository.ExcludedTagRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.HiddenModelRepository
@@ -43,5 +41,4 @@ val dataModule = module {
     single<HiddenModelRepository> { HiddenModelRepositoryImpl(get()) }
     single<LocalModelFileRepository> { LocalModelFileRepositoryImpl(get(), get(), get()) }
     single<ModelVersionCheckpointRepository> { ModelVersionCheckpointRepositoryImpl(get()) }
-    single<ComfyUIRepository> { ComfyUIRepositoryImpl(get(), get()) }
 }

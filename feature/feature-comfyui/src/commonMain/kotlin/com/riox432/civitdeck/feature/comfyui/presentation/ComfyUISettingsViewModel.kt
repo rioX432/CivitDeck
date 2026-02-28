@@ -1,15 +1,15 @@
-package com.riox432.civitdeck.ui.comfyui
+package com.riox432.civitdeck.feature.comfyui.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIConnectionStatus
-import com.riox432.civitdeck.domain.usecase.ActivateComfyUIConnectionUseCase
-import com.riox432.civitdeck.domain.usecase.DeleteComfyUIConnectionUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveActiveComfyUIConnectionUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveComfyUIConnectionsUseCase
-import com.riox432.civitdeck.domain.usecase.SaveComfyUIConnectionUseCase
-import com.riox432.civitdeck.domain.usecase.TestComfyUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveComfyUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIConnectionsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

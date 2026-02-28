@@ -3,6 +3,7 @@ package com.riox432.civitdeck.di
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
 import com.riox432.civitdeck.feature.collections.di.collectionsModule
+import com.riox432.civitdeck.feature.comfyui.di.comfyuiModule
 import com.riox432.civitdeck.feature.creator.di.creatorModule
 import com.riox432.civitdeck.feature.detail.di.detailModule
 import com.riox432.civitdeck.feature.gallery.di.galleryModule
@@ -26,6 +27,7 @@ val sharedModules: List<Module>
         galleryModule,
         collectionsModule,
         detailModule,
+        comfyuiModule,
     )
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {

@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.data.repository
+package com.riox432.civitdeck.feature.comfyui.data.repository
 
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIOutputImage
