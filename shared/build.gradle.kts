@@ -21,6 +21,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            api(project(":core:core-domain"))
             api(libs.androidx.lifecycle.viewmodel)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)

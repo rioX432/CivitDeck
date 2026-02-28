@@ -12,6 +12,7 @@ val sharedModules: List<Module>
         platformModule,
         dataModule,
         domainModule,
+        viewModelModule,
     )
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {

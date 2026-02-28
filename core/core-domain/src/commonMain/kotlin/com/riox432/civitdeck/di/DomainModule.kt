@@ -90,8 +90,6 @@ import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
-import com.riox432.civitdeck.ui.settings.SettingsViewModel
-import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val domainModule = module {
@@ -192,16 +190,4 @@ val domainModule = module {
     factory { FetchComfyUICheckpointsUseCase(get()) }
     factory { SubmitComfyUIGenerationUseCase(get()) }
     factory { PollComfyUIResultUseCase(get()) }
-    // ViewModels (shared between Android and iOS)
-    viewModel {
-        SettingsViewModel(
-            get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(),
-            get(), get(), get(), get(),
-        )
-    }
 }
