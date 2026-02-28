@@ -4,12 +4,6 @@ import Shared
 struct ComfyUIHistoryView: View {
     @StateObject private var viewModel = ComfyUIHistoryViewModel()
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @State private var selectedImageId: String?
-    @State private var showSaveAlert = false
-
-    private var selectedImage: ComfyUIGeneratedImage? {
-        viewModel.images.first { $0.id == selectedImageId }
-    }
 
     var body: some View {
         Group {
@@ -36,29 +30,6 @@ struct ComfyUIHistoryView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task { viewModel.startObserving() }
         .onDisappear { viewModel.stopObserving() }
-        .sheet(isPresented: Binding(
-            get: { selectedImageId != nil },
-            set: { if !$0 { selectedImageId = nil } }
-        )) {
-            if let image = selectedImage {
-                ComfyUIOutputDetailView(
-                    image: image,
-                    onSave: { url in
-                        viewModel.onSaveImage(url: url)
-                        selectedImageId = nil
-                    }
-                )
-            }
-        }
-        .alert(
-            viewModel.imageSaveSuccess == true ? "Saved to Photos" : "Save failed",
-            isPresented: $showSaveAlert
-        ) {
-            Button("OK") { viewModel.imageSaveSuccess = nil }
-        }
-        .onChange(of: viewModel.imageSaveSuccess) { newValue in
-            if newValue != nil { showSaveAlert = true }
-        }
     }
 
     // MARK: - Workflow Filter
@@ -105,9 +76,7 @@ struct ComfyUIHistoryView: View {
     }
 
     private func imageCell(image: ComfyUIGeneratedImage) -> some View {
-        Button {
-            selectedImageId = image.id
-        } label: {
+        NavigationLink(destination: ComfyUIOutputDetailView(image: image)) {
             CachedAsyncImage(url: URL(string: image.imageUrl)) { phase in
                 switch phase {
                 case .success(let img):
@@ -116,21 +85,20 @@ struct ComfyUIHistoryView: View {
                         .scaledToFill()
                         .transition(.opacity)
                 case .failure:
-                    Rectangle()
-                        .fill(Color.civitSurfaceVariant)
+                    Color.civitSurfaceVariant
                         .overlay {
                             Image(systemName: "photo")
                                 .foregroundColor(.civitOnSurfaceVariant)
                         }
                 case .empty:
-                    Rectangle()
-                        .fill(Color.civitSurfaceVariant)
+                    Color.civitSurfaceVariant
                         .shimmer()
                 @unknown default:
-                    EmptyView()
+                    Color.clear
                 }
             }
-            .aspectRatio(1, contentMode: .fill)
+            .frame(maxWidth: .infinity)
+            .aspectRatio(1, contentMode: .fit)
             .clipped()
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }

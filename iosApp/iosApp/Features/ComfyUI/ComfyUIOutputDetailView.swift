@@ -3,35 +3,39 @@ import Shared
 
 struct ComfyUIOutputDetailView: View {
     let image: ComfyUIGeneratedImage
-    let onSave: (String) -> Void
 
-    @Environment(\.dismiss) private var dismiss
     @State private var showAddCollectionAlert = false
+    @State private var imageSaveSuccess: Bool?
+    @State private var showSaveAlert = false
+
+    private let saveImageUseCase = KoinHelper.shared.getSaveGeneratedImageUseCase()
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.lg) {
-                    fullImage
-                    metadataSection
-                    loraSection
-                    actionButtons
-                }
-                .padding(Spacing.md)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                fullImage
+                metadataSection
+                loraSection
+                actionButtons
             }
-            .navigationTitle("Detail")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") { dismiss() }
-                }
-            }
-            .alert("Add to Collection", isPresented: $showAddCollectionAlert) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text("ComfyUI generated images are not linked to a CivitAI model " +
-                     "and cannot be added to a model collection.")
-            }
+            .padding(Spacing.md)
+        }
+        .navigationTitle("Detail")
+        .navigationBarTitleDisplayMode(.inline)
+        .alert("Add to Collection", isPresented: $showAddCollectionAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("ComfyUI generated images are not linked to a CivitAI model " +
+                 "and cannot be added to a model collection.")
+        }
+        .alert(
+            imageSaveSuccess == true ? "Saved to Photos" : "Save failed",
+            isPresented: $showSaveAlert
+        ) {
+            Button("OK") { imageSaveSuccess = nil }
+        }
+        .onChange(of: imageSaveSuccess) { newValue in
+            if newValue != nil { showSaveAlert = true }
         }
     }
 
@@ -156,8 +160,7 @@ struct ComfyUIOutputDetailView: View {
     private var actionButtons: some View {
         HStack(spacing: Spacing.sm) {
             Button {
-                onSave(image.imageUrl)
-                dismiss()
+                onSaveImage()
             } label: {
                 Label("Save to Photos", systemImage: "star.fill")
                     .frame(maxWidth: .infinity)
@@ -171,6 +174,19 @@ struct ComfyUIOutputDetailView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
+        }
+    }
+
+    // MARK: - Save
+
+    private func onSaveImage() {
+        Task {
+            do {
+                let success = try await saveImageUseCase.invoke(url: image.imageUrl, filename: "civitdeck_history")
+                imageSaveSuccess = success.boolValue
+            } catch {
+                imageSaveSuccess = false
+            }
         }
     }
 }
