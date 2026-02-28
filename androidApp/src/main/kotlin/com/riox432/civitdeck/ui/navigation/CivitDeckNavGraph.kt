@@ -75,6 +75,7 @@ import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsScreen
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateEditorScreen
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateScreen
 import com.riox432.civitdeck.ui.compare.ModelCompareScreen
+import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.creator.CreatorProfileScreen
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryScreen
@@ -681,9 +682,11 @@ private fun EntryProviderScope<Any>.comfyUIHistoryEntries(backStack: MutableList
     }
     entry<ComfyUIOutputDetailRoute> { key ->
         val historyViewModel: ComfyUIHistoryViewModel = koinViewModel()
-        val image = historyViewModel.uiState.value.images.find { it.id == key.imageId }
-        if (image != null) {
-            ComfyUIOutputDetailScreen(
+        val state by historyViewModel.uiState.collectAsStateWithLifecycle()
+        val image = state.images.find { it.id == key.imageId }
+        when {
+            state.isLoading && image == null -> LoadingStateOverlay()
+            image != null -> ComfyUIOutputDetailScreen(
                 image = image,
                 viewModel = historyViewModel,
                 onBack = { backStack.removeLastOrNull() },
