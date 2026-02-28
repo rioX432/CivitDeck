@@ -100,10 +100,7 @@ struct ComfyUIGenerationView: View {
     private var statusSection: some View {
         switch viewModel.generationStatus {
         case .running:
-            VStack {
-                ProgressView()
-                Text("Generating...").font(.civitBodySmall)
-            }
+            generationProgressSection
         case .error:
             Text(viewModel.error ?? "Generation failed")
                 .font(.civitBodySmall)
@@ -114,6 +111,21 @@ struct ComfyUIGenerationView: View {
                 .foregroundColor(.civitPrimary)
         default:
             EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private var generationProgressSection: some View {
+        VStack(spacing: Spacing.xs) {
+            if viewModel.totalSteps > 0 {
+                ProgressView(value: viewModel.progressFraction)
+                    .progressViewStyle(.linear)
+                Text("Step \(viewModel.currentStep) / \(viewModel.totalSteps)")
+                    .font(.civitBodySmall)
+            } else {
+                ProgressView()
+                Text("Generating...").font(.civitBodySmall)
+            }
         }
     }
 

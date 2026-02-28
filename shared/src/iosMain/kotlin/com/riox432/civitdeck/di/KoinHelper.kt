@@ -65,6 +65,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnect
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIConnectionsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
@@ -203,6 +204,7 @@ object KoinHelper {
     fun getFetchComfyUICheckpointsUseCase(): FetchComfyUICheckpointsUseCase = getKoin().get()
     fun getSubmitComfyUIGenerationUseCase(): SubmitComfyUIGenerationUseCase = getKoin().get()
     fun getPollComfyUIResultUseCase(): PollComfyUIResultUseCase = getKoin().get()
+    fun getObserveGenerationProgressUseCase(): ObserveGenerationProgressUseCase = getKoin().get()
 
     // ViewModels
     fun createSettingsViewModel(): SettingsViewModel = getKoin().get()

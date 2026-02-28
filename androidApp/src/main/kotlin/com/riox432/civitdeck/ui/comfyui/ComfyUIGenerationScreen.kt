@@ -249,12 +249,7 @@ private fun GenerateButton(state: GenerationUiState, onGenerate: () -> Unit) {
 @Composable
 private fun GenerationStatusSection(state: GenerationUiState) {
     when (state.generationStatus) {
-        GenerationStatus.Running -> {
-            Column {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                Text("Generating...", style = MaterialTheme.typography.bodySmall)
-            }
-        }
+        GenerationStatus.Running -> GenerationProgressSection(state)
         GenerationStatus.Error -> {
             Text(
                 state.error ?: "Generation failed",
@@ -270,6 +265,25 @@ private fun GenerationStatusSection(state: GenerationUiState) {
             )
         }
         else -> {}
+    }
+}
+
+@Composable
+private fun GenerationProgressSection(state: GenerationUiState) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+        if (state.totalSteps > 0) {
+            LinearProgressIndicator(
+                progress = { state.progressFraction },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(
+                "Step ${state.currentStep} / ${state.totalSteps}",
+                style = MaterialTheme.typography.bodySmall,
+            )
+        } else {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            Text("Generating...", style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
 
