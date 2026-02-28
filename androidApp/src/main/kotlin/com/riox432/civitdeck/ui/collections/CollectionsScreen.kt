@@ -41,9 +41,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
@@ -132,7 +134,7 @@ private fun CollectionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(onClickLabel = stringResource(R.string.cd_open_collection), onClick = onClick),
         shape = RoundedCornerShape(CornerRadius.card),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {

@@ -511,7 +511,7 @@ internal fun DropdownSettingRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = true }
+                .clickable(onClickLabel = stringResource(R.string.cd_open_dropdown)) { expanded = true }
                 .padding(horizontal = Spacing.lg, vertical = Spacing.md),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,

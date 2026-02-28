@@ -36,7 +36,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.AspectRatioFilter
 import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
@@ -269,7 +271,7 @@ private fun ImageGridItem(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(CornerRadius.image))
-            .clickable(onClick = onClick),
+            .clickable(onClickLabel = stringResource(R.string.cd_open_image), onClick = onClick),
     ) {
         CivitAsyncImage(
             imageUrl = image.url,
