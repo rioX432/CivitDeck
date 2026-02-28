@@ -221,22 +221,28 @@ Report back: files changed, commit hash, any issues encountered.
 
 ## Step 5: Quality Gate
 
-After ALL issues are implemented:
+After ALL issues are implemented, run ALL checks on the **feature branch** (not master):
 
-### 5a. Tests
+### 5a. Android Build (always run)
+```bash
+./gradlew :androidApp:assembleDebug
+```
+
+### 5b. Tests
 ```bash
 ./gradlew :shared:testDebugUnitTest
 ```
 
-### 5b. Detekt (if Kotlin changed)
+### 5c. Detekt (if Kotlin changed)
 ```bash
 ./gradlew detekt
 ```
 Run twice if first run reports import reordering issues.
 
-### 5c. SwiftLint (if Swift changed)
+### 5d. SwiftLint (if Swift changed)
 ```bash
-cd iosApp && swiftlint --strict
+# Run from project root with explicit config — NOT `cd iosApp && swiftlint`
+swiftlint --strict --config iosApp/.swiftlint.yml
 ```
 
 ### Failure Handling
@@ -315,7 +321,7 @@ Status: {Merged / Open for review}
 | 2 | #{43} Title | def5678 | Done |
 | 3 | #{44} Title | — | Skipped (reason) |
 
-Quality Gate: Tests ✓ | Detekt ✓ | SwiftLint ✓
+Quality Gate: Android Build ✓ | Tests ✓ | Detekt ✓ | SwiftLint ✓
 ```
 
 Mark all tasks as `completed`.

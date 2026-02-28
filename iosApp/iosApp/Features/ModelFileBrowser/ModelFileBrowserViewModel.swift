@@ -1,6 +1,10 @@
 import Foundation
 import Shared
 
+enum ScanStatus {
+    case idle, scanning, verifying, completed, error
+}
+
 @MainActor
 final class ModelFileBrowserViewModel: ObservableObject {
     @Published var directories: [ModelDirectory] = []

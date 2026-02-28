@@ -51,7 +51,7 @@ import kotlinx.coroutines.IO
         ModelVersionCheckpointEntity::class,
         ComfyUIConnectionEntity::class,
     ],
-    version = 18,
+    version = 19,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -382,6 +382,17 @@ val MIGRATION_17_18 = object : Migration(17, 18) {
     }
 }
 
+val MIGRATION_18_19 = object : Migration(18, 19) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "ALTER TABLE saved_prompts ADD COLUMN templateVariables TEXT",
+        )
+        connection.execSQL(
+            "ALTER TABLE saved_prompts ADD COLUMN templateType TEXT",
+        )
+    }
+}
+
 private val defaultCollectionCallback = object : RoomDatabase.Callback() {
     override fun onOpen(connection: SQLiteConnection) {
         super.onOpen(connection)
@@ -389,7 +400,42 @@ private val defaultCollectionCallback = object : RoomDatabase.Callback() {
             "INSERT OR IGNORE INTO `collections` (`id`, `name`, `isDefault`, `createdAt`, `updatedAt`) " +
                 "VALUES (1, 'Favorites', 1, 0, 0)",
         )
+        seedBuiltInTemplates(connection)
     }
+}
+
+@Suppress("LongMethod")
+private fun seedBuiltInTemplates(connection: SQLiteConnection) {
+    // id=-1 → TXT2IMG built-in template
+    connection.execSQL(
+        """INSERT OR IGNORE INTO saved_prompts
+            (id, prompt, negativePrompt, sampler, steps, cfgScale, seed, modelName, size,
+             sourceImageUrl, savedAt, isTemplate, templateName, autoSaved, templateVariables, templateType)
+           VALUES (-1, '{positive_prompt}', '{negative_prompt}', 'euler', 20, 7.0, -1,
+                   '{checkpoint}', '{width}x{height}', NULL, 0, 1, 'txt2img Default', 0,
+                   '[{"name":"positive_prompt","type":"TEXT","defaultValue":"","options":[],"required":true},{"name":"negative_prompt","type":"TEXT","defaultValue":"","options":[],"required":false},{"name":"checkpoint","type":"TEXT","defaultValue":"","options":[],"required":true},{"name":"steps","type":"NUMBER","defaultValue":"20","options":[],"required":false},{"name":"cfg","type":"NUMBER","defaultValue":"7.0","options":[],"required":false},{"name":"width","type":"NUMBER","defaultValue":"512","options":[],"required":false},{"name":"height","type":"NUMBER","defaultValue":"512","options":[],"required":false}]',
+                   'TXT2IMG')""",
+    )
+    // id=-2 → IMG2IMG built-in template
+    connection.execSQL(
+        """INSERT OR IGNORE INTO saved_prompts
+            (id, prompt, negativePrompt, sampler, steps, cfgScale, seed, modelName, size,
+             sourceImageUrl, savedAt, isTemplate, templateName, autoSaved, templateVariables, templateType)
+           VALUES (-2, '{positive_prompt}', '{negative_prompt}', 'euler', 20, 7.0, -1,
+                   '{checkpoint}', '{width}x{height}', NULL, 0, 1, 'img2img Default', 0,
+                   '[{"name":"positive_prompt","type":"TEXT","defaultValue":"","options":[],"required":true},{"name":"negative_prompt","type":"TEXT","defaultValue":"","options":[],"required":false},{"name":"checkpoint","type":"TEXT","defaultValue":"","options":[],"required":true},{"name":"steps","type":"NUMBER","defaultValue":"20","options":[],"required":false},{"name":"cfg","type":"NUMBER","defaultValue":"7.0","options":[],"required":false},{"name":"width","type":"NUMBER","defaultValue":"512","options":[],"required":false},{"name":"height","type":"NUMBER","defaultValue":"512","options":[],"required":false},{"name":"denoise_strength","type":"NUMBER","defaultValue":"0.75","options":[],"required":false}]',
+                   'IMG2IMG')""",
+    )
+    // id=-3 → UPSCALE built-in template
+    connection.execSQL(
+        """INSERT OR IGNORE INTO saved_prompts
+            (id, prompt, negativePrompt, sampler, steps, cfgScale, seed, modelName, size,
+             sourceImageUrl, savedAt, isTemplate, templateName, autoSaved, templateVariables, templateType)
+           VALUES (-3, '{input_image}', NULL, 'euler', 20, 7.0, -1,
+                   NULL, '512x512', NULL, 0, 1, 'Upscale Default', 0,
+                   '[{"name":"input_image","type":"TEXT","defaultValue":"","options":[],"required":true},{"name":"upscale_factor","type":"NUMBER","defaultValue":"2","options":[],"required":false}]',
+                   'UPSCALE')""",
+    )
 }
 
 fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeckDatabase {
@@ -412,6 +458,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_15_16,
             MIGRATION_16_17,
             MIGRATION_17_18,
+            MIGRATION_18_19,
         )
         .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())

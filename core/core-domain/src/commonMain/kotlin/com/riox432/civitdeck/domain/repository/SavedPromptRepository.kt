@@ -13,4 +13,5 @@ interface SavedPromptRepository {
     suspend fun autoSave(meta: ImageGenerationMeta, sourceImageUrl: String?)
     suspend fun toggleTemplate(id: Long, isTemplate: Boolean, templateName: String?)
     suspend fun delete(id: Long)
+    suspend fun saveTemplate(prompt: SavedPrompt)
 }

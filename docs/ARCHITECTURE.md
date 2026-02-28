@@ -6,46 +6,60 @@ This document describes CivitDeck's architecture, module structure, data flow, a
 
 ```
 CivitDeck/
-├── shared/                    # KMP shared module
+├── build-logic/              # Convention Plugins (civitdeck.kmp.library, civitdeck.kmp.feature, civitdeck.android.application)
+├── shared/                   # KMP coordinator — re-exports core modules via api()
 │   └── src/
-│       ├── commonMain/        # Cross-platform shared code
-│       │   └── kotlin/
-│       │       ├── data/
-│       │       │   ├── api/           # Ktor API client, DTOs, request/response models
-│       │       │   ├── local/         # Room database, DAOs, entities
-│       │       │   └── repository/    # Repository implementations
-│       │       ├── domain/
-│       │       │   ├── model/         # Domain entities (pure Kotlin)
-│       │       │   ├── repository/    # Repository interfaces
-│       │       │   └── usecase/       # Use cases (single-responsibility)
-│       │       └── di/               # Koin dependency injection modules
-│       ├── androidMain/       # Android-specific implementations (e.g., Room driver)
-│       └── iosMain/           # iOS-specific implementations (e.g., Room driver)
-├── androidApp/                # Android application
+│       ├── commonMain/       # DI wiring, ViewModelModule (SettingsViewModel)
+│       ├── androidMain/      # Android-specific Koin setup
+│       └── iosMain/          # iOS Koin setup, KoinHelper.kt
+├── core/
+│   ├── core-domain/          # Domain layer: models, repository interfaces, use cases
+│   │   └── src/commonMain/kotlin/.../
+│   │       ├── domain/model/         # Pure Kotlin domain entities
+│   │       ├── domain/repository/    # Repository interfaces (contracts)
+│   │       ├── domain/usecase/       # Single-responsibility use cases (return Flow)
+│   │       └── di/                   # DomainModule (Koin)
+│   ├── core-network/         # Network layer: Ktor client, DTOs, API services
+│   │   └── src/commonMain/kotlin/.../
+│   │       ├── data/api/             # CivitAI + ComfyUI API clients, DTOs
+│   │       └── di/                   # NetworkModule (Koin)
+│   ├── core-database/        # Database layer: Room KMP entities, DAOs, migrations
+│   │   └── src/commonMain/kotlin/.../
+│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v19)
+│   │       ├── data/local/migration/ # Sequential migrations (1→2 … 18→19)
+│   │       └── di/                   # DatabaseModule (Koin)
+│   └── core-ui/              # Shared Compose components + design tokens (Android-only)
+│       └── src/main/kotlin/.../
+│           ├── ui/components/        # LoadingStateOverlay, ErrorStateView, ModelStatsRow, …
+│           └── ui/theme/             # CivitDeckColors, CivitDeckTypography, CivitDeckSpacing
+├── feature/
+│   ├── feature-search/       # Model search & swipe discovery
+│   ├── feature-detail/       # Model detail view + model comparison
+│   ├── feature-gallery/      # Image gallery with NSFW blur and prompt extraction
+│   ├── feature-creator/      # Creator profile browser
+│   ├── feature-collections/  # User model collections (create, rename, bulk manage)
+│   ├── feature-prompts/      # Saved prompts + template library (built-in & user-created)
+│   ├── feature-settings/     # App settings (NSFW, appearance, notifications, storage)
+│   └── feature-comfyui/      # ComfyUI integration: generation, queue, LoRA/ControlNet, workflow import
+├── androidApp/               # Android app entry point
 │   └── src/main/kotlin/
-│       ├── di/                # Android Koin module
-│       └── ui/
-│           ├── navigation/    # Navigation 3 routes & NavDisplay
-│           ├── search/        # Model search screen + ViewModel
-│           ├── detail/        # Model detail screen + ViewModel
-│           ├── creator/       # Creator profile screen
-│           ├── favorites/     # Favorites screen
-│           ├── gallery/       # Image gallery screen + ViewModel
-│           ├── prompts/       # Prompts screen
-│           ├── settings/      # Settings screen
-│           ├── components/    # Reusable Compose components
-│           └── theme/         # Design tokens (colors, typography, spacing)
-└── iosApp/                    # iOS application
+│       ├── CivitDeckApplication.kt   # Koin init + ViewModel DI
+│       ├── ui/navigation/            # Navigation 3 routes & NavDisplay
+│       ├── ui/components/            # ModelCard, SwipeableModelCard (Nav3 dependency)
+│       ├── widget/                   # Glance home screen widgets
+│       ├── tile/                     # Quick Settings tile
+│       └── notification/             # Background polling notifications
+└── iosApp/                   # iOS app entry point (SwiftUI)
     └── iosApp/
-        ├── Features/          # Feature-based modules
-        │   ├── Search/        # Search screen + ViewModel
-        │   ├── Detail/        # Detail screen + ViewModel
-        │   ├── Creator/       # Creator profile
-        │   ├── Favorites/     # Favorites screen
-        │   ├── Gallery/       # Image gallery
-        │   ├── Prompts/       # Prompts screen
-        │   └── Settings/      # Settings screen
-        └── DesignSystem/      # Design tokens + shared components
+        ├── Features/         # Feature-based screens + ViewModels
+        │   ├── Search/       │   ├── Detail/       │   ├── Gallery/
+        │   ├── Creator/      │   ├── Collections/  │   ├── Prompts/
+        │   ├── Settings/     │   ├── ComfyUI/      │   └── Compare/
+        └── DesignSystem/     # Design tokens + shared components
+            ├── CivitDeckColors.swift   ├── CivitDeckFonts.swift
+            ├── CivitDeckSpacing.swift  ├── CivitDeckMotion.swift
+            ├── CivitDeckShapes.swift   ├── CachedAsyncImage.swift
+            └── ShimmerModifier.swift
 ```
 
 ## Data Flow
@@ -65,13 +79,13 @@ graph TB
 
 ## Layer Responsibilities
 
-### Data Layer (`shared/data/`)
+### Data Layer (`core/core-network/` + `core/core-database/`)
 
-- **API**: Ktor HTTP client targeting `https://civitai.com/api/v1`. Endpoints include `/models`, `/models/:id`, `/model-versions/:id`, `/images`, `/creators`, and `/tags`. Pagination is cursor-based for images and page-based for others.
-- **Local**: Room KMP database for offline favorites and response caching with TTL.
+- **API** (`core-network`): Ktor HTTP client targeting `https://civitai.com/api/v1`. Endpoints include `/models`, `/models/:id`, `/model-versions/:id`, `/images`, `/creators`, and `/tags`. Pagination is cursor-based for images and page-based for others. Also includes a ComfyUI API client for local generation workflows.
+- **Local** (`core-database`): Room KMP database (version 19) for offline favorites, user collections, saved prompts, and response caching with TTL. Migrations tracked sequentially from version 1.
 - **Repository Implementations**: Combine remote API calls with local cache. Return domain models, not DTOs.
 
-### Domain Layer (`shared/domain/`)
+### Domain Layer (`core/core-domain/`)
 
 - **Models**: Pure Kotlin data classes with no framework dependencies.
 - **Repository Interfaces**: Contracts that the data layer implements.
@@ -115,9 +129,12 @@ AndroidX Navigation 3 is the latest navigation library with full type-safe route
 
 Koin is used as the DI framework across all modules:
 
-- **Shared module** (`shared/di/`): Defines modules for API clients, repositories, and use cases
-- **Android** (`androidApp/di/`): Extends shared modules with Android-specific bindings (ViewModels, platform dependencies)
-- **iOS** (`iosApp/`): Initializes Koin in app entry point, resolves use cases for SwiftUI ViewModels
+- **core-network** (`core/core-network/.../di/NetworkModule`): Ktor client, CivitAI and ComfyUI API services
+- **core-database** (`core/core-database/.../di/DatabaseModule`): Room DB instance, all DAOs
+- **core-domain** (`core/core-domain/.../di/DomainModule`): Repository bindings, use case factory
+- **shared** (`shared/src/commonMain/di/`): Re-exports core modules; `ViewModelModule` for SettingsViewModel
+- **Android** (`androidApp/CivitDeckApplication.kt`): Platform-specific ViewModel registrations, platform drivers
+- **iOS** (`shared/src/iosMain/di/KoinHelper.kt`): Use case accessors for SwiftUI ViewModels via `KoinHelper.shared.getXxx()`
 
 ## CI/CD
 

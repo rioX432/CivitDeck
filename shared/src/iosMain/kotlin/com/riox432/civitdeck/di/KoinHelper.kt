@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
+import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
@@ -61,13 +62,26 @@ import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveModelColl
 import com.riox432.civitdeck.feature.collections.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.RenameCollectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ApplyWorkflowTemplateUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.CancelComfyUIJobUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteWorkflowTemplateUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExportWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FindMatchingLocalModelUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.GetWorkflowTemplatesUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowTemplateUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIConnectionsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIQueueUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.PopulateGenerationFromModelUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
@@ -202,9 +216,25 @@ object KoinHelper {
     fun getActivateComfyUIConnectionUseCase(): ActivateComfyUIConnectionUseCase = getKoin().get()
     fun getTestComfyUIConnectionUseCase(): TestComfyUIConnectionUseCase = getKoin().get()
     fun getFetchComfyUICheckpointsUseCase(): FetchComfyUICheckpointsUseCase = getKoin().get()
+    fun getFetchComfyUILorasUseCase(): FetchComfyUILorasUseCase = getKoin().get()
+    fun getFetchComfyUIControlNetsUseCase(): FetchComfyUIControlNetsUseCase = getKoin().get()
+    fun getImportWorkflowUseCase(): ImportWorkflowUseCase = getKoin().get()
     fun getSubmitComfyUIGenerationUseCase(): SubmitComfyUIGenerationUseCase = getKoin().get()
     fun getPollComfyUIResultUseCase(): PollComfyUIResultUseCase = getKoin().get()
     fun getObserveGenerationProgressUseCase(): ObserveGenerationProgressUseCase = getKoin().get()
+    fun getObserveComfyUIQueueUseCase(): ObserveComfyUIQueueUseCase = getKoin().get()
+    fun getCancelComfyUIJobUseCase(): CancelComfyUIJobUseCase = getKoin().get()
+    fun getFindMatchingLocalModelUseCase(): FindMatchingLocalModelUseCase = getKoin().get()
+    fun getPopulateGenerationFromModelUseCase(): PopulateGenerationFromModelUseCase = getKoin().get()
+    fun getSaveGeneratedImageUseCase(): SaveGeneratedImageUseCase = getKoin().get()
+
+    // Workflow template use cases
+    fun getGetWorkflowTemplatesUseCase(): GetWorkflowTemplatesUseCase = getKoin().get()
+    fun getSaveWorkflowTemplateUseCase(): SaveWorkflowTemplateUseCase = getKoin().get()
+    fun getDeleteWorkflowTemplateUseCase(): DeleteWorkflowTemplateUseCase = getKoin().get()
+    fun getExportWorkflowTemplateUseCase(): ExportWorkflowTemplateUseCase = getKoin().get()
+    fun getImportWorkflowTemplateUseCase(): ImportWorkflowTemplateUseCase = getKoin().get()
+    fun getApplyWorkflowTemplateUseCase(): ApplyWorkflowTemplateUseCase = getKoin().get()
 
     // ViewModels
     fun createSettingsViewModel(): SettingsViewModel = getKoin().get()

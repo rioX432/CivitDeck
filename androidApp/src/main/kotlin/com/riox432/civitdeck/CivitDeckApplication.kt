@@ -20,8 +20,10 @@ import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ModelFileBrowserViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
@@ -125,5 +127,7 @@ val androidModule = module {
     viewModel { GestureTutorialViewModel(get(), get()) }
     viewModel { SwipeDiscoveryViewModel(get(), get()) }
     viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
-    viewModel { ComfyUIGenerationViewModel(get(), get(), get(), get(), get()) }
+    viewModel { ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { ComfyUIQueueViewModel(get(), get()) }
+    viewModel { WorkflowTemplateViewModel(get(), get(), get(), get(), get()) }
 }

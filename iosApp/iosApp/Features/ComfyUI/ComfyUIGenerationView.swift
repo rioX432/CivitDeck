@@ -3,6 +3,10 @@ import Shared
 
 struct ComfyUIGenerationView: View {
     @StateObject private var viewModel = ComfyUIGenerationViewModel()
+    @State private var showWorkflowImport = false
+    @State private var workflowInputText = ""
+    @State private var showSaveAlert = false
+    @State private var showTemplatePicker = false
 
     var body: some View {
         ScrollView {
@@ -10,6 +14,9 @@ struct ComfyUIGenerationView: View {
                 checkpointPicker
                 promptInputs
                 parameterControls
+                loraSection
+                controlNetSection
+                customWorkflowSection
                 generateButton
                 statusSection
                 resultGrid
@@ -18,7 +25,35 @@ struct ComfyUIGenerationView: View {
         }
         .navigationTitle("txt2img")
         .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.loadCheckpoints() }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showTemplatePicker = true
+                } label: {
+                    Image(systemName: "folder")
+                }
+            }
+        }
+        .task { await viewModel.loadAll() }
+        .sheet(isPresented: $showTemplatePicker) {
+            NavigationStack {
+                WorkflowTemplateView(isPicker: true, onSelect: { _ in
+                    showTemplatePicker = false
+                })
+            }
+        }
+        .sheet(isPresented: $showWorkflowImport) {
+            workflowImportSheet
+        }
+        .alert(
+            viewModel.imageSaveSuccess == true ? "Saved to gallery" : "Save failed",
+            isPresented: $showSaveAlert
+        ) {
+            Button("OK") { viewModel.imageSaveSuccess = nil }
+        }
+        .onChange(of: viewModel.imageSaveSuccess) { newValue in
+            if newValue != nil { showSaveAlert = true }
+        }
     }
 
     private var checkpointPicker: some View {
@@ -80,9 +115,107 @@ struct ComfyUIGenerationView: View {
         }
     }
 
+    private var loraSection: some View {
+        GroupBox(label: Label("LoRA", systemImage: "cpu")) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                if viewModel.availableLoras.isEmpty {
+                    Text("No LoRAs found on server").font(.civitBodySmall)
+                        .foregroundColor(.civitOnSurfaceVariant)
+                } else {
+                    Menu("Add LoRA") {
+                        ForEach(viewModel.availableLoras, id: \.self) { lora in
+                            Button(lora.components(separatedBy: "/").last ?? lora) {
+                                viewModel.onLoraAdded(lora)
+                            }
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                }
+                ForEach(viewModel.loraSelections) { lora in
+                    LoraRow(lora: lora, viewModel: viewModel)
+                }
+            }
+        }
+    }
+
+    private var controlNetSection: some View {
+        GroupBox(label: Label("ControlNet", systemImage: "slider.horizontal.3")) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Toggle("Enable ControlNet", isOn: $viewModel.controlNetEnabled)
+                if viewModel.controlNetEnabled {
+                    Picker("Model", selection: $viewModel.selectedControlNet) {
+                        Text("Select...").tag("")
+                        ForEach(viewModel.availableControlNets, id: \.self) { cn in
+                            Text(cn.components(separatedBy: "/").last ?? cn).tag(cn)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    paramSlider(label: "Strength", value: $viewModel.controlNetStrength, range: 0...2, format: "%.2f")
+                }
+            }
+        }
+    }
+
+    private var customWorkflowSection: some View {
+        GroupBox(label: Label("Custom Workflow", systemImage: "doc.badge.gearshape")) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                if let json = viewModel.customWorkflowJson {
+                    HStack {
+                        Text("Workflow loaded (\(json.count) chars)")
+                            .font(.civitBodySmall).foregroundColor(.civitPrimary)
+                        Spacer()
+                        Button(action: viewModel.onClearCustomWorkflow) {
+                            Image(systemName: "xmark.circle.fill")
+                        }
+                        .buttonStyle(.plain)
+                    }
+                } else {
+                    Button("Import Workflow JSON") { showWorkflowImport = true }
+                        .buttonStyle(.bordered)
+                }
+                if let err = viewModel.workflowImportError {
+                    Text(err).font(.civitBodySmall).foregroundColor(.civitError)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var workflowImportSheet: some View {
+        NavigationStack {
+            VStack(spacing: Spacing.md) {
+                Text("Paste ComfyUI Workflow JSON").font(.civitBodyMedium)
+                TextEditor(text: $workflowInputText)
+                    .font(.system(.caption, design: .monospaced))
+                    .frame(maxWidth: .infinity, minHeight: 200)
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.civitOnSurfaceVariant.opacity(0.4)))
+                if let err = viewModel.workflowImportError {
+                    Text(err).font(.civitBodySmall).foregroundColor(.civitError)
+                }
+            }
+            .padding(Spacing.md)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { showWorkflowImport = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Import") {
+                        viewModel.onImportWorkflow(workflowInputText)
+                        if viewModel.workflowImportError == nil {
+                            showWorkflowImport = false
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private var generateButton: some View {
         let isGenerating = viewModel.generationStatus == .submitting
             || viewModel.generationStatus == .running
+        let canGenerate = viewModel.customWorkflowJson != nil
+            || (!viewModel.selectedCheckpoint.isEmpty && !viewModel.prompt.isEmpty)
         return Button(action: viewModel.onGenerate) {
             HStack {
                 if isGenerating {
@@ -93,7 +226,7 @@ struct ComfyUIGenerationView: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
-        .disabled(isGenerating || viewModel.selectedCheckpoint.isEmpty || viewModel.prompt.isEmpty)
+        .disabled(isGenerating || !canGenerate)
     }
 
     @ViewBuilder
@@ -135,20 +268,63 @@ struct ComfyUIGenerationView: View {
             let columns = [GridItem(.flexible()), GridItem(.flexible())]
             LazyVGrid(columns: columns, spacing: Spacing.sm) {
                 ForEach(viewModel.resultImageUrls, id: \.self) { url in
-                    CachedAsyncImage(url: URL(string: url)) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image.resizable().aspectRatio(1, contentMode: .fill)
-                        case .failure:
-                            Color.civitSurfaceVariant
-                        default:
-                            Color.civitSurfaceVariant.overlay(ProgressView())
+                    VStack(spacing: 0) {
+                        CachedAsyncImage(url: URL(string: url)) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable().aspectRatio(1, contentMode: .fill)
+                            case .failure:
+                                Color.civitSurfaceVariant
+                            default:
+                                Color.civitSurfaceVariant.overlay(ProgressView())
+                            }
                         }
+                        .frame(minHeight: 150)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        Button {
+                            viewModel.onSaveImage(url: url)
+                        } label: {
+                            Label("Save", systemImage: "square.and.arrow.down")
+                                .font(.civitBodySmall)
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderless)
+                        .padding(.top, Spacing.xs)
                     }
-                    .frame(minHeight: 150)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
             }
         }
+    }
+}
+
+private struct LoraRow: View {
+    let lora: LoraSelectionSwift
+    let viewModel: ComfyUIGenerationViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack {
+                Text(lora.name.components(separatedBy: "/").last ?? lora.name)
+                    .font(.civitBodySmall).lineLimit(1)
+                Spacer()
+                Button { viewModel.onLoraRemoved(lora.name) } label: {
+                    Image(systemName: "xmark.circle.fill").foregroundColor(.civitError)
+                }
+                .buttonStyle(.plain)
+            }
+            HStack {
+                Text("Strength: \(String(format: "%.2f", lora.strengthModel))")
+                    .font(.civitBodySmall)
+                    .frame(width: 110, alignment: .leading)
+                Slider(
+                    value: Binding(
+                        get: { Double(lora.strengthModel) },
+                        set: { viewModel.onLoraStrengthChanged(name: lora.name, strength: $0) }
+                    ),
+                    in: 0...2
+                )
+            }
+        }
+        .padding(.vertical, Spacing.xs)
     }
 }

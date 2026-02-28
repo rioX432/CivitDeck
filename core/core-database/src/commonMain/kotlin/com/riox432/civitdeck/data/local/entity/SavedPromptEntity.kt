@@ -20,4 +20,6 @@ data class SavedPromptEntity(
     @ColumnInfo(defaultValue = "0") val isTemplate: Boolean = false,
     val templateName: String? = null,
     @ColumnInfo(defaultValue = "0") val autoSaved: Boolean = false,
+    val templateVariables: String? = null,
+    val templateType: String? = null,
 )

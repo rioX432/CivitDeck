@@ -4,7 +4,7 @@ import Shared
 
 @MainActor
 final class SpotlightIndexManager: ObservableObject {
-    private let observeFavoritesUseCase: ObserveFavoritesUseCase
+    private let observeFavoritesUseCase: Core_domainObserveFavoritesUseCase
     private var observeTask: Task<Void, Never>?
 
     init() {
@@ -18,12 +18,12 @@ final class SpotlightIndexManager: ObservableObject {
 
     private func observe() async {
         for await list in observeFavoritesUseCase.invoke() {
-            let favorites = list.compactMap { $0 as? FavoriteModelSummary }
+            let favorites = list.compactMap { $0 as? Core_domainFavoriteModelSummary }
             indexFavorites(favorites)
         }
     }
 
-    private func indexFavorites(_ favorites: [FavoriteModelSummary]) {
+    private func indexFavorites(_ favorites: [Core_domainFavoriteModelSummary]) {
         let items = favorites.map { SpotlightItemBuilder.build(from: $0) }
         CSSearchableIndex.default().indexSearchableItems(items) { error in
             if let error {

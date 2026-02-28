@@ -3,6 +3,7 @@ package com.riox432.civitdeck.data.local.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Upsert
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -38,6 +39,9 @@ interface SavedPromptDao {
 
     @Insert
     suspend fun insert(entity: SavedPromptEntity)
+
+    @Upsert
+    suspend fun upsert(entity: SavedPromptEntity)
 
     @Query("DELETE FROM saved_prompts WHERE id = :id")
     suspend fun deleteById(id: Long)

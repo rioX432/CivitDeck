@@ -24,6 +24,7 @@ fun AdvancedSettingsScreen(
     onBack: () -> Unit,
     onNavigateToComfyUI: () -> Unit = {},
     onNavigateToModelFiles: () -> Unit = {},
+    onNavigateToTemplates: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
@@ -44,6 +45,7 @@ fun AdvancedSettingsScreen(
             if (state.powerUserMode) {
                 item { SectionHeader("ComfyUI") }
                 item { SubScreenRow("Server Connections", onNavigateToComfyUI) }
+                item { SubScreenRow("Workflow Templates", onNavigateToTemplates) }
                 item { SectionHeader("Model Files") }
                 item { SubScreenRow("Model File Browser", onNavigateToModelFiles) }
             }

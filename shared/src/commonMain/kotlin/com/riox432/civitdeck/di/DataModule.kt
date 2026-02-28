@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.di
 
+import com.riox432.civitdeck.data.image.ImageSaver
 import com.riox432.civitdeck.data.repository.AuthRepositoryImpl
 import com.riox432.civitdeck.data.repository.BrowsingHistoryRepositoryImpl
 import com.riox432.civitdeck.data.repository.CacheRepositoryImpl
@@ -22,6 +23,9 @@ import org.koin.dsl.module
 val dataModule = module {
     // File Scanner
     single { FileScanner() }
+
+    // Image Saver (platform-specific via expect/actual)
+    single { ImageSaver() }
 
     // Repositories
     single<AuthRepository> { AuthRepositoryImpl(get()) }

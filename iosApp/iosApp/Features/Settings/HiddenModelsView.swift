@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct HiddenModelsView: View {
-    let models: [HiddenModel]
+    let models: [Core_domainHiddenModel]
     let onUnhide: (Int64) -> Void
 
     var body: some View {

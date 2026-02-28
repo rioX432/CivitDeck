@@ -121,7 +121,7 @@ enum CollectionSortOrder_: String, CaseIterable {
 }
 
 // swiftlint:disable:next type_name
-typealias ModelType_ = Shared.ModelType
+typealias ModelType_ = Core_domainModelType
 
 extension CollectionDetailViewModel {
     static let allModelTypes: [ModelType_] = [

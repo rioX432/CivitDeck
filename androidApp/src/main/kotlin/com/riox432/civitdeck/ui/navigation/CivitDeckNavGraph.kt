@@ -47,8 +47,10 @@ import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_L
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ModelFileBrowserViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
@@ -59,7 +61,10 @@ import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
 import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.CollectionsScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationScreen
+import com.riox432.civitdeck.ui.comfyui.ComfyUIQueueScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsScreen
+import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateEditorScreen
+import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateScreen
 import com.riox432.civitdeck.ui.compare.ModelCompareScreen
 import com.riox432.civitdeck.ui.creator.CreatorProfileScreen
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
@@ -111,6 +116,27 @@ data class CompareRoute(val leftModelId: Long, val rightModelId: Long)
 data object ComfyUISettingsRoute
 
 data object ComfyUIGenerationRoute
+
+data object ComfyUIQueueRoute
+
+data class ComfyUIBridgeRoute(
+    val modelId: Long,
+    val versionId: Long,
+    val sha256Hash: String,
+    val modelName: String,
+    val prompt: String?,
+    val negativePrompt: String?,
+    val steps: Int?,
+    val cfgScale: Double?,
+    val seed: Long?,
+    val sampler: String?,
+)
+
+data object WorkflowTemplateLibraryRoute
+
+data class WorkflowTemplateEditorRoute(val templateId: Long)
+
+data object WorkflowTemplatePickerRoute
 
 data object AppearanceSettingsRoute
 
@@ -392,6 +418,7 @@ private fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {
         val viewModel: ModelDetailViewModel = koinViewModel(
             key = key.modelId.toString(),
         ) { parametersOf(key.modelId) }
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
         ModelDetailScreen(
             viewModel = viewModel,
             modelId = key.modelId,
@@ -403,6 +430,27 @@ private fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {
             },
             onCreatorClick = { username ->
                 backStack.add(CreatorRoute(username))
+            },
+            onTryInComfyUI = if (uiState.powerUserMode) {
+                { sha256, modelName, meta ->
+                    backStack.add(
+                        ComfyUIBridgeRoute(
+                            modelId = key.modelId,
+                            versionId = uiState.model?.modelVersions
+                                ?.getOrNull(uiState.selectedVersionIndex)?.id ?: 0L,
+                            sha256Hash = sha256,
+                            modelName = modelName,
+                            prompt = meta?.prompt,
+                            negativePrompt = meta?.negativePrompt,
+                            steps = meta?.steps,
+                            cfgScale = meta?.cfgScale,
+                            seed = meta?.seed,
+                            sampler = meta?.sampler,
+                        )
+                    )
+                }
+            } else {
+                null
             },
         )
     }
@@ -500,6 +548,7 @@ private fun EntryProviderScope<Any>.settingsSubScreenEntries(backStack: MutableL
             onBack = { backStack.removeLastOrNull() },
             onNavigateToComfyUI = { backStack.add(ComfyUISettingsRoute) },
             onNavigateToModelFiles = { backStack.add(ModelFileBrowserRoute) },
+            onNavigateToTemplates = { backStack.add(WorkflowTemplateLibraryRoute) },
         )
     }
 }
@@ -516,6 +565,58 @@ private fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>) 
     entry<ComfyUIGenerationRoute> {
         val viewModel: ComfyUIGenerationViewModel = koinViewModel()
         ComfyUIGenerationScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onLoadTemplate = { backStack.add(WorkflowTemplatePickerRoute) },
+        )
+    }
+    entry<ComfyUIQueueRoute> {
+        val viewModel: ComfyUIQueueViewModel = koinViewModel()
+        ComfyUIQueueScreen(viewModel = viewModel, onBack = { backStack.removeLastOrNull() })
+    }
+    entry<ComfyUIBridgeRoute> { key ->
+        val viewModel: ComfyUIGenerationViewModel = koinViewModel(
+            key = "bridge_${key.modelId}_${key.versionId}",
+        )
+        ComfyUIGenerationScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onLoadTemplate = { backStack.add(WorkflowTemplatePickerRoute) },
+        )
+    }
+    workflowTemplateEntries(backStack)
+}
+
+private fun EntryProviderScope<Any>.workflowTemplateEntries(backStack: MutableList<Any>) {
+    entry<WorkflowTemplateLibraryRoute> {
+        val viewModel: WorkflowTemplateViewModel = koinViewModel()
+        WorkflowTemplateScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onCreateTemplate = { backStack.add(WorkflowTemplateEditorRoute(templateId = 0L)) },
+            onEditTemplate = { template -> backStack.add(WorkflowTemplateEditorRoute(templateId = template.id)) },
+        )
+    }
+    entry<WorkflowTemplatePickerRoute> {
+        val viewModel: WorkflowTemplateViewModel = koinViewModel()
+        WorkflowTemplateScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onCreateTemplate = {},
+            onEditTemplate = {},
+            onSelectTemplate = { backStack.removeLastOrNull() },
+        )
+    }
+    entry<WorkflowTemplateEditorRoute> { key ->
+        val viewModel: WorkflowTemplateViewModel = koinViewModel()
+        val template = if (key.templateId == 0L) {
+            WorkflowTemplateViewModel.emptyTemplate()
+        } else {
+            viewModel.uiState.value.templates.find { it.id == key.templateId }
+                ?: WorkflowTemplateViewModel.emptyTemplate()
+        }
+        WorkflowTemplateEditorScreen(
+            initialTemplate = template,
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
         )

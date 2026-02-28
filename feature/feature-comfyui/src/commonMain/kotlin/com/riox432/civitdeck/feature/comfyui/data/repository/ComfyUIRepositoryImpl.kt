@@ -12,20 +12,30 @@ import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
+import com.riox432.civitdeck.domain.model.LoraSelection
+import com.riox432.civitdeck.domain.model.QueueJob
+import com.riox432.civitdeck.domain.model.QueueJobStatus
 import com.riox432.civitdeck.domain.repository.ComfyUIRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 
 class ComfyUIRepositoryImpl(
     private val dao: ComfyUIConnectionDao,
     private val api: ComfyUIApi,
     private val webSocketApi: ComfyUIWebSocketApi,
+    private val json: Json,
 ) : ComfyUIRepository {
 
     override fun observeConnections(): Flow<List<ComfyUIConnection>> =
@@ -76,6 +86,16 @@ class ComfyUIRepositoryImpl(
     override suspend fun fetchCheckpoints(): List<String> {
         ensureApiConfigured()
         return api.getCheckpoints()
+    }
+
+    override suspend fun fetchLoras(): List<String> {
+        ensureApiConfigured()
+        return api.getLoras()
+    }
+
+    override suspend fun fetchControlNets(): List<String> {
+        ensureApiConfigured()
+        return api.getControlNets()
     }
 
     override suspend fun submitGeneration(params: ComfyUIGenerationParams): String {
@@ -129,6 +149,47 @@ class ComfyUIRepositoryImpl(
         return api.getImageUrl(ComfyUIOutputImage(filename, subfolder, type))
     }
 
+    override fun observeQueue(intervalMs: Long): Flow<List<QueueJob>> = flow {
+        while (true) {
+            try {
+                ensureApiConfigured()
+                val response = api.getQueue()
+                val jobs = mutableListOf<QueueJob>()
+                response.running.forEachIndexed { index, entry ->
+                    jobs.add(QueueJob(extractPromptId(entry), index, QueueJobStatus.Running))
+                }
+                response.pending.forEachIndexed { index, entry ->
+                    jobs.add(QueueJob(extractPromptId(entry), index, QueueJobStatus.Queued))
+                }
+                emit(jobs)
+            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+                emit(emptyList())
+            }
+            delay(intervalMs)
+        }
+    }
+
+    override suspend fun cancelJob(promptId: String) {
+        ensureApiConfigured()
+        api.deleteQueue(listOf(promptId))
+    }
+
+    /**
+     * ComfyUI queue entries are arrays: [queue_number, prompt_id, prompt, extra_data, outputs].
+     * Extract prompt_id (index 1) from the array element.
+     */
+    private fun extractPromptId(entry: JsonElement): String {
+        return try {
+            when (entry) {
+                is JsonArray -> entry.getOrNull(1)?.jsonPrimitive?.content ?: ""
+                is JsonObject -> entry["prompt_id"]?.jsonPrimitive?.content ?: ""
+                else -> entry.jsonPrimitive.content
+            }
+        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            ""
+        }
+    }
+
     private suspend fun ensureApiConfigured() {
         val active = dao.getActive() ?: error("No active ComfyUI connection")
         api.setBaseUrl(active.hostname, active.port)
@@ -136,19 +197,47 @@ class ComfyUIRepositoryImpl(
 
     @Suppress("LongMethod")
     private fun buildWorkflow(params: ComfyUIGenerationParams): JsonObject {
+        // If custom workflow JSON is provided, use it directly
+        val customJson = params.customWorkflowJson
+        if (customJson != null) {
+            return json.decodeFromString(customJson)
+        }
+
+        // Determine which node ID the model output flows from (after LoRA chain).
+        // Node IDs:
+        //   3  = CheckpointLoaderSimple
+        //   10,11,... = LoraLoader nodes (one per LoRA)
+        //   20 = ControlNetLoader (if enabled)
+        //   21 = ControlNetApply (if enabled)
+        //   6  = CLIPTextEncode (positive)
+        //   7  = CLIPTextEncode (negative)
+        //   5  = EmptyLatentImage
+        //   4  = KSampler
+        //   8  = VAEDecode
+        //   9  = SaveImage
+        val loraChain = buildLoraChain(params.loraSelections)
+        val finalModelNodeId = loraChain.lastOrNull()?.nodeId ?: "3"
+        val finalClipNodeId = loraChain.lastOrNull()?.nodeId ?: "3"
+        val finalModelOutput = if (loraChain.isEmpty()) 0 else 0
+        val finalClipOutput = if (loraChain.isEmpty()) 1 else 1
+
+        // Positive conditioning source
+        val positiveCondId = if (params.controlNetEnabled && params.controlNetModel.isNotBlank()) "21" else "6"
+
         return buildJsonObject {
+            // Checkpoint loader (node 3)
             put(
                 "3",
                 buildJsonObject {
                     put("class_type", "CheckpointLoaderSimple")
-                    put(
-                        "inputs",
-                        buildJsonObject {
-                            put("ckpt_name", params.checkpoint)
-                        }
-                    )
+                    put("inputs", buildJsonObject { put("ckpt_name", params.checkpoint) })
                 }
             )
+            // LoRA nodes (nodes 10, 11, ...)
+            loraChain.forEach { loraNode ->
+                put(loraNode.nodeId, loraNode.jsonNode)
+            }
+            // CLIPTextEncode positive (node 6)
             put(
                 "6",
                 buildJsonObject {
@@ -157,11 +246,12 @@ class ComfyUIRepositoryImpl(
                         "inputs",
                         buildJsonObject {
                             put("text", params.prompt)
-                            put("clip", nodeLink("3", 1))
+                            put("clip", nodeLink(finalClipNodeId, finalClipOutput))
                         }
                     )
                 }
             )
+            // CLIPTextEncode negative (node 7)
             put(
                 "7",
                 buildJsonObject {
@@ -170,11 +260,40 @@ class ComfyUIRepositoryImpl(
                         "inputs",
                         buildJsonObject {
                             put("text", params.negativePrompt)
-                            put("clip", nodeLink("3", 1))
+                            put("clip", nodeLink(finalClipNodeId, finalClipOutput))
                         }
                     )
                 }
             )
+            // ControlNet nodes (20, 21) if enabled
+            if (params.controlNetEnabled && params.controlNetModel.isNotBlank()) {
+                put(
+                    "20",
+                    buildJsonObject {
+                        put("class_type", "ControlNetLoader")
+                        put(
+                            "inputs",
+                            buildJsonObject { put("control_net_name", params.controlNetModel) }
+                        )
+                    }
+                )
+                put(
+                    "21",
+                    buildJsonObject {
+                        put("class_type", "ControlNetApply")
+                        put(
+                            "inputs",
+                            buildJsonObject {
+                                put("conditioning", nodeLink("6", 0))
+                                put("control_net", nodeLink("20", 0))
+                                put("image", buildJsonArray { }) // placeholder — no image input in txt2img
+                                put("strength", params.controlNetStrength.toDouble())
+                            }
+                        )
+                    }
+                )
+            }
+            // EmptyLatentImage (node 5)
             put(
                 "5",
                 buildJsonObject {
@@ -189,6 +308,7 @@ class ComfyUIRepositoryImpl(
                     )
                 }
             )
+            // KSampler (node 4)
             put(
                 "4",
                 buildJsonObject {
@@ -202,14 +322,15 @@ class ComfyUIRepositoryImpl(
                             put("sampler_name", params.samplerName)
                             put("scheduler", params.scheduler)
                             put("denoise", 1.0)
-                            put("model", nodeLink("3", 0))
-                            put("positive", nodeLink("6", 0))
+                            put("model", nodeLink(finalModelNodeId, finalModelOutput))
+                            put("positive", nodeLink(positiveCondId, 0))
                             put("negative", nodeLink("7", 0))
                             put("latent_image", nodeLink("5", 0))
                         }
                     )
                 }
             )
+            // VAEDecode (node 8)
             put(
                 "8",
                 buildJsonObject {
@@ -223,6 +344,7 @@ class ComfyUIRepositoryImpl(
                     )
                 }
             )
+            // SaveImage (node 9)
             put(
                 "9",
                 buildJsonObject {
@@ -237,6 +359,37 @@ class ComfyUIRepositoryImpl(
                 }
             )
         }
+    }
+
+    /**
+     * Builds a chain of LoraLoader nodes. Each LoRA takes the model/clip output
+     * of the previous node (or the checkpoint loader for the first LoRA).
+     * Returns a list of (nodeId, jsonNode) pairs.
+     */
+    private data class LoraNodeEntry(val nodeId: String, val jsonNode: JsonObject)
+
+    private fun buildLoraChain(loras: List<LoraSelection>): List<LoraNodeEntry> {
+        if (loras.isEmpty()) return emptyList()
+        val entries = mutableListOf<LoraNodeEntry>()
+        loras.forEachIndexed { index, lora ->
+            val nodeId = (10 + index).toString()
+            val prevNodeId = if (index == 0) "3" else (10 + index - 1).toString()
+            val node = buildJsonObject {
+                put("class_type", "LoraLoader")
+                put(
+                    "inputs",
+                    buildJsonObject {
+                        put("lora_name", lora.name)
+                        put("strength_model", lora.strengthModel.toDouble())
+                        put("strength_clip", lora.strengthClip.toDouble())
+                        put("model", nodeLink(prevNodeId, 0))
+                        put("clip", nodeLink(prevNodeId, 1))
+                    }
+                )
+            }
+            entries.add(LoraNodeEntry(nodeId, node))
+        }
+        return entries
     }
 
     private fun nodeLink(nodeId: String, outputIndex: Int) = buildJsonArray {

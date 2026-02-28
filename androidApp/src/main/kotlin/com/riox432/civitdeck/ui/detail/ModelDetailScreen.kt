@@ -111,6 +111,14 @@ fun ModelDetailScreen(
     onBack: () -> Unit,
     onViewImages: (Long) -> Unit = {},
     onCreatorClick: (String) -> Unit = {},
+    onTryInComfyUI:
+    (
+        (
+            sha256: String,
+            modelName: String,
+            meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?
+        ) -> Unit
+    )? = null,
     sharedElementSuffix: String = "",
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -142,6 +150,7 @@ fun ModelDetailScreen(
             onVersionSelected = viewModel::onVersionSelected,
             onViewImages = onViewImages,
             onCreatorClick = onCreatorClick,
+            onTryInComfyUI = onTryInComfyUI,
             contentPadding = padding,
         )
     }
@@ -228,6 +237,7 @@ private fun prepareImages(
     return listOf(filtered[idx]) + filtered.subList(0, idx) + filtered.subList(idx + 1, filtered.size)
 }
 
+@Suppress("LongParameterList")
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ModelDetailBody(
@@ -239,6 +249,8 @@ private fun ModelDetailBody(
     onVersionSelected: (Int) -> Unit,
     onViewImages: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
+    onTryInComfyUI:
+    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     contentPadding: PaddingValues,
 ) {
     val model = uiState.model
@@ -270,6 +282,7 @@ private fun ModelDetailBody(
             onViewImages = onViewImages,
             onCreatorClick = onCreatorClick,
             onShowImageGrid = { showImageGrid = true },
+            onTryInComfyUI = onTryInComfyUI,
             bottomPadding = contentPadding.calculateBottomPadding(),
             modifier = Modifier.weight(1f),
             carouselContent = {
@@ -342,6 +355,8 @@ private fun DetailStateContent(
     onViewImages: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
     onShowImageGrid: () -> Unit,
+    onTryInComfyUI:
+    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     bottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
     carouselContent: @Composable () -> Unit = {},
@@ -381,6 +396,7 @@ private fun DetailStateContent(
                         onViewImages = onViewImages,
                         onCreatorClick = onCreatorClick,
                         onShowImageGrid = onShowImageGrid,
+                        onTryInComfyUI = onTryInComfyUI,
                         bottomPadding = bottomPadding,
                         carouselContent = carouselContent,
                     )
@@ -453,6 +469,8 @@ private fun ModelDetailContentBody(
     onViewImages: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
     onShowImageGrid: () -> Unit,
+    onTryInComfyUI:
+    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     bottomPadding: androidx.compose.ui.unit.Dp,
     carouselContent: @Composable () -> Unit = {},
 ) {
@@ -484,11 +502,13 @@ private fun ModelDetailContentBody(
             onViewImages = onViewImages,
             onCreatorClick = onCreatorClick,
             onShowImageGrid = onShowImageGrid,
+            onTryInComfyUI = onTryInComfyUI,
             carouselContent = carouselContent,
         )
     }
 }
 
+@Suppress("LongParameterList")
 private fun LazyListScope.modelDetailItems(
     model: Model,
     uiState: ModelDetailUiState,
@@ -498,6 +518,8 @@ private fun LazyListScope.modelDetailItems(
     onViewImages: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
     onShowImageGrid: () -> Unit,
+    onTryInComfyUI:
+    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     carouselContent: @Composable () -> Unit,
 ) {
     item { carouselContent() }
@@ -512,10 +534,19 @@ private fun LazyListScope.modelDetailItems(
         )
     }
     item {
+        val primaryFile = selectedVersion.files.firstOrNull { it.primary } ?: selectedVersion.files.firstOrNull()
+        val sha256 = primaryFile?.hashes?.get("SHA256") ?: primaryFile?.hashes?.get("sha256")
+        val sampleMeta = images.firstOrNull()?.meta
         ImageActionsRow(
             onViewImages = { onViewImages(selectedVersion.id) },
             onShowGrid = onShowImageGrid,
             hasImages = images.isNotEmpty(),
+            showTryInComfyUI = onTryInComfyUI != null,
+            onTryInComfyUI = {
+                if (onTryInComfyUI != null && sha256 != null) {
+                    onTryInComfyUI(sha256, model.name, sampleMeta)
+                }
+            },
         )
     }
     if (model.tags.isNotEmpty()) { item { TagsSection(tags = model.tags) } }
@@ -539,6 +570,8 @@ private fun ImageActionsRow(
     onViewImages: () -> Unit,
     onShowGrid: () -> Unit,
     hasImages: Boolean,
+    showTryInComfyUI: Boolean = false,
+    onTryInComfyUI: () -> Unit = {},
 ) {
     Row(
         modifier = Modifier
@@ -556,6 +589,17 @@ private fun ImageActionsRow(
             ),
         ) {
             Text("View Community Images")
+        }
+        if (showTryInComfyUI) {
+            Button(
+                onClick = onTryInComfyUI,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                ),
+            ) {
+                Text("Try in ComfyUI")
+            }
         }
         if (hasImages) {
             IconButton(onClick = onShowGrid) {
