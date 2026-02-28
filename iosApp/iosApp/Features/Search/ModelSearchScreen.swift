@@ -170,7 +170,7 @@ struct ModelSearchScreen: View {
                 }
             }
         }
-        .padding(10)
+        .padding(Spacing.smPlus)
         .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.searchBar)
                 .stroke(Color.civitOutlineVariant, lineWidth: 1)

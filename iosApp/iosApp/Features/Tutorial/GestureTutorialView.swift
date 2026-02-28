@@ -80,7 +80,7 @@ private struct TutorialPageView: View {
     var body: some View {
         VStack(spacing: 0) {
             stepAnimation
-                .padding(.bottom, 32)
+                .padding(.bottom, Spacing.xxl)
             Text(step.title)
                 .font(.civitHeadlineSmall)
                 .foregroundColor(.civitOnSurface)
@@ -90,7 +90,7 @@ private struct TutorialPageView: View {
                 .font(.civitBodyMedium)
                 .foregroundColor(.civitOnSurfaceVariant)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, Spacing.xl)
         }
     }
 

@@ -33,7 +33,7 @@ struct TagFilterSection: View {
                 .font(.civitBodySmall)
                 .submitLabel(.done)
                 .onSubmit(submitTag)
-                .padding(8)
+                .padding(Spacing.sm)
                 .overlay(
                     RoundedRectangle(cornerRadius: CornerRadius.searchBar)
                         .stroke(Color.civitOutlineVariant, lineWidth: 1)
@@ -50,7 +50,7 @@ struct TagFilterSection: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.xs) {
                 ForEach(tags, id: \.self) { tag in
-                    HStack(spacing: 4) {
+                    HStack(spacing: Spacing.xs) {
                         Text(tag)
                             .font(.civitLabelSmall)
                         Button {
@@ -61,7 +61,7 @@ struct TagFilterSection: View {
                         }
                     }
                     .padding(.horizontal, Spacing.sm)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, Spacing.xs)
                     .background(chipColor.opacity(0.15))
                     .foregroundColor(chipColor)
                     .clipShape(Capsule())
