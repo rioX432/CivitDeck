@@ -94,7 +94,7 @@ struct ImageViewerScreen: View {
                 }
                 Spacer()
             }
-            .padding(16)
+            .padding(Spacing.lg)
 
             Spacer()
 
@@ -112,7 +112,7 @@ struct ImageViewerScreen: View {
                     }
                 }
             }
-            .padding(16)
+            .padding(Spacing.lg)
         }
     }
 
@@ -171,8 +171,8 @@ struct ImageViewerScreen: View {
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundColor(.white)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
+                .padding(.horizontal, Spacing.lg)
+                .padding(.vertical, Spacing.smPlus)
                 .background(.ultraThinMaterial, in: Capsule())
                 .padding(.bottom, 80)
         }
@@ -229,7 +229,7 @@ private struct ControlCircleButton: View {
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundColor(.white)
-                .padding(10)
+                .padding(Spacing.smPlus)
                 .background(.ultraThinMaterial, in: Circle())
         }
         .accessibilityLabel(label ?? systemName)
