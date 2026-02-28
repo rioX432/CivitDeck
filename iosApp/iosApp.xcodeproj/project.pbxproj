@@ -11,6 +11,8 @@
 		058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		CD0001012D000001000CD001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0001002D000001000CD001 /* ContentView.swift */; };
+		CDFF01012DFFA101000CD001 /* SharedTypeAliases.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFF01002DFFA100000CD001 /* SharedTypeAliases.swift */; };
+		CDFF01032DFFA103000CD001 /* SharedServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFF01022DFFA102000CD001 /* SharedServices.swift */; };
 		CD0002012D000002000CD001 /* ModelSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002002D000002000CD001 /* ModelSearchViewModel.swift */; };
 		CD0002032D000002000CD001 /* ModelSearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002022D000002000CD001 /* ModelSearchScreen.swift */; };
 		CD0002052D000002000CD001 /* ModelCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002042D000002000CD001 /* ModelCardView.swift */; };
@@ -108,6 +110,8 @@
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AB3632DC29227652001CCB65 /* Config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		CD0001002D000001000CD001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		CDFF01002DFFA100000CD001 /* SharedTypeAliases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedTypeAliases.swift; sourceTree = "<group>"; };
+		CDFF01022DFFA102000CD001 /* SharedServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedServices.swift; sourceTree = "<group>"; };
 		CD0002002D000002000CD001 /* ModelSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSearchViewModel.swift; sourceTree = "<group>"; };
 		CD0002022D000002000CD001 /* ModelSearchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSearchScreen.swift; sourceTree = "<group>"; };
 		CD0002042D000002000CD001 /* ModelCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCardView.swift; sourceTree = "<group>"; };
@@ -252,6 +256,8 @@
 				7555FF8C242A565B00829871 /* Info.plist */,
 				2152FB032600AC8F00CF470E /* iOSApp.swift */,
 				CD0001002D000001000CD001 /* ContentView.swift */,
+				CDFF01002DFFA100000CD001 /* SharedTypeAliases.swift */,
+			CDFF01022DFFA102000CD001 /* SharedServices.swift */,
 				CD0006082D000006000CD001 /* DesignSystem */,
 				CD0003002D000003000CD001 /* Features */,
 				CDSP0A002E900001000CD001 /* Services */,
@@ -613,6 +619,8 @@
 			files = (
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
 				CD0001012D000001000CD001 /* ContentView.swift in Sources */,
+				CDFF01012DFFA101000CD001 /* SharedTypeAliases.swift in Sources */,
+			CDFF01032DFFA103000CD001 /* SharedServices.swift in Sources */,
 				CD0002012D000002000CD001 /* ModelSearchViewModel.swift in Sources */,
 				CD0002032D000002000CD001 /* ModelSearchScreen.swift in Sources */,
 				CD0002052D000002000CD001 /* ModelCardView.swift in Sources */,

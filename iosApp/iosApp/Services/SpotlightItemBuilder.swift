@@ -4,7 +4,7 @@ import Shared
 enum SpotlightItemBuilder {
     static let domainIdentifier = "com.riox432.civitdeck.favorites"
 
-    static func build(from model: FavoriteModelSummary) -> CSSearchableItem {
+    static func build(from model: Core_domainFavoriteModelSummary) -> CSSearchableItem {
         let attributeSet = CSSearchableItemAttributeSet(contentType: .item)
         attributeSet.title = model.name
         attributeSet.contentDescription = model.type.name

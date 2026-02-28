@@ -14,6 +14,7 @@ struct ComfyUIQueueView: View {
                 }
             } else if viewModel.jobs.isEmpty {
                 EmptyStateView(
+                    icon: "square.stack",
                     title: "Queue is empty",
                     subtitle: "No jobs are running or pending."
                 )

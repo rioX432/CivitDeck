@@ -13,7 +13,7 @@ final class SettingsViewModelOwner: ObservableObject {
     @Published var defaultSortOrder: CivitSortOrder = .mostDownloaded
     @Published var defaultTimePeriod: TimePeriod = .allTime
     @Published var gridColumns: Int32 = 2
-    @Published var hiddenModels: [HiddenModel] = []
+    @Published var hiddenModels: [Core_domainHiddenModel] = []
     @Published var excludedTags: [String] = []
     @Published var apiKey: String?
     @Published var connectedUsername: String?
@@ -50,7 +50,7 @@ final class SettingsViewModelOwner: ObservableObject {
             defaultSortOrder = state.defaultSortOrder
             defaultTimePeriod = state.defaultTimePeriod
             gridColumns = state.gridColumns
-            hiddenModels = state.hiddenModels as? [HiddenModel] ?? []
+            hiddenModels = state.hiddenModels as? [Core_domainHiddenModel] ?? []
             excludedTags = state.excludedTags as? [String] ?? []
             apiKey = state.apiKey
             connectedUsername = state.connectedUsername

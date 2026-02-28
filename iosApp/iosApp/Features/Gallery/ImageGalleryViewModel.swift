@@ -1,8 +1,8 @@
 import Foundation
 import Shared
 
-typealias CivitSortOrder = Shared.SortOrder
-typealias CivitImage = Shared.Image
+typealias CivitSortOrder = Core_domainSortOrder
+typealias CivitImage = Core_domainImage
 
 enum AspectRatioFilter: String, CaseIterable {
     case portrait = "Portrait"

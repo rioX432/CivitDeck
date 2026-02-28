@@ -15,4 +15,6 @@ data class SavedPrompt(
     val isTemplate: Boolean = false,
     val templateName: String? = null,
     val autoSaved: Boolean = false,
+    val templateVariables: String? = null,
+    val templateType: String? = null,
 )

@@ -164,8 +164,8 @@ enum TemplateVariableTypeSwift: String, CaseIterable {
 
 private func typeLabel(_ type: WorkflowTemplateType) -> String {
     switch type {
-    case .txt2img: return "txt2img"
-    case .img2img: return "img2img"
+    case .txt2Img: return "txt2img"
+    case .img2Img: return "img2img"
     case .inpainting: return "Inpainting"
     case .upscale: return "Upscale"
     default: return type.name

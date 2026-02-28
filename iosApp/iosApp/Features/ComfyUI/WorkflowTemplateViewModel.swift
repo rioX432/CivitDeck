@@ -89,7 +89,7 @@ class WorkflowTemplateViewModel: ObservableObject {
 
     // MARK: - Factory helpers
 
-    static func emptyTemplate(type: WorkflowTemplateType = WorkflowTemplateType.txt2img) -> WorkflowTemplate {
+    static func emptyTemplate(type: WorkflowTemplateType = WorkflowTemplateType.txt2Img) -> WorkflowTemplate {
         WorkflowTemplate(
             id: 0,
             name: "",
@@ -102,7 +102,7 @@ class WorkflowTemplateViewModel: ObservableObject {
 
     static func defaultVariables(for type: WorkflowTemplateType) -> [TemplateVariable] {
         switch type {
-        case .txt2img:
+        case .txt2Img:
             return [
                 TemplateVariable(name: "positive_prompt", type: .text, defaultValue: "", options: [], required: true),
                 TemplateVariable(name: "negative_prompt", type: .text, defaultValue: "", options: [], required: false),
@@ -112,7 +112,7 @@ class WorkflowTemplateViewModel: ObservableObject {
                 TemplateVariable(name: "width", type: .number, defaultValue: "512", options: [], required: false),
                 TemplateVariable(name: "height", type: .number, defaultValue: "512", options: [], required: false),
             ]
-        case .img2img:
+        case .img2Img:
             return [
                 TemplateVariable(name: "positive_prompt", type: .text, defaultValue: "", options: [], required: true),
                 TemplateVariable(name: "negative_prompt", type: .text, defaultValue: "", options: [], required: false),

@@ -175,7 +175,7 @@ class ComfyUIGenerationViewModel: ObservableObject {
         Task {
             do {
                 let success = try await saveImageUseCase.invoke(url: url, filename: "civitdeck_gen")
-                imageSaveSuccess = success
+                imageSaveSuccess = success.boolValue
             } catch {
                 imageSaveSuccess = false
             }

@@ -19,7 +19,7 @@ enum WidgetDataWriter {
         WidgetCenter.shared.reloadTimelines(ofKind: "CivitDeckTrendingWidget")
     }
 
-    static func writeTrendingModel(from sections: [RecommendationSection]) {
+    static func writeTrendingModel(from sections: [Core_domainRecommendationSection]) {
         guard let firstModel = sections.compactMap({ $0.models.first }).first else { return }
         let thumbUrl = firstModel.modelVersions.first?.images.first?.url
         writeTrendingModel(id: firstModel.id, name: firstModel.name, thumbnailURL: thumbUrl)

@@ -42,6 +42,29 @@ class SavedPromptRepositoryImpl(
 
     override suspend fun delete(id: Long) = dao.deleteById(id)
 
+    override suspend fun saveTemplate(prompt: SavedPrompt) {
+        dao.upsert(prompt.toEntity())
+    }
+
+    private fun SavedPrompt.toEntity() = SavedPromptEntity(
+        id = id,
+        prompt = prompt,
+        negativePrompt = negativePrompt,
+        sampler = sampler,
+        steps = steps,
+        cfgScale = cfgScale,
+        seed = seed,
+        modelName = modelName,
+        size = size,
+        sourceImageUrl = sourceImageUrl,
+        savedAt = savedAt,
+        isTemplate = isTemplate,
+        templateName = templateName,
+        autoSaved = autoSaved,
+        templateVariables = templateVariables,
+        templateType = templateType,
+    )
+
     private fun ImageGenerationMeta.toEntity(
         sourceImageUrl: String?,
         autoSaved: Boolean,
@@ -74,5 +97,7 @@ class SavedPromptRepositoryImpl(
         isTemplate = isTemplate,
         templateName = templateName,
         autoSaved = autoSaved,
+        templateVariables = templateVariables,
+        templateType = templateType,
     )
 }

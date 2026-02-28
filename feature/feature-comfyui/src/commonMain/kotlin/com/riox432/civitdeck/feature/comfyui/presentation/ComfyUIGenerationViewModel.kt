@@ -182,8 +182,11 @@ class ComfyUIGenerationViewModel(
         _uiState.update { state ->
             state.copy(
                 loraSelections = state.loraSelections.map {
-                    if (it.name == loraName) it.copy(strengthModel = strengthModel, strengthClip = strengthClip)
-                    else it
+                    if (it.name == loraName) {
+                        it.copy(strengthModel = strengthModel, strengthClip = strengthClip)
+                    } else {
+                        it
+                    }
                 }
             )
         }
