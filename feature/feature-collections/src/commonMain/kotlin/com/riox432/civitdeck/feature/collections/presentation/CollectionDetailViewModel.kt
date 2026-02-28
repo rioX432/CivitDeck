@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.collections
+package com.riox432.civitdeck.feature.collections.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,10 +6,10 @@ import com.riox432.civitdeck.domain.model.CollectionSortOrder
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
 import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.domain.model.ModelType
-import com.riox432.civitdeck.domain.usecase.BulkMoveModelsUseCase
-import com.riox432.civitdeck.domain.usecase.BulkRemoveModelsUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveCollectionModelsUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.BulkMoveModelsUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.BulkRemoveModelsUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveCollectionModelsUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveCollectionsUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

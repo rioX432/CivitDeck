@@ -3,7 +3,6 @@ package com.riox432.civitdeck.di
 import com.riox432.civitdeck.data.repository.AuthRepositoryImpl
 import com.riox432.civitdeck.data.repository.BrowsingHistoryRepositoryImpl
 import com.riox432.civitdeck.data.repository.CacheRepositoryImpl
-import com.riox432.civitdeck.data.repository.CollectionRepositoryImpl
 import com.riox432.civitdeck.data.repository.ComfyUIRepositoryImpl
 import com.riox432.civitdeck.data.repository.ExcludedTagRepositoryImpl
 import com.riox432.civitdeck.data.repository.FavoriteRepositoryImpl
@@ -17,7 +16,6 @@ import com.riox432.civitdeck.data.scanner.FileScanner
 import com.riox432.civitdeck.domain.repository.AuthRepository
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.CacheRepository
-import com.riox432.civitdeck.domain.repository.CollectionRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIRepository
 import com.riox432.civitdeck.domain.repository.ExcludedTagRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
@@ -39,7 +37,6 @@ val dataModule = module {
     single<ModelRepository> { ModelRepositoryImpl(get(), get(), get()) }
     single<TagRepository> { TagRepositoryImpl(get()) }
     single<FavoriteRepository> { FavoriteRepositoryImpl(get()) }
-    single<CollectionRepository> { CollectionRepositoryImpl(get()) }
     single<SearchHistoryRepository> { SearchHistoryRepositoryImpl(get()) }
     single<BrowsingHistoryRepository> { BrowsingHistoryRepositoryImpl(get()) }
     single<ExcludedTagRepository> { ExcludedTagRepositoryImpl(get()) }

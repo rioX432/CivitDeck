@@ -44,14 +44,14 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
+import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
+import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
 import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
-import com.riox432.civitdeck.ui.collections.CollectionDetailViewModel
 import com.riox432.civitdeck.ui.collections.CollectionsScreen
-import com.riox432.civitdeck.ui.collections.CollectionsViewModel
 import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationViewModel
 import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsScreen

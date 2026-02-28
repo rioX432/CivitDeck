@@ -17,10 +17,10 @@ import com.riox432.civitdeck.di.initializeAuth
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
+import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
+import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
-import com.riox432.civitdeck.ui.collections.CollectionDetailViewModel
-import com.riox432.civitdeck.ui.collections.CollectionsViewModel
 import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationViewModel
 import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel

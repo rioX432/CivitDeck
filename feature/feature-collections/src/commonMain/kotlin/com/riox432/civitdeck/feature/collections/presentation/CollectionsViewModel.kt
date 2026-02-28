@@ -1,12 +1,12 @@
-package com.riox432.civitdeck.ui.collections
+package com.riox432.civitdeck.feature.collections.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.ModelCollection
-import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
-import com.riox432.civitdeck.domain.usecase.DeleteCollectionUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
-import com.riox432.civitdeck.domain.usecase.RenameCollectionUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.CreateCollectionUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.DeleteCollectionUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveCollectionsUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.RenameCollectionUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
