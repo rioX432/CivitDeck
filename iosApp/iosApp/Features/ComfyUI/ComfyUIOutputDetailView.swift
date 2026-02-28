@@ -29,7 +29,8 @@ struct ComfyUIOutputDetailView: View {
             .alert("Add to Collection", isPresented: $showAddCollectionAlert) {
                 Button("OK", role: .cancel) {}
             } message: {
-                Text("ComfyUI generated images are not linked to a CivitAI model and cannot be added to a model collection.")
+                Text("ComfyUI generated images are not linked to a CivitAI model " +
+                     "and cannot be added to a model collection.")
             }
         }
     }
