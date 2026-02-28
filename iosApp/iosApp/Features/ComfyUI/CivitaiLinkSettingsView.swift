@@ -30,7 +30,7 @@ struct CivitaiLinkSettingsView: View {
                 Spacer()
                 if viewModel.isConnected {
                     Button("Disconnect", action: viewModel.onDisconnect)
-                        .foregroundColor(.red)
+                        .foregroundColor(.civitError)
                 }
             }
         } header: {
@@ -100,7 +100,7 @@ private struct CivitaiLinkActivityRow: View {
             }
             if activity.status == "Running" {
                 ProgressView(value: activity.progress)
-                Button("Cancel", action: onCancel).font(.civitBodySmall).foregroundColor(.red)
+                Button("Cancel", action: onCancel).font(.civitBodySmall).foregroundColor(.civitError)
             }
         }
     }
