@@ -8,6 +8,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.encodeURLQueryComponent
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -106,10 +107,13 @@ class ComfyUIApi(
      * Omits subfolder when empty to avoid ComfyUI rejecting the request.
      */
     fun getImageUrl(image: ComfyUIOutputImage): String {
+        val filename = image.filename.encodeURLQueryComponent()
+        val type = image.type
         return if (image.subfolder.isEmpty()) {
-            "$baseUrl/view?filename=${image.filename}&type=${image.type}"
+            "$baseUrl/view?filename=$filename&type=$type"
         } else {
-            "$baseUrl/view?filename=${image.filename}&subfolder=${image.subfolder}&type=${image.type}"
+            val subfolder = image.subfolder.encodeURLQueryComponent()
+            "$baseUrl/view?filename=$filename&subfolder=$subfolder&type=$type"
         }
     }
 
