@@ -86,11 +86,7 @@ final class ModelSearchViewModel: ObservableObject {
         }
     }
 
-    deinit {
-        if let token = memoryWarningToken {
-            NotificationCenter.default.removeObserver(token)
-        }
-    }
+    deinit { memoryWarningToken.map { NotificationCenter.default.removeObserver($0) } }
 
     private func loadDefaults() {
         Task {
