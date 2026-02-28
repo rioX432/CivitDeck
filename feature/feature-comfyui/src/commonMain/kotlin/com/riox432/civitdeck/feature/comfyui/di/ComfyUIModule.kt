@@ -3,12 +3,16 @@ package com.riox432.civitdeck.feature.comfyui.di
 import com.riox432.civitdeck.domain.repository.ComfyUIRepository
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.CancelComfyUIJobUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FindMatchingLocalModelUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIConnectionsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIQueueUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.PopulateGenerationFromModelUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
@@ -26,4 +30,8 @@ val comfyuiModule = module {
     factory { SubmitComfyUIGenerationUseCase(get()) }
     factory { PollComfyUIResultUseCase(get()) }
     factory { ObserveGenerationProgressUseCase(get()) }
+    factory { ObserveComfyUIQueueUseCase(get()) }
+    factory { CancelComfyUIJobUseCase(get()) }
+    factory { FindMatchingLocalModelUseCase(get()) }
+    factory { PopulateGenerationFromModelUseCase() }
 }

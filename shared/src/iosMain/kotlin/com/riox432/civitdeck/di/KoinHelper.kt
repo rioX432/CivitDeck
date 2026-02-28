@@ -61,12 +61,16 @@ import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveModelColl
 import com.riox432.civitdeck.feature.collections.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.RenameCollectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.CancelComfyUIJobUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FindMatchingLocalModelUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIConnectionsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIQueueUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.PopulateGenerationFromModelUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
@@ -205,6 +209,10 @@ object KoinHelper {
     fun getSubmitComfyUIGenerationUseCase(): SubmitComfyUIGenerationUseCase = getKoin().get()
     fun getPollComfyUIResultUseCase(): PollComfyUIResultUseCase = getKoin().get()
     fun getObserveGenerationProgressUseCase(): ObserveGenerationProgressUseCase = getKoin().get()
+    fun getObserveComfyUIQueueUseCase(): ObserveComfyUIQueueUseCase = getKoin().get()
+    fun getCancelComfyUIJobUseCase(): CancelComfyUIJobUseCase = getKoin().get()
+    fun getFindMatchingLocalModelUseCase(): FindMatchingLocalModelUseCase = getKoin().get()
+    fun getPopulateGenerationFromModelUseCase(): PopulateGenerationFromModelUseCase = getKoin().get()
 
     // ViewModels
     fun createSettingsViewModel(): SettingsViewModel = getKoin().get()

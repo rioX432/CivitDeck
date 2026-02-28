@@ -12,14 +12,21 @@ import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
+import com.riox432.civitdeck.domain.model.QueueJob
+import com.riox432.civitdeck.domain.model.QueueJobStatus
 import com.riox432.civitdeck.domain.repository.ComfyUIRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 
 class ComfyUIRepositoryImpl(
@@ -127,6 +134,47 @@ class ComfyUIRepositoryImpl(
 
     override fun getImageUrl(filename: String, subfolder: String, type: String): String {
         return api.getImageUrl(ComfyUIOutputImage(filename, subfolder, type))
+    }
+
+    override fun observeQueue(intervalMs: Long): Flow<List<QueueJob>> = flow {
+        while (true) {
+            try {
+                ensureApiConfigured()
+                val response = api.getQueue()
+                val jobs = mutableListOf<QueueJob>()
+                response.running.forEachIndexed { index, entry ->
+                    jobs.add(QueueJob(extractPromptId(entry), index, QueueJobStatus.Running))
+                }
+                response.pending.forEachIndexed { index, entry ->
+                    jobs.add(QueueJob(extractPromptId(entry), index, QueueJobStatus.Queued))
+                }
+                emit(jobs)
+            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+                emit(emptyList())
+            }
+            delay(intervalMs)
+        }
+    }
+
+    override suspend fun cancelJob(promptId: String) {
+        ensureApiConfigured()
+        api.deleteQueue(listOf(promptId))
+    }
+
+    /**
+     * ComfyUI queue entries are arrays: [queue_number, prompt_id, prompt, extra_data, outputs].
+     * Extract prompt_id (index 1) from the array element.
+     */
+    private fun extractPromptId(entry: JsonElement): String {
+        return try {
+            when (entry) {
+                is JsonArray -> entry.getOrNull(1)?.jsonPrimitive?.content ?: ""
+                is JsonObject -> entry["prompt_id"]?.jsonPrimitive?.content ?: ""
+                else -> entry.jsonPrimitive.content
+            }
+        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            ""
+        }
     }
 
     private suspend fun ensureApiConfigured() {

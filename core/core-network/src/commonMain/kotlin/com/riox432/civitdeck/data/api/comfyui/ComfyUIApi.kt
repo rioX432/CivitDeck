@@ -50,6 +50,24 @@ class ComfyUIApi(
     }
 
     /**
+     * Delete (cancel) queued prompts: POST /queue with {"delete": [...promptIds]}
+     */
+    suspend fun deleteQueue(promptIds: List<String>) {
+        val body = buildJsonObject {
+            put(
+                "delete",
+                kotlinx.serialization.json.buildJsonArray {
+                    promptIds.forEach { add(kotlinx.serialization.json.JsonPrimitive(it)) }
+                }
+            )
+        }
+        client.post("$baseUrl/queue") {
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }
+    }
+
+    /**
      * Get generation history: GET /history/{promptId}
      */
     suspend fun getHistory(promptId: String): HistoryEntry? {

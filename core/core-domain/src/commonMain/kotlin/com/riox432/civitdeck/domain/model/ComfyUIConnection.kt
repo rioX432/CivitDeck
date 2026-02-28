@@ -53,6 +53,19 @@ enum class GenerationStatus {
     Error,
 }
 
+enum class QueueJobStatus {
+    Queued,
+    Running,
+    Completed,
+    Error,
+}
+
+data class QueueJob(
+    val promptId: String,
+    val queueNumber: Int,
+    val status: QueueJobStatus,
+)
+
 data class GenerationResult(
     val promptId: String,
     val status: GenerationStatus,

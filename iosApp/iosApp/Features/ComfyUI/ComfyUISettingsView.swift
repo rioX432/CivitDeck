@@ -11,6 +11,9 @@ struct ComfyUISettingsView: View {
                 NavigationLink("Open txt2img Generator") {
                     ComfyUIGenerationView()
                 }
+                NavigationLink("View Queue") {
+                    ComfyUIQueueView()
+                }
             }
             connectionsSection
         }

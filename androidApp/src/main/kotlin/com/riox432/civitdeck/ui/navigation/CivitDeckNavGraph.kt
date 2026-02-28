@@ -47,6 +47,7 @@ import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_L
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ModelFileBrowserViewModel
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
@@ -59,6 +60,7 @@ import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
 import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.CollectionsScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationScreen
+import com.riox432.civitdeck.ui.comfyui.ComfyUIQueueScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsScreen
 import com.riox432.civitdeck.ui.compare.ModelCompareScreen
 import com.riox432.civitdeck.ui.creator.CreatorProfileScreen
@@ -111,6 +113,21 @@ data class CompareRoute(val leftModelId: Long, val rightModelId: Long)
 data object ComfyUISettingsRoute
 
 data object ComfyUIGenerationRoute
+
+data object ComfyUIQueueRoute
+
+data class ComfyUIBridgeRoute(
+    val modelId: Long,
+    val versionId: Long,
+    val sha256Hash: String,
+    val modelName: String,
+    val prompt: String?,
+    val negativePrompt: String?,
+    val steps: Int?,
+    val cfgScale: Double?,
+    val seed: Long?,
+    val sampler: String?,
+)
 
 data object AppearanceSettingsRoute
 
@@ -392,6 +409,7 @@ private fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {
         val viewModel: ModelDetailViewModel = koinViewModel(
             key = key.modelId.toString(),
         ) { parametersOf(key.modelId) }
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
         ModelDetailScreen(
             viewModel = viewModel,
             modelId = key.modelId,
@@ -403,6 +421,27 @@ private fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {
             },
             onCreatorClick = { username ->
                 backStack.add(CreatorRoute(username))
+            },
+            onTryInComfyUI = if (uiState.powerUserMode) {
+                { sha256, modelName, meta ->
+                    backStack.add(
+                        ComfyUIBridgeRoute(
+                            modelId = key.modelId,
+                            versionId = uiState.model?.modelVersions
+                                ?.getOrNull(uiState.selectedVersionIndex)?.id ?: 0L,
+                            sha256Hash = sha256,
+                            modelName = modelName,
+                            prompt = meta?.prompt,
+                            negativePrompt = meta?.negativePrompt,
+                            steps = meta?.steps,
+                            cfgScale = meta?.cfgScale,
+                            seed = meta?.seed,
+                            sampler = meta?.sampler,
+                        )
+                    )
+                }
+            } else {
+                null
             },
         )
     }
@@ -515,6 +554,22 @@ private fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>) 
     }
     entry<ComfyUIGenerationRoute> {
         val viewModel: ComfyUIGenerationViewModel = koinViewModel()
+        ComfyUIGenerationScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+    entry<ComfyUIQueueRoute> {
+        val viewModel: ComfyUIQueueViewModel = koinViewModel()
+        ComfyUIQueueScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+    entry<ComfyUIBridgeRoute> { key ->
+        val viewModel: ComfyUIGenerationViewModel = koinViewModel(
+            key = "bridge_${key.modelId}_${key.versionId}",
+        )
         ComfyUIGenerationScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },

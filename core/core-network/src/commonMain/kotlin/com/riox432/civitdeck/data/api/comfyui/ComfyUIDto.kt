@@ -2,7 +2,6 @@ package com.riox432.civitdeck.data.api.comfyui
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
 
 /**
  * Response from POST /prompt
@@ -14,12 +13,14 @@ data class PromptResponse(
 )
 
 /**
- * Response from GET /queue
+ * Response from GET /queue.
+ * Each entry is an array: [queue_number, prompt_id, prompt, extra_data, outputs_to_execute].
+ * Using JsonElement to handle both running (array of arrays) and pending (array of arrays).
  */
 @Serializable
 data class QueueResponse(
-    @SerialName("queue_running") val running: List<JsonObject> = emptyList(),
-    @SerialName("queue_pending") val pending: List<JsonObject> = emptyList(),
+    @SerialName("queue_running") val running: List<kotlinx.serialization.json.JsonElement> = emptyList(),
+    @SerialName("queue_pending") val pending: List<kotlinx.serialization.json.JsonElement> = emptyList(),
 )
 
 /**

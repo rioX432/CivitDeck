@@ -13,6 +13,7 @@ struct ModelDetailScreen: View {
     @State private var showImageGrid = false
     @State private var gridSelectedIndex: Int?
     @State private var showCollectionSheet = false
+    @State private var showComfyUIGeneration = false
 
     var body: some View {
         Group {
@@ -107,6 +108,11 @@ struct ModelDetailScreen: View {
                 selectedIndex: $gridSelectedIndex
             )
         }
+        .sheet(isPresented: $showComfyUIGeneration) {
+            NavigationView {
+                ComfyUIGenerationView()
+            }
+        }
     }
 
     // MARK: - Content
@@ -191,23 +197,35 @@ struct ModelDetailScreen: View {
     // MARK: - Image Actions Row
 
     private func imageActionsRow(modelVersionId: Int64) -> some View {
-        HStack(spacing: Spacing.sm) {
-            NavigationLink {
-                ImageGalleryScreen(modelVersionId: modelVersionId)
-            } label: {
-                Text("View Community Images")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-
-            if !filteredImages.isEmpty {
-                Button {
-                    showImageGrid = true
+        VStack(spacing: Spacing.sm) {
+            HStack(spacing: Spacing.sm) {
+                NavigationLink {
+                    ImageGalleryScreen(modelVersionId: modelVersionId)
                 } label: {
-                    SwiftUI.Image(systemName: "square.grid.2x2")
-                        .font(.title3)
+                    Text("View Community Images")
+                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
+
+                if !filteredImages.isEmpty {
+                    Button {
+                        showImageGrid = true
+                    } label: {
+                        SwiftUI.Image(systemName: "square.grid.2x2")
+                            .font(.title3)
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+            if viewModel.powerUserMode {
+                Button {
+                    showComfyUIGeneration = true
+                } label: {
+                    Text("Try in ComfyUI")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(.green)
             }
         }
         .padding(.horizontal, Spacing.lg)
