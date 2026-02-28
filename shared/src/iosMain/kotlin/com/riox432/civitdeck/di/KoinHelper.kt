@@ -76,6 +76,8 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.DisconnectCivitaiLin
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExportWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryItemUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIModelsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUISamplersUseCase
@@ -226,6 +228,10 @@ object KoinHelper {
     // Tutorial use cases
     fun getObserveSeenTutorialVersionUseCase(): ObserveSeenTutorialVersionUseCase = getKoin().get()
     fun getSetSeenTutorialVersionUseCase(): SetSeenTutorialVersionUseCase = getKoin().get()
+
+    // ComfyUI history use cases
+    fun getFetchComfyUIHistoryUseCase(): FetchComfyUIHistoryUseCase = getKoin().get()
+    fun getFetchComfyUIHistoryItemUseCase(): FetchComfyUIHistoryItemUseCase = getKoin().get()
 
     // ComfyUI use cases
     fun getObserveComfyUIConnectionsUseCase(): ObserveComfyUIConnectionsUseCase = getKoin().get()

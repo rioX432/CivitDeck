@@ -1,9 +1,11 @@
 package com.riox432.civitdeck.feature.comfyui.domain.usecase
 
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
+import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.QueueJob
+import com.riox432.civitdeck.domain.repository.ComfyUIHistoryRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIRepository
 import com.riox432.civitdeck.domain.repository.LocalModelFileRepository
 import kotlinx.coroutines.flow.Flow
@@ -85,6 +87,17 @@ class SubmitComfyUIGenerationUseCase(private val repository: ComfyUIRepository) 
 class PollComfyUIResultUseCase(private val repository: ComfyUIRepository) {
     suspend operator fun invoke(promptId: String): GenerationResult =
         repository.pollGenerationResult(promptId)
+}
+
+// -- History --
+
+class FetchComfyUIHistoryUseCase(private val repository: ComfyUIHistoryRepository) {
+    operator fun invoke(): Flow<List<ComfyUIGeneratedImage>> = repository.fetchHistory()
+}
+
+class FetchComfyUIHistoryItemUseCase(private val repository: ComfyUIHistoryRepository) {
+    operator fun invoke(promptId: String): Flow<List<ComfyUIGeneratedImage>> =
+        repository.fetchHistoryItem(promptId)
 }
 
 // -- Queue management --

@@ -146,6 +146,8 @@ typealias GetCreatorModelsUseCase = Feature_creatorGetCreatorModelsUseCase
 
 // MARK: - Feature: ComfyUI — Workflow Templates
 
+typealias ComfyUIGeneratedImage = Core_domainComfyUIGeneratedImage
+typealias ComfyUIGenerationMeta = Core_domainComfyUIGenerationMeta
 typealias WorkflowTemplate = Core_domainWorkflowTemplate
 typealias WorkflowTemplateType = Core_domainWorkflowTemplateType
 typealias TemplateVariable = Core_domainTemplateVariable
