@@ -50,6 +50,7 @@ struct ImageComparisonOverlay: View {
                     orientation = orientation == .horizontal ? .vertical : .horizontal
                 }
             }
+            .accessibilityLabel("Toggle comparison orientation")
         }
     }
 
