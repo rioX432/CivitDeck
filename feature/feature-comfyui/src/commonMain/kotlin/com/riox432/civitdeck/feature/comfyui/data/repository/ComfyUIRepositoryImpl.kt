@@ -198,8 +198,9 @@ class ComfyUIRepositoryImpl(
     @Suppress("LongMethod")
     private fun buildWorkflow(params: ComfyUIGenerationParams): JsonObject {
         // If custom workflow JSON is provided, use it directly
-        if (params.customWorkflowJson != null) {
-            return json.decodeFromString(params.customWorkflowJson)
+        val customJson = params.customWorkflowJson
+        if (customJson != null) {
+            return json.decodeFromString(customJson)
         }
 
         // Determine which node ID the model output flows from (after LoRA chain).

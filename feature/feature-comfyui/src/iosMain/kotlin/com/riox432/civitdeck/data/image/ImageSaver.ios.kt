@@ -21,7 +21,7 @@ actual class ImageSaver actual constructor() {
                 val image = UIImage(data = nsData) ?: return@withContext false
                 UIImageWriteToSavedPhotosAlbum(image, null, null, null)
                 true
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
                 false
             }
         }

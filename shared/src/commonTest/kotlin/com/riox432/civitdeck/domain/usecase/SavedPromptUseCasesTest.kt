@@ -48,6 +48,7 @@ class SavedPromptUseCasesTest {
             lastSavedMeta = meta
         }
         override suspend fun toggleTemplate(id: Long, isTemplate: Boolean, templateName: String?) = Unit
+        override suspend fun saveTemplate(prompt: SavedPrompt) = Unit
         override suspend fun delete(id: Long) {
             deleteCalled = true
             lastDeletedId = id

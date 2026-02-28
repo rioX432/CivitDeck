@@ -22,15 +22,15 @@ class ComfyUIGenerationViewModel: ObservableObject {
     @Published var selectedControlNet = ""
     @Published var controlNetStrength: Double = 1.0
     // Custom workflow
-    @Published var customWorkflowJson: String? = nil
-    @Published var workflowImportError: String? = nil
+    @Published var customWorkflowJson: String?
+    @Published var workflowImportError: String?
     // Generation
     @Published var generationStatus: GenerationStatusSwift = .idle
     @Published var currentStep: Int = 0
     @Published var totalSteps: Int = 0
     @Published var resultImageUrls: [String] = []
     @Published var error: String?
-    @Published var imageSaveSuccess: Bool? = nil
+    @Published var imageSaveSuccess: Bool?
 
     var progressFraction: Float {
         guard totalSteps > 0 else { return 0 }

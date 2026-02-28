@@ -39,7 +39,7 @@ actual class ImageSaver actual constructor() : KoinComponent {
                     context.contentResolver.update(uri, values, null, null)
                 }
                 true
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
                 false
             }
         }

@@ -16,7 +16,7 @@ class SaveGeneratedImageUseCase(
         return try {
             val bytes = httpClient.get(url).readBytes()
             imageSaver.saveToGallery(bytes, filename)
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
             false
         }
     }

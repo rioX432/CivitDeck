@@ -111,6 +111,7 @@ class ComfyUIApi(
      * Generic parser for /object_info nodes that return a list of filenames
      * under `inputs.required.<fieldName>[0]`.
      */
+    @Suppress("ReturnCount")
     private fun parseNodeInputList(responseText: String, nodeType: String, fieldName: String): List<String> {
         return try {
             val root = json.decodeFromString<JsonObject>(responseText)

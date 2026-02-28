@@ -465,9 +465,10 @@ private fun CustomWorkflowSection(state: GenerationUiState, viewModel: ComfyUIGe
                     }
                 }
             }
-            if (state.customWorkflowJson != null) {
+            val customJson = state.customWorkflowJson
+            if (customJson != null) {
                 Text(
-                    "Custom workflow loaded (${state.customWorkflowJson.length} chars)",
+                    "Custom workflow loaded (${customJson.length} chars)",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )

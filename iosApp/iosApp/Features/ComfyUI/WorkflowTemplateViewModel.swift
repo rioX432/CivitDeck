@@ -121,7 +121,9 @@ class WorkflowTemplateViewModel: ObservableObject {
                 TemplateVariable(name: "cfg", type: .number, defaultValue: "7.0", options: [], required: false),
                 TemplateVariable(name: "width", type: .number, defaultValue: "512", options: [], required: false),
                 TemplateVariable(name: "height", type: .number, defaultValue: "512", options: [], required: false),
-                TemplateVariable(name: "denoise_strength", type: .number, defaultValue: "0.75", options: [], required: false),
+                TemplateVariable(
+                    name: "denoise_strength", type: .number, defaultValue: "0.75", options: [], required: false
+                ),
             ]
         case .inpainting:
             return [
@@ -130,12 +132,16 @@ class WorkflowTemplateViewModel: ObservableObject {
                 TemplateVariable(name: "checkpoint", type: .text, defaultValue: "", options: [], required: true),
                 TemplateVariable(name: "steps", type: .number, defaultValue: "20", options: [], required: false),
                 TemplateVariable(name: "cfg", type: .number, defaultValue: "7.0", options: [], required: false),
-                TemplateVariable(name: "denoise_strength", type: .number, defaultValue: "1.0", options: [], required: false),
+                TemplateVariable(
+                    name: "denoise_strength", type: .number, defaultValue: "1.0", options: [], required: false
+                ),
             ]
         case .upscale:
             return [
                 TemplateVariable(name: "input_image", type: .text, defaultValue: "", options: [], required: true),
-                TemplateVariable(name: "upscale_factor", type: .number, defaultValue: "2", options: [], required: false),
+                TemplateVariable(
+                    name: "upscale_factor", type: .number, defaultValue: "2", options: [], required: false
+                ),
             ]
         default:
             return []

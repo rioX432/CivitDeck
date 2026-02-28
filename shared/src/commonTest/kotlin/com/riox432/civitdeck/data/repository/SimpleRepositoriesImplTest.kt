@@ -49,6 +49,12 @@ class SimpleRepositoriesImplTest {
             updates.value++
         }
 
+        override suspend fun upsert(entity: SavedPromptEntity) {
+            val idx = entities.indexOfFirst { it.id == entity.id }
+            if (idx >= 0) entities[idx] = entity else entities.add(entity.copy(id = idCounter++))
+            updates.value++
+        }
+
         override suspend fun deleteById(id: Long) {
             entities.removeAll { it.id == id }
             updates.value++

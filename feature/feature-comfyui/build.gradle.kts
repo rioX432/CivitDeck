@@ -8,6 +8,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.lifecycle.viewmodel)
+            implementation(libs.ktor.client.core)
         }
     }
 }
