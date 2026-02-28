@@ -7,8 +7,9 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.URLBuilder
 import io.ktor.http.contentType
-import io.ktor.http.encodeURLQueryComponent
+import io.ktor.http.path
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -107,14 +108,14 @@ class ComfyUIApi(
      * Omits subfolder when empty to avoid ComfyUI rejecting the request.
      */
     fun getImageUrl(image: ComfyUIOutputImage): String {
-        val filename = image.filename.encodeURLQueryComponent()
-        val type = image.type
-        return if (image.subfolder.isEmpty()) {
-            "$baseUrl/view?filename=$filename&type=$type"
-        } else {
-            val subfolder = image.subfolder.encodeURLQueryComponent()
-            "$baseUrl/view?filename=$filename&subfolder=$subfolder&type=$type"
-        }
+        return URLBuilder(baseUrl).apply {
+            path("view")
+            parameters.append("filename", image.filename)
+            parameters.append("type", image.type)
+            if (image.subfolder.isNotEmpty()) {
+                parameters.append("subfolder", image.subfolder)
+            }
+        }.buildString()
     }
 
     private fun parseCheckpointNames(responseText: String): List<String> {
