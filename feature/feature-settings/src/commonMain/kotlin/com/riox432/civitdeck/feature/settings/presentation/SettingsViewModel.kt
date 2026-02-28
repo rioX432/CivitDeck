@@ -183,12 +183,10 @@ class SettingsViewModel(
         }
         viewModelScope.launch {
             val key = observeApiKeyUseCase().first() ?: return@launch
-            try {
-                val username = validateApiKeyUseCase(key)
+            validateApiKeyUseCase(key).onSuccess { username ->
                 _mutableState.update { it.copy(connectedUsername = username) }
-            } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
-                // Key might be expired
             }
+            // Silently ignore failure — key might be expired
         }
     }
 
@@ -196,20 +194,21 @@ class SettingsViewModel(
         if (apiKey.isBlank()) return
         _mutableState.update { it.copy(isValidatingApiKey = true, apiKeyError = null) }
         viewModelScope.launch {
-            try {
-                val username = validateApiKeyUseCase(apiKey)
-                setApiKeyUseCase(apiKey)
-                _mutableState.update {
-                    it.copy(connectedUsername = username, isValidatingApiKey = false)
+            validateApiKeyUseCase(apiKey)
+                .onSuccess { username ->
+                    setApiKeyUseCase(apiKey)
+                    _mutableState.update {
+                        it.copy(connectedUsername = username, isValidatingApiKey = false)
+                    }
                 }
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                _mutableState.update {
-                    it.copy(
-                        isValidatingApiKey = false,
-                        apiKeyError = e.message ?: "Invalid API key",
-                    )
+                .onFailure { e ->
+                    _mutableState.update {
+                        it.copy(
+                            isValidatingApiKey = false,
+                            apiKeyError = e.message ?: "Invalid API key",
+                        )
+                    }
                 }
-            }
         }
     }
 
@@ -225,12 +224,10 @@ class SettingsViewModel(
     fun onRefreshUsername() {
         viewModelScope.launch {
             val key = observeApiKeyUseCase().first() ?: return@launch
-            try {
-                val username = validateApiKeyUseCase(key)
+            validateApiKeyUseCase(key).onSuccess { username ->
                 _mutableState.update { it.copy(connectedUsername = username) }
-            } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
-                // Silently ignore - key might be expired
             }
+            // Silently ignore failure — key might be expired
         }
     }
 

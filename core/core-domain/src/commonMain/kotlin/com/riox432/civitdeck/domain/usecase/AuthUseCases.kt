@@ -13,7 +13,7 @@ class SetApiKeyUseCase(private val repository: UserPreferencesRepository) {
 }
 
 class ValidateApiKeyUseCase(private val repository: AuthRepository) {
-    suspend operator fun invoke(apiKey: String): String {
+    suspend operator fun invoke(apiKey: String): Result<String> {
         return repository.validateApiKey(apiKey)
     }
 }
