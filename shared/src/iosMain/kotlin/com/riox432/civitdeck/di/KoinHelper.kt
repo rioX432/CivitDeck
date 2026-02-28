@@ -91,6 +91,7 @@ import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
+import com.riox432.civitdeck.ui.settings.SettingsViewModel
 import org.koin.mp.KoinPlatform.getKoin
 
 @Suppress("TooManyFunctions")
@@ -202,4 +203,7 @@ object KoinHelper {
     fun getFetchComfyUICheckpointsUseCase(): FetchComfyUICheckpointsUseCase = getKoin().get()
     fun getSubmitComfyUIGenerationUseCase(): SubmitComfyUIGenerationUseCase = getKoin().get()
     fun getPollComfyUIResultUseCase(): PollComfyUIResultUseCase = getKoin().get()
+
+    // ViewModels
+    fun createSettingsViewModel(): SettingsViewModel = getKoin().get()
 }

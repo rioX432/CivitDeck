@@ -319,6 +319,7 @@ class SettingsViewModel(
     fun onAmoledDarkModeChanged(enabled: Boolean) {
         viewModelScope.launch { setAmoledDarkModeUseCase(enabled) }
     }
+
     fun onOfflineCacheEnabledChanged(enabled: Boolean) {
         viewModelScope.launch { setOfflineCacheEnabledUseCase(enabled) }
     }
@@ -329,5 +330,15 @@ class SettingsViewModel(
             evictCacheUseCase(limitMb.toLong() * 1024L * 1024L)
             _mutableState.update { it.copy(cacheInfo = getCacheInfoUseCase()) }
         }
+    }
+
+    // iOS-specific: toggle NSFW filter between off and all
+    fun onNsfwFilterToggle() {
+        val newLevel = if (uiState.value.nsfwFilterLevel == NsfwFilterLevel.Off) {
+            NsfwFilterLevel.All
+        } else {
+            NsfwFilterLevel.Off
+        }
+        onNsfwFilterChanged(newLevel)
     }
 }

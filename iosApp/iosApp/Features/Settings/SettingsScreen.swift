@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct SettingsScreen: View {
-    @StateObject private var viewModel = SettingsViewModel()
+    @StateObject private var viewModel = SettingsViewModelOwner()
 
     var body: some View {
         NavigationStack {
@@ -20,20 +20,7 @@ struct SettingsScreen: View {
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
-            .task { await viewModel.observeApiKey() }
-            .task { await viewModel.observeNsfwFilter() }
-            .task { await viewModel.observeNsfwBlurSettings() }
-            .task { await viewModel.observeSortOrder() }
-            .task { await viewModel.observeTimePeriod() }
-            .task { await viewModel.observeGridColumns() }
-            .task { await viewModel.observePowerUserMode() }
-            .task { await viewModel.observeAccentColor() }
-            .task { await viewModel.observeAmoledDarkMode() }
-            .task { await viewModel.observeNetworkStatus() }
-            .task { await viewModel.observeOfflineCacheEnabled() }
-            .task { await viewModel.observeCacheSizeLimit() }
-            .task { await viewModel.observeNotificationsEnabled() }
-            .task { await viewModel.observePollingInterval() }
+            .task { await viewModel.observeUiState() }
         }
     }
 
