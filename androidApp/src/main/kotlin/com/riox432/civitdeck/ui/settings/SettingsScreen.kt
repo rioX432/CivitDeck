@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -41,6 +43,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -63,6 +66,7 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Suppress("LongParameterList")
@@ -86,24 +90,35 @@ fun SettingsScreen(
             listState.animateScrollToItem(0)
         }
     }
-    LazyColumn(state = listState) {
-        if (!state.isOnline) {
-            item { OfflineBanner() }
+    val isEmpty by remember { derivedStateOf { listState.layoutInfo.totalItemsCount == 0 } }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+            if (!state.isOnline) {
+                item { OfflineBanner() }
+            }
+            settingsAccountItems(state, viewModel)
+            item { SectionHeader("Appearance") }
+            item { SubScreenRow("Appearance", onNavigateToAppearance) }
+            item { SectionHeader("Content & Filters") }
+            item { SubScreenRow("Content & Filters", onNavigateToContentFilter) }
+            item { SectionHeader("Notifications") }
+            item { SubScreenRow("Notifications", onNavigateToNotifications) }
+            item { SectionHeader("Storage") }
+            item { SubScreenRow("Storage", onNavigateToStorage) }
+            item { SectionHeader("Advanced") }
+            item { SubScreenRow("Advanced", onNavigateToAdvanced) }
+            item { SectionHeader("About") }
+            item { InfoRow("App Version", BuildConfig.VERSION_NAME) }
+            item { NavigationRow("Open Source Licenses", onNavigateToLicenses) }
         }
-        settingsAccountItems(state, viewModel)
-        item { SectionHeader("Appearance") }
-        item { SubScreenRow("Appearance", onNavigateToAppearance) }
-        item { SectionHeader("Content & Filters") }
-        item { SubScreenRow("Content & Filters", onNavigateToContentFilter) }
-        item { SectionHeader("Notifications") }
-        item { SubScreenRow("Notifications", onNavigateToNotifications) }
-        item { SectionHeader("Storage") }
-        item { SubScreenRow("Storage", onNavigateToStorage) }
-        item { SectionHeader("Advanced") }
-        item { SubScreenRow("Advanced", onNavigateToAdvanced) }
-        item { SectionHeader("About") }
-        item { InfoRow("App Version", BuildConfig.VERSION_NAME) }
-        item { NavigationRow("Open Source Licenses", onNavigateToLicenses) }
+        if (isEmpty) {
+            EmptyStateMessage(
+                icon = Icons.Default.Settings,
+                title = "No settings available",
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
     }
 }
 
