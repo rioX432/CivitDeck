@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.data.repository
+package com.riox432.civitdeck.feature.settings.data.repository
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
@@ -116,6 +116,7 @@ class UserPreferencesRepositoryImpl(
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(amoledDarkMode = enabled))
     }
+
     override fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings> =
         dao.observePreferences().map { entity ->
             NsfwBlurSettings(

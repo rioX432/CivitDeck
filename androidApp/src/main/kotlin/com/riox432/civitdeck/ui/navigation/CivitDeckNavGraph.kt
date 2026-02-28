@@ -44,6 +44,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
+import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
 import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.CollectionDetailViewModel
 import com.riox432.civitdeck.ui.collections.CollectionsScreen
@@ -73,7 +74,6 @@ import com.riox432.civitdeck.ui.settings.ContentFilterSettingsScreen
 import com.riox432.civitdeck.ui.settings.LicensesScreen
 import com.riox432.civitdeck.ui.settings.NotificationsSettingsScreen
 import com.riox432.civitdeck.ui.settings.SettingsScreen
-import com.riox432.civitdeck.ui.settings.SettingsViewModel
 import com.riox432.civitdeck.ui.settings.StorageSettingsScreen
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing

@@ -91,7 +91,7 @@ import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
-import com.riox432.civitdeck.ui.settings.SettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
 import org.koin.mp.KoinPlatform.getKoin
 
 @Suppress("TooManyFunctions")

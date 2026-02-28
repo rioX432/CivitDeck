@@ -17,6 +17,7 @@ class CivitDeckKmpFeaturePlugin : Plugin<Project> {
                     val libs = rootProject.extensions.getByType<org.gradle.api.artifacts.VersionCatalogsExtension>()
                         .named("libs")
                     implementation(libs.findLibrary("koin-core").get())
+                    implementation(libs.findLibrary("koin-core-viewmodel").get())
                 }
             }
         }
