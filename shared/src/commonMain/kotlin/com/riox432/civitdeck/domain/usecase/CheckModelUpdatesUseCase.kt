@@ -43,8 +43,9 @@ class CheckModelUpdatesUseCase(
                     )
                 }
                 newCheckpoints[modelId] = latestVersion.id
-            } catch (_: Exception) {
+            } catch (e: Exception) {
                 // Skip models that fail to fetch (deleted, network error, etc.)
+                println("CheckModelUpdatesUseCase: skipping model $modelId — ${e::class.simpleName}: ${e.message}")
             }
         }
 
