@@ -65,7 +65,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
@@ -83,6 +82,7 @@ import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
+import com.riox432.civitdeck.ui.components.ExpandableTextSection
 import com.riox432.civitdeck.ui.components.FilterChipRow
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
@@ -727,33 +727,15 @@ private fun TagsSection(tags: List<String>) {
 
 @Composable
 private fun DescriptionSection(description: String) {
-    var isExpanded by remember { mutableStateOf(false) }
     val plainText = remember(description) {
         Html.fromHtml(description, Html.FROM_HTML_MODE_COMPACT).toString()
     }
-
     Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
         SectionHeader(title = "Description", showDivider = true)
         Spacer(modifier = Modifier.height(Spacing.sm))
-        Text(
-            text = AnnotatedString(plainText),
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = if (isExpanded) Int.MAX_VALUE else DESCRIPTION_COLLAPSED_LINES,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.animateContentSize(
-                animationSpec = tween(
-                    durationMillis = Duration.normal,
-                    easing = Easing.standard,
-                ),
-            ),
-        )
-        Text(
-            text = if (isExpanded) "Show less" else "Show more",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .clickable { isExpanded = !isExpanded }
-                .padding(vertical = Spacing.xs),
+        ExpandableTextSection(
+            text = plainText,
+            collapsedMaxLines = DESCRIPTION_COLLAPSED_LINES,
         )
     }
 }
