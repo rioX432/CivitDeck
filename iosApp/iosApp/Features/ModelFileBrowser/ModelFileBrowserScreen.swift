@@ -87,13 +87,11 @@ struct ModelFileBrowserScreen: View {
     @ViewBuilder
     private var emptyOverlay: some View {
         if viewModel.directories.isEmpty {
-            VStack(spacing: Spacing.sm) {
-                Text("No model directories configured")
-                    .font(.civitTitleMedium)
-                Text("Tap + to add a directory path")
-                    .font(.civitBodyMedium)
-                    .foregroundColor(.civitOnSurfaceVariant)
-            }
+            EmptyStateView(
+                icon: "folder.badge.plus",
+                title: "No model directories configured",
+                subtitle: "Tap + to add a directory path"
+            )
         }
     }
 

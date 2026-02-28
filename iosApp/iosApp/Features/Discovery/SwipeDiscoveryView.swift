@@ -21,14 +21,14 @@ struct SwipeDiscoveryView: View {
         GeometryReader { geometry in
             ZStack {
                 if viewModel.isLoading && viewModel.cards.isEmpty {
-                    ProgressView()
+                    LoadingStateView()
                 } else if let error = viewModel.error, viewModel.cards.isEmpty {
-                    Text(error)
-                        .foregroundColor(.civitError)
+                    ErrorStateView(message: error)
                 } else if viewModel.cards.isEmpty {
-                    Text("No more models to discover")
-                        .font(.civitBodyMedium)
-                        .foregroundColor(.civitOnSurfaceVariant)
+                    EmptyStateView(
+                        icon: "books.vertical",
+                        title: "No more models to discover"
+                    )
                 } else {
                     cardStack(in: geometry)
                 }

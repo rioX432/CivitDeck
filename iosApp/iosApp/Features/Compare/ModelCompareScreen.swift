@@ -15,10 +15,10 @@ struct ModelCompareScreen: View {
     var body: some View {
         Group {
             if viewModel.isLoading && viewModel.leftModel == nil {
-                ProgressView()
+                LoadingStateView()
             } else if let error = viewModel.error,
                       viewModel.leftModel == nil || viewModel.rightModel == nil {
-                errorView(message: error)
+                ErrorStateView(message: error)
             } else if let leftModel = viewModel.leftModel,
                       let rightModel = viewModel.rightModel {
                 compareContent(left: leftModel, right: rightModel)
@@ -293,15 +293,6 @@ struct ModelCompareScreen: View {
         let file = version.files.first { $0.primary } ?? version.files.first
         guard let file else { return "-" }
         return FormatUtils.shared.formatFileSize(sizeKB: file.sizeKB)
-    }
-
-    private func errorView(message: String) -> some View {
-        VStack(spacing: Spacing.lg) {
-            Text(message)
-                .foregroundColor(.civitError)
-                .multilineTextAlignment(.center)
-        }
-        .padding()
     }
 }
 

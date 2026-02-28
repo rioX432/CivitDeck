@@ -21,7 +21,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -50,7 +49,9 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
+import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
+import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.detail.ModelDetailUiState
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.theme.Duration
@@ -106,16 +107,14 @@ private fun CompareBody(
     val bothLoading = leftState.isLoading || rightState.isLoading
     val bothMissing = leftModel == null || rightModel == null
     if (bothLoading && bothMissing) {
-        CenteredBox(contentPadding) { CircularProgressIndicator() }
+        LoadingStateOverlay(modifier = Modifier.padding(contentPadding))
         return
     }
     if (leftModel == null || rightModel == null) {
-        CenteredBox(contentPadding) {
-            Text(
-                leftState.error ?: rightState.error ?: "Failed to load models",
-                color = MaterialTheme.colorScheme.error
-            )
-        }
+        ErrorStateView(
+            message = leftState.error ?: rightState.error ?: "Failed to load models",
+            modifier = Modifier.padding(contentPadding),
+        )
         return
     }
 
@@ -128,11 +127,6 @@ private fun CompareBody(
         onRightVersionSelected,
         contentPadding
     )
-}
-
-@Composable
-private fun CenteredBox(padding: PaddingValues, content: @Composable () -> Unit) {
-    Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { content() }
 }
 
 @Suppress("LongParameterList")
