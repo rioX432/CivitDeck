@@ -21,6 +21,17 @@ struct AdvancedSettingsView: View {
                         }
                     }
                 }
+                Section("SD WebUI") {
+                    NavigationLink(destination: SDWebUISettingsView()) {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text("SD WebUI Connections")
+                                .font(.civitBodyMedium)
+                            Text("Manage Automatic1111/Forge server connections")
+                                .font(.civitBodySmall)
+                                .foregroundColor(.civitOnSurfaceVariant)
+                        }
+                    }
+                }
                 Section("Model Files") {
                     NavigationLink {
                         ModelFileBrowserScreen()

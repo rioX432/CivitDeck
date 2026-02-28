@@ -16,6 +16,7 @@ import com.riox432.civitdeck.data.local.dao.ExcludedTagDao
 import com.riox432.civitdeck.data.local.dao.HiddenModelDao
 import com.riox432.civitdeck.data.local.dao.LocalModelFileDao
 import com.riox432.civitdeck.data.local.dao.ModelVersionCheckpointDao
+import com.riox432.civitdeck.data.local.dao.SDWebUIConnectionDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
 import com.riox432.civitdeck.data.local.dao.SearchHistoryDao
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
@@ -29,6 +30,7 @@ import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
 import com.riox432.civitdeck.data.local.entity.LocalModelFileEntity
 import com.riox432.civitdeck.data.local.entity.ModelDirectoryEntity
 import com.riox432.civitdeck.data.local.entity.ModelVersionCheckpointEntity
+import com.riox432.civitdeck.data.local.entity.SDWebUIConnectionEntity
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import com.riox432.civitdeck.data.local.entity.SearchHistoryEntity
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
@@ -50,8 +52,9 @@ import kotlinx.coroutines.IO
         LocalModelFileEntity::class,
         ModelVersionCheckpointEntity::class,
         ComfyUIConnectionEntity::class,
+        SDWebUIConnectionEntity::class,
     ],
-    version = 19,
+    version = 20,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -66,6 +69,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun localModelFileDao(): LocalModelFileDao
     abstract fun modelVersionCheckpointDao(): ModelVersionCheckpointDao
     abstract fun comfyUIConnectionDao(): ComfyUIConnectionDao
+    abstract fun sdWebUIConnectionDao(): SDWebUIConnectionDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -393,6 +397,22 @@ val MIGRATION_18_19 = object : Migration(18, 19) {
     }
 }
 
+val MIGRATION_19_20 = object : Migration(19, 20) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `sdwebui_connections` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`name` TEXT NOT NULL, " +
+                "`hostname` TEXT NOT NULL, " +
+                "`port` INTEGER NOT NULL DEFAULT 7860, " +
+                "`isActive` INTEGER NOT NULL DEFAULT 0, " +
+                "`lastTestedAt` INTEGER, " +
+                "`lastTestSuccess` INTEGER, " +
+                "`createdAt` INTEGER NOT NULL)",
+        )
+    }
+}
+
 private val defaultCollectionCallback = object : RoomDatabase.Callback() {
     override fun onOpen(connection: SQLiteConnection) {
         super.onOpen(connection)
@@ -459,6 +479,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_16_17,
             MIGRATION_17_18,
             MIGRATION_18_19,
+            MIGRATION_19_20,
         )
         .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())

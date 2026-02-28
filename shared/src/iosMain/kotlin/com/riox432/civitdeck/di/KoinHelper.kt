@@ -62,6 +62,17 @@ import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveModelColl
 import com.riox432.civitdeck.feature.collections.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.RenameCollectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateSDWebUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteSDWebUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIModelsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUISamplersUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIVaesUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.GenerateSDWebUIImageUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptSDWebUIGenerationUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveSDWebUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveSDWebUIConnectionsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveSDWebUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ApplyWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.CancelComfyUIJobUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnectionUseCase
@@ -238,4 +249,17 @@ object KoinHelper {
 
     // ViewModels
     fun createSettingsViewModel(): SettingsViewModel = getKoin().get()
+
+    // SD WebUI use cases
+    fun getObserveSDWebUIConnectionsUseCase(): ObserveSDWebUIConnectionsUseCase = getKoin().get()
+    fun getObserveActiveSDWebUIConnectionUseCase(): ObserveActiveSDWebUIConnectionUseCase = getKoin().get()
+    fun getSaveSDWebUIConnectionUseCase(): SaveSDWebUIConnectionUseCase = getKoin().get()
+    fun getDeleteSDWebUIConnectionUseCase(): DeleteSDWebUIConnectionUseCase = getKoin().get()
+    fun getActivateSDWebUIConnectionUseCase(): ActivateSDWebUIConnectionUseCase = getKoin().get()
+    fun getTestSDWebUIConnectionUseCase(): TestSDWebUIConnectionUseCase = getKoin().get()
+    fun getFetchSDWebUIModelsUseCase(): FetchSDWebUIModelsUseCase = getKoin().get()
+    fun getFetchSDWebUISamplersUseCase(): FetchSDWebUISamplersUseCase = getKoin().get()
+    fun getFetchSDWebUIVaesUseCase(): FetchSDWebUIVaesUseCase = getKoin().get()
+    fun getGenerateSDWebUIImageUseCase(): GenerateSDWebUIImageUseCase = getKoin().get()
+    fun getInterruptSDWebUIGenerationUseCase(): InterruptSDWebUIGenerationUseCase = getKoin().get()
 }

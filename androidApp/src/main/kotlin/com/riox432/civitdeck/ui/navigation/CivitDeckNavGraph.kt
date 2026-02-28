@@ -50,6 +50,8 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewM
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ModelFileBrowserViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
@@ -63,6 +65,8 @@ import com.riox432.civitdeck.ui.collections.CollectionsScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIQueueScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsScreen
+import com.riox432.civitdeck.ui.comfyui.SDWebUIGenerationScreen
+import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsScreen
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateEditorScreen
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateScreen
 import com.riox432.civitdeck.ui.compare.ModelCompareScreen
@@ -137,6 +141,10 @@ data object WorkflowTemplateLibraryRoute
 data class WorkflowTemplateEditorRoute(val templateId: Long)
 
 data object WorkflowTemplatePickerRoute
+
+data object SDWebUISettingsRoute
+
+data object SDWebUIGenerationRoute
 
 data object AppearanceSettingsRoute
 
@@ -549,6 +557,7 @@ private fun EntryProviderScope<Any>.settingsSubScreenEntries(backStack: MutableL
             onNavigateToComfyUI = { backStack.add(ComfyUISettingsRoute) },
             onNavigateToModelFiles = { backStack.add(ModelFileBrowserRoute) },
             onNavigateToTemplates = { backStack.add(WorkflowTemplateLibraryRoute) },
+            onNavigateToSDWebUI = { backStack.add(SDWebUISettingsRoute) },
         )
     }
 }
@@ -560,6 +569,21 @@ private fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>) 
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
             onNavigateToGeneration = { backStack.add(ComfyUIGenerationRoute) },
+        )
+    }
+    entry<SDWebUISettingsRoute> {
+        val viewModel: SDWebUISettingsViewModel = koinViewModel()
+        SDWebUISettingsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onNavigateToGeneration = { backStack.add(SDWebUIGenerationRoute) },
+        )
+    }
+    entry<SDWebUIGenerationRoute> {
+        val viewModel: SDWebUIGenerationViewModel = koinViewModel()
+        SDWebUIGenerationScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
         )
     }
     entry<ComfyUIGenerationRoute> {

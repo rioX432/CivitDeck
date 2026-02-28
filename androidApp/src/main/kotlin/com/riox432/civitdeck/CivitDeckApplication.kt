@@ -23,6 +23,8 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewM
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ModelFileBrowserViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
@@ -130,4 +132,6 @@ val androidModule = module {
     viewModel { ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { ComfyUIQueueViewModel(get(), get()) }
     viewModel { WorkflowTemplateViewModel(get(), get(), get(), get(), get()) }
+    viewModel { SDWebUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { SDWebUIGenerationViewModel(get(), get(), get(), get(), get()) }
 }

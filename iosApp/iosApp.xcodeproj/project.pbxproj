@@ -88,6 +88,10 @@
 		CDWT01012F200001000CD001 /* WorkflowTemplateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDWT01002F200001000CD001 /* WorkflowTemplateView.swift */; };
 		CDWT02012F200002000CD001 /* WorkflowTemplateEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDWT02002F200002000CD001 /* WorkflowTemplateEditorView.swift */; };
 		CDWT03012F200003000CD001 /* WorkflowTemplateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDWT03002F200003000CD001 /* WorkflowTemplateViewModel.swift */; };
+		CDSD01012F780001000CD001 /* SDWebUISettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSD01002F780001000CD001 /* SDWebUISettingsView.swift */; };
+		CDSD02012F780002000CD001 /* SDWebUISettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSD02002F780002000CD001 /* SDWebUISettingsViewModel.swift */; };
+		CDSD03012F780003000CD001 /* SDWebUIGenerationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSD03002F780003000CD001 /* SDWebUIGenerationView.swift */; };
+		CDSD04012F780004000CD001 /* SDWebUIGenerationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSD04002F780004000CD001 /* SDWebUIGenerationViewModel.swift */; };
 		CD00SS012E208001000CD001 /* AppearanceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS002E208001000CD001 /* AppearanceSettingsView.swift */; };
 		CD00SS032E208001000CD001 /* ContentFilterSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS022E208001000CD001 /* ContentFilterSettingsView.swift */; };
 		CD00SS052E208001000CD001 /* NotificationsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS042E208001000CD001 /* NotificationsSettingsView.swift */; };
@@ -192,6 +196,10 @@
 		CDWT01002F200001000CD001 /* WorkflowTemplateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowTemplateView.swift; sourceTree = "<group>"; };
 		CDWT02002F200002000CD001 /* WorkflowTemplateEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowTemplateEditorView.swift; sourceTree = "<group>"; };
 		CDWT03002F200003000CD001 /* WorkflowTemplateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowTemplateViewModel.swift; sourceTree = "<group>"; };
+		CDSD01002F780001000CD001 /* SDWebUISettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDWebUISettingsView.swift; sourceTree = "<group>"; };
+		CDSD02002F780002000CD001 /* SDWebUISettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDWebUISettingsViewModel.swift; sourceTree = "<group>"; };
+		CDSD03002F780003000CD001 /* SDWebUIGenerationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDWebUIGenerationView.swift; sourceTree = "<group>"; };
+		CDSD04002F780004000CD001 /* SDWebUIGenerationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDWebUIGenerationViewModel.swift; sourceTree = "<group>"; };
 		CDSP01002E900001000CD001 /* SpotlightIndexManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightIndexManager.swift; sourceTree = "<group>"; };
 		CDSP02002E900002000CD001 /* SpotlightItemBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightItemBuilder.swift; sourceTree = "<group>"; };
 		CDDL01002E900003000CD001 /* DeepLinkHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkHandler.swift; sourceTree = "<group>"; };
@@ -500,6 +508,10 @@
 				CDWT01002F200001000CD001 /* WorkflowTemplateView.swift */,
 				CDWT02002F200002000CD001 /* WorkflowTemplateEditorView.swift */,
 				CDWT03002F200003000CD001 /* WorkflowTemplateViewModel.swift */,
+				CDSD01002F780001000CD001 /* SDWebUISettingsView.swift */,
+				CDSD02002F780002000CD001 /* SDWebUISettingsViewModel.swift */,
+				CDSD03002F780003000CD001 /* SDWebUIGenerationView.swift */,
+				CDSD04002F780004000CD001 /* SDWebUIGenerationViewModel.swift */,
 			);
 			path = ComfyUI;
 			sourceTree = "<group>";
@@ -696,6 +708,10 @@
 				CDWT01012F200001000CD001 /* WorkflowTemplateView.swift in Sources */,
 				CDWT02012F200002000CD001 /* WorkflowTemplateEditorView.swift in Sources */,
 				CDWT03012F200003000CD001 /* WorkflowTemplateViewModel.swift in Sources */,
+				CDSD01012F780001000CD001 /* SDWebUISettingsView.swift in Sources */,
+				CDSD02012F780002000CD001 /* SDWebUISettingsViewModel.swift in Sources */,
+				CDSD03012F780003000CD001 /* SDWebUIGenerationView.swift in Sources */,
+				CDSD04012F780004000CD001 /* SDWebUIGenerationViewModel.swift in Sources */,
 				CD00SS012E208001000CD001 /* AppearanceSettingsView.swift in Sources */,
 				CD00SS032E208001000CD001 /* ContentFilterSettingsView.swift in Sources */,
 				CD00SS052E208001000CD001 /* NotificationsSettingsView.swift in Sources */,

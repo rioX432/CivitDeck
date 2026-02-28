@@ -19,6 +19,7 @@ val databaseModule = module {
     single { get<CivitDeckDatabase>().localModelFileDao() }
     single { get<CivitDeckDatabase>().modelVersionCheckpointDao() }
     single { get<CivitDeckDatabase>().comfyUIConnectionDao() }
+    single { get<CivitDeckDatabase>().sdWebUIConnectionDao() }
 
     // Data Sources
     single { LocalCacheDataSource(get()) }
