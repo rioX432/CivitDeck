@@ -57,7 +57,7 @@ struct TagFilterSection: View {
                             onRemove(tag)
                         } label: {
                             Image(systemName: "xmark")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(.civitLabelXSmall)
                         }
                     }
                     .padding(.horizontal, Spacing.sm)

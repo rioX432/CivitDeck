@@ -428,7 +428,7 @@ extension ModelSearchScreen { // MARK: - Filter FAB
                     .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
                 if activeFilterCount > 0 {
                     Text("\(activeFilterCount)")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(.civitBadgeLabel)
                         .foregroundColor(.white)
                         .frame(width: 18, height: 18)
                         .background(Color.civitError)
