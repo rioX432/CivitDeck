@@ -52,6 +52,7 @@ final class ModelSearchViewModel: ObservableObject {
 
     private let pageSize: Int32 = 20
     private let maxFetchIterations = 5
+    private var memoryWarningToken: NSObjectProtocol?
 
     init() {
         self.getModelsUseCase = KoinHelper.shared.getModelsUseCase()
@@ -75,13 +76,19 @@ final class ModelSearchViewModel: ObservableObject {
         loadExcludedTags()
         loadDefaults()
         loadRecommendations()
-        NotificationCenter.default.addObserver(
+        memoryWarningToken = NotificationCenter.default.addObserver(
             forName: UIApplication.didReceiveMemoryWarningNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
             let count = self?.models.count ?? 0
             logger.warning("Memory warning received. models.count=\(count)")
+        }
+    }
+
+    deinit {
+        if let token = memoryWarningToken {
+            NotificationCenter.default.removeObserver(token)
         }
     }
 
