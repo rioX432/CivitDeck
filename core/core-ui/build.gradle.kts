@@ -41,5 +41,5 @@ dependencies {
     implementation(compose.foundation)
     implementation(compose.ui)
     implementation(libs.coil.compose)
-    implementation(libs.coil.network.ktor3)
+    implementation(libs.coil.network.okhttp)
 }

@@ -50,7 +50,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.coil.compose)
-    implementation(libs.coil.network.ktor3)
+    implementation(libs.coil.network.okhttp)
     implementation(libs.paging.compose)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
