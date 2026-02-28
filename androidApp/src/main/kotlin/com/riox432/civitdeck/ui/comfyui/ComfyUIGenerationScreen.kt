@@ -3,6 +3,7 @@
 package com.riox432.civitdeck.ui.comfyui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -41,11 +42,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.ui.theme.shimmer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -285,13 +288,24 @@ private fun ResultGrid(imageUrls: List<String>) {
     ) {
         items(imageUrls) { url ->
             Card {
-                AsyncImage(
-                    model = ImageRequest.Builder(context).data(url).build(),
+                SubcomposeAsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(url)
+                        .crossfade(true)
+                        .build(),
                     contentDescription = "Generated image",
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f),
                     contentScale = ContentScale.Crop,
+                    loading = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .shimmer(),
+                        )
+                    },
                 )
             }
         }
