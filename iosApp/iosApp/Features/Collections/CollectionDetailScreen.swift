@@ -249,34 +249,8 @@ private struct CollectionModelCard: View {
         }
     }
 
-    @ViewBuilder
     private var thumbnailImage: some View {
-        if let urlString = model.thumbnailUrl, let imageUrl = URL(string: urlString) {
-            Color.civitSurfaceVariant
-                .aspectRatio(1, contentMode: .fit)
-                .overlay {
-                    CachedAsyncImage(url: imageUrl) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image.resizable().scaledToFill().transition(.opacity)
-                        case .failure:
-                            Image(systemName: "photo").foregroundColor(.civitOnSurfaceVariant)
-                        case .empty:
-                            Rectangle().fill(Color.civitSurfaceVariant).shimmer()
-                        @unknown default:
-                            Image(systemName: "photo").foregroundColor(.civitOnSurfaceVariant)
-                        }
-                    }
-                }
-                .clipped()
-        } else {
-            Rectangle()
-                .fill(Color.civitSurfaceVariant)
-                .aspectRatio(1, contentMode: .fit)
-                .overlay {
-                    Image(systemName: "photo").foregroundColor(.civitOnSurfaceVariant)
-                }
-        }
+        CivitAsyncImageView(imageUrl: model.thumbnailUrl, aspectRatio: 1)
     }
 
     private var cardInfo: some View {

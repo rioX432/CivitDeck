@@ -147,46 +147,16 @@ struct ModelDetailScreen: View {
             if !images.isEmpty {
                 TabView {
                     ForEach(Array(images.enumerated()), id: \.offset) { index, image in
-                        if let url = URL(string: image.url) {
-                            CachedAsyncImage(url: url) { phase in
-                                switch phase {
-                                case .success(let img):
-                                    img
-                                        .resizable()
-                                        .scaledToFill()
-                                        .transition(.opacity)
-                                case .failure:
-                                    imagePlaceholder
-                                case .empty:
-                                    Rectangle()
-                                        .fill(Color.civitSurfaceVariant)
-                                        .shimmer()
-                                @unknown default:
-                                    imagePlaceholder
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .aspectRatio(1, contentMode: .fit)
-                            .clipped()
+                        CivitAsyncImageView(imageUrl: image.url, aspectRatio: 1)
                             .onTapGesture {
                                 selectedCarouselIndex = index
                             }
-                        }
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))
                 .frame(height: min(UIScreen.main.bounds.width, 600))
             }
         }
-    }
-
-    private var imagePlaceholder: some View {
-        Rectangle()
-            .fill(Color.civitSurfaceVariant)
-            .overlay {
-                Image(systemName: "photo")
-                    .foregroundColor(.civitOnSurfaceVariant)
-            }
     }
 
     // MARK: - Model Header
