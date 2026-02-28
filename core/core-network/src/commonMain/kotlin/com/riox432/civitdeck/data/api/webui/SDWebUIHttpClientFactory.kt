@@ -18,7 +18,13 @@ private const val SOCKET_TIMEOUT_MS = 300_000L
 fun createSDWebUIHttpClient(): HttpClient {
     return HttpClient {
         install(ContentNegotiation) {
-            json(Json { ignoreUnknownKeys = true; isLenient = true; encodeDefaults = true })
+            json(
+                Json {
+                    ignoreUnknownKeys = true
+                    isLenient = true
+                    encodeDefaults = true
+                }
+            )
         }
         install(HttpTimeout) {
             connectTimeoutMillis = CONNECT_TIMEOUT_MS

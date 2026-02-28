@@ -2,7 +2,6 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 
 import com.riox432.civitdeck.data.api.civitailink.CivitaiLinkApi
 import com.riox432.civitdeck.data.api.civitailink.CivitaiLinkOutgoingMessage
-import com.riox432.civitdeck.data.api.civitailink.CivitaiLinkResource as ApiResource
 import com.riox432.civitdeck.data.api.civitailink.CivitaiLinkResourceItem
 import com.riox432.civitdeck.domain.model.CivitaiLinkActivity
 import com.riox432.civitdeck.domain.model.CivitaiLinkResource
@@ -16,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.riox432.civitdeck.data.api.civitailink.CivitaiLinkResource as ApiResource
 
 class CivitaiLinkRepositoryImpl(
     private val api: CivitaiLinkApi,
@@ -82,10 +82,13 @@ class CivitaiLinkRepositoryImpl(
 
     override suspend fun cancelActivity(activityId: String) {
         val key = activeKey ?: return
-        api.sendCommand(key, CivitaiLinkOutgoingMessage(
-            command = "activities:cancel",
-            payload = null,
-        ))
+        api.sendCommand(
+            key,
+            CivitaiLinkOutgoingMessage(
+                command = "activities:cancel",
+                payload = null,
+            )
+        )
     }
 
     private fun com.riox432.civitdeck.data.api.civitailink.CivitaiLinkActivity.toDomain() =
