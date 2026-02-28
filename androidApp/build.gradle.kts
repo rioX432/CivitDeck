@@ -38,6 +38,7 @@ dependencies {
     testImplementation(libs.turbine)
 
     implementation(project(":shared"))
+    implementation(project(":core:core-ui"))
     implementation(compose.material3)
     implementation(compose.materialIconsExtended)
     implementation(compose.foundation)
