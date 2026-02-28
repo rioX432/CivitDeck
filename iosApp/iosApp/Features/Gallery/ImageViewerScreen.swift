@@ -170,7 +170,7 @@ struct ImageViewerScreen: View {
             Text(message)
                 .font(.subheadline)
                 .fontWeight(.medium)
-                .foregroundColor(.white)
+                .foregroundColor(.civitInverseOnSurface)
                 .padding(.horizontal, Spacing.lg)
                 .padding(.vertical, Spacing.smPlus)
                 .background(.ultraThinMaterial, in: Capsule())
@@ -228,7 +228,7 @@ private struct ControlCircleButton: View {
             SwiftUI.Image(systemName: systemName)
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundColor(.white)
+                .foregroundColor(.civitInverseOnSurface)
                 .padding(Spacing.smPlus)
                 .background(.ultraThinMaterial, in: Circle())
         }

@@ -285,7 +285,7 @@ private struct CollectionModelCard: View {
                 if isSelected {
                     Image(systemName: "checkmark")
                         .font(.caption.bold())
-                        .foregroundColor(.white)
+                        .foregroundColor(.civitOnPrimary)
                 }
             }
             .padding(Spacing.sm)

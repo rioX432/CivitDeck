@@ -36,7 +36,7 @@ struct CarouselViewer: View {
                             SwiftUI.Image(systemName: "xmark")
                                 .font(.title3)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.white)
+                                .foregroundColor(.civitInverseOnSurface)
                                 .padding(Spacing.smPlus)
                                 .background(.ultraThinMaterial, in: Circle())
                         }
@@ -145,7 +145,7 @@ struct GridImageViewer: View {
                             SwiftUI.Image(systemName: "xmark")
                                 .font(.title3)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.white)
+                                .foregroundColor(.civitInverseOnSurface)
                                 .padding(Spacing.smPlus)
                                 .background(.ultraThinMaterial, in: Circle())
                         }

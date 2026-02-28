@@ -74,7 +74,7 @@ private struct OverlayCircleButton: View {
             Image(systemName: systemName)
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundColor(.white)
+                .foregroundColor(.civitInverseOnSurface)
                 .padding(buttonPadding)
                 .background(.ultraThinMaterial, in: Circle())
         }
@@ -89,7 +89,7 @@ private struct ComparisonLabelChip: View {
     var body: some View {
         Text(text)
             .font(.civitLabelMedium)
-            .foregroundColor(.white)
+            .foregroundColor(.civitInverseOnSurface)
             .padding(.horizontal, chipHPadding)
             .padding(.vertical, chipVPadding)
             .background(Color.black.opacity(chipAlpha), in: Capsule())

@@ -411,7 +411,7 @@ extension ModelSearchScreen { // MARK: - Filter FAB
                 if activeFilterCount > 0 {
                     Text("\(activeFilterCount)")
                         .font(.civitBadgeLabel)
-                        .foregroundColor(.white)
+                        .foregroundColor(.civitOnError)
                         .frame(width: 18, height: 18)
                         .background(Color.civitError)
                         .clipShape(Circle())

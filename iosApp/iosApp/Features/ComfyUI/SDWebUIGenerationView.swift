@@ -131,7 +131,7 @@ struct SDWebUIGenerationView: View {
                     Text(label).font(.civitBodySmall)
                     ProgressView(value: viewModel.progress)
                     Button("Interrupt", action: viewModel.interruptGeneration)
-                        .foregroundColor(.red)
+                        .foregroundColor(.civitError)
                 }
             } else {
                 Button("Generate") { viewModel.generate() }
