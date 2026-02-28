@@ -154,7 +154,7 @@ struct ImageGalleryScreen: View {
     private func staggeredImageCell(image: CivitImage) -> some View {
         let index = viewModel.images.firstIndex(where: { $0.id == image.id }) ?? 0
         return imageCell(image: image, index: index)
-            .onAppear {
+            .task {
                 if index >= viewModel.images.count - 6 {
                     viewModel.loadMore()
                 }

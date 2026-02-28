@@ -277,7 +277,7 @@ struct ModelSearchScreen: View {
                             }
                         }
                         .staggeredEntrance(index: index)
-                        .onAppear {
+                        .task {
                             viewModel.onModelAppear(model.id)
                         }
                     }
