@@ -5,6 +5,7 @@ import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
+import com.riox432.civitdeck.domain.model.QueueJob
 import com.riox432.civitdeck.domain.repository.ComfyUIRepository
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
@@ -52,6 +53,8 @@ class ComfyUIUseCasesTest {
         override suspend fun testConnection(connection: ComfyUIConnection): Boolean = testResult
         override suspend fun updateTestResult(id: Long, success: Boolean) { testResultUpdated = true }
         override suspend fun fetchCheckpoints(): List<String> = fetchedCheckpoints
+        override suspend fun fetchLoras(): List<String> = emptyList()
+        override suspend fun fetchControlNets(): List<String> = emptyList()
         override suspend fun submitGeneration(params: ComfyUIGenerationParams): String {
             submittedParams = params
             return "prompt-123"
@@ -62,6 +65,9 @@ class ComfyUIUseCasesTest {
             kotlinx.coroutines.flow.emptyFlow()
         override fun getImageUrl(filename: String, subfolder: String, type: String): String =
             "http://localhost:8188/view?filename=$filename"
+        override fun observeQueue(intervalMs: Long): Flow<List<QueueJob>> =
+            kotlinx.coroutines.flow.flowOf(emptyList())
+        override suspend fun cancelJob(promptId: String) {}
     }
 
     private val repo = FakeComfyUIRepository()

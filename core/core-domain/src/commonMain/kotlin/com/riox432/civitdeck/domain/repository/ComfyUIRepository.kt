@@ -21,6 +21,8 @@ interface ComfyUIRepository {
 
     // Generation
     suspend fun fetchCheckpoints(): List<String>
+    suspend fun fetchLoras(): List<String>
+    suspend fun fetchControlNets(): List<String>
     suspend fun submitGeneration(params: ComfyUIGenerationParams): String
     suspend fun pollGenerationResult(promptId: String): GenerationResult
     fun observeGenerationProgress(promptId: String, host: String, port: Int): Flow<GenerationProgress>

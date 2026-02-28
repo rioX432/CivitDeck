@@ -60,11 +60,15 @@ import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveCollectio
 import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveModelCollectionsUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.RenameCollectionUseCase
+import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.CancelComfyUIJobUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FindMatchingLocalModelUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIConnectionsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIQueueUseCase
@@ -206,6 +210,9 @@ object KoinHelper {
     fun getActivateComfyUIConnectionUseCase(): ActivateComfyUIConnectionUseCase = getKoin().get()
     fun getTestComfyUIConnectionUseCase(): TestComfyUIConnectionUseCase = getKoin().get()
     fun getFetchComfyUICheckpointsUseCase(): FetchComfyUICheckpointsUseCase = getKoin().get()
+    fun getFetchComfyUILorasUseCase(): FetchComfyUILorasUseCase = getKoin().get()
+    fun getFetchComfyUIControlNetsUseCase(): FetchComfyUIControlNetsUseCase = getKoin().get()
+    fun getImportWorkflowUseCase(): ImportWorkflowUseCase = getKoin().get()
     fun getSubmitComfyUIGenerationUseCase(): SubmitComfyUIGenerationUseCase = getKoin().get()
     fun getPollComfyUIResultUseCase(): PollComfyUIResultUseCase = getKoin().get()
     fun getObserveGenerationProgressUseCase(): ObserveGenerationProgressUseCase = getKoin().get()
@@ -213,6 +220,7 @@ object KoinHelper {
     fun getCancelComfyUIJobUseCase(): CancelComfyUIJobUseCase = getKoin().get()
     fun getFindMatchingLocalModelUseCase(): FindMatchingLocalModelUseCase = getKoin().get()
     fun getPopulateGenerationFromModelUseCase(): PopulateGenerationFromModelUseCase = getKoin().get()
+    fun getSaveGeneratedImageUseCase(): SaveGeneratedImageUseCase = getKoin().get()
 
     // ViewModels
     fun createSettingsViewModel(): SettingsViewModel = getKoin().get()

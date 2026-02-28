@@ -24,6 +24,12 @@ enum class ComfyUIConnectionStatus {
     NotConfigured,
 }
 
+data class LoraSelection(
+    val name: String,
+    val strengthModel: Float = 1.0f,
+    val strengthClip: Float = 1.0f,
+)
+
 data class ComfyUIGenerationParams(
     val checkpoint: String,
     val prompt: String,
@@ -35,6 +41,14 @@ data class ComfyUIGenerationParams(
     val height: Int = DEFAULT_DIMENSION,
     val samplerName: String = DEFAULT_SAMPLER,
     val scheduler: String = DEFAULT_SCHEDULER,
+    // LoRA injections
+    val loraSelections: List<LoraSelection> = emptyList(),
+    // ControlNet
+    val controlNetEnabled: Boolean = false,
+    val controlNetModel: String = "",
+    val controlNetStrength: Float = 1.0f,
+    // Custom workflow JSON (bypasses built-in workflow builder when non-null)
+    val customWorkflowJson: String? = null,
 ) {
     companion object {
         const val DEFAULT_STEPS = 20

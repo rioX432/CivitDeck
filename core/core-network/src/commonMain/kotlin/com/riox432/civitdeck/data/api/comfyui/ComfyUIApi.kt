@@ -39,6 +39,22 @@ class ComfyUIApi(
     }
 
     /**
+     * Fetch available LoRA models: GET /object_info/LoraLoader
+     */
+    suspend fun getLoras(): List<String> {
+        val text = client.get("$baseUrl/object_info/LoraLoader").bodyAsText()
+        return parseNodeInputList(text, "LoraLoader", "lora_name")
+    }
+
+    /**
+     * Fetch available ControlNet models: GET /object_info/ControlNetLoader
+     */
+    suspend fun getControlNets(): List<String> {
+        val text = client.get("$baseUrl/object_info/ControlNetLoader").bodyAsText()
+        return parseNodeInputList(text, "ControlNetLoader", "control_net_name")
+    }
+
+    /**
      * Submit workflow: POST /prompt
      */
     suspend fun submitPrompt(workflow: JsonObject): PromptResponse {
@@ -89,5 +105,25 @@ class ComfyUIApi(
             json.decodeFromString<CheckpointLoaderInfo>(it.toString())
         }
         return info?.input?.required?.ckptName?.firstOrNull() ?: emptyList()
+    }
+
+    /**
+     * Generic parser for /object_info nodes that return a list of filenames
+     * under `inputs.required.<fieldName>[0]`.
+     */
+    private fun parseNodeInputList(responseText: String, nodeType: String, fieldName: String): List<String> {
+        return try {
+            val root = json.decodeFromString<JsonObject>(responseText)
+            val nodeInfo = root[nodeType] as? JsonObject ?: return emptyList()
+            val inputObj = nodeInfo["input"] as? JsonObject ?: return emptyList()
+            val requiredObj = inputObj["required"] as? JsonObject ?: return emptyList()
+            val fieldArray = requiredObj[fieldName] as? kotlinx.serialization.json.JsonArray
+                ?: return emptyList()
+            val namesList = fieldArray.firstOrNull() as? kotlinx.serialization.json.JsonArray
+                ?: return emptyList()
+            namesList.mapNotNull { (it as? kotlinx.serialization.json.JsonPrimitive)?.content }
+        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            emptyList()
+        }
     }
 }

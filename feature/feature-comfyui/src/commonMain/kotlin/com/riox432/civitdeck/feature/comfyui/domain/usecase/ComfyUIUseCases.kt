@@ -7,6 +7,7 @@ import com.riox432.civitdeck.domain.model.QueueJob
 import com.riox432.civitdeck.domain.repository.ComfyUIRepository
 import com.riox432.civitdeck.domain.repository.LocalModelFileRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.json.Json
 
 // -- Connection management --
 
@@ -45,6 +46,35 @@ class TestComfyUIConnectionUseCase(private val repository: ComfyUIRepository) {
 
 class FetchComfyUICheckpointsUseCase(private val repository: ComfyUIRepository) {
     suspend operator fun invoke(): List<String> = repository.fetchCheckpoints()
+}
+
+class FetchComfyUILorasUseCase(private val repository: ComfyUIRepository) {
+    suspend operator fun invoke(): List<String> = repository.fetchLoras()
+}
+
+class FetchComfyUIControlNetsUseCase(private val repository: ComfyUIRepository) {
+    suspend operator fun invoke(): List<String> = repository.fetchControlNets()
+}
+
+class ImportWorkflowUseCase {
+    /**
+     * Validates that the given JSON string is a valid ComfyUI workflow (a JSON object with
+     * at least one node entry). Returns the cleaned JSON on success, or throws on invalid input.
+     */
+    operator fun invoke(jsonString: String): String {
+        val trimmed = jsonString.trim()
+        if (trimmed.isBlank()) error("Workflow JSON is empty")
+        val decoded = try {
+            Json.parseToJsonElement(trimmed)
+        } catch (e: Exception) {
+            error("Invalid JSON: ${e.message}")
+        }
+        if (decoded !is kotlinx.serialization.json.JsonObject) {
+            error("Workflow must be a JSON object")
+        }
+        if (decoded.isEmpty()) error("Workflow JSON has no nodes")
+        return trimmed
+    }
 }
 
 class SubmitComfyUIGenerationUseCase(private val repository: ComfyUIRepository) {

@@ -2,12 +2,17 @@ package com.riox432.civitdeck.feature.comfyui.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
+import com.riox432.civitdeck.domain.model.LoraSelection
 import com.riox432.civitdeck.domain.repository.ComfyUIRepository
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
@@ -32,22 +37,42 @@ data class GenerationUiState(
     val samplerName: String = "euler",
     val scheduler: String = "normal",
     val isLoadingCheckpoints: Boolean = false,
+    // LoRA
+    val availableLoras: List<String> = emptyList(),
+    val isLoadingLoras: Boolean = false,
+    val loraSelections: List<LoraSelection> = emptyList(),
+    // ControlNet
+    val availableControlNets: List<String> = emptyList(),
+    val isLoadingControlNets: Boolean = false,
+    val controlNetEnabled: Boolean = false,
+    val selectedControlNet: String = "",
+    val controlNetStrength: Float = 1.0f,
+    // Custom workflow
+    val customWorkflowJson: String? = null,
+    val workflowImportError: String? = null,
+    // Generation
     val generationStatus: GenerationStatus = GenerationStatus.Idle,
     val currentStep: Int = 0,
     val totalSteps: Int = 0,
     val result: GenerationResult? = null,
     val error: String? = null,
+    val imageSaveSuccess: Boolean? = null,
 ) {
     /** Progress fraction in [0f, 1f]. Returns 0 when totalSteps is unknown. */
     val progressFraction: Float
         get() = if (totalSteps > 0) currentStep.toFloat() / totalSteps.toFloat() else 0f
 }
 
+@Suppress("TooManyFunctions")
 class ComfyUIGenerationViewModel(
     private val fetchCheckpoints: FetchComfyUICheckpointsUseCase,
+    private val fetchLoras: FetchComfyUILorasUseCase,
+    private val fetchControlNets: FetchComfyUIControlNetsUseCase,
+    private val importWorkflow: ImportWorkflowUseCase,
     private val submitGeneration: SubmitComfyUIGenerationUseCase,
     private val pollResult: PollComfyUIResultUseCase,
     private val observeProgress: ObserveGenerationProgressUseCase,
+    private val saveImage: SaveGeneratedImageUseCase,
     private val repository: ComfyUIRepository,
 ) : ViewModel() {
 
@@ -58,6 +83,8 @@ class ComfyUIGenerationViewModel(
 
     init {
         loadCheckpoints()
+        loadLoras()
+        loadControlNets()
     }
 
     private fun loadCheckpoints() {
@@ -76,6 +103,30 @@ class ComfyUIGenerationViewModel(
                 _uiState.update {
                     it.copy(isLoadingCheckpoints = false, error = e.message)
                 }
+            }
+        }
+    }
+
+    private fun loadLoras() {
+        _uiState.update { it.copy(isLoadingLoras = true) }
+        viewModelScope.launch {
+            try {
+                val list = fetchLoras()
+                _uiState.update { it.copy(availableLoras = list, isLoadingLoras = false) }
+            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+                _uiState.update { it.copy(isLoadingLoras = false) }
+            }
+        }
+    }
+
+    private fun loadControlNets() {
+        _uiState.update { it.copy(isLoadingControlNets = true) }
+        viewModelScope.launch {
+            try {
+                val list = fetchControlNets()
+                _uiState.update { it.copy(availableControlNets = list, isLoadingControlNets = false) }
+            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+                _uiState.update { it.copy(isLoadingControlNets = false) }
             }
         }
     }
@@ -112,9 +163,65 @@ class ComfyUIGenerationViewModel(
         _uiState.update { it.copy(seed = seed) }
     }
 
+    // -- LoRA --
+
+    fun onLoraAdded(loraName: String) {
+        val current = _uiState.value.loraSelections
+        if (current.none { it.name == loraName }) {
+            _uiState.update { it.copy(loraSelections = current + LoraSelection(loraName)) }
+        }
+    }
+
+    fun onLoraRemoved(loraName: String) {
+        _uiState.update { state ->
+            state.copy(loraSelections = state.loraSelections.filter { it.name != loraName })
+        }
+    }
+
+    fun onLoraStrengthChanged(loraName: String, strengthModel: Float, strengthClip: Float) {
+        _uiState.update { state ->
+            state.copy(
+                loraSelections = state.loraSelections.map {
+                    if (it.name == loraName) it.copy(strengthModel = strengthModel, strengthClip = strengthClip)
+                    else it
+                }
+            )
+        }
+    }
+
+    // -- ControlNet --
+
+    fun onControlNetToggled(enabled: Boolean) {
+        _uiState.update { it.copy(controlNetEnabled = enabled) }
+    }
+
+    fun onControlNetSelected(model: String) {
+        _uiState.update { it.copy(selectedControlNet = model) }
+    }
+
+    fun onControlNetStrengthChanged(strength: Float) {
+        _uiState.update { it.copy(controlNetStrength = strength) }
+    }
+
+    // -- Custom workflow --
+
+    fun onImportWorkflow(jsonInput: String) {
+        try {
+            val validated = importWorkflow(jsonInput)
+            _uiState.update { it.copy(customWorkflowJson = validated, workflowImportError = null) }
+        } catch (e: IllegalStateException) {
+            _uiState.update { it.copy(workflowImportError = e.message) }
+        }
+    }
+
+    fun onClearCustomWorkflow() {
+        _uiState.update { it.copy(customWorkflowJson = null, workflowImportError = null) }
+    }
+
     fun onGenerate() {
         val state = _uiState.value
-        if (state.selectedCheckpoint.isBlank() || state.prompt.isBlank()) return
+        val hasCustomWorkflow = state.customWorkflowJson != null
+        if (!hasCustomWorkflow && (state.selectedCheckpoint.isBlank() || state.prompt.isBlank())) return
         progressJob?.cancel()
         _uiState.update {
             it.copy(
@@ -143,6 +250,17 @@ class ComfyUIGenerationViewModel(
         }
     }
 
+    fun onSaveImage(imageUrl: String) {
+        viewModelScope.launch {
+            val success = saveImage(imageUrl)
+            _uiState.update { it.copy(imageSaveSuccess = success) }
+        }
+    }
+
+    fun onDismissSaveResult() {
+        _uiState.update { it.copy(imageSaveSuccess = null) }
+    }
+
     private fun buildParams(state: GenerationUiState) = ComfyUIGenerationParams(
         checkpoint = state.selectedCheckpoint,
         prompt = state.prompt,
@@ -154,6 +272,11 @@ class ComfyUIGenerationViewModel(
         height = state.height,
         samplerName = state.samplerName,
         scheduler = state.scheduler,
+        loraSelections = state.loraSelections,
+        controlNetEnabled = state.controlNetEnabled,
+        controlNetModel = state.selectedControlNet,
+        controlNetStrength = state.controlNetStrength,
+        customWorkflowJson = state.customWorkflowJson,
     )
 
     private fun startWebSocketProgress(promptId: String, connection: ComfyUIConnection) {
