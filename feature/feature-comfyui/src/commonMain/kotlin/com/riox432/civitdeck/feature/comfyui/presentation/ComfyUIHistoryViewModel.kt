@@ -36,7 +36,7 @@ class ComfyUIHistoryViewModel(
         viewModelScope.launch {
             fetchHistory()
                 .catch { e ->
-                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                    _uiState.update { it.copy(isLoading = false, error = e.message ?: e.toString()) }
                 }
                 .collect { images ->
                     _uiState.update {

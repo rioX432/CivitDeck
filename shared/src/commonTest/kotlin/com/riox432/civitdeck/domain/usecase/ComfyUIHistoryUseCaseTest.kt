@@ -25,7 +25,7 @@ class ComfyUIHistoryUseCaseTest {
 
     private val testPromptId = "abc-123"
     private val testFilename = "ComfyUI_00001_.png"
-    private val testImageUrl = "http://localhost:8188/view?filename=$testFilename&subfolder=&type=output"
+    private val testImageUrl = "http://localhost:8188/view?filename=$testFilename&type=output"
 
     private val fakeImages = listOf(
         ComfyUIGeneratedImage(
