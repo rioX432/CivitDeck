@@ -235,6 +235,7 @@ private fun ImageGrid(
                 image = image,
                 blurSettings = blurSettings,
                 onClick = { onImageClick(index) },
+                contentDescription = "Image ${index + 1}",
                 modifier = Modifier.animateItem(),
             )
         }
@@ -256,6 +257,7 @@ private fun ImageGridItem(
     image: Image,
     blurSettings: NsfwBlurSettings,
     onClick: () -> Unit,
+    contentDescription: String,
     modifier: Modifier = Modifier,
 ) {
     val aspectRatio = if (image.width > 0 && image.height > 0) {
@@ -277,7 +279,7 @@ private fun ImageGridItem(
                 .data(image.url)
                 .crossfade(Duration.normal)
                 .build(),
-            contentDescription = null,
+            contentDescription = contentDescription,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()

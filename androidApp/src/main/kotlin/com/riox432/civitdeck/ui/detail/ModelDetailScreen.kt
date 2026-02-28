@@ -420,7 +420,7 @@ private fun SharedThumbnailPlaceholder(
             .data(thumbnailUrl)
             .crossfade(Duration.normal)
             .build(),
-        contentDescription = null,
+        contentDescription = "Model thumbnail",
         contentScale = ContentScale.Fit,
         modifier = imageModifier
             .background(MaterialTheme.colorScheme.surfaceContainerLow),
@@ -643,7 +643,7 @@ private fun CarouselPage(
             .data(image.url)
             .crossfade(Duration.normal)
             .build(),
-        contentDescription = null,
+        contentDescription = "Model image",
         contentScale = ContentScale.Fit,
         modifier = pageModifier
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
@@ -811,7 +811,7 @@ private fun ImageGridItem(
             .data(image.url)
             .crossfade(Duration.normal)
             .build(),
-        contentDescription = null,
+        contentDescription = "Version image",
         contentScale = ContentScale.Crop,
         modifier = Modifier
             .fillMaxWidth()
