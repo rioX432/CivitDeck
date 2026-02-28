@@ -39,6 +39,8 @@
 		CDEM01012EFF0001000CD001 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDEM01002EFF0001000CD001 /* EmptyStateView.swift */; };
 		CDMS01012EFF0001000CD001 /* ModelStatsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDMS01002EFF0001000CD001 /* ModelStatsRow.swift */; };
 		CDCB01012EFF0001000CD001 /* ChipButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCB01002EFF0001000CD001 /* ChipButton.swift */; };
+		CDDR01012F000001000CD001 /* DetailRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDR01002F000001000CD001 /* DetailRow.swift */; };
+		CDSB01012F000002000CD001 /* SearchBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSB01002F000002000CD001 /* SearchBarView.swift */; };
 		CD00C0012D3CC001000CD001 /* CollectionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0002D3CC001000CD001 /* CollectionsScreen.swift */; };
 		CD00C0032D3CC001000CD001 /* CollectionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0022D3CC001000CD001 /* CollectionsViewModel.swift */; };
 		CD00C0052D3CC001000CD001 /* CollectionDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0042D3CC001000CD001 /* CollectionDetailScreen.swift */; };
@@ -128,6 +130,8 @@
 		CDEM01002EFF0001000CD001 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		CDMS01002EFF0001000CD001 /* ModelStatsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelStatsRow.swift; sourceTree = "<group>"; };
 		CDCB01002EFF0001000CD001 /* ChipButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChipButton.swift; sourceTree = "<group>"; };
+		CDDR01002F000001000CD001 /* DetailRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRow.swift; sourceTree = "<group>"; };
+		CDSB01002F000002000CD001 /* SearchBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarView.swift; sourceTree = "<group>"; };
 		CD00C0002D3CC001000CD001 /* CollectionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsScreen.swift; sourceTree = "<group>"; };
 		CD00C0022D3CC001000CD001 /* CollectionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsViewModel.swift; sourceTree = "<group>"; };
 		CD00C0042D3CC001000CD001 /* CollectionDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionDetailScreen.swift; sourceTree = "<group>"; };
@@ -304,6 +308,8 @@
 			CDEM01002EFF0001000CD001 /* EmptyStateView.swift */,
 		CDMS01002EFF0001000CD001 /* ModelStatsRow.swift */,
 		CDCB01002EFF0001000CD001 /* ChipButton.swift */,
+			CDDR01002F000001000CD001 /* DetailRow.swift */,
+			CDSB01002F000002000CD001 /* SearchBarView.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -617,6 +623,8 @@
 			CDEM01012EFF0001000CD001 /* EmptyStateView.swift in Sources */,
 		CDMS01012EFF0001000CD001 /* ModelStatsRow.swift in Sources */,
 		CDCB01012EFF0001000CD001 /* ChipButton.swift in Sources */,
+				CDDR01012F000001000CD001 /* DetailRow.swift in Sources */,
+				CDSB01012F000002000CD001 /* SearchBarView.swift in Sources */,
 				CD00C0012D3CC001000CD001 /* CollectionsScreen.swift in Sources */,
 				CD00C0032D3CC001000CD001 /* CollectionsViewModel.swift in Sources */,
 				CD00C0052D3CC001000CD001 /* CollectionDetailScreen.swift in Sources */,
