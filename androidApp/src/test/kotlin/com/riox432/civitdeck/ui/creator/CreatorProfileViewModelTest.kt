@@ -10,7 +10,8 @@ import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.ModelRepository
-import com.riox432.civitdeck.domain.usecase.GetCreatorModelsUseCase
+import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
+import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher

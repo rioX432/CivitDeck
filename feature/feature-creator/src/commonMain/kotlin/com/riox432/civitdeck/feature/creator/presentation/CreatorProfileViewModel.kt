@@ -1,9 +1,9 @@
-package com.riox432.civitdeck.ui.creator
+package com.riox432.civitdeck.feature.creator.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.Model
-import com.riox432.civitdeck.domain.usecase.GetCreatorModelsUseCase
+import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow

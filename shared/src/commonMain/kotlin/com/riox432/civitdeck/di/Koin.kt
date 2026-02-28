@@ -2,6 +2,7 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
+import com.riox432.civitdeck.feature.creator.di.creatorModule
 import com.riox432.civitdeck.feature.settings.di.settingsModule
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -16,6 +17,7 @@ val sharedModules: List<Module>
         dataModule,
         domainModule,
         settingsModule,
+        creatorModule,
     )
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {

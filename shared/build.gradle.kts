@@ -23,6 +23,7 @@ kotlin {
             api(project(":core:core-network"))
             api(project(":core:core-database"))
             api(project(":feature:feature-settings"))
+            api(project(":feature:feature-creator"))
             api(libs.androidx.lifecycle.viewmodel)
             implementation(libs.ktor.client.core)
             implementation(libs.kotlinx.serialization.json)

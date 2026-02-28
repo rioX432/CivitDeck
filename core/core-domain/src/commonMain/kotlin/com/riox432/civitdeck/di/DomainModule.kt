@@ -20,7 +20,6 @@ import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
 import com.riox432.civitdeck.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.domain.usecase.GetCacheInfoUseCase
-import com.riox432.civitdeck.domain.usecase.GetCreatorModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetDiscoveryModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelIdsUseCase
@@ -94,7 +93,6 @@ import org.koin.dsl.module
 
 val domainModule = module {
     factory { GetModelsUseCase(get()) }
-    factory { GetCreatorModelsUseCase(get()) }
     factory { GetModelDetailUseCase(get()) }
     factory { GetImagesUseCase(get()) }
     factory { EnrichModelImagesUseCase(get()) }

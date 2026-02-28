@@ -21,7 +21,6 @@ import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
 import com.riox432.civitdeck.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.domain.usecase.GetCacheInfoUseCase
-import com.riox432.civitdeck.domain.usecase.GetCreatorModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetDiscoveryModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelIdsUseCase
@@ -91,6 +90,7 @@ import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
+import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
 import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
 import org.koin.mp.KoinPlatform.getKoin
 
