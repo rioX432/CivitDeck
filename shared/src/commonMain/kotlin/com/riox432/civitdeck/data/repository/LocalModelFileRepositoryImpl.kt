@@ -120,16 +120,14 @@ private fun LocalModelFileEntity.toDomain() = LocalModelFile(
     sha256Hash = sha256Hash,
     sizeBytes = sizeBytes,
     scannedAt = scannedAt,
-    matchedModel = if (matchedModelId != null) {
+    matchedModel = matchedModelId?.let { modelId ->
         MatchedModelInfo(
-            modelId = matchedModelId,
+            modelId = modelId,
             modelName = matchedModelName ?: "Unknown",
             versionId = matchedVersionId ?: 0,
             versionName = matchedVersionName ?: "Unknown",
             latestVersionId = latestVersionId,
             hasUpdate = hasUpdate,
         )
-    } else {
-        null
     },
 )

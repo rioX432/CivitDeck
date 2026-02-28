@@ -10,8 +10,11 @@ import org.koin.mp.KoinPlatform
 val sharedModules: List<Module>
     get() = listOf(
         platformModule,
+        networkModule,
+        databaseModule,
         dataModule,
         domainModule,
+        viewModelModule,
     )
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
