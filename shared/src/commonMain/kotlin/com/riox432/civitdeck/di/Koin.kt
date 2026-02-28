@@ -10,6 +10,7 @@ import org.koin.mp.KoinPlatform
 val sharedModules: List<Module>
     get() = listOf(
         platformModule,
+        networkModule,
         dataModule,
         domainModule,
         viewModelModule,

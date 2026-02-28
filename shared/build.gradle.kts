@@ -22,11 +22,9 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":core:core-domain"))
+            api(project(":core:core-network"))
             api(libs.androidx.lifecycle.viewmodel)
             implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.ktor.serialization.kotlinx.json)
-            implementation(libs.ktor.client.logging)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
@@ -34,12 +32,7 @@ kotlin {
         }
 
         androidMain.dependencies {
-            implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)
-        }
-
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
         }
 
         commonTest.dependencies {
