@@ -55,8 +55,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.BuildConfig
 import com.riox432.civitdeck.domain.model.AccentColor
@@ -137,7 +139,7 @@ internal fun SubScreenRow(label: String, onClick: () -> Unit) {
         Text(label, style = MaterialTheme.typography.bodyLarge)
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-            contentDescription = null,
+            contentDescription = stringResource(R.string.cd_navigate_forward),
             modifier = Modifier.size(16.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )

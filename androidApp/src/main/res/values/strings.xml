@@ -1,4 +1,8 @@
 <resources>
     <string name="quick_tile_label">CivitDeck Search</string>
     <string name="widget_description">Shows trending AI models on your home screen</string>
+    <string name="cd_navigate_forward">Navigate forward</string>
+    <string name="cd_open_dropdown">Open dropdown</string>
+    <string name="cd_open_image">Open image</string>
+    <string name="cd_open_collection">Open collection</string>
 </resources>
