@@ -2,10 +2,7 @@
 
 package com.riox432.civitdeck.ui.comfyui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -34,15 +31,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationMeta
@@ -105,10 +96,6 @@ private fun DetailBody(
     image: ComfyUIGeneratedImage,
     modifier: Modifier = Modifier,
 ) {
-    var showFullscreen by remember { mutableStateOf(false) }
-    if (showFullscreen) {
-        FullscreenImageDialog(imageUrl = image.imageUrl, onDismiss = { showFullscreen = false })
-    }
     LazyColumn(
         contentPadding = PaddingValues(bottom = Spacing.lg),
         modifier = modifier.fillMaxSize(),
@@ -118,7 +105,7 @@ private fun DetailBody(
                 imageUrl = image.imageUrl,
                 contentDescription = image.filename,
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxWidth().clickable { showFullscreen = true },
+                modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(Spacing.md))
         }
@@ -215,25 +202,3 @@ private fun LoraBadge(name: String) {
     )
 }
 
-@Composable
-private fun FullscreenImageDialog(imageUrl: String, onDismiss: () -> Unit) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black)
-                .clickable(onClick = onDismiss),
-            contentAlignment = Alignment.Center,
-        ) {
-            CivitAsyncImage(
-                imageUrl = imageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-    }
-}
