@@ -14,6 +14,9 @@ struct ComfyUISettingsView: View {
                 NavigationLink("View Queue") {
                     ComfyUIQueueView()
                 }
+                NavigationLink("View History") {
+                    ComfyUIHistoryView()
+                }
             }
             connectionsSection
         }
