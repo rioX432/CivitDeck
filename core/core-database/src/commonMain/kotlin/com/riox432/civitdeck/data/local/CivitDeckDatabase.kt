@@ -54,7 +54,7 @@ import kotlinx.coroutines.IO
         ComfyUIConnectionEntity::class,
         SDWebUIConnectionEntity::class,
     ],
-    version = 20,
+    version = 21,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -413,6 +413,14 @@ val MIGRATION_19_20 = object : Migration(19, 20) {
     }
 }
 
+val MIGRATION_20_21 = object : Migration(20, 21) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN civitaiLinkKey TEXT",
+        )
+    }
+}
+
 private val defaultCollectionCallback = object : RoomDatabase.Callback() {
     override fun onOpen(connection: SQLiteConnection) {
         super.onOpen(connection)
@@ -480,6 +488,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_17_18,
             MIGRATION_18_19,
             MIGRATION_19_20,
+            MIGRATION_20_21,
         )
         .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())

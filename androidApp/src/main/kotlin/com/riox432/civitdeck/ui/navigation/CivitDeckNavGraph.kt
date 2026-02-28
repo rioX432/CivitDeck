@@ -46,6 +46,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
@@ -62,6 +63,7 @@ import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
 import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.CollectionsScreen
+import com.riox432.civitdeck.ui.comfyui.CivitaiLinkSettingsScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIQueueScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsScreen
@@ -155,6 +157,8 @@ data object NotificationsSettingsRoute
 data object StorageSettingsRoute
 
 data object AdvancedSettingsRoute
+
+data object CivitaiLinkSettingsRoute
 
 internal enum class Tab(
     val label: String,
@@ -558,11 +562,19 @@ private fun EntryProviderScope<Any>.settingsSubScreenEntries(backStack: MutableL
             onNavigateToModelFiles = { backStack.add(ModelFileBrowserRoute) },
             onNavigateToTemplates = { backStack.add(WorkflowTemplateLibraryRoute) },
             onNavigateToSDWebUI = { backStack.add(SDWebUISettingsRoute) },
+            onNavigateToCivitaiLink = { backStack.add(CivitaiLinkSettingsRoute) },
         )
     }
 }
 
 private fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>) {
+    entry<CivitaiLinkSettingsRoute> {
+        val viewModel: CivitaiLinkSettingsViewModel = koinViewModel()
+        CivitaiLinkSettingsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
     entry<ComfyUISettingsRoute> {
         val viewModel: ComfyUISettingsViewModel = koinViewModel()
         ComfyUISettingsScreen(

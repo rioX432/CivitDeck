@@ -39,6 +39,15 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveSDWebUI
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveSDWebUIConnectionsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectionUseCase
+import com.riox432.civitdeck.data.api.civitailink.CivitaiLinkApi
+import com.riox432.civitdeck.domain.repository.CivitaiLinkRepository
+import com.riox432.civitdeck.feature.comfyui.data.repository.CivitaiLinkRepositoryImpl
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.CancelLinkActivityUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ConnectCivitaiLinkUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.DisconnectCivitaiLinkUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveCivitaiLinkActivitiesUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveCivitaiLinkStatusUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.SendResourceToPCUseCase
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -87,4 +96,13 @@ val comfyuiModule = module {
     factory { FetchSDWebUIVaesUseCase(get()) }
     factory { GenerateSDWebUIImageUseCase(get()) }
     factory { InterruptSDWebUIGenerationUseCase(get()) }
+
+    // Civitai Link
+    single<CivitaiLinkRepository> { CivitaiLinkRepositoryImpl(get()) }
+    factory { ObserveCivitaiLinkStatusUseCase(get()) }
+    factory { ObserveCivitaiLinkActivitiesUseCase(get()) }
+    factory { ConnectCivitaiLinkUseCase(get(), get()) }
+    factory { DisconnectCivitaiLinkUseCase(get()) }
+    factory { SendResourceToPCUseCase(get()) }
+    factory { CancelLinkActivityUseCase(get()) }
 }

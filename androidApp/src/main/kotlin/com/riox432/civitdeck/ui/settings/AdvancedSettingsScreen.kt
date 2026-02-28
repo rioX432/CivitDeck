@@ -26,6 +26,7 @@ fun AdvancedSettingsScreen(
     onNavigateToModelFiles: () -> Unit = {},
     onNavigateToTemplates: () -> Unit = {},
     onNavigateToSDWebUI: () -> Unit = {},
+    onNavigateToCivitaiLink: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
@@ -49,6 +50,8 @@ fun AdvancedSettingsScreen(
                 item { SubScreenRow("Workflow Templates", onNavigateToTemplates) }
                 item { SectionHeader("SD WebUI") }
                 item { SubScreenRow("SD WebUI Connections", onNavigateToSDWebUI) }
+                item { SectionHeader("Civitai Link") }
+                item { SubScreenRow("Civitai Link Setup", onNavigateToCivitaiLink) }
                 item { SectionHeader("Model Files") }
                 item { SubScreenRow("Model File Browser", onNavigateToModelFiles) }
             }

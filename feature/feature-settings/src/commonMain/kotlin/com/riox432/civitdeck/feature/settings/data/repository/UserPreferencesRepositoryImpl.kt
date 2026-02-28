@@ -160,4 +160,15 @@ class UserPreferencesRepositoryImpl(
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(seenTutorialVersion = version))
     }
+
+    override fun observeCivitaiLinkKey(): Flow<String?> =
+        dao.observePreferences().map { it?.civitaiLinkKey }
+
+    override suspend fun getCivitaiLinkKey(): String? =
+        dao.getPreferences()?.civitaiLinkKey
+
+    override suspend fun setCivitaiLinkKey(key: String?) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(civitaiLinkKey = key))
+    }
 }

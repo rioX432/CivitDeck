@@ -19,6 +19,8 @@ import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
@@ -134,4 +136,6 @@ val androidModule = module {
     viewModel { WorkflowTemplateViewModel(get(), get(), get(), get(), get()) }
     viewModel { SDWebUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { SDWebUIGenerationViewModel(get(), get(), get(), get(), get()) }
+    viewModel { CivitaiLinkSettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { CivitaiLinkSendViewModel(get(), get()) }
 }

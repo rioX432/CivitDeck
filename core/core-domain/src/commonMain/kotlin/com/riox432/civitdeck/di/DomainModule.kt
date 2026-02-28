@@ -44,6 +44,8 @@ import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SetOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveCivitaiLinkKeyUseCase
+import com.riox432.civitdeck.domain.usecase.SetCivitaiLinkKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
@@ -106,4 +108,7 @@ val domainModule = module {
     // Tutorial use cases
     factory { ObserveSeenTutorialVersionUseCase(get()) }
     factory { SetSeenTutorialVersionUseCase(get()) }
+    // Civitai Link key use cases
+    factory { ObserveCivitaiLinkKeyUseCase(get()) }
+    factory { SetCivitaiLinkKeyUseCase(get()) }
 }

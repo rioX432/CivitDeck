@@ -2,6 +2,7 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.api.CivitAiApi
+import com.riox432.civitdeck.data.api.civitailink.CivitaiLinkApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
 import com.riox432.civitdeck.data.api.comfyui.createComfyUIHttpClient
@@ -32,4 +33,7 @@ val networkModule = module {
     // SDWebUI
     single(named("sdwebui")) { createSDWebUIHttpClient() }
     single { SDWebUIApi(get(named("sdwebui"))) }
+
+    // Civitai Link uses the ComfyUI client (already has WebSockets plugin)
+    single { CivitaiLinkApi(get(named("comfyui")), get()) }
 }

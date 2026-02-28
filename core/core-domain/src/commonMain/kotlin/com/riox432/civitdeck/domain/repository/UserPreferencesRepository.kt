@@ -39,4 +39,7 @@ interface UserPreferencesRepository {
     suspend fun setCacheSizeLimitMb(limitMb: Int)
     fun observeSeenTutorialVersion(): Flow<Int>
     suspend fun setSeenTutorialVersion(version: Int)
+    fun observeCivitaiLinkKey(): Flow<String?>
+    suspend fun getCivitaiLinkKey(): String?
+    suspend fun setCivitaiLinkKey(key: String?)
 }

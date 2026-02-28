@@ -32,6 +32,17 @@ struct AdvancedSettingsView: View {
                         }
                     }
                 }
+                Section("Civitai Link") {
+                    NavigationLink(destination: CivitaiLinkSettingsView()) {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text("Civitai Link Setup")
+                                .font(.civitBodyMedium)
+                            Text("Send models directly to your PC")
+                                .font(.civitBodySmall)
+                                .foregroundColor(.civitOnSurfaceVariant)
+                        }
+                    }
+                }
                 Section("Model Files") {
                     NavigationLink {
                         ModelFileBrowserScreen()
