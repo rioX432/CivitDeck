@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -60,6 +61,7 @@ import com.riox432.civitdeck.ui.theme.Spacing
 fun ComfyUIGenerationScreen(
     viewModel: ComfyUIGenerationViewModel,
     onBack: () -> Unit,
+    onLoadTemplate: (() -> Unit)? = null,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -85,6 +87,13 @@ fun ComfyUIGenerationScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                    }
+                },
+                actions = {
+                    onLoadTemplate?.let {
+                        IconButton(onClick = it) {
+                            Icon(Icons.Default.FolderOpen, "Load template")
+                        }
                     }
                 },
             )
@@ -360,7 +369,10 @@ private fun LoraSection(state: GenerationUiState, viewModel: ComfyUIGenerationVi
                     state.availableLoras.forEach { lora ->
                         DropdownMenuItem(
                             text = { Text(lora.substringAfterLast('/'), maxLines = 1) },
-                            onClick = { viewModel.onLoraAdded(lora); expanded = false },
+                            onClick = {
+                                viewModel.onLoraAdded(lora)
+                                expanded = false
+                            },
                         )
                     }
                 }
@@ -369,8 +381,11 @@ private fun LoraSection(state: GenerationUiState, viewModel: ComfyUIGenerationVi
                 LoraRow(lora, viewModel)
             }
             if (state.availableLoras.isEmpty() && !state.isLoadingLoras) {
-                Text("No LoRAs found on server", style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    "No LoRAs found on server",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -380,8 +395,12 @@ private fun LoraSection(state: GenerationUiState, viewModel: ComfyUIGenerationVi
 private fun LoraRow(lora: LoraSelection, viewModel: ComfyUIGenerationViewModel) {
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(lora.name.substringAfterLast('/'), modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodySmall, maxLines = 1)
+            Text(
+                lora.name.substringAfterLast('/'),
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1
+            )
             IconButton(onClick = { viewModel.onLoraRemoved(lora.name) }) {
                 Icon(Icons.Default.Close, "Remove LoRA")
             }
@@ -412,7 +431,10 @@ private fun ControlNetSection(state: GenerationUiState, viewModel: ComfyUIGenera
                     state.availableControlNets.forEach { cn ->
                         DropdownMenuItem(
                             text = { Text(cn.substringAfterLast('/'), maxLines = 1) },
-                            onClick = { viewModel.onControlNetSelected(cn); expanded = false },
+                            onClick = {
+                                viewModel.onControlNetSelected(cn)
+                                expanded = false
+                            },
                         )
                     }
                 }
@@ -432,7 +454,11 @@ private fun CustomWorkflowSection(state: GenerationUiState, viewModel: ComfyUIGe
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(Spacing.md), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Custom Workflow JSON", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+                Text(
+                    "Custom Workflow JSON",
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.weight(1f)
+                )
                 if (state.customWorkflowJson != null) {
                     IconButton(onClick = viewModel::onClearCustomWorkflow) {
                         Icon(Icons.Default.Close, "Clear workflow")
@@ -440,8 +466,11 @@ private fun CustomWorkflowSection(state: GenerationUiState, viewModel: ComfyUIGe
                 }
             }
             if (state.customWorkflowJson != null) {
-                Text("Custom workflow loaded (${state.customWorkflowJson.length} chars)",
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                Text(
+                    "Custom workflow loaded (${state.customWorkflowJson.length} chars)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
             } else {
                 Button(onClick = { showDialog = true }, modifier = Modifier.fillMaxWidth()) {
                     Text("Import Workflow JSON")
@@ -457,7 +486,10 @@ private fun CustomWorkflowSection(state: GenerationUiState, viewModel: ComfyUIGe
         WorkflowImportDialog(
             text = inputText,
             onTextChange = { inputText = it },
-            onConfirm = { viewModel.onImportWorkflow(inputText); showDialog = false },
+            onConfirm = {
+                viewModel.onImportWorkflow(inputText)
+                showDialog = false
+            },
             onDismiss = { showDialog = false },
         )
     }

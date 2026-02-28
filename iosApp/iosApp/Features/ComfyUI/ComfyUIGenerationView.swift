@@ -6,6 +6,7 @@ struct ComfyUIGenerationView: View {
     @State private var showWorkflowImport = false
     @State private var workflowInputText = ""
     @State private var showSaveAlert = false
+    @State private var showTemplatePicker = false
 
     var body: some View {
         ScrollView {
@@ -24,7 +25,23 @@ struct ComfyUIGenerationView: View {
         }
         .navigationTitle("txt2img")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showTemplatePicker = true
+                } label: {
+                    Image(systemName: "folder")
+                }
+            }
+        }
         .task { await viewModel.loadAll() }
+        .sheet(isPresented: $showTemplatePicker) {
+            NavigationStack {
+                WorkflowTemplateView(isPicker: true, onSelect: { _ in
+                    showTemplatePicker = false
+                })
+            }
+        }
         .sheet(isPresented: $showWorkflowImport) {
             workflowImportSheet
         }
