@@ -19,11 +19,11 @@ import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
+import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
 import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationViewModel
 import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsViewModel
-import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel

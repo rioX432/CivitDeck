@@ -47,6 +47,7 @@ import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_L
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
+import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
@@ -59,7 +60,6 @@ import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsViewModel
 import com.riox432.civitdeck.ui.compare.ModelCompareScreen
 import com.riox432.civitdeck.ui.creator.CreatorProfileScreen
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
-import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryScreen
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen

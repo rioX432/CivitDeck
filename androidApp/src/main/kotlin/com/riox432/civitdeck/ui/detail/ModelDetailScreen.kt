@@ -78,6 +78,8 @@ import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
 import com.riox432.civitdeck.domain.model.stripCdnWidth
+import com.riox432.civitdeck.feature.detail.presentation.ModelDetailUiState
+import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
