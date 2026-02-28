@@ -58,9 +58,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.riox432.civitdeck.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.BuildConfig
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
