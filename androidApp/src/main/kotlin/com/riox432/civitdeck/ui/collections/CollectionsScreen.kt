@@ -44,15 +44,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.SubcomposeAsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.ModelCollection
+import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.theme.CornerRadius
-import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Spacing
-import com.riox432.civitdeck.ui.theme.shimmer
 
 @Composable
 fun CollectionsScreen(
@@ -240,25 +236,13 @@ private fun CollectionOverflowMenu(
 private fun CollectionThumbnail(thumbnailUrl: String?) {
     val thumbnailSize = 56.dp
     if (thumbnailUrl != null) {
-        SubcomposeAsyncImage(
-            model = ImageRequest.Builder(
-                androidx.compose.ui.platform.LocalContext.current,
-            )
-                .data(thumbnailUrl)
-                .crossfade(Duration.normal)
-                .build(),
+        CivitAsyncImage(
+            imageUrl = thumbnailUrl,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(thumbnailSize)
                 .clip(RoundedCornerShape(CornerRadius.image)),
-            loading = {
-                Box(
-                    modifier = Modifier
-                        .size(thumbnailSize)
-                        .shimmer(),
-                )
-            },
         )
     } else {
         Box(

@@ -49,20 +49,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.SubcomposeAsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.CollectionSortOrder
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
 import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.domain.model.ModelType
+import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
-import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.components.ModelStatsRow
 import com.riox432.civitdeck.ui.theme.CornerRadius
-import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Spacing
-import com.riox432.civitdeck.ui.theme.shimmer
 
 @Suppress("LongParameterList")
 @Composable
@@ -405,33 +400,13 @@ private fun ModelCard(
 @Composable
 private fun ModelThumbnail(model: FavoriteModelSummary) {
     if (model.thumbnailUrl != null) {
-        SubcomposeAsyncImage(
-            model = ImageRequest.Builder(
-                androidx.compose.ui.platform.LocalContext.current,
-            )
-                .data(model.thumbnailUrl)
-                .crossfade(Duration.normal)
-                .build(),
+        CivitAsyncImage(
+            imageUrl = model.thumbnailUrl,
             contentDescription = model.name,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f),
-            loading = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                        .shimmer(),
-                )
-            },
-            error = {
-                ImageErrorPlaceholder(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f),
-                )
-            },
         )
     }
 }

@@ -80,6 +80,7 @@ import com.riox432.civitdeck.domain.model.filterByNsfwLevel
 import com.riox432.civitdeck.domain.model.stripCdnWidth
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
+import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.ExpandableTextSection
@@ -788,11 +789,8 @@ private fun ImageGridItem(
         1f
     }
 
-    SubcomposeAsyncImage(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(image.url)
-            .crossfade(Duration.normal)
-            .build(),
+    CivitAsyncImage(
+        imageUrl = image.url,
         contentDescription = "Version image",
         contentScale = ContentScale.Crop,
         modifier = Modifier
@@ -800,21 +798,6 @@ private fun ImageGridItem(
             .aspectRatio(aspectRatio)
             .clip(RoundedCornerShape(CornerRadius.image))
             .clickable(onClick = onClick),
-        loading = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(aspectRatio)
-                    .shimmer(),
-            )
-        },
-        error = {
-            ImageErrorPlaceholder(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(aspectRatio),
-            )
-        },
     )
 }
 
