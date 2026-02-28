@@ -6,6 +6,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.androidx.lifecycle.viewmodel)
+            implementation(project(":feature:feature-search"))
         }
     }
 }

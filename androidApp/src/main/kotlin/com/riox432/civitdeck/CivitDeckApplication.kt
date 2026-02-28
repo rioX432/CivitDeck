@@ -24,9 +24,9 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewMod
 import com.riox432.civitdeck.feature.comfyui.presentation.ModelFileBrowserViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
+import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
+import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
-import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryViewModel
-import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
 import com.riox432.civitdeck.widget.WidgetRefreshWorker
 import kotlinx.coroutines.CoroutineScope

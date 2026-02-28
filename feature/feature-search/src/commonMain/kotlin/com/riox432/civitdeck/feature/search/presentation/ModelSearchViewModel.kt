@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.search
+package com.riox432.civitdeck.feature.search.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,24 +13,24 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
-import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
-import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
-import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
-import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
-import com.riox432.civitdeck.domain.usecase.GetHiddenModelIdsUseCase
-import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
-import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
-import com.riox432.civitdeck.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
-import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.AddExcludedTagUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.ClearSearchHistoryUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.GetExcludedTagsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.RemoveExcludedTagUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -60,7 +60,7 @@ data class ModelSearchUiState(
     val includedTags: List<String> = emptyList(),
 )
 
-internal data class FilterState(
+data class FilterState(
     val query: String = "",
     val selectedType: ModelType? = null,
     val selectedSort: SortOrder = SortOrder.MostDownloaded,

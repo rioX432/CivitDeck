@@ -8,6 +8,7 @@ import com.riox432.civitdeck.feature.creator.di.creatorModule
 import com.riox432.civitdeck.feature.detail.di.detailModule
 import com.riox432.civitdeck.feature.gallery.di.galleryModule
 import com.riox432.civitdeck.feature.prompts.di.promptsModule
+import com.riox432.civitdeck.feature.search.di.searchModule
 import com.riox432.civitdeck.feature.settings.di.settingsModule
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -28,6 +29,7 @@ val sharedModules: List<Module>
         collectionsModule,
         detailModule,
         comfyuiModule,
+        searchModule,
     )
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
