@@ -62,7 +62,7 @@ struct CollectionsScreen: View {
             ) {
                 let currentName = renameTarget?.name ?? ""
                 TextField("Collection name", text: $newCollectionName)
-                    .onAppear { newCollectionName = currentName }
+                    .task { newCollectionName = currentName }
                 Button("Rename") {
                     if let target = renameTarget {
                         let name = newCollectionName.trimmingCharacters(in: .whitespaces)
