@@ -202,6 +202,10 @@ internal fun AccentColorSwatch(
     isSelected: Boolean,
     onClick: () -> Unit,
 ) {
+    // Intentional: seedHex is the user-chosen accent seed color, used here as a literal preview
+    // swatch. It cannot be expressed via MaterialTheme tokens because it is the input to the
+    // dynamic color pipeline, not a derived token value.
+    @Suppress("MagicNumber")
     val swatchColor = Color(color.seedHex)
     Box(
         modifier = Modifier
