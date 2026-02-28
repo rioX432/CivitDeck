@@ -2,6 +2,7 @@ package com.riox432.civitdeck.data.api.comfyui
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 /**
  * Response from POST /prompt
@@ -43,12 +44,22 @@ data class HistoryNodeOutput(
 
 /**
  * A single history entry for a prompt.
+ * The [prompt] field is an array: [index, prompt_id, {nodeId: {class_type, inputs}}, ...].
+ * Index 2 contains the node graph used during generation.
  */
 @Serializable
 data class HistoryEntry(
     val status: HistoryStatus? = null,
     val outputs: Map<String, HistoryNodeOutput> = emptyMap(),
-)
+    @SerialName("prompt") val prompt: kotlinx.serialization.json.JsonArray? = null,
+) {
+    /**
+     * Extracts the node graph (index 2 of the prompt array) as a map of node_id -> node object.
+     * Returns null if the prompt array is malformed or absent.
+     */
+    val promptNodes: JsonObject?
+        get() = prompt?.getOrNull(2) as? JsonObject
+}
 
 @Serializable
 data class HistoryStatus(

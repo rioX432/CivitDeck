@@ -84,6 +84,15 @@ class ComfyUIApi(
     }
 
     /**
+     * Get all generation history: GET /history
+     * Returns a map of prompt_id -> HistoryEntry for all completed prompts.
+     */
+    suspend fun getAllHistory(): Map<String, HistoryEntry> {
+        val text = client.get("$baseUrl/history").bodyAsText()
+        return json.decodeFromString(text)
+    }
+
+    /**
      * Get generation history: GET /history/{promptId}
      */
     suspend fun getHistory(promptId: String): HistoryEntry? {

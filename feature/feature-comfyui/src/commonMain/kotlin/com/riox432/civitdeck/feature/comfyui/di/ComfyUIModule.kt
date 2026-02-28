@@ -2,9 +2,11 @@ package com.riox432.civitdeck.feature.comfyui.di
 
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.repository.CivitaiLinkRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIHistoryRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIRepository
 import com.riox432.civitdeck.feature.comfyui.data.repository.CivitaiLinkRepositoryImpl
+import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIHistoryRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.SDWebUIRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
@@ -20,6 +22,8 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.DisconnectCivitaiLin
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExportWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryItemUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIModelsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUISamplersUseCase
@@ -53,6 +57,9 @@ import org.koin.dsl.module
 
 val comfyuiModule = module {
     single<ComfyUIRepository> { ComfyUIRepositoryImpl(get(), get(), get(), get()) }
+    single<ComfyUIHistoryRepository> { ComfyUIHistoryRepositoryImpl(get(), get()) }
+    factory { FetchComfyUIHistoryUseCase(get()) }
+    factory { FetchComfyUIHistoryItemUseCase(get()) }
     factory { ObserveComfyUIConnectionsUseCase(get()) }
     factory { ObserveActiveComfyUIConnectionUseCase(get()) }
     factory { SaveComfyUIConnectionUseCase(get()) }
