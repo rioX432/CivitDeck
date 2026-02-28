@@ -77,6 +77,7 @@ struct SwipeDiscoveryView: View {
                     .background(Color.civitSurfaceContainerHigh)
                     .clipShape(Circle())
             }
+            .accessibilityLabel("Undo last swipe")
             .disabled(viewModel.lastDismissed == nil)
             .opacity(viewModel.lastDismissed == nil ? 0.4 : 1.0)
 
@@ -93,6 +94,7 @@ struct SwipeDiscoveryView: View {
                     .background(Color.civitSurfaceContainerHigh)
                     .clipShape(Circle())
             }
+            .accessibilityLabel("Skip")
             .disabled(viewModel.cards.isEmpty)
 
             // Favorite button
@@ -108,6 +110,7 @@ struct SwipeDiscoveryView: View {
                     .background(Color.civitSurfaceContainerHigh)
                     .clipShape(Circle())
             }
+            .accessibilityLabel("Add to favorites")
             .disabled(viewModel.cards.isEmpty)
         }
         .padding(.vertical, Spacing.md)
