@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

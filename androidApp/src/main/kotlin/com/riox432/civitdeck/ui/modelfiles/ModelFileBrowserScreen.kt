@@ -46,6 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.LocalModelFile
 import com.riox432.civitdeck.domain.model.ModelDirectory
 import com.riox432.civitdeck.domain.model.ScanStatus
+import com.riox432.civitdeck.feature.comfyui.presentation.ModelFileBrowserViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)

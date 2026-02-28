@@ -41,6 +41,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.GenerationStatus
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.GenerationUiState
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.theme.Spacing

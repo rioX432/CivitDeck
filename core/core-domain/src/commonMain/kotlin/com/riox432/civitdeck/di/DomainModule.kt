@@ -1,51 +1,33 @@
 package com.riox432.civitdeck.di
 
-import com.riox432.civitdeck.domain.usecase.ActivateComfyUIConnectionUseCase
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
-import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
-import com.riox432.civitdeck.domain.usecase.AutoSavePromptUseCase
-import com.riox432.civitdeck.domain.usecase.BulkMoveModelsUseCase
-import com.riox432.civitdeck.domain.usecase.BulkRemoveModelsUseCase
 import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
-import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
-import com.riox432.civitdeck.domain.usecase.DeleteCollectionUseCase
-import com.riox432.civitdeck.domain.usecase.DeleteComfyUIConnectionUseCase
-import com.riox432.civitdeck.domain.usecase.DeleteSavedPromptUseCase
-import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
-import com.riox432.civitdeck.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.domain.usecase.GetCacheInfoUseCase
-import com.riox432.civitdeck.domain.usecase.GetCreatorModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetDiscoveryModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
-import com.riox432.civitdeck.domain.usecase.GetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveActiveComfyUIConnectionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCacheSizeLimitUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveCollectionModelsUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveComfyUIConnectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveLocalModelFilesUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNetworkStatusUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
@@ -55,19 +37,11 @@ import com.riox432.civitdeck.domain.usecase.ObserveOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveTemplatesUseCase
-import com.riox432.civitdeck.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelDirectoryUseCase
-import com.riox432.civitdeck.domain.usecase.RemoveModelFromCollectionUseCase
-import com.riox432.civitdeck.domain.usecase.RenameCollectionUseCase
-import com.riox432.civitdeck.domain.usecase.SaveComfyUIConnectionUseCase
-import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
-import com.riox432.civitdeck.domain.usecase.SearchSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.SetAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
@@ -82,10 +56,7 @@ import com.riox432.civitdeck.domain.usecase.SetOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
-import com.riox432.civitdeck.domain.usecase.SubmitComfyUIGenerationUseCase
-import com.riox432.civitdeck.domain.usecase.TestComfyUIConnectionUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
-import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
@@ -94,10 +65,7 @@ import org.koin.dsl.module
 
 val domainModule = module {
     factory { GetModelsUseCase(get()) }
-    factory { GetCreatorModelsUseCase(get()) }
     factory { GetModelDetailUseCase(get()) }
-    factory { GetImagesUseCase(get()) }
-    factory { EnrichModelImagesUseCase(get()) }
     factory { GetDiscoveryModelsUseCase(get()) }
     factory { ToggleFavoriteUseCase(get()) }
     factory { ObserveFavoritesUseCase(get()) }
@@ -106,13 +74,6 @@ val domainModule = module {
     factory { SetNsfwFilterUseCase(get()) }
     factory { ObserveNsfwBlurSettingsUseCase(get()) }
     factory { SetNsfwBlurSettingsUseCase(get()) }
-    factory { SavePromptUseCase(get()) }
-    factory { ObserveSavedPromptsUseCase(get()) }
-    factory { DeleteSavedPromptUseCase(get()) }
-    factory { AutoSavePromptUseCase(get()) }
-    factory { ToggleTemplateUseCase(get()) }
-    factory { SearchSavedPromptsUseCase(get()) }
-    factory { ObserveTemplatesUseCase(get()) }
     factory { ObserveSearchHistoryUseCase(get()) }
     factory { AddSearchHistoryUseCase(get()) }
     factory { ClearSearchHistoryUseCase(get()) }
@@ -139,17 +100,6 @@ val domainModule = module {
     factory { ObserveApiKeyUseCase(get()) }
     factory { SetApiKeyUseCase(get()) }
     factory { ValidateApiKeyUseCase(get()) }
-    // Collection use cases
-    factory { ObserveCollectionsUseCase(get()) }
-    factory { CreateCollectionUseCase(get()) }
-    factory { RenameCollectionUseCase(get()) }
-    factory { DeleteCollectionUseCase(get()) }
-    factory { ObserveCollectionModelsUseCase(get()) }
-    factory { AddModelToCollectionUseCase(get()) }
-    factory { RemoveModelFromCollectionUseCase(get()) }
-    factory { ObserveModelCollectionsUseCase(get()) }
-    factory { BulkMoveModelsUseCase(get()) }
-    factory { BulkRemoveModelsUseCase(get()) }
     // Local model file use cases
     factory { ObserveModelDirectoriesUseCase(get()) }
     factory { AddModelDirectoryUseCase(get()) }
@@ -180,14 +130,4 @@ val domainModule = module {
     // Tutorial use cases
     factory { ObserveSeenTutorialVersionUseCase(get()) }
     factory { SetSeenTutorialVersionUseCase(get()) }
-    // ComfyUI use cases
-    factory { ObserveComfyUIConnectionsUseCase(get()) }
-    factory { ObserveActiveComfyUIConnectionUseCase(get()) }
-    factory { SaveComfyUIConnectionUseCase(get()) }
-    factory { DeleteComfyUIConnectionUseCase(get()) }
-    factory { ActivateComfyUIConnectionUseCase(get()) }
-    factory { TestComfyUIConnectionUseCase(get()) }
-    factory { FetchComfyUICheckpointsUseCase(get()) }
-    factory { SubmitComfyUIGenerationUseCase(get()) }
-    factory { PollComfyUIResultUseCase(get()) }
 }

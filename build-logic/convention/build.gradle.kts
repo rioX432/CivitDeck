@@ -17,5 +17,9 @@ gradlePlugin {
             id = "civitdeck.android.application"
             implementationClass = "CivitDeckAndroidApplicationPlugin"
         }
+        create("kmpFeature") {
+            id = "civitdeck.kmp.feature"
+            implementationClass = "CivitDeckKmpFeaturePlugin"
+        }
     }
 }

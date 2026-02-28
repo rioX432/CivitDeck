@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.ui.settings
 
 import com.riox432.civitdeck.domain.model.AccentColor
+import com.riox432.civitdeck.feature.settings.presentation.SettingsUiState
 import com.riox432.civitdeck.domain.model.CacheInfo
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval

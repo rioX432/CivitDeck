@@ -17,17 +17,15 @@ import com.riox432.civitdeck.di.initializeAuth
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
+import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
+import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ModelFileBrowserViewModel
+import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
+import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
-import com.riox432.civitdeck.ui.collections.CollectionDetailViewModel
-import com.riox432.civitdeck.ui.collections.CollectionsViewModel
-import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationViewModel
-import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsViewModel
-import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
-import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryViewModel
-import com.riox432.civitdeck.ui.gallery.ImageGalleryViewModel
-import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserViewModel
-import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
 import com.riox432.civitdeck.widget.WidgetRefreshWorker
@@ -122,9 +120,7 @@ val androidModule = module {
             params.get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
         )
     }
-    viewModel { params -> CreatorProfileViewModel(params.get(), get()) }
     viewModel { params -> ImageGalleryViewModel(params.get(), get(), get(), get(), get(), get()) }
-    viewModel { SavedPromptsViewModel(get(), get(), get(), get(), get()) }
     viewModel { ModelFileBrowserViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { GestureTutorialViewModel(get(), get()) }
     viewModel { SwipeDiscoveryViewModel(get(), get()) }
