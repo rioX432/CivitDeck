@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
@@ -209,7 +210,7 @@ private fun CollectionOverflowMenu(
         Text(
             text = "...",
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.clickable { onToggleMenu(true) },
+            modifier = Modifier.clickable(role = Role.Button, onClickLabel = "Open menu") { onToggleMenu(true) },
         )
         DropdownMenu(
             expanded = showMenu,
