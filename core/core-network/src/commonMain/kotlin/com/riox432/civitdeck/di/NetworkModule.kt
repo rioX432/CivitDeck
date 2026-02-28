@@ -3,6 +3,7 @@ package com.riox432.civitdeck.di
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.api.CivitAiApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
+import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
 import com.riox432.civitdeck.data.api.comfyui.createComfyUIHttpClient
 import com.riox432.civitdeck.data.api.createHttpClient
 import kotlinx.serialization.json.Json
@@ -24,4 +25,5 @@ val networkModule = module {
     // ComfyUI
     single(named("comfyui")) { createComfyUIHttpClient() }
     single { ComfyUIApi(get(named("comfyui")), get()) }
+    single { ComfyUIWebSocketApi(get(named("comfyui")), get()) }
 }

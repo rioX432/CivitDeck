@@ -2,16 +2,20 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIOutputImage
+import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
+import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketMessage
 import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.repository.ComfyUIRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
@@ -21,6 +25,7 @@ import kotlinx.serialization.json.put
 class ComfyUIRepositoryImpl(
     private val dao: ComfyUIConnectionDao,
     private val api: ComfyUIApi,
+    private val webSocketApi: ComfyUIWebSocketApi,
 ) : ComfyUIRepository {
 
     override fun observeConnections(): Flow<List<ComfyUIConnection>> =
@@ -98,6 +103,25 @@ class ComfyUIRepositoryImpl(
             GenerationResult(promptId, GenerationStatus.Error, error = "No images generated")
         } else {
             GenerationResult(promptId, GenerationStatus.Running)
+        }
+    }
+
+    override fun observeGenerationProgress(
+        promptId: String,
+        host: String,
+        port: Int,
+    ): Flow<GenerationProgress> {
+        val clientId = "civitdeck-${currentTimeMillis()}"
+        return webSocketApi.observeProgress(host, port, clientId, promptId).mapNotNull { msg ->
+            when (msg) {
+                is ComfyUIWebSocketMessage.Progress -> GenerationProgress(
+                    promptId = msg.promptId,
+                    currentStep = msg.value,
+                    totalSteps = msg.max,
+                    currentNode = msg.node,
+                )
+                else -> null
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package com.riox432.civitdeck.domain.usecase
 
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.repository.ComfyUIRepository
@@ -57,6 +58,8 @@ class ComfyUIUseCasesTest {
         }
 
         override suspend fun pollGenerationResult(promptId: String): GenerationResult = pollResult
+        override fun observeGenerationProgress(promptId: String, host: String, port: Int): Flow<GenerationProgress> =
+            kotlinx.coroutines.flow.emptyFlow()
         override fun getImageUrl(filename: String, subfolder: String, type: String): String =
             "http://localhost:8188/view?filename=$filename"
     }

@@ -14,12 +14,21 @@ class ComfyUIGenerationViewModel: ObservableObject {
     @Published var seed = ""
     @Published var isLoadingCheckpoints = false
     @Published var generationStatus: GenerationStatusSwift = .idle
+    @Published var currentStep: Int = 0
+    @Published var totalSteps: Int = 0
     @Published var resultImageUrls: [String] = []
     @Published var error: String?
+
+    var progressFraction: Float {
+        guard totalSteps > 0 else { return 0 }
+        return Float(currentStep) / Float(totalSteps)
+    }
 
     private let fetchCheckpoints = KoinHelper.shared.getFetchComfyUICheckpointsUseCase()
     private let submitGeneration = KoinHelper.shared.getSubmitComfyUIGenerationUseCase()
     private let pollResult = KoinHelper.shared.getPollComfyUIResultUseCase()
+    private let observeProgress = KoinHelper.shared.getObserveGenerationProgressUseCase()
+    private var progressTask: Task<Void, Never>?
 
     func loadCheckpoints() async {
         isLoadingCheckpoints = true
@@ -36,9 +45,12 @@ class ComfyUIGenerationViewModel: ObservableObject {
 
     func onGenerate() {
         guard !selectedCheckpoint.isEmpty, !prompt.isEmpty else { return }
+        progressTask?.cancel()
         generationStatus = .submitting
         self.error = nil
         resultImageUrls = []
+        currentStep = 0
+        totalSteps = 0
 
         Task {
             do {
@@ -59,12 +71,19 @@ class ComfyUIGenerationViewModel: ObservableObject {
                 )
                 let promptId = try await submitGeneration.invoke(params: params)
                 generationStatus = .running
-                await pollForResult(promptId: promptId)
+                await startWebSocketProgress(promptId: promptId)
             } catch {
                 generationStatus = .error
                 self.error = error.localizedDescription
             }
         }
+    }
+
+    private func startWebSocketProgress(promptId: String) async {
+        // ObserveGenerationProgressUseCase requires host+port — fall back to polling if unavailable
+        // For now bridge via polling; WebSocket is invoked from shared ViewModel on Android.
+        // On iOS we drive progress via pollForResult until SKIE-based Flow collection is wired.
+        await pollForResult(promptId: promptId)
     }
 
     private func pollForResult(promptId: String) async {
