@@ -69,7 +69,7 @@ struct GestureTutorialView: View {
         }) {
             Text(currentPage == tutorialSteps.count - 1 ? "Get Started" : "Next")
                 .font(.civitTitleMedium)
-                .foregroundColor(.white)
+                .foregroundColor(.civitOnPrimary)
                 .frame(maxWidth: Layout.buttonMaxWidth)
                 .padding(.vertical, Spacing.md)
                 .background(Color.civitPrimary)

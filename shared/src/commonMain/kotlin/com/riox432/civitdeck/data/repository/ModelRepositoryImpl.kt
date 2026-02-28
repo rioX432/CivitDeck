@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.data.repository
 
 import com.riox432.civitdeck.data.api.CivitAiApi
+import com.riox432.civitdeck.data.api.DataParseException
 import com.riox432.civitdeck.data.api.dto.ModelListResponse
 import com.riox432.civitdeck.data.api.dto.ModelResponse
 import com.riox432.civitdeck.data.api.dto.ModelVersionResponse
@@ -67,7 +68,7 @@ class ModelRepositoryImpl(
                 items = response.items.map { it.toDomain() },
                 metadata = response.metadata.toDomain(),
             )
-        } catch (@Suppress("SwallowedException") e: io.ktor.serialization.ContentConvertException) {
+        } catch (@Suppress("SwallowedException") e: DataParseException) {
             getModelsFromCacheOrEmpty(cacheKey)
         } catch (@Suppress("SwallowedException") e: SerializationException) {
             getModelsFromCacheOrEmpty(cacheKey)

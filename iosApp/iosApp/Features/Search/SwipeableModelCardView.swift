@@ -38,8 +38,9 @@ struct SwipeableModelCardView: View {
             } label: {
                 Image(systemName: isFavorite ? "heart.fill" : "heart")
                     .font(.civitIconMedium)
-                    .foregroundColor(isFavorite ? .red : .white)
+                    .foregroundColor(isFavorite ? .red : .civitOnError)
                     .frame(width: 44, height: 44)
+                    .accessibilityLabel(isFavorite ? "Remove from favorites" : "Add to favorites")
             }
             Button {
                 onHide()
@@ -47,8 +48,9 @@ struct SwipeableModelCardView: View {
             } label: {
                 Image(systemName: "eye.slash.fill")
                     .font(.civitIconMedium)
-                    .foregroundColor(.white)
+                    .foregroundColor(.civitOnError)
                     .frame(width: 44, height: 44)
+                    .accessibilityLabel("Hide model")
             }
         }
         .padding(.trailing, Spacing.sm)

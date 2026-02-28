@@ -207,3 +207,22 @@ fun ColorScheme.withAmoled(): ColorScheme = copy(
     surfaceContainerHigh = Color(0xFF161616),
     surfaceContainerHighest = Color(0xFF1E1E1E),
 )
+
+/** Fixed semantic color tokens that do not vary with the Material3 dynamic color pipeline. */
+object CivitDeckColors {
+    // Status indicator colors (connection/download state dots)
+    val statusSuccess = Color(0xFF4CAF50)
+    val statusWarning = Color(0xFFFFC107)
+    val statusError = Color(0xFFF44336)
+    val statusNeutral = Color(0xFF9E9E9E)
+
+    // Tutorial accent colors (fixed per step, not tied to user accent selection)
+    val tutorialAccentBlue = Color(0xFF3755C3)
+    val tutorialAccentPink = Color(0xFF75546F)
+    val tutorialAccentGray = Color(0xFF5A5D72)
+
+    // Full-screen overlay / cinema-mode colors
+    // These are intentionally fixed (not theme-adaptive) for maximum contrast in dark contexts.
+    val scrim = Color.Black
+    val onScrim = Color.White
+}

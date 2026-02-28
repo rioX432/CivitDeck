@@ -26,17 +26,23 @@ struct CachedAsyncImage<Content: View>: View {
             return
         }
 
+        imageLogger.debug("Loading image: \(url.absoluteString)")
+
         let request = URLRequest(
             url: url,
             cachePolicy: .returnCacheDataElseLoad
         )
 
         do {
-            let (data, _) = try await ImageURLSession.shared.data(for: request)
+            let (data, response) = try await ImageURLSession.shared.data(for: request)
+            if let http = response as? HTTPURLResponse {
+                imageLogger.debug("HTTP \(http.statusCode) for \(url.absoluteString)")
+            }
             // Use CGImageSource for memory-efficient downsampling.
             // Unlike UIImage(data:) + byPreparingThumbnail, this does NOT
             // decode the full-resolution image into memory first.
             guard let image = Self.downsampledImage(data: data, maxPixelSize: maxPixelSize) else {
+                imageLogger.error("Downsampling failed for \(url.absoluteString), data size: \(data.count)")
                 phase = .failure(ImageLoadingError.invalidData)
                 return
             }
@@ -45,6 +51,7 @@ struct CachedAsyncImage<Content: View>: View {
             }
         } catch {
             if !Task.isCancelled {
+                imageLogger.error("Failed to load \(url.absoluteString): \(error)")
                 phase = .failure(error)
             }
         }

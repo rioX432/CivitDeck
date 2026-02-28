@@ -13,6 +13,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.http.HttpHeaders
+import io.ktor.serialization.ContentConvertException
 
 class CivitAiApi(private val client: HttpClient) {
 
@@ -33,18 +34,22 @@ class CivitAiApi(private val client: HttpClient) {
         username: String? = null,
         nsfw: Boolean? = null,
     ): ModelListResponse {
-        return client.get("$BASE_URL/models") {
-            query?.let { parameter("query", it) }
-            tag?.let { parameter("tag", it) }
-            type?.let { parameter("types", it) }
-            sort?.let { parameter("sort", it) }
-            period?.let { parameter("period", it) }
-            baseModels?.forEach { parameter("baseModels", it) }
-            cursor?.let { parameter("cursor", it) }
-            limit?.let { parameter("limit", it) }
-            username?.let { parameter("username", it) }
-            nsfw?.let { parameter("nsfw", it) }
-        }.body()
+        return try {
+            client.get("$BASE_URL/models") {
+                query?.let { parameter("query", it) }
+                tag?.let { parameter("tag", it) }
+                type?.let { parameter("types", it) }
+                sort?.let { parameter("sort", it) }
+                period?.let { parameter("period", it) }
+                baseModels?.forEach { parameter("baseModels", it) }
+                cursor?.let { parameter("cursor", it) }
+                limit?.let { parameter("limit", it) }
+                username?.let { parameter("username", it) }
+                nsfw?.let { parameter("nsfw", it) }
+            }.body()
+        } catch (e: ContentConvertException) {
+            throw DataParseException(e.message, e)
+        }
     }
 
     suspend fun getModel(id: Long): ModelResponse {

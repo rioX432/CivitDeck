@@ -36,13 +36,13 @@ struct CarouselViewer: View {
                             SwiftUI.Image(systemName: "xmark")
                                 .font(.title3)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                                .padding(10)
+                                .foregroundColor(.civitInverseOnSurface)
+                                .padding(Spacing.smPlus)
                                 .background(.ultraThinMaterial, in: Circle())
                         }
                         Spacer()
                     }
-                    .padding(16)
+                    .padding(Spacing.lg)
                     Spacer()
                 }
             }
@@ -145,13 +145,13 @@ struct GridImageViewer: View {
                             SwiftUI.Image(systemName: "xmark")
                                 .font(.title3)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                                .padding(10)
+                                .foregroundColor(.civitInverseOnSurface)
+                                .padding(Spacing.smPlus)
                                 .background(.ultraThinMaterial, in: Circle())
                         }
                         Spacer()
                     }
-                    .padding(16)
+                    .padding(Spacing.lg)
                     Spacer()
                 }
             }
@@ -190,7 +190,7 @@ struct WrappingHStack: View {
             ForEach(tags, id: \.self) { tag in
                 Text(tag)
                     .font(.civitLabelMedium)
-                    .padding(.horizontal, 10)
+                    .padding(.horizontal, Spacing.smPlus)
                     .padding(.vertical, Spacing.xs)
                     .background(Color.civitSurfaceVariant)
                     .clipShape(Capsule())

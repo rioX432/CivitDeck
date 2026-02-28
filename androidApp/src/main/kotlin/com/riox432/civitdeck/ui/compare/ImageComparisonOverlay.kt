@@ -25,12 +25,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.riox432.civitdeck.R
+import com.riox432.civitdeck.ui.theme.CivitDeckColors
 
 /**
  * Full-screen overlay for comparing two images with a slider.
@@ -68,7 +68,7 @@ private fun OverlayContent(
     var orientation by remember { mutableStateOf(SliderOrientation.Horizontal) }
     var controlsVisible by remember { mutableStateOf(true) }
 
-    Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+    Box(modifier = Modifier.fillMaxSize().background(CivitDeckColors.scrim)) {
         ImageComparisonSlider(
             beforeImageUrl = beforeImageUrl,
             afterImageUrl = afterImageUrl,
@@ -154,9 +154,9 @@ private fun LabelChip(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelMedium,
-        color = Color.White,
+        color = CivitDeckColors.onScrim,
         modifier = Modifier
-            .background(Color.Black.copy(alpha = CHIP_ALPHA), MaterialTheme.shapes.small)
+            .background(CivitDeckColors.scrim.copy(alpha = CHIP_ALPHA), MaterialTheme.shapes.small)
             .padding(horizontal = CHIP_H_PADDING.dp, vertical = CHIP_V_PADDING.dp),
     )
 }

@@ -55,8 +55,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.BuildConfig
 import com.riox432.civitdeck.domain.model.AccentColor
@@ -137,7 +139,7 @@ internal fun SubScreenRow(label: String, onClick: () -> Unit) {
         Text(label, style = MaterialTheme.typography.bodyLarge)
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-            contentDescription = null,
+            contentDescription = stringResource(R.string.cd_navigate_forward),
             modifier = Modifier.size(16.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -200,6 +202,10 @@ internal fun AccentColorSwatch(
     isSelected: Boolean,
     onClick: () -> Unit,
 ) {
+    // Intentional: seedHex is the user-chosen accent seed color, used here as a literal preview
+    // swatch. It cannot be expressed via MaterialTheme tokens because it is the input to the
+    // dynamic color pipeline, not a derived token value.
+    @Suppress("MagicNumber")
     val swatchColor = Color(color.seedHex)
     Box(
         modifier = Modifier
@@ -220,7 +226,7 @@ internal fun AccentColorSwatch(
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = "Selected",
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(20.dp),
             )
         }
@@ -509,7 +515,7 @@ internal fun DropdownSettingRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = true }
+                .clickable(onClickLabel = stringResource(R.string.cd_open_dropdown)) { expanded = true }
                 .padding(horizontal = Spacing.lg, vertical = Spacing.md),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,

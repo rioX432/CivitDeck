@@ -8,12 +8,12 @@ struct MetadataSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: Spacing.md) {
                     promptSection
                     parametersSection
                     exportSection
                 }
-                .padding(16)
+                .padding(Spacing.lg)
             }
             .navigationTitle("Generation Info")
             .navigationBarTitleDisplayMode(.inline)

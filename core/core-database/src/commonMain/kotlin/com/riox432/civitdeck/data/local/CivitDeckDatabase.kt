@@ -421,6 +421,10 @@ val MIGRATION_20_21 = object : Migration(20, 21) {
     }
 }
 
+// Seed data is inserted via onOpen (not in migrations) because Room migrations only run on
+// upgrades — a fresh install starts directly at the latest schema version, skipping all
+// migration callbacks. Using INSERT OR IGNORE in onOpen ensures required rows are always
+// present on every app launch, whether on a new install or after an upgrade.
 private val defaultCollectionCallback = object : RoomDatabase.Callback() {
     override fun onOpen(connection: SQLiteConnection) {
         super.onOpen(connection)
@@ -434,6 +438,8 @@ private val defaultCollectionCallback = object : RoomDatabase.Callback() {
 
 @Suppress("LongMethod")
 private fun seedBuiltInTemplates(connection: SQLiteConnection) {
+    // INSERT OR IGNORE guarantees idempotency: rows with the same negative IDs are silently
+    // skipped if they already exist, so this function is safe to call on every app open.
     // id=-1 → TXT2IMG built-in template
     connection.execSQL(
         """INSERT OR IGNORE INTO saved_prompts

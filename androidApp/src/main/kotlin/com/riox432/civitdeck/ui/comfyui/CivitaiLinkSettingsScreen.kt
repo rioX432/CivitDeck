@@ -42,6 +42,7 @@ import com.riox432.civitdeck.domain.model.CivitaiLinkActivity
 import com.riox432.civitdeck.domain.model.CivitaiLinkStatus
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsUiState
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
+import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -239,8 +240,8 @@ private fun CivitaiLinkStatus.label(): String = when (this) {
 }
 
 private fun CivitaiLinkStatus.dotColor(): Color = when (this) {
-    CivitaiLinkStatus.Connected -> Color(0xFF4CAF50)
-    CivitaiLinkStatus.Connecting -> Color(0xFFFFC107)
-    CivitaiLinkStatus.Error -> Color(0xFFF44336)
-    CivitaiLinkStatus.Disconnected -> Color(0xFF9E9E9E)
+    CivitaiLinkStatus.Connected -> CivitDeckColors.statusSuccess
+    CivitaiLinkStatus.Connecting -> CivitDeckColors.statusWarning
+    CivitaiLinkStatus.Error -> CivitDeckColors.statusError
+    CivitaiLinkStatus.Disconnected -> CivitDeckColors.statusNeutral
 }

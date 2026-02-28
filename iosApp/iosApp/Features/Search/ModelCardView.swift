@@ -19,6 +19,7 @@ struct ModelCardView: View {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: IconSize.statIcon))
                             .foregroundColor(.civitPrimary)
+                            .accessibilityLabel("Owned")
                     }
                 }
 

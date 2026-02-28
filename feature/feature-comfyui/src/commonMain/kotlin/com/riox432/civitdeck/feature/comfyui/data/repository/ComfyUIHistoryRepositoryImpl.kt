@@ -22,9 +22,11 @@ class ComfyUIHistoryRepositoryImpl(
     override fun fetchHistory(): Flow<List<ComfyUIGeneratedImage>> = flow {
         ensureApiConfigured()
         val historyMap = api.getAllHistory()
+        println("DEBUG ComfyUI: fetched ${historyMap.size} history entries")
         val images = historyMap.flatMap { (promptId, entry) ->
             entry.toGeneratedImages(promptId)
         }
+        println("DEBUG ComfyUI: total images=${images.size}, first imageUrl=${images.firstOrNull()?.imageUrl}")
         emit(images)
     }
 
