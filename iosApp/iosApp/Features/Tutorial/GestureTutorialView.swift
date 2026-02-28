@@ -4,6 +4,12 @@ struct GestureTutorialView: View {
     let onDismiss: () -> Void
     @State private var currentPage = 0
 
+    private enum Layout {
+        static let tabViewHeight: CGFloat = 340
+        static let indicatorSize: CGFloat = 8
+        static let buttonMaxWidth: CGFloat = 200
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             skipButton
@@ -38,7 +44,7 @@ struct GestureTutorialView: View {
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
-        .frame(height: 340)
+        .frame(height: Layout.tabViewHeight)
     }
 
     private var pageIndicator: some View {
@@ -46,7 +52,7 @@ struct GestureTutorialView: View {
             ForEach(tutorialSteps) { step in
                 Circle()
                     .fill(step.id == currentPage ? Color.civitPrimary : Color.civitOutlineVariant)
-                    .frame(width: 8, height: 8)
+                    .frame(width: Layout.indicatorSize, height: Layout.indicatorSize)
             }
         }
     }
@@ -64,7 +70,7 @@ struct GestureTutorialView: View {
             Text(currentPage == tutorialSteps.count - 1 ? "Get Started" : "Next")
                 .font(.civitTitleMedium)
                 .foregroundColor(.white)
-                .frame(maxWidth: 200)
+                .frame(maxWidth: Layout.buttonMaxWidth)
                 .padding(.vertical, Spacing.md)
                 .background(Color.civitPrimary)
                 .cornerRadius(CornerRadius.card)
@@ -80,7 +86,7 @@ private struct TutorialPageView: View {
     var body: some View {
         VStack(spacing: 0) {
             stepAnimation
-                .padding(.bottom, 32)
+                .padding(.bottom, Spacing.xxl)
             Text(step.title)
                 .font(.civitHeadlineSmall)
                 .foregroundColor(.civitOnSurface)
@@ -90,7 +96,7 @@ private struct TutorialPageView: View {
                 .font(.civitBodyMedium)
                 .foregroundColor(.civitOnSurfaceVariant)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, Spacing.xl)
         }
     }
 

@@ -36,27 +36,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.SubcomposeAsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.AspectRatioFilter
 import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
+import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.FilterChipRow
-import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.components.NsfwBlurOverlay
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
-import com.riox432.civitdeck.ui.theme.shimmer
 
 @Composable
 fun ImageGalleryScreen(
@@ -235,6 +230,7 @@ private fun ImageGrid(
                 image = image,
                 blurSettings = blurSettings,
                 onClick = { onImageClick(index) },
+                contentDescription = "Image ${index + 1}",
                 modifier = Modifier.animateItem(),
             )
         }
@@ -256,6 +252,7 @@ private fun ImageGridItem(
     image: Image,
     blurSettings: NsfwBlurSettings,
     onClick: () -> Unit,
+    contentDescription: String,
     modifier: Modifier = Modifier,
 ) {
     val aspectRatio = if (image.width > 0 && image.height > 0) {
@@ -272,31 +269,13 @@ private fun ImageGridItem(
             .clip(RoundedCornerShape(CornerRadius.image))
             .clickable(onClick = onClick),
     ) {
-        SubcomposeAsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(image.url)
-                .crossfade(Duration.normal)
-                .build(),
-            contentDescription = null,
+        CivitAsyncImage(
+            imageUrl = image.url,
+            contentDescription = contentDescription,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(aspectRatio),
-            loading = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(aspectRatio)
-                        .shimmer(),
-                )
-            },
-            error = {
-                ImageErrorPlaceholder(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(aspectRatio),
-                )
-            },
         )
     }
 }

@@ -40,49 +40,9 @@ struct ModelCardView: View {
     }
 
     private var thumbnailImage: some View {
-        Group {
-            let image = model.modelVersions.first?.images.first
-            let urlString = image.flatMap { $0.thumbnailUrl(width: 450) }
-            if let urlString, let imageUrl = URL(string: urlString) {
-                Color.civitSurfaceVariant
-                    .aspectRatio(1, contentMode: .fit)
-                    .overlay {
-                        CachedAsyncImage(url: imageUrl) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                                    .parallaxEffect(offset: parallaxOffset)
-                                    .transition(.opacity)
-                            case .failure:
-                                Image(systemName: "photo")
-                                    .foregroundColor(.civitOnSurfaceVariant)
-                            case .empty:
-                                Rectangle()
-                                    .fill(Color.civitSurfaceVariant)
-                                    .shimmer()
-                            @unknown default:
-                                Image(systemName: "photo")
-                                    .foregroundColor(.civitOnSurfaceVariant)
-                            }
-                        }
-                    }
-                    .clipped()
-            } else {
-                imagePlaceholder
-            }
-        }
-    }
-
-    private var imagePlaceholder: some View {
-        Rectangle()
-            .fill(Color.civitSurfaceVariant)
-            .aspectRatio(1, contentMode: .fit)
-            .overlay {
-                Image(systemName: "photo")
-                    .foregroundColor(.civitOnSurfaceVariant)
-            }
+        let urlString = model.modelVersions.first?.images.first.flatMap { $0.thumbnailUrl(width: 450) }
+        return CivitAsyncImageView(imageUrl: urlString, aspectRatio: 1)
+            .parallaxEffect(offset: parallaxOffset)
     }
 
     private var statsRow: some View {

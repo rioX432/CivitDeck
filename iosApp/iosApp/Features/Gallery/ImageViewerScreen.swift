@@ -89,7 +89,7 @@ struct ImageViewerScreen: View {
     private func viewerControls(currentIndex: Int) -> some View {
         VStack {
             HStack {
-                ControlCircleButton(systemName: "xmark") {
+                ControlCircleButton(systemName: "xmark", label: "Close") {
                     selectedIndex = nil
                 }
                 Spacer()
@@ -100,14 +100,14 @@ struct ImageViewerScreen: View {
 
             HStack {
                 Spacer()
-                ControlCircleButton(systemName: "arrow.down.to.line") {
+                ControlCircleButton(systemName: "arrow.down.to.line", label: "Download") {
                     downloadImage(at: currentIndex)
                 }
-                ControlCircleButton(systemName: "square.and.arrow.up") {
+                ControlCircleButton(systemName: "square.and.arrow.up", label: "Share") {
                     showShareSheet = true
                 }
                 if images[safe: currentIndex]?.meta != nil {
-                    ControlCircleButton(systemName: "info.circle") {
+                    ControlCircleButton(systemName: "info.circle", label: "Metadata") {
                         showMetadata = true
                     }
                 }
@@ -220,6 +220,7 @@ private enum DownloadError: Error {
 
 private struct ControlCircleButton: View {
     let systemName: String
+    var label: String?
     let action: () -> Void
 
     var body: some View {
@@ -231,6 +232,7 @@ private struct ControlCircleButton: View {
                 .padding(10)
                 .background(.ultraThinMaterial, in: Circle())
         }
+        .accessibilityLabel(label ?? systemName)
     }
 }
 

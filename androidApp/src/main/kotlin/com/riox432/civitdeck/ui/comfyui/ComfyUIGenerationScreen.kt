@@ -39,11 +39,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
 import com.riox432.civitdeck.domain.model.GenerationStatus
+import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -275,7 +273,6 @@ private fun GenerationStatusSection(state: GenerationUiState) {
 
 @Composable
 private fun ResultGrid(imageUrls: List<String>) {
-    val context = LocalContext.current
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier.fillMaxWidth(),
@@ -285,13 +282,13 @@ private fun ResultGrid(imageUrls: List<String>) {
     ) {
         items(imageUrls) { url ->
             Card {
-                AsyncImage(
-                    model = ImageRequest.Builder(context).data(url).build(),
+                CivitAsyncImage(
+                    imageUrl = url,
                     contentDescription = "Generated image",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f),
-                    contentScale = ContentScale.Crop,
                 )
             }
         }

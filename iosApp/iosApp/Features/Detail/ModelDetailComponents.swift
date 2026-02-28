@@ -86,7 +86,8 @@ struct ImageGridSheet: View {
             ? CGFloat(image.width) / CGFloat(image.height) : 1.0
         return Button {
             onDismiss()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(300))
                 onImageSelected(index)
             }
         } label: {

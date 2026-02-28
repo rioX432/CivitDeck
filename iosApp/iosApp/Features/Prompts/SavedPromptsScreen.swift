@@ -47,12 +47,7 @@ struct SavedPromptsScreen: View {
     }
 
     private var searchBar: some View {
-        HStack {
-            TextField("Search prompts...", text: $viewModel.searchQuery)
-                .textFieldStyle(.roundedBorder)
-        }
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.sm)
+        SearchBarView(text: $viewModel.searchQuery, placeholder: "Search prompts...")
     }
 
     private var tabPicker: some View {
@@ -120,7 +115,7 @@ private struct PromptCardView: View {
     var onApply: (() -> Void)?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             headerRow
             Text(prompt.prompt)
                 .font(.callout)
@@ -136,12 +131,12 @@ private struct PromptCardView: View {
             paramsText
             actionsRow
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xs)
     }
 
     private var headerRow: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 if let templateName = prompt.templateName {
                     Text(templateName)
                         .font(.caption)

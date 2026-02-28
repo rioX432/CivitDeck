@@ -17,44 +17,8 @@ struct DiscoveryCardContent: View {
     }
 
     private var cardImage: some View {
-        Group {
-            let image = model.modelVersions.first?.images.first
-            let urlString = image.flatMap { $0.thumbnailUrl(width: 600) }
-            if let urlString, let imageUrl = URL(string: urlString) {
-                Color.civitSurfaceVariant
-                    .aspectRatio(imageAspectRatio, contentMode: .fit)
-                    .overlay {
-                        CachedAsyncImage(url: imageUrl) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                                    .transition(.opacity)
-                            case .failure:
-                                Image(systemName: "photo")
-                                    .foregroundColor(.civitOnSurfaceVariant)
-                            case .empty:
-                                Rectangle()
-                                    .fill(Color.civitSurfaceVariant)
-                                    .shimmer()
-                            @unknown default:
-                                Image(systemName: "photo")
-                                    .foregroundColor(.civitOnSurfaceVariant)
-                            }
-                        }
-                    }
-                    .clipped()
-            } else {
-                Rectangle()
-                    .fill(Color.civitSurfaceVariant)
-                    .aspectRatio(imageAspectRatio, contentMode: .fit)
-                    .overlay {
-                        Image(systemName: "photo")
-                            .foregroundColor(.civitOnSurfaceVariant)
-                    }
-            }
-        }
+        let urlString = model.modelVersions.first?.images.first.flatMap { $0.thumbnailUrl(width: 600) }
+        return CivitAsyncImageView(imageUrl: urlString, aspectRatio: imageAspectRatio)
     }
 
     private var cardInfo: some View {

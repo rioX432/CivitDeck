@@ -26,7 +26,7 @@ struct VersionDetailSection: View {
     @ViewBuilder
     private var baseModelRow: some View {
         if let baseModel = version.baseModel, !baseModel.isEmpty {
-            detailRow(label: "Base Model", value: baseModel)
+            DetailRow(label: "Base Model", value: baseModel)
         }
     }
 
@@ -97,17 +97,17 @@ struct VersionDetailSection: View {
             let hashes = file.hashes
             ForEach(Array(hashes.keys.sorted()), id: \.self) { key in
                 if let value = hashes[key] {
-                    detailRow(label: key, value: value)
+                    DetailRow(label: key, value: value)
                 }
             }
             if let scan = file.pickleScanResult {
-                detailRow(label: "Pickle Scan", value: scan)
+                DetailRow(label: "Pickle Scan", value: scan)
             }
             if let scan = file.virusScanResult {
-                detailRow(label: "Virus Scan", value: scan)
+                DetailRow(label: "Virus Scan", value: scan)
             }
             if let scannedAt = file.scannedAt {
-                detailRow(label: "Scanned At", value: scannedAt)
+                DetailRow(label: "Scanned At", value: scannedAt)
             }
         }
         .padding(.leading, Spacing.sm)
@@ -139,14 +139,14 @@ struct VersionDetailSection: View {
             if isAdvancedExpanded {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     if !version.createdAt.isEmpty {
-                        detailRow(label: "Created", value: version.createdAt)
+                        DetailRow(label: "Created", value: version.createdAt)
                     }
                     if let stats = version.stats {
-                        detailRow(
+                        DetailRow(
                             label: "Downloads",
                             value: "\(stats.downloadCount)"
                         )
-                        detailRow(
+                        DetailRow(
                             label: "Rating",
                             value: "\(FormatUtils.shared.formatRating(rating: stats.rating))"
                                 + " (\(stats.ratingCount))"
@@ -164,21 +164,6 @@ struct VersionDetailSection: View {
                 }
                 .transition(.opacity)
             }
-        }
-    }
-
-    // MARK: - Detail Row
-
-    private func detailRow(label: String, value: String) -> some View {
-        HStack {
-            Text(label)
-                .font(.civitBodyMedium)
-                .foregroundColor(.civitOnSurfaceVariant)
-            Spacer()
-            Text(value)
-                .font(.civitBodyMedium)
-                .lineLimit(1)
-                .truncationMode(.middle)
         }
     }
 }

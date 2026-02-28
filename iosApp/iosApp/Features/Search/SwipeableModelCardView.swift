@@ -37,7 +37,7 @@ struct SwipeableModelCardView: View {
                 resetOffset()
             } label: {
                 Image(systemName: isFavorite ? "heart.fill" : "heart")
-                    .font(.system(size: 22))
+                    .font(.civitIconMedium)
                     .foregroundColor(isFavorite ? .red : .white)
                     .frame(width: 44, height: 44)
             }
@@ -46,7 +46,7 @@ struct SwipeableModelCardView: View {
                 resetOffset()
             } label: {
                 Image(systemName: "eye.slash.fill")
-                    .font(.system(size: 22))
+                    .font(.civitIconMedium)
                     .foregroundColor(.white)
                     .frame(width: 44, height: 44)
             }

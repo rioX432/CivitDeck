@@ -16,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwLevel
@@ -49,7 +50,7 @@ fun NsfwBlurOverlay(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable { isRevealed = true },
+                    .clickable(role = Role.Button, onClickLabel = "Reveal content") { isRevealed = true },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(

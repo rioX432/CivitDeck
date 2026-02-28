@@ -39,6 +39,8 @@
 		CDEM01012EFF0001000CD001 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDEM01002EFF0001000CD001 /* EmptyStateView.swift */; };
 		CDMS01012EFF0001000CD001 /* ModelStatsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDMS01002EFF0001000CD001 /* ModelStatsRow.swift */; };
 		CDCB01012EFF0001000CD001 /* ChipButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCB01002EFF0001000CD001 /* ChipButton.swift */; };
+		CDDR01012F000001000CD001 /* DetailRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDR01002F000001000CD001 /* DetailRow.swift */; };
+		CDSB01012F000002000CD001 /* SearchBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSB01002F000002000CD001 /* SearchBarView.swift */; };
 		CD00C0012D3CC001000CD001 /* CollectionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0002D3CC001000CD001 /* CollectionsScreen.swift */; };
 		CD00C0032D3CC001000CD001 /* CollectionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0022D3CC001000CD001 /* CollectionsViewModel.swift */; };
 		CD00C0052D3CC001000CD001 /* CollectionDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00C0042D3CC001000CD001 /* CollectionDetailScreen.swift */; };
@@ -54,6 +56,7 @@
 		CD000B032D00000B000CD001 /* ExcludedTagsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD000B022D00000B000CD001 /* ExcludedTagsView.swift */; };
 		CD000B052D00000B000CD001 /* LicensesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD000B042D00000B000CD001 /* LicensesView.swift */; };
 		CD00CA012D0CC001000CD001 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */; };
+		CDAI01012F000003000CD001 /* CivitAsyncImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDAI01002F000003000CD001 /* CivitAsyncImageView.swift */; };
 		CD17300A2D173001000CD001 /* NsfwBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD17300B2D173001000CD001 /* NsfwBlurView.swift */; };
 		CD00AD012D1CC001000CD001 /* AdaptiveGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00AD002D1CC001000CD001 /* AdaptiveGrid.swift */; };
 		CD00CE012D2CC001000CD001 /* ComparisonState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CE002D2CC001000CD001 /* ComparisonState.swift */; };
@@ -128,6 +131,8 @@
 		CDEM01002EFF0001000CD001 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		CDMS01002EFF0001000CD001 /* ModelStatsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelStatsRow.swift; sourceTree = "<group>"; };
 		CDCB01002EFF0001000CD001 /* ChipButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChipButton.swift; sourceTree = "<group>"; };
+		CDDR01002F000001000CD001 /* DetailRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRow.swift; sourceTree = "<group>"; };
+		CDSB01002F000002000CD001 /* SearchBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarView.swift; sourceTree = "<group>"; };
 		CD00C0002D3CC001000CD001 /* CollectionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsScreen.swift; sourceTree = "<group>"; };
 		CD00C0022D3CC001000CD001 /* CollectionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsViewModel.swift; sourceTree = "<group>"; };
 		CD00C0042D3CC001000CD001 /* CollectionDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionDetailScreen.swift; sourceTree = "<group>"; };
@@ -148,6 +153,7 @@
 		CD000B022D00000B000CD001 /* ExcludedTagsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExcludedTagsView.swift; sourceTree = "<group>"; };
 		CD000B042D00000B000CD001 /* LicensesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicensesView.swift; sourceTree = "<group>"; };
 		CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
+		CDAI01002F000003000CD001 /* CivitAsyncImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitAsyncImageView.swift; sourceTree = "<group>"; };
 		CD17300B2D173001000CD001 /* NsfwBlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NsfwBlurView.swift; sourceTree = "<group>"; };
 		CD00AD002D1CC001000CD001 /* AdaptiveGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveGrid.swift; sourceTree = "<group>"; };
 		CD00CE002D2CC001000CD001 /* ComparisonState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComparisonState.swift; sourceTree = "<group>"; };
@@ -293,6 +299,7 @@
 				CD00060A2D000006000CD001 /* CivitDeckMotion.swift */,
 				CD0006102D000036000CD001 /* ShimmerModifier.swift */,
 				CD00CA002D0CC001000CD001 /* CachedAsyncImage.swift */,
+				CDAI01002F000003000CD001 /* CivitAsyncImageView.swift */,
 				CD17300B2D173001000CD001 /* NsfwBlurView.swift */,
 				CD00AD002D1CC001000CD001 /* AdaptiveGrid.swift */,
 				CD171A002E4F0171000CD001 /* AnimationModifiers.swift */,
@@ -304,6 +311,8 @@
 			CDEM01002EFF0001000CD001 /* EmptyStateView.swift */,
 		CDMS01002EFF0001000CD001 /* ModelStatsRow.swift */,
 		CDCB01002EFF0001000CD001 /* ChipButton.swift */,
+			CDDR01002F000001000CD001 /* DetailRow.swift */,
+			CDSB01002F000002000CD001 /* SearchBarView.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -617,6 +626,8 @@
 			CDEM01012EFF0001000CD001 /* EmptyStateView.swift in Sources */,
 		CDMS01012EFF0001000CD001 /* ModelStatsRow.swift in Sources */,
 		CDCB01012EFF0001000CD001 /* ChipButton.swift in Sources */,
+				CDDR01012F000001000CD001 /* DetailRow.swift in Sources */,
+				CDSB01012F000002000CD001 /* SearchBarView.swift in Sources */,
 				CD00C0012D3CC001000CD001 /* CollectionsScreen.swift in Sources */,
 				CD00C0032D3CC001000CD001 /* CollectionsViewModel.swift in Sources */,
 				CD00C0052D3CC001000CD001 /* CollectionDetailScreen.swift in Sources */,
@@ -632,6 +643,7 @@
 				CD000B032D00000B000CD001 /* ExcludedTagsView.swift in Sources */,
 				CD000B052D00000B000CD001 /* LicensesView.swift in Sources */,
 				CD00CA012D0CC001000CD001 /* CachedAsyncImage.swift in Sources */,
+				CDAI01012F000003000CD001 /* CivitAsyncImageView.swift in Sources */,
 				CD17300A2D173001000CD001 /* NsfwBlurView.swift in Sources */,
 				CD00AD012D1CC001000CD001 /* AdaptiveGrid.swift in Sources */,
 				CD00CE012D2CC001000CD001 /* ComparisonState.swift in Sources */,

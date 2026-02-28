@@ -21,4 +21,13 @@ extension Font {
 
     // labelSmall: 11pt Medium
     static let civitLabelSmall = Font.system(size: 11, weight: .medium)
+
+    // badgeLabel: 11pt Bold — compact badge counts
+    static let civitBadgeLabel = Font.system(size: 11, weight: .bold)
+
+    // iconMedium: 22pt Regular — action icon buttons
+    static let civitIconMedium = Font.system(size: 22)
+
+    // labelXSmall: 10pt Bold — tiny tag remove icons
+    static let civitLabelXSmall = Font.system(size: 10, weight: .bold)
 }
