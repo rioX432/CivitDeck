@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -52,6 +53,7 @@ fun ComfyUISettingsScreen(
     viewModel: ComfyUISettingsViewModel,
     onBack: () -> Unit,
     onNavigateToGeneration: () -> Unit,
+    onNavigateToHistory: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -77,28 +79,15 @@ fun ComfyUISettingsScreen(
             contentPadding = PaddingValues(Spacing.lg),
             verticalArrangement = Arrangement.spacedBy(Spacing.md),
         ) {
-            item { StatusSection(state, viewModel::onTestConnection) }
-
-            if (state.connectionStatus == ComfyUIConnectionStatus.Connected) {
-                item {
-                    TextButton(
-                        onClick = onNavigateToGeneration,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text("Open txt2img Generator")
-                    }
-                }
-            }
-
-            items(state.connections, key = { it.id }) { connection ->
-                ConnectionCard(
-                    connection = connection,
-                    isActive = connection.id == state.activeConnection?.id,
-                    onActivate = { viewModel.onActivateConnection(connection.id) },
-                    onEdit = { viewModel.onEditConnection(connection) },
-                    onDelete = { viewModel.onDeleteConnection(connection.id) },
-                )
-            }
+            settingsItems(
+                state = state,
+                onTestConnection = viewModel::onTestConnection,
+                onNavigateToGeneration = onNavigateToGeneration,
+                onNavigateToHistory = onNavigateToHistory,
+                onActivate = viewModel::onActivateConnection,
+                onEdit = viewModel::onEditConnection,
+                onDelete = viewModel::onDeleteConnection,
+            )
         }
     }
 
@@ -107,6 +96,41 @@ fun ComfyUISettingsScreen(
             editing = state.editingConnection,
             onSave = viewModel::onSaveConnection,
             onDismiss = viewModel::onDismissDialog,
+        )
+    }
+}
+
+private fun LazyListScope.settingsItems(
+    state: ComfyUISettingsUiState,
+    onTestConnection: () -> Unit,
+    onNavigateToGeneration: () -> Unit,
+    onNavigateToHistory: () -> Unit,
+    onActivate: (Long) -> Unit,
+    onEdit: (ComfyUIConnection) -> Unit,
+    onDelete: (Long) -> Unit,
+) {
+    item { StatusSection(state, onTestConnection) }
+
+    if (state.connectionStatus == ComfyUIConnectionStatus.Connected) {
+        item {
+            TextButton(onClick = onNavigateToGeneration, modifier = Modifier.fillMaxWidth()) {
+                Text("Open txt2img Generator")
+            }
+        }
+        item {
+            TextButton(onClick = onNavigateToHistory, modifier = Modifier.fillMaxWidth()) {
+                Text("View Output Gallery")
+            }
+        }
+    }
+
+    items(state.connections, key = { it.id }) { connection ->
+        ConnectionCard(
+            connection = connection,
+            isActive = connection.id == state.activeConnection?.id,
+            onActivate = { onActivate(connection.id) },
+            onEdit = { onEdit(connection) },
+            onDelete = { onDelete(connection.id) },
         )
     }
 }

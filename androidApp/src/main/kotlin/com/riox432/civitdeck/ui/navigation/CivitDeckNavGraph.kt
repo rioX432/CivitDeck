@@ -48,6 +48,7 @@ import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailVi
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ModelFileBrowserViewModel
@@ -65,6 +66,8 @@ import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.CollectionsScreen
 import com.riox432.civitdeck.ui.comfyui.CivitaiLinkSettingsScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationScreen
+import com.riox432.civitdeck.ui.comfyui.ComfyUIHistoryScreen
+import com.riox432.civitdeck.ui.comfyui.ComfyUIOutputDetailScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIQueueScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsScreen
 import com.riox432.civitdeck.ui.comfyui.SDWebUIGenerationScreen
@@ -159,6 +162,10 @@ data object StorageSettingsRoute
 data object AdvancedSettingsRoute
 
 data object CivitaiLinkSettingsRoute
+
+data object ComfyUIHistoryRoute
+
+data class ComfyUIOutputDetailRoute(val imageId: String)
 
 internal enum class Tab(
     val label: String,
@@ -581,6 +588,7 @@ private fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>) 
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
             onNavigateToGeneration = { backStack.add(ComfyUIGenerationRoute) },
+            onNavigateToHistory = { backStack.add(ComfyUIHistoryRoute) },
         )
     }
     entry<SDWebUISettingsRoute> {
@@ -621,6 +629,7 @@ private fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>) 
         )
     }
     workflowTemplateEntries(backStack)
+    comfyUIHistoryEntries(backStack)
 }
 
 private fun EntryProviderScope<Any>.workflowTemplateEntries(backStack: MutableList<Any>) {
@@ -656,5 +665,29 @@ private fun EntryProviderScope<Any>.workflowTemplateEntries(backStack: MutableLi
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
         )
+    }
+}
+
+private fun EntryProviderScope<Any>.comfyUIHistoryEntries(backStack: MutableList<Any>) {
+    entry<ComfyUIHistoryRoute> {
+        val viewModel: ComfyUIHistoryViewModel = koinViewModel()
+        ComfyUIHistoryScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onImageClick = { image ->
+                backStack.add(ComfyUIOutputDetailRoute(image.id))
+            },
+        )
+    }
+    entry<ComfyUIOutputDetailRoute> { key ->
+        val historyViewModel: ComfyUIHistoryViewModel = koinViewModel()
+        val image = historyViewModel.uiState.value.images.find { it.id == key.imageId }
+        if (image != null) {
+            ComfyUIOutputDetailScreen(
+                image = image,
+                viewModel = historyViewModel,
+                onBack = { backStack.removeLastOrNull() },
+            )
+        }
     }
 }

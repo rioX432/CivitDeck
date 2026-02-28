@@ -22,6 +22,7 @@ import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewMod
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ModelFileBrowserViewModel
@@ -132,6 +133,7 @@ val androidModule = module {
     viewModel { SwipeDiscoveryViewModel(get(), get()) }
     viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { ComfyUIHistoryViewModel(get(), get()) }
     viewModel { ComfyUIQueueViewModel(get(), get()) }
     viewModel { WorkflowTemplateViewModel(get(), get(), get(), get(), get()) }
     viewModel { SDWebUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
