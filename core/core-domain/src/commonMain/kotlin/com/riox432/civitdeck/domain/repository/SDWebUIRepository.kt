@@ -5,6 +5,7 @@ import com.riox432.civitdeck.domain.model.SDWebUIGenerationParams
 import com.riox432.civitdeck.domain.model.SDWebUIGenerationProgress
 import kotlinx.coroutines.flow.Flow
 
+@Suppress("TooManyFunctions")
 interface SDWebUIRepository {
     fun observeConnections(): Flow<List<SDWebUIConnection>>
     fun observeActiveConnection(): Flow<SDWebUIConnection?>

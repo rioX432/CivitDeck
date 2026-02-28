@@ -17,10 +17,8 @@ class CivitaiLinkSettingsViewModel: ObservableObject {
     private let cancelActivity = KoinHelper.shared.getCancelLinkActivityUseCase()
 
     func observeLinkKey() async {
-        for await key in observeKey.invoke() {
-            if self.linkKey.isEmpty {
-                self.linkKey = key ?? ""
-            }
+        for await key in observeKey.invoke() where self.linkKey.isEmpty {
+            self.linkKey = key ?? ""
         }
     }
 

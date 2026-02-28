@@ -14,6 +14,7 @@ import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+@Suppress("TooManyFunctions")
 class UserPreferencesRepositoryImpl(
     private val dao: UserPreferencesDao,
     private val apiKeyProvider: ApiKeyProvider,

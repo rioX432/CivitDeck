@@ -44,12 +44,12 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
@@ -85,7 +85,6 @@ import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewMod
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailUiState
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
-import org.koin.compose.viewmodel.koinViewModel
 import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
@@ -107,6 +106,7 @@ import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
 import com.riox432.civitdeck.util.FormatUtils
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ModelDetailScreen(
@@ -480,6 +480,7 @@ private fun SharedThumbnailPlaceholder(
     )
 }
 
+@Suppress("LongParameterList")
 @Composable
 private fun ModelDetailContentBody(
     model: Model,

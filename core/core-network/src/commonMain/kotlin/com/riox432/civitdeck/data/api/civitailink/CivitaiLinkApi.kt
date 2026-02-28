@@ -23,7 +23,6 @@ class CivitaiLinkApi(
 
     fun observeLink(key: String): Flow<CivitaiLinkIncomingMessage> = callbackFlow {
         client.wss(host = HOST, path = "$PATH_PREFIX$key") {
-            outgoing.invokeOnClose { close() }
             incoming.consumeEach { frame ->
                 if (frame is Frame.Text) {
                     runCatching {

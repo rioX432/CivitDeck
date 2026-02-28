@@ -45,7 +45,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationUiState
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
@@ -165,22 +164,30 @@ private fun LazyListScope.sdwebuiFormItems(
     item { SDWebUIDropdownRow("Sampler", state.selectedSampler, state.samplers, onSamplerSelected) }
     item {
         OutlinedTextField(
-            value = state.prompt, onValueChange = onPromptChanged,
-            label = { Text("Prompt") }, minLines = 3, modifier = Modifier.fillMaxWidth(),
+            value = state.prompt,
+            onValueChange = onPromptChanged,
+            label = { Text("Prompt") },
+            minLines = 3,
+            modifier = Modifier.fillMaxWidth(),
         )
     }
     item {
         OutlinedTextField(
-            value = state.negativePrompt, onValueChange = onNegativePromptChanged,
-            label = { Text("Negative Prompt") }, minLines = 2, modifier = Modifier.fillMaxWidth(),
+            value = state.negativePrompt,
+            onValueChange = onNegativePromptChanged,
+            label = { Text("Negative Prompt") },
+            minLines = 2,
+            modifier = Modifier.fillMaxWidth(),
         )
     }
     item { SDWebUIStepsSection(state.steps, onStepsChanged) }
     item { SDWebUICfgSection(state.cfgScale, onCfgChanged) }
     item {
         SDWebUIDimensionRow(
-            width = state.width, height = state.height,
-            onWidthChanged = onWidthChanged, onHeightChanged = onHeightChanged,
+            width = state.width,
+            height = state.height,
+            onWidthChanged = onWidthChanged,
+            onHeightChanged = onHeightChanged,
         )
     }
     item { SDWebUISeedRow(state.seed, onSeedChanged) }
@@ -207,7 +214,10 @@ private fun SDWebUIDropdownRow(
                 options.forEach { option ->
                     DropdownMenuItem(
                         text = { Text(option) },
-                        onClick = { onSelected(option); expanded = false },
+                        onClick = {
+                            onSelected(option)
+                            expanded = false
+                        },
                     )
                 }
             }
@@ -236,7 +246,7 @@ private fun SDWebUICfgSection(cfg: Double, onChanged: (Double) -> Unit) {
     Column {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("CFG Scale", style = MaterialTheme.typography.labelMedium)
-            Text(String.format("%.1f", cfg), style = MaterialTheme.typography.bodySmall)
+            Text(String.format(java.util.Locale.US, "%.1f", cfg), style = MaterialTheme.typography.bodySmall)
         }
         Slider(
             value = cfg.toFloat(),
