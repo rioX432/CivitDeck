@@ -8,8 +8,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":core:core-domain"))
-            implementation(libs.room.runtime)
-            implementation(libs.sqlite.bundled)
+            api(libs.room.runtime)
+            api(libs.sqlite.bundled)
             implementation(libs.koin.core)
         }
 

@@ -11,6 +11,7 @@ val sharedModules: List<Module>
     get() = listOf(
         platformModule,
         networkModule,
+        databaseModule,
         dataModule,
         domainModule,
         viewModelModule,
