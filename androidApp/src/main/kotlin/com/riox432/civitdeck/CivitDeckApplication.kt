@@ -26,7 +26,6 @@ import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.ui.gallery.ImageGalleryViewModel
 import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserViewModel
-import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
 import com.riox432.civitdeck.widget.WidgetRefreshWorker
@@ -122,7 +121,6 @@ val androidModule = module {
         )
     }
     viewModel { params -> ImageGalleryViewModel(params.get(), get(), get(), get(), get(), get()) }
-    viewModel { SavedPromptsViewModel(get(), get(), get(), get(), get()) }
     viewModel { ModelFileBrowserViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { GestureTutorialViewModel(get(), get()) }
     viewModel { SwipeDiscoveryViewModel(get(), get()) }

@@ -3,11 +3,12 @@ package com.riox432.civitdeck.ui.prompts
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.domain.model.SavedPrompt
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
-import com.riox432.civitdeck.domain.usecase.DeleteSavedPromptUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveTemplatesUseCase
-import com.riox432.civitdeck.domain.usecase.SearchSavedPromptsUseCase
-import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.DeleteSavedPromptUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveSavedPromptsUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveTemplatesUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.SearchSavedPromptsUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.ToggleTemplateUseCase
+import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow

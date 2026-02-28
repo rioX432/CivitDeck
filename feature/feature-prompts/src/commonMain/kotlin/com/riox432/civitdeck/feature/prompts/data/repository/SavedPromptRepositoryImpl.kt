@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.data.repository
+package com.riox432.civitdeck.feature.prompts.data.repository
 
 import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao

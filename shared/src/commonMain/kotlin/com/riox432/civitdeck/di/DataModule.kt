@@ -12,7 +12,6 @@ import com.riox432.civitdeck.data.repository.ImageRepositoryImpl
 import com.riox432.civitdeck.data.repository.LocalModelFileRepositoryImpl
 import com.riox432.civitdeck.data.repository.ModelRepositoryImpl
 import com.riox432.civitdeck.data.repository.ModelVersionCheckpointRepositoryImpl
-import com.riox432.civitdeck.data.repository.SavedPromptRepositoryImpl
 import com.riox432.civitdeck.data.repository.SearchHistoryRepositoryImpl
 import com.riox432.civitdeck.data.repository.TagRepositoryImpl
 import com.riox432.civitdeck.data.scanner.FileScanner
@@ -28,7 +27,6 @@ import com.riox432.civitdeck.domain.repository.ImageRepository
 import com.riox432.civitdeck.domain.repository.LocalModelFileRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.domain.repository.ModelVersionCheckpointRepository
-import com.riox432.civitdeck.domain.repository.SavedPromptRepository
 import com.riox432.civitdeck.domain.repository.SearchHistoryRepository
 import com.riox432.civitdeck.domain.repository.TagRepository
 import org.koin.dsl.module
@@ -45,7 +43,6 @@ val dataModule = module {
     single<TagRepository> { TagRepositoryImpl(get()) }
     single<FavoriteRepository> { FavoriteRepositoryImpl(get()) }
     single<CollectionRepository> { CollectionRepositoryImpl(get()) }
-    single<SavedPromptRepository> { SavedPromptRepositoryImpl(get()) }
     single<SearchHistoryRepository> { SearchHistoryRepositoryImpl(get()) }
     single<BrowsingHistoryRepository> { BrowsingHistoryRepositoryImpl(get()) }
     single<ExcludedTagRepository> { ExcludedTagRepositoryImpl(get()) }

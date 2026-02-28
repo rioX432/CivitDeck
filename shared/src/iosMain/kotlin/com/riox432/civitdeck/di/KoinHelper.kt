@@ -6,7 +6,6 @@ import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.AddSearchHistoryUseCase
-import com.riox432.civitdeck.domain.usecase.AutoSavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.BulkMoveModelsUseCase
 import com.riox432.civitdeck.domain.usecase.BulkRemoveModelsUseCase
 import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
@@ -16,7 +15,6 @@ import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteComfyUIConnectionUseCase
-import com.riox432.civitdeck.domain.usecase.DeleteSavedPromptUseCase
 import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
 import com.riox432.civitdeck.domain.usecase.FetchComfyUICheckpointsUseCase
@@ -55,19 +53,15 @@ import com.riox432.civitdeck.domain.usecase.ObserveOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveTemplatesUseCase
 import com.riox432.civitdeck.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.RenameCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.SaveComfyUIConnectionUseCase
-import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
-import com.riox432.civitdeck.domain.usecase.SearchSavedPromptsUseCase
 import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.SetAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
@@ -85,12 +79,18 @@ import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.domain.usecase.TestComfyUIConnectionUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
-import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
 import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.AutoSavePromptUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.DeleteSavedPromptUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveSavedPromptsUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveTemplatesUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.SavePromptUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.SearchSavedPromptsUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.ToggleTemplateUseCase
 import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
 import org.koin.mp.KoinPlatform.getKoin
 

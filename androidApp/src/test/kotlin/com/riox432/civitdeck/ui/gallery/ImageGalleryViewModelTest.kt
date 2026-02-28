@@ -11,10 +11,10 @@ import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.ImageRepository
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
 import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
-import com.riox432.civitdeck.domain.usecase.AutoSavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.GetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
-import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.AutoSavePromptUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.SavePromptUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow

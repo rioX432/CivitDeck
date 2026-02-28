@@ -24,6 +24,7 @@ kotlin {
             api(project(":core:core-database"))
             api(project(":feature:feature-settings"))
             api(project(":feature:feature-creator"))
+            api(project(":feature:feature-prompts"))
             api(libs.androidx.lifecycle.viewmodel)
             implementation(libs.ktor.client.core)
             implementation(libs.kotlinx.serialization.json)

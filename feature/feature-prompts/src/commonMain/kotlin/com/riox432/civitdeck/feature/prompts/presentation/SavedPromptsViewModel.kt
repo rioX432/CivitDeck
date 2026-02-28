@@ -1,13 +1,13 @@
-package com.riox432.civitdeck.ui.prompts
+package com.riox432.civitdeck.feature.prompts.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.SavedPrompt
-import com.riox432.civitdeck.domain.usecase.DeleteSavedPromptUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveSavedPromptsUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveTemplatesUseCase
-import com.riox432.civitdeck.domain.usecase.SearchSavedPromptsUseCase
-import com.riox432.civitdeck.domain.usecase.ToggleTemplateUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.DeleteSavedPromptUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveSavedPromptsUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveTemplatesUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.SearchSavedPromptsUseCase
+import com.riox432.civitdeck.feature.prompts.domain.usecase.ToggleTemplateUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
