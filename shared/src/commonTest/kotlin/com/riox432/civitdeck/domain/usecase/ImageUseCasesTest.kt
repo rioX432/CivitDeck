@@ -6,6 +6,7 @@ import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.ImageRepository
+import com.riox432.civitdeck.feature.gallery.domain.usecase.GetImagesUseCase
 import com.riox432.civitdeck.testImage
 import com.riox432.civitdeck.testPaginatedResult
 import kotlinx.coroutines.test.runTest

@@ -42,6 +42,8 @@ import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryUiState
+import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.ErrorStateView

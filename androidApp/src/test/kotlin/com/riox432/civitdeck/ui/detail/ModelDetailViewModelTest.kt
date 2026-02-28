@@ -16,12 +16,12 @@ import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
-import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.feature.gallery.domain.usecase.EnrichModelImagesUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow

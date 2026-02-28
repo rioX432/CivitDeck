@@ -14,7 +14,6 @@ import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteComfyUIConnectionUseCase
-import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
 import com.riox432.civitdeck.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.domain.usecase.GetCacheInfoUseCase
@@ -22,7 +21,6 @@ import com.riox432.civitdeck.domain.usecase.GetDiscoveryModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
-import com.riox432.civitdeck.domain.usecase.GetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetRecommendationsUseCase
@@ -87,8 +85,6 @@ import org.koin.dsl.module
 val domainModule = module {
     factory { GetModelsUseCase(get()) }
     factory { GetModelDetailUseCase(get()) }
-    factory { GetImagesUseCase(get()) }
-    factory { EnrichModelImagesUseCase(get()) }
     factory { GetDiscoveryModelsUseCase(get()) }
     factory { ToggleFavoriteUseCase(get()) }
     factory { ObserveFavoritesUseCase(get()) }

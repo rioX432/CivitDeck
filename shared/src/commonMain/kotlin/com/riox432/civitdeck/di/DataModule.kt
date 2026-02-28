@@ -8,7 +8,6 @@ import com.riox432.civitdeck.data.repository.ComfyUIRepositoryImpl
 import com.riox432.civitdeck.data.repository.ExcludedTagRepositoryImpl
 import com.riox432.civitdeck.data.repository.FavoriteRepositoryImpl
 import com.riox432.civitdeck.data.repository.HiddenModelRepositoryImpl
-import com.riox432.civitdeck.data.repository.ImageRepositoryImpl
 import com.riox432.civitdeck.data.repository.LocalModelFileRepositoryImpl
 import com.riox432.civitdeck.data.repository.ModelRepositoryImpl
 import com.riox432.civitdeck.data.repository.ModelVersionCheckpointRepositoryImpl
@@ -23,7 +22,6 @@ import com.riox432.civitdeck.domain.repository.ComfyUIRepository
 import com.riox432.civitdeck.domain.repository.ExcludedTagRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.HiddenModelRepository
-import com.riox432.civitdeck.domain.repository.ImageRepository
 import com.riox432.civitdeck.domain.repository.LocalModelFileRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.domain.repository.ModelVersionCheckpointRepository
@@ -39,7 +37,6 @@ val dataModule = module {
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<CacheRepository> { CacheRepositoryImpl(get()) }
     single<ModelRepository> { ModelRepositoryImpl(get(), get(), get()) }
-    single<ImageRepository> { ImageRepositoryImpl(get(), get(), get()) }
     single<TagRepository> { TagRepositoryImpl(get()) }
     single<FavoriteRepository> { FavoriteRepositoryImpl(get()) }
     single<CollectionRepository> { CollectionRepositoryImpl(get()) }

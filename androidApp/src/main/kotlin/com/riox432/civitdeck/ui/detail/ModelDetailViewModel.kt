@@ -7,7 +7,6 @@ import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
-import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
@@ -17,6 +16,7 @@ import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.feature.gallery.domain.usecase.EnrichModelImagesUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
