@@ -7,6 +7,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### ComfyUI Generation History
+- Add ComfyUI output gallery and detail screen — Android (#278) (cf8ff16)
+- Add ComfyUI output gallery and detail screen — iOS (#279) (e3d6e0d)
+- Add ComfyUI /history API client and FetchComfyUIHistoryUseCase (#277) (4fec378)
+
+#### New Integrations
+- Add SD WebUI (Automatic1111/Forge) API support (#178) (92c2228)
+- Add Civitai Link integration (#179) (659cf91)
+
+#### Error Handling & Accessibility
+- Add error handling to AuthRepositoryImpl.validateApiKey using Result<String> (#316) (dde32e1)
+- Add accessibilityLabel to images in iOS views (#311) (7450d4b)
+- Add onClickLabel to clickable containers in SettingsScreen, ImageGallery, Collections (#308) (b151d2e)
+- Add contentDescription to navigation arrow icon in SettingsScreen (#307) (e3adba4)
+
+### Changed
+
+#### Architecture & Code Quality
+- Split monolithic DomainModule into feature-scoped sub-modules (#320) (f1af807)
+- Split multi-class UseCase files into single-class files (#319) (7352b20)
+- Wrap ContentConvertException in DataParseException to prevent Ktor types leaking into domain (#317) (2122f62)
+- Allow cleartext HTTP traffic for ComfyUI local/Tailscale connections (5afa974)
+
+#### iOS Design Token Migration
+- Replace hardcoded status indicator colors in CivitaiLinkSettingsScreen with design tokens (#301) (a456e60)
+- Replace hardcoded accent hex colors in TutorialStep with design tokens (#302) (f5b0048)
+- Replace hardcoded Color.White/Black in overlay screens with design tokens (#303) (7e08319)
+- Replace hardcoded .foregroundColor(.white/.red) with design tokens across iOS views (#304) (dc5d089)
+- Replace Color.White tint with design token in AccentColorSwatch (#310) (01af5ba)
+- Replace hardcoded .red foreground color with design token in CivitaiLinkSettingsView (#313) (e7900a4)
+- Replace magic number padding with Spacing design tokens in iOS gallery/detail (#312) (a490538)
+- Replace .onAppear with .task for async pagination callbacks (#314) (d976cbf)
+- Replace .onAppear with .task for animation triggers in GestureAnimationView (#315) (fb8d065)
+- Document intentional raw hex usage in AccentColorSwatch (#309) (a2a9d12)
+
+### Fixed
+
+- Fix ComfyUI gallery/detail UX: push navigation, grid overlap, image fit, fullscreen tap (5b099e0)
+- Fix ComfyUI image URL encoding to handle & and special characters in filenames (43bf0b8)
+- Fix ComfyUI gallery HTTP image loading: iOS ATS and Android coil-network-okhttp (06bf445)
+- Fix ComfyUI gallery images not loading: omit empty subfolder in view URL (e28d259)
+- Fix Android ComfyUI detail screen not rendering: observe uiState reactively (301dfa4)
+- Fix DomainModule type error and ModelSearchViewModel SwiftLint violation (16c23e7)
+- Fix NotificationCenter observer leak in ModelSearchViewModel (#299) (4046722)
+- Seed built-in workflow templates in DB onOpen callback (#318) (2bc8038)
+- Fix iOS build: add missing KMP type aliases in SharedTypeAliases (e07847a)
+- Fix lint and test issues from SD WebUI and Civitai Link PRs (1270d25)
+
+### Removed
+
+- Remove fullscreen tap dialog from ComfyUI detail screen (8e8281b)
+- Remove println debug statement from CheckModelUpdatesUseCase (#300) (7e2c764)
+
+### Infrastructure
+
+- Apply Detekt formatting and add Room schema for migration 20→21 (8b21c55)
+- Update ROADMAP to Phase 6 and fix ARCHITECTURE DB version (9260750)
+- Fix SwiftLint line length in ComfyUIOutputDetailView (24fe8e6)
+
 ---
 
 ## [1.1.0] - 2026-02-28
