@@ -7,6 +7,7 @@ struct AppearanceSettingsView: View {
     var body: some View {
         List {
             Section("Theme") {
+                themeModePicker
                 accentColorPicker
                 amoledDarkModeToggle
             }
@@ -16,6 +17,18 @@ struct AppearanceSettingsView: View {
         }
         .navigationTitle("Appearance")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var themeModePicker: some View {
+        Picker("Color Scheme", selection: Binding(
+            get: { viewModel.themeMode },
+            set: { viewModel.onThemeModeChanged($0) }
+        )) {
+            Text("Light").tag(ThemeMode.light)
+            Text("Dark").tag(ThemeMode.dark)
+            Text("System").tag(ThemeMode.system)
+        }
+        .pickerStyle(.segmented)
     }
 
     private var accentColorPicker: some View {

@@ -18,11 +18,13 @@ struct iOSApp: App {
             ThemedContentView()
                 .environmentObject(themeManager)
                 .environmentObject(router)
+                .preferredColorScheme(themeManager.colorSchemeOverride)
                 .onAppear {
                     ShortcutsRouter.shared.navigationRouter = router
                 }
                 .task { await themeManager.observeAccentColor() }
                 .task { await themeManager.observeAmoledDarkMode() }
+                .task { await themeManager.observeThemeMode() }
                 .onOpenURL { url in
                     if let deepLink = DeepLinkHandler.handle(url) {
                         router.route(to: deepLink)

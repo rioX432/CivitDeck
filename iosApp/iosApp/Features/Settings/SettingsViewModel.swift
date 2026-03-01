@@ -22,6 +22,7 @@ final class SettingsViewModelOwner: ObservableObject {
     @Published var powerUserMode: Bool = false
     @Published var accentColor: AccentColor = .blue
     @Published var amoledDarkMode: Bool = false
+    @Published var themeMode: ThemeMode = .system
     @Published var isOnline: Bool = true
     @Published var offlineCacheEnabled: Bool = true
     @Published var cacheSizeLimitMb: Int32 = 200
@@ -59,6 +60,7 @@ final class SettingsViewModelOwner: ObservableObject {
             powerUserMode = state.powerUserMode
             accentColor = state.accentColor
             amoledDarkMode = state.amoledDarkMode
+            themeMode = state.themeMode
             isOnline = state.isOnline
             offlineCacheEnabled = state.offlineCacheEnabled
             cacheSizeLimitMb = state.cacheSizeLimitMb
@@ -93,6 +95,10 @@ final class SettingsViewModelOwner: ObservableObject {
 
     func onAmoledDarkModeChanged(_ enabled: Bool) {
         vm.onAmoledDarkModeChanged(enabled: enabled)
+    }
+
+    func onThemeModeChanged(_ mode: ThemeMode) {
+        vm.onThemeModeChanged(mode: mode)
     }
 
     func onPowerUserModeChanged(_ enabled: Bool) {

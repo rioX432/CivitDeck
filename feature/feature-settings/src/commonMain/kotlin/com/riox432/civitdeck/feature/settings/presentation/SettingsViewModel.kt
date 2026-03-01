@@ -9,6 +9,7 @@ import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
+import com.riox432.civitdeck.domain.model.ThemeMode
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
@@ -29,6 +30,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.SetAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
@@ -42,6 +44,7 @@ import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SetOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.SetThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ClearSearchHistoryUseCase
@@ -74,6 +77,7 @@ data class SettingsUiState(
     val pollingInterval: PollingInterval = PollingInterval.Off,
     val accentColor: AccentColor = AccentColor.Blue,
     val amoledDarkMode: Boolean = false,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val isOnline: Boolean = true,
     val offlineCacheEnabled: Boolean = true,
     val cacheSizeLimitMb: Int = 200,
@@ -113,6 +117,8 @@ class SettingsViewModel(
     private val setAccentColorUseCase: SetAccentColorUseCase,
     observeAmoledDarkModeUseCase: ObserveAmoledDarkModeUseCase,
     private val setAmoledDarkModeUseCase: SetAmoledDarkModeUseCase,
+    observeThemeModeUseCase: ObserveThemeModeUseCase,
+    private val setThemeModeUseCase: SetThemeModeUseCase,
     observeNetworkStatusUseCase: ObserveNetworkStatusUseCase,
     observeOfflineCacheEnabledUseCase: ObserveOfflineCacheEnabledUseCase,
     private val setOfflineCacheEnabledUseCase: SetOfflineCacheEnabledUseCase,
@@ -157,6 +163,8 @@ class SettingsViewModel(
         state.copy(offlineCacheEnabled = enabled)
     }.combine(observeCacheSizeLimitUseCase()) { state, limit ->
         state.copy(cacheSizeLimitMb = limit)
+    }.combine(observeThemeModeUseCase()) { state, mode ->
+        state.copy(themeMode = mode)
     }.combine(_mutableState) { observed, mutable ->
         observed.copy(
             hiddenModels = mutable.hiddenModels,
@@ -315,6 +323,10 @@ class SettingsViewModel(
 
     fun onAmoledDarkModeChanged(enabled: Boolean) {
         viewModelScope.launch { setAmoledDarkModeUseCase(enabled) }
+    }
+
+    fun onThemeModeChanged(mode: ThemeMode) {
+        viewModelScope.launch { setThemeModeUseCase(mode) }
     }
 
     fun onOfflineCacheEnabledChanged(enabled: Boolean) {

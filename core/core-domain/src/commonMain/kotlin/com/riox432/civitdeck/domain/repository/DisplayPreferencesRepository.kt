@@ -2,9 +2,11 @@ package com.riox432.civitdeck.domain.repository
 
 import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.domain.model.SortOrder
+import com.riox432.civitdeck.domain.model.ThemeMode
 import com.riox432.civitdeck.domain.model.TimePeriod
 import kotlinx.coroutines.flow.Flow
 
+@Suppress("TooManyFunctions")
 interface DisplayPreferencesRepository {
     fun observeDefaultSortOrder(): Flow<SortOrder>
     suspend fun setDefaultSortOrder(sort: SortOrder)
@@ -16,4 +18,6 @@ interface DisplayPreferencesRepository {
     suspend fun setAccentColor(color: AccentColor)
     fun observeAmoledDarkMode(): Flow<Boolean>
     suspend fun setAmoledDarkMode(enabled: Boolean)
+    fun observeThemeMode(): Flow<ThemeMode>
+    suspend fun setThemeMode(mode: ThemeMode)
 }
