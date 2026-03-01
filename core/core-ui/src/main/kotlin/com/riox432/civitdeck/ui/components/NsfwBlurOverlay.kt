@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,6 +25,8 @@ import com.riox432.civitdeck.domain.model.NsfwLevel
 /**
  * Wraps [content] with a blur overlay based on the NSFW level and blur settings.
  * Supports tap-to-reveal: tapping the blurred area temporarily removes the blur.
+ * Resets the revealed state when the blur radius changes so that slider adjustments
+ * in Settings immediately take effect.
  */
 @Composable
 fun NsfwBlurOverlay(
@@ -34,6 +37,9 @@ fun NsfwBlurOverlay(
 ) {
     val blurRadius = blurSettings.blurRadiusFor(nsfwLevel)
     var isRevealed by remember { mutableStateOf(false) }
+    // Reset reveal state when the blur radius changes so that slider adjustments
+    // in Settings take effect immediately instead of being hidden by a prior reveal.
+    LaunchedEffect(blurRadius) { isRevealed = false }
     val effectiveBlur = if (isRevealed) 0f else blurRadius
 
     Box(modifier = modifier) {
