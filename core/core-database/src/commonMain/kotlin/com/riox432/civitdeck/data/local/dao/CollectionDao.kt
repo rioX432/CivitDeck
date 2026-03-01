@@ -10,6 +10,16 @@ import kotlinx.coroutines.flow.Flow
 
 data class TypeCount(val type: String, val cnt: Int)
 
+data class CollectionWithCount(
+    val id: Long,
+    val name: String,
+    val isDefault: Boolean,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val modelCount: Int,
+    val thumbnailUrl: String?,
+)
+
 @Suppress("TooManyFunctions")
 @Dao
 interface CollectionDao {
@@ -17,6 +27,25 @@ interface CollectionDao {
 
     @Query("SELECT * FROM collections ORDER BY isDefault DESC, name ASC")
     fun observeAllCollections(): Flow<List<CollectionEntity>>
+
+    @Query(
+        """
+        SELECT
+            c.id,
+            c.name,
+            c.isDefault,
+            c.createdAt,
+            c.updatedAt,
+            COUNT(e.modelId) AS modelCount,
+            (SELECT thumbnailUrl FROM collection_model_entries
+                WHERE collectionId = c.id ORDER BY addedAt DESC LIMIT 1) AS thumbnailUrl
+        FROM collections c
+        LEFT JOIN collection_model_entries e ON e.collectionId = c.id
+        GROUP BY c.id
+        ORDER BY c.isDefault DESC, c.name ASC
+        """,
+    )
+    fun observeAllCollectionsWithCount(): Flow<List<CollectionWithCount>>
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertCollection(collection: CollectionEntity): Long

@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.collections.data.repository
 
 import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.CollectionDao
+import com.riox432.civitdeck.data.local.dao.CollectionWithCount
 import com.riox432.civitdeck.data.local.entity.CollectionEntity
 import com.riox432.civitdeck.data.local.entity.CollectionModelEntity
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
@@ -17,16 +18,8 @@ class CollectionRepositoryImpl(
 ) : CollectionRepository {
 
     override fun observeCollections(): Flow<List<ModelCollection>> =
-        dao.observeAllCollections().map { entities ->
-            entities.map { entity ->
-                ModelCollection(
-                    id = entity.id,
-                    name = entity.name,
-                    isDefault = entity.isDefault,
-                    createdAt = entity.createdAt,
-                    updatedAt = entity.updatedAt,
-                )
-            }
+        dao.observeAllCollectionsWithCount().map { rows ->
+            rows.map { row -> row.toModelCollection() }
         }
 
     override suspend fun createCollection(name: String): Long {
@@ -75,6 +68,16 @@ class CollectionRepositoryImpl(
         dao.insertEntries(newEntries)
         dao.removeEntries(fromCollectionId, modelIds)
     }
+
+    private fun CollectionWithCount.toModelCollection() = ModelCollection(
+        id = id,
+        name = name,
+        isDefault = isDefault,
+        modelCount = modelCount,
+        thumbnailUrl = thumbnailUrl,
+        createdAt = createdAt,
+        updatedAt = updatedAt,
+    )
 
     private fun CollectionModelEntity.toFavoriteModelSummary() = FavoriteModelSummary(
         id = modelId,
