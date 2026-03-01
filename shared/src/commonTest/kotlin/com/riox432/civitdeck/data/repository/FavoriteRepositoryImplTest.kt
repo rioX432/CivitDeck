@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.data.repository
 
 import com.riox432.civitdeck.data.local.dao.CollectionDao
+import com.riox432.civitdeck.data.local.dao.CollectionWithCount
 import com.riox432.civitdeck.data.local.dao.TypeCount
 import com.riox432.civitdeck.data.local.entity.CollectionEntity
 import com.riox432.civitdeck.data.local.entity.CollectionModelEntity
@@ -86,6 +87,22 @@ class FavoriteRepositoryImplTest {
 
         override fun observeCollectionThumbnail(collectionId: Long): Flow<String?> =
             flow.map { entries.filter { it.collectionId == collectionId }.maxByOrNull { it.addedAt }?.thumbnailUrl }
+
+        override fun observeAllCollectionsWithCount(): Flow<List<CollectionWithCount>> =
+            flow.map {
+                collections.map { c ->
+                    CollectionWithCount(
+                        id = c.id,
+                        name = c.name,
+                        isDefault = c.isDefault,
+                        createdAt = c.createdAt,
+                        updatedAt = c.updatedAt,
+                        modelCount = entries.count { it.collectionId == c.id },
+                        thumbnailUrl = entries.filter { it.collectionId == c.id }
+                            .maxByOrNull { it.addedAt }?.thumbnailUrl,
+                    )
+                }
+            }
     }
 
     @Test

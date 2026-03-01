@@ -17,12 +17,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlin.io.Closeable
 import com.riox432.civitdeck.data.api.civitailink.CivitaiLinkResource as ApiResource
 
 class CivitaiLinkRepositoryImpl(
     private val api: CivitaiLinkApi,
-) : CivitaiLinkRepository, Closeable {
+) : CivitaiLinkRepository {
 
     private val _status = MutableStateFlow(CivitaiLinkStatus.Disconnected)
     private val _activities = MutableStateFlow<List<CivitaiLinkActivity>>(emptyList())
@@ -68,7 +67,7 @@ class CivitaiLinkRepositoryImpl(
         _activities.value = emptyList()
     }
 
-    override fun close() {
+    fun close() {
         scope.cancel()
     }
 
