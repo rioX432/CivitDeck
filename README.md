@@ -44,7 +44,8 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Prompt Metadata** — view generation parameters and copy with one tap
 - **Prompt Templates** — built-in and user-created templates with variable support
 - **Favorites & Collections** — organize saved models into named collections
-- **ComfyUI Integration** — send models to ComfyUI, manage the queue, import custom workflows, and use LoRA/ControlNet support
+- **ComfyUI & SD WebUI Integration** — send models to ComfyUI or Automatic1111/Forge, manage the generation queue, browse generation history, import custom workflows, and use LoRA/ControlNet support
+- **Civitai Link** — sync models directly to your ComfyUI instance via Civitai Link key
 - **Model Comparison** — compare two models side-by-side
 - **Model File Browser** — detect local model files with CivitAI hash matching
 - **Fresh Find** — discover recently published models before they trend

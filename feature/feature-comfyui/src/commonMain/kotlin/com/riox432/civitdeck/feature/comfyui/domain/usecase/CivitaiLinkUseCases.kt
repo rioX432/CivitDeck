@@ -3,8 +3,8 @@ package com.riox432.civitdeck.feature.comfyui.domain.usecase
 import com.riox432.civitdeck.domain.model.CivitaiLinkActivity
 import com.riox432.civitdeck.domain.model.CivitaiLinkResource
 import com.riox432.civitdeck.domain.model.CivitaiLinkStatus
+import com.riox432.civitdeck.domain.repository.AuthPreferencesRepository
 import com.riox432.civitdeck.domain.repository.CivitaiLinkRepository
-import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
 
 class ObserveCivitaiLinkStatusUseCase(private val repository: CivitaiLinkRepository) {
@@ -17,7 +17,7 @@ class ObserveCivitaiLinkActivitiesUseCase(private val repository: CivitaiLinkRep
 
 class ConnectCivitaiLinkUseCase(
     private val repository: CivitaiLinkRepository,
-    private val prefs: UserPreferencesRepository,
+    private val prefs: AuthPreferencesRepository,
 ) {
     suspend operator fun invoke(): Boolean {
         val key = prefs.getCivitaiLinkKey() ?: return false

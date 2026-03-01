@@ -2,9 +2,13 @@ package com.riox432.civitdeck.feature.comfyui.di
 
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.repository.CivitaiLinkRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIHistoryRepository
-import com.riox432.civitdeck.domain.repository.ComfyUIRepository
-import com.riox432.civitdeck.domain.repository.SDWebUIRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIQueueRepository
+import com.riox432.civitdeck.domain.repository.SDWebUIAssetRepository
+import com.riox432.civitdeck.domain.repository.SDWebUIConnectionRepository
+import com.riox432.civitdeck.domain.repository.SDWebUIGenerationRepository
 import com.riox432.civitdeck.feature.comfyui.data.repository.CivitaiLinkRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIHistoryRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIRepositoryImpl
@@ -52,11 +56,17 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerat
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val comfyuiModule = module {
-    single<ComfyUIRepository> { ComfyUIRepositoryImpl(get(), get(), get(), get()) }
+    singleOf(::ComfyUIRepositoryImpl) {
+        bind<ComfyUIConnectionRepository>()
+        bind<ComfyUIGenerationRepository>()
+        bind<ComfyUIQueueRepository>()
+    }
     single<ComfyUIHistoryRepository> { ComfyUIHistoryRepositoryImpl(get(), get()) }
     factory { FetchComfyUIHistoryUseCase(get()) }
     factory { FetchComfyUIHistoryItemUseCase(get()) }
@@ -90,7 +100,11 @@ val comfyuiModule = module {
     }
 
     // SD WebUI
-    single<SDWebUIRepository> { SDWebUIRepositoryImpl(get(), get()) }
+    singleOf(::SDWebUIRepositoryImpl) {
+        bind<SDWebUIConnectionRepository>()
+        bind<SDWebUIAssetRepository>()
+        bind<SDWebUIGenerationRepository>()
+    }
     factory { ObserveSDWebUIConnectionsUseCase(get()) }
     factory { ObserveActiveSDWebUIConnectionUseCase(get()) }
     factory { SaveSDWebUIConnectionUseCase(get()) }

@@ -13,9 +13,9 @@ import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
+import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
-import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
@@ -142,19 +142,13 @@ class ModelDetailViewModelTest {
         override suspend fun clearAll() = error("not used")
     }
 
-    @Suppress("TooManyFunctions")
-    private class FakePrefsRepo : UserPreferencesRepository {
+    private class FakePrefsRepo : ContentFilterPreferencesRepository {
         override fun observeNsfwFilterLevel() = flowOf(NsfwFilterLevel.Off)
         override suspend fun setNsfwFilterLevel(level: NsfwFilterLevel) = error("not used")
-        override fun observeDefaultSortOrder(): Flow<SortOrder> = error("not used")
-        override suspend fun setDefaultSortOrder(sort: SortOrder) = error("not used")
-        override fun observeDefaultTimePeriod(): Flow<TimePeriod> = error("not used")
-        override suspend fun setDefaultTimePeriod(period: TimePeriod) = error("not used")
-        override fun observeGridColumns(): Flow<Int> = error("not used")
-        override suspend fun setGridColumns(columns: Int) = error("not used")
-        override fun observeApiKey(): Flow<String?> = error("not used")
-        override suspend fun setApiKey(apiKey: String?) = error("not used")
-        override suspend fun getApiKey() = error("not used")
+        override fun observeNsfwBlurSettings() = error("not used")
+        override suspend fun setNsfwBlurSettings(
+            settings: com.riox432.civitdeck.domain.model.NsfwBlurSettings
+        ) = error("not used")
     }
 
     private fun createViewModel(

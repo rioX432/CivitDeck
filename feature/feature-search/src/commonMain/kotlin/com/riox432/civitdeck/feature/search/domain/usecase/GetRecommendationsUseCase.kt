@@ -7,16 +7,16 @@ import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.model.filterNsfwImages
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
+import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
-import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.first
 
 class GetRecommendationsUseCase(
     private val modelRepository: ModelRepository,
     private val favoriteRepository: FavoriteRepository,
     private val browsingHistoryRepository: BrowsingHistoryRepository,
-    private val userPreferencesRepository: UserPreferencesRepository,
+    private val userPreferencesRepository: ContentFilterPreferencesRepository,
 ) {
     suspend operator fun invoke(): List<RecommendationSection> {
         val sections = mutableListOf<RecommendationSection>()

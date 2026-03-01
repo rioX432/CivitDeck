@@ -9,9 +9,9 @@ import com.riox432.civitdeck.domain.model.PageMetadata
 import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
 import com.riox432.civitdeck.domain.repository.ImageRepository
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
-import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.feature.gallery.domain.usecase.GetImagesUseCase
@@ -97,42 +97,17 @@ class ImageGalleryViewModelTest {
 
     private fun fakePrefsRepo(
         nsfwFlow: MutableStateFlow<NsfwFilterLevel> = MutableStateFlow(NsfwFilterLevel.Off),
-    ): UserPreferencesRepository = object : UserPreferencesRepository {
+    ): ContentFilterPreferencesRepository = object : ContentFilterPreferencesRepository {
         override fun observeNsfwFilterLevel() = nsfwFlow
-        override fun observeDefaultSortOrder() = flowOf(SortOrder.HighestRated)
-        override fun observeDefaultTimePeriod() = flowOf(TimePeriod.AllTime)
-        override fun observeGridColumns() = flowOf(2)
-        override fun observeApiKey(): kotlinx.coroutines.flow.Flow<String?> = flowOf(null)
         override fun observeNsfwBlurSettings() = flowOf(NsfwBlurSettings())
-        override fun observePowerUserMode() = flowOf(false)
-        override fun observeNotificationsEnabled() = flowOf(false)
-        override fun observePollingInterval() = flowOf(com.riox432.civitdeck.domain.model.PollingInterval.Off)
-        override fun observeAccentColor() = flowOf(com.riox432.civitdeck.domain.model.AccentColor.Default)
-        override fun observeAmoledDarkMode() = flowOf(false)
-        override fun observeOfflineCacheEnabled() = flowOf(false)
-        override fun observeCacheSizeLimitMb() = flowOf(500)
-        override fun observeSeenTutorialVersion() = flowOf(0)
         override suspend fun setNsfwFilterLevel(level: NsfwFilterLevel) = Unit
-        override suspend fun setDefaultSortOrder(sort: SortOrder) = Unit
-        override suspend fun setDefaultTimePeriod(period: TimePeriod) = Unit
-        override suspend fun setGridColumns(columns: Int) = Unit
-        override suspend fun setApiKey(apiKey: String?) = Unit
-        override suspend fun getApiKey(): String? = null
         override suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings) = Unit
-        override suspend fun setPowerUserMode(enabled: Boolean) = Unit
-        override suspend fun setNotificationsEnabled(enabled: Boolean) = Unit
-        override suspend fun setPollingInterval(interval: com.riox432.civitdeck.domain.model.PollingInterval) = Unit
-        override suspend fun setAccentColor(color: com.riox432.civitdeck.domain.model.AccentColor) = Unit
-        override suspend fun setAmoledDarkMode(enabled: Boolean) = Unit
-        override suspend fun setOfflineCacheEnabled(enabled: Boolean) = Unit
-        override suspend fun setCacheSizeLimitMb(limitMb: Int) = Unit
-        override suspend fun setSeenTutorialVersion(version: Int) = Unit
     }
 
     private fun createVm(
         imageRepo: FakeImageRepo,
         savedPromptRepo: FakeSavedPromptRepo = FakeSavedPromptRepo(),
-        prefsRepo: UserPreferencesRepository = fakePrefsRepo(),
+        prefsRepo: ContentFilterPreferencesRepository = fakePrefsRepo(),
     ): ImageGalleryViewModel = ImageGalleryViewModel(
         modelVersionId = 100L,
         getImagesUseCase = GetImagesUseCase(imageRepo),

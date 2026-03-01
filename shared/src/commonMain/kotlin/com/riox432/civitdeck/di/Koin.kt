@@ -1,7 +1,7 @@
 package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
-import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
+import com.riox432.civitdeck.domain.repository.AuthPreferencesRepository
 import com.riox432.civitdeck.feature.collections.di.collectionsModule
 import com.riox432.civitdeck.feature.comfyui.di.comfyuiModule
 import com.riox432.civitdeck.feature.creator.di.creatorModule
@@ -40,7 +40,7 @@ fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
 }
 
 suspend fun initializeAuth() {
-    val repository: UserPreferencesRepository = KoinPlatform.getKoin().get()
+    val repository: AuthPreferencesRepository = KoinPlatform.getKoin().get()
     val provider: ApiKeyProvider = KoinPlatform.getKoin().get()
     provider.apiKey = repository.getApiKey()
 }

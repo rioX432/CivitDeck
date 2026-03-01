@@ -2,11 +2,8 @@ package com.riox432.civitdeck.ui.favorites
 
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
 import com.riox432.civitdeck.domain.model.ModelType
-import com.riox432.civitdeck.domain.model.NsfwFilterLevel
-import com.riox432.civitdeck.domain.model.SortOrder
-import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.domain.repository.DisplayPreferencesRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
-import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import kotlinx.coroutines.Dispatchers
@@ -62,19 +59,23 @@ class FavoritesViewModelTest {
             override suspend fun getFavoriteTypeCounts() = error("not used")
         }
 
-        @Suppress("TooManyFunctions")
-        val prefsRepo = object : UserPreferencesRepository {
-            override fun observeNsfwFilterLevel(): Flow<NsfwFilterLevel> = error("not used")
-            override suspend fun setNsfwFilterLevel(level: NsfwFilterLevel) = error("not used")
-            override fun observeDefaultSortOrder(): Flow<SortOrder> = error("not used")
-            override suspend fun setDefaultSortOrder(sort: SortOrder) = error("not used")
-            override fun observeDefaultTimePeriod(): Flow<TimePeriod> = error("not used")
-            override suspend fun setDefaultTimePeriod(period: TimePeriod) = error("not used")
+        val prefsRepo = object : DisplayPreferencesRepository {
+            override fun observeDefaultSortOrder() = error("not used")
+            override suspend fun setDefaultSortOrder(
+                sort: com.riox432.civitdeck.domain.model.SortOrder
+            ) = error("not used")
+            override fun observeDefaultTimePeriod() = error("not used")
+            override suspend fun setDefaultTimePeriod(
+                period: com.riox432.civitdeck.domain.model.TimePeriod
+            ) = error("not used")
             override fun observeGridColumns(): Flow<Int> = flowOf(gridColumns)
             override suspend fun setGridColumns(columns: Int) = error("not used")
-            override fun observeApiKey(): Flow<String?> = error("not used")
-            override suspend fun setApiKey(apiKey: String?) = error("not used")
-            override suspend fun getApiKey() = error("not used")
+            override fun observeAccentColor() = error("not used")
+            override suspend fun setAccentColor(
+                color: com.riox432.civitdeck.domain.model.AccentColor
+            ) = error("not used")
+            override fun observeAmoledDarkMode() = error("not used")
+            override suspend fun setAmoledDarkMode(enabled: Boolean) = error("not used")
         }
 
         return FavoritesViewModel(

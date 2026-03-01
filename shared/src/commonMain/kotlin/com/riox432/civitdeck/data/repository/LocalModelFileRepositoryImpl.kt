@@ -9,7 +9,9 @@ import com.riox432.civitdeck.data.scanner.FileScanner
 import com.riox432.civitdeck.domain.model.LocalModelFile
 import com.riox432.civitdeck.domain.model.MatchedModelInfo
 import com.riox432.civitdeck.domain.model.ModelDirectory
-import com.riox432.civitdeck.domain.repository.LocalModelFileRepository
+import com.riox432.civitdeck.domain.repository.ModelDirectoryRepository
+import com.riox432.civitdeck.domain.repository.ModelFileHashRepository
+import com.riox432.civitdeck.domain.repository.ModelScanRepository
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -19,7 +21,7 @@ class LocalModelFileRepositoryImpl(
     private val dao: LocalModelFileDao,
     private val api: CivitAiApi,
     private val fileScanner: FileScanner,
-) : LocalModelFileRepository {
+) : ModelDirectoryRepository, ModelScanRepository, ModelFileHashRepository {
 
     override fun observeDirectories(): Flow<List<ModelDirectory>> =
         dao.observeDirectories().map { entities -> entities.map { it.toDomain() } }

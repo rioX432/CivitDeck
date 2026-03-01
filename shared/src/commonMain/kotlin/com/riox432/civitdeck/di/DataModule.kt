@@ -14,10 +14,14 @@ import com.riox432.civitdeck.domain.repository.AuthRepository
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.CacheRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
-import com.riox432.civitdeck.domain.repository.LocalModelFileRepository
+import com.riox432.civitdeck.domain.repository.ModelDirectoryRepository
+import com.riox432.civitdeck.domain.repository.ModelFileHashRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
+import com.riox432.civitdeck.domain.repository.ModelScanRepository
 import com.riox432.civitdeck.domain.repository.ModelVersionCheckpointRepository
 import com.riox432.civitdeck.domain.repository.TagRepository
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 val dataModule = module {
@@ -34,6 +38,10 @@ val dataModule = module {
     single<TagRepository> { TagRepositoryImpl(get()) }
     single<FavoriteRepository> { FavoriteRepositoryImpl(get()) }
     single<BrowsingHistoryRepository> { BrowsingHistoryRepositoryImpl(get()) }
-    single<LocalModelFileRepository> { LocalModelFileRepositoryImpl(get(), get(), get()) }
+    singleOf(::LocalModelFileRepositoryImpl) {
+        bind<ModelDirectoryRepository>()
+        bind<ModelScanRepository>()
+        bind<ModelFileHashRepository>()
+    }
     single<ModelVersionCheckpointRepository> { ModelVersionCheckpointRepositoryImpl(get()) }
 }

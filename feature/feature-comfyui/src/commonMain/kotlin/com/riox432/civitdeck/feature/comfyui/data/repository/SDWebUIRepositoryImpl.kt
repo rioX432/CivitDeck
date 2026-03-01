@@ -9,7 +9,9 @@ import com.riox432.civitdeck.data.local.entity.SDWebUIConnectionEntity
 import com.riox432.civitdeck.domain.model.SDWebUIConnection
 import com.riox432.civitdeck.domain.model.SDWebUIGenerationParams
 import com.riox432.civitdeck.domain.model.SDWebUIGenerationProgress
-import com.riox432.civitdeck.domain.repository.SDWebUIRepository
+import com.riox432.civitdeck.domain.repository.SDWebUIAssetRepository
+import com.riox432.civitdeck.domain.repository.SDWebUIConnectionRepository
+import com.riox432.civitdeck.domain.repository.SDWebUIGenerationRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -22,7 +24,7 @@ private const val PROGRESS_POLL_MS = 500L
 class SDWebUIRepositoryImpl(
     private val dao: SDWebUIConnectionDao,
     private val api: SDWebUIApi,
-) : SDWebUIRepository {
+) : SDWebUIConnectionRepository, SDWebUIAssetRepository, SDWebUIGenerationRepository {
 
     override fun observeConnections(): Flow<List<SDWebUIConnection>> =
         dao.observeAll().map { it.map { e -> e.toDomain() } }

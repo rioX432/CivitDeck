@@ -6,7 +6,9 @@ import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.QueueJob
-import com.riox432.civitdeck.domain.repository.ComfyUIRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIQueueRepository
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIConnectionsUseCase
@@ -25,7 +27,7 @@ import kotlin.test.assertTrue
 
 class ComfyUIUseCasesTest {
 
-    private class FakeComfyUIRepository : ComfyUIRepository {
+    private class FakeComfyUIRepository : ComfyUIConnectionRepository, ComfyUIGenerationRepository, ComfyUIQueueRepository {
         val connections = MutableStateFlow(listOf<ComfyUIConnection>())
         var savedConnection: ComfyUIConnection? = null
         var deletedId: Long? = null

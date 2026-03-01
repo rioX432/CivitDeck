@@ -8,7 +8,7 @@ import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
-import com.riox432.civitdeck.domain.repository.ComfyUIRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
@@ -73,7 +73,7 @@ class ComfyUIGenerationViewModel(
     private val pollResult: PollComfyUIResultUseCase,
     private val observeProgress: ObserveGenerationProgressUseCase,
     private val saveImage: SaveGeneratedImageUseCase,
-    private val repository: ComfyUIRepository,
+    private val repository: ComfyUIConnectionRepository,
 ) : ViewModel() {
 
     private var progressJob: Job? = null

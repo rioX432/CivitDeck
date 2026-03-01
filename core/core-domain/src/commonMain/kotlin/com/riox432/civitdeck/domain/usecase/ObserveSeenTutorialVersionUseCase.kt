@@ -1,8 +1,8 @@
 package com.riox432.civitdeck.domain.usecase
 
-import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
+import com.riox432.civitdeck.domain.repository.AppBehaviorPreferencesRepository
 import kotlinx.coroutines.flow.Flow
 
-class ObserveSeenTutorialVersionUseCase(private val repository: UserPreferencesRepository) {
+class ObserveSeenTutorialVersionUseCase(private val repository: AppBehaviorPreferencesRepository) {
     operator fun invoke(): Flow<Int> = repository.observeSeenTutorialVersion()
 }
