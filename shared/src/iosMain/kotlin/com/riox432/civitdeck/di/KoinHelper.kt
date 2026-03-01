@@ -32,6 +32,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
@@ -49,6 +50,7 @@ import com.riox432.civitdeck.domain.usecase.SetOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
+import com.riox432.civitdeck.domain.usecase.SetThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
@@ -208,6 +210,8 @@ object KoinHelper {
     fun getSetAccentColorUseCase(): SetAccentColorUseCase = getKoin().get()
     fun getObserveAmoledDarkModeUseCase(): ObserveAmoledDarkModeUseCase = getKoin().get()
     fun getSetAmoledDarkModeUseCase(): SetAmoledDarkModeUseCase = getKoin().get()
+    fun getObserveThemeModeUseCase(): ObserveThemeModeUseCase = getKoin().get()
+    fun getSetThemeModeUseCase(): SetThemeModeUseCase = getKoin().get()
 
     // Notification use cases
     fun getCheckModelUpdatesUseCase(): CheckModelUpdatesUseCase = getKoin().get()

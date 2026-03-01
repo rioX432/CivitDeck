@@ -9,6 +9,7 @@ import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
+import com.riox432.civitdeck.domain.model.ThemeMode
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.AppBehaviorPreferencesRepository
 import com.riox432.civitdeck.domain.repository.AuthPreferencesRepository
@@ -179,5 +180,16 @@ class UserPreferencesRepositoryImpl(
     override suspend fun setCivitaiLinkKey(key: String?) {
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(civitaiLinkKey = key))
+    }
+
+    override fun observeThemeMode(): Flow<ThemeMode> =
+        dao.observePreferences().map { entity ->
+            runCatching { ThemeMode.valueOf(entity?.themeMode ?: "") }
+                .getOrDefault(ThemeMode.SYSTEM)
+        }
+
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(themeMode = mode.name))
     }
 }

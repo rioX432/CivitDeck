@@ -69,8 +69,10 @@ class ModelRepositoryImpl(
                 metadata = response.metadata.toDomain(),
             )
         } catch (@Suppress("SwallowedException") e: DataParseException) {
+            println("ModelRepositoryImpl: Parse error fetching models, falling back to cache: ${e.message}")
             getModelsFromCacheOrEmpty(cacheKey)
         } catch (@Suppress("SwallowedException") e: SerializationException) {
+            println("ModelRepositoryImpl: Serialization error fetching models, falling back to cache: ${e.message}")
             getModelsFromCacheOrEmpty(cacheKey)
         } catch (e: Exception) {
             val cached = localCache.getCached(cacheKey)

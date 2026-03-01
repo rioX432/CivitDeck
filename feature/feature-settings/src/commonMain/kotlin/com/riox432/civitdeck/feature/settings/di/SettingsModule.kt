@@ -24,6 +24,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.SetAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
@@ -37,6 +38,7 @@ import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SetOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.SetThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ClearSearchHistoryUseCase
@@ -91,6 +93,8 @@ val settingsModule = module {
         val setAccentColor: SetAccentColorUseCase = get()
         val observeAmoledDarkMode: ObserveAmoledDarkModeUseCase = get()
         val setAmoledDarkMode: SetAmoledDarkModeUseCase = get()
+        val observeThemeMode: ObserveThemeModeUseCase = get()
+        val setThemeMode: SetThemeModeUseCase = get()
         val observeNetworkStatus: ObserveNetworkStatusUseCase = get()
         val observeOfflineCacheEnabled: ObserveOfflineCacheEnabledUseCase = get()
         val setOfflineCacheEnabled: SetOfflineCacheEnabledUseCase = get()
@@ -108,6 +112,7 @@ val settingsModule = module {
             observeNotificationsEnabled, setNotificationsEnabled,
             observePollingInterval, setPollingInterval,
             observeAccentColor, setAccentColor, observeAmoledDarkMode, setAmoledDarkMode,
+            observeThemeMode, setThemeMode,
             observeNetworkStatus, observeOfflineCacheEnabled, setOfflineCacheEnabled,
             observeCacheSizeLimit, setCacheSizeLimit, getCacheInfo, evictCache,
         )

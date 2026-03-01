@@ -163,6 +163,8 @@ struct ModelDetailScreen: View {
                             .onTapGesture {
                                 selectedCarouselIndex = index
                             }
+                            .accessibilityLabel("Image \(index + 1) of \(images.count)")
+                            .accessibilityAddTraits(.isButton)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))

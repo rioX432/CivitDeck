@@ -45,7 +45,8 @@ actual class FileScanner actual constructor() {
                     sha256Hash = computeSha256(filePath),
                     sizeBytes = size,
                 )
-            } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                println("FileScanner: Failed to scan file $filePath, skipping: ${e.message}")
                 null
             }
         }

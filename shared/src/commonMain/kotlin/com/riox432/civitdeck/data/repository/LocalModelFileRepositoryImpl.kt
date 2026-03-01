@@ -66,7 +66,7 @@ class LocalModelFileRepositoryImpl(
         }
     }
 
-    @Suppress("SwallowedException", "TooGenericExceptionCaught")
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun verifyFileHash(fileId: Long, sha256Hash: String) {
         try {
             currentCoroutineContext().ensureActive()
@@ -84,8 +84,9 @@ class LocalModelFileRepositoryImpl(
             )
         } catch (e: kotlin.coroutines.cancellation.CancellationException) {
             throw e
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             // Hash not found in CivitAI or network error — leave unmatched
+            println("LocalModelFileRepositoryImpl: Hash verification failed fileId=$fileId: ${e.message}")
         }
     }
 

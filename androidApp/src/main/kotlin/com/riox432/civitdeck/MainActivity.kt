@@ -5,11 +5,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.AccentColor
+import com.riox432.civitdeck.domain.model.ThemeMode
 import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveThemeModeUseCase
 import com.riox432.civitdeck.ui.navigation.CivitDeckNavGraph
 import com.riox432.civitdeck.ui.navigation.Tab
 import com.riox432.civitdeck.ui.theme.CivitDeckTheme
@@ -23,6 +26,7 @@ class MainActivity : ComponentActivity(), KoinComponent {
 
     private val observeAccentColor: ObserveAccentColorUseCase by inject()
     private val observeAmoledDarkMode: ObserveAmoledDarkModeUseCase by inject()
+    private val observeThemeMode: ObserveThemeModeUseCase by inject()
 
     companion object {
         const val EXTRA_INITIAL_ROUTE = "extra_initial_route"
@@ -41,8 +45,17 @@ class MainActivity : ComponentActivity(), KoinComponent {
                 .collectAsStateWithLifecycle(AccentColor.Blue)
             val amoledDarkMode by observeAmoledDarkMode()
                 .collectAsStateWithLifecycle(false)
+            val themeMode by observeThemeMode()
+                .collectAsStateWithLifecycle(ThemeMode.SYSTEM)
+            val systemDark = isSystemInDarkTheme()
+            val darkTheme = when (themeMode) {
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+                ThemeMode.SYSTEM -> systemDark
+            }
 
             CivitDeckTheme(
+                darkTheme = darkTheme,
                 accentColor = accentColor,
                 amoledDarkMode = amoledDarkMode,
             ) {

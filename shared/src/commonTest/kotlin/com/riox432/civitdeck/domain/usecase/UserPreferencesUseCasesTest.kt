@@ -5,6 +5,7 @@ import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
+import com.riox432.civitdeck.domain.model.ThemeMode
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.AppBehaviorPreferencesRepository
 import com.riox432.civitdeck.domain.repository.AuthPreferencesRepository
@@ -72,6 +73,10 @@ class UserPreferencesUseCasesTest {
         val nsfwBlurSettings = MutableStateFlow(NsfwBlurSettings())
         override fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings> = nsfwBlurSettings
         override suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings) { nsfwBlurSettings.value = settings }
+
+        val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
+        override fun observeThemeMode(): Flow<ThemeMode> = themeMode
+        override suspend fun setThemeMode(mode: ThemeMode) { themeMode.value = mode }
 
         val offlineCacheEnabled = MutableStateFlow(true)
         override fun observeOfflineCacheEnabled(): Flow<Boolean> = offlineCacheEnabled

@@ -11,6 +11,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +27,7 @@ class CivitaiLinkRepositoryImpl(
     private val _activities = MutableStateFlow<List<CivitaiLinkActivity>>(emptyList())
     private var connectionJob: Job? = null
     private var activeKey: String? = null
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     override fun observeStatus(): Flow<CivitaiLinkStatus> = _status.asStateFlow()
     override fun observeActivities(): Flow<List<CivitaiLinkActivity>> = _activities.asStateFlow()
@@ -50,7 +52,8 @@ class CivitaiLinkRepositoryImpl(
                     }
                 }
                 _status.value = CivitaiLinkStatus.Disconnected
-            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                println("CivitaiLinkRepositoryImpl: Connection failed: ${e.message}")
                 _status.value = CivitaiLinkStatus.Error
             }
         }
@@ -62,6 +65,10 @@ class CivitaiLinkRepositoryImpl(
         activeKey = null
         _status.value = CivitaiLinkStatus.Disconnected
         _activities.value = emptyList()
+    }
+
+    fun close() {
+        scope.cancel()
     }
 
     override suspend fun sendResourceToPC(resource: CivitaiLinkResource) {

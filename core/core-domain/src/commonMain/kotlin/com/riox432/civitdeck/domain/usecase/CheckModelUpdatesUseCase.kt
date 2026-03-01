@@ -12,7 +12,6 @@ class CheckModelUpdatesUseCase(
     private val modelRepository: ModelRepository,
     private val checkpointRepository: ModelVersionCheckpointRepository,
 ) {
-    @Suppress("TooGenericExceptionCaught")
     suspend operator fun invoke(): List<ModelUpdate> {
         val favoriteIds = favoriteRepository.getAllFavoriteIds()
         if (favoriteIds.isEmpty()) return emptyList()
@@ -43,8 +42,9 @@ class CheckModelUpdatesUseCase(
                     )
                 }
                 newCheckpoints[modelId] = latestVersion.id
-            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 // Skip models that fail to fetch (deleted, network error, etc.)
+                println("CheckModelUpdatesUseCase: Failed to fetch model $modelId, skipping: ${e.message}")
             }
         }
 

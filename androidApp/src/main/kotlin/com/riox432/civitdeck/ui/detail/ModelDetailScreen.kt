@@ -297,18 +297,18 @@ private fun ModelDetailBody(
             onVersionSelected = onVersionSelected,
             onViewImages = onViewImages,
             onCreatorClick = onCreatorClick,
-            onShowImageGrid = { showImageGrid = true },
             onTryInComfyUI = onTryInComfyUI,
             onSendToPC = onSendToPC,
             bottomPadding = contentPadding.calculateBottomPadding(),
             modifier = Modifier.weight(1f),
             carouselContent = {
-                ImageCarousel(
+                CarouselWithGridButton(
                     images = images,
                     modelId = modelId,
                     sharedElementSuffix = sharedElementSuffix,
                     onImageClick = { selectedCarouselIndex = it },
                     onImageError = { url -> failedImageUrls = failedImageUrls + url },
+                    onShowGrid = { showImageGrid = true },
                 )
             },
         )
@@ -324,6 +324,41 @@ private fun ModelDetailBody(
         gridSelectedIndex = gridSelectedIndex,
         onDismissGridViewer = { gridSelectedIndex = null },
     )
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun CarouselWithGridButton(
+    images: List<ModelImage>,
+    modelId: Long,
+    sharedElementSuffix: String,
+    onImageClick: (Int) -> Unit,
+    onImageError: (String) -> Unit,
+    onShowGrid: () -> Unit,
+) {
+    Box {
+        ImageCarousel(
+            images = images,
+            modelId = modelId,
+            sharedElementSuffix = sharedElementSuffix,
+            onImageClick = onImageClick,
+            onImageError = onImageError,
+        )
+        if (images.isNotEmpty()) {
+            IconButton(
+                onClick = onShowGrid,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(Spacing.xs),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.GridView,
+                    contentDescription = "View version images as grid",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -371,7 +406,6 @@ private fun DetailStateContent(
     onVersionSelected: (Int) -> Unit,
     onViewImages: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
-    onShowImageGrid: () -> Unit,
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     onSendToPC: () -> Unit = {},
@@ -413,7 +447,6 @@ private fun DetailStateContent(
                         onVersionSelected = onVersionSelected,
                         onViewImages = onViewImages,
                         onCreatorClick = onCreatorClick,
-                        onShowImageGrid = onShowImageGrid,
                         onTryInComfyUI = onTryInComfyUI,
                         onSendToPC = onSendToPC,
                         bottomPadding = bottomPadding,
@@ -488,7 +521,6 @@ private fun ModelDetailContentBody(
     onVersionSelected: (Int) -> Unit,
     onViewImages: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
-    onShowImageGrid: () -> Unit,
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     onSendToPC: () -> Unit = {},
@@ -522,7 +554,6 @@ private fun ModelDetailContentBody(
             onVersionSelected = onVersionSelected,
             onViewImages = onViewImages,
             onCreatorClick = onCreatorClick,
-            onShowImageGrid = onShowImageGrid,
             onTryInComfyUI = onTryInComfyUI,
             onSendToPC = onSendToPC,
             carouselContent = carouselContent,
@@ -539,7 +570,6 @@ private fun LazyListScope.modelDetailItems(
     onVersionSelected: (Int) -> Unit,
     onViewImages: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
-    onShowImageGrid: () -> Unit,
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     onSendToPC: () -> Unit = {},
@@ -562,8 +592,6 @@ private fun LazyListScope.modelDetailItems(
         val sampleMeta = images.firstOrNull()?.meta
         ImageActionsRow(
             onViewImages = { onViewImages(selectedVersion.id) },
-            onShowGrid = onShowImageGrid,
-            hasImages = images.isNotEmpty(),
             showTryInComfyUI = onTryInComfyUI != null,
             onTryInComfyUI = {
                 if (onTryInComfyUI != null && sha256 != null) {
@@ -589,25 +617,23 @@ private fun LazyListScope.modelDetailItems(
     item { VersionDetail(version = selectedVersion, powerUserMode = uiState.powerUserMode) }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ImageActionsRow(
     onViewImages: () -> Unit,
-    onShowGrid: () -> Unit,
-    hasImages: Boolean,
     showTryInComfyUI: Boolean = false,
     onTryInComfyUI: () -> Unit = {},
     onSendToPC: () -> Unit = {},
 ) {
-    Row(
+    FlowRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
         Button(
             onClick = onViewImages,
-            modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -627,14 +653,6 @@ private fun ImageActionsRow(
                 ),
             ) {
                 Text("Try in ComfyUI")
-            }
-        }
-        if (hasImages) {
-            IconButton(onClick = onShowGrid) {
-                Icon(
-                    imageVector = Icons.Default.GridView,
-                    contentDescription = "View version images as grid",
-                )
             }
         }
     }
