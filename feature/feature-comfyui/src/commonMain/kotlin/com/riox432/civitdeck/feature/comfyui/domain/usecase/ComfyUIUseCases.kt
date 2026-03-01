@@ -5,36 +5,38 @@ import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.QueueJob
+import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIHistoryRepository
-import com.riox432.civitdeck.domain.repository.ComfyUIRepository
-import com.riox432.civitdeck.domain.repository.LocalModelFileRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIQueueRepository
+import com.riox432.civitdeck.domain.repository.ModelFileHashRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
 
 // -- Connection management --
 
-class ObserveComfyUIConnectionsUseCase(private val repository: ComfyUIRepository) {
+class ObserveComfyUIConnectionsUseCase(private val repository: ComfyUIConnectionRepository) {
     operator fun invoke(): Flow<List<ComfyUIConnection>> = repository.observeConnections()
 }
 
-class ObserveActiveComfyUIConnectionUseCase(private val repository: ComfyUIRepository) {
+class ObserveActiveComfyUIConnectionUseCase(private val repository: ComfyUIConnectionRepository) {
     operator fun invoke(): Flow<ComfyUIConnection?> = repository.observeActiveConnection()
 }
 
-class SaveComfyUIConnectionUseCase(private val repository: ComfyUIRepository) {
+class SaveComfyUIConnectionUseCase(private val repository: ComfyUIConnectionRepository) {
     suspend operator fun invoke(connection: ComfyUIConnection): Long =
         repository.saveConnection(connection)
 }
 
-class DeleteComfyUIConnectionUseCase(private val repository: ComfyUIRepository) {
+class DeleteComfyUIConnectionUseCase(private val repository: ComfyUIConnectionRepository) {
     suspend operator fun invoke(id: Long) = repository.deleteConnection(id)
 }
 
-class ActivateComfyUIConnectionUseCase(private val repository: ComfyUIRepository) {
+class ActivateComfyUIConnectionUseCase(private val repository: ComfyUIConnectionRepository) {
     suspend operator fun invoke(id: Long) = repository.activateConnection(id)
 }
 
-class TestComfyUIConnectionUseCase(private val repository: ComfyUIRepository) {
+class TestComfyUIConnectionUseCase(private val repository: ComfyUIConnectionRepository) {
     suspend operator fun invoke(connection: ComfyUIConnection): Boolean {
         val success = repository.testConnection(connection)
         if (connection.id != 0L) {
@@ -46,15 +48,15 @@ class TestComfyUIConnectionUseCase(private val repository: ComfyUIRepository) {
 
 // -- Generation --
 
-class FetchComfyUICheckpointsUseCase(private val repository: ComfyUIRepository) {
+class FetchComfyUICheckpointsUseCase(private val repository: ComfyUIGenerationRepository) {
     suspend operator fun invoke(): List<String> = repository.fetchCheckpoints()
 }
 
-class FetchComfyUILorasUseCase(private val repository: ComfyUIRepository) {
+class FetchComfyUILorasUseCase(private val repository: ComfyUIGenerationRepository) {
     suspend operator fun invoke(): List<String> = repository.fetchLoras()
 }
 
-class FetchComfyUIControlNetsUseCase(private val repository: ComfyUIRepository) {
+class FetchComfyUIControlNetsUseCase(private val repository: ComfyUIGenerationRepository) {
     suspend operator fun invoke(): List<String> = repository.fetchControlNets()
 }
 
@@ -79,12 +81,12 @@ class ImportWorkflowUseCase {
     }
 }
 
-class SubmitComfyUIGenerationUseCase(private val repository: ComfyUIRepository) {
+class SubmitComfyUIGenerationUseCase(private val repository: ComfyUIGenerationRepository) {
     suspend operator fun invoke(params: ComfyUIGenerationParams): String =
         repository.submitGeneration(params)
 }
 
-class PollComfyUIResultUseCase(private val repository: ComfyUIRepository) {
+class PollComfyUIResultUseCase(private val repository: ComfyUIGenerationRepository) {
     suspend operator fun invoke(promptId: String): GenerationResult =
         repository.pollGenerationResult(promptId)
 }
@@ -102,17 +104,17 @@ class FetchComfyUIHistoryItemUseCase(private val repository: ComfyUIHistoryRepos
 
 // -- Queue management --
 
-class ObserveComfyUIQueueUseCase(private val repository: ComfyUIRepository) {
+class ObserveComfyUIQueueUseCase(private val repository: ComfyUIQueueRepository) {
     operator fun invoke(): Flow<List<QueueJob>> = repository.observeQueue()
 }
 
-class CancelComfyUIJobUseCase(private val repository: ComfyUIRepository) {
+class CancelComfyUIJobUseCase(private val repository: ComfyUIQueueRepository) {
     suspend operator fun invoke(promptId: String) = repository.cancelJob(promptId)
 }
 
 // -- CivitAI model bridge --
 
-class FindMatchingLocalModelUseCase(private val localModelFileRepository: LocalModelFileRepository) {
+class FindMatchingLocalModelUseCase(private val localModelFileRepository: ModelFileHashRepository) {
     /**
      * Returns the file path of the local model file matching the given SHA256 hash, or null
      * if no matching file is found locally.

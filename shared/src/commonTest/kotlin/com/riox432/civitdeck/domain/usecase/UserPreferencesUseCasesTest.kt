@@ -6,7 +6,11 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
-import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
+import com.riox432.civitdeck.domain.repository.AppBehaviorPreferencesRepository
+import com.riox432.civitdeck.domain.repository.AuthPreferencesRepository
+import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
+import com.riox432.civitdeck.domain.repository.DisplayPreferencesRepository
+import com.riox432.civitdeck.domain.repository.StoragePreferencesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -18,7 +22,12 @@ import kotlin.test.assertNull
 @Suppress("TooManyFunctions")
 class UserPreferencesUseCasesTest {
 
-    private class FakeUserPreferencesRepository : UserPreferencesRepository {
+    private class FakeUserPreferencesRepository :
+        ContentFilterPreferencesRepository,
+        DisplayPreferencesRepository,
+        AuthPreferencesRepository,
+        AppBehaviorPreferencesRepository,
+        StoragePreferencesRepository {
         val nsfwLevel = MutableStateFlow(NsfwFilterLevel.Off)
         val sortOrder = MutableStateFlow(SortOrder.HighestRated)
         val timePeriod = MutableStateFlow(TimePeriod.AllTime)

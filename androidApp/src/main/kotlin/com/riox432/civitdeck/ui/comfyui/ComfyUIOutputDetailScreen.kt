@@ -201,4 +201,3 @@ private fun LoraBadge(name: String) {
         label = { Text(name, style = MaterialTheme.typography.labelSmall) },
     )
 }
-

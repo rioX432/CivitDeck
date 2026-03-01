@@ -1,8 +1,8 @@
 package com.riox432.civitdeck.domain.usecase
 
-import com.riox432.civitdeck.domain.repository.LocalModelFileRepository
+import com.riox432.civitdeck.domain.repository.ModelScanRepository
 
-class ScanModelDirectoriesUseCase(private val repository: LocalModelFileRepository) {
+class ScanModelDirectoriesUseCase(private val repository: ModelScanRepository) {
     suspend operator fun invoke(
         directoryId: Long = SCAN_ALL,
         onProgress: (current: Int, total: Int) -> Unit = { _, _ -> },

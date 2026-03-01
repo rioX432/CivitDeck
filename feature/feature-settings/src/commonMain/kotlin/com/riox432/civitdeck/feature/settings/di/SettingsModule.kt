@@ -1,6 +1,10 @@
 package com.riox432.civitdeck.feature.settings.di
 
-import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
+import com.riox432.civitdeck.domain.repository.AppBehaviorPreferencesRepository
+import com.riox432.civitdeck.domain.repository.AuthPreferencesRepository
+import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
+import com.riox432.civitdeck.domain.repository.DisplayPreferencesRepository
+import com.riox432.civitdeck.domain.repository.StoragePreferencesRepository
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
@@ -41,12 +45,20 @@ import com.riox432.civitdeck.feature.search.domain.usecase.RemoveExcludedTagUseC
 import com.riox432.civitdeck.feature.search.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.feature.settings.data.repository.UserPreferencesRepositoryImpl
 import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 @Suppress("LongMethod")
 val settingsModule = module {
-    single<UserPreferencesRepository> { UserPreferencesRepositoryImpl(get(), get()) }
+    singleOf(::UserPreferencesRepositoryImpl) {
+        bind<ContentFilterPreferencesRepository>()
+        bind<DisplayPreferencesRepository>()
+        bind<AuthPreferencesRepository>()
+        bind<AppBehaviorPreferencesRepository>()
+        bind<StoragePreferencesRepository>()
+    }
     viewModel {
         val observeNsfwFilter: ObserveNsfwFilterUseCase = get()
         val setNsfwFilter: SetNsfwFilterUseCase = get()

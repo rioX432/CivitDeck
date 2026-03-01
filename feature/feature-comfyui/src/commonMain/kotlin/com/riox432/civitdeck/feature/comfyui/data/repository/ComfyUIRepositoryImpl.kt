@@ -15,7 +15,9 @@ import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
 import com.riox432.civitdeck.domain.model.QueueJob
 import com.riox432.civitdeck.domain.model.QueueJobStatus
-import com.riox432.civitdeck.domain.repository.ComfyUIRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIQueueRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -36,7 +38,7 @@ class ComfyUIRepositoryImpl(
     private val api: ComfyUIApi,
     private val webSocketApi: ComfyUIWebSocketApi,
     private val json: Json,
-) : ComfyUIRepository {
+) : ComfyUIConnectionRepository, ComfyUIGenerationRepository, ComfyUIQueueRepository {
 
     override fun observeConnections(): Flow<List<ComfyUIConnection>> =
         dao.observeAll().map { list -> list.map { it.toDomain() } }

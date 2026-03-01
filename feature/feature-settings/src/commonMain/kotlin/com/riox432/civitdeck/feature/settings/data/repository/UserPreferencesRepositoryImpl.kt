@@ -10,7 +10,11 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
-import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
+import com.riox432.civitdeck.domain.repository.AppBehaviorPreferencesRepository
+import com.riox432.civitdeck.domain.repository.AuthPreferencesRepository
+import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
+import com.riox432.civitdeck.domain.repository.DisplayPreferencesRepository
+import com.riox432.civitdeck.domain.repository.StoragePreferencesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -18,7 +22,11 @@ import kotlinx.coroutines.flow.map
 class UserPreferencesRepositoryImpl(
     private val dao: UserPreferencesDao,
     private val apiKeyProvider: ApiKeyProvider,
-) : UserPreferencesRepository {
+) : ContentFilterPreferencesRepository,
+    DisplayPreferencesRepository,
+    AuthPreferencesRepository,
+    AppBehaviorPreferencesRepository,
+    StoragePreferencesRepository {
 
     override fun observeNsfwFilterLevel(): Flow<NsfwFilterLevel> =
         dao.observePreferences().map { entity ->

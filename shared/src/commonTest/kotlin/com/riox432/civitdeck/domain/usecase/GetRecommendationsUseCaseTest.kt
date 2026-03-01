@@ -7,13 +7,14 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
+import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
-import com.riox432.civitdeck.domain.repository.UserPreferencesRepository
 import com.riox432.civitdeck.testModel
 import com.riox432.civitdeck.testPaginatedResult
 import kotlinx.coroutines.flow.Flow
@@ -87,42 +88,13 @@ class GetRecommendationsUseCaseTest {
         override suspend fun clearAll() = error("not used")
     }
 
-    @Suppress("TooManyFunctions")
     private class FakeUserPreferencesRepository(
         private val nsfwLevel: NsfwFilterLevel = NsfwFilterLevel.All,
-    ) : UserPreferencesRepository {
+    ) : ContentFilterPreferencesRepository {
         override fun observeNsfwFilterLevel(): Flow<NsfwFilterLevel> = flowOf(nsfwLevel)
         override suspend fun setNsfwFilterLevel(level: NsfwFilterLevel) = error("not used")
-        override fun observeDefaultSortOrder(): Flow<SortOrder> = error("not used")
-        override suspend fun setDefaultSortOrder(sort: SortOrder) = error("not used")
-        override fun observeDefaultTimePeriod(): Flow<TimePeriod> = error("not used")
-        override suspend fun setDefaultTimePeriod(period: TimePeriod) = error("not used")
-        override fun observeGridColumns(): Flow<Int> = error("not used")
-        override suspend fun setGridColumns(columns: Int) = error("not used")
-        override fun observeApiKey(): Flow<String?> = error("not used")
-        override suspend fun setApiKey(apiKey: String?) = error("not used")
-        override suspend fun getApiKey(): String? = error("not used")
-        override fun observePowerUserMode(): Flow<Boolean> = error("not used")
-        override suspend fun setPowerUserMode(enabled: Boolean) = error("not used")
-        override fun observeNotificationsEnabled(): Flow<Boolean> = error("not used")
-        override suspend fun setNotificationsEnabled(enabled: Boolean) = error("not used")
-        override fun observePollingInterval(): Flow<com.riox432.civitdeck.domain.model.PollingInterval> = error("not used")
-        override suspend fun setPollingInterval(interval: com.riox432.civitdeck.domain.model.PollingInterval) = error("not used")
-        override fun observeAccentColor(): Flow<com.riox432.civitdeck.domain.model.AccentColor> = error("not used")
-        override suspend fun setAccentColor(color: com.riox432.civitdeck.domain.model.AccentColor) = error("not used")
-        override fun observeAmoledDarkMode(): Flow<Boolean> = error("not used")
-        override suspend fun setAmoledDarkMode(enabled: Boolean) = error("not used")
-        override fun observeNsfwBlurSettings(): Flow<com.riox432.civitdeck.domain.model.NsfwBlurSettings> = error("not used")
-        override suspend fun setNsfwBlurSettings(settings: com.riox432.civitdeck.domain.model.NsfwBlurSettings) = error("not used")
-        override fun observeOfflineCacheEnabled(): Flow<Boolean> = error("not used")
-        override suspend fun setOfflineCacheEnabled(enabled: Boolean) = error("not used")
-        override fun observeCacheSizeLimitMb(): Flow<Int> = error("not used")
-        override suspend fun setCacheSizeLimitMb(limitMb: Int) = error("not used")
-        override fun observeSeenTutorialVersion(): Flow<Int> = error("not used")
-        override suspend fun setSeenTutorialVersion(version: Int) = error("not used")
-        override fun observeCivitaiLinkKey(): Flow<String?> = error("not used")
-        override suspend fun getCivitaiLinkKey(): String? = error("not used")
-        override suspend fun setCivitaiLinkKey(key: String?) = error("not used")
+        override fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings> = error("not used")
+        override suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings) = error("not used")
     }
 
     @Test
