@@ -198,6 +198,7 @@ private class TabState(
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Search) {
+    val searchViewModel: ModelSearchViewModel = koinViewModel()
     var selectedTab by rememberSaveable(
         stateSaver = mapSaver(
             save = { mapOf("tab" to it.name) },
@@ -258,6 +259,7 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Search) {
                 CompositionLocalProvider(LocalSharedTransitionScope provides this) {
                     CivitDeckNavDisplay(
                         backStack = activeTab.backStack,
+                        searchViewModel = searchViewModel,
                         searchScrollTrigger = tabs.getValue(Tab.Search).scrollTrigger,
                         promptsScrollTrigger = tabs.getValue(Tab.Prompts).scrollTrigger,
                         settingsScrollTrigger = tabs.getValue(Tab.Settings).scrollTrigger,
@@ -290,6 +292,7 @@ private fun slideTransition(enterOffset: (Int) -> Int, exitOffset: (Int) -> Int)
 @Composable
 private fun CivitDeckNavDisplay(
     backStack: MutableList<Any>,
+    searchViewModel: ModelSearchViewModel,
     searchScrollTrigger: Int = 0,
     promptsScrollTrigger: Int = 0,
     settingsScrollTrigger: Int = 0,
@@ -309,9 +312,8 @@ private fun CivitDeckNavDisplay(
         popTransitionSpec = { slideTransition(enterOffset = { -it / 4 }, exitOffset = { it / 4 }) },
         entryProvider = entryProvider {
             entry<SearchRoute> {
-                val viewModel: ModelSearchViewModel = koinViewModel()
                 ModelSearchScreen(
-                    viewModel = viewModel,
+                    viewModel = searchViewModel,
                     onModelClick = { modelId, thumbnailUrl, suffix ->
                         val cmpId = compareModelId
                         if (cmpId != null) {

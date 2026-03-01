@@ -7,7 +7,7 @@ struct CompareDestination: Hashable {
 }
 
 struct ModelSearchScreen: View {
-    @StateObject private var viewModel = ModelSearchViewModel()
+    @ObservedObject var viewModel: ModelSearchViewModel
     @EnvironmentObject private var comparisonState: ComparisonState
     @EnvironmentObject private var router: NavigationRouter
     @Environment(\.horizontalSizeClass) private var sizeClass

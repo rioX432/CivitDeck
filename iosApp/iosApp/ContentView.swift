@@ -5,6 +5,7 @@ struct ContentView: View {
     @State private var selectedTab: SidebarTab? = .search
     @StateObject private var comparisonState = ComparisonState()
     @StateObject private var tutorialVm = GestureTutorialViewModel()
+    @StateObject private var searchViewModel = ModelSearchViewModel()
     @EnvironmentObject private var router: NavigationRouter
 
     var body: some View {
@@ -36,7 +37,7 @@ struct ContentView: View {
 
     private var tabLayout: some View {
         TabView(selection: $selectedTab) {
-            ModelSearchScreen()
+            ModelSearchScreen(viewModel: searchViewModel)
                 .tabItem {
                     Label("Search", systemImage: "magnifyingglass")
                 }
@@ -73,7 +74,7 @@ struct ContentView: View {
             .navigationTitle("CivitDeck")
         } detail: {
             TabView(selection: $selectedTab) {
-                ModelSearchScreen()
+                ModelSearchScreen(viewModel: searchViewModel)
                     .tag(SidebarTab.search as SidebarTab?)
                 CollectionsScreen()
                     .tag(SidebarTab.collections as SidebarTab?)
