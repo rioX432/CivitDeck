@@ -360,6 +360,7 @@ private fun CollapsibleHeader(
             onSearch = viewModel::onSearch,
             searchHistory = searchHistory,
             onHistoryItemClick = viewModel::onHistoryItemClick,
+            onDeleteHistoryItem = viewModel::removeSearchHistoryItem,
             onClearHistory = viewModel::clearSearchHistory,
         )
     }
@@ -384,6 +385,7 @@ private fun SearchBarWithFilterButton(
     onSearch: () -> Unit,
     searchHistory: List<String>,
     onHistoryItemClick: (String) -> Unit,
+    onDeleteHistoryItem: (String) -> Unit,
     onClearHistory: () -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -420,6 +422,7 @@ private fun SearchBarWithFilterButton(
                     showHistory = false
                     keyboardController?.hide()
                 },
+                onDeleteItem = { item -> onDeleteHistoryItem(item) },
                 onClearAll = {
                     onClearHistory()
                     showHistory = false
@@ -616,6 +619,7 @@ private fun FilterSheetContent(
 private fun SearchHistoryDropdown(
     history: List<String>,
     onItemClick: (String) -> Unit,
+    onDeleteItem: (String) -> Unit,
     onClearAll: () -> Unit,
 ) {
     Column(
@@ -635,12 +639,13 @@ private fun SearchHistoryDropdown(
                     .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    Icons.Default.Clear,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = Spacing.sm),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                IconButton(onClick = { onDeleteItem(item) }) {
+                    Icon(
+                        Icons.Default.Clear,
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 Text(
                     text = item,
                     style = MaterialTheme.typography.bodyMedium,
