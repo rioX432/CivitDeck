@@ -369,7 +369,7 @@ final class ModelSearchViewModel: ObservableObject {
 
     private func fetchAndAccumulate(isLoadMore: Bool) async throws -> FetchResult {
         let baseModelList: [BaseModel]? = selectedBaseModels.isEmpty ? nil : Array(selectedBaseModels)
-        let nsfw: KotlinBoolean? = nsfwFilterLevel == .off ? KotlinBoolean(bool: false) : nil
+        let nsfw: Bool? = nsfwFilterLevel == .off ? false : nil
         let viewedIds: Set<KotlinLong> = isFreshFindEnabled
             ? try await getViewedModelIdsUseCase.invoke()
             : []
@@ -392,7 +392,7 @@ final class ModelSearchViewModel: ObservableObject {
                 query: query.isEmpty ? nil : query,
                 tag: includedTags.first, type: selectedType, sort: selectedSort,
                 period: selectedPeriod, baseModels: baseModelList,
-                cursor: currentCursor, limit: KotlinInt(int: pageSize), nsfw: nsfw
+                cursor: currentCursor, limit: pageSize, nsfw: nsfw
             )
 
             let allModels = result.items.compactMap { $0 as? Model }

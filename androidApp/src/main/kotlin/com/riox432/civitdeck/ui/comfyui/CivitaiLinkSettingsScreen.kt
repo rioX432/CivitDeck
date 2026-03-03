@@ -80,7 +80,7 @@ fun CivitaiLinkSettingsScreen(
             }
             if (state.activities.isNotEmpty()) {
                 item { ActivityListHeader() }
-                items(state.activities) { activity ->
+                items(state.activities, key = { it.id }) { activity ->
                     ActivityCard(
                         activity = activity,
                         onCancel = { viewModel.onCancelActivity(activity.id) },
