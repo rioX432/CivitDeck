@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Dataset
@@ -35,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -54,32 +57,32 @@ import com.riox432.civitdeck.ui.theme.Spacing
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ComfyUIOutputDetailScreen(
-    image: ComfyUIGeneratedImage,
+    images: List<ComfyUIGeneratedImage>,
+    initialIndex: Int,
     viewModel: ComfyUIHistoryViewModel,
     onBack: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val datasets by viewModel.datasets.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    var showImageViewer by remember { mutableStateOf(false) }
-
+    val pagerState = rememberPagerState(initialPage = initialIndex) { images.size }
+    val currentImage = images[pagerState.currentPage]
     DetailSnackbarEffects(state = state, snackbarHostState = snackbarHostState, viewModel = viewModel)
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(image.filename, maxLines = 1) },
+                title = { Text("${pagerState.currentPage + 1} / ${images.size}", maxLines = 1) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.onAddToDatasetTap(image) }) {
+                    IconButton(onClick = { viewModel.onAddToDatasetTap(currentImage) }) {
                         Icon(Icons.Default.Dataset, contentDescription = "Add to Dataset")
                     }
                     IconButton(
-                        onClick = { viewModel.onSaveImage(image.imageUrl, image.filename) },
+                        onClick = { viewModel.onSaveImage(currentImage.imageUrl, currentImage.filename) },
                     ) {
                         Icon(Icons.Default.Download, contentDescription = "Save to gallery")
                     }
@@ -88,27 +91,29 @@ fun ComfyUIOutputDetailScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        DetailBody(
-            image = image,
-            modifier = Modifier.padding(padding),
-            onImageClick = { showImageViewer = true },
-        )
+        HorizontalPager(state = pagerState, modifier = Modifier.padding(padding)) { page ->
+            DetailPage(image = images[page])
+        }
     }
-
-    if (showImageViewer) {
-        ImageViewerOverlay(
-            images = listOf(ViewerImage(url = image.imageUrl)),
-            initialIndex = 0,
-            onDismiss = { showImageViewer = false },
-        )
-    }
-
     if (state.showDatasetPicker) {
         AddToDatasetSheet(
             datasets = datasets,
             onSelectDataset = viewModel::onDatasetSelected,
             onCreateAndSelect = viewModel::onCreateDatasetAndSelect,
             onDismiss = viewModel::onDismissDatasetPicker,
+        )
+    }
+}
+
+@Composable
+private fun DetailPage(image: ComfyUIGeneratedImage) {
+    var showImageViewer by rememberSaveable { mutableStateOf(false) }
+    DetailBody(image = image, onImageClick = { showImageViewer = true })
+    if (showImageViewer) {
+        ImageViewerOverlay(
+            images = listOf(ViewerImage(url = image.imageUrl)),
+            initialIndex = 0,
+            onDismiss = { showImageViewer = false },
         )
     }
 }

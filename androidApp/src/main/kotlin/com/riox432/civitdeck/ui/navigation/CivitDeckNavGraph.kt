@@ -329,6 +329,7 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Search) {
                         searchViewModel = searchViewModel,
                         searchScrollTrigger = fixedTabStates.getValue(Tab.Search.name).scrollTrigger,
                         settingsScrollTrigger = fixedTabStates.getValue(Tab.Settings.name).scrollTrigger,
+                        outputScrollTrigger = shortcutTabStates[NavShortcut.OutputGallery.name]?.scrollTrigger ?: 0,
                         compareModelId = compareModelId,
                         compareModelName = compareModelName,
                         onCompareModel = { id, name ->
@@ -374,6 +375,7 @@ private fun CivitDeckNavDisplay(
     searchViewModel: ModelSearchViewModel,
     searchScrollTrigger: Int = 0,
     settingsScrollTrigger: Int = 0,
+    outputScrollTrigger: Int = 0,
     compareModelId: Long? = null,
     compareModelName: String? = null,
     onCompareModel: (Long, String) -> Unit = { _, _ -> },
@@ -445,7 +447,7 @@ private fun CivitDeckNavDisplay(
                     onBack = { backStack.removeLastOrNull() },
                 )
             }
-            comfyUIEntries(backStack)
+            comfyUIEntries(backStack, outputScrollTrigger)
         },
     )
 }
@@ -728,7 +730,7 @@ private fun EntryProviderScope<Any>.settingsSubScreenEntries(backStack: MutableL
     }
 }
 
-private fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>) {
+private fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>, outputScrollTrigger: Int) {
     entry<CivitaiLinkSettingsRoute> {
         val viewModel: CivitaiLinkSettingsViewModel = koinViewModel()
         CivitaiLinkSettingsScreen(
@@ -783,7 +785,7 @@ private fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>) 
         )
     }
     workflowTemplateEntries(backStack)
-    comfyUIHistoryEntries(backStack)
+    comfyUIHistoryEntries(backStack, outputScrollTrigger)
 }
 
 private fun EntryProviderScope<Any>.workflowTemplateEntries(backStack: MutableList<Any>) {
@@ -822,25 +824,26 @@ private fun EntryProviderScope<Any>.workflowTemplateEntries(backStack: MutableLi
     }
 }
 
-private fun EntryProviderScope<Any>.comfyUIHistoryEntries(backStack: MutableList<Any>) {
+private fun EntryProviderScope<Any>.comfyUIHistoryEntries(backStack: MutableList<Any>, outputScrollTrigger: Int) {
     entry<ComfyUIHistoryRoute> {
         val viewModel: ComfyUIHistoryViewModel = koinViewModel()
         ComfyUIHistoryScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
-            onImageClick = { image ->
-                backStack.add(ComfyUIOutputDetailRoute(image.id))
-            },
+            onImageClick = { image -> backStack.add(ComfyUIOutputDetailRoute(image.id)) },
+            scrollToTopTrigger = outputScrollTrigger,
         )
     }
     entry<ComfyUIOutputDetailRoute> { key ->
         val historyViewModel: ComfyUIHistoryViewModel = koinViewModel()
         val state by historyViewModel.uiState.collectAsStateWithLifecycle()
-        val image = state.images.find { it.id == key.imageId }
+        val images = historyViewModel.filteredImages()
+        val initialIndex = images.indexOfFirst { it.id == key.imageId }.coerceAtLeast(0)
         when {
-            state.isLoading && image == null -> LoadingStateOverlay()
-            image != null -> ComfyUIOutputDetailScreen(
-                image = image,
+            state.isLoading && images.isEmpty() -> LoadingStateOverlay()
+            images.isNotEmpty() -> ComfyUIOutputDetailScreen(
+                images = images,
+                initialIndex = initialIndex,
                 viewModel = historyViewModel,
                 onBack = { backStack.removeLastOrNull() },
             )

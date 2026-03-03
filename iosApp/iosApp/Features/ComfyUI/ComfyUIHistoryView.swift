@@ -65,10 +65,11 @@ struct ComfyUIHistoryView: View {
 
     private var imageGrid: some View {
         let columns = AdaptiveGrid.columns(sizeClass: sizeClass)
+        let filtered = viewModel.filteredImages
         return ScrollView {
             LazyVGrid(columns: columns, spacing: Spacing.sm) {
-                ForEach(viewModel.filteredImages, id: \.id) { image in
-                    imageCell(image: image)
+                ForEach(Array(filtered.enumerated()), id: \.element.id) { idx, image in
+                    imageCell(image: image, allImages: filtered, index: idx)
                 }
             }
             .padding(Spacing.sm)
@@ -78,8 +79,8 @@ struct ComfyUIHistoryView: View {
         }
     }
 
-    private func imageCell(image: ComfyUIGeneratedImage) -> some View {
-        NavigationLink(destination: ComfyUIOutputDetailView(image: image)) {
+    private func imageCell(image: ComfyUIGeneratedImage, allImages: [ComfyUIGeneratedImage], index: Int) -> some View {
+        NavigationLink(destination: ComfyUIOutputDetailView(images: allImages, initialIndex: index)) {
             CachedAsyncImage(url: URL(string: image.imageUrl)) { phase in
                 switch phase {
                 case .success(let img):

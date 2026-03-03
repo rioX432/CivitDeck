@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BrokenImage
@@ -33,8 +35,10 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,10 +66,19 @@ fun ComfyUIHistoryScreen(
     viewModel: ComfyUIHistoryViewModel,
     onBack: () -> Unit,
     onImageClick: (ComfyUIGeneratedImage) -> Unit,
+    scrollToTopTrigger: Int = 0,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val datasets by viewModel.datasets.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val gridState = rememberLazyGridState()
+    var lastHandledTrigger by rememberSaveable { mutableIntStateOf(scrollToTopTrigger) }
+    LaunchedEffect(scrollToTopTrigger) {
+        if (scrollToTopTrigger != lastHandledTrigger) {
+            lastHandledTrigger = scrollToTopTrigger
+            gridState.animateScrollToItem(0)
+        }
+    }
 
     HistorySnackbarEffects(state = state, snackbarHostState = snackbarHostState, viewModel = viewModel)
 
@@ -94,6 +107,7 @@ fun ComfyUIHistoryScreen(
             onRetry = viewModel::refresh,
             onSortSelected = viewModel::onSelectSort,
             onAddToDataset = viewModel::onAddToDatasetTap,
+            gridState = gridState,
             modifier = Modifier.padding(padding),
         )
     }
@@ -151,6 +165,7 @@ private fun HistoryBody(
     onRetry: () -> Unit,
     onSortSelected: (HistorySortOrder) -> Unit,
     onAddToDataset: (ComfyUIGeneratedImage) -> Unit,
+    gridState: LazyGridState = rememberLazyGridState(),
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -180,6 +195,7 @@ private fun HistoryBody(
                         contentPadding = PaddingValues(Spacing.sm),
                         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
                         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+                        state = gridState,
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         item(span = { GridItemSpan(maxLineSpan) }) {

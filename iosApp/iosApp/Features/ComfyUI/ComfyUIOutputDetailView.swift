@@ -3,6 +3,32 @@ import Shared
 import Photos
 
 struct ComfyUIOutputDetailView: View {
+    let images: [ComfyUIGeneratedImage]
+    let initialIndex: Int
+    @State private var currentIndex: Int
+
+    init(images: [ComfyUIGeneratedImage], initialIndex: Int) {
+        self.images = images
+        self.initialIndex = initialIndex
+        self._currentIndex = State(initialValue: initialIndex)
+    }
+
+    var body: some View {
+        TabView(selection: $currentIndex) {
+            ForEach(Array(images.enumerated()), id: \.element.id) { idx, img in
+                ComfyUIOutputDetailPage(image: img)
+                    .tag(idx)
+            }
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .navigationTitle("\(currentIndex + 1) / \(images.count)")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - Detail Page
+
+private struct ComfyUIOutputDetailPage: View {
     let image: ComfyUIGeneratedImage
 
     @State private var showAddCollectionAlert = false
@@ -27,8 +53,6 @@ struct ComfyUIOutputDetailView: View {
             }
             .padding(Spacing.md)
         }
-        .navigationTitle("Detail")
-        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
