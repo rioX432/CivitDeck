@@ -26,7 +26,7 @@ struct ResolutionFilterSheet: View {
                         minWidth = 0
                         minHeight = 0
                     }
-                    .foregroundColor(.civitError)
+                    .foregroundColor(Color.civitError)
                 }
             }
             .navigationTitle("Resolution Filter")
