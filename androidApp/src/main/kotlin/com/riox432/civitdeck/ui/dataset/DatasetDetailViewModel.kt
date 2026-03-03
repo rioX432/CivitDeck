@@ -49,7 +49,11 @@ class DatasetDetailViewModel(
             if (w == 0 && h == 0) {
                 emptyList()
             } else {
-                imgs.filter { img -> img.width != null && img.height != null && (img.width < w || img.height < h) }
+                imgs.filter { img ->
+                    val imgW = img.width
+                    val imgH = img.height
+                    imgW != null && imgH != null && (imgW < w || imgH < h)
+                }
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
