@@ -110,24 +110,26 @@ private fun DetailBody(
             Spacer(modifier = Modifier.height(Spacing.md))
         }
 
-        if (image.meta.positivePrompt.isNotBlank()) {
-            item { PromptSection(prompt = image.meta.positivePrompt) }
-        }
-
+        val showPrompt = image.meta.positivePrompt.isNotBlank()
         val hasParams = image.meta.seed != null ||
             image.meta.samplerName != null ||
             image.meta.cfg != null ||
             image.meta.steps != null
+        val showLoras = image.meta.loraNames.isNotEmpty()
+
+        if (showPrompt) {
+            item { PromptSection(prompt = image.meta.positivePrompt) }
+        }
 
         if (hasParams) {
-            item { ParamsSection(meta = image.meta) }
+            item { ParamsSection(meta = image.meta, showTopDivider = showPrompt) }
         }
 
-        if (image.meta.loraNames.isNotEmpty()) {
-            item { LoraSection(loraNames = image.meta.loraNames) }
+        if (showLoras) {
+            item { LoraSection(loraNames = image.meta.loraNames, showTopDivider = showPrompt || hasParams) }
         }
 
-        item { PromptIdFooter(promptId = image.promptId) }
+        item { PromptIdFooter(promptId = image.promptId, showTopDivider = showPrompt || hasParams || showLoras) }
     }
 }
 
@@ -140,8 +142,8 @@ private fun PromptSection(prompt: String) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ParamsSection(meta: ComfyUIGenerationMeta) {
-    HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
+private fun ParamsSection(meta: ComfyUIGenerationMeta, showTopDivider: Boolean = true) {
+    if (showTopDivider) HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
     Spacer(modifier = Modifier.height(Spacing.sm))
     SectionHeader(
         title = "Generation Settings",
@@ -160,8 +162,8 @@ private fun ParamsSection(meta: ComfyUIGenerationMeta) {
 }
 
 @Composable
-private fun LoraSection(loraNames: List<String>) {
-    HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
+private fun LoraSection(loraNames: List<String>, showTopDivider: Boolean = true) {
+    if (showTopDivider) HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
     Spacer(modifier = Modifier.height(Spacing.sm))
     SectionHeader(title = "LoRAs", modifier = Modifier.padding(horizontal = Spacing.lg))
     Column(
@@ -174,8 +176,8 @@ private fun LoraSection(loraNames: List<String>) {
 }
 
 @Composable
-private fun PromptIdFooter(promptId: String) {
-    HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
+private fun PromptIdFooter(promptId: String, showTopDivider: Boolean = true) {
+    if (showTopDivider) HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
     Spacer(modifier = Modifier.height(Spacing.sm))
     Text(
         text = "ID: $promptId",
