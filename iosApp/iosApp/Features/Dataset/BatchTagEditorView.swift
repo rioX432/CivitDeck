@@ -50,7 +50,7 @@ struct BatchTagEditorView: View {
             HStack {
                 TextField("Tag name", text: $viewModel.tagInput)
                     .textFieldStyle(.roundedBorder)
-                    .onChange(of: viewModel.tagInput) { _, newValue in
+                    .onChange(of: viewModel.tagInput) { newValue in
                         viewModel.updateTagInput(newValue)
                     }
                 if !viewModel.tagInput.isEmpty {

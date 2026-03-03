@@ -20,7 +20,7 @@ final class DuplicateReviewViewModel: ObservableObject {
     }
 
     private func observeGroups(datasetId: Int64) async {
-        for await result in detectDuplicatesUseCase.invoke(datasetId: datasetId, threshold: KotlinInt(int: 10)) {
+        for await result in detectDuplicatesUseCase.invoke(datasetId: datasetId, threshold: 10) {
             let groupList = result.compactMap { $0 as? DuplicateGroup }
             groups = groupList.map { group in
                 group.images.compactMap { $0 as? DatasetImage }

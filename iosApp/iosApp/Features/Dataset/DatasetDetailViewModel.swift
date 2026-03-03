@@ -67,7 +67,7 @@ final class DatasetDetailViewModel: ObservableObject {
     private func observeDuplicateCount() async {
         for await result in detectDuplicatesUseCase.invoke(
             datasetId: datasetId,
-            threshold: KotlinInt(int: 10)
+            threshold: 10
         ) {
             let groups = result.compactMap { $0 as? DuplicateGroup }
             duplicateImageCount = groups.reduce(0) { $0 + $1.images.count } - groups.count
@@ -116,8 +116,8 @@ final class DatasetDetailViewModel: ObservableObject {
     func updateTrainable(id: Int64, trainable: Bool) {
         Task {
             try? await updateTrainableUseCase.invoke(
-                imageId: KotlinLong(value: id),
-                trainable: KotlinBoolean(bool: trainable)
+                imageId: id,
+                trainable: trainable
             )
         }
     }
@@ -125,7 +125,7 @@ final class DatasetDetailViewModel: ObservableObject {
     func saveCaption(imageId: Int64, text: String) {
         Task {
             try? await editCaptionUseCase.invoke(
-                datasetImageId: KotlinLong(value: imageId),
+                datasetImageId: imageId,
                 text: text
             )
         }
