@@ -36,6 +36,16 @@ struct DatasetDetailView: View {
                 selectionBar
             }
         }
+        .sheet(isPresented: Binding(
+            get: { viewModel.detailImage != nil },
+            set: { if !$0 { viewModel.dismissDetail() } }
+        )) {
+            if let image = viewModel.detailImage {
+                ImageDetailSheet(image: image) { newValue in
+                    viewModel.updateTrainable(id: image.id, trainable: newValue)
+                }
+            }
+        }
     }
 
     @ToolbarContentBuilder
@@ -58,13 +68,27 @@ struct DatasetDetailView: View {
 
     private var imageGrid: some View {
         ScrollView {
+            if !viewModel.isSelectionMode {
+                sourceFilterPicker
+            }
             LazyVGrid(columns: columns, spacing: Spacing.sm) {
-                ForEach(viewModel.images, id: \.id) { image in
+                ForEach(viewModel.filteredImages, id: \.id) { image in
                     imageCell(image: image)
                 }
             }
             .padding(Spacing.sm)
         }
+    }
+
+    private var sourceFilterPicker: some View {
+        Picker("Source", selection: $viewModel.selectedSource) {
+            Text("All").tag(nil as ImageSource?)
+            Text("CivitAI").tag(ImageSource.civitai as ImageSource?)
+            Text("Local").tag(ImageSource.local as ImageSource?)
+            Text("Generated").tag(ImageSource.generated as ImageSource?)
+        }
+        .pickerStyle(.segmented)
+        .padding(Spacing.sm)
     }
 
     private func imageCell(image: DatasetImage) -> some View {
@@ -98,9 +122,17 @@ struct DatasetDetailView: View {
                 selectionIndicator(isSelected: isSelected)
             }
         }
+        .overlay(alignment: .bottomTrailing) {
+            if !viewModel.isSelectionMode {
+                SourceBadgeMiniView(source: image.sourceType)
+                    .padding(Spacing.xs)
+            }
+        }
         .onTapGesture {
             if viewModel.isSelectionMode {
                 viewModel.toggleSelection(id: image.id)
+            } else {
+                viewModel.showDetail(image)
             }
         }
         .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
@@ -146,5 +178,37 @@ struct DatasetDetailView: View {
             title: "No images in this dataset",
             subtitle: "Add images from ComfyUI history"
         )
+    }
+}
+
+private struct SourceBadgeMiniView: View {
+    let source: ImageSource
+
+    var body: some View {
+        Text(label)
+            .font(.system(size: 9, weight: .bold))
+            .padding(.horizontal, 4)
+            .padding(.vertical, 2)
+            .background(badgeColor.opacity(0.85))
+            .foregroundColor(.white)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+    }
+
+    private var label: String {
+        switch source {
+        case .civitai: return "CI"
+        case .local: return "LO"
+        case .generated: return "GN"
+        default: return "?"
+        }
+    }
+
+    private var badgeColor: Color {
+        switch source {
+        case .civitai: return .civitPrimary
+        case .local: return .civitSecondary
+        case .generated: return .civitTertiary
+        default: return .civitOnSurfaceVariant
+        }
     }
 }

@@ -115,6 +115,7 @@
 		CDDT03012F300003000CD001 /* DatasetDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT03002F300003000CD001 /* DatasetDetailViewModel.swift */; };
 		CDDT04012F300004000CD001 /* DatasetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT04002F300004000CD001 /* DatasetDetailView.swift */; };
 		CDDT05012F300005000CD001 /* AddToDatasetSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT05002F300005000CD001 /* AddToDatasetSheet.swift */; };
+		CDDT06012F300006000CD001 /* ImageDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT06002F300006000CD001 /* ImageDetailSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -232,6 +233,7 @@
 		CDDT03002F300003000CD001 /* DatasetDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatasetDetailViewModel.swift; sourceTree = "<group>"; };
 		CDDT04002F300004000CD001 /* DatasetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatasetDetailView.swift; sourceTree = "<group>"; };
 		CDDT05002F300005000CD001 /* AddToDatasetSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToDatasetSheet.swift; sourceTree = "<group>"; };
+		CDDT06002F300006000CD001 /* ImageDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageDetailSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -392,6 +394,7 @@
 				CDDT03002F300003000CD001 /* DatasetDetailViewModel.swift */,
 				CDDT04002F300004000CD001 /* DatasetDetailView.swift */,
 				CDDT05002F300005000CD001 /* AddToDatasetSheet.swift */,
+			CDDT06002F300006000CD001 /* ImageDetailSheet.swift */,
 			);
 			path = Dataset;
 			sourceTree = "<group>";
@@ -776,6 +779,7 @@
 				CDDT03012F300003000CD001 /* DatasetDetailViewModel.swift in Sources */,
 				CDDT04012F300004000CD001 /* DatasetDetailView.swift in Sources */,
 				CDDT05012F300005000CD001 /* AddToDatasetSheet.swift in Sources */,
+			CDDT06012F300006000CD001 /* ImageDetailSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

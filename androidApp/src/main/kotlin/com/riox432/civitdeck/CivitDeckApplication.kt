@@ -145,6 +145,6 @@ val androidModule = module {
     viewModel { CivitaiLinkSettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { CivitaiLinkSendViewModel(get(), get()) }
     viewModel { DatasetListViewModel(get(), get(), get(), get()) }
-    viewModel { params -> DatasetDetailViewModel(params.get(), get(), get(), get()) }
+    viewModel { params -> DatasetDetailViewModel(params.get(), get(), get(), get(), get()) }
     viewModel { params -> BatchTagEditorViewModel(params.get(), get(), get(), get()) }
 }

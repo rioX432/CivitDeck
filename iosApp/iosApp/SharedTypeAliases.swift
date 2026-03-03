@@ -38,6 +38,8 @@ typealias ModelType = Core_domainModelType
 typealias ModelUpdate = Core_domainModelUpdate
 typealias ModelVersion = Core_domainModelVersion
 typealias ModelVersionStats = Core_domainModelVersionStats
+typealias DuplicateGroup = Core_domainDuplicateGroup
+typealias ModelLicenseInfo = Core_domainModelLicenseInfo
 typealias CivitaiLinkActivity = Core_domainCivitaiLinkActivity
 typealias CivitaiLinkStatus = Core_domainCivitaiLinkStatus
 typealias NsfwBlurSettings = Core_domainNsfwBlurSettings
@@ -62,6 +64,16 @@ typealias TimePeriod = Core_domainTimePeriod
 
 // MARK: - Core Domain Use Cases
 
+typealias BatchEditTagsUseCase = Core_domainBatchEditTagsUseCase
+typealias DetectDuplicatesUseCase = Core_domainDetectDuplicatesUseCase
+typealias EditCaptionUseCase = Core_domainEditCaptionUseCase
+typealias FilterByResolutionUseCase = Core_domainFilterByResolutionUseCase
+typealias GetNonTrainableImagesUseCase = Core_domainGetNonTrainableImagesUseCase
+typealias GetTagSuggestionsUseCase = Core_domainGetTagSuggestionsUseCase
+typealias MarkImageExcludedUseCase = Core_domainMarkImageExcludedUseCase
+typealias StorePHashUseCase = Core_domainStorePHashUseCase
+typealias StoreImageDimensionsUseCase = Core_domainStoreImageDimensionsUseCase
+typealias UpdateTrainableUseCase = Core_domainUpdateTrainableUseCase
 typealias AddImageToDatasetUseCase = Core_domainAddImageToDatasetUseCase
 typealias AddModelDirectoryUseCase = Core_domainAddModelDirectoryUseCase
 typealias CheckModelUpdatesUseCase = Core_domainCheckModelUpdatesUseCase

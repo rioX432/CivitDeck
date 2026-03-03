@@ -5,6 +5,7 @@ package com.riox432.civitdeck.ui.dataset
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -51,13 +53,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.DatasetImage
+import com.riox432.civitdeck.domain.model.ImageSource
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
+import com.riox432.civitdeck.ui.components.FilterChipRow
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
 private const val GRID_COLUMNS = 2
 private const val IMAGE_ASPECT_RATIO = 1f
+
+private data class DatasetGridCallbacks(
+    val onToggleSelection: (Long) -> Unit,
+    val onEnterSelectionMode: (Long) -> Unit,
+    val onShowDetail: (DatasetImage) -> Unit,
+    val onEditCaption: (DatasetImage) -> Unit,
+    val onNavigateToBatchTagEditor: () -> Unit,
+    val onSourceFilterChange: (ImageSource?) -> Unit,
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,12 +80,24 @@ fun DatasetDetailScreen(
     onBack: () -> Unit,
     onNavigateToBatchTagEditor: (datasetId: Long) -> Unit,
 ) {
-    val images by viewModel.images.collectAsStateWithLifecycle()
+    val filteredImages by viewModel.filteredImages.collectAsStateWithLifecycle()
     val selectedImageIds by viewModel.selectedImageIds.collectAsStateWithLifecycle()
     val isSelectionMode by viewModel.isSelectionMode.collectAsStateWithLifecycle()
+    val selectedSource by viewModel.selectedSource.collectAsStateWithLifecycle()
+    val detailImage by viewModel.detailImage.collectAsStateWithLifecycle()
     var captionSheetImageId by remember { mutableStateOf<Long?>(null) }
     var captionSheetInitial by remember { mutableStateOf("") }
-
+    val callbacks = DatasetGridCallbacks(
+        onToggleSelection = viewModel::toggleSelection,
+        onEnterSelectionMode = viewModel::enterSelectionMode,
+        onShowDetail = viewModel::showDetail,
+        onEditCaption = { image ->
+            captionSheetImageId = image.id
+            captionSheetInitial = image.caption?.text.orEmpty()
+        },
+        onNavigateToBatchTagEditor = { onNavigateToBatchTagEditor(viewModel.datasetId) },
+        onSourceFilterChange = viewModel::setSourceFilter,
+    )
     Scaffold(
         topBar = {
             DatasetDetailTopBar(
@@ -95,26 +120,48 @@ fun DatasetDetailScreen(
         },
     ) { padding ->
         DatasetDetailContent(
-            images = images,
+            images = filteredImages,
             isSelectionMode = isSelectionMode,
             selectedImageIds = selectedImageIds,
-            onToggleSelection = viewModel::toggleSelection,
-            onEnterSelectionMode = viewModel::enterSelectionMode,
-            onEditCaption = { image ->
-                captionSheetImageId = image.id
-                captionSheetInitial = image.caption?.text.orEmpty()
-            },
-            onNavigateToBatchTagEditor = { onNavigateToBatchTagEditor(viewModel.datasetId) },
+            selectedSource = selectedSource,
+            callbacks = callbacks,
             modifier = Modifier.padding(padding),
         )
     }
+    DatasetDetailSheets(
+        captionSheetImageId = captionSheetImageId,
+        captionSheetInitial = captionSheetInitial,
+        detailImage = detailImage,
+        onSaveCaption = { id, text -> viewModel.editCaption(id, text) },
+        onDismissCaption = { captionSheetImageId = null },
+        onTrainableToggle = { id, trainable -> viewModel.updateTrainable(id, trainable) },
+        onDismissDetail = viewModel::dismissDetail,
+    )
+}
 
+@Composable
+private fun DatasetDetailSheets(
+    captionSheetImageId: Long?,
+    captionSheetInitial: String,
+    detailImage: DatasetImage?,
+    onSaveCaption: (Long, String) -> Unit,
+    onDismissCaption: () -> Unit,
+    onTrainableToggle: (Long, Boolean) -> Unit,
+    onDismissDetail: () -> Unit,
+) {
     captionSheetImageId?.let { imageId ->
         CaptionEditorSheet(
             imageId = imageId,
             initialCaption = captionSheetInitial,
-            onSave = { id, text -> viewModel.editCaption(id, text) },
-            onDismiss = { captionSheetImageId = null },
+            onSave = onSaveCaption,
+            onDismiss = onDismissCaption,
+        )
+    }
+    detailImage?.let { image ->
+        ImageDetailSheet(
+            image = image,
+            onTrainableToggle = { trainable -> onTrainableToggle(image.id, trainable) },
+            onDismiss = onDismissDetail,
         )
     }
 }
@@ -201,13 +248,11 @@ private fun DatasetDetailContent(
     images: List<DatasetImage>,
     isSelectionMode: Boolean,
     selectedImageIds: Set<Long>,
-    onToggleSelection: (Long) -> Unit,
-    onEnterSelectionMode: (Long) -> Unit,
-    onEditCaption: (DatasetImage) -> Unit,
-    onNavigateToBatchTagEditor: () -> Unit,
+    selectedSource: ImageSource?,
+    callbacks: DatasetGridCallbacks,
     modifier: Modifier = Modifier,
 ) {
-    if (images.isEmpty()) {
+    if (images.isEmpty() && selectedSource == null) {
         EmptyStateMessage(
             icon = Icons.Default.Dataset,
             title = "No images yet",
@@ -219,10 +264,8 @@ private fun DatasetDetailContent(
             images = images,
             isSelectionMode = isSelectionMode,
             selectedImageIds = selectedImageIds,
-            onToggleSelection = onToggleSelection,
-            onEnterSelectionMode = onEnterSelectionMode,
-            onEditCaption = onEditCaption,
-            onNavigateToBatchTagEditor = onNavigateToBatchTagEditor,
+            selectedSource = selectedSource,
+            callbacks = callbacks,
             modifier = modifier,
         )
     }
@@ -233,12 +276,11 @@ private fun DatasetImageGrid(
     images: List<DatasetImage>,
     isSelectionMode: Boolean,
     selectedImageIds: Set<Long>,
-    onToggleSelection: (Long) -> Unit,
-    onEnterSelectionMode: (Long) -> Unit,
-    onEditCaption: (DatasetImage) -> Unit,
-    onNavigateToBatchTagEditor: () -> Unit,
+    selectedSource: ImageSource?,
+    callbacks: DatasetGridCallbacks,
     modifier: Modifier = Modifier,
 ) {
+    val sourceOptions: List<ImageSource?> = listOf(null) + ImageSource.entries
     LazyVerticalGrid(
         columns = GridCells.Fixed(GRID_COLUMNS),
         contentPadding = PaddingValues(
@@ -251,15 +293,25 @@ private fun DatasetImageGrid(
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
         modifier = modifier.fillMaxSize(),
     ) {
+        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+            if (!isSelectionMode) {
+                FilterChipRow(
+                    options = sourceOptions,
+                    selected = selectedSource,
+                    onSelect = callbacks.onSourceFilterChange,
+                    label = { it?.name?.lowercase()?.replaceFirstChar { c -> c.uppercase() } ?: "All" },
+                    modifier = Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = Spacing.sm),
+                )
+            }
+        }
         items(items = images, key = { it.id }) { image ->
             DatasetImageItem(
                 image = image,
                 isSelected = image.id in selectedImageIds,
                 isSelectionMode = isSelectionMode,
-                onClick = { if (isSelectionMode) onToggleSelection(image.id) },
-                onEnterSelectionMode = { onEnterSelectionMode(image.id) },
-                onEditCaption = { onEditCaption(image) },
-                onBatchEditTags = onNavigateToBatchTagEditor,
+                callbacks = callbacks,
                 modifier = Modifier.animateItem(),
             )
         }
@@ -272,17 +324,16 @@ private fun DatasetImageItem(
     image: DatasetImage,
     isSelected: Boolean,
     isSelectionMode: Boolean,
-    onClick: () -> Unit,
-    onEnterSelectionMode: () -> Unit,
-    onEditCaption: () -> Unit,
-    onBatchEditTags: () -> Unit,
+    callbacks: DatasetGridCallbacks,
     modifier: Modifier = Modifier,
 ) {
     var showContextMenu by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier.combinedClickable(
-            onClick = onClick,
+            onClick = {
+                if (isSelectionMode) callbacks.onToggleSelection(image.id) else callbacks.onShowDetail(image)
+            },
             onLongClick = { if (!isSelectionMode) showContextMenu = true },
         ),
     ) {
@@ -297,24 +348,49 @@ private fun DatasetImageItem(
         )
         if (isSelectionMode) {
             DatasetImageSelectionOverlay(isSelected = isSelected)
+        } else {
+            SourceBadgeMini(
+                sourceType = image.sourceType,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(Spacing.xs),
+            )
         }
         ImageContextMenu(
             expanded = showContextMenu,
             onDismiss = { showContextMenu = false },
             onEditCaption = {
                 showContextMenu = false
-                onEditCaption()
+                callbacks.onEditCaption(image)
             },
             onBatchEditTags = {
                 showContextMenu = false
-                onBatchEditTags()
+                callbacks.onNavigateToBatchTagEditor()
             },
             onSelect = {
                 showContextMenu = false
-                onEnterSelectionMode()
+                callbacks.onEnterSelectionMode(image.id)
             },
         )
     }
+}
+
+@Composable
+private fun SourceBadgeMini(sourceType: ImageSource, modifier: Modifier = Modifier) {
+    val (label, color) = when (sourceType) {
+        ImageSource.CIVITAI -> "CI" to MaterialTheme.colorScheme.primaryContainer
+        ImageSource.LOCAL -> "LO" to MaterialTheme.colorScheme.secondaryContainer
+        ImageSource.GENERATED -> "GN" to MaterialTheme.colorScheme.tertiaryContainer
+    }
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = modifier
+            .clip(RoundedCornerShape(CornerRadius.chip))
+            .background(color.copy(alpha = 0.85f))
+            .padding(horizontal = Spacing.xs, vertical = 2.dp),
+    )
 }
 
 @Composable
