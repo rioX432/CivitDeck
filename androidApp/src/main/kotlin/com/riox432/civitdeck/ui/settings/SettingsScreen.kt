@@ -445,7 +445,8 @@ internal fun NsfwBlurSection(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            "Controls blur strength for NSFW images in the Image Gallery. Tap any blurred image to reveal it temporarily.",
+            "Controls blur strength for NSFW images in the Image Gallery. " +
+                "Tap any blurred image to reveal it temporarily.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
