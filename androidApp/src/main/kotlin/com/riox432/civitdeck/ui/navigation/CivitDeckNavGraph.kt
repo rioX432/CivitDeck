@@ -10,13 +10,17 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.FolderCopy
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material.icons.outlined.Bookmarks
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.FolderCopy
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -32,7 +36,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -44,6 +47,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
+import com.riox432.civitdeck.domain.model.NavShortcut
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
@@ -81,12 +85,12 @@ import com.riox432.civitdeck.ui.detail.ModelDetailScreen
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryScreen
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
 import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserScreen
-import com.riox432.civitdeck.ui.prompts.SavedPromptsScreen
 import com.riox432.civitdeck.ui.search.ModelSearchScreen
 import com.riox432.civitdeck.ui.settings.AdvancedSettingsScreen
 import com.riox432.civitdeck.ui.settings.AppearanceSettingsScreen
 import com.riox432.civitdeck.ui.settings.ContentFilterSettingsScreen
 import com.riox432.civitdeck.ui.settings.LicensesScreen
+import com.riox432.civitdeck.ui.settings.NavShortcutsSettingsScreen
 import com.riox432.civitdeck.ui.settings.NotificationsSettingsScreen
 import com.riox432.civitdeck.ui.settings.SettingsScreen
 import com.riox432.civitdeck.ui.settings.StorageSettingsScreen
@@ -94,6 +98,7 @@ import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import kotlin.collections.buildList
 
 data object SearchRoute
 
@@ -168,16 +173,40 @@ data object ComfyUIHistoryRoute
 
 data class ComfyUIOutputDetailRoute(val imageId: String)
 
+data object BrowseImagesRoute
+
+data object NavShortcutsSettingsRoute
+
 internal enum class Tab(
     val label: String,
     val activeIcon: ImageVector,
     val inactiveIcon: ImageVector,
 ) {
     Search("Search", Icons.Filled.Explore, Icons.Outlined.Explore),
-    Collections("Collections", Icons.Filled.FolderCopy, Icons.Outlined.FolderCopy),
-    Prompts("Prompts", Icons.Outlined.Bookmarks, Icons.Outlined.BookmarkBorder),
+    Collections("Saved", Icons.Filled.FolderCopy, Icons.Outlined.FolderCopy),
     Settings("Settings", Icons.Filled.Settings, Icons.Outlined.Settings),
 }
+
+private val NavShortcut.activeIcon: ImageVector
+    get() = when (this) {
+        NavShortcut.OutputGallery -> Icons.Filled.PhotoLibrary
+        NavShortcut.Generate -> Icons.Filled.AutoAwesome
+        NavShortcut.ImageGallery -> Icons.Filled.Image
+    }
+
+private val NavShortcut.inactiveIcon: ImageVector
+    get() = when (this) {
+        NavShortcut.OutputGallery -> Icons.Outlined.PhotoLibrary
+        NavShortcut.Generate -> Icons.Outlined.AutoAwesome
+        NavShortcut.ImageGallery -> Icons.Outlined.Image
+    }
+
+private val NavShortcut.navLabel: String
+    get() = when (this) {
+        NavShortcut.OutputGallery -> "Output"
+        NavShortcut.Generate -> "Generate"
+        NavShortcut.ImageGallery -> "Images"
+    }
 
 private class TabState(
     val backStack: MutableList<Any>,
@@ -199,23 +228,44 @@ private class TabState(
 @Composable
 internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Search) {
     val searchViewModel: ModelSearchViewModel = koinViewModel()
-    var selectedTab by rememberSaveable(
-        stateSaver = mapSaver(
-            save = { mapOf("tab" to it.name) },
-            restore = { Tab.valueOf(it["tab"] as String) },
-        ),
-    ) { mutableStateOf(initialTab) }
+    val settingsViewModel: SettingsViewModel = koinViewModel()
+    val settingsState by settingsViewModel.uiState.collectAsStateWithLifecycle()
 
-    val tabs = remember {
+    var selectedTabId by rememberSaveable { mutableStateOf(initialTab.name) }
+
+    val fixedTabStates = remember {
         mapOf(
-            Tab.Search to TabState(mutableStateListOf<Any>(SearchRoute)),
-            Tab.Collections to TabState(mutableStateListOf<Any>(CollectionsRoute)),
-            Tab.Prompts to TabState(mutableStateListOf<Any>(SavedPromptsRoute)),
-            Tab.Settings to TabState(mutableStateListOf<Any>(SettingsRoute)),
+            Tab.Search.name to TabState(mutableStateListOf<Any>(SearchRoute)),
+            Tab.Collections.name to TabState(mutableStateListOf<Any>(CollectionsRoute)),
+            Tab.Settings.name to TabState(mutableStateListOf<Any>(SettingsRoute)),
         )
     }
 
-    val activeTab = tabs.getValue(selectedTab)
+    val shortcutTabStates = remember {
+        mapOf(
+            NavShortcut.OutputGallery.name to TabState(mutableStateListOf<Any>(ComfyUIHistoryRoute)),
+            NavShortcut.Generate.name to TabState(mutableStateListOf<Any>(ComfyUIGenerationRoute)),
+            NavShortcut.ImageGallery.name to TabState(mutableStateListOf<Any>(BrowseImagesRoute)),
+        )
+    }
+
+    val activeShortcuts = if (settingsState.powerUserMode) settingsState.customNavShortcuts else emptyList()
+
+    val navItems = buildList {
+        add(Tab.Search)
+        add(Tab.Collections)
+        activeShortcuts.forEach { shortcut ->
+            add(shortcut)
+        }
+        add(Tab.Settings)
+    }
+
+    val validTabIds = navItems.mapNotNull { navItemInfoFor(it)?.id }.toSet()
+    if (selectedTabId !in validTabIds) selectedTabId = Tab.Search.name
+
+    val activeBackStack = fixedTabStates[selectedTabId]?.backStack
+        ?: shortcutTabStates[selectedTabId]?.backStack
+        ?: fixedTabStates.getValue(Tab.Search.name).backStack
 
     var compareModelId by rememberSaveable { mutableStateOf<Long?>(null) }
     var compareModelName by rememberSaveable { mutableStateOf<String?>(null) }
@@ -232,24 +282,25 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Search) {
     NavigationSuiteScaffold(
         layoutType = navLayoutType,
         navigationSuiteItems = {
-            Tab.entries.forEach { tab ->
-                val selected = tab == selectedTab
+            navItems.forEach { navItem ->
+                val info = navItemInfoFor(navItem) ?: return@forEach
+                val selected = info.id == selectedTabId
                 item(
                     selected = selected,
                     onClick = {
-                        if (tab == selectedTab) {
-                            tabs.getValue(tab).onReselected()
+                        if (info.id == selectedTabId) {
+                            (fixedTabStates[info.id] ?: shortcutTabStates[info.id])?.onReselected()
                         } else {
-                            selectedTab = tab
+                            selectedTabId = info.id
                         }
                     },
                     icon = {
                         Icon(
-                            imageVector = if (selected) tab.activeIcon else tab.inactiveIcon,
-                            contentDescription = tab.label,
+                            imageVector = if (selected) info.activeIcon else info.inactiveIcon,
+                            contentDescription = info.label,
                         )
                     },
-                    label = { Text(tab.label) },
+                    label = { Text(info.label) },
                 )
             }
         },
@@ -258,11 +309,10 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Search) {
             SharedTransitionLayout(modifier = Modifier.padding(padding)) {
                 CompositionLocalProvider(LocalSharedTransitionScope provides this) {
                     CivitDeckNavDisplay(
-                        backStack = activeTab.backStack,
+                        backStack = activeBackStack,
                         searchViewModel = searchViewModel,
-                        searchScrollTrigger = tabs.getValue(Tab.Search).scrollTrigger,
-                        promptsScrollTrigger = tabs.getValue(Tab.Prompts).scrollTrigger,
-                        settingsScrollTrigger = tabs.getValue(Tab.Settings).scrollTrigger,
+                        searchScrollTrigger = fixedTabStates.getValue(Tab.Search.name).scrollTrigger,
+                        settingsScrollTrigger = fixedTabStates.getValue(Tab.Settings.name).scrollTrigger,
                         compareModelId = compareModelId,
                         compareModelName = compareModelName,
                         onCompareModel = { id, name ->
@@ -280,6 +330,19 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Search) {
     }
 }
 
+private data class NavItemInfo(
+    val id: String,
+    val label: String,
+    val activeIcon: ImageVector,
+    val inactiveIcon: ImageVector,
+)
+
+private fun navItemInfoFor(navItem: Any): NavItemInfo? = when (navItem) {
+    is Tab -> NavItemInfo(navItem.name, navItem.label, navItem.activeIcon, navItem.inactiveIcon)
+    is NavShortcut -> NavItemInfo(navItem.name, navItem.navLabel, navItem.activeIcon, navItem.inactiveIcon)
+    else -> null
+}
+
 private fun slideTransition(enterOffset: (Int) -> Int, exitOffset: (Int) -> Int) =
     ContentTransform(
         slideInHorizontally(tween(Duration.normal, easing = Easing.standard), enterOffset) +
@@ -294,7 +357,6 @@ private fun CivitDeckNavDisplay(
     backStack: MutableList<Any>,
     searchViewModel: ModelSearchViewModel,
     searchScrollTrigger: Int = 0,
-    promptsScrollTrigger: Int = 0,
     settingsScrollTrigger: Int = 0,
     compareModelId: Long? = null,
     compareModelName: String? = null,
@@ -337,13 +399,7 @@ private fun CivitDeckNavDisplay(
             galleryEntry(backStack)
             compareEntry(backStack)
             discoveryEntry(backStack)
-            entry<SavedPromptsRoute> {
-                val viewModel: SavedPromptsViewModel = koinViewModel()
-                SavedPromptsScreen(
-                    viewModel = viewModel,
-                    scrollToTopTrigger = promptsScrollTrigger,
-                )
-            }
+            browseImagesEntry(backStack)
             entry<SettingsRoute> {
                 val viewModel: SettingsViewModel = koinViewModel()
                 SettingsScreen(
@@ -353,7 +409,7 @@ private fun CivitDeckNavDisplay(
                     onNavigateToNotifications = { backStack.add(NotificationsSettingsRoute) },
                     onNavigateToStorage = { backStack.add(StorageSettingsRoute) },
                     onNavigateToAdvanced = { backStack.add(AdvancedSettingsRoute) },
-                    onNavigateToOutputGallery = { backStack.add(ComfyUIHistoryRoute) },
+                    onNavigateToNavShortcuts = { backStack.add(NavShortcutsSettingsRoute) },
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
                     scrollToTopTrigger = settingsScrollTrigger,
                 )
@@ -377,6 +433,7 @@ private fun CivitDeckNavDisplay(
 private fun EntryProviderScope<Any>.collectionsEntry(backStack: MutableList<Any>) {
     entry<CollectionsRoute> {
         val viewModel: CollectionsViewModel = koinViewModel()
+        val promptsViewModel: SavedPromptsViewModel = koinViewModel()
         val collections by viewModel.collections.collectAsStateWithLifecycle()
         CollectionsScreen(
             collections = collections,
@@ -386,6 +443,7 @@ private fun EntryProviderScope<Any>.collectionsEntry(backStack: MutableList<Any>
             onCreateCollection = viewModel::createCollection,
             onRenameCollection = viewModel::renameCollection,
             onDeleteCollection = viewModel::deleteCollection,
+            promptsViewModel = promptsViewModel,
         )
     }
 }
@@ -506,6 +564,16 @@ private fun EntryProviderScope<Any>.galleryEntry(backStack: MutableList<Any>) {
     }
 }
 
+private fun EntryProviderScope<Any>.browseImagesEntry(backStack: MutableList<Any>) {
+    entry<BrowseImagesRoute> {
+        val viewModel: ImageGalleryViewModel = koinViewModel(key = "browse_images") { parametersOf(0L) }
+        ImageGalleryScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+}
+
 private fun EntryProviderScope<Any>.compareEntry(backStack: MutableList<Any>) {
     entry<CompareRoute> { key ->
         val leftVm: ModelDetailViewModel = koinViewModel(
@@ -574,6 +642,13 @@ private fun EntryProviderScope<Any>.settingsSubScreenEntries(backStack: MutableL
             onNavigateToTemplates = { backStack.add(WorkflowTemplateLibraryRoute) },
             onNavigateToSDWebUI = { backStack.add(SDWebUISettingsRoute) },
             onNavigateToCivitaiLink = { backStack.add(CivitaiLinkSettingsRoute) },
+        )
+    }
+    entry<NavShortcutsSettingsRoute> {
+        val viewModel: SettingsViewModel = koinViewModel()
+        NavShortcutsSettingsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
         )
     }
 }

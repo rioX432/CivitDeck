@@ -82,7 +82,7 @@ fun SettingsScreen(
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToStorage: () -> Unit = {},
     onNavigateToAdvanced: () -> Unit = {},
-    onNavigateToOutputGallery: () -> Unit = {},
+    onNavigateToNavShortcuts: () -> Unit = {},
     onNavigateToLicenses: () -> Unit = {},
     scrollToTopTrigger: Int = 0,
 ) {
@@ -112,8 +112,8 @@ fun SettingsScreen(
             item { SectionHeader("Storage") }
             item { SubScreenRow("Storage", onNavigateToStorage) }
             if (state.powerUserMode) {
-                item { SectionHeader("ComfyUI") }
-                item { SubScreenRow("Output Gallery", onNavigateToOutputGallery) }
+                item { SectionHeader("Navigation") }
+                item { SubScreenRow("Navigation Shortcuts", onNavigateToNavShortcuts) }
             }
             item { SectionHeader("Advanced") }
             item { SubScreenRow("Advanced", onNavigateToAdvanced) }

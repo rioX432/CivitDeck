@@ -24,6 +24,7 @@ data class UserPreferencesEntity(
     val seenTutorialVersion: Int = 0,
     val civitaiLinkKey: String? = null,
     val themeMode: String = "SYSTEM",
+    val customNavShortcuts: String = "",
 ) {
     companion object {
         const val DEFAULT_CACHE_SIZE_LIMIT_MB = 200

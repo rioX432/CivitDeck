@@ -30,6 +30,7 @@ final class SettingsViewModelOwner: ObservableObject {
     @Published var cacheFormattedSize: String = "0 B"
     @Published var notificationsEnabled: Bool = false
     @Published var pollingInterval: PollingInterval = .off
+    @Published var customNavShortcuts: [NavShortcut] = []
 
     private let vm: SettingsViewModel
     private let store: ViewModelStore
@@ -68,6 +69,7 @@ final class SettingsViewModelOwner: ObservableObject {
             cacheFormattedSize = state.cacheInfo.formattedSize
             notificationsEnabled = state.notificationsEnabled
             pollingInterval = state.pollingInterval
+            customNavShortcuts = state.customNavShortcuts as? [NavShortcut] ?? []
         }
     }
 
@@ -143,5 +145,9 @@ final class SettingsViewModelOwner: ObservableObject {
 
     func onCacheSizeLimitChanged(_ limitMb: Int32) {
         vm.onCacheSizeLimitChanged(limitMb: limitMb)
+    }
+
+    func onCustomNavShortcutsChanged(_ shortcuts: [NavShortcut]) {
+        vm.onCustomNavShortcutsChanged(shortcuts: shortcuts)
     }
 }

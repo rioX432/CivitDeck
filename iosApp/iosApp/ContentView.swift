@@ -2,11 +2,16 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @State private var selectedTab: SidebarTab? = .search
+    @State private var selectedTabId: String = "search"
     @StateObject private var comparisonState = ComparisonState()
     @StateObject private var tutorialVm = GestureTutorialViewModel()
     @StateObject private var searchViewModel = ModelSearchViewModel()
+    @StateObject private var navBarVm = SettingsViewModelOwner()
     @EnvironmentObject private var router: NavigationRouter
+
+    private var activeShortcuts: [NavShortcut] {
+        navBarVm.powerUserMode ? navBarVm.customNavShortcuts : []
+    }
 
     var body: some View {
         Group {
@@ -19,98 +24,101 @@ struct ContentView: View {
             }
         }
         .environmentObject(comparisonState)
+        .task { await navBarVm.observeUiState() }
         .onChange(of: router.pendingDeepLink) { link in
             guard let link else { return }
             switch link {
             case .favorites:
-                selectedTab = .collections
+                selectedTabId = "collections"
                 _ = router.consume()
             case .trending, .search:
-                selectedTab = .search
+                selectedTabId = "search"
                 _ = router.consume()
             case .modelDetail:
-                selectedTab = .search
+                selectedTabId = "search"
                 // DeepLink is consumed by ModelSearchScreen
             }
         }
     }
 
     private var tabLayout: some View {
-        TabView(selection: $selectedTab) {
+        TabView(selection: $selectedTabId) {
             ModelSearchScreen(viewModel: searchViewModel)
-                .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
-                }
-                .tag(SidebarTab.search as SidebarTab?)
+                .tabItem { Label("Search", systemImage: "magnifyingglass") }
+                .tag("search")
 
             CollectionsScreen()
-                .tabItem {
-                    Label("Collections", systemImage: "folder")
-                }
-                .tag(SidebarTab.collections as SidebarTab?)
+                .tabItem { Label("Saved", systemImage: "folder") }
+                .tag("collections")
 
-            SavedPromptsScreen()
-                .tabItem {
-                    Label("Prompts", systemImage: "bookmark")
-                }
-                .tag(SidebarTab.prompts as SidebarTab?)
+            ForEach(activeShortcuts, id: \.name) { shortcut in
+                shortcutView(for: shortcut)
+                    .tabItem { Label(shortcut.tabLabel, systemImage: shortcut.iconName) }
+                    .tag(shortcut.name)
+            }
 
             SettingsScreen()
-                .tabItem {
-                    Label("Settings", systemImage: "gearshape")
-                }
-                .tag(SidebarTab.settings as SidebarTab?)
+                .tabItem { Label("Settings", systemImage: "gearshape") }
+                .tag("settings")
         }
     }
 
     private var sidebarLayout: some View {
         NavigationSplitView {
-            List(selection: $selectedTab) {
-                ForEach(SidebarTab.allCases) { tab in
-                    Label(tab.title, systemImage: tab.icon)
-                        .tag(tab)
+            List(selection: $selectedTabId) {
+                Label("Search", systemImage: "magnifyingglass").tag("search")
+                Label("Collections", systemImage: "folder").tag("collections")
+                ForEach(activeShortcuts, id: \.name) { shortcut in
+                    Label(shortcut.label, systemImage: shortcut.iconName).tag(shortcut.name)
                 }
+                Label("Settings", systemImage: "gearshape").tag("settings")
             }
             .navigationTitle("CivitDeck")
         } detail: {
-            TabView(selection: $selectedTab) {
-                ModelSearchScreen(viewModel: searchViewModel)
-                    .tag(SidebarTab.search as SidebarTab?)
-                CollectionsScreen()
-                    .tag(SidebarTab.collections as SidebarTab?)
-                SavedPromptsScreen()
-                    .tag(SidebarTab.prompts as SidebarTab?)
-                SettingsScreen()
-                    .tag(SidebarTab.settings as SidebarTab?)
+            TabView(selection: $selectedTabId) {
+                ModelSearchScreen(viewModel: searchViewModel).tag("search")
+                CollectionsScreen().tag("collections")
+                ForEach(activeShortcuts, id: \.name) { shortcut in
+                    shortcutView(for: shortcut).tag(shortcut.name)
+                }
+                SettingsScreen().tag("settings")
             }
             .toolbar(.hidden, for: .tabBar)
         }
     }
+
+    @ViewBuilder
+    private func shortcutView(for shortcut: NavShortcut) -> some View {
+        switch shortcut {
+        case .outputGallery:
+            ComfyUIHistoryView()
+        case .generate:
+            ComfyUIGenerationView()
+        case .imageGallery:
+            ImageGalleryScreen(modelVersionId: 0)
+        default:
+            EmptyView()
+        }
+    }
 }
 
-private enum SidebarTab: String, CaseIterable, Identifiable {
-    case search
-    case collections
-    case prompts
-    case settings
-
-    var id: String { rawValue }
-
-    var title: String {
+extension NavShortcut {
+    var iconName: String {
         switch self {
-        case .search: return "Search"
-        case .collections: return "Collections"
-        case .prompts: return "Prompts"
-        case .settings: return "Settings"
+        case .outputGallery: return "photo.stack"
+        case .generate: return "wand.and.sparkles"
+        case .imageGallery: return "photo"
+        default: return "star"
         }
     }
 
-    var icon: String {
+    /// Shortened label for use in tab bar (avoids truncation when 5 tabs are shown)
+    var tabLabel: String {
         switch self {
-        case .search: return "magnifyingglass"
-        case .collections: return "folder"
-        case .prompts: return "bookmark"
-        case .settings: return "gearshape"
+        case .outputGallery: return "Output"
+        case .generate: return "Generate"
+        case .imageGallery: return "Images"
+        default: return label
         }
     }
 }

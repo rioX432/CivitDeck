@@ -16,6 +16,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCivitaiLinkKeyUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveCustomNavShortcutsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
@@ -40,6 +41,7 @@ import com.riox432.civitdeck.domain.usecase.SetAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.SetCivitaiLinkKeyUseCase
+import com.riox432.civitdeck.domain.usecase.SetCustomNavShortcutsUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
@@ -171,6 +173,8 @@ object KoinHelper {
     fun getClearCacheUseCase(): ClearCacheUseCase = getKoin().get()
     fun getObservePowerUserModeUseCase(): ObservePowerUserModeUseCase = getKoin().get()
     fun getSetPowerUserModeUseCase(): SetPowerUserModeUseCase = getKoin().get()
+    fun getObserveCustomNavShortcutsUseCase(): ObserveCustomNavShortcutsUseCase = getKoin().get()
+    fun getSetCustomNavShortcutsUseCase(): SetCustomNavShortcutsUseCase = getKoin().get()
     fun getEnrichModelImagesUseCase(): EnrichModelImagesUseCase = getKoin().get()
     fun getDiscoveryModelsUseCase(): GetDiscoveryModelsUseCase = getKoin().get()
     fun getObserveApiKeyUseCase(): ObserveApiKeyUseCase = getKoin().get()

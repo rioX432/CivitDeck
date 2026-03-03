@@ -84,14 +84,8 @@ struct SettingsScreen: View {
     private var advancedSection: some View {
         Section {
             if viewModel.powerUserMode {
-                NavigationLink(destination: ComfyUIHistoryView()) {
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text("Output Gallery")
-                            .font(.civitBodyMedium)
-                        Text("Browse ComfyUI generated images")
-                            .font(.civitBodySmall)
-                            .foregroundColor(.civitOnSurfaceVariant)
-                    }
+                NavigationLink(destination: NavShortcutsSettingsView(viewModel: viewModel)) {
+                    Text("Navigation Shortcuts")
                 }
             }
             NavigationLink(destination: AdvancedSettingsView(viewModel: viewModel)) {

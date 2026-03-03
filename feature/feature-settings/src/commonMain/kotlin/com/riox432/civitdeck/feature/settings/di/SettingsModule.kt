@@ -14,6 +14,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCacheSizeLimitUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveCustomNavShortcutsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
@@ -29,6 +30,7 @@ import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.SetAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetCacheSizeLimitUseCase
+import com.riox432.civitdeck.domain.usecase.SetCustomNavShortcutsUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
@@ -95,6 +97,8 @@ val settingsModule = module {
         val setAmoledDarkMode: SetAmoledDarkModeUseCase = get()
         val observeThemeMode: ObserveThemeModeUseCase = get()
         val setThemeMode: SetThemeModeUseCase = get()
+        val observeCustomNavShortcuts: ObserveCustomNavShortcutsUseCase = get()
+        val setCustomNavShortcuts: SetCustomNavShortcutsUseCase = get()
         val observeNetworkStatus: ObserveNetworkStatusUseCase = get()
         val observeOfflineCacheEnabled: ObserveOfflineCacheEnabledUseCase = get()
         val setOfflineCacheEnabled: SetOfflineCacheEnabledUseCase = get()
@@ -112,7 +116,7 @@ val settingsModule = module {
             observeNotificationsEnabled, setNotificationsEnabled,
             observePollingInterval, setPollingInterval,
             observeAccentColor, setAccentColor, observeAmoledDarkMode, setAmoledDarkMode,
-            observeThemeMode, setThemeMode,
+            observeThemeMode, setThemeMode, observeCustomNavShortcuts, setCustomNavShortcuts,
             observeNetworkStatus, observeOfflineCacheEnabled, setOfflineCacheEnabled,
             observeCacheSizeLimit, setCacheSizeLimit, getCacheInfo, evictCache,
         )

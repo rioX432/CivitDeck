@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.domain.model.CacheInfo
 import com.riox432.civitdeck.domain.model.HiddenModel
+import com.riox432.civitdeck.domain.model.NavShortcut
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
@@ -20,6 +21,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCacheSizeLimitUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveCustomNavShortcutsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
@@ -35,6 +37,7 @@ import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.SetAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetCacheSizeLimitUseCase
+import com.riox432.civitdeck.domain.usecase.SetCustomNavShortcutsUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
@@ -82,6 +85,7 @@ data class SettingsUiState(
     val offlineCacheEnabled: Boolean = true,
     val cacheSizeLimitMb: Int = 200,
     val cacheInfo: CacheInfo = CacheInfo(0, 0),
+    val customNavShortcuts: List<NavShortcut> = emptyList(),
 )
 
 @Suppress("LongParameterList")
@@ -119,6 +123,8 @@ class SettingsViewModel(
     private val setAmoledDarkModeUseCase: SetAmoledDarkModeUseCase,
     observeThemeModeUseCase: ObserveThemeModeUseCase,
     private val setThemeModeUseCase: SetThemeModeUseCase,
+    observeCustomNavShortcutsUseCase: ObserveCustomNavShortcutsUseCase,
+    private val setCustomNavShortcutsUseCase: SetCustomNavShortcutsUseCase,
     observeNetworkStatusUseCase: ObserveNetworkStatusUseCase,
     observeOfflineCacheEnabledUseCase: ObserveOfflineCacheEnabledUseCase,
     private val setOfflineCacheEnabledUseCase: SetOfflineCacheEnabledUseCase,
@@ -165,6 +171,8 @@ class SettingsViewModel(
         state.copy(cacheSizeLimitMb = limit)
     }.combine(observeThemeModeUseCase()) { state, mode ->
         state.copy(themeMode = mode)
+    }.combine(observeCustomNavShortcutsUseCase()) { state, shortcuts ->
+        state.copy(customNavShortcuts = shortcuts)
     }.combine(_mutableState) { observed, mutable ->
         observed.copy(
             hiddenModels = mutable.hiddenModels,
@@ -327,6 +335,10 @@ class SettingsViewModel(
 
     fun onThemeModeChanged(mode: ThemeMode) {
         viewModelScope.launch { setThemeModeUseCase(mode) }
+    }
+
+    fun onCustomNavShortcutsChanged(shortcuts: List<NavShortcut>) {
+        viewModelScope.launch { setCustomNavShortcutsUseCase(shortcuts) }
     }
 
     fun onOfflineCacheEnabledChanged(enabled: Boolean) {

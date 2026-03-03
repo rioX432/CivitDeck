@@ -1,8 +1,13 @@
 import SwiftUI
 import Shared
 
+private enum CollectionsScreenTab {
+    case collections, prompts
+}
+
 struct CollectionsScreen: View {
     @StateObject private var viewModel = CollectionsViewModel()
+    @State private var selectedTab: CollectionsScreenTab = .collections
     @State private var showCreateSheet = false
     @State private var newCollectionName = ""
     @State private var renameTarget: (id: Int64, name: String)?
@@ -10,21 +15,36 @@ struct CollectionsScreen: View {
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            Group {
-                if viewModel.collections.isEmpty {
-                    emptyView
-                } else {
-                    collectionsList
+            VStack(spacing: 0) {
+                Picker("", selection: $selectedTab) {
+                    Text("Collections").tag(CollectionsScreenTab.collections)
+                    Text("Prompts").tag(CollectionsScreenTab.prompts)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.vertical, Spacing.sm)
+
+                switch selectedTab {
+                case .collections:
+                    if viewModel.collections.isEmpty {
+                        emptyView
+                    } else {
+                        collectionsList
+                    }
+                case .prompts:
+                    SavedPromptsScreen()
                 }
             }
             .navigationTitle("Collections")
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        newCollectionName = ""
-                        showCreateSheet = true
-                    } label: {
-                        Image(systemName: "plus")
+                if selectedTab == .collections {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            newCollectionName = ""
+                            showCreateSheet = true
+                        } label: {
+                            Image(systemName: "plus")
+                        }
                     }
                 }
             }

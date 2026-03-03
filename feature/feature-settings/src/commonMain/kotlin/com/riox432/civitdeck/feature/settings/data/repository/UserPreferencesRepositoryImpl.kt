@@ -5,6 +5,7 @@ import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity.Companion.DEFAULT_CACHE_SIZE_LIMIT_MB
 import com.riox432.civitdeck.domain.model.AccentColor
+import com.riox432.civitdeck.domain.model.NavShortcut
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
@@ -191,5 +192,18 @@ class UserPreferencesRepositoryImpl(
     override suspend fun setThemeMode(mode: ThemeMode) {
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(themeMode = mode.name))
+    }
+
+    override fun observeCustomNavShortcuts(): Flow<List<NavShortcut>> =
+        dao.observePreferences().map { entity ->
+            entity?.customNavShortcuts?.split(",")
+                ?.filter { it.isNotBlank() }
+                ?.mapNotNull { runCatching { NavShortcut.valueOf(it.trim()) }.getOrNull() }
+                ?: emptyList()
+        }
+
+    override suspend fun setCustomNavShortcuts(items: List<NavShortcut>) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(customNavShortcuts = items.joinToString(",") { it.name }))
     }
 }

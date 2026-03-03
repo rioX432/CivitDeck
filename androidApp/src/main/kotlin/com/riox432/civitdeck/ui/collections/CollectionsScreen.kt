@@ -30,12 +30,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,10 +50,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ModelCollection
+import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
+import com.riox432.civitdeck.ui.prompts.SavedPromptsScreen
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
+
+private enum class CollectionsScreenTab { Collections, Prompts }
 
 @Composable
 fun CollectionsScreen(
@@ -59,33 +66,32 @@ fun CollectionsScreen(
     onCreateCollection: (String) -> Unit,
     onRenameCollection: (Long, String) -> Unit,
     onDeleteCollection: (Long) -> Unit,
+    promptsViewModel: SavedPromptsViewModel,
 ) {
+    var selectedTab by rememberSaveable { mutableStateOf(CollectionsScreenTab.Collections) }
     var showCreateDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = { showCreateDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Create collection")
+            if (selectedTab == CollectionsScreenTab.Collections) {
+                FloatingActionButton(onClick = { showCreateDialog = true }) {
+                    Icon(Icons.Default.Add, contentDescription = "Create collection")
+                }
             }
         },
     ) { padding ->
-        if (collections.isEmpty()) {
-            EmptyStateMessage(
-                icon = Icons.Default.Folder,
-                title = "No collections yet",
-                subtitle = "Create a collection to organize your models",
-                modifier = Modifier.padding(padding),
-            )
-        } else {
-            CollectionsList(
-                collections = collections,
-                onCollectionClick = onCollectionClick,
-                onRenameCollection = onRenameCollection,
-                onDeleteCollection = onDeleteCollection,
-                modifier = Modifier.padding(padding),
-            )
+        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            CollectionsTabRow(selectedTab = selectedTab, onTabSelected = { selectedTab = it })
+            when (selectedTab) {
+                CollectionsScreenTab.Collections -> CollectionsContent(
+                    collections = collections,
+                    onCollectionClick = onCollectionClick,
+                    onRenameCollection = onRenameCollection,
+                    onDeleteCollection = onDeleteCollection,
+                )
+                CollectionsScreenTab.Prompts -> SavedPromptsScreen(viewModel = promptsViewModel)
+            }
         }
-
         if (showCreateDialog) {
             CreateCollectionDialog(
                 onDismiss = { showCreateDialog = false },
@@ -95,6 +101,45 @@ fun CollectionsScreen(
                 },
             )
         }
+    }
+}
+
+@Composable
+private fun CollectionsTabRow(
+    selectedTab: CollectionsScreenTab,
+    onTabSelected: (CollectionsScreenTab) -> Unit,
+) {
+    TabRow(selectedTabIndex = selectedTab.ordinal) {
+        CollectionsScreenTab.entries.forEach { tab ->
+            Tab(
+                selected = selectedTab == tab,
+                onClick = { onTabSelected(tab) },
+                text = { Text(tab.name) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun CollectionsContent(
+    collections: List<ModelCollection>,
+    onCollectionClick: (Long, String) -> Unit,
+    onRenameCollection: (Long, String) -> Unit,
+    onDeleteCollection: (Long) -> Unit,
+) {
+    if (collections.isEmpty()) {
+        EmptyStateMessage(
+            icon = Icons.Default.Folder,
+            title = "No collections yet",
+            subtitle = "Create a collection to organize your models",
+        )
+    } else {
+        CollectionsList(
+            collections = collections,
+            onCollectionClick = onCollectionClick,
+            onRenameCollection = onRenameCollection,
+            onDeleteCollection = onDeleteCollection,
+        )
     }
 }
 
