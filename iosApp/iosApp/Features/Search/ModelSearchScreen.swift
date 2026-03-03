@@ -155,6 +155,7 @@ struct ModelSearchScreen: View {
                 && !viewModel.searchHistory.isEmpty
         }
         .onChange(of: isSearchFocused) { focused in
+            if !focused { viewModel.onSearch() }
             showHistory = focused
                 && viewModel.query.isEmpty
                 && !viewModel.searchHistory.isEmpty
@@ -198,22 +199,31 @@ struct ModelSearchScreen: View {
         if showHistory && !viewModel.searchHistory.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(viewModel.searchHistory, id: \.self) { item in
-                    Button {
-                        viewModel.onHistoryItemClick(item)
-                        showHistory = false
-                        isSearchFocused = false
-                    } label: {
-                        HStack(spacing: Spacing.sm) {
-                            Image(systemName: "clock.arrow.circlepath")
+                    HStack(spacing: 0) {
+                        Button {
+                            viewModel.removeSearchHistoryItem(item)
+                        } label: {
+                            Image(systemName: "xmark")
                                 .foregroundColor(.civitOnSurfaceVariant)
                                 .font(.civitBodySmall)
-                            Text(item)
-                                .font(.civitBodyMedium)
-                                .foregroundColor(.civitOnSurface)
-                            Spacer()
+                                .padding(.leading, Spacing.lg)
+                                .padding(.vertical, Spacing.sm)
+                                .padding(.trailing, Spacing.sm)
                         }
-                        .padding(.horizontal, Spacing.lg)
-                        .padding(.vertical, Spacing.sm)
+                        Button {
+                            viewModel.onHistoryItemClick(item)
+                            showHistory = false
+                            isSearchFocused = false
+                        } label: {
+                            HStack {
+                                Text(item)
+                                    .font(.civitBodyMedium)
+                                    .foregroundColor(.civitOnSurface)
+                                Spacer()
+                            }
+                            .padding(.vertical, Spacing.sm)
+                            .padding(.trailing, Spacing.lg)
+                        }
                     }
                 }
                 Button {

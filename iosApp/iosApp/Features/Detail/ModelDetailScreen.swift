@@ -10,6 +10,7 @@ struct ModelDetailScreen: View {
 
     @State private var isDescriptionExpanded = false
     @State private var selectedCarouselIndex: Int?
+    @State private var currentCarouselPage: Int = 0
     @State private var showImageGrid = false
     @State private var gridSelectedIndex: Int?
     @State private var showCollectionSheet = false
@@ -157,7 +158,7 @@ struct ModelDetailScreen: View {
         let images = filteredImages
         return Group {
             if !images.isEmpty {
-                TabView {
+                TabView(selection: $currentCarouselPage) {
                     ForEach(Array(images.enumerated()), id: \.offset) { index, image in
                         CivitAsyncImageView(imageUrl: image.url, aspectRatio: 1)
                             .onTapGesture {
@@ -165,9 +166,10 @@ struct ModelDetailScreen: View {
                             }
                             .accessibilityLabel("Image \(index + 1) of \(images.count)")
                             .accessibilityAddTraits(.isButton)
+                            .tag(index)
                     }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .automatic))
+                .tabViewStyle(.page(indexDisplayMode: .never))
                 .frame(height: min(UIScreen.main.bounds.width, 600))
             }
         }
@@ -219,8 +221,12 @@ struct ModelDetailScreen: View {
                     Button {
                         showImageGrid = true
                     } label: {
-                        SwiftUI.Image(systemName: "square.grid.2x2")
-                            .font(.title3)
+                        VStack(spacing: 2) {
+                            SwiftUI.Image(systemName: "square.grid.2x2")
+                                .font(.title3)
+                            Text("\(currentCarouselPage + 1)/\(filteredImages.count)")
+                                .font(.civitLabelSmall)
+                        }
                     }
                     .buttonStyle(.bordered)
                 }

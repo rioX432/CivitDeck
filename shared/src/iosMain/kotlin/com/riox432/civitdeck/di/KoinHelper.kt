@@ -122,6 +122,7 @@ import com.riox432.civitdeck.feature.prompts.domain.usecase.ToggleTemplateUseCas
 import com.riox432.civitdeck.feature.search.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ClearSearchHistoryUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSearchHistoryItemUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetDiscoveryModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseCase
@@ -153,6 +154,7 @@ object KoinHelper {
     fun getObserveSearchHistoryUseCase(): ObserveSearchHistoryUseCase = getKoin().get()
     fun getAddSearchHistoryUseCase(): AddSearchHistoryUseCase = getKoin().get()
     fun getClearSearchHistoryUseCase(): ClearSearchHistoryUseCase = getKoin().get()
+    fun getDeleteSearchHistoryItemUseCase(): DeleteSearchHistoryItemUseCase = getKoin().get()
     fun getTrackModelViewUseCase(): TrackModelViewUseCase = getKoin().get()
     fun getRecommendationsUseCase(): GetRecommendationsUseCase = getKoin().get()
     fun getViewedModelIdsUseCase(): GetViewedModelIdsUseCase = getKoin().get()

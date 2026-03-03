@@ -33,6 +33,7 @@ final class ModelSearchViewModel: ObservableObject {
     private let observeSearchHistoryUseCase: ObserveSearchHistoryUseCase
     private let addSearchHistoryUseCase: AddSearchHistoryUseCase
     private let clearSearchHistoryUseCase: ClearSearchHistoryUseCase
+    private let deleteSearchHistoryItemUseCase: DeleteSearchHistoryItemUseCase
     private let getViewedModelIdsUseCase: GetViewedModelIdsUseCase
     private let getExcludedTagsUseCase: GetExcludedTagsUseCase
     private let addExcludedTagUseCase: AddExcludedTagUseCase
@@ -61,6 +62,7 @@ final class ModelSearchViewModel: ObservableObject {
         self.observeSearchHistoryUseCase = KoinHelper.shared.getObserveSearchHistoryUseCase()
         self.addSearchHistoryUseCase = KoinHelper.shared.getAddSearchHistoryUseCase()
         self.clearSearchHistoryUseCase = KoinHelper.shared.getClearSearchHistoryUseCase()
+        self.deleteSearchHistoryItemUseCase = KoinHelper.shared.getDeleteSearchHistoryItemUseCase()
         self.getViewedModelIdsUseCase = KoinHelper.shared.getViewedModelIdsUseCase()
         self.getExcludedTagsUseCase = KoinHelper.shared.getExcludedTagsUseCase()
         self.addExcludedTagUseCase = KoinHelper.shared.getAddExcludedTagUseCase()
@@ -158,10 +160,12 @@ final class ModelSearchViewModel: ObservableObject {
         onSearch()
     }
 
+    func removeSearchHistoryItem(_ item: String) {
+        Task { try? await deleteSearchHistoryItemUseCase.invoke(query: item) }
+    }
     func clearSearchHistory() {
         Task { try? await clearSearchHistoryUseCase.invoke() }
     }
-
     func onTypeSelected(_ type: ModelType?) {
         loadTask?.cancel()
         selectedType = type
@@ -248,14 +252,12 @@ final class ModelSearchViewModel: ObservableObject {
             try? await toggleFavoriteUseCase.invoke(model: model)
         }
     }
-
     func observeFavorites() async {
         for await list in observeFavoritesUseCase.invoke() {
             let summaries = list.compactMap { $0 as? FavoriteModelSummary }
             favoriteIds = Set(summaries.map { $0.id })
         }
     }
-
     func hideModel(_ modelId: Int64, name: String) {
         Task {
             try? await hideModelUseCase.invoke(modelId: modelId, modelName: name)
@@ -263,7 +265,6 @@ final class ModelSearchViewModel: ObservableObject {
             models.removeAll { $0.id == modelId }
         }
     }
-
     func isModelOwned(_ model: Model) -> Bool {
         guard !ownedHashes.isEmpty else { return false }
         return model.modelVersions.contains { version in
