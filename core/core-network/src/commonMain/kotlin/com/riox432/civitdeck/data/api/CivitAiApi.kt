@@ -53,15 +53,27 @@ class CivitAiApi(private val client: HttpClient) {
     }
 
     suspend fun getModel(id: Long): ModelResponse {
-        return client.get("$BASE_URL/models/$id").body()
+        return try {
+            client.get("$BASE_URL/models/$id").body()
+        } catch (e: ContentConvertException) {
+            throw DataParseException(e.message, e)
+        }
     }
 
     suspend fun getModelVersion(id: Long): ModelVersionResponse {
-        return client.get("$BASE_URL/model-versions/$id").body()
+        return try {
+            client.get("$BASE_URL/model-versions/$id").body()
+        } catch (e: ContentConvertException) {
+            throw DataParseException(e.message, e)
+        }
     }
 
     suspend fun getModelVersionByHash(hash: String): ModelVersionResponse {
-        return client.get("$BASE_URL/model-versions/by-hash/$hash").body()
+        return try {
+            client.get("$BASE_URL/model-versions/by-hash/$hash").body()
+        } catch (e: ContentConvertException) {
+            throw DataParseException(e.message, e)
+        }
     }
 
     suspend fun getImages(
