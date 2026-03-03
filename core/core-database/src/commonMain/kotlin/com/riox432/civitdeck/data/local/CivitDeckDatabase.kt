@@ -13,6 +13,7 @@ import com.riox432.civitdeck.data.local.dao.CachedApiResponseDao
 import com.riox432.civitdeck.data.local.dao.CollectionDao
 import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.data.local.dao.DatasetCollectionDao
+import com.riox432.civitdeck.data.local.dao.DatasetImageMetaDao
 import com.riox432.civitdeck.data.local.dao.ExcludedTagDao
 import com.riox432.civitdeck.data.local.dao.HiddenModelDao
 import com.riox432.civitdeck.data.local.dao.LocalModelFileDao
@@ -80,6 +81,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun comfyUIConnectionDao(): ComfyUIConnectionDao
     abstract fun sdWebUIConnectionDao(): SDWebUIConnectionDao
     abstract fun datasetCollectionDao(): DatasetCollectionDao
+    abstract fun datasetImageMetaDao(): DatasetImageMetaDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")

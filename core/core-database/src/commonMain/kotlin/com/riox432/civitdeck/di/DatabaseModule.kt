@@ -23,10 +23,11 @@ val databaseModule = module {
     single { get<CivitDeckDatabase>().comfyUIConnectionDao() }
     single { get<CivitDeckDatabase>().sdWebUIConnectionDao() }
     single { get<CivitDeckDatabase>().datasetCollectionDao() }
+    single { get<CivitDeckDatabase>().datasetImageMetaDao() }
 
     // Data Sources
     single { LocalCacheDataSource(get()) }
 
     // Dataset
-    single<DatasetCollectionRepository> { DatasetCollectionRepositoryImpl(get()) }
+    single<DatasetCollectionRepository> { DatasetCollectionRepositoryImpl(get(), get()) }
 }

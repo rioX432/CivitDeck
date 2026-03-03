@@ -2,6 +2,7 @@ package com.riox432.civitdeck.data.local.repository
 
 import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.DatasetCollectionDao
+import com.riox432.civitdeck.data.local.dao.DatasetImageMetaDao
 import com.riox432.civitdeck.data.local.entity.DatasetCollectionEntity
 import com.riox432.civitdeck.data.local.entity.DatasetImageEntity
 import com.riox432.civitdeck.data.local.entity.ImageTagEntity
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.map
 
 class DatasetCollectionRepositoryImpl(
     private val dao: DatasetCollectionDao,
+    private val metaDao: DatasetImageMetaDao,
 ) : DatasetCollectionRepository {
 
     override fun observeCollections(): Flow<List<DatasetCollection>> =
@@ -50,8 +52,8 @@ class DatasetCollectionRepositoryImpl(
     override fun observeImages(datasetId: Long): Flow<List<DatasetImage>> =
         dao.observeImages(datasetId).map { entities ->
             entities.map { entity ->
-                val tags = dao.getTagsForImage(entity.id).map { ImageTag(it.id, it.datasetImageId, it.tag) }
-                val caption = dao.getCaption(entity.id)?.let { Caption(it.datasetImageId, it.text) }
+                val tags = metaDao.getTagsForImage(entity.id).map { ImageTag(it.id, it.datasetImageId, it.tag) }
+                val caption = metaDao.getCaption(entity.id)?.let { Caption(it.datasetImageId, it.text) }
                 DatasetImage(
                     id = entity.id,
                     datasetId = entity.datasetId,
@@ -82,7 +84,7 @@ class DatasetCollectionRepositoryImpl(
             ),
         )
         if (imageId != -1L && tags.isNotEmpty()) {
-            dao.insertTags(tags.map { ImageTagEntity(datasetImageId = imageId, tag = it) })
+            metaDao.insertTags(tags.map { ImageTagEntity(datasetImageId = imageId, tag = it) })
         }
         return imageId
     }

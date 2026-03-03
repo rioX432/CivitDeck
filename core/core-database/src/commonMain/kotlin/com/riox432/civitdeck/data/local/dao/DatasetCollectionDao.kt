@@ -4,10 +4,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.riox432.civitdeck.data.local.entity.CaptionEntity
 import com.riox432.civitdeck.data.local.entity.DatasetCollectionEntity
 import com.riox432.civitdeck.data.local.entity.DatasetImageEntity
-import com.riox432.civitdeck.data.local.entity.ImageTagEntity
 import kotlinx.coroutines.flow.Flow
 
 data class DatasetCollectionWithCount(
@@ -21,8 +19,6 @@ data class DatasetCollectionWithCount(
 
 @Dao
 interface DatasetCollectionDao {
-
-    // --- Dataset Collection CRUD ---
 
     @Query(
         """
@@ -45,8 +41,6 @@ interface DatasetCollectionDao {
     @Query("DELETE FROM dataset_collections WHERE id = :id")
     suspend fun deleteCollection(id: Long)
 
-    // --- Dataset Images ---
-
     @Query("SELECT * FROM dataset_images WHERE datasetId = :datasetId ORDER BY addedAt DESC")
     fun observeImages(datasetId: Long): Flow<List<DatasetImageEntity>>
 
@@ -58,26 +52,4 @@ interface DatasetCollectionDao {
 
     @Query("DELETE FROM dataset_images WHERE id IN (:imageIds)")
     suspend fun deleteImages(imageIds: List<Long>)
-
-    // --- Tags ---
-
-    @Query("SELECT * FROM image_tags WHERE datasetImageId = :datasetImageId")
-    suspend fun getTagsForImage(datasetImageId: Long): List<ImageTagEntity>
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertTag(entity: ImageTagEntity): Long
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertTags(entities: List<ImageTagEntity>)
-
-    @Query("DELETE FROM image_tags WHERE datasetImageId = :datasetImageId")
-    suspend fun deleteTagsForImage(datasetImageId: Long)
-
-    // --- Captions ---
-
-    @Query("SELECT * FROM captions WHERE datasetImageId = :datasetImageId")
-    suspend fun getCaption(datasetImageId: Long): CaptionEntity?
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertCaption(entity: CaptionEntity)
 }
