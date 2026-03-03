@@ -3,23 +3,32 @@
 package com.riox432.civitdeck.ui.comfyui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -37,9 +46,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryUiState
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.HistorySortOrder
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
+import com.riox432.civitdeck.ui.components.FilterChipRow
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -92,8 +103,11 @@ fun ComfyUIHistoryScreen(
         HistoryBody(
             state = state,
             images = viewModel.filteredImages(),
+            workflows = viewModel.workflows(),
             onImageClick = onImageClick,
             onRetry = viewModel::refresh,
+            onSortSelected = viewModel::onSelectSort,
+            onWorkflowSelected = viewModel::onSelectWorkflow,
             modifier = Modifier.padding(padding),
         )
     }
@@ -104,8 +118,11 @@ fun ComfyUIHistoryScreen(
 private fun HistoryBody(
     state: ComfyUIHistoryUiState,
     images: List<ComfyUIGeneratedImage>,
+    workflows: List<String>,
     onImageClick: (ComfyUIGeneratedImage) -> Unit,
     onRetry: () -> Unit,
+    onSortSelected: (HistorySortOrder) -> Unit,
+    onWorkflowSelected: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -137,6 +154,15 @@ private fun HistoryBody(
                         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
                         modifier = Modifier.fillMaxSize(),
                     ) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            FilterHeader(
+                                selectedSort = state.selectedSort,
+                                selectedWorkflow = state.selectedWorkflow,
+                                workflows = workflows,
+                                onSortSelected = onSortSelected,
+                                onWorkflowSelected = onWorkflowSelected,
+                            )
+                        }
                         items(images, key = { it.id }) { image ->
                             HistoryImageItem(
                                 image = image,
@@ -146,6 +172,62 @@ private fun HistoryBody(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun FilterHeader(
+    selectedSort: HistorySortOrder,
+    selectedWorkflow: String?,
+    workflows: List<String>,
+    onSortSelected: (HistorySortOrder) -> Unit,
+    onWorkflowSelected: (String?) -> Unit,
+) {
+    Column(modifier = Modifier.padding(bottom = Spacing.xs)) {
+        FilterChipRow(
+            options = HistorySortOrder.entries,
+            selected = selectedSort,
+            onSelect = onSortSelected,
+            label = { it.name },
+        )
+        if (workflows.size > 1) {
+            Spacer(modifier = Modifier.height(Spacing.xs))
+            WorkflowFilterRow(
+                workflows = workflows,
+                selectedWorkflow = selectedWorkflow,
+                onWorkflowSelected = onWorkflowSelected,
+            )
+        }
+    }
+}
+
+@Composable
+private fun WorkflowFilterRow(
+    workflows: List<String>,
+    selectedWorkflow: String?,
+    onWorkflowSelected: (String?) -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        modifier = Modifier.horizontalScroll(rememberScrollState()),
+    ) {
+        FilterChip(
+            selected = selectedWorkflow == null,
+            onClick = { onWorkflowSelected(null) },
+            label = { Text("All", style = MaterialTheme.typography.labelSmall) },
+        )
+        workflows.forEach { promptId ->
+            FilterChip(
+                selected = selectedWorkflow == promptId,
+                onClick = { onWorkflowSelected(promptId) },
+                label = {
+                    Text(
+                        promptId.take(8),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                },
+            )
         }
     }
 }
