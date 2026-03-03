@@ -81,6 +81,8 @@ import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateScreen
 import com.riox432.civitdeck.ui.compare.ModelCompareScreen
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.creator.CreatorProfileScreen
+import com.riox432.civitdeck.ui.dataset.BatchTagEditorScreen
+import com.riox432.civitdeck.ui.dataset.BatchTagEditorViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetDetailScreen
 import com.riox432.civitdeck.ui.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetListScreen
@@ -184,6 +186,8 @@ data object NavShortcutsSettingsRoute
 data object DatasetListRoute
 
 data class DatasetDetailRoute(val datasetId: Long, val datasetName: String)
+
+data class BatchTagEditorRoute(val datasetId: Long)
 
 internal enum class Tab(
     val label: String,
@@ -404,6 +408,7 @@ private fun CivitDeckNavDisplay(
             collectionDetailEntry(backStack, compareModelId, onCancelCompare)
             datasetListEntry(backStack)
             datasetDetailEntry(backStack)
+            batchTagEditorEntry(backStack)
             detailEntry(backStack)
             creatorEntry(backStack)
             galleryEntry(backStack)
@@ -477,6 +482,21 @@ private fun EntryProviderScope<Any>.datasetDetailEntry(backStack: MutableList<An
         ) { parametersOf(key.datasetId) }
         DatasetDetailScreen(
             datasetName = key.datasetName,
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onNavigateToBatchTagEditor = { datasetId ->
+                backStack.add(BatchTagEditorRoute(datasetId))
+            },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.batchTagEditorEntry(backStack: MutableList<Any>) {
+    entry<BatchTagEditorRoute> { key ->
+        val viewModel: BatchTagEditorViewModel = koinViewModel(
+            parameters = { parametersOf(key.datasetId) },
+        )
+        BatchTagEditorScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
         )

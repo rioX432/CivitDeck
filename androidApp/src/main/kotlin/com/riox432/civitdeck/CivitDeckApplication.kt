@@ -34,6 +34,7 @@ import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
+import com.riox432.civitdeck.ui.dataset.BatchTagEditorViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetListViewModel
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
@@ -144,5 +145,6 @@ val androidModule = module {
     viewModel { CivitaiLinkSettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { CivitaiLinkSendViewModel(get(), get()) }
     viewModel { DatasetListViewModel(get(), get(), get(), get()) }
-    viewModel { params -> DatasetDetailViewModel(params.get(), get(), get()) }
+    viewModel { params -> DatasetDetailViewModel(params.get(), get(), get(), get()) }
+    viewModel { params -> BatchTagEditorViewModel(params.get(), get(), get(), get()) }
 }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,8 +26,11 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.filled.Style
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,6 +40,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,10 +65,13 @@ fun DatasetDetailScreen(
     datasetName: String,
     viewModel: DatasetDetailViewModel,
     onBack: () -> Unit,
+    onNavigateToBatchTagEditor: (datasetId: Long) -> Unit,
 ) {
     val images by viewModel.images.collectAsStateWithLifecycle()
     val selectedImageIds by viewModel.selectedImageIds.collectAsStateWithLifecycle()
     val isSelectionMode by viewModel.isSelectionMode.collectAsStateWithLifecycle()
+    var captionSheetImageId by remember { mutableStateOf<Long?>(null) }
+    var captionSheetInitial by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -79,6 +89,7 @@ fun DatasetDetailScreen(
                 DatasetSelectionBottomBar(
                     selectedCount = selectedImageIds.size,
                     onRemove = viewModel::removeSelected,
+                    onEditTags = { onNavigateToBatchTagEditor(viewModel.datasetId) },
                 )
             }
         },
@@ -89,7 +100,21 @@ fun DatasetDetailScreen(
             selectedImageIds = selectedImageIds,
             onToggleSelection = viewModel::toggleSelection,
             onEnterSelectionMode = viewModel::enterSelectionMode,
+            onEditCaption = { image ->
+                captionSheetImageId = image.id
+                captionSheetInitial = image.caption?.text.orEmpty()
+            },
+            onNavigateToBatchTagEditor = { onNavigateToBatchTagEditor(viewModel.datasetId) },
             modifier = Modifier.padding(padding),
+        )
+    }
+
+    captionSheetImageId?.let { imageId ->
+        CaptionEditorSheet(
+            imageId = imageId,
+            initialCaption = captionSheetInitial,
+            onSave = { id, text -> viewModel.editCaption(id, text) },
+            onDismiss = { captionSheetImageId = null },
         )
     }
 }
@@ -136,12 +161,26 @@ private fun DatasetDetailTopBar(
 private fun DatasetSelectionBottomBar(
     selectedCount: Int,
     onRemove: () -> Unit,
+    onEditTags: () -> Unit,
 ) {
     BottomAppBar {
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center,
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Spacing.md),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm, Alignment.CenterHorizontally),
         ) {
+            Button(onClick = onEditTags) {
+                Icon(
+                    imageVector = Icons.Default.Style,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Text(
+                    text = "Edit Tags",
+                    modifier = Modifier.padding(start = Spacing.sm),
+                )
+            }
             Button(onClick = onRemove) {
                 Icon(
                     imageVector = Icons.Default.Delete,
@@ -164,6 +203,8 @@ private fun DatasetDetailContent(
     selectedImageIds: Set<Long>,
     onToggleSelection: (Long) -> Unit,
     onEnterSelectionMode: (Long) -> Unit,
+    onEditCaption: (DatasetImage) -> Unit,
+    onNavigateToBatchTagEditor: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (images.isEmpty()) {
@@ -174,32 +215,53 @@ private fun DatasetDetailContent(
             modifier = modifier.fillMaxSize(),
         )
     } else {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(GRID_COLUMNS),
-            contentPadding = PaddingValues(
-                start = Spacing.md,
-                end = Spacing.md,
-                top = Spacing.sm,
-                bottom = Spacing.lg,
-            ),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-            modifier = modifier.fillMaxSize(),
-        ) {
-            items(items = images, key = { it.id }) { image ->
-                DatasetImageItem(
-                    image = image,
-                    isSelected = image.id in selectedImageIds,
-                    isSelectionMode = isSelectionMode,
-                    onClick = {
-                        if (isSelectionMode) onToggleSelection(image.id)
-                    },
-                    onLongClick = {
-                        if (!isSelectionMode) onEnterSelectionMode(image.id)
-                    },
-                    modifier = Modifier.animateItem(),
-                )
-            }
+        DatasetImageGrid(
+            images = images,
+            isSelectionMode = isSelectionMode,
+            selectedImageIds = selectedImageIds,
+            onToggleSelection = onToggleSelection,
+            onEnterSelectionMode = onEnterSelectionMode,
+            onEditCaption = onEditCaption,
+            onNavigateToBatchTagEditor = onNavigateToBatchTagEditor,
+            modifier = modifier,
+        )
+    }
+}
+
+@Composable
+private fun DatasetImageGrid(
+    images: List<DatasetImage>,
+    isSelectionMode: Boolean,
+    selectedImageIds: Set<Long>,
+    onToggleSelection: (Long) -> Unit,
+    onEnterSelectionMode: (Long) -> Unit,
+    onEditCaption: (DatasetImage) -> Unit,
+    onNavigateToBatchTagEditor: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(GRID_COLUMNS),
+        contentPadding = PaddingValues(
+            start = Spacing.md,
+            end = Spacing.md,
+            top = Spacing.sm,
+            bottom = Spacing.lg,
+        ),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        modifier = modifier.fillMaxSize(),
+    ) {
+        items(items = images, key = { it.id }) { image ->
+            DatasetImageItem(
+                image = image,
+                isSelected = image.id in selectedImageIds,
+                isSelectionMode = isSelectionMode,
+                onClick = { if (isSelectionMode) onToggleSelection(image.id) },
+                onEnterSelectionMode = { onEnterSelectionMode(image.id) },
+                onEditCaption = { onEditCaption(image) },
+                onBatchEditTags = onNavigateToBatchTagEditor,
+                modifier = Modifier.animateItem(),
+            )
         }
     }
 }
@@ -211,13 +273,17 @@ private fun DatasetImageItem(
     isSelected: Boolean,
     isSelectionMode: Boolean,
     onClick: () -> Unit,
-    onLongClick: () -> Unit,
+    onEnterSelectionMode: () -> Unit,
+    onEditCaption: () -> Unit,
+    onBatchEditTags: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var showContextMenu by remember { mutableStateOf(false) }
+
     Box(
         modifier = modifier.combinedClickable(
             onClick = onClick,
-            onLongClick = onLongClick,
+            onLongClick = { if (!isSelectionMode) showContextMenu = true },
         ),
     ) {
         CivitAsyncImage(
@@ -232,6 +298,49 @@ private fun DatasetImageItem(
         if (isSelectionMode) {
             DatasetImageSelectionOverlay(isSelected = isSelected)
         }
+        ImageContextMenu(
+            expanded = showContextMenu,
+            onDismiss = { showContextMenu = false },
+            onEditCaption = {
+                showContextMenu = false
+                onEditCaption()
+            },
+            onBatchEditTags = {
+                showContextMenu = false
+                onBatchEditTags()
+            },
+            onSelect = {
+                showContextMenu = false
+                onEnterSelectionMode()
+            },
+        )
+    }
+}
+
+@Composable
+private fun ImageContextMenu(
+    expanded: Boolean,
+    onDismiss: () -> Unit,
+    onEditCaption: () -> Unit,
+    onBatchEditTags: () -> Unit,
+    onSelect: () -> Unit,
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismiss,
+    ) {
+        DropdownMenuItem(
+            text = { Text("Edit caption") },
+            onClick = onEditCaption,
+        )
+        DropdownMenuItem(
+            text = { Text("Batch edit tags") },
+            onClick = onBatchEditTags,
+        )
+        DropdownMenuItem(
+            text = { Text("Select") },
+            onClick = onSelect,
+        )
     }
 }
 

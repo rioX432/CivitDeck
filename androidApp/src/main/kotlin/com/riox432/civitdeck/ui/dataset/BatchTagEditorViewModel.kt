@@ -3,9 +3,9 @@ package com.riox432.civitdeck.ui.dataset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.DatasetImage
-import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
+import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
+import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetImagesUseCase
-import com.riox432.civitdeck.domain.usecase.RemoveImageFromDatasetUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,11 +13,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class DatasetDetailViewModel(
-    val datasetId: Long,
+class BatchTagEditorViewModel(
+    private val datasetId: Long,
     observeDatasetImagesUseCase: ObserveDatasetImagesUseCase,
-    private val removeImageFromDatasetUseCase: RemoveImageFromDatasetUseCase,
-    private val editCaptionUseCase: EditCaptionUseCase,
+    private val batchEditTagsUseCase: BatchEditTagsUseCase,
+    private val getTagSuggestionsUseCase: GetTagSuggestionsUseCase,
 ) : ViewModel() {
 
     val images: StateFlow<List<DatasetImage>> =
@@ -25,19 +25,14 @@ class DatasetDetailViewModel(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
     val selectedImageIds = MutableStateFlow<Set<Long>>(emptySet())
-    val isSelectionMode = MutableStateFlow(false)
-    val isLoading = MutableStateFlow(false)
-
-    fun enterSelectionMode(imageId: Long) {
-        isSelectionMode.value = true
-        selectedImageIds.value = setOf(imageId)
-    }
+    val tagInput = MutableStateFlow("")
+    val tagSuggestions = MutableStateFlow<List<String>>(emptyList())
+    val isAddMode = MutableStateFlow(true)
 
     fun toggleSelection(imageId: Long) {
         selectedImageIds.value = selectedImageIds.value.let { current ->
             if (imageId in current) current - imageId else current + imageId
         }
-        if (selectedImageIds.value.isEmpty()) isSelectionMode.value = false
     }
 
     fun selectAll() {
@@ -46,32 +41,43 @@ class DatasetDetailViewModel(
 
     fun clearSelection() {
         selectedImageIds.value = emptySet()
-        isSelectionMode.value = false
     }
 
-    fun removeSelected() {
-        val ids = selectedImageIds.value.toList()
-        if (ids.isEmpty()) return
+    fun setTagInput(text: String) {
+        tagInput.value = text
+        loadSuggestions(text)
+    }
+
+    fun toggleMode() {
+        isAddMode.value = !isAddMode.value
+    }
+
+    private fun loadSuggestions(prefix: String) {
         viewModelScope.launch {
             try {
-                removeImageFromDatasetUseCase(ids)
-                clearSelection()
+                tagSuggestions.value = getTagSuggestionsUseCase(datasetId, prefix)
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                // Removal failure is non-critical
+                tagSuggestions.value = emptyList()
             }
         }
     }
 
-    fun editCaption(imageId: Long, text: String) {
+    fun applyTags(tags: List<String>) {
+        val ids = selectedImageIds.value.toList()
+        if (ids.isEmpty() || tags.isEmpty()) return
         viewModelScope.launch {
             try {
-                editCaptionUseCase(imageId, text)
+                if (isAddMode.value) {
+                    batchEditTagsUseCase(ids, addTags = tags, removeTags = emptyList())
+                } else {
+                    batchEditTagsUseCase(ids, addTags = emptyList(), removeTags = tags)
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                // Caption edit failure is non-critical
+                // Tag edit failure is non-critical
             }
         }
     }
