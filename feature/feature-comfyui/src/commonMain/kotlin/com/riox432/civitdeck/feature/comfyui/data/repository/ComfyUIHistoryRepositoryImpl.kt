@@ -41,7 +41,7 @@ class ComfyUIHistoryRepositoryImpl(
         val meta = extractMeta(this)
         return outputs.values.flatMap { nodeOutput ->
             (nodeOutput.images ?: emptyList()).map { imgRef ->
-                val imageUrl = api.getImageUrl(imgRef)
+                val imageUrl = "${api.getImageUrl(imgRef)}&_prompt=$promptId"
                 ComfyUIGeneratedImage(
                     id = "$promptId/${imgRef.filename}",
                     promptId = promptId,
