@@ -30,6 +30,17 @@ struct ComfyUIHistoryView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task { viewModel.startObserving() }
         .onDisappear { viewModel.stopObserving() }
+        .sheet(isPresented: $viewModel.showDatasetPicker, onDismiss: viewModel.onDismissDatasetPicker) {
+            AddToDatasetSheet(
+                datasets: viewModel.datasets,
+                onSelectDataset: { datasetId in
+                    viewModel.onDatasetSelected(datasetId: datasetId)
+                },
+                onCreateAndSelect: { name in
+                    viewModel.onCreateDatasetAndSelect(name: name)
+                }
+            )
+        }
     }
 
     // MARK: - Filter Bar
@@ -95,5 +106,12 @@ struct ComfyUIHistoryView: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
+        .contextMenu {
+            Button {
+                viewModel.onAddToDatasetTap(image: image)
+            } label: {
+                Label("Add to Dataset", systemImage: "folder.badge.plus")
+            }
+        }
     }
 }

@@ -9,8 +9,13 @@ struct ComfyUIOutputDetailView: View {
     @State private var imageSaveSuccess: Bool?
     @State private var showSaveAlert = false
     @State private var showImageViewer = false
+    @State private var showDatasetPicker = false
+    @State private var datasets: [DatasetCollection] = []
 
     private let saveImageUseCase = KoinHelper.shared.getSaveGeneratedImageUseCase()
+    private let observeDatasetUseCase = KoinHelper.shared.getObserveDatasetCollectionsUseCase()
+    private let addToDatasetUseCase = KoinHelper.shared.getAddImageToDatasetUseCase()
+    private let createDatasetUseCase = KoinHelper.shared.getCreateDatasetCollectionUseCase()
 
     var body: some View {
         ScrollView {
@@ -24,6 +29,33 @@ struct ComfyUIOutputDetailView: View {
         }
         .navigationTitle("Detail")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showDatasetPicker = true
+                } label: {
+                    Image(systemName: "folder.badge.plus")
+                }
+            }
+        }
+        .sheet(isPresented: $showDatasetPicker) {
+            AddToDatasetSheet(
+                datasets: datasets,
+                onSelectDataset: { datasetId in
+                    showDatasetPicker = false
+                    onDatasetSelected(datasetId: datasetId)
+                },
+                onCreateAndSelect: { name in
+                    showDatasetPicker = false
+                    onCreateDatasetAndSelect(name: name)
+                }
+            )
+        }
+        .task {
+            for await list in observeDatasetUseCase.invoke() {
+                datasets = list.compactMap { $0 as? DatasetCollection }
+            }
+        }
         .alert("Add to Collection", isPresented: $showAddCollectionAlert) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -181,6 +213,50 @@ struct ComfyUIOutputDetailView: View {
             }
             .buttonStyle(.bordered)
         }
+    }
+
+    // MARK: - Dataset
+
+    private func onDatasetSelected(datasetId: Int64) {
+        let tags = buildTags()
+        Task {
+            _ = try? await addToDatasetUseCase.invoke(
+                datasetId: datasetId,
+                imageUrl: image.imageUrl,
+                sourceType: ImageSource.generated,
+                trainable: true,
+                tags: tags
+            )
+        }
+    }
+
+    private func onCreateDatasetAndSelect(name: String) {
+        let tags = buildTags()
+        Task {
+            if let datasetId = try? await createDatasetUseCase.invoke(name: name, description: "") {
+                _ = try? await addToDatasetUseCase.invoke(
+                    datasetId: datasetId.int64Value,
+                    imageUrl: image.imageUrl,
+                    sourceType: ImageSource.generated,
+                    trainable: true,
+                    tags: tags
+                )
+            }
+        }
+    }
+
+    private func buildTags() -> [String] {
+        var tags: [String] = []
+        if let seed = image.meta.seed {
+            tags.append("seed:\(seed.int64Value)")
+        }
+        if let sampler = image.meta.samplerName, !sampler.isEmpty {
+            tags.append("sampler:\(sampler)")
+        }
+        if !image.meta.positivePrompt.isEmpty {
+            tags.append("prompt_hash:\(abs(image.meta.positivePrompt.hashValue))")
+        }
+        return tags
     }
 
     // MARK: - Save
