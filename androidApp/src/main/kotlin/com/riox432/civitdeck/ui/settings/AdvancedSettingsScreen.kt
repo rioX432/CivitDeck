@@ -23,6 +23,7 @@ fun AdvancedSettingsScreen(
     viewModel: SettingsViewModel,
     onBack: () -> Unit,
     onNavigateToComfyUI: () -> Unit = {},
+    onNavigateToOutputGallery: () -> Unit = {},
     onNavigateToModelFiles: () -> Unit = {},
     onNavigateToTemplates: () -> Unit = {},
     onNavigateToSDWebUI: () -> Unit = {},
@@ -48,6 +49,7 @@ fun AdvancedSettingsScreen(
                 item { SectionHeader("ComfyUI") }
                 item { SubScreenRow("Server Connections", onNavigateToComfyUI) }
                 item { SubScreenRow("Workflow Templates", onNavigateToTemplates) }
+                item { SubScreenRow("Output Gallery", onNavigateToOutputGallery) }
                 item { SectionHeader("SD WebUI") }
                 item { SubScreenRow("SD WebUI Connections", onNavigateToSDWebUI) }
                 item { SectionHeader("Civitai Link") }

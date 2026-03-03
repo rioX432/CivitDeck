@@ -569,6 +569,7 @@ private fun EntryProviderScope<Any>.settingsSubScreenEntries(backStack: MutableL
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
             onNavigateToComfyUI = { backStack.add(ComfyUISettingsRoute) },
+            onNavigateToOutputGallery = { backStack.add(ComfyUIHistoryRoute) },
             onNavigateToModelFiles = { backStack.add(ModelFileBrowserRoute) },
             onNavigateToTemplates = { backStack.add(WorkflowTemplateLibraryRoute) },
             onNavigateToSDWebUI = { backStack.add(SDWebUISettingsRoute) },
