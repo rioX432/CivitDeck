@@ -35,16 +35,6 @@ struct ComfyUIHistoryView: View {
     // MARK: - Filter Bar
 
     private var filterBar: some View {
-        VStack(spacing: 0) {
-            sortChips
-            if viewModel.workflows.count > 1 {
-                workflowFilter
-            }
-        }
-        .padding(.vertical, Spacing.xs)
-    }
-
-    private var sortChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.sm) {
                 ForEach(HistorySortOrder.allCases, id: \.self) { sort in
@@ -52,27 +42,6 @@ struct ComfyUIHistoryView: View {
                         label: sort.rawValue,
                         isSelected: viewModel.selectedSort == sort,
                         action: { viewModel.selectedSort = sort }
-                    )
-                }
-            }
-            .padding(.horizontal, Spacing.md)
-            .padding(.vertical, Spacing.xs)
-        }
-    }
-
-    private var workflowFilter: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Spacing.sm) {
-                ChipButton(
-                    label: "All",
-                    isSelected: viewModel.selectedWorkflow == nil,
-                    action: { viewModel.selectedWorkflow = nil }
-                )
-                ForEach(viewModel.workflows, id: \.self) { promptId in
-                    ChipButton(
-                        label: String(promptId.prefix(8)),
-                        isSelected: viewModel.selectedWorkflow == promptId,
-                        action: { viewModel.selectedWorkflow = promptId }
                     )
                 }
             }

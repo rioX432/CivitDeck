@@ -11,24 +11,11 @@ final class ComfyUIHistoryViewModel: ObservableObject {
     @Published var images: [ComfyUIGeneratedImage] = []
     @Published var isLoading = true
     @Published var errorMessage: String?
-    @Published var selectedWorkflow: String?
     @Published var selectedSort: HistorySortOrder = .newest
     @Published var imageSaveSuccess: Bool?
 
-    var workflows: [String] {
-        let ids = images.map { $0.promptId }
-        var seen = Set<String>()
-        return ids.filter { seen.insert($0).inserted }
-    }
-
     var filteredImages: [ComfyUIGeneratedImage] {
-        let filtered: [ComfyUIGeneratedImage]
-        if let workflow = selectedWorkflow {
-            filtered = images.filter { $0.promptId == workflow }
-        } else {
-            filtered = images
-        }
-        return selectedSort == .newest ? filtered.reversed() : filtered
+        selectedSort == .newest ? images.reversed() : images
     }
 
     private let fetchHistoryUseCase = KoinHelper.shared.getFetchComfyUIHistoryUseCase()

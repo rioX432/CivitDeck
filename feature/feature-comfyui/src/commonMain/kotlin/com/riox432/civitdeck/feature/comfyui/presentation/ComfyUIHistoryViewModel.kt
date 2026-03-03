@@ -17,7 +17,6 @@ data class ComfyUIHistoryUiState(
     val images: List<ComfyUIGeneratedImage> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val selectedWorkflow: String? = null,
     val selectedSort: HistorySortOrder = HistorySortOrder.Newest,
     val imageSaveSuccess: Boolean? = null,
 )
@@ -49,10 +48,6 @@ class ComfyUIHistoryViewModel(
         }
     }
 
-    fun onSelectWorkflow(workflow: String?) {
-        _uiState.update { it.copy(selectedWorkflow = workflow) }
-    }
-
     fun onSelectSort(sort: HistorySortOrder) {
         _uiState.update { it.copy(selectedSort = sort) }
     }
@@ -68,22 +63,11 @@ class ComfyUIHistoryViewModel(
         _uiState.update { it.copy(imageSaveSuccess = null) }
     }
 
-    fun workflows(): List<String> {
-        val seen = linkedSetOf<String>()
-        _uiState.value.images.forEach { seen += it.promptId }
-        return seen.toList()
-    }
-
     fun filteredImages(): List<ComfyUIGeneratedImage> {
         val state = _uiState.value
-        val filtered = if (state.selectedWorkflow != null) {
-            state.images.filter { it.promptId == state.selectedWorkflow }
-        } else {
-            state.images
-        }
         return when (state.selectedSort) {
-            HistorySortOrder.Newest -> filtered.reversed()
-            HistorySortOrder.Oldest -> filtered
+            HistorySortOrder.Newest -> state.images.reversed()
+            HistorySortOrder.Oldest -> state.images
         }
     }
 }

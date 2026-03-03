@@ -20,15 +20,6 @@ struct AdvancedSettingsView: View {
                                 .foregroundColor(.civitOnSurfaceVariant)
                         }
                     }
-                    NavigationLink(destination: ComfyUIHistoryView()) {
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text("Output Gallery")
-                                .font(.civitBodyMedium)
-                            Text("Browse generated images")
-                                .font(.civitBodySmall)
-                                .foregroundColor(.civitOnSurfaceVariant)
-                        }
-                    }
                 }
                 Section("SD WebUI") {
                     NavigationLink(destination: SDWebUISettingsView()) {
