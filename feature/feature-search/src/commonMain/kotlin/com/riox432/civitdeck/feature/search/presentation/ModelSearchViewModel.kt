@@ -24,6 +24,7 @@ import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ClearSearchHistoryUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSearchHistoryItemUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
@@ -80,6 +81,7 @@ class ModelSearchViewModel(
     observeSearchHistoryUseCase: ObserveSearchHistoryUseCase,
     private val addSearchHistoryUseCase: AddSearchHistoryUseCase,
     private val clearSearchHistoryUseCase: ClearSearchHistoryUseCase,
+    private val deleteSearchHistoryItemUseCase: DeleteSearchHistoryItemUseCase,
     private val getViewedModelIdsUseCase: GetViewedModelIdsUseCase,
     private val getExcludedTagsUseCase: GetExcludedTagsUseCase,
     private val addExcludedTagUseCase: AddExcludedTagUseCase,
@@ -204,6 +206,10 @@ class ModelSearchViewModel(
     fun onHistoryItemClick(query: String) {
         _uiState.update { it.copy(query = query) }
         onSearch()
+    }
+
+    fun removeSearchHistoryItem(query: String) {
+        viewModelScope.launch { deleteSearchHistoryItemUseCase(query) }
     }
 
     fun clearSearchHistory() {

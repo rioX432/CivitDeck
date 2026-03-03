@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.domain.usecase
 
 import com.riox432.civitdeck.domain.model.AccentColor
+import com.riox432.civitdeck.domain.model.NavShortcut
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
@@ -94,6 +95,10 @@ class UserPreferencesUseCasesTest {
         override fun observeCivitaiLinkKey(): Flow<String?> = civitaiLinkKey
         override suspend fun getCivitaiLinkKey(): String? = civitaiLinkKey.value
         override suspend fun setCivitaiLinkKey(key: String?) { civitaiLinkKey.value = key }
+
+        val customNavShortcuts = MutableStateFlow<List<NavShortcut>>(emptyList())
+        override fun observeCustomNavShortcuts(): Flow<List<NavShortcut>> = customNavShortcuts
+        override suspend fun setCustomNavShortcuts(items: List<NavShortcut>) { customNavShortcuts.value = items }
     }
 
     private val repo = FakeUserPreferencesRepository()

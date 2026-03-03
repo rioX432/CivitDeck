@@ -9,6 +9,7 @@ import com.riox432.civitdeck.feature.search.data.repository.SearchHistoryReposit
 import com.riox432.civitdeck.feature.search.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ClearSearchHistoryUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSearchHistoryItemUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetDiscoveryModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseCase
@@ -33,6 +34,7 @@ val searchModule = module {
     factory { ObserveSearchHistoryUseCase(get()) }
     factory { AddSearchHistoryUseCase(get()) }
     factory { ClearSearchHistoryUseCase(get()) }
+    factory { DeleteSearchHistoryItemUseCase(get()) }
     factory { GetExcludedTagsUseCase(get()) }
     factory { AddExcludedTagUseCase(get()) }
     factory { RemoveExcludedTagUseCase(get()) }

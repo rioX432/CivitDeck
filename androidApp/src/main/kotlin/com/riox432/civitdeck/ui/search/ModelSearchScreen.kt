@@ -23,12 +23,12 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -36,11 +36,9 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.filled.Add
@@ -360,6 +358,7 @@ private fun CollapsibleHeader(
             onSearch = viewModel::onSearch,
             searchHistory = searchHistory,
             onHistoryItemClick = viewModel::onHistoryItemClick,
+            onDeleteHistoryItem = viewModel::removeSearchHistoryItem,
             onClearHistory = viewModel::clearSearchHistory,
         )
     }
@@ -384,6 +383,7 @@ private fun SearchBarWithFilterButton(
     onSearch: () -> Unit,
     searchHistory: List<String>,
     onHistoryItemClick: (String) -> Unit,
+    onDeleteHistoryItem: (String) -> Unit,
     onClearHistory: () -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -406,6 +406,7 @@ private fun SearchBarWithFilterButton(
             },
             onClear = {
                 onQueryChange("")
+                onSearch()
                 showHistory = searchHistory.isNotEmpty()
             },
             modifier = Modifier.fillMaxWidth(),
@@ -419,6 +420,7 @@ private fun SearchBarWithFilterButton(
                     showHistory = false
                     keyboardController?.hide()
                 },
+                onDeleteItem = { item -> onDeleteHistoryItem(item) },
                 onClearAll = {
                     onClearHistory()
                     showHistory = false
@@ -546,68 +548,81 @@ private fun FilterSheetContent(
     viewModel: ModelSearchViewModel,
     onDismiss: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxHeight(0.95f)
-            .verticalScroll(rememberScrollState())
-            .padding(bottom = Spacing.lg),
+    LazyColumn(
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
+        contentPadding = PaddingValues(bottom = Spacing.lg),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Spacing.lg),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(text = "Filters", style = MaterialTheme.typography.titleMedium)
-            TextButton(onClick = {
-                viewModel.resetFilters()
-                onDismiss()
-            }) {
-                Text("Reset")
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Spacing.lg),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(text = "Filters", style = MaterialTheme.typography.titleMedium)
+                TextButton(onClick = {
+                    viewModel.resetFilters()
+                    onDismiss()
+                }) {
+                    Text("Reset")
+                }
             }
         }
-        TypeFilterSection(
-            selectedType = uiState.selectedType,
-            onTypeSelected = viewModel::onTypeSelected,
-        )
-        BaseModelFilterSection(
-            selectedBaseModels = uiState.selectedBaseModels,
-            onBaseModelToggled = viewModel::onBaseModelToggled,
-        )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
-        SortFilterSection(
-            selectedSort = uiState.selectedSort,
-            onSortSelected = viewModel::onSortSelected,
-        )
-        PeriodFilterSection(
-            selectedPeriod = uiState.selectedPeriod,
-            onPeriodSelected = viewModel::onPeriodSelected,
-        )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
-        FreshOnlyToggleRow(
-            isFreshFindEnabled = uiState.isFreshFindEnabled,
-            onFreshFindToggled = viewModel::onFreshFindToggled,
-        )
-        TagFilterSection(
-            tags = uiState.includedTags,
-            onAddTag = viewModel::onAddIncludedTag,
-            onRemoveTag = viewModel::onRemoveIncludedTag,
-            placeholder = "Include tag...",
-            header = "Tags",
-            headerSubtitle = "(include)",
-            chipBackground = { MaterialTheme.colorScheme.primaryContainer },
-            chipForeground = { MaterialTheme.colorScheme.onPrimaryContainer },
-        )
-        TagFilterSection(
-            tags = uiState.excludedTags,
-            onAddTag = viewModel::onAddExcludedTag,
-            onRemoveTag = viewModel::onRemoveExcludedTag,
-            placeholder = "Exclude tag...",
-            chipBackground = { MaterialTheme.colorScheme.errorContainer },
-            chipForeground = { MaterialTheme.colorScheme.onErrorContainer },
-        )
+        item {
+            TypeFilterSection(
+                selectedType = uiState.selectedType,
+                onTypeSelected = viewModel::onTypeSelected,
+            )
+        }
+        item {
+            BaseModelFilterSection(
+                selectedBaseModels = uiState.selectedBaseModels,
+                onBaseModelToggled = viewModel::onBaseModelToggled,
+            )
+        }
+        item { HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg)) }
+        item {
+            SortFilterSection(
+                selectedSort = uiState.selectedSort,
+                onSortSelected = viewModel::onSortSelected,
+            )
+        }
+        item {
+            PeriodFilterSection(
+                selectedPeriod = uiState.selectedPeriod,
+                onPeriodSelected = viewModel::onPeriodSelected,
+            )
+        }
+        item { HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg)) }
+        item {
+            FreshOnlyToggleRow(
+                isFreshFindEnabled = uiState.isFreshFindEnabled,
+                onFreshFindToggled = viewModel::onFreshFindToggled,
+            )
+        }
+        item {
+            TagFilterSection(
+                tags = uiState.includedTags,
+                onAddTag = viewModel::onAddIncludedTag,
+                onRemoveTag = viewModel::onRemoveIncludedTag,
+                placeholder = "Include tag...",
+                header = "Tags",
+                headerSubtitle = "(include)",
+                chipBackground = { MaterialTheme.colorScheme.primaryContainer },
+                chipForeground = { MaterialTheme.colorScheme.onPrimaryContainer },
+            )
+        }
+        item {
+            TagFilterSection(
+                tags = uiState.excludedTags,
+                onAddTag = viewModel::onAddExcludedTag,
+                onRemoveTag = viewModel::onRemoveExcludedTag,
+                placeholder = "Exclude tag...",
+                chipBackground = { MaterialTheme.colorScheme.errorContainer },
+                chipForeground = { MaterialTheme.colorScheme.onErrorContainer },
+            )
+        }
     }
 }
 
@@ -615,6 +630,7 @@ private fun FilterSheetContent(
 private fun SearchHistoryDropdown(
     history: List<String>,
     onItemClick: (String) -> Unit,
+    onDeleteItem: (String) -> Unit,
     onClearAll: () -> Unit,
 ) {
     Column(
@@ -634,12 +650,13 @@ private fun SearchHistoryDropdown(
                     .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    Icons.Default.Clear,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = Spacing.sm),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                IconButton(onClick = { onDeleteItem(item) }) {
+                    Icon(
+                        Icons.Default.Clear,
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 Text(
                     text = item,
                     style = MaterialTheme.typography.bodyMedium,
