@@ -1,8 +1,11 @@
 package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.domain.usecase.AddImageToDatasetUseCase
+import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
 import com.riox432.civitdeck.domain.usecase.CreateDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
+import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveImageFromDatasetUseCase
@@ -17,4 +20,7 @@ val datasetDomainModule = module {
     factory { ObserveDatasetImagesUseCase(get()) }
     factory { AddImageToDatasetUseCase(get()) }
     factory { RemoveImageFromDatasetUseCase(get()) }
+    factory { BatchEditTagsUseCase(get()) }
+    factory { EditCaptionUseCase(get()) }
+    factory { GetTagSuggestionsUseCase(get()) }
 }

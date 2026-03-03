@@ -3,6 +3,9 @@ package com.riox432.civitdeck.di
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.usecase.AddImageToDatasetUseCase
+import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
+import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
+import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
@@ -312,4 +315,7 @@ object KoinHelper {
     fun getObserveDatasetImagesUseCase(): ObserveDatasetImagesUseCase = getKoin().get()
     fun getAddImageToDatasetUseCase(): AddImageToDatasetUseCase = getKoin().get()
     fun getRemoveImageFromDatasetUseCase(): RemoveImageFromDatasetUseCase = getKoin().get()
+    fun getBatchEditTagsUseCase(): BatchEditTagsUseCase = getKoin().get()
+    fun getEditCaptionUseCase(): EditCaptionUseCase = getKoin().get()
+    fun getGetTagSuggestionsUseCase(): GetTagSuggestionsUseCase = getKoin().get()
 }
