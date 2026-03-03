@@ -110,6 +110,10 @@
 		CDSC01012EA00001000CD001 /* ShortcutsIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSC01002EA00001000CD001 /* ShortcutsIntents.swift */; };
 		CDSC02012EA00002000CD001 /* ShortcutsRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSC02002EA00002000CD001 /* ShortcutsRouter.swift */; };
 		CDWD01012EBB0001000CD001 /* WidgetDataWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDWD01002EBB0001000CD001 /* WidgetDataWriter.swift */; };
+		CDDT01012F300001000CD001 /* DatasetListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT01002F300001000CD001 /* DatasetListViewModel.swift */; };
+		CDDT02012F300002000CD001 /* DatasetListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT02002F300002000CD001 /* DatasetListView.swift */; };
+		CDDT03012F300003000CD001 /* DatasetDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT03002F300003000CD001 /* DatasetDetailViewModel.swift */; };
+		CDDT04012F300004000CD001 /* DatasetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT04002F300004000CD001 /* DatasetDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -222,6 +226,10 @@
 		CDWG01002EBB0002000CD001 /* CivitDeckWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckWidget.swift; sourceTree = "<group>"; };
 		CDWG02002EBB0002000CD001 /* CivitDeckWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckWidgetBundle.swift; sourceTree = "<group>"; };
 		CDWG03002EBB0002000CD001 /* WidgetConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetConstants.swift; sourceTree = "<group>"; };
+		CDDT01002F300001000CD001 /* DatasetListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatasetListViewModel.swift; sourceTree = "<group>"; };
+		CDDT02002F300002000CD001 /* DatasetListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatasetListView.swift; sourceTree = "<group>"; };
+		CDDT03002F300003000CD001 /* DatasetDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatasetDetailViewModel.swift; sourceTree = "<group>"; };
+		CDDT04002F300004000CD001 /* DatasetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatasetDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -361,6 +369,7 @@
 				CD00CU0A2D8CC001000CD001 /* ComfyUI */,
 				CD00CE062D2CC001000CD001 /* Compare */,
 				CD0008042D000008000CD001 /* Creator */,
+				CDDT0A002F300000000CD001 /* Dataset */,
 				CD0004042D000004000CD001 /* Detail */,
 				CD00DS0A2D7CC001000CD001 /* Discovery */,
 				CD0005082D000005000CD001 /* Gallery */,
@@ -371,6 +380,17 @@
 				CD00GT082D6CC001000CD001 /* Tutorial */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		CDDT0A002F300000000CD001 /* Dataset */ = {
+			isa = PBXGroup;
+			children = (
+				CDDT01002F300001000CD001 /* DatasetListViewModel.swift */,
+				CDDT02002F300002000CD001 /* DatasetListView.swift */,
+				CDDT03002F300003000CD001 /* DatasetDetailViewModel.swift */,
+				CDDT04002F300004000CD001 /* DatasetDetailView.swift */,
+			);
+			path = Dataset;
 			sourceTree = "<group>";
 		};
 		CDSC0A002EA00001000CD001 /* Shortcuts */ = {
@@ -748,6 +768,10 @@
 				CDSC01012EA00001000CD001 /* ShortcutsIntents.swift in Sources */,
 				CDSC02012EA00002000CD001 /* ShortcutsRouter.swift in Sources */,
 				CDWD01012EBB0001000CD001 /* WidgetDataWriter.swift in Sources */,
+				CDDT01012F300001000CD001 /* DatasetListViewModel.swift in Sources */,
+				CDDT02012F300002000CD001 /* DatasetListView.swift in Sources */,
+				CDDT03012F300003000CD001 /* DatasetDetailViewModel.swift in Sources */,
+				CDDT04012F300004000CD001 /* DatasetDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
