@@ -49,7 +49,7 @@ final class CreatorProfileViewModel: ObservableObject {
                 let result = try await getCreatorModelsUseCase.invoke(
                     username: username,
                     cursor: isLoadMore ? nextCursor : nil,
-                    limit: KotlinInt(int: pageSize)
+                    limit: pageSize
                 )
 
                 guard !Task.isCancelled else { return }
