@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
@@ -57,7 +58,7 @@ import com.riox432.civitdeck.ui.prompts.SavedPromptsScreen
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
-private enum class CollectionsScreenTab { Collections, Prompts }
+private enum class CollectionsScreenTab { Collections, Prompts, Datasets }
 
 @Composable
 fun CollectionsScreen(
@@ -67,16 +68,25 @@ fun CollectionsScreen(
     onRenameCollection: (Long, String) -> Unit,
     onDeleteCollection: (Long) -> Unit,
     promptsViewModel: SavedPromptsViewModel,
+    onNavigateToDatasets: () -> Unit = {},
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(CollectionsScreenTab.Collections) }
     var showCreateDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         floatingActionButton = {
-            if (selectedTab == CollectionsScreenTab.Collections) {
-                FloatingActionButton(onClick = { showCreateDialog = true }) {
-                    Icon(Icons.Default.Add, contentDescription = "Create collection")
+            when (selectedTab) {
+                CollectionsScreenTab.Collections -> {
+                    FloatingActionButton(onClick = { showCreateDialog = true }) {
+                        Icon(Icons.Default.Add, contentDescription = "Create collection")
+                    }
                 }
+                CollectionsScreenTab.Datasets -> {
+                    FloatingActionButton(onClick = onNavigateToDatasets) {
+                        Icon(Icons.Default.Dataset, contentDescription = "Manage datasets")
+                    }
+                }
+                else -> {}
             }
         },
     ) { padding ->
@@ -90,6 +100,7 @@ fun CollectionsScreen(
                     onDeleteCollection = onDeleteCollection,
                 )
                 CollectionsScreenTab.Prompts -> SavedPromptsScreen(viewModel = promptsViewModel)
+                CollectionsScreenTab.Datasets -> DatasetsEntryContent()
             }
         }
         if (showCreateDialog) {
@@ -117,6 +128,20 @@ private fun CollectionsTabRow(
                 text = { Text(tab.name) },
             )
         }
+    }
+}
+
+@Composable
+private fun DatasetsEntryContent() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        EmptyStateMessage(
+            icon = Icons.Default.Dataset,
+            title = "Training Datasets",
+            subtitle = "Curate image sets for AI model training",
+        )
     }
 }
 
