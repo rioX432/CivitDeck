@@ -406,6 +406,7 @@ private fun SearchBarWithFilterButton(
             },
             onClear = {
                 onQueryChange("")
+                onSearch()
                 showHistory = searchHistory.isNotEmpty()
             },
             modifier = Modifier.fillMaxWidth(),
