@@ -174,7 +174,7 @@ final class ImageGalleryViewModel: ObservableObject {
                     sort: selectedSort,
                     period: selectedPeriod,
                     nsfwLevel: nsfwLevel,
-                    limit: pageSize,
+                    limit: KotlinInt(int: pageSize),
                     cursor: isLoadMore ? nextCursor : nil
                 )
                 timeoutTask.cancel()
