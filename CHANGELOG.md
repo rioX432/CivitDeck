@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Dataset Feature
+- Add DatasetCollection domain models + ImageSource enum (#280) (d154c8f)
+- Add Dataset Room entities, DAOs, migration v23→v24, repository + use cases (#281) (ccca6f4)
+- Add Android Dataset list/detail screens (CRUD) (#282) (f7bdc56)
+- Add iOS Dataset list/detail screens (CRUD) (#283) (2160c49)
+- Add 'Add to Dataset' action in ComfyUI gallery + detail screen (#290) (ef0410d)
+- Add 'Add to Dataset' action in iOS ComfyUI output detail and gallery (#291) (291d7cf)
+
+#### Output Gallery
+- Add fullscreen image viewer to Output Gallery Detail (#338) (a6441b1)
+- Add sort/filter controls to Output Gallery (#337) (3b7ea72)
+- Add Output Gallery shortcut to Advanced Settings (#336) (4334e3e)
+
+#### Settings & UX
+- Add Theme (Light/Dark/System) setting to Appearance Settings (#334) (58e584f)
+- Show current/total page indicator on image gallery expand button (#347) (5d228d8)
+- Add carousel accessibilityLabel; fix .task in alert (#323 #324) (2bfb25b)
+
 #### ComfyUI Generation History
 - Add ComfyUI output gallery and detail screen — Android (#278) (cf8ff16)
 - Add ComfyUI output gallery and detail screen — iOS (#279) (e3d6e0d)
@@ -26,7 +44,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Navigation & UX
+- Merge Prompts into Collections tab and add custom bottom nav shortcuts (334588d)
+- Persist Search ViewModel across tab switches to prevent refetch (#332) (a162a1d)
+- Move image gallery expand button to bottom-right with image count (#347) (180827e)
+- Re-search on focus lost, regardless of query content (#345) (fa802b5)
+- Re-search when text is manually cleared and focus leaves the field (#345) (d4238fb)
+- Trigger re-search when clearing the search text field (#345) (ebea1f9)
+- iOS parity: re-search on blur, per-item history delete, image counter (#345 #346 #347) (5aed107)
+- Add scope description to Blur Intensity settings section (#341) (e95477c)
+- Clarify Power User Mode scope and add Civitai Link subscription notice (#340) (bc1675f)
+- Add logging to swallowed exceptions in shared layer (#325 #326 #327 #328) (32efe15)
+
 #### Architecture & Code Quality
+- Split repository interfaces by concern, removing @Suppress("TooManyFunctions") (#333) (d3abaf9)
+- Split DatasetCollectionDao into two DAOs to fix TooManyFunctions detekt violation (994d6ab)
 - Split monolithic DomainModule into feature-scoped sub-modules (#320) (f1af807)
 - Split multi-class UseCase files into single-class files (#319) (7352b20)
 - Wrap ContentConvertException in DataParseException to prevent Ktor types leaking into domain (#317) (2122f62)
@@ -46,6 +78,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix Output Gallery: remove meaningless workflow filter, move shortcut to Settings main (#336 #337) (994ecca)
+- Fix inverted sort order in Output Gallery (#337) (c8070c8)
+- Fix misaligned dividers in ComfyUIOutputDetailScreen (#339) (86deea1)
+- Fix filter modal infinite scroll by replacing verticalScroll with LazyColumn (#344) (e8f8357)
+- Fix search history delete button to delete item instead of triggering search (#346) (af49416)
+- Fix NSFW blur intensity setting having no effect (#329) (d3b899c)
+- Fix action button overflow in ModelDetailScreen Android (#331) (e5c7758)
+- Fix collection model count always showing 0 (#330) (4089e8f)
+- Fix CoroutineScope leak in CivitaiLinkRepositoryImpl (#322) (e861bba)
+- Fix iOS build: add NavShortcut/DeleteSearchHistoryItem type aliases, fix List selection binding (78e536f)
+- Fix iOS build: add Dataset domain type aliases (7208d6f)
 - Fix ComfyUI gallery/detail UX: push navigation, grid overlap, image fit, fullscreen tap (5b099e0)
 - Fix ComfyUI image URL encoding to handle & and special characters in filenames (43bf0b8)
 - Fix ComfyUI gallery HTTP image loading: iOS ATS and Android coil-network-okhttp (06bf445)
@@ -64,6 +107,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Infrastructure
 
+- Fix import ordering (detekt autocorrect) + add Room schema v24 (0823e17)
+- Add cross-feature integration design document (#342) (5229598)
+- Fix lint issues (line length) (fa15ffd)
 - Apply Detekt formatting and add Room schema for migration 20→21 (8b21c55)
 - Update ROADMAP to Phase 6 and fix ARCHITECTURE DB version (9260750)
 - Fix SwiftLint line length in ComfyUIOutputDetailView (24fe8e6)

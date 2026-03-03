@@ -25,8 +25,8 @@ CivitDeck/
 │   │       └── di/                   # NetworkModule (Koin)
 │   ├── core-database/        # Database layer: Room KMP entities, DAOs, migrations
 │   │   └── src/commonMain/kotlin/.../
-│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v21)
-│   │       ├── data/local/migration/ # Sequential migrations (1→2 … 20→21)
+│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v24)
+│   │       ├── data/local/migration/ # Sequential migrations (1→2 … 23→24)
 │   │       └── di/                   # DatabaseModule (Koin)
 │   └── core-ui/              # Shared Compose components + design tokens (Android-only)
 │       └── src/main/kotlin/.../
@@ -40,14 +40,14 @@ CivitDeck/
 │   ├── feature-collections/  # User model collections (create, rename, bulk manage)
 │   ├── feature-prompts/      # Saved prompts + template library (built-in & user-created)
 │   ├── feature-settings/     # App settings (NSFW, appearance, notifications, storage)
-│   ├── feature-comfyui/      # ComfyUI integration: generation, queue, LoRA/ControlNet, workflow import
-│   ├── feature-dataset/      # (Phase 5-6) Dataset collection, tagging, caption editor
-│   └── feature-export/       # (Phase 6) Dataset export UI (zip, kohya-ss format)
+│   └── feature-comfyui/      # ComfyUI integration: generation, queue, LoRA/ControlNet, workflow import
 ├── androidApp/               # Android app entry point
 │   └── src/main/kotlin/
 │       ├── CivitDeckApplication.kt   # Koin init + ViewModel DI
 │       ├── ui/navigation/            # Navigation 3 routes & NavDisplay
 │       ├── ui/components/            # ModelCard, SwipeableModelCard (Nav3 dependency)
+│       ├── ui/dataset/               # Dataset list/detail screens + AddToDataset sheet
+│       ├── ui/compare/               # Model comparison screen
 │       ├── widget/                   # Glance home screen widgets
 │       ├── tile/                     # Quick Settings tile
 │       └── notification/             # Background polling notifications
@@ -56,7 +56,8 @@ CivitDeck/
         ├── Features/         # Feature-based screens + ViewModels
         │   ├── Search/       │   ├── Detail/       │   ├── Gallery/
         │   ├── Creator/      │   ├── Collections/  │   ├── Prompts/
-        │   ├── Settings/     │   ├── ComfyUI/      │   └── Compare/
+        │   ├── Settings/     │   ├── ComfyUI/      │   ├── Dataset/
+        │   ├── Compare/      │   └── ModelFileBrowser/
         └── DesignSystem/     # Design tokens + shared components
             ├── CivitDeckColors.swift   ├── CivitDeckFonts.swift
             ├── CivitDeckSpacing.swift  ├── CivitDeckMotion.swift
@@ -84,39 +85,8 @@ graph TB
 ### Data Layer (`core/core-network/` + `core/core-database/`)
 
 - **API** (`core-network`): Ktor HTTP client targeting `https://civitai.com/api/v1`. Endpoints include `/models`, `/models/:id`, `/model-versions/:id`, `/images`, `/creators`, and `/tags`. Pagination is cursor-based for images and page-based for others. Also includes a ComfyUI API client for local generation workflows.
-- **Local** (`core-database`): Room KMP database (version 21) for offline favorites, user collections, saved prompts, SD WebUI connections, and response caching with TTL. Migrations tracked sequentially from version 1.
+- **Local** (`core-database`): Room KMP database (version 24) for offline favorites, user collections, saved prompts, SD WebUI connections, dataset collections, and response caching with TTL. Migrations tracked sequentially from version 1.
 - **Repository Implementations**: Combine remote API calls with local cache. Return domain models, not DTOs.
-
-#### Phase 5-6 Domain Extensions (planned)
-
-New domain models for dataset curation and training pipeline preparation:
-
-| Model | Description |
-|---|---|
-| `DatasetCollection` | Top-level dataset group (independent of Favorites) |
-| `DatasetImage` | Single image within a dataset — references a FavoriteImage or ComfyUI output |
-| `ImageTag` | Custom tag supporting batch editing across multiple images |
-| `Caption` | Per-image training caption (plain text, maps to `caption.txt` in kohya format) |
-| `ExportManifest` | Metadata definition for JSONL/CSV export |
-| `ImageSource` | Provenance enum: `CivitAI`, `Local`, `Generated` |
-
-New repository interfaces (to be added to `core-domain`):
-
-| Repository | Responsibility |
-|---|---|
-| `DatasetCollectionRepository` | CRUD + add/remove images within a dataset |
-| `ImageTagRepository` | Batch tag operations across multiple images |
-| `ExportRepository` | Zip generation and manifest output |
-| `ComfyUIHistoryRepository` | ComfyUI `/history` API wrapper (extends existing `ComfyUIRepository`) |
-
-New use cases (to be added to `core-domain`):
-
-- `CreateDatasetCollectionUseCase`
-- `AddImageToDatasetUseCase`
-- `BatchEditTagsUseCase`
-- `EditCaptionUseCase`
-- `ExportDatasetUseCase`
-- `FetchComfyUIHistoryUseCase`
 
 ### Domain Layer (`core/core-domain/`)
 
