@@ -1,11 +1,15 @@
 import SwiftUI
 import Shared
 
+extension DatasetImage: @retroactive Identifiable {}
+
 struct DatasetDetailView: View {
     @StateObject private var viewModel: DatasetDetailViewModel
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     private let datasetName: String
+    @State private var editCaptionImage: DatasetImage?
+    @State private var showBatchTagEditor = false
 
     private var columns: [GridItem] {
         AdaptiveGrid.columns(sizeClass: sizeClass)
@@ -45,6 +49,14 @@ struct DatasetDetailView: View {
                     viewModel.updateTrainable(id: image.id, trainable: newValue)
                 }
             }
+        }
+        .sheet(item: $editCaptionImage) { img in
+            CaptionEditorSheet(image: img) { newText in
+                viewModel.saveCaption(imageId: img.id, text: newText)
+            }
+        }
+        .sheet(isPresented: $showBatchTagEditor) {
+            BatchTagEditorView(datasetId: viewModel.datasetId)
         }
     }
 
@@ -140,6 +152,11 @@ struct DatasetDetailView: View {
                 viewModel.enterSelectionMode(id: image.id)
             }
         }, perform: {})
+        .contextMenu {
+            Button("Edit Caption") { editCaptionImage = image }
+            Button("Batch Edit Tags") { showBatchTagEditor = true }
+            Button("Select") { viewModel.enterSelectionMode(id: image.id) }
+        }
     }
 
     private func selectionIndicator(isSelected: Bool) -> some View {
@@ -165,6 +182,11 @@ struct DatasetDetailView: View {
                     "Remove \(viewModel.selectedImageIds.count) image\(viewModel.selectedImageIds.count == 1 ? "" : "s")",
                     systemImage: "trash"
                 )
+            }
+            Button {
+                showBatchTagEditor = true
+            } label: {
+                Label("Edit Tags", systemImage: "tag")
             }
         }
         .padding()

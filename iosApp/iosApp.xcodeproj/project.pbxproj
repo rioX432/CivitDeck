@@ -116,6 +116,9 @@
 		CDDT04012F300004000CD001 /* DatasetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT04002F300004000CD001 /* DatasetDetailView.swift */; };
 		CDDT05012F300005000CD001 /* AddToDatasetSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT05002F300005000CD001 /* AddToDatasetSheet.swift */; };
 		CDDT06012F300006000CD001 /* ImageDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT06002F300006000CD001 /* ImageDetailSheet.swift */; };
+		CDDT07012F300007000CD001 /* CaptionEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT07002F300007000CD001 /* CaptionEditorSheet.swift */; };
+		CDDT08012F300008000CD001 /* BatchTagEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT08002F300008000CD001 /* BatchTagEditorViewModel.swift */; };
+		CDDT09012F300009000CD001 /* BatchTagEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT09002F300009000CD001 /* BatchTagEditorView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -234,6 +237,9 @@
 		CDDT04002F300004000CD001 /* DatasetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatasetDetailView.swift; sourceTree = "<group>"; };
 		CDDT05002F300005000CD001 /* AddToDatasetSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToDatasetSheet.swift; sourceTree = "<group>"; };
 		CDDT06002F300006000CD001 /* ImageDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageDetailSheet.swift; sourceTree = "<group>"; };
+		CDDT07002F300007000CD001 /* CaptionEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptionEditorSheet.swift; sourceTree = "<group>"; };
+		CDDT08002F300008000CD001 /* BatchTagEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchTagEditorViewModel.swift; sourceTree = "<group>"; };
+		CDDT09002F300009000CD001 /* BatchTagEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchTagEditorView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -395,6 +401,9 @@
 				CDDT04002F300004000CD001 /* DatasetDetailView.swift */,
 				CDDT05002F300005000CD001 /* AddToDatasetSheet.swift */,
 			CDDT06002F300006000CD001 /* ImageDetailSheet.swift */,
+			CDDT07002F300007000CD001 /* CaptionEditorSheet.swift */,
+			CDDT08002F300008000CD001 /* BatchTagEditorViewModel.swift */,
+			CDDT09002F300009000CD001 /* BatchTagEditorView.swift */,
 			);
 			path = Dataset;
 			sourceTree = "<group>";
@@ -780,6 +789,9 @@
 				CDDT04012F300004000CD001 /* DatasetDetailView.swift in Sources */,
 				CDDT05012F300005000CD001 /* AddToDatasetSheet.swift in Sources */,
 			CDDT06012F300006000CD001 /* ImageDetailSheet.swift in Sources */,
+			CDDT07012F300007000CD001 /* CaptionEditorSheet.swift in Sources */,
+			CDDT08012F300008000CD001 /* BatchTagEditorViewModel.swift in Sources */,
+			CDDT09012F300009000CD001 /* BatchTagEditorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -14,6 +14,7 @@ final class DatasetDetailViewModel: ObservableObject {
     private let observeImagesUseCase: ObserveDatasetImagesUseCase
     private let removeImagesUseCase: RemoveImageFromDatasetUseCase
     private let updateTrainableUseCase: UpdateTrainableUseCase
+    private let editCaptionUseCase: EditCaptionUseCase
     private var observeTask: Task<Void, Never>?
 
     init(datasetId: Int64) {
@@ -21,6 +22,7 @@ final class DatasetDetailViewModel: ObservableObject {
         self.observeImagesUseCase = KoinHelper.shared.getObserveDatasetImagesUseCase()
         self.removeImagesUseCase = KoinHelper.shared.getRemoveImageFromDatasetUseCase()
         self.updateTrainableUseCase = KoinHelper.shared.getUpdateTrainableUseCase()
+        self.editCaptionUseCase = KoinHelper.shared.getEditCaptionUseCase()
         observeTask = Task { await observeImages() }
     }
 
@@ -79,6 +81,15 @@ final class DatasetDetailViewModel: ObservableObject {
             try? await updateTrainableUseCase.invoke(
                 imageId: KotlinLong(value: id),
                 trainable: KotlinBoolean(bool: trainable)
+            )
+        }
+    }
+
+    func saveCaption(imageId: Int64, text: String) {
+        Task {
+            try? await editCaptionUseCase.invoke(
+                datasetImageId: KotlinLong(value: imageId),
+                text: text
             )
         }
     }
