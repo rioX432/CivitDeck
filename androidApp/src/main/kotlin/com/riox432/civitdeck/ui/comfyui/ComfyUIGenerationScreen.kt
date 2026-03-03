@@ -332,7 +332,7 @@ private fun ResultGrid(imageUrls: List<String>, onSaveImage: (String) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
         userScrollEnabled = false,
     ) {
-        items(imageUrls) { url ->
+        items(imageUrls, key = { it }) { url ->
             Card {
                 Column {
                     CivitAsyncImage(

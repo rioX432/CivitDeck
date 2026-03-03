@@ -192,7 +192,7 @@ internal fun AccentColorRow(
         Text("Accent Color", style = MaterialTheme.typography.bodyLarge)
         Spacer(modifier = Modifier.height(Spacing.sm))
         LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            items(AccentColor.entries.toList()) { color ->
+            items(AccentColor.entries.toList(), key = { it.name }) { color ->
                 AccentColorSwatch(color = color, isSelected = color == selected) {
                     onChanged(color)
                 }
