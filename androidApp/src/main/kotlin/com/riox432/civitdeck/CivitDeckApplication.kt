@@ -136,7 +136,7 @@ val androidModule = module {
     viewModel { SwipeDiscoveryViewModel(get(), get()) }
     viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    viewModel { ComfyUIHistoryViewModel(get(), get()) }
+    viewModel { ComfyUIHistoryViewModel(get(), get(), get(), get(), get()) }
     viewModel { ComfyUIQueueViewModel(get(), get()) }
     viewModel { WorkflowTemplateViewModel(get(), get(), get(), get(), get()) }
     viewModel { SDWebUISettingsViewModel(get(), get(), get(), get(), get(), get()) }

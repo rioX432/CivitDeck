@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,10 +41,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationMeta
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryUiState
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.ExpandableTextSection
 import com.riox432.civitdeck.ui.components.SectionHeader
+import com.riox432.civitdeck.ui.dataset.AddToDatasetSheet
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -56,22 +59,11 @@ fun ComfyUIOutputDetailScreen(
     onBack: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val datasets by viewModel.datasets.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showImageViewer by remember { mutableStateOf(false) }
 
-    LaunchedEffect(state.imageSaveSuccess) {
-        when (state.imageSaveSuccess) {
-            true -> {
-                snackbarHostState.showSnackbar("Image saved to gallery")
-                viewModel.onDismissSaveResult()
-            }
-            false -> {
-                snackbarHostState.showSnackbar("Failed to save image")
-                viewModel.onDismissSaveResult()
-            }
-            null -> {}
-        }
-    }
+    DetailSnackbarEffects(state = state, snackbarHostState = snackbarHostState, viewModel = viewModel)
 
     Scaffold(
         topBar = {
@@ -83,6 +75,9 @@ fun ComfyUIOutputDetailScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { viewModel.onAddToDatasetTap(image) }) {
+                        Icon(Icons.Default.Dataset, contentDescription = "Add to Dataset")
+                    }
                     IconButton(
                         onClick = { viewModel.onSaveImage(image.imageUrl, image.filename) },
                     ) {
@@ -106,6 +101,49 @@ fun ComfyUIOutputDetailScreen(
             initialIndex = 0,
             onDismiss = { showImageViewer = false },
         )
+    }
+
+    if (state.showDatasetPicker) {
+        AddToDatasetSheet(
+            datasets = datasets,
+            onSelectDataset = viewModel::onDatasetSelected,
+            onCreateAndSelect = viewModel::onCreateDatasetAndSelect,
+            onDismiss = viewModel::onDismissDatasetPicker,
+        )
+    }
+}
+
+@Composable
+private fun DetailSnackbarEffects(
+    state: ComfyUIHistoryUiState,
+    snackbarHostState: SnackbarHostState,
+    viewModel: ComfyUIHistoryViewModel,
+) {
+    LaunchedEffect(state.imageSaveSuccess) {
+        when (state.imageSaveSuccess) {
+            true -> {
+                snackbarHostState.showSnackbar("Image saved to gallery")
+                viewModel.onDismissSaveResult()
+            }
+            false -> {
+                snackbarHostState.showSnackbar("Failed to save image")
+                viewModel.onDismissSaveResult()
+            }
+            null -> {}
+        }
+    }
+    LaunchedEffect(state.addToDatasetSuccess) {
+        when (state.addToDatasetSuccess) {
+            true -> {
+                snackbarHostState.showSnackbar("Added to dataset")
+                viewModel.onDismissDatasetResult()
+            }
+            false -> {
+                snackbarHostState.showSnackbar("Failed to add to dataset")
+                viewModel.onDismissDatasetResult()
+            }
+            null -> {}
+        }
     }
 }
 
