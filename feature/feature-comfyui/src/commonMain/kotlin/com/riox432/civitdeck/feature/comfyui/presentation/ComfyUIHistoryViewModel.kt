@@ -82,8 +82,8 @@ class ComfyUIHistoryViewModel(
             state.images
         }
         return when (state.selectedSort) {
-            HistorySortOrder.Newest -> filtered
-            HistorySortOrder.Oldest -> filtered.reversed()
+            HistorySortOrder.Newest -> filtered.reversed()
+            HistorySortOrder.Oldest -> filtered
         }
     }
 }

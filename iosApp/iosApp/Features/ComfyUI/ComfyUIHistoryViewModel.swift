@@ -28,7 +28,7 @@ final class ComfyUIHistoryViewModel: ObservableObject {
         } else {
             filtered = images
         }
-        return selectedSort == .oldest ? filtered.reversed() : filtered
+        return selectedSort == .newest ? filtered.reversed() : filtered
     }
 
     private let fetchHistoryUseCase = KoinHelper.shared.getFetchComfyUIHistoryUseCase()
