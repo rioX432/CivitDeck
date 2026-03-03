@@ -64,7 +64,7 @@ struct AdvancedSettingsView: View {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Power User Mode")
                     .font(.civitBodyMedium)
-                Text("Show advanced metadata on detail screens")
+                Text("Enables ComfyUI, SD WebUI, Civitai Link, model files, and advanced metadata")
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
             }

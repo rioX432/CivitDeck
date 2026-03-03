@@ -6,6 +6,7 @@ struct CivitaiLinkSettingsView: View {
 
     var body: some View {
         List {
+            subscriptionRequiredBanner
             statusSection
             configSection
             if !viewModel.activities.isEmpty {
@@ -17,6 +18,19 @@ struct CivitaiLinkSettingsView: View {
         .task { await viewModel.observeLinkKey() }
         .task { await viewModel.observeLinkStatus() }
         .task { await viewModel.observeLinkActivities() }
+    }
+
+    private var subscriptionRequiredBanner: some View {
+        Section {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("Requires CivitAI Supporter+ subscription")
+                    .font(.civitBodyMedium)
+                Text("Civitai Link is only available to CivitAI Supporter+ members. Subscribe at civitai.com/pricing")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+            }
+            .padding(.vertical, Spacing.xs)
+        }
     }
 
     private var statusSection: some View {
