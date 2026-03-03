@@ -32,6 +32,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -339,16 +340,18 @@ private fun CarouselWithGridButton(
     onImageError: (String) -> Unit,
     onShowGrid: () -> Unit,
 ) {
+    val pagerState = rememberPagerState { images.size }
     Box {
         ImageCarousel(
             images = images,
             modelId = modelId,
             sharedElementSuffix = sharedElementSuffix,
+            pagerState = pagerState,
             onImageClick = onImageClick,
             onImageError = onImageError,
         )
         if (images.isNotEmpty()) {
-            Row(
+            Column(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(Spacing.sm)
@@ -356,18 +359,17 @@ private fun CarouselWithGridButton(
                     .background(Color.Black.copy(alpha = 0.55f))
                     .clickable(onClick = onShowGrid)
                     .padding(horizontal = Spacing.sm, vertical = Spacing.xs),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Icon(
                     imageVector = Icons.Default.GridView,
-                    contentDescription = "View all ${images.size} images",
+                    contentDescription = "View all images",
                     tint = Color.White,
                     modifier = Modifier.size(16.dp),
                 )
                 Text(
-                    text = "${images.size}",
-                    style = MaterialTheme.typography.labelMedium,
+                    text = "${pagerState.currentPage + 1}/${images.size}",
+                    style = MaterialTheme.typography.labelSmall,
                     color = Color.White,
                 )
             }
@@ -677,38 +679,25 @@ private fun ImageActionsRow(
 private fun ImageCarousel(
     images: List<ModelImage>,
     modelId: Long,
+    pagerState: PagerState,
     sharedElementSuffix: String = "",
     onImageClick: (Int) -> Unit = {},
     onImageError: (String) -> Unit = {},
 ) {
     if (images.isEmpty()) return
 
-    val pagerState = rememberPagerState { images.size }
-
-    Column {
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxWidth(),
-        ) { page ->
-            CarouselPage(
-                image = images[page],
-                modelId = modelId,
-                sharedElementSuffix = sharedElementSuffix,
-                applySharedElement = page == pagerState.currentPage,
-                onClick = { onImageClick(page) },
-                onError = { onImageError(images[page].url) },
-            )
-        }
-
-        if (images.size > 1) {
-            Text(
-                text = "${pagerState.currentPage + 1} / ${images.size}",
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = Spacing.sm),
-            )
-        }
+    HorizontalPager(
+        state = pagerState,
+        modifier = Modifier.fillMaxWidth(),
+    ) { page ->
+        CarouselPage(
+            image = images[page],
+            modelId = modelId,
+            sharedElementSuffix = sharedElementSuffix,
+            applySharedElement = page == pagerState.currentPage,
+            onClick = { onImageClick(page) },
+            onError = { onImageError(images[page].url) },
+        )
     }
 }
 
