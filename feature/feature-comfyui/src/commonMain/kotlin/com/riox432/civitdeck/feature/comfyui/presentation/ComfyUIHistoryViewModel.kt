@@ -11,11 +11,14 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+enum class HistorySortOrder { Newest, Oldest }
+
 data class ComfyUIHistoryUiState(
     val images: List<ComfyUIGeneratedImage> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val selectedWorkflow: String? = null,
+    val selectedSort: HistorySortOrder = HistorySortOrder.Newest,
     val imageSaveSuccess: Boolean? = null,
 )
 
@@ -50,6 +53,10 @@ class ComfyUIHistoryViewModel(
         _uiState.update { it.copy(selectedWorkflow = workflow) }
     }
 
+    fun onSelectSort(sort: HistorySortOrder) {
+        _uiState.update { it.copy(selectedSort = sort) }
+    }
+
     fun onSaveImage(imageUrl: String, filename: String) {
         viewModelScope.launch {
             val success = saveImage(imageUrl, filename)
@@ -61,9 +68,22 @@ class ComfyUIHistoryViewModel(
         _uiState.update { it.copy(imageSaveSuccess = null) }
     }
 
+    fun workflows(): List<String> {
+        val seen = linkedSetOf<String>()
+        _uiState.value.images.forEach { seen += it.promptId }
+        return seen.toList()
+    }
+
     fun filteredImages(): List<ComfyUIGeneratedImage> {
         val state = _uiState.value
-        val workflow = state.selectedWorkflow ?: return state.images
-        return state.images.filter { it.meta.samplerName == workflow }
+        val filtered = if (state.selectedWorkflow != null) {
+            state.images.filter { it.promptId == state.selectedWorkflow }
+        } else {
+            state.images
+        }
+        return when (state.selectedSort) {
+            HistorySortOrder.Newest -> filtered
+            HistorySortOrder.Oldest -> filtered.reversed()
+        }
     }
 }

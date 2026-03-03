@@ -69,6 +69,7 @@ fun CivitaiLinkSettingsScreen(
             modifier = Modifier.padding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(Spacing.sm),
         ) {
+            item { SubscriptionRequiredBanner() }
             item { StatusCard(state = state, onDisconnect = viewModel::onDisconnect) }
             item {
                 ConfigCard(
@@ -176,6 +177,31 @@ private fun ConfigCard(
             ) {
                 Text(if (state.isSaving) "Connecting..." else "Save & Connect")
             }
+        }
+    }
+}
+
+@Composable
+private fun SubscriptionRequiredBanner() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.md, vertical = Spacing.sm),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        ),
+    ) {
+        Column(modifier = Modifier.padding(Spacing.md)) {
+            Text(
+                "Requires CivitAI Supporter+ subscription",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
+            Text(
+                "Civitai Link is only available to CivitAI Supporter+ members. Subscribe at civitai.com/pricing",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
         }
     }
 }

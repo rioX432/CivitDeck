@@ -1,12 +1,18 @@
 import Foundation
 import Shared
 
+enum HistorySortOrder: String, CaseIterable {
+    case newest = "Newest"
+    case oldest = "Oldest"
+}
+
 @MainActor
 final class ComfyUIHistoryViewModel: ObservableObject {
     @Published var images: [ComfyUIGeneratedImage] = []
     @Published var isLoading = true
     @Published var errorMessage: String?
     @Published var selectedWorkflow: String?
+    @Published var selectedSort: HistorySortOrder = .newest
     @Published var imageSaveSuccess: Bool?
 
     var workflows: [String] {
@@ -16,8 +22,13 @@ final class ComfyUIHistoryViewModel: ObservableObject {
     }
 
     var filteredImages: [ComfyUIGeneratedImage] {
-        guard let workflow = selectedWorkflow else { return images }
-        return images.filter { $0.promptId == workflow }
+        let filtered: [ComfyUIGeneratedImage]
+        if let workflow = selectedWorkflow {
+            filtered = images.filter { $0.promptId == workflow }
+        } else {
+            filtered = images
+        }
+        return selectedSort == .oldest ? filtered.reversed() : filtered
     }
 
     private let fetchHistoryUseCase = KoinHelper.shared.getFetchComfyUIHistoryUseCase()

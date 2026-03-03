@@ -444,6 +444,12 @@ internal fun NsfwBlurSection(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        Text(
+            "Controls blur strength for NSFW images in the Image Gallery. " +
+                "Tap any blurred image to reveal it temporarily.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         BlurSliderRow("Soft", settings.softIntensity) {
             onSettingsChanged(settings.copy(softIntensity = it))
         }
@@ -581,7 +587,7 @@ internal fun PowerUserModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
         Column(modifier = Modifier.weight(1f)) {
             Text("Power User Mode", style = MaterialTheme.typography.bodyLarge)
             Text(
-                "Show advanced metadata on detail screens",
+                "Enables ComfyUI, SD WebUI, Civitai Link, model files, and advanced metadata",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

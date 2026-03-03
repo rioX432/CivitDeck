@@ -2,6 +2,7 @@
 
 package com.riox432.civitdeck.ui.comfyui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -31,7 +32,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,6 +44,8 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewMode
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.ExpandableTextSection
 import com.riox432.civitdeck.ui.components.SectionHeader
+import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
+import com.riox432.civitdeck.ui.gallery.ViewerImage
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,6 +57,7 @@ fun ComfyUIOutputDetailScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showImageViewer by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.imageSaveSuccess) {
         when (state.imageSaveSuccess) {
@@ -87,7 +93,19 @@ fun ComfyUIOutputDetailScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        DetailBody(image = image, modifier = Modifier.padding(padding))
+        DetailBody(
+            image = image,
+            modifier = Modifier.padding(padding),
+            onImageClick = { showImageViewer = true },
+        )
+    }
+
+    if (showImageViewer) {
+        ImageViewerOverlay(
+            images = listOf(ViewerImage(url = image.imageUrl)),
+            initialIndex = 0,
+            onDismiss = { showImageViewer = false },
+        )
     }
 }
 
@@ -95,6 +113,7 @@ fun ComfyUIOutputDetailScreen(
 private fun DetailBody(
     image: ComfyUIGeneratedImage,
     modifier: Modifier = Modifier,
+    onImageClick: () -> Unit = {},
 ) {
     LazyColumn(
         contentPadding = PaddingValues(bottom = Spacing.lg),
@@ -105,29 +124,33 @@ private fun DetailBody(
                 imageUrl = image.imageUrl,
                 contentDescription = image.filename,
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onImageClick),
             )
             Spacer(modifier = Modifier.height(Spacing.md))
         }
 
-        if (image.meta.positivePrompt.isNotBlank()) {
-            item { PromptSection(prompt = image.meta.positivePrompt) }
-        }
-
+        val showPrompt = image.meta.positivePrompt.isNotBlank()
         val hasParams = image.meta.seed != null ||
             image.meta.samplerName != null ||
             image.meta.cfg != null ||
             image.meta.steps != null
+        val showLoras = image.meta.loraNames.isNotEmpty()
+
+        if (showPrompt) {
+            item { PromptSection(prompt = image.meta.positivePrompt) }
+        }
 
         if (hasParams) {
-            item { ParamsSection(meta = image.meta) }
+            item { ParamsSection(meta = image.meta, showTopDivider = showPrompt) }
         }
 
-        if (image.meta.loraNames.isNotEmpty()) {
-            item { LoraSection(loraNames = image.meta.loraNames) }
+        if (showLoras) {
+            item { LoraSection(loraNames = image.meta.loraNames, showTopDivider = showPrompt || hasParams) }
         }
 
-        item { PromptIdFooter(promptId = image.promptId) }
+        item { PromptIdFooter(promptId = image.promptId, showTopDivider = showPrompt || hasParams || showLoras) }
     }
 }
 
@@ -140,8 +163,8 @@ private fun PromptSection(prompt: String) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ParamsSection(meta: ComfyUIGenerationMeta) {
-    HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
+private fun ParamsSection(meta: ComfyUIGenerationMeta, showTopDivider: Boolean = true) {
+    if (showTopDivider) HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
     Spacer(modifier = Modifier.height(Spacing.sm))
     SectionHeader(
         title = "Generation Settings",
@@ -160,8 +183,8 @@ private fun ParamsSection(meta: ComfyUIGenerationMeta) {
 }
 
 @Composable
-private fun LoraSection(loraNames: List<String>) {
-    HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
+private fun LoraSection(loraNames: List<String>, showTopDivider: Boolean = true) {
+    if (showTopDivider) HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
     Spacer(modifier = Modifier.height(Spacing.sm))
     SectionHeader(title = "LoRAs", modifier = Modifier.padding(horizontal = Spacing.lg))
     Column(
@@ -174,8 +197,8 @@ private fun LoraSection(loraNames: List<String>) {
 }
 
 @Composable
-private fun PromptIdFooter(promptId: String) {
-    HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
+private fun PromptIdFooter(promptId: String, showTopDivider: Boolean = true) {
+    if (showTopDivider) HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg))
     Spacer(modifier = Modifier.height(Spacing.sm))
     Text(
         text = "ID: $promptId",

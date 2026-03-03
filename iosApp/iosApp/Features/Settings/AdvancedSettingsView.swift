@@ -20,6 +20,15 @@ struct AdvancedSettingsView: View {
                                 .foregroundColor(.civitOnSurfaceVariant)
                         }
                     }
+                    NavigationLink(destination: ComfyUIHistoryView()) {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text("Output Gallery")
+                                .font(.civitBodyMedium)
+                            Text("Browse generated images")
+                                .font(.civitBodySmall)
+                                .foregroundColor(.civitOnSurfaceVariant)
+                        }
+                    }
                 }
                 Section("SD WebUI") {
                     NavigationLink(destination: SDWebUISettingsView()) {
@@ -64,7 +73,7 @@ struct AdvancedSettingsView: View {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Power User Mode")
                     .font(.civitBodyMedium)
-                Text("Show advanced metadata on detail screens")
+                Text("Enables ComfyUI, SD WebUI, Civitai Link, model files, and advanced metadata")
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
             }

@@ -21,7 +21,7 @@ struct ComfyUIHistoryView: View {
                 )
             } else {
                 VStack(spacing: 0) {
-                    workflowFilter
+                    filterBar
                     imageGrid
                 }
             }
@@ -32,29 +32,52 @@ struct ComfyUIHistoryView: View {
         .onDisappear { viewModel.stopObserving() }
     }
 
-    // MARK: - Workflow Filter
+    // MARK: - Filter Bar
 
-    @ViewBuilder
-    private var workflowFilter: some View {
-        if viewModel.workflows.count > 1 {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: Spacing.sm) {
-                    ChipButton(
-                        label: "All",
-                        isSelected: viewModel.selectedWorkflow == nil,
-                        action: { viewModel.selectedWorkflow = nil }
-                    )
-                    ForEach(viewModel.workflows, id: \.self) { promptId in
-                        ChipButton(
-                            label: String(promptId.prefix(8)),
-                            isSelected: viewModel.selectedWorkflow == promptId,
-                            action: { viewModel.selectedWorkflow = promptId }
-                        )
-                    }
-                }
-                .padding(.horizontal, Spacing.md)
-                .padding(.vertical, Spacing.sm)
+    private var filterBar: some View {
+        VStack(spacing: 0) {
+            sortChips
+            if viewModel.workflows.count > 1 {
+                workflowFilter
             }
+        }
+        .padding(.vertical, Spacing.xs)
+    }
+
+    private var sortChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.sm) {
+                ForEach(HistorySortOrder.allCases, id: \.self) { sort in
+                    ChipButton(
+                        label: sort.rawValue,
+                        isSelected: viewModel.selectedSort == sort,
+                        action: { viewModel.selectedSort = sort }
+                    )
+                }
+            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.xs)
+        }
+    }
+
+    private var workflowFilter: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.sm) {
+                ChipButton(
+                    label: "All",
+                    isSelected: viewModel.selectedWorkflow == nil,
+                    action: { viewModel.selectedWorkflow = nil }
+                )
+                ForEach(viewModel.workflows, id: \.self) { promptId in
+                    ChipButton(
+                        label: String(promptId.prefix(8)),
+                        isSelected: viewModel.selectedWorkflow == promptId,
+                        action: { viewModel.selectedWorkflow = promptId }
+                    )
+                }
+            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.xs)
         }
     }
 
