@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FindReplace
+import androidx.compose.material.icons.filled.PhotoSizeSelectLarge
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Style
 import androidx.compose.material3.BottomAppBar
@@ -38,6 +40,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -72,6 +75,14 @@ private data class DatasetGridCallbacks(
     val onSourceFilterChange: (ImageSource?) -> Unit,
 )
 
+private data class ResolutionFilterState(
+    val show: Boolean,
+    val minWidth: Int,
+    val minHeight: Int,
+    val onApply: (Int, Int) -> Unit,
+    val onDismiss: () -> Unit,
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatasetDetailScreen(
@@ -79,25 +90,65 @@ fun DatasetDetailScreen(
     viewModel: DatasetDetailViewModel,
     onBack: () -> Unit,
     onNavigateToBatchTagEditor: (datasetId: Long) -> Unit,
+    onNavigateToDuplicateReview: (Long) -> Unit,
 ) {
     val filteredImages by viewModel.filteredImages.collectAsStateWithLifecycle()
     val selectedImageIds by viewModel.selectedImageIds.collectAsStateWithLifecycle()
     val isSelectionMode by viewModel.isSelectionMode.collectAsStateWithLifecycle()
     val selectedSource by viewModel.selectedSource.collectAsStateWithLifecycle()
     val detailImage by viewModel.detailImage.collectAsStateWithLifecycle()
+    val duplicateCount by viewModel.duplicateCount.collectAsStateWithLifecycle()
+    val lowResImages by viewModel.lowResImages.collectAsStateWithLifecycle()
+    val resFilter = collectResolutionFilterState(viewModel)
     var captionSheetImageId by remember { mutableStateOf<Long?>(null) }
     var captionSheetInitial by remember { mutableStateOf("") }
-    val callbacks = DatasetGridCallbacks(
-        onToggleSelection = viewModel::toggleSelection,
-        onEnterSelectionMode = viewModel::enterSelectionMode,
-        onShowDetail = viewModel::showDetail,
-        onEditCaption = { image ->
-            captionSheetImageId = image.id
-            captionSheetInitial = image.caption?.text.orEmpty()
-        },
-        onNavigateToBatchTagEditor = { onNavigateToBatchTagEditor(viewModel.datasetId) },
-        onSourceFilterChange = viewModel::setSourceFilter,
+    val callbacks = buildCallbacks(viewModel, onNavigateToBatchTagEditor) { id, text ->
+        captionSheetImageId = id
+        captionSheetInitial = text
+    }
+    DatasetDetailScaffold(
+        datasetName = datasetName,
+        viewModel = viewModel,
+        filteredImages = filteredImages,
+        selectedImageIds = selectedImageIds,
+        isSelectionMode = isSelectionMode,
+        selectedSource = selectedSource,
+        callbacks = callbacks,
+        duplicateCount = duplicateCount,
+        lowResImages = lowResImages,
+        resFilter = resFilter,
+        captionSheetImageId = captionSheetImageId,
+        captionSheetInitial = captionSheetInitial,
+        detailImage = detailImage,
+        onBack = onBack,
+        onNavigateToBatchTagEditor = onNavigateToBatchTagEditor,
+        onNavigateToDuplicateReview = onNavigateToDuplicateReview,
+        onDismissCaption = { captionSheetImageId = null },
     )
+}
+
+@Suppress("LongParameterList", "LongMethod")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DatasetDetailScaffold(
+    datasetName: String,
+    viewModel: DatasetDetailViewModel,
+    filteredImages: List<DatasetImage>,
+    selectedImageIds: Set<Long>,
+    isSelectionMode: Boolean,
+    selectedSource: ImageSource?,
+    callbacks: DatasetGridCallbacks,
+    duplicateCount: Int,
+    lowResImages: List<DatasetImage>,
+    resFilter: ResolutionFilterState,
+    captionSheetImageId: Long?,
+    captionSheetInitial: String,
+    detailImage: DatasetImage?,
+    onBack: () -> Unit,
+    onNavigateToBatchTagEditor: (Long) -> Unit,
+    onNavigateToDuplicateReview: (Long) -> Unit,
+    onDismissCaption: () -> Unit,
+) {
     Scaffold(
         topBar = {
             DatasetDetailTopBar(
@@ -107,6 +158,8 @@ fun DatasetDetailScreen(
                 onBack = onBack,
                 onClearSelection = viewModel::clearSelection,
                 onSelectAll = viewModel::selectAll,
+                onReviewDuplicates = { onNavigateToDuplicateReview(viewModel.datasetId) },
+                onResolutionFilter = viewModel::openResolutionFilter,
             )
         },
         bottomBar = {
@@ -125,6 +178,8 @@ fun DatasetDetailScreen(
             selectedImageIds = selectedImageIds,
             selectedSource = selectedSource,
             callbacks = callbacks,
+            duplicateCount = duplicateCount,
+            lowResCount = lowResImages.size,
             modifier = Modifier.padding(padding),
         )
     }
@@ -132,18 +187,48 @@ fun DatasetDetailScreen(
         captionSheetImageId = captionSheetImageId,
         captionSheetInitial = captionSheetInitial,
         detailImage = detailImage,
+        resolutionFilterState = resFilter,
         onSaveCaption = { id, text -> viewModel.editCaption(id, text) },
-        onDismissCaption = { captionSheetImageId = null },
+        onDismissCaption = onDismissCaption,
         onTrainableToggle = { id, trainable -> viewModel.updateTrainable(id, trainable) },
         onDismissDetail = viewModel::dismissDetail,
     )
 }
 
 @Composable
+private fun collectResolutionFilterState(viewModel: DatasetDetailViewModel): ResolutionFilterState {
+    val show by viewModel.showResolutionFilter.collectAsStateWithLifecycle()
+    val minWidth by viewModel.minWidth.collectAsStateWithLifecycle()
+    val minHeight by viewModel.minHeight.collectAsStateWithLifecycle()
+    return ResolutionFilterState(
+        show = show,
+        minWidth = minWidth,
+        minHeight = minHeight,
+        onApply = viewModel::setResolutionFilter,
+        onDismiss = viewModel::dismissResolutionFilter,
+    )
+}
+
+@Composable
+private fun buildCallbacks(
+    viewModel: DatasetDetailViewModel,
+    onNavigateToBatchTagEditor: (Long) -> Unit,
+    onStartEditCaption: (Long, String) -> Unit,
+): DatasetGridCallbacks = DatasetGridCallbacks(
+    onToggleSelection = viewModel::toggleSelection,
+    onEnterSelectionMode = viewModel::enterSelectionMode,
+    onShowDetail = viewModel::showDetail,
+    onEditCaption = { image -> onStartEditCaption(image.id, image.caption?.text.orEmpty()) },
+    onNavigateToBatchTagEditor = { onNavigateToBatchTagEditor(viewModel.datasetId) },
+    onSourceFilterChange = viewModel::setSourceFilter,
+)
+
+@Composable
 private fun DatasetDetailSheets(
     captionSheetImageId: Long?,
     captionSheetInitial: String,
     detailImage: DatasetImage?,
+    resolutionFilterState: ResolutionFilterState,
     onSaveCaption: (Long, String) -> Unit,
     onDismissCaption: () -> Unit,
     onTrainableToggle: (Long, Boolean) -> Unit,
@@ -164,6 +249,17 @@ private fun DatasetDetailSheets(
             onDismiss = onDismissDetail,
         )
     }
+    if (resolutionFilterState.show) {
+        ResolutionFilterSheet(
+            initialMinWidth = resolutionFilterState.minWidth,
+            initialMinHeight = resolutionFilterState.minHeight,
+            onApply = { w, h ->
+                resolutionFilterState.onApply(w, h)
+                resolutionFilterState.onDismiss()
+            },
+            onDismiss = resolutionFilterState.onDismiss,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -175,6 +271,8 @@ private fun DatasetDetailTopBar(
     onBack: () -> Unit,
     onClearSelection: () -> Unit,
     onSelectAll: () -> Unit,
+    onReviewDuplicates: () -> Unit,
+    onResolutionFilter: () -> Unit,
 ) {
     TopAppBar(
         title = {
@@ -198,6 +296,13 @@ private fun DatasetDetailTopBar(
             if (isSelectionMode) {
                 IconButton(onClick = onSelectAll) {
                     Icon(Icons.Default.SelectAll, contentDescription = "Select all")
+                }
+            } else {
+                IconButton(onClick = onReviewDuplicates) {
+                    Icon(Icons.Default.FindReplace, contentDescription = "Review duplicates")
+                }
+                IconButton(onClick = onResolutionFilter) {
+                    Icon(Icons.Default.PhotoSizeSelectLarge, contentDescription = "Resolution filter")
                 }
             }
         },
@@ -250,6 +355,8 @@ private fun DatasetDetailContent(
     selectedImageIds: Set<Long>,
     selectedSource: ImageSource?,
     callbacks: DatasetGridCallbacks,
+    duplicateCount: Int,
+    lowResCount: Int,
     modifier: Modifier = Modifier,
 ) {
     if (images.isEmpty() && selectedSource == null) {
@@ -266,6 +373,8 @@ private fun DatasetDetailContent(
             selectedImageIds = selectedImageIds,
             selectedSource = selectedSource,
             callbacks = callbacks,
+            duplicateCount = duplicateCount,
+            lowResCount = lowResCount,
             modifier = modifier,
         )
     }
@@ -278,6 +387,8 @@ private fun DatasetImageGrid(
     selectedImageIds: Set<Long>,
     selectedSource: ImageSource?,
     callbacks: DatasetGridCallbacks,
+    duplicateCount: Int,
+    lowResCount: Int,
     modifier: Modifier = Modifier,
 ) {
     val sourceOptions: List<ImageSource?> = listOf(null) + ImageSource.entries
@@ -295,15 +406,25 @@ private fun DatasetImageGrid(
     ) {
         item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
             if (!isSelectionMode) {
-                FilterChipRow(
-                    options = sourceOptions,
-                    selected = selectedSource,
-                    onSelect = callbacks.onSourceFilterChange,
-                    label = { it?.name?.lowercase()?.replaceFirstChar { c -> c.uppercase() } ?: "All" },
-                    modifier = Modifier
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = Spacing.sm),
-                )
+                androidx.compose.foundation.layout.Column {
+                    FilterChipRow(
+                        options = sourceOptions,
+                        selected = selectedSource,
+                        onSelect = callbacks.onSourceFilterChange,
+                        label = { it?.name?.lowercase()?.replaceFirstChar { c -> c.uppercase() } ?: "All" },
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = Spacing.sm),
+                    )
+                    if (duplicateCount > 0 || lowResCount > 0) {
+                        QualitySummaryChip(
+                            imageCount = images.size,
+                            duplicateCount = duplicateCount,
+                            lowResCount = lowResCount,
+                            modifier = Modifier.padding(horizontal = Spacing.sm, vertical = Spacing.xs),
+                        )
+                    }
+                }
             }
         }
         items(items = images, key = { it.id }) { image ->
@@ -316,6 +437,25 @@ private fun DatasetImageGrid(
             )
         }
     }
+}
+
+@Composable
+private fun QualitySummaryChip(
+    imageCount: Int,
+    duplicateCount: Int,
+    lowResCount: Int,
+    modifier: Modifier = Modifier,
+) {
+    val label = buildString {
+        append("$imageCount images")
+        if (duplicateCount > 0) append(" • $duplicateCount duplicates")
+        if (lowResCount > 0) append(" • $lowResCount below threshold")
+    }
+    SuggestionChip(
+        onClick = {},
+        label = { Text(text = label, style = MaterialTheme.typography.labelSmall) },
+        modifier = modifier,
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -355,6 +495,13 @@ private fun DatasetImageItem(
                     .align(Alignment.BottomEnd)
                     .padding(Spacing.xs),
             )
+            if (image.excluded) {
+                FlaggedBadge(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(Spacing.xs),
+                )
+            }
         }
         ImageContextMenu(
             expanded = showContextMenu,
@@ -373,6 +520,19 @@ private fun DatasetImageItem(
             },
         )
     }
+}
+
+@Composable
+private fun FlaggedBadge(modifier: Modifier = Modifier) {
+    Text(
+        text = "Flagged",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onError,
+        modifier = modifier
+            .clip(RoundedCornerShape(CornerRadius.chip))
+            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.85f))
+            .padding(horizontal = Spacing.xs, vertical = 2.dp),
+    )
 }
 
 @Composable

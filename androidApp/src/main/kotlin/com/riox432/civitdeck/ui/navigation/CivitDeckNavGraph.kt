@@ -87,6 +87,8 @@ import com.riox432.civitdeck.ui.dataset.DatasetDetailScreen
 import com.riox432.civitdeck.ui.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetListScreen
 import com.riox432.civitdeck.ui.dataset.DatasetListViewModel
+import com.riox432.civitdeck.ui.dataset.DuplicateReviewScreen
+import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryScreen
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
@@ -188,6 +190,8 @@ data object DatasetListRoute
 data class DatasetDetailRoute(val datasetId: Long, val datasetName: String)
 
 data class BatchTagEditorRoute(val datasetId: Long)
+
+data class DuplicateReviewRoute(val datasetId: Long)
 
 internal enum class Tab(
     val label: String,
@@ -409,6 +413,7 @@ private fun CivitDeckNavDisplay(
             datasetListEntry(backStack)
             datasetDetailEntry(backStack)
             batchTagEditorEntry(backStack)
+            duplicateReviewEntry(backStack)
             detailEntry(backStack)
             creatorEntry(backStack)
             galleryEntry(backStack)
@@ -487,6 +492,21 @@ private fun EntryProviderScope<Any>.datasetDetailEntry(backStack: MutableList<An
             onNavigateToBatchTagEditor = { datasetId ->
                 backStack.add(BatchTagEditorRoute(datasetId))
             },
+            onNavigateToDuplicateReview = { datasetId ->
+                backStack.add(DuplicateReviewRoute(datasetId))
+            },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.duplicateReviewEntry(backStack: MutableList<Any>) {
+    entry<DuplicateReviewRoute> { key ->
+        val viewModel: DuplicateReviewViewModel = koinViewModel(
+            parameters = { parametersOf(key.datasetId) },
+        )
+        DuplicateReviewScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
         )
     }
 }
