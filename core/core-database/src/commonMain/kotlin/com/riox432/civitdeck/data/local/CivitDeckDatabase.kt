@@ -12,6 +12,7 @@ import com.riox432.civitdeck.data.local.dao.BrowsingHistoryDao
 import com.riox432.civitdeck.data.local.dao.CachedApiResponseDao
 import com.riox432.civitdeck.data.local.dao.CollectionDao
 import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
+import com.riox432.civitdeck.data.local.dao.DatasetCollectionDao
 import com.riox432.civitdeck.data.local.dao.ExcludedTagDao
 import com.riox432.civitdeck.data.local.dao.HiddenModelDao
 import com.riox432.civitdeck.data.local.dao.LocalModelFileDao
@@ -22,11 +23,15 @@ import com.riox432.civitdeck.data.local.dao.SearchHistoryDao
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
 import com.riox432.civitdeck.data.local.entity.CachedApiResponseEntity
+import com.riox432.civitdeck.data.local.entity.CaptionEntity
 import com.riox432.civitdeck.data.local.entity.CollectionEntity
 import com.riox432.civitdeck.data.local.entity.CollectionModelEntity
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
+import com.riox432.civitdeck.data.local.entity.DatasetCollectionEntity
+import com.riox432.civitdeck.data.local.entity.DatasetImageEntity
 import com.riox432.civitdeck.data.local.entity.ExcludedTagEntity
 import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
+import com.riox432.civitdeck.data.local.entity.ImageTagEntity
 import com.riox432.civitdeck.data.local.entity.LocalModelFileEntity
 import com.riox432.civitdeck.data.local.entity.ModelDirectoryEntity
 import com.riox432.civitdeck.data.local.entity.ModelVersionCheckpointEntity
@@ -53,8 +58,12 @@ import kotlinx.coroutines.IO
         ModelVersionCheckpointEntity::class,
         ComfyUIConnectionEntity::class,
         SDWebUIConnectionEntity::class,
+        DatasetCollectionEntity::class,
+        DatasetImageEntity::class,
+        ImageTagEntity::class,
+        CaptionEntity::class,
     ],
-    version = 23,
+    version = 24,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -70,6 +79,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun modelVersionCheckpointDao(): ModelVersionCheckpointDao
     abstract fun comfyUIConnectionDao(): ComfyUIConnectionDao
     abstract fun sdWebUIConnectionDao(): SDWebUIConnectionDao
+    abstract fun datasetCollectionDao(): DatasetCollectionDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -437,6 +447,49 @@ val MIGRATION_22_23 = object : Migration(22, 23) {
     }
 }
 
+val MIGRATION_23_24 = object : Migration(23, 24) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `dataset_collections` " +
+                "(`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`name` TEXT NOT NULL, " +
+                "`description` TEXT NOT NULL DEFAULT '', " +
+                "`createdAt` INTEGER NOT NULL, " +
+                "`updatedAt` INTEGER NOT NULL)",
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `dataset_images` " +
+                "(`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`datasetId` INTEGER NOT NULL, " +
+                "`imageUrl` TEXT NOT NULL, " +
+                "`sourceType` TEXT NOT NULL, " +
+                "`trainable` INTEGER NOT NULL DEFAULT 1, " +
+                "`addedAt` INTEGER NOT NULL, " +
+                "FOREIGN KEY(`datasetId`) REFERENCES `dataset_collections`(`id`) ON DELETE CASCADE)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_dataset_images_datasetId` ON `dataset_images`(`datasetId`)",
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `image_tags` " +
+                "(`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`datasetImageId` INTEGER NOT NULL, " +
+                "`tag` TEXT NOT NULL, " +
+                "FOREIGN KEY(`datasetImageId`) REFERENCES `dataset_images`(`id`) ON DELETE CASCADE)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_image_tags_datasetImageId` ON `image_tags`(`datasetImageId`)",
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `captions` " +
+                "(`datasetImageId` INTEGER NOT NULL, " +
+                "`text` TEXT NOT NULL, " +
+                "PRIMARY KEY(`datasetImageId`), " +
+                "FOREIGN KEY(`datasetImageId`) REFERENCES `dataset_images`(`id`) ON DELETE CASCADE)",
+        )
+    }
+}
+
 // Seed data is inserted via onOpen (not in migrations) because Room migrations only run on
 // upgrades — a fresh install starts directly at the latest schema version, skipping all
 // migration callbacks. Using INSERT OR IGNORE in onOpen ensures required rows are always
@@ -513,6 +566,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_20_21,
             MIGRATION_21_22,
             MIGRATION_22_23,
+            MIGRATION_23_24,
         )
         .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())

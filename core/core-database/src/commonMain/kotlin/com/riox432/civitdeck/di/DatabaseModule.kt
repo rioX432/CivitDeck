@@ -3,6 +3,8 @@ package com.riox432.civitdeck.di
 import com.riox432.civitdeck.data.local.CivitDeckDatabase
 import com.riox432.civitdeck.data.local.LocalCacheDataSource
 import com.riox432.civitdeck.data.local.getRoomDatabase
+import com.riox432.civitdeck.data.local.repository.DatasetCollectionRepositoryImpl
+import com.riox432.civitdeck.domain.repository.DatasetCollectionRepository
 import org.koin.dsl.module
 
 val databaseModule = module {
@@ -20,7 +22,11 @@ val databaseModule = module {
     single { get<CivitDeckDatabase>().modelVersionCheckpointDao() }
     single { get<CivitDeckDatabase>().comfyUIConnectionDao() }
     single { get<CivitDeckDatabase>().sdWebUIConnectionDao() }
+    single { get<CivitDeckDatabase>().datasetCollectionDao() }
 
     // Data Sources
     single { LocalCacheDataSource(get()) }
+
+    // Dataset
+    single<DatasetCollectionRepository> { DatasetCollectionRepositoryImpl(get()) }
 }

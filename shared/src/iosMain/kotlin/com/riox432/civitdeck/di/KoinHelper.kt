@@ -2,7 +2,14 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
+import com.riox432.civitdeck.domain.usecase.AddImageToDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
+import com.riox432.civitdeck.domain.usecase.CreateDatasetCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveDatasetCollectionsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveDatasetImagesUseCase
+import com.riox432.civitdeck.domain.usecase.RemoveImageFromDatasetUseCase
+import com.riox432.civitdeck.domain.usecase.RenameDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
@@ -296,4 +303,13 @@ object KoinHelper {
     fun getFetchSDWebUIVaesUseCase(): FetchSDWebUIVaesUseCase = getKoin().get()
     fun getGenerateSDWebUIImageUseCase(): GenerateSDWebUIImageUseCase = getKoin().get()
     fun getInterruptSDWebUIGenerationUseCase(): InterruptSDWebUIGenerationUseCase = getKoin().get()
+
+    // Dataset use cases
+    fun getObserveDatasetCollectionsUseCase(): ObserveDatasetCollectionsUseCase = getKoin().get()
+    fun getCreateDatasetCollectionUseCase(): CreateDatasetCollectionUseCase = getKoin().get()
+    fun getRenameDatasetCollectionUseCase(): RenameDatasetCollectionUseCase = getKoin().get()
+    fun getDeleteDatasetCollectionUseCase(): DeleteDatasetCollectionUseCase = getKoin().get()
+    fun getObserveDatasetImagesUseCase(): ObserveDatasetImagesUseCase = getKoin().get()
+    fun getAddImageToDatasetUseCase(): AddImageToDatasetUseCase = getKoin().get()
+    fun getRemoveImageFromDatasetUseCase(): RemoveImageFromDatasetUseCase = getKoin().get()
 }
