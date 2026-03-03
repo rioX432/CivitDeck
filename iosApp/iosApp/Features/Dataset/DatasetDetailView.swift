@@ -58,6 +58,17 @@ struct DatasetDetailView: View {
         .sheet(isPresented: $showBatchTagEditor) {
             BatchTagEditorView(datasetId: viewModel.datasetId)
         }
+        .sheet(isPresented: $viewModel.showDuplicateReview) {
+            DuplicateReviewSheet(datasetId: viewModel.datasetId)
+        }
+        .sheet(isPresented: $viewModel.showResolutionFilter) {
+            ResolutionFilterSheet(
+                initialMinWidth: viewModel.minWidth,
+                initialMinHeight: viewModel.minHeight
+            ) { width, height in
+                viewModel.setResolutionFilter(minWidth: width, minHeight: height)
+            }
+        }
     }
 
     @ToolbarContentBuilder
@@ -68,6 +79,13 @@ struct DatasetDetailView: View {
                     for image in viewModel.images {
                         viewModel.selectedImageIds.insert(image.id)
                     }
+                }
+            } else {
+                Menu {
+                    Button("Review Duplicates") { viewModel.showDuplicateReview = true }
+                    Button("Resolution Filter") { viewModel.showResolutionFilter = true }
+                } label: {
+                    Image(systemName: "slider.horizontal.3")
                 }
             }
         }
@@ -82,6 +100,17 @@ struct DatasetDetailView: View {
         ScrollView {
             if !viewModel.isSelectionMode {
                 sourceFilterPicker
+                if viewModel.duplicateImageCount > 0 || viewModel.lowResImageCount > 0 {
+                    Text(
+                        "\(viewModel.images.count) images" +
+                        " · \(viewModel.duplicateImageCount) duplicates" +
+                        " · \(viewModel.lowResImageCount) low-res"
+                    )
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, Spacing.sm)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
             LazyVGrid(columns: columns, spacing: Spacing.sm) {
                 ForEach(viewModel.filteredImages, id: \.id) { image in
@@ -105,13 +134,46 @@ struct DatasetDetailView: View {
 
     private func imageCell(image: DatasetImage) -> some View {
         let isSelected = viewModel.selectedImageIds.contains(image.id)
-        return CachedAsyncImage(url: URL(string: image.imageUrl)) { phase in
+        return imageThumbnail(image: image)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(alignment: .topLeading) {
+                if viewModel.isSelectionMode {
+                    selectionIndicator(isSelected: isSelected)
+                }
+            }
+            .overlay(alignment: .topTrailing) {
+                excludedBadge(image: image)
+            }
+            .overlay(alignment: .bottomTrailing) {
+                if !viewModel.isSelectionMode {
+                    SourceBadgeMiniView(source: image.sourceType)
+                        .padding(Spacing.xs)
+                }
+            }
+            .onTapGesture {
+                if viewModel.isSelectionMode {
+                    viewModel.toggleSelection(id: image.id)
+                } else {
+                    viewModel.showDetail(image)
+                }
+            }
+            .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
+                if pressing && !viewModel.isSelectionMode {
+                    viewModel.enterSelectionMode(id: image.id)
+                }
+            }, perform: {})
+            .contextMenu {
+                Button("Edit Caption") { editCaptionImage = image }
+                Button("Batch Edit Tags") { showBatchTagEditor = true }
+                Button("Select") { viewModel.enterSelectionMode(id: image.id) }
+            }
+    }
+
+    private func imageThumbnail(image: DatasetImage) -> some View {
+        CachedAsyncImage(url: URL(string: image.imageUrl)) { phase in
             switch phase {
             case .success(let img):
-                img
-                    .resizable()
-                    .scaledToFill()
-                    .transition(.opacity)
+                img.resizable().scaledToFill().transition(.opacity)
             case .failure:
                 Color.civitSurfaceVariant
                     .overlay {
@@ -119,8 +181,7 @@ struct DatasetDetailView: View {
                             .foregroundColor(.civitOnSurfaceVariant)
                     }
             case .empty:
-                Color.civitSurfaceVariant
-                    .shimmer()
+                Color.civitSurfaceVariant.shimmer()
             @unknown default:
                 Color.clear
             }
@@ -128,34 +189,18 @@ struct DatasetDetailView: View {
         .frame(maxWidth: .infinity)
         .aspectRatio(1, contentMode: .fit)
         .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(alignment: .topLeading) {
-            if viewModel.isSelectionMode {
-                selectionIndicator(isSelected: isSelected)
-            }
-        }
-        .overlay(alignment: .bottomTrailing) {
-            if !viewModel.isSelectionMode {
-                SourceBadgeMiniView(source: image.sourceType)
-                    .padding(Spacing.xs)
-            }
-        }
-        .onTapGesture {
-            if viewModel.isSelectionMode {
-                viewModel.toggleSelection(id: image.id)
-            } else {
-                viewModel.showDetail(image)
-            }
-        }
-        .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
-            if pressing && !viewModel.isSelectionMode {
-                viewModel.enterSelectionMode(id: image.id)
-            }
-        }, perform: {})
-        .contextMenu {
-            Button("Edit Caption") { editCaptionImage = image }
-            Button("Batch Edit Tags") { showBatchTagEditor = true }
-            Button("Select") { viewModel.enterSelectionMode(id: image.id) }
+    }
+
+    @ViewBuilder
+    private func excludedBadge(image: DatasetImage) -> some View {
+        if image.excluded {
+            Text("Excluded")
+                .font(.caption2.bold())
+                .padding(.horizontal, Spacing.xs)
+                .background(Color.civitError)
+                .foregroundColor(.white)
+                .clipShape(Capsule())
+                .padding(Spacing.xs)
         }
     }
 

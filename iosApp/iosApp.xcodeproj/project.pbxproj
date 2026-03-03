@@ -119,6 +119,9 @@
 		CDDT07012F300007000CD001 /* CaptionEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT07002F300007000CD001 /* CaptionEditorSheet.swift */; };
 		CDDT08012F300008000CD001 /* BatchTagEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT08002F300008000CD001 /* BatchTagEditorViewModel.swift */; };
 		CDDT09012F300009000CD001 /* BatchTagEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT09002F300009000CD001 /* BatchTagEditorView.swift */; };
+		CDDT10012F300010000CD001 /* DuplicateReviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT10002F300010000CD001 /* DuplicateReviewSheet.swift */; };
+		CDDT11012F300011000CD001 /* DuplicateReviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT11002F300011000CD001 /* DuplicateReviewViewModel.swift */; };
+		CDDT12012F300012000CD001 /* ResolutionFilterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT12002F300012000CD001 /* ResolutionFilterSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -240,6 +243,9 @@
 		CDDT07002F300007000CD001 /* CaptionEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptionEditorSheet.swift; sourceTree = "<group>"; };
 		CDDT08002F300008000CD001 /* BatchTagEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchTagEditorViewModel.swift; sourceTree = "<group>"; };
 		CDDT09002F300009000CD001 /* BatchTagEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchTagEditorView.swift; sourceTree = "<group>"; };
+		CDDT10002F300010000CD001 /* DuplicateReviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateReviewSheet.swift; sourceTree = "<group>"; };
+		CDDT11002F300011000CD001 /* DuplicateReviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateReviewViewModel.swift; sourceTree = "<group>"; };
+		CDDT12002F300012000CD001 /* ResolutionFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolutionFilterSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -404,6 +410,9 @@
 			CDDT07002F300007000CD001 /* CaptionEditorSheet.swift */,
 			CDDT08002F300008000CD001 /* BatchTagEditorViewModel.swift */,
 			CDDT09002F300009000CD001 /* BatchTagEditorView.swift */,
+			CDDT10002F300010000CD001 /* DuplicateReviewSheet.swift */,
+			CDDT11002F300011000CD001 /* DuplicateReviewViewModel.swift */,
+			CDDT12002F300012000CD001 /* ResolutionFilterSheet.swift */,
 			);
 			path = Dataset;
 			sourceTree = "<group>";
@@ -792,6 +801,9 @@
 			CDDT07012F300007000CD001 /* CaptionEditorSheet.swift in Sources */,
 			CDDT08012F300008000CD001 /* BatchTagEditorViewModel.swift in Sources */,
 			CDDT09012F300009000CD001 /* BatchTagEditorView.swift in Sources */,
+			CDDT10012F300010000CD001 /* DuplicateReviewSheet.swift in Sources */,
+			CDDT11012F300011000CD001 /* DuplicateReviewViewModel.swift in Sources */,
+			CDDT12012F300012000CD001 /* ResolutionFilterSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
