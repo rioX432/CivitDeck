@@ -88,6 +88,9 @@ private struct NsfwBlurSettingsSection: View {
             Text("Blur Intensity")
                 .font(.civitBodySmall)
                 .foregroundColor(.civitOnSurfaceVariant)
+            Text("Controls blur strength for NSFW images in the Image Gallery. Tap any blurred image to reveal it temporarily.")
+                .font(.civitBodySmall)
+                .foregroundColor(.civitOnSurfaceVariant)
             BlurSliderRow(label: "Soft", intensity: Int(settings.softIntensity)) { value in
                 onChanged(NsfwBlurSettings(
                     softIntensity: Int32(value),
