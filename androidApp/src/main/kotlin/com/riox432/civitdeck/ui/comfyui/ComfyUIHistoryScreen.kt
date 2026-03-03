@@ -2,7 +2,8 @@
 
 package com.riox432.civitdeck.ui.comfyui
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,6 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,7 +33,9 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +49,7 @@ import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.FilterChipRow
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
+import com.riox432.civitdeck.ui.dataset.AddToDatasetSheet
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -58,21 +64,10 @@ fun ComfyUIHistoryScreen(
     onImageClick: (ComfyUIGeneratedImage) -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val datasets by viewModel.datasets.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(state.imageSaveSuccess) {
-        when (state.imageSaveSuccess) {
-            true -> {
-                snackbarHostState.showSnackbar("Image saved to gallery")
-                viewModel.onDismissSaveResult()
-            }
-            false -> {
-                snackbarHostState.showSnackbar("Failed to save image")
-                viewModel.onDismissSaveResult()
-            }
-            null -> {}
-        }
-    }
+    HistorySnackbarEffects(state = state, snackbarHostState = snackbarHostState, viewModel = viewModel)
 
     Scaffold(
         topBar = {
@@ -98,8 +93,52 @@ fun ComfyUIHistoryScreen(
             onImageClick = onImageClick,
             onRetry = viewModel::refresh,
             onSortSelected = viewModel::onSelectSort,
+            onAddToDataset = viewModel::onAddToDatasetTap,
             modifier = Modifier.padding(padding),
         )
+    }
+
+    if (state.showDatasetPicker) {
+        AddToDatasetSheet(
+            datasets = datasets,
+            onSelectDataset = viewModel::onDatasetSelected,
+            onCreateAndSelect = viewModel::onCreateDatasetAndSelect,
+            onDismiss = viewModel::onDismissDatasetPicker,
+        )
+    }
+}
+
+@Composable
+private fun HistorySnackbarEffects(
+    state: ComfyUIHistoryUiState,
+    snackbarHostState: SnackbarHostState,
+    viewModel: ComfyUIHistoryViewModel,
+) {
+    LaunchedEffect(state.imageSaveSuccess) {
+        when (state.imageSaveSuccess) {
+            true -> {
+                snackbarHostState.showSnackbar("Image saved to gallery")
+                viewModel.onDismissSaveResult()
+            }
+            false -> {
+                snackbarHostState.showSnackbar("Failed to save image")
+                viewModel.onDismissSaveResult()
+            }
+            null -> {}
+        }
+    }
+    LaunchedEffect(state.addToDatasetSuccess) {
+        when (state.addToDatasetSuccess) {
+            true -> {
+                snackbarHostState.showSnackbar("Added to dataset")
+                viewModel.onDismissDatasetResult()
+            }
+            false -> {
+                snackbarHostState.showSnackbar("Failed to add to dataset")
+                viewModel.onDismissDatasetResult()
+            }
+            null -> {}
+        }
     }
 }
 
@@ -111,6 +150,7 @@ private fun HistoryBody(
     onImageClick: (ComfyUIGeneratedImage) -> Unit,
     onRetry: () -> Unit,
     onSortSelected: (HistorySortOrder) -> Unit,
+    onAddToDataset: (ComfyUIGeneratedImage) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -152,6 +192,7 @@ private fun HistoryBody(
                             HistoryImageItem(
                                 image = image,
                                 onClick = { onImageClick(image) },
+                                onAddToDataset = { onAddToDataset(image) },
                             )
                         }
                     }
@@ -175,18 +216,39 @@ private fun FilterHeader(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun HistoryImageItem(
     image: ComfyUIGeneratedImage,
     onClick: () -> Unit,
+    onAddToDataset: () -> Unit,
 ) {
-    CivitAsyncImage(
-        imageUrl = image.imageUrl,
-        contentDescription = image.filename,
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(IMAGE_ASPECT_RATIO)
-            .clip(androidx.compose.foundation.shape.RoundedCornerShape(CornerRadius.image))
-            .clickable(onClick = onClick),
-    )
+    var showMenu by remember { mutableStateOf(false) }
+
+    Box {
+        CivitAsyncImage(
+            imageUrl = image.imageUrl,
+            contentDescription = image.filename,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(IMAGE_ASPECT_RATIO)
+                .clip(androidx.compose.foundation.shape.RoundedCornerShape(CornerRadius.image))
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = { showMenu = true },
+                ),
+        )
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text("Add to Dataset") },
+                onClick = {
+                    showMenu = false
+                    onAddToDataset()
+                },
+            )
+        }
+    }
 }

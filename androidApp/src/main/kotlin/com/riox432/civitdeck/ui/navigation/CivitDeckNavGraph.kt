@@ -81,6 +81,10 @@ import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateScreen
 import com.riox432.civitdeck.ui.compare.ModelCompareScreen
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.creator.CreatorProfileScreen
+import com.riox432.civitdeck.ui.dataset.DatasetDetailScreen
+import com.riox432.civitdeck.ui.dataset.DatasetDetailViewModel
+import com.riox432.civitdeck.ui.dataset.DatasetListScreen
+import com.riox432.civitdeck.ui.dataset.DatasetListViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryScreen
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
@@ -176,6 +180,10 @@ data class ComfyUIOutputDetailRoute(val imageId: String)
 data object BrowseImagesRoute
 
 data object NavShortcutsSettingsRoute
+
+data object DatasetListRoute
+
+data class DatasetDetailRoute(val datasetId: Long, val datasetName: String)
 
 internal enum class Tab(
     val label: String,
@@ -394,6 +402,8 @@ private fun CivitDeckNavDisplay(
             }
             collectionsEntry(backStack)
             collectionDetailEntry(backStack, compareModelId, onCancelCompare)
+            datasetListEntry(backStack)
+            datasetDetailEntry(backStack)
             detailEntry(backStack)
             creatorEntry(backStack)
             galleryEntry(backStack)
@@ -444,6 +454,31 @@ private fun EntryProviderScope<Any>.collectionsEntry(backStack: MutableList<Any>
             onRenameCollection = viewModel::renameCollection,
             onDeleteCollection = viewModel::deleteCollection,
             promptsViewModel = promptsViewModel,
+            onNavigateToDatasets = { backStack.add(DatasetListRoute) },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.datasetListEntry(backStack: MutableList<Any>) {
+    entry<DatasetListRoute> {
+        val viewModel: DatasetListViewModel = koinViewModel()
+        DatasetListScreen(
+            viewModel = viewModel,
+            onDatasetClick = { id, name -> backStack.add(DatasetDetailRoute(id, name)) },
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.datasetDetailEntry(backStack: MutableList<Any>) {
+    entry<DatasetDetailRoute> { key ->
+        val viewModel: DatasetDetailViewModel = koinViewModel(
+            key = "dataset_${key.datasetId}",
+        ) { parametersOf(key.datasetId) }
+        DatasetDetailScreen(
+            datasetName = key.datasetName,
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
         )
     }
 }

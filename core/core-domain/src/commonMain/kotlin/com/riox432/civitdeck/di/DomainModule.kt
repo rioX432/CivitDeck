@@ -16,5 +16,6 @@ val domainModule = module {
         cacheDomainModule,
         tutorialDomainModule,
         civitaiLinkDomainModule,
+        datasetDomainModule,
     )
 }

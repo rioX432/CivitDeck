@@ -16,6 +16,7 @@ struct SettingsScreen: View {
                 notificationsSection
                 storageSection
                 advancedSection
+                datasetsSection
                 aboutSection
             }
             .navigationTitle("Settings")
@@ -90,6 +91,14 @@ struct SettingsScreen: View {
             }
             NavigationLink(destination: AdvancedSettingsView(viewModel: viewModel)) {
                 Text("Advanced")
+            }
+        }
+    }
+
+    private var datasetsSection: some View {
+        Section("Training") {
+            NavigationLink(destination: DatasetListView()) {
+                Label("Datasets", systemImage: "photo.on.rectangle.angled")
             }
         }
     }

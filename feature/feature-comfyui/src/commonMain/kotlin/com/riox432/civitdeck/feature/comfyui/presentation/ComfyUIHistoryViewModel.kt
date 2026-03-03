@@ -4,12 +4,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
+import com.riox432.civitdeck.domain.model.DatasetCollection
+import com.riox432.civitdeck.domain.model.ImageSource
+import com.riox432.civitdeck.domain.usecase.AddImageToDatasetUseCase
+import com.riox432.civitdeck.domain.usecase.CreateDatasetCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveDatasetCollectionsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+private const val STOP_TIMEOUT = 5_000L
 
 enum class HistorySortOrder { Newest, Oldest }
 
@@ -19,15 +29,25 @@ data class ComfyUIHistoryUiState(
     val error: String? = null,
     val selectedSort: HistorySortOrder = HistorySortOrder.Newest,
     val imageSaveSuccess: Boolean? = null,
+    val showDatasetPicker: Boolean = false,
+    val pendingImageForDataset: ComfyUIGeneratedImage? = null,
+    val addToDatasetSuccess: Boolean? = null,
 )
 
 class ComfyUIHistoryViewModel(
     private val fetchHistory: FetchComfyUIHistoryUseCase,
     private val saveImage: SaveGeneratedImageUseCase,
+    observeDatasetCollections: ObserveDatasetCollectionsUseCase,
+    private val addImageToDataset: AddImageToDatasetUseCase,
+    private val createDatasetCollection: CreateDatasetCollectionUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ComfyUIHistoryUiState())
     val uiState: StateFlow<ComfyUIHistoryUiState> = _uiState
+
+    val datasets: StateFlow<List<DatasetCollection>> =
+        observeDatasetCollections()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
     init {
         refresh()
@@ -69,5 +89,72 @@ class ComfyUIHistoryViewModel(
             HistorySortOrder.Newest -> state.images.reversed()
             HistorySortOrder.Oldest -> state.images
         }
+    }
+
+    fun onAddToDatasetTap(image: ComfyUIGeneratedImage) {
+        _uiState.update { it.copy(pendingImageForDataset = image, showDatasetPicker = true) }
+    }
+
+    fun onDatasetSelected(datasetId: Long) {
+        val image = _uiState.value.pendingImageForDataset ?: return
+        _uiState.update { it.copy(showDatasetPicker = false, pendingImageForDataset = null) }
+        viewModelScope.launch {
+            try {
+                val tags = buildDatasetTags(image)
+                addImageToDataset(
+                    datasetId = datasetId,
+                    imageUrl = image.imageUrl,
+                    sourceType = ImageSource.GENERATED,
+                    trainable = true,
+                    tags = tags,
+                )
+                _uiState.update { it.copy(addToDatasetSuccess = true) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                _uiState.update { it.copy(addToDatasetSuccess = false) }
+            }
+        }
+    }
+
+    fun onCreateDatasetAndSelect(name: String) {
+        val image = _uiState.value.pendingImageForDataset ?: return
+        _uiState.update { it.copy(showDatasetPicker = false, pendingImageForDataset = null) }
+        viewModelScope.launch {
+            try {
+                val datasetId = createDatasetCollection(name)
+                val tags = buildDatasetTags(image)
+                addImageToDataset(
+                    datasetId = datasetId,
+                    imageUrl = image.imageUrl,
+                    sourceType = ImageSource.GENERATED,
+                    trainable = true,
+                    tags = tags,
+                )
+                _uiState.update { it.copy(addToDatasetSuccess = true) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                _uiState.update { it.copy(addToDatasetSuccess = false) }
+            }
+        }
+    }
+
+    fun onDismissDatasetPicker() {
+        _uiState.update { it.copy(showDatasetPicker = false, pendingImageForDataset = null) }
+    }
+
+    fun onDismissDatasetResult() {
+        _uiState.update { it.copy(addToDatasetSuccess = null) }
+    }
+
+    private fun buildDatasetTags(image: ComfyUIGeneratedImage): List<String> {
+        val tags = mutableListOf<String>()
+        image.meta.seed?.let { tags.add("seed:$it") }
+        image.meta.samplerName?.let { tags.add("sampler:$it") }
+        if (image.meta.positivePrompt.isNotBlank()) {
+            tags.add("prompt_hash:${image.meta.positivePrompt.hashCode()}")
+        }
+        return tags
     }
 }
