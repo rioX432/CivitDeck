@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -64,6 +65,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -345,16 +348,27 @@ private fun CarouselWithGridButton(
             onImageError = onImageError,
         )
         if (images.isNotEmpty()) {
-            IconButton(
-                onClick = onShowGrid,
+            Row(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(Spacing.xs),
+                    .align(Alignment.BottomEnd)
+                    .padding(Spacing.sm)
+                    .clip(RoundedCornerShape(CornerRadius.chip))
+                    .background(Color.Black.copy(alpha = 0.55f))
+                    .clickable(onClick = onShowGrid)
+                    .padding(horizontal = Spacing.sm, vertical = Spacing.xs),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
             ) {
                 Icon(
                     imageVector = Icons.Default.GridView,
-                    contentDescription = "View version images as grid",
-                    tint = MaterialTheme.colorScheme.onSurface,
+                    contentDescription = "View all ${images.size} images",
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp),
+                )
+                Text(
+                    text = "${images.size}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White,
                 )
             }
         }
