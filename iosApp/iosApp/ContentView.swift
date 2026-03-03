@@ -64,14 +64,18 @@ struct ContentView: View {
     }
 
     private var sidebarLayout: some View {
-        NavigationSplitView {
-            List(selection: $selectedTabId) {
-                Label("Search", systemImage: "magnifyingglass").tag("search")
-                Label("Collections", systemImage: "folder").tag("collections")
+        let optionalSelection = Binding<String?>(
+            get: { selectedTabId },
+            set: { if let v = $0 { selectedTabId = v } }
+        )
+        return NavigationSplitView {
+            List(selection: optionalSelection) {
+                Label("Search", systemImage: "magnifyingglass").tag("search" as String?)
+                Label("Collections", systemImage: "folder").tag("collections" as String?)
                 ForEach(activeShortcuts, id: \.name) { shortcut in
-                    Label(shortcut.label, systemImage: shortcut.iconName).tag(shortcut.name)
+                    Label(shortcut.label, systemImage: shortcut.iconName).tag(shortcut.name as String?)
                 }
-                Label("Settings", systemImage: "gearshape").tag("settings")
+                Label("Settings", systemImage: "gearshape").tag("settings" as String?)
             }
             .navigationTitle("CivitDeck")
         } detail: {
