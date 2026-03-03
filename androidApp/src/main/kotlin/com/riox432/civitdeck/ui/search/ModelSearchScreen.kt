@@ -402,6 +402,7 @@ private fun SearchBarWithFilterButton(
                 showHistory = false
             },
             onFocusChanged = { focused ->
+                if (!focused && query.isEmpty()) onSearch()
                 showHistory = focused && query.isEmpty() && searchHistory.isNotEmpty()
             },
             onClear = {
