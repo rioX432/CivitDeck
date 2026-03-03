@@ -245,6 +245,18 @@ Run twice if first run reports import reordering issues.
 swiftlint --strict --config iosApp/.swiftlint.yml
 ```
 
+### 5e. iOS Build (if Swift changed)
+```bash
+xcodebuild build \
+  -project iosApp/iosApp.xcodeproj \
+  -scheme iosApp \
+  -destination 'generic/platform=iOS Simulator' \
+  CODE_SIGNING_REQUIRED=NO \
+  CODE_SIGNING_ALLOWED=YES \
+  EXPANDED_CODE_SIGN_IDENTITY=""
+```
+Check for `BUILD SUCCEEDED` — `No such module 'Shared'` errors in SourceKit are false positives (expected until KMP framework is built), but real compile errors must be fixed.
+
 ### Failure Handling
 - Fix and retry (max 3 attempts per check)
 - Lint/test fixes go in a separate commit: `Fix lint/test issues`
@@ -281,8 +293,10 @@ Closes #{NUMBER}
 ## Test Plan
 
 - [x] Unit tests pass (`./gradlew :shared:testDebugUnitTest`)
+- [x] Android build pass (`./gradlew :androidApp:assembleDebug`)
 - [x] Detekt pass (`./gradlew detekt`)
 - [x] SwiftLint pass (if Swift changed)
+- [x] iOS build pass (`xcodebuild build ... BUILD SUCCEEDED`)
 
 ## Review Checklist
 

@@ -14,7 +14,8 @@ allowed-tools:
   - Bash(git status)
   - Bash(git branch:*)
   - Bash(./gradlew *)
-  - Bash(cd iosApp && swiftlint *)
+  - Bash(swiftlint *)
+  - Bash(xcodebuild *)
   - Bash(gh pr create:*)
   - Bash(gh issue view:*)
   - Glob
@@ -56,7 +57,7 @@ Create these tasks at the start:
 2. "Investigate codebase"
 3. "Cross-check with Codex"
 4. "Implement changes"
-5. "Run quality gate (test + detekt + swiftlint)"
+5. "Run quality gate (tests + Android build + detekt + SwiftLint + iOS build)"
 6. "Commit changes"
 7. "Review changes"
 8. "Create PR"
@@ -207,7 +208,13 @@ Implement the changes using `Edit` and `Write` tools.
 ./gradlew :shared:testDebugUnitTest
 ```
 
-### 5b. Run Detekt (if Kotlin files changed)
+### 5b. Android Build (if Kotlin files changed)
+
+```bash
+./gradlew :androidApp:assembleDebug
+```
+
+### 5c. Run Detekt (if Kotlin files changed)
 
 ```bash
 ./gradlew detekt
@@ -215,11 +222,26 @@ Implement the changes using `Edit` and `Write` tools.
 
 If detekt reports issues from import reordering, run it again (auto-correct may cause cascading fixes).
 
-### 5c. Run SwiftLint (if Swift files changed)
+### 5d. Run SwiftLint (if Swift files changed)
 
 ```bash
-cd iosApp && swiftlint --strict
+# Run from project root with explicit config — NOT `cd iosApp && swiftlint`
+swiftlint --strict --config iosApp/.swiftlint.yml
 ```
+
+### 5e. iOS Build (if Swift files changed)
+
+```bash
+xcodebuild build \
+  -project iosApp/iosApp.xcodeproj \
+  -scheme iosApp \
+  -destination 'generic/platform=iOS Simulator' \
+  CODE_SIGNING_REQUIRED=NO \
+  CODE_SIGNING_ALLOWED=YES \
+  EXPANDED_CODE_SIGN_IDENTITY=""
+```
+
+Check for `BUILD SUCCEEDED` — `No such module 'Shared'` errors in SourceKit are false positives (expected until KMP framework is built), but real compile errors must be fixed.
 
 ### Failure Handling
 
