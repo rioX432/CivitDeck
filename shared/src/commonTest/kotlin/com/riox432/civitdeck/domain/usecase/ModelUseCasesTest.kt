@@ -51,6 +51,7 @@ class ModelUseCasesTest {
         override suspend fun getModel(id: Long): Model = modelDetail
         override suspend fun getModelVersion(id: Long): ModelVersion = error("not used")
         override suspend fun getModelVersionByHash(hash: String): ModelVersion = error("not used")
+        override suspend fun getModelLicense(versionId: Long) = null
     }
 
     // --- GetModelsUseCase ---

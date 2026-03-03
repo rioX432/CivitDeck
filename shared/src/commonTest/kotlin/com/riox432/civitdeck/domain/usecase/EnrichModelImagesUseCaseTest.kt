@@ -71,6 +71,7 @@ class EnrichModelImagesUseCaseTest {
 
         override suspend fun getModel(id: Long): Model = error("not used")
         override suspend fun getModelVersionByHash(hash: String): ModelVersion = error("not used")
+        override suspend fun getModelLicense(versionId: Long) = null
     }
 
     @Test

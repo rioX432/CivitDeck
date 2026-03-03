@@ -63,6 +63,11 @@ class DatasetCollectionRepositoryImpl(
                     addedAt = entity.addedAt,
                     tags = tags,
                     caption = caption,
+                    licenseNote = entity.licenseNote,
+                    pHash = entity.pHash,
+                    excluded = entity.excluded,
+                    width = entity.width,
+                    height = entity.height,
                 )
             }
         }
@@ -95,5 +100,48 @@ class DatasetCollectionRepositoryImpl(
 
     override suspend fun removeImages(imageIds: List<Long>) {
         dao.deleteImages(imageIds)
+    }
+
+    override suspend fun updateTrainable(imageId: Long, trainable: Boolean) {
+        dao.updateTrainable(imageId, trainable)
+    }
+
+    override suspend fun updateLicenseNote(imageId: Long, licenseNote: String?) {
+        dao.updateLicenseNote(imageId, licenseNote)
+    }
+
+    override suspend fun getNonTrainableImages(datasetId: Long): List<DatasetImage> {
+        val entities = dao.getNonTrainableImages(datasetId)
+        return entities.map { entity ->
+            val tags = metaDao.getTagsForImage(entity.id).map { ImageTag(it.id, it.datasetImageId, it.tag) }
+            val caption = metaDao.getCaption(entity.id)?.let { Caption(it.datasetImageId, it.text) }
+            DatasetImage(
+                id = entity.id,
+                datasetId = entity.datasetId,
+                imageUrl = entity.imageUrl,
+                sourceType = ImageSource.valueOf(entity.sourceType),
+                trainable = entity.trainable,
+                addedAt = entity.addedAt,
+                tags = tags,
+                caption = caption,
+                licenseNote = entity.licenseNote,
+                pHash = entity.pHash,
+                excluded = entity.excluded,
+                width = entity.width,
+                height = entity.height,
+            )
+        }
+    }
+
+    override suspend fun updatePHash(imageId: Long, pHash: String?) {
+        dao.updatePHash(imageId, pHash)
+    }
+
+    override suspend fun markExcluded(imageId: Long, excluded: Boolean) {
+        dao.updateExcluded(imageId, excluded)
+    }
+
+    override suspend fun updateDimensions(imageId: Long, width: Int, height: Int) {
+        dao.updateDimensions(imageId, width, height)
     }
 }

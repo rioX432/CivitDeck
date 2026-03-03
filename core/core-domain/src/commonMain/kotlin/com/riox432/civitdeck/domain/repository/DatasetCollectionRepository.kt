@@ -5,6 +5,7 @@ import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.domain.model.ImageSource
 import kotlinx.coroutines.flow.Flow
 
+@Suppress("TooManyFunctions")
 interface DatasetCollectionRepository {
     fun observeCollections(): Flow<List<DatasetCollection>>
     suspend fun createCollection(name: String, description: String = ""): Long
@@ -20,4 +21,10 @@ interface DatasetCollectionRepository {
     ): Long
     suspend fun removeImage(imageId: Long)
     suspend fun removeImages(imageIds: List<Long>)
+    suspend fun updateTrainable(imageId: Long, trainable: Boolean)
+    suspend fun updateLicenseNote(imageId: Long, licenseNote: String?)
+    suspend fun getNonTrainableImages(datasetId: Long): List<DatasetImage>
+    suspend fun updatePHash(imageId: Long, pHash: String?)
+    suspend fun markExcluded(imageId: Long, excluded: Boolean)
+    suspend fun updateDimensions(imageId: Long, width: Int, height: Int)
 }

@@ -81,10 +81,14 @@ import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateScreen
 import com.riox432.civitdeck.ui.compare.ModelCompareScreen
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.creator.CreatorProfileScreen
+import com.riox432.civitdeck.ui.dataset.BatchTagEditorScreen
+import com.riox432.civitdeck.ui.dataset.BatchTagEditorViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetDetailScreen
 import com.riox432.civitdeck.ui.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetListScreen
 import com.riox432.civitdeck.ui.dataset.DatasetListViewModel
+import com.riox432.civitdeck.ui.dataset.DuplicateReviewScreen
+import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryScreen
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
@@ -184,6 +188,10 @@ data object NavShortcutsSettingsRoute
 data object DatasetListRoute
 
 data class DatasetDetailRoute(val datasetId: Long, val datasetName: String)
+
+data class BatchTagEditorRoute(val datasetId: Long)
+
+data class DuplicateReviewRoute(val datasetId: Long)
 
 internal enum class Tab(
     val label: String,
@@ -404,6 +412,8 @@ private fun CivitDeckNavDisplay(
             collectionDetailEntry(backStack, compareModelId, onCancelCompare)
             datasetListEntry(backStack)
             datasetDetailEntry(backStack)
+            batchTagEditorEntry(backStack)
+            duplicateReviewEntry(backStack)
             detailEntry(backStack)
             creatorEntry(backStack)
             galleryEntry(backStack)
@@ -477,6 +487,36 @@ private fun EntryProviderScope<Any>.datasetDetailEntry(backStack: MutableList<An
         ) { parametersOf(key.datasetId) }
         DatasetDetailScreen(
             datasetName = key.datasetName,
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onNavigateToBatchTagEditor = { datasetId ->
+                backStack.add(BatchTagEditorRoute(datasetId))
+            },
+            onNavigateToDuplicateReview = { datasetId ->
+                backStack.add(DuplicateReviewRoute(datasetId))
+            },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.duplicateReviewEntry(backStack: MutableList<Any>) {
+    entry<DuplicateReviewRoute> { key ->
+        val viewModel: DuplicateReviewViewModel = koinViewModel(
+            parameters = { parametersOf(key.datasetId) },
+        )
+        DuplicateReviewScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.batchTagEditorEntry(backStack: MutableList<Any>) {
+    entry<BatchTagEditorRoute> { key ->
+        val viewModel: BatchTagEditorViewModel = koinViewModel(
+            parameters = { parametersOf(key.datasetId) },
+        )
+        BatchTagEditorScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
         )

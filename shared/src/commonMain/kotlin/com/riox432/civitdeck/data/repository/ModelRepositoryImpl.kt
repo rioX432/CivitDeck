@@ -9,6 +9,7 @@ import com.riox432.civitdeck.data.api.dto.toDomain
 import com.riox432.civitdeck.data.local.LocalCacheDataSource
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelLicenseInfo
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.PageMetadata
@@ -144,6 +145,21 @@ class ModelRepositoryImpl(
             } else {
                 throw e
             }
+        }
+    }
+
+    override suspend fun getModelLicense(versionId: Long): ModelLicenseInfo? {
+        return try {
+            val response = api.getModelVersionLicense(versionId)
+            response.model?.let {
+                ModelLicenseInfo(
+                    allowNoCredit = it.allowNoCredit,
+                    allowCommercialUse = it.allowCommercialUse,
+                    allowDerivatives = it.allowDerivatives,
+                )
+            }
+        } catch (_: Exception) {
+            null
         }
     }
 

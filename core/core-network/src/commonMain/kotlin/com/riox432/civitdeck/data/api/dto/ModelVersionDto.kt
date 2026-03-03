@@ -3,6 +3,13 @@ package com.riox432.civitdeck.data.api.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class ModelVersionParentDto(
+    val allowNoCredit: Boolean = true,
+    val allowCommercialUse: String? = null,
+    val allowDerivatives: Boolean = true,
+)
+
+@Serializable
 data class ModelVersionResponse(
     val id: Long = 0,
     val modelId: Long = 0,
@@ -15,6 +22,7 @@ data class ModelVersionResponse(
     val files: List<ModelFileDto> = emptyList(),
     val images: List<ModelImageDto> = emptyList(),
     val stats: ModelVersionStatsDto? = null,
+    val model: ModelVersionParentDto? = null,
 )
 
 typealias ModelVersionDto = ModelVersionResponse

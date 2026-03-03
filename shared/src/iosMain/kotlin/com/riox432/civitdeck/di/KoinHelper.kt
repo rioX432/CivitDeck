@@ -4,16 +4,24 @@ import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.usecase.AddImageToDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
+import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
 import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
 import com.riox432.civitdeck.domain.usecase.CreateDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.DetectDuplicatesUseCase
+import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
+import com.riox432.civitdeck.domain.usecase.FilterByResolutionUseCase
 import com.riox432.civitdeck.domain.usecase.GetCacheInfoUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
+import com.riox432.civitdeck.domain.usecase.GetModelLicenseUseCase
+import com.riox432.civitdeck.domain.usecase.GetNonTrainableImagesUseCase
+import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
+import com.riox432.civitdeck.domain.usecase.MarkImageExcludedUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
@@ -60,8 +68,11 @@ import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.SetThemeModeUseCase
+import com.riox432.civitdeck.domain.usecase.StoreImageDimensionsUseCase
+import com.riox432.civitdeck.domain.usecase.StorePHashUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.domain.usecase.UpdateTrainableUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.AddModelToCollectionUseCase
@@ -312,4 +323,15 @@ object KoinHelper {
     fun getObserveDatasetImagesUseCase(): ObserveDatasetImagesUseCase = getKoin().get()
     fun getAddImageToDatasetUseCase(): AddImageToDatasetUseCase = getKoin().get()
     fun getRemoveImageFromDatasetUseCase(): RemoveImageFromDatasetUseCase = getKoin().get()
+    fun getBatchEditTagsUseCase(): BatchEditTagsUseCase = getKoin().get()
+    fun getEditCaptionUseCase(): EditCaptionUseCase = getKoin().get()
+    fun getGetTagSuggestionsUseCase(): GetTagSuggestionsUseCase = getKoin().get()
+    fun getUpdateTrainableUseCase(): UpdateTrainableUseCase = getKoin().get()
+    fun getGetNonTrainableImagesUseCase(): GetNonTrainableImagesUseCase = getKoin().get()
+    fun getGetModelLicenseUseCase(): GetModelLicenseUseCase = getKoin().get()
+    fun getDetectDuplicatesUseCase(): DetectDuplicatesUseCase = getKoin().get()
+    fun getFilterByResolutionUseCase(): FilterByResolutionUseCase = getKoin().get()
+    fun getMarkImageExcludedUseCase(): MarkImageExcludedUseCase = getKoin().get()
+    fun getStorePHashUseCase(): StorePHashUseCase = getKoin().get()
+    fun getStoreImageDimensionsUseCase(): StoreImageDimensionsUseCase = getKoin().get()
 }

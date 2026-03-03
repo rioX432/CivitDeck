@@ -19,6 +19,17 @@ interface DatasetImageMetaDao {
     @Query("DELETE FROM image_tags WHERE datasetImageId = :datasetImageId")
     suspend fun deleteTagsForImage(datasetImageId: Long)
 
+    @Query("DELETE FROM image_tags WHERE datasetImageId = :imageId AND tag = :tag")
+    suspend fun deleteTagByName(imageId: Long, tag: String)
+
+    @Query(
+        "SELECT DISTINCT tag FROM image_tags " +
+            "WHERE datasetImageId IN (SELECT id FROM dataset_images WHERE datasetId = :datasetId) " +
+            "AND ((:prefix = '') OR tag LIKE :prefix || '%') " +
+            "ORDER BY tag LIMIT 20",
+    )
+    suspend fun getTagSuggestions(datasetId: Long, prefix: String): List<String>
+
     @Query("SELECT * FROM captions WHERE datasetImageId = :datasetImageId")
     suspend fun getCaption(datasetImageId: Long): CaptionEntity?
 

@@ -68,6 +68,14 @@ class CivitAiApi(private val client: HttpClient) {
         }
     }
 
+    suspend fun getModelVersionLicense(versionId: Long): ModelVersionResponse {
+        return try {
+            client.get("$BASE_URL/model-versions/$versionId").body()
+        } catch (e: ContentConvertException) {
+            throw DataParseException(e.message, e)
+        }
+    }
+
     suspend fun getModelVersionByHash(hash: String): ModelVersionResponse {
         return try {
             client.get("$BASE_URL/model-versions/by-hash/$hash").body()
