@@ -52,4 +52,22 @@ interface DatasetCollectionDao {
 
     @Query("DELETE FROM dataset_images WHERE id IN (:imageIds)")
     suspend fun deleteImages(imageIds: List<Long>)
+
+    @Query("UPDATE dataset_images SET trainable = :trainable WHERE id = :imageId")
+    suspend fun updateTrainable(imageId: Long, trainable: Boolean)
+
+    @Query("UPDATE dataset_images SET licenseNote = :licenseNote WHERE id = :imageId")
+    suspend fun updateLicenseNote(imageId: Long, licenseNote: String?)
+
+    @Query("SELECT * FROM dataset_images WHERE datasetId = :datasetId AND trainable = 0 ORDER BY addedAt DESC")
+    suspend fun getNonTrainableImages(datasetId: Long): List<DatasetImageEntity>
+
+    @Query("UPDATE dataset_images SET pHash = :pHash WHERE id = :imageId")
+    suspend fun updatePHash(imageId: Long, pHash: String?)
+
+    @Query("UPDATE dataset_images SET excluded = :excluded WHERE id = :imageId")
+    suspend fun updateExcluded(imageId: Long, excluded: Boolean)
+
+    @Query("UPDATE dataset_images SET width = :width, height = :height WHERE id = :imageId")
+    suspend fun updateDimensions(imageId: Long, width: Int, height: Int)
 }

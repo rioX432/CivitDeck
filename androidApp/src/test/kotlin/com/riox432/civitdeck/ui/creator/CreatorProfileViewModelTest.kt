@@ -72,6 +72,7 @@ class CreatorProfileViewModelTest {
         override suspend fun getModel(id: Long) = error("not used")
         override suspend fun getModelVersion(id: Long) = error("not used")
         override suspend fun getModelVersionByHash(hash: String) = error("not used")
+        override suspend fun getModelLicense(versionId: Long) = null
     }
 
     @Test

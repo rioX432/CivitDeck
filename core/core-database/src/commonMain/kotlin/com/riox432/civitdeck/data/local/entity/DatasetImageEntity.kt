@@ -25,4 +25,9 @@ data class DatasetImageEntity(
     val sourceType: String,
     val trainable: Boolean = true,
     val addedAt: Long,
+    val licenseNote: String? = null,
+    val pHash: String? = null,
+    val excluded: Boolean = false,
+    val width: Int? = null,
+    val height: Int? = null,
 )

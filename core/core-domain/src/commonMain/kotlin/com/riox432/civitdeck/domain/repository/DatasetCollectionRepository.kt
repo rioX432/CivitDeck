@@ -20,4 +20,10 @@ interface DatasetCollectionRepository {
     ): Long
     suspend fun removeImage(imageId: Long)
     suspend fun removeImages(imageIds: List<Long>)
+    suspend fun updateTrainable(imageId: Long, trainable: Boolean)
+    suspend fun updateLicenseNote(imageId: Long, licenseNote: String?)
+    suspend fun getNonTrainableImages(datasetId: Long): List<DatasetImage>
+    suspend fun updatePHash(imageId: Long, pHash: String?)
+    suspend fun markExcluded(imageId: Long, excluded: Boolean)
+    suspend fun updateDimensions(imageId: Long, width: Int, height: Int)
 }

@@ -109,6 +109,7 @@ class ModelDetailViewModelTest {
         override suspend fun getModelVersion(id: Long) = model.modelVersions.first()
         override suspend fun getModelVersionByHash(hash: String): ModelVersion =
             error("not used")
+        override suspend fun getModelLicense(versionId: Long) = null
     }
 
     private class FakeFavoriteRepo(

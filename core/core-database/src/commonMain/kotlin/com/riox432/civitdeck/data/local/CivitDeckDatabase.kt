@@ -64,7 +64,7 @@ import kotlinx.coroutines.IO
         ImageTagEntity::class,
         CaptionEntity::class,
     ],
-    version = 24,
+    version = 25,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -492,6 +492,16 @@ val MIGRATION_23_24 = object : Migration(23, 24) {
     }
 }
 
+val MIGRATION_24_25 = object : Migration(24, 25) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("ALTER TABLE dataset_images ADD COLUMN licenseNote TEXT")
+        connection.execSQL("ALTER TABLE dataset_images ADD COLUMN pHash TEXT")
+        connection.execSQL("ALTER TABLE dataset_images ADD COLUMN excluded INTEGER NOT NULL DEFAULT 0")
+        connection.execSQL("ALTER TABLE dataset_images ADD COLUMN width INTEGER")
+        connection.execSQL("ALTER TABLE dataset_images ADD COLUMN height INTEGER")
+    }
+}
+
 // Seed data is inserted via onOpen (not in migrations) because Room migrations only run on
 // upgrades — a fresh install starts directly at the latest schema version, skipping all
 // migration callbacks. Using INSERT OR IGNORE in onOpen ensures required rows are always
@@ -569,6 +579,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_21_22,
             MIGRATION_22_23,
             MIGRATION_23_24,
+            MIGRATION_24_25,
         )
         .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())
