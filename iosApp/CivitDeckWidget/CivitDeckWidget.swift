@@ -103,7 +103,7 @@ struct TrendingModelWidgetView: View {
     @ViewBuilder
     private var thumbnailView: some View {
         if let url = entry.thumbnailURL {
-            CachedAsyncImage(url: url) { phase in
+            AsyncImage(url: url) { phase in
                 switch phase {
                 case .success(let image):
                     image
