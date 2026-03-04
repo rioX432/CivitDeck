@@ -6,9 +6,9 @@ struct ExternalServerGalleryView: View {
     @StateObject private var viewModel = ExternalServerGalleryViewModel()
 
     private let columns = [
-        GridItem(.flexible(), spacing: 2),
-        GridItem(.flexible(), spacing: 2),
-        GridItem(.flexible(), spacing: 2),
+        GridItem(.flexible(), spacing: Spacing.xxs),
+        GridItem(.flexible(), spacing: Spacing.xxs),
+        GridItem(.flexible(), spacing: Spacing.xxs),
     ]
 
     var body: some View {
@@ -31,7 +31,7 @@ struct ExternalServerGalleryView: View {
                 .padding(Spacing.lg)
             } else {
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: 2) {
+                    LazyVGrid(columns: columns, spacing: Spacing.xxs) {
                         ForEach(viewModel.images, id: \.id) { image in
                             ServerImageCell(image: image)
                                 .onAppear {
@@ -70,7 +70,7 @@ private struct ServerImageCell: View {
                     .foregroundColor(.white)
                     .padding(Spacing.xs)
                     .background(Color.black.opacity(0.5))
-                    .cornerRadius(4)
+                    .cornerRadius(Spacing.xs)
                     .padding(Spacing.xs)
             }
         }
