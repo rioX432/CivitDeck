@@ -26,6 +26,7 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var gridColumns: Int32 = 2
     @Published var ownedHashes: Set<String> = []
     @Published var favoriteIds: Set<Int64> = []
+    @Published var savedFilters: [SavedSearchFilter] = []
 
     private let getModelsUseCase: GetModelsUseCase
     private let getRecommendationsUseCase: GetRecommendationsUseCase
@@ -46,6 +47,9 @@ final class ModelSearchViewModel: ObservableObject {
     private let observeOwnedModelHashesUseCase: ObserveOwnedModelHashesUseCase
     private let toggleFavoriteUseCase: ToggleFavoriteUseCase
     private let observeFavoritesUseCase: ObserveFavoritesUseCase
+    private let observeSavedSearchFiltersUseCase: ObserveSavedSearchFiltersUseCase
+    private let saveSearchFilterUseCase: SaveSearchFilterUseCase
+    private let deleteSavedSearchFilterUseCase: DeleteSavedSearchFilterUseCase
     private var nextCursor: String?
     private var loadTask: Task<Void, Never>?
     private var hiddenModelIds: Set<KotlinLong> = []
@@ -75,6 +79,9 @@ final class ModelSearchViewModel: ObservableObject {
         self.observeOwnedModelHashesUseCase = KoinHelper.shared.getObserveOwnedModelHashesUseCase()
         self.toggleFavoriteUseCase = KoinHelper.shared.getToggleFavoriteUseCase()
         self.observeFavoritesUseCase = KoinHelper.shared.getObserveFavoritesUseCase()
+        self.observeSavedSearchFiltersUseCase = KoinHelper.shared.getObserveSavedSearchFiltersUseCase()
+        self.saveSearchFilterUseCase = KoinHelper.shared.getSaveSearchFilterUseCase()
+        self.deleteSavedSearchFilterUseCase = KoinHelper.shared.getDeleteSavedSearchFilterUseCase()
         loadExcludedTags()
         loadDefaults()
         loadRecommendations()
@@ -257,6 +264,48 @@ final class ModelSearchViewModel: ObservableObject {
             let summaries = list.compactMap { $0 as? FavoriteModelSummary }
             favoriteIds = Set(summaries.map { $0.id })
         }
+    }
+
+    func observeSavedFilters() async {
+        for await list in observeSavedSearchFiltersUseCase.invoke() {
+            savedFilters = list.compactMap { $0 as? SavedSearchFilter }
+        }
+    }
+
+    func saveCurrentFilter(name: String) {
+        let filter = SavedSearchFilter(
+            id: 0,
+            name: name,
+            query: query,
+            selectedType: selectedType,
+            selectedSort: selectedSort,
+            selectedPeriod: selectedPeriod,
+            selectedBaseModels: selectedBaseModels,
+            nsfwFilterLevel: nsfwFilterLevel,
+            isFreshFindEnabled: isFreshFindEnabled,
+            excludedTags: excludedTags,
+            includedTags: includedTags,
+            savedAt: 0
+        )
+        Task { try? await saveSearchFilterUseCase.invoke(name: name, filter: filter) }
+    }
+
+    func applyFilter(_ filter: SavedSearchFilter) {
+        loadTask?.cancel()
+        query = filter.query
+        selectedType = filter.selectedType
+        selectedSort = filter.selectedSort
+        selectedPeriod = filter.selectedPeriod
+        selectedBaseModels = Set(filter.selectedBaseModels.compactMap { $0 as? BaseModel })
+        nsfwFilterLevel = filter.nsfwFilterLevel
+        isFreshFindEnabled = filter.isFreshFindEnabled
+        includedTags = filter.includedTags.compactMap { $0 as? String }
+        excludedTags = filter.excludedTags.compactMap { $0 as? String }
+        reloadModels()
+    }
+
+    func deleteSavedFilter(id: Int64) {
+        Task { try? await deleteSavedSearchFilterUseCase.invoke(id: id) }
     }
     func hideModel(_ modelId: Int64, name: String) {
         Task {

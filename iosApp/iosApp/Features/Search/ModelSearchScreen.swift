@@ -21,6 +21,9 @@ struct ModelSearchScreen: View {
     @State private var includeTagInput: String = ""
     @State private var excludeTagInput: String = ""
     @State private var showFilterSheet: Bool = false
+    @State private var showSavedFiltersSheet: Bool = false
+    @State private var showSaveFilterAlert: Bool = false
+    @State private var saveFilterName: String = ""
     @State private var navigationPath = NavigationPath()
     @Namespace private var heroNamespace
 
@@ -98,6 +101,7 @@ struct ModelSearchScreen: View {
             .task { await viewModel.observeGridColumns() }
             .task { await viewModel.observeOwnedHashes() }
             .task { await viewModel.observeFavorites() }
+            .task { await viewModel.observeSavedFilters() }
             .onChange(of: router.pendingDeepLink) { link in
                 guard case .modelDetail(let id) = link else { return }
                 navigationPath.append(id)
@@ -184,14 +188,48 @@ struct ModelSearchScreen: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        showFilterSheet = false
+                    HStack(spacing: Spacing.xs) {
+                        Button {
+                            showSavedFiltersSheet = true
+                        } label: {
+                            Image(systemName: "bookmark.fill")
+                        }
+                        Button {
+                            saveFilterName = ""
+                            showSaveFilterAlert = true
+                        } label: {
+                            Image(systemName: "bookmark.badge.plus")
+                        }
+                        Button("Done") {
+                            showFilterSheet = false
+                        }
+                        .fontWeight(.semibold)
                     }
-                    .fontWeight(.semibold)
                 }
             }
         }
         .presentationDetents([.medium, .large])
+        .sheet(isPresented: $showSavedFiltersSheet) {
+            SavedFiltersSheet(
+                savedFilters: viewModel.savedFilters,
+                onApply: { filter in
+                    viewModel.applyFilter(filter)
+                    showFilterSheet = false
+                },
+                onDelete: { id in viewModel.deleteSavedFilter(id: id) },
+                onDismiss: { showSavedFiltersSheet = false }
+            )
+        }
+        .alert("Save Filter", isPresented: $showSaveFilterAlert) {
+            TextField("Filter name", text: $saveFilterName)
+            Button("Save") {
+                let name = saveFilterName.trimmingCharacters(in: .whitespaces)
+                if !name.isEmpty {
+                    viewModel.saveCurrentFilter(name: name)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
     }
 
     @ViewBuilder

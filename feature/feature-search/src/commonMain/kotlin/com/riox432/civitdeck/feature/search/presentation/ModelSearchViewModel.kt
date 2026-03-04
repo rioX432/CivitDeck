@@ -11,6 +11,7 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.RecommendationSection
+import com.riox432.civitdeck.domain.model.SavedSearchFilter
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
@@ -24,6 +25,7 @@ import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ClearSearchHistoryUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSavedSearchFilterUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSearchHistoryItemUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseCase
@@ -31,7 +33,9 @@ import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.RemoveExcludedTagUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -94,6 +98,9 @@ class ModelSearchViewModel(
     observeOwnedModelHashesUseCase: ObserveOwnedModelHashesUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     observeFavoritesUseCase: ObserveFavoritesUseCase,
+    observeSavedSearchFiltersUseCase: ObserveSavedSearchFiltersUseCase,
+    private val saveSearchFilterUseCase: SaveSearchFilterUseCase,
+    private val deleteSavedSearchFilterUseCase: DeleteSavedSearchFilterUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelSearchUiState())
@@ -118,6 +125,10 @@ class ModelSearchViewModel(
         observeFavoritesUseCase()
             .map { favorites -> favorites.map { it.id }.toSet() }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
+    val savedFilters: StateFlow<List<SavedSearchFilter>> =
+        observeSavedSearchFiltersUseCase()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val pagingData: Flow<PagingData<Model>> = combine(
@@ -305,6 +316,58 @@ class ModelSearchViewModel(
             val ids = getHiddenModelIdsUseCase()
             _hiddenModelIds.value = ids
         }
+    }
+
+    fun saveCurrentFilter(name: String) {
+        val filter = _filterState.value
+        val toSave = SavedSearchFilter(
+            id = 0,
+            name = name,
+            query = filter.query,
+            selectedType = filter.selectedType,
+            selectedSort = filter.selectedSort,
+            selectedPeriod = filter.selectedPeriod,
+            selectedBaseModels = filter.selectedBaseModels,
+            nsfwFilterLevel = filter.nsfwFilterLevel,
+            isFreshFindEnabled = filter.isFreshFindEnabled,
+            excludedTags = filter.excludedTags,
+            includedTags = filter.includedTags,
+            savedAt = 0,
+        )
+        viewModelScope.launch { saveSearchFilterUseCase(name, toSave) }
+    }
+
+    fun applyFilter(filter: SavedSearchFilter) {
+        _uiState.update {
+            it.copy(
+                query = filter.query,
+                selectedType = filter.selectedType,
+                selectedSort = filter.selectedSort,
+                selectedPeriod = filter.selectedPeriod,
+                selectedBaseModels = filter.selectedBaseModels,
+                nsfwFilterLevel = filter.nsfwFilterLevel,
+                isFreshFindEnabled = filter.isFreshFindEnabled,
+                includedTags = filter.includedTags,
+                excludedTags = filter.excludedTags,
+            )
+        }
+        _filterState.update {
+            it.copy(
+                query = filter.query,
+                selectedType = filter.selectedType,
+                selectedSort = filter.selectedSort,
+                selectedPeriod = filter.selectedPeriod,
+                selectedBaseModels = filter.selectedBaseModels,
+                nsfwFilterLevel = filter.nsfwFilterLevel,
+                isFreshFindEnabled = filter.isFreshFindEnabled,
+                includedTags = filter.includedTags,
+                excludedTags = filter.excludedTags,
+            )
+        }
+    }
+
+    fun deleteSavedFilter(id: Long) {
+        viewModelScope.launch { deleteSavedSearchFilterUseCase(id) }
     }
 
     fun toggleFavorite(model: Model) {
