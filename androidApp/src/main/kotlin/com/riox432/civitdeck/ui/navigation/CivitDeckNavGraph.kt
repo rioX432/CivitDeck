@@ -61,6 +61,8 @@ import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewMod
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
+import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
+import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
@@ -91,6 +93,8 @@ import com.riox432.civitdeck.ui.dataset.DuplicateReviewScreen
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryScreen
+import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryScreen
+import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsScreen
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
 import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserScreen
 import com.riox432.civitdeck.ui.search.ModelSearchScreen
@@ -184,6 +188,10 @@ data class ComfyUIOutputDetailRoute(val imageId: String)
 data object BrowseImagesRoute
 
 data object NavShortcutsSettingsRoute
+
+data object ExternalServerSettingsRoute
+
+data object ExternalServerGalleryRoute
 
 data object DatasetListRoute
 
@@ -448,6 +456,7 @@ private fun CivitDeckNavDisplay(
                 )
             }
             comfyUIEntries(backStack, outputScrollTrigger)
+            externalServerEntries(backStack)
         },
     )
 }
@@ -719,6 +728,7 @@ private fun EntryProviderScope<Any>.settingsSubScreenEntries(backStack: MutableL
             onNavigateToTemplates = { backStack.add(WorkflowTemplateLibraryRoute) },
             onNavigateToSDWebUI = { backStack.add(SDWebUISettingsRoute) },
             onNavigateToCivitaiLink = { backStack.add(CivitaiLinkSettingsRoute) },
+            onNavigateToExternalServer = { backStack.add(ExternalServerSettingsRoute) },
         )
     }
     entry<NavShortcutsSettingsRoute> {
@@ -819,6 +829,30 @@ private fun EntryProviderScope<Any>.workflowTemplateEntries(backStack: MutableLi
         WorkflowTemplateEditorScreen(
             initialTemplate = template,
             viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.externalServerEntries(backStack: MutableList<Any>) {
+    entry<ExternalServerSettingsRoute> {
+        val viewModel: ExternalServerSettingsViewModel = koinViewModel()
+        val state by viewModel.uiState.collectAsStateWithLifecycle()
+        ExternalServerSettingsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onNavigateToGallery = {
+                backStack.add(ExternalServerGalleryRoute)
+            },
+        )
+    }
+    entry<ExternalServerGalleryRoute> {
+        val settingsVm: ExternalServerSettingsViewModel = koinViewModel()
+        val settingsState by settingsVm.uiState.collectAsStateWithLifecycle()
+        val galleryVm: ExternalServerGalleryViewModel = koinViewModel()
+        ExternalServerGalleryScreen(
+            viewModel = galleryVm,
+            serverName = settingsState.activeConfig?.name ?: "Gallery",
             onBack = { backStack.removeLastOrNull() },
         )
     }

@@ -15,12 +15,13 @@ import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.data.local.dao.DatasetCollectionDao
 import com.riox432.civitdeck.data.local.dao.DatasetImageMetaDao
 import com.riox432.civitdeck.data.local.dao.ExcludedTagDao
-import com.riox432.civitdeck.data.local.dao.SavedSearchFilterDao
+import com.riox432.civitdeck.data.local.dao.ExternalServerConfigDao
 import com.riox432.civitdeck.data.local.dao.HiddenModelDao
 import com.riox432.civitdeck.data.local.dao.LocalModelFileDao
 import com.riox432.civitdeck.data.local.dao.ModelVersionCheckpointDao
 import com.riox432.civitdeck.data.local.dao.SDWebUIConnectionDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
+import com.riox432.civitdeck.data.local.dao.SavedSearchFilterDao
 import com.riox432.civitdeck.data.local.dao.SearchHistoryDao
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
@@ -32,6 +33,7 @@ import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.data.local.entity.DatasetCollectionEntity
 import com.riox432.civitdeck.data.local.entity.DatasetImageEntity
 import com.riox432.civitdeck.data.local.entity.ExcludedTagEntity
+import com.riox432.civitdeck.data.local.entity.ExternalServerConfigEntity
 import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
 import com.riox432.civitdeck.data.local.entity.ImageTagEntity
 import com.riox432.civitdeck.data.local.entity.LocalModelFileEntity
@@ -66,8 +68,9 @@ import kotlinx.coroutines.IO
         ImageTagEntity::class,
         CaptionEntity::class,
         SavedSearchFilterEntity::class,
+        ExternalServerConfigEntity::class,
     ],
-    version = 26,
+    version = 27,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -86,6 +89,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun datasetCollectionDao(): DatasetCollectionDao
     abstract fun datasetImageMetaDao(): DatasetImageMetaDao
     abstract fun savedSearchFilterDao(): SavedSearchFilterDao
+    abstract fun externalServerConfigDao(): ExternalServerConfigDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -526,6 +530,22 @@ val MIGRATION_25_26 = object : Migration(25, 26) {
     }
 }
 
+val MIGRATION_26_27 = object : Migration(26, 27) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `external_server_configs` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`name` TEXT NOT NULL, " +
+                "`baseUrl` TEXT NOT NULL, " +
+                "`apiKey` TEXT NOT NULL DEFAULT '', " +
+                "`isActive` INTEGER NOT NULL DEFAULT 0, " +
+                "`lastTestedAt` INTEGER, " +
+                "`lastTestSuccess` INTEGER, " +
+                "`createdAt` INTEGER NOT NULL)",
+        )
+    }
+}
+
 // Seed data is inserted via onOpen (not in migrations) because Room migrations only run on
 // upgrades — a fresh install starts directly at the latest schema version, skipping all
 // migration callbacks. Using INSERT OR IGNORE in onOpen ensures required rows are always
@@ -605,6 +625,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_23_24,
             MIGRATION_24_25,
             MIGRATION_25_26,
+            MIGRATION_26_27,
         )
         .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())

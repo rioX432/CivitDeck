@@ -30,6 +30,8 @@ import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewM
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
+import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
+import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
@@ -145,6 +147,8 @@ val androidModule = module {
     viewModel { SDWebUIGenerationViewModel(get(), get(), get(), get(), get()) }
     viewModel { CivitaiLinkSettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { CivitaiLinkSendViewModel(get(), get()) }
+    viewModel { ExternalServerSettingsViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { ExternalServerGalleryViewModel(get()) }
     viewModel { DatasetListViewModel(get(), get(), get(), get()) }
     viewModel { params -> DatasetDetailViewModel(params.get(), get(), get(), get(), get(), get()) }
     viewModel { params -> BatchTagEditorViewModel(params.get(), get(), get(), get()) }

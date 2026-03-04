@@ -43,6 +43,17 @@ struct AdvancedSettingsView: View {
                         }
                     }
                 }
+                Section("Custom Server") {
+                    NavigationLink(destination: ExternalServerSettingsView()) {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text("Custom Server")
+                                .font(.civitBodyMedium)
+                            Text("Connect to a custom REST API image server")
+                                .font(.civitBodySmall)
+                                .foregroundColor(.civitOnSurfaceVariant)
+                        }
+                    }
+                }
                 Section("Model Files") {
                     NavigationLink {
                         ModelFileBrowserScreen()

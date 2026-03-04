@@ -27,6 +27,7 @@ fun AdvancedSettingsScreen(
     onNavigateToTemplates: () -> Unit = {},
     onNavigateToSDWebUI: () -> Unit = {},
     onNavigateToCivitaiLink: () -> Unit = {},
+    onNavigateToExternalServer: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
@@ -52,6 +53,8 @@ fun AdvancedSettingsScreen(
                 item { SubScreenRow("SD WebUI Connections", onNavigateToSDWebUI) }
                 item { SectionHeader("Civitai Link") }
                 item { SubScreenRow("Civitai Link Setup", onNavigateToCivitaiLink) }
+                item { SectionHeader("Custom Server") }
+                item { SubScreenRow("Custom Server Integration", onNavigateToExternalServer) }
                 item { SectionHeader("Model Files") }
                 item { SubScreenRow("Model File Browser", onNavigateToModelFiles) }
             }

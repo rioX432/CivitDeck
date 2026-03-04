@@ -7,6 +7,8 @@ import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
 import com.riox432.civitdeck.data.api.comfyui.createComfyUIHttpClient
 import com.riox432.civitdeck.data.api.createHttpClient
+import com.riox432.civitdeck.data.api.externalserver.ExternalServerApi
+import com.riox432.civitdeck.data.api.externalserver.createExternalServerHttpClient
 import com.riox432.civitdeck.data.api.webui.SDWebUIApi
 import com.riox432.civitdeck.data.api.webui.createSDWebUIHttpClient
 import kotlinx.serialization.json.Json
@@ -36,4 +38,8 @@ val networkModule = module {
 
     // Civitai Link uses the ComfyUI client (already has WebSockets plugin)
     single { CivitaiLinkApi(get(named("comfyui")), get()) }
+
+    // External Server (generic REST API)
+    single(named("externalserver")) { createExternalServerHttpClient() }
+    single { ExternalServerApi(get(named("externalserver"))) }
 }

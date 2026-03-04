@@ -128,6 +128,14 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerat
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.ActivateExternalServerConfigUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.DeleteExternalServerConfigUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerCapabilitiesUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerImagesUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveActiveExternalServerConfigUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveExternalServerConfigsUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.SaveExternalServerConfigUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.TestExternalServerConnectionUseCase
 import com.riox432.civitdeck.feature.gallery.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.feature.gallery.domain.usecase.GetImagesUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.AutoSavePromptUseCase
@@ -148,8 +156,8 @@ import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseC
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.UnhideModelUseCase
@@ -340,4 +348,14 @@ object KoinHelper {
     fun getMarkImageExcludedUseCase(): MarkImageExcludedUseCase = getKoin().get()
     fun getStorePHashUseCase(): StorePHashUseCase = getKoin().get()
     fun getStoreImageDimensionsUseCase(): StoreImageDimensionsUseCase = getKoin().get()
+
+    // External Server use cases
+    fun getObserveExternalServerConfigsUseCase(): ObserveExternalServerConfigsUseCase = getKoin().get()
+    fun getObserveActiveExternalServerConfigUseCase(): ObserveActiveExternalServerConfigUseCase = getKoin().get()
+    fun getSaveExternalServerConfigUseCase(): SaveExternalServerConfigUseCase = getKoin().get()
+    fun getDeleteExternalServerConfigUseCase(): DeleteExternalServerConfigUseCase = getKoin().get()
+    fun getActivateExternalServerConfigUseCase(): ActivateExternalServerConfigUseCase = getKoin().get()
+    fun getTestExternalServerConnectionUseCase(): TestExternalServerConnectionUseCase = getKoin().get()
+    fun getGetExternalServerCapabilitiesUseCase(): GetExternalServerCapabilitiesUseCase = getKoin().get()
+    fun getGetExternalServerImagesUseCase(): GetExternalServerImagesUseCase = getKoin().get()
 }

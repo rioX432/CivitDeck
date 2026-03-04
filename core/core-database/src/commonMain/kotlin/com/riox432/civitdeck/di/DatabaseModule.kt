@@ -29,6 +29,7 @@ val databaseModule = module {
     single { get<CivitDeckDatabase>().datasetCollectionDao() }
     single { get<CivitDeckDatabase>().datasetImageMetaDao() }
     single { get<CivitDeckDatabase>().savedSearchFilterDao() }
+    single { get<CivitDeckDatabase>().externalServerConfigDao() }
 
     // Data Sources
     single { LocalCacheDataSource(get()) }
