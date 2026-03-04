@@ -20,6 +20,7 @@
 		CD00DC032D0DD003000CD001 /* SearchFilterConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC022D0DD003000CD001 /* SearchFilterConstants.swift */; };
 		CD00DC052D0DD004000CD001 /* TagFilterSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC042D0DD004000CD001 /* TagFilterSection.swift */; };
 		CD00DC072D0E0001000CD001 /* SavedFiltersSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC062D0E0001000CD001 /* SavedFiltersSheet.swift */; };
+		CD00DC092D0E0002000CD001 /* ModelNsfwFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC082D0E0002000CD001 /* ModelNsfwFilter.swift */; };
 		CD0004012D000004000CD001 /* ModelDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0004002D000004000CD001 /* ModelDetailViewModel.swift */; };
 		CD0004032D000004000CD001 /* ModelDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0004022D000004000CD001 /* ModelDetailScreen.swift */; };
 		CD00DC012D0DD001000CD001 /* ModelDetailComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC002D0DD001000CD001 /* ModelDetailComponents.swift */; };
@@ -146,6 +147,7 @@
 		CD00DC022D0DD003000CD001 /* SearchFilterConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFilterConstants.swift; sourceTree = "<group>"; };
 		CD00DC042D0DD004000CD001 /* TagFilterSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagFilterSection.swift; sourceTree = "<group>"; };
 		CD00DC062D0E0001000CD001 /* SavedFiltersSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedFiltersSheet.swift; sourceTree = "<group>"; };
+		CD00DC082D0E0002000CD001 /* ModelNsfwFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelNsfwFilter.swift; sourceTree = "<group>"; };
 		CD0004002D000004000CD001 /* ModelDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailViewModel.swift; sourceTree = "<group>"; };
 		CD0004022D000004000CD001 /* ModelDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailScreen.swift; sourceTree = "<group>"; };
 		CD00DC002D0DD001000CD001 /* ModelDetailComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailComponents.swift; sourceTree = "<group>"; };
@@ -540,6 +542,7 @@
 				CD00DC022D0DD003000CD001 /* SearchFilterConstants.swift */,
 				CD00DC042D0DD004000CD001 /* TagFilterSection.swift */,
 				CD00DC062D0E0001000CD001 /* SavedFiltersSheet.swift */,
+				CD00DC082D0E0002000CD001 /* ModelNsfwFilter.swift */,
 			);
 			path = Search;
 			sourceTree = "<group>";
@@ -725,6 +728,7 @@
 				CD00DC032D0DD003000CD001 /* SearchFilterConstants.swift in Sources */,
 				CD00DC052D0DD004000CD001 /* TagFilterSection.swift in Sources */,
 				CD00DC072D0E0001000CD001 /* SavedFiltersSheet.swift in Sources */,
+				CD00DC092D0E0002000CD001 /* ModelNsfwFilter.swift in Sources */,
 				CD0004012D000004000CD001 /* ModelDetailViewModel.swift in Sources */,
 				CD0004032D000004000CD001 /* ModelDetailScreen.swift in Sources */,
 				CD00DC012D0DD001000CD001 /* ModelDetailComponents.swift in Sources */,
