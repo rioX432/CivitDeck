@@ -42,6 +42,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BookmarkAdd
+import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
@@ -49,6 +51,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Style
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
@@ -256,6 +259,10 @@ private fun SearchScreenBody(
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
     var showFilterSheet by remember { mutableStateOf(false) }
+    var showSavedFiltersSheet by remember { mutableStateOf(false) }
+    var showSaveDialog by remember { mutableStateOf(false) }
+    var saveFilterName by remember { mutableStateOf("") }
+    val savedFilters by viewModel.savedFilters.collectAsStateWithLifecycle()
     val activeFilterCount = countActiveFilters(uiState)
     val isFabVisible by remember {
         derivedStateOf {
@@ -331,6 +338,51 @@ private fun SearchScreenBody(
             uiState = uiState,
             viewModel = viewModel,
             onDismiss = { showFilterSheet = false },
+            onShowSavedFilters = { showSavedFiltersSheet = true },
+            onSaveFilter = { showSaveDialog = true },
+        )
+    }
+    if (showSavedFiltersSheet) {
+        SavedFiltersSheet(
+            savedFilters = savedFilters,
+            onApply = { filter ->
+                viewModel.applyFilter(filter)
+                showFilterSheet = false
+            },
+            onDelete = viewModel::deleteSavedFilter,
+            onDismiss = { showSavedFiltersSheet = false },
+        )
+    }
+    if (showSaveDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showSaveDialog = false
+                saveFilterName = ""
+            },
+            title = { Text("Save Filter") },
+            text = {
+                OutlinedTextField(
+                    value = saveFilterName,
+                    onValueChange = { saveFilterName = it },
+                    label = { Text("Filter name") },
+                    singleLine = true,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (saveFilterName.isNotBlank()) {
+                        viewModel.saveCurrentFilter(saveFilterName.trim())
+                    }
+                    showSaveDialog = false
+                    saveFilterName = ""
+                }) { Text("Save") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showSaveDialog = false
+                    saveFilterName = ""
+                }) { Text("Cancel") }
+            },
         )
     }
 }
@@ -531,6 +583,8 @@ private fun FilterBottomSheet(
     uiState: ModelSearchUiState,
     viewModel: ModelSearchViewModel,
     onDismiss: () -> Unit,
+    onShowSavedFilters: () -> Unit = {},
+    onSaveFilter: () -> Unit = {},
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -538,7 +592,13 @@ private fun FilterBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
     ) {
-        FilterSheetContent(uiState = uiState, viewModel = viewModel, onDismiss = onDismiss)
+        FilterSheetContent(
+            uiState = uiState,
+            viewModel = viewModel,
+            onDismiss = onDismiss,
+            onShowSavedFilters = onShowSavedFilters,
+            onSaveFilter = onSaveFilter,
+        )
     }
 }
 
@@ -548,6 +608,8 @@ private fun FilterSheetContent(
     uiState: ModelSearchUiState,
     viewModel: ModelSearchViewModel,
     onDismiss: () -> Unit,
+    onShowSavedFilters: () -> Unit = {},
+    onSaveFilter: () -> Unit = {},
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
@@ -562,11 +624,19 @@ private fun FilterSheetContent(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(text = "Filters", style = MaterialTheme.typography.titleMedium)
-                TextButton(onClick = {
-                    viewModel.resetFilters()
-                    onDismiss()
-                }) {
-                    Text("Reset")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onShowSavedFilters) {
+                        Icon(Icons.Default.Bookmarks, contentDescription = "Saved filters")
+                    }
+                    IconButton(onClick = onSaveFilter) {
+                        Icon(Icons.Default.BookmarkAdd, contentDescription = "Save current filter")
+                    }
+                    TextButton(onClick = {
+                        viewModel.resetFilters()
+                        onDismiss()
+                    }) {
+                        Text("Reset")
+                    }
                 }
             }
         }

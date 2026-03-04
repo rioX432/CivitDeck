@@ -52,6 +52,7 @@ typealias QueueJob = Core_domainQueueJob
 typealias QueueJobStatus = Core_domainQueueJobStatus
 typealias RecommendationSection = Core_domainRecommendationSection
 typealias SavedPrompt = Core_domainSavedPrompt
+typealias SavedSearchFilter = Core_domainSavedSearchFilter
 typealias CivitaiLinkResource = Core_domainCivitaiLinkResource
 typealias SDWebUIConnection = Core_domainSDWebUIConnection
 typealias SDWebUIGenerationParams = Core_domainSDWebUIGenerationParams
@@ -158,9 +159,12 @@ typealias GetExcludedTagsUseCase = Feature_searchGetExcludedTagsUseCase
 typealias GetHiddenModelIdsUseCase = Feature_searchGetHiddenModelIdsUseCase
 typealias GetModelsUseCase = Feature_searchGetModelsUseCase
 typealias GetRecommendationsUseCase = Feature_searchGetRecommendationsUseCase
+typealias DeleteSavedSearchFilterUseCase = Feature_searchDeleteSavedSearchFilterUseCase
 typealias HideModelUseCase = Feature_searchHideModelUseCase
+typealias ObserveSavedSearchFiltersUseCase = Feature_searchObserveSavedSearchFiltersUseCase
 typealias ObserveSearchHistoryUseCase = Feature_searchObserveSearchHistoryUseCase
 typealias RemoveExcludedTagUseCase = Feature_searchRemoveExcludedTagUseCase
+typealias SaveSearchFilterUseCase = Feature_searchSaveSearchFilterUseCase
 typealias UnhideModelUseCase = Feature_searchUnhideModelUseCase
 
 // MARK: - Feature: Gallery

@@ -122,7 +122,7 @@ val androidModule = module {
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
-            get(),
+            get(), get(), get(), get(),
         )
     }
     viewModel { CollectionsViewModel(get(), get(), get(), get()) }

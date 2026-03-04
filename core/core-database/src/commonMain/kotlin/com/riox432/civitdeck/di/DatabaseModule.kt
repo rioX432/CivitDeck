@@ -28,6 +28,7 @@ val databaseModule = module {
     single { get<CivitDeckDatabase>().sdWebUIConnectionDao() }
     single { get<CivitDeckDatabase>().datasetCollectionDao() }
     single { get<CivitDeckDatabase>().datasetImageMetaDao() }
+    single { get<CivitDeckDatabase>().savedSearchFilterDao() }
 
     // Data Sources
     single { LocalCacheDataSource(get()) }

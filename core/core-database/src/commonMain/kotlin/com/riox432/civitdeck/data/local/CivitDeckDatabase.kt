@@ -15,6 +15,7 @@ import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.data.local.dao.DatasetCollectionDao
 import com.riox432.civitdeck.data.local.dao.DatasetImageMetaDao
 import com.riox432.civitdeck.data.local.dao.ExcludedTagDao
+import com.riox432.civitdeck.data.local.dao.SavedSearchFilterDao
 import com.riox432.civitdeck.data.local.dao.HiddenModelDao
 import com.riox432.civitdeck.data.local.dao.LocalModelFileDao
 import com.riox432.civitdeck.data.local.dao.ModelVersionCheckpointDao
@@ -38,6 +39,7 @@ import com.riox432.civitdeck.data.local.entity.ModelDirectoryEntity
 import com.riox432.civitdeck.data.local.entity.ModelVersionCheckpointEntity
 import com.riox432.civitdeck.data.local.entity.SDWebUIConnectionEntity
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
+import com.riox432.civitdeck.data.local.entity.SavedSearchFilterEntity
 import com.riox432.civitdeck.data.local.entity.SearchHistoryEntity
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
 import kotlinx.coroutines.Dispatchers
@@ -63,8 +65,9 @@ import kotlinx.coroutines.IO
         DatasetImageEntity::class,
         ImageTagEntity::class,
         CaptionEntity::class,
+        SavedSearchFilterEntity::class,
     ],
-    version = 25,
+    version = 26,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -82,6 +85,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun sdWebUIConnectionDao(): SDWebUIConnectionDao
     abstract fun datasetCollectionDao(): DatasetCollectionDao
     abstract fun datasetImageMetaDao(): DatasetImageMetaDao
+    abstract fun savedSearchFilterDao(): SavedSearchFilterDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -502,6 +506,26 @@ val MIGRATION_24_25 = object : Migration(24, 25) {
     }
 }
 
+val MIGRATION_25_26 = object : Migration(25, 26) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `saved_search_filters` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`name` TEXT NOT NULL, " +
+                "`query` TEXT NOT NULL DEFAULT '', " +
+                "`selectedType` TEXT, " +
+                "`selectedSort` TEXT NOT NULL DEFAULT 'MostDownloaded', " +
+                "`selectedPeriod` TEXT NOT NULL DEFAULT 'AllTime', " +
+                "`selectedBaseModels` TEXT NOT NULL DEFAULT '', " +
+                "`nsfwFilterLevel` TEXT NOT NULL DEFAULT 'Off', " +
+                "`isFreshFindEnabled` INTEGER NOT NULL DEFAULT 0, " +
+                "`excludedTags` TEXT NOT NULL DEFAULT '', " +
+                "`includedTags` TEXT NOT NULL DEFAULT '', " +
+                "`savedAt` INTEGER NOT NULL)",
+        )
+    }
+}
+
 // Seed data is inserted via onOpen (not in migrations) because Room migrations only run on
 // upgrades — a fresh install starts directly at the latest schema version, skipping all
 // migration callbacks. Using INSERT OR IGNORE in onOpen ensures required rows are always
@@ -580,6 +604,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_22_23,
             MIGRATION_23_24,
             MIGRATION_24_25,
+            MIGRATION_25_26,
         )
         .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())

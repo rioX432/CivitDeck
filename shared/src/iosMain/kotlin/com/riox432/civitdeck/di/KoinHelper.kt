@@ -140,6 +140,7 @@ import com.riox432.civitdeck.feature.prompts.domain.usecase.ToggleTemplateUseCas
 import com.riox432.civitdeck.feature.search.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ClearSearchHistoryUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSavedSearchFilterUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSearchHistoryItemUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetDiscoveryModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetExcludedTagsUseCase
@@ -148,7 +149,9 @@ import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.RemoveExcludedTagUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
 import org.koin.mp.KoinPlatform.getKoin
@@ -182,6 +185,9 @@ object KoinHelper {
     fun getHiddenModelIdsUseCase(): GetHiddenModelIdsUseCase = getKoin().get()
     fun getHideModelUseCase(): HideModelUseCase = getKoin().get()
     fun getUnhideModelUseCase(): UnhideModelUseCase = getKoin().get()
+    fun getObserveSavedSearchFiltersUseCase(): ObserveSavedSearchFiltersUseCase = getKoin().get()
+    fun getSaveSearchFilterUseCase(): SaveSearchFilterUseCase = getKoin().get()
+    fun getDeleteSavedSearchFilterUseCase(): DeleteSavedSearchFilterUseCase = getKoin().get()
     fun getObserveDefaultSortOrderUseCase(): ObserveDefaultSortOrderUseCase = getKoin().get()
     fun getSetDefaultSortOrderUseCase(): SetDefaultSortOrderUseCase = getKoin().get()
     fun getObserveDefaultTimePeriodUseCase(): ObserveDefaultTimePeriodUseCase = getKoin().get()
