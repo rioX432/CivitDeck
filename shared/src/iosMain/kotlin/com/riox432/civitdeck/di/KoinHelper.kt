@@ -135,7 +135,14 @@ import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalSe
 import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.GetAllPersonalTagsUseCase
+import com.riox432.civitdeck.domain.usecase.FollowCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
+import com.riox432.civitdeck.domain.usecase.UnfollowCreatorUseCase
+import com.riox432.civitdeck.domain.usecase.GetCreatorFeedUseCase
+import com.riox432.civitdeck.domain.usecase.GetFollowedCreatorsUseCase
+import com.riox432.civitdeck.domain.usecase.GetUnreadFeedCountUseCase
+import com.riox432.civitdeck.domain.usecase.IsFollowingCreatorUseCase
+import com.riox432.civitdeck.domain.usecase.MarkFeedReadUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePersonalTagsUseCase
 import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
@@ -382,4 +389,13 @@ object KoinHelper {
 
     // Analytics use cases
     fun getBrowsingStatsUseCase(): GetBrowsingStatsUseCase = getKoin().get()
+
+    // Creator follow use cases
+    fun getFollowCreatorUseCase(): FollowCreatorUseCase = getKoin().get()
+    fun getUnfollowCreatorUseCase(): UnfollowCreatorUseCase = getKoin().get()
+    fun getIsFollowingCreatorUseCase(): IsFollowingCreatorUseCase = getKoin().get()
+    fun getCreatorFeedUseCase(): GetCreatorFeedUseCase = getKoin().get()
+    fun getUnreadFeedCountUseCase(): GetUnreadFeedCountUseCase = getKoin().get()
+    fun getMarkFeedReadUseCase(): MarkFeedReadUseCase = getKoin().get()
+    fun getFollowedCreatorsUseCase(): GetFollowedCreatorsUseCase = getKoin().get()
 }

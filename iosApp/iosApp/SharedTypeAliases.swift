@@ -157,6 +157,15 @@ typealias GetBrowsingStatsUseCase = Core_domainGetBrowsingStatsUseCase
 typealias BrowsingStats = Core_domainBrowsingStats
 typealias DailyViewCount = Core_domainDailyViewCount
 typealias CategoryStat = Core_domainCategoryStat
+typealias FeedItem = Core_domainFeedItem
+typealias FollowedCreator = Core_domainFollowedCreator
+typealias FollowCreatorUseCase = Core_domainFollowCreatorUseCase
+typealias UnfollowCreatorUseCase = Core_domainUnfollowCreatorUseCase
+typealias IsFollowingCreatorUseCase = Core_domainIsFollowingCreatorUseCase
+typealias GetCreatorFeedUseCase = Core_domainGetCreatorFeedUseCase
+typealias GetUnreadFeedCountUseCase = Core_domainGetUnreadFeedCountUseCase
+typealias MarkFeedReadUseCase = Core_domainMarkFeedReadUseCase
+typealias GetFollowedCreatorsUseCase = Core_domainGetFollowedCreatorsUseCase
 
 // MARK: - Feature: Collections
 

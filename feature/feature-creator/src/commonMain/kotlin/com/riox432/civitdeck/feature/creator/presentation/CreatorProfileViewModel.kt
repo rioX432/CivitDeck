@@ -3,6 +3,9 @@ package com.riox432.civitdeck.feature.creator.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.usecase.FollowCreatorUseCase
+import com.riox432.civitdeck.domain.usecase.IsFollowingCreatorUseCase
+import com.riox432.civitdeck.domain.usecase.UnfollowCreatorUseCase
 import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -18,6 +21,7 @@ data class CreatorProfileUiState(
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
     val isRefreshing: Boolean = false,
+    val isFollowing: Boolean = false,
     val error: String? = null,
     val nextCursor: String? = null,
     val hasMore: Boolean = true,
@@ -26,6 +30,9 @@ data class CreatorProfileUiState(
 class CreatorProfileViewModel(
     private val username: String,
     private val getCreatorModelsUseCase: GetCreatorModelsUseCase,
+    private val isFollowingCreatorUseCase: IsFollowingCreatorUseCase,
+    private val followCreatorUseCase: FollowCreatorUseCase,
+    private val unfollowCreatorUseCase: UnfollowCreatorUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CreatorProfileUiState(username = username))
@@ -35,6 +42,7 @@ class CreatorProfileViewModel(
 
     init {
         loadModels()
+        observeFollowState()
     }
 
     fun loadMore() {
@@ -47,6 +55,30 @@ class CreatorProfileViewModel(
         loadJob?.cancel()
         _uiState.update { it.copy(nextCursor = null, hasMore = true) }
         loadModels(isRefresh = true)
+    }
+
+    fun toggleFollow() {
+        viewModelScope.launch {
+            val state = _uiState.value
+            if (state.isFollowing) {
+                unfollowCreatorUseCase(username)
+            } else {
+                val creator = state.models.firstOrNull()?.creator
+                followCreatorUseCase(
+                    username = username,
+                    displayName = creator?.username ?: username,
+                    avatarUrl = creator?.image,
+                )
+            }
+        }
+    }
+
+    private fun observeFollowState() {
+        viewModelScope.launch {
+            isFollowingCreatorUseCase(username).collect { following ->
+                _uiState.update { it.copy(isFollowing = following) }
+            }
+        }
     }
 
     private fun loadModels(isLoadMore: Boolean = false, isRefresh: Boolean = false) {

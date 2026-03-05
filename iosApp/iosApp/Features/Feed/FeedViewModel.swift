@@ -1,0 +1,59 @@
+import Foundation
+import Shared
+
+@MainActor
+final class FeedViewModel: ObservableObject {
+    @Published var feedItems: [FeedItem] = []
+    @Published var isLoading = true
+    @Published var isRefreshing = false
+    @Published var errorMessage: String?
+    @Published var unreadCount: Int = 0
+
+    private let getCreatorFeedUseCase: GetCreatorFeedUseCase
+    private let getUnreadFeedCountUseCase: GetUnreadFeedCountUseCase
+    private let markFeedReadUseCase: MarkFeedReadUseCase
+    private var unreadObserveTask: Task<Void, Never>?
+
+    init() {
+        self.getCreatorFeedUseCase = KoinHelper.shared.getCreatorFeedUseCase()
+        self.getUnreadFeedCountUseCase = KoinHelper.shared.getUnreadFeedCountUseCase()
+        self.markFeedReadUseCase = KoinHelper.shared.getMarkFeedReadUseCase()
+        observeUnreadCount()
+    }
+
+    func loadFeed(forceRefresh: Bool = false) async {
+        if forceRefresh {
+            isRefreshing = true
+        } else if feedItems.isEmpty {
+            isLoading = true
+        }
+        errorMessage = nil
+
+        do {
+            let items = try await getCreatorFeedUseCase.invoke(
+                forceRefresh: forceRefresh
+            )
+            feedItems = items.compactMap { $0 as? FeedItem }
+            isLoading = false
+            isRefreshing = false
+            if !feedItems.isEmpty {
+                try? await markFeedReadUseCase.invoke()
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+            isLoading = false
+            isRefreshing = false
+        }
+    }
+
+    private func observeUnreadCount() {
+        unreadObserveTask = Task {
+            for await count in getUnreadFeedCountUseCase.invoke() {
+                guard !Task.isCancelled else { return }
+                if let intCount = count as? Int {
+                    self.unreadCount = intCount
+                }
+            }
+        }
+    }
+}

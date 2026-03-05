@@ -51,6 +51,10 @@ struct ContentView: View {
                 .tabItem { Label("Saved", systemImage: "folder") }
                 .tag("collections")
 
+            FeedView()
+                .tabItem { Label("Feed", systemImage: "dot.radiowaves.up.forward") }
+                .tag("feed")
+
             ForEach(activeShortcuts, id: \.name) { shortcut in
                 shortcutView(for: shortcut)
                     .tabItem { Label(shortcut.tabLabel, systemImage: shortcut.iconName) }
@@ -72,6 +76,7 @@ struct ContentView: View {
             List(selection: optionalSelection) {
                 Label("Search", systemImage: "magnifyingglass").tag("search" as String?)
                 Label("Collections", systemImage: "folder").tag("collections" as String?)
+                Label("Feed", systemImage: "dot.radiowaves.up.forward").tag("feed" as String?)
                 ForEach(activeShortcuts, id: \.name) { shortcut in
                     Label(shortcut.label, systemImage: shortcut.iconName).tag(shortcut.name as String?)
                 }
@@ -82,6 +87,7 @@ struct ContentView: View {
             TabView(selection: $selectedTabId) {
                 ModelSearchScreen(viewModel: searchViewModel).tag("search")
                 CollectionsScreen().tag("collections")
+                FeedView().tag("feed")
                 ForEach(activeShortcuts, id: \.name) { shortcut in
                     shortcutView(for: shortcut).tag(shortcut.name)
                 }

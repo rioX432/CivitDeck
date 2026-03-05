@@ -19,5 +19,6 @@ val domainModule = module {
         datasetDomainModule,
         notesDomainModule,
         analyticsDomainModule,
+        followDomainModule,
     )
 }
