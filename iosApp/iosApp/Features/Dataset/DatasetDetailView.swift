@@ -69,6 +69,21 @@ struct DatasetDetailView: View {
                 viewModel.setResolutionFilter(minWidth: width, minHeight: height)
             }
         }
+        .sheet(isPresented: $viewModel.showExportSheet) {
+            ExportDatasetSheet(
+                imageCount: viewModel.trainableImageCount,
+                nonTrainableCount: viewModel.nonTrainableImageCount,
+                onExport: { viewModel.startExport() }
+            )
+        }
+        .overlay {
+            if let progress = viewModel.exportProgress {
+                ExportProgressOverlay(
+                    progress: progress,
+                    onDismiss: { viewModel.dismissExportResult() }
+                )
+            }
+        }
     }
 
     @ToolbarContentBuilder
@@ -81,6 +96,9 @@ struct DatasetDetailView: View {
                     }
                 }
             } else {
+                Button { viewModel.showExportSheet = true } label: {
+                    Image(systemName: "square.and.arrow.up")
+                }
                 Menu {
                     Button("Review Duplicates") { viewModel.showDuplicateReview = true }
                     Button("Resolution Filter") { viewModel.showResolutionFilter = true }

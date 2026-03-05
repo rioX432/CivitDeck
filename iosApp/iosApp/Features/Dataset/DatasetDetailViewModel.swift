@@ -10,6 +10,8 @@ final class DatasetDetailViewModel: ObservableObject {
     @Published var detailImage: DatasetImage?
     @Published var showDuplicateReview = false
     @Published var showResolutionFilter = false
+    @Published var showExportSheet = false
+    @Published var exportProgress: ExportProgress?
     @Published var minWidth = 0
     @Published var minHeight = 0
     @Published var duplicateImageCount = 0
@@ -23,8 +25,10 @@ final class DatasetDetailViewModel: ObservableObject {
     private let detectDuplicatesUseCase: DetectDuplicatesUseCase
     private let filterByResolutionUseCase: FilterByResolutionUseCase
     private let markImageExcludedUseCase: MarkImageExcludedUseCase
+    private let exportDatasetUseCase: ExportDatasetUseCase
     private var observeTask: Task<Void, Never>?
     private var duplicatesTask: Task<Void, Never>?
+    private var exportTask: Task<Void, Never>?
 
     init(datasetId: Int64) {
         self.datasetId = datasetId
@@ -35,6 +39,7 @@ final class DatasetDetailViewModel: ObservableObject {
         self.detectDuplicatesUseCase = KoinHelper.shared.getDetectDuplicatesUseCase()
         self.filterByResolutionUseCase = KoinHelper.shared.getFilterByResolutionUseCase()
         self.markImageExcludedUseCase = KoinHelper.shared.getMarkImageExcludedUseCase()
+        self.exportDatasetUseCase = KoinHelper.shared.getExportDatasetUseCase()
         observeTask = Task { await observeImages() }
         duplicatesTask = Task { await observeDuplicateCount() }
     }
@@ -42,6 +47,7 @@ final class DatasetDetailViewModel: ObservableObject {
     deinit {
         observeTask?.cancel()
         duplicatesTask?.cancel()
+        exportTask?.cancel()
     }
 
     var filteredImages: [DatasetImage] {
@@ -128,6 +134,33 @@ final class DatasetDetailViewModel: ObservableObject {
                 datasetImageId: imageId,
                 text: text
             )
+        }
+    }
+
+    var trainableImageCount: Int {
+        images.filter { $0.trainable && !$0.excluded }.count
+    }
+
+    var nonTrainableImageCount: Int {
+        images.count - trainableImageCount
+    }
+
+    func startExport() {
+        showExportSheet = false
+        exportTask = Task { await runExport() }
+    }
+
+    func dismissExportResult() {
+        exportProgress = nil
+    }
+
+    private func runExport() async {
+        for await progress in exportDatasetUseCase.invoke(
+            datasetId: datasetId,
+            format: .zip
+        ) {
+            guard let value = progress as? ExportProgress else { continue }
+            self.exportProgress = value
         }
     }
 }
