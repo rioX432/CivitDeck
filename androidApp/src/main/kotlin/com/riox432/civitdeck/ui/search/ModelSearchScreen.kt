@@ -1068,17 +1068,14 @@ private fun FilterChipItem(
     showCheckmark: Boolean = false,
 ) {
     val haptic = rememberHapticFeedback()
-    val colorTween = tween<androidx.compose.ui.graphics.Color>(
-        durationMillis = Duration.fast,
-        easing = Easing.standard,
-    )
+    val chipColorTween = tween<androidx.compose.ui.graphics.Color>(Duration.fast, easing = Easing.standard)
     val backgroundColor by animateColorAsState(
         targetValue = if (isSelected) {
             MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
         } else {
             MaterialTheme.colorScheme.surfaceVariant
         },
-        animationSpec = colorTween,
+        animationSpec = chipColorTween,
         label = "chipBg",
     )
     val textColor by animateColorAsState(
@@ -1087,7 +1084,7 @@ private fun FilterChipItem(
         } else {
             MaterialTheme.colorScheme.onSurface
         },
-        animationSpec = colorTween,
+        animationSpec = chipColorTween,
         label = "chipText",
     )
     Row(
