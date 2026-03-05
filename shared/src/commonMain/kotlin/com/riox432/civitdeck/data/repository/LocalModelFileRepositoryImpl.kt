@@ -12,6 +12,7 @@ import com.riox432.civitdeck.domain.model.ModelDirectory
 import com.riox432.civitdeck.domain.repository.ModelDirectoryRepository
 import com.riox432.civitdeck.domain.repository.ModelFileHashRepository
 import com.riox432.civitdeck.domain.repository.ModelScanRepository
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -86,7 +87,7 @@ class LocalModelFileRepositoryImpl(
             throw e
         } catch (e: Exception) {
             // Hash not found in CivitAI or network error — leave unmatched
-            println("LocalModelFileRepositoryImpl: Hash verification failed fileId=$fileId: ${e.message}")
+            Logger.w(TAG, "Hash verification failed fileId=$fileId: ${e.message}")
         }
     }
 
@@ -103,6 +104,7 @@ class LocalModelFileRepositoryImpl(
     override fun observeUpdatesAvailableCount(): Flow<Int> = dao.observeUpdatesAvailableCount()
 
     companion object {
+        private const val TAG = "LocalModelFileRepositoryImpl"
         internal const val SCAN_ALL_DIRECTORIES = -1L
     }
 }

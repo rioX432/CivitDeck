@@ -17,6 +17,7 @@ import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.ModelRepository
+import com.riox432.civitdeck.util.Logger
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
@@ -25,6 +26,10 @@ class ModelRepositoryImpl(
     private val localCache: LocalCacheDataSource,
     private val json: Json,
 ) : ModelRepository {
+
+    private companion object {
+        const val TAG = "ModelRepositoryImpl"
+    }
 
     override suspend fun getModels(
         query: String?,
@@ -70,10 +75,10 @@ class ModelRepositoryImpl(
                 metadata = response.metadata.toDomain(),
             )
         } catch (@Suppress("SwallowedException") e: DataParseException) {
-            println("ModelRepositoryImpl: Parse error fetching models, falling back to cache: ${e.message}")
+            Logger.w(TAG, "Parse error fetching models, falling back to cache: ${e.message}")
             getModelsFromCacheOrEmpty(cacheKey)
         } catch (@Suppress("SwallowedException") e: SerializationException) {
-            println("ModelRepositoryImpl: Serialization error fetching models, falling back to cache: ${e.message}")
+            Logger.w(TAG, "Serialization error fetching models, falling back to cache: ${e.message}")
             getModelsFromCacheOrEmpty(cacheKey)
         } catch (e: Exception) {
             val cached = localCache.getCached(cacheKey)
