@@ -6,9 +6,11 @@ import com.riox432.civitdeck.data.local.getRoomDatabase
 import com.riox432.civitdeck.data.local.repository.CaptionRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.DatasetCollectionRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ImageTagRepositoryImpl
+import com.riox432.civitdeck.data.local.repository.ModelNoteRepositoryImpl
 import com.riox432.civitdeck.domain.repository.CaptionRepository
 import com.riox432.civitdeck.domain.repository.DatasetCollectionRepository
 import com.riox432.civitdeck.domain.repository.ImageTagRepository
+import com.riox432.civitdeck.domain.repository.ModelNoteRepository
 import org.koin.dsl.module
 
 val databaseModule = module {
@@ -30,6 +32,8 @@ val databaseModule = module {
     single { get<CivitDeckDatabase>().datasetImageMetaDao() }
     single { get<CivitDeckDatabase>().savedSearchFilterDao() }
     single { get<CivitDeckDatabase>().externalServerConfigDao() }
+    single { get<CivitDeckDatabase>().modelNoteDao() }
+    single { get<CivitDeckDatabase>().personalTagDao() }
 
     // Data Sources
     single { LocalCacheDataSource(get()) }
@@ -38,4 +42,7 @@ val databaseModule = module {
     single<DatasetCollectionRepository> { DatasetCollectionRepositoryImpl(get(), get()) }
     single<ImageTagRepository> { ImageTagRepositoryImpl(get()) }
     single<CaptionRepository> { CaptionRepositoryImpl(get()) }
+
+    // Notes & Personal Tags
+    single<ModelNoteRepository> { ModelNoteRepositoryImpl(get(), get()) }
 }

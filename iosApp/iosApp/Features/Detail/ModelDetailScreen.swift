@@ -45,6 +45,12 @@ struct ModelDetailScreen: View {
         .task {
             await viewModel.observePowerUserMode()
         }
+        .task {
+            await viewModel.observeNote()
+        }
+        .task {
+            await viewModel.observePersonalTags()
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -140,6 +146,15 @@ struct ModelDetailScreen: View {
                     imageActionsRow(modelVersionId: version.id)
                 }
                 tagsSection(tags: model.tags)
+                ModelNotesSection(
+                    note: viewModel.note,
+                    onSave: { viewModel.saveNote($0) }
+                )
+                PersonalTagsSection(
+                    tags: viewModel.personalTags,
+                    onAdd: { viewModel.addTag($0) },
+                    onRemove: { viewModel.removeTag($0) }
+                )
                 descriptionSection(description: model.description_)
                 versionSelector(model: model)
                 versionDetail

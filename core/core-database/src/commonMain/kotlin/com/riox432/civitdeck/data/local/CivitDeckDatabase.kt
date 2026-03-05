@@ -18,7 +18,9 @@ import com.riox432.civitdeck.data.local.dao.ExcludedTagDao
 import com.riox432.civitdeck.data.local.dao.ExternalServerConfigDao
 import com.riox432.civitdeck.data.local.dao.HiddenModelDao
 import com.riox432.civitdeck.data.local.dao.LocalModelFileDao
+import com.riox432.civitdeck.data.local.dao.ModelNoteDao
 import com.riox432.civitdeck.data.local.dao.ModelVersionCheckpointDao
+import com.riox432.civitdeck.data.local.dao.PersonalTagDao
 import com.riox432.civitdeck.data.local.dao.SDWebUIConnectionDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
 import com.riox432.civitdeck.data.local.dao.SavedSearchFilterDao
@@ -35,10 +37,12 @@ import com.riox432.civitdeck.data.local.entity.DatasetImageEntity
 import com.riox432.civitdeck.data.local.entity.ExcludedTagEntity
 import com.riox432.civitdeck.data.local.entity.ExternalServerConfigEntity
 import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
+import com.riox432.civitdeck.data.local.entity.ModelNoteEntity
 import com.riox432.civitdeck.data.local.entity.ImageTagEntity
 import com.riox432.civitdeck.data.local.entity.LocalModelFileEntity
 import com.riox432.civitdeck.data.local.entity.ModelDirectoryEntity
 import com.riox432.civitdeck.data.local.entity.ModelVersionCheckpointEntity
+import com.riox432.civitdeck.data.local.entity.PersonalTagEntity
 import com.riox432.civitdeck.data.local.entity.SDWebUIConnectionEntity
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import com.riox432.civitdeck.data.local.entity.SavedSearchFilterEntity
@@ -69,8 +73,10 @@ import kotlinx.coroutines.IO
         CaptionEntity::class,
         SavedSearchFilterEntity::class,
         ExternalServerConfigEntity::class,
+        ModelNoteEntity::class,
+        PersonalTagEntity::class,
     ],
-    version = 27,
+    version = 28,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -90,6 +96,8 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun datasetImageMetaDao(): DatasetImageMetaDao
     abstract fun savedSearchFilterDao(): SavedSearchFilterDao
     abstract fun externalServerConfigDao(): ExternalServerConfigDao
+    abstract fun modelNoteDao(): ModelNoteDao
+    abstract fun personalTagDao(): PersonalTagDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -546,6 +554,35 @@ val MIGRATION_26_27 = object : Migration(26, 27) {
     }
 }
 
+val MIGRATION_27_28 = object : Migration(27, 28) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `model_notes` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`modelId` INTEGER NOT NULL, " +
+                "`noteText` TEXT NOT NULL, " +
+                "`createdAt` INTEGER NOT NULL, " +
+                "`updatedAt` INTEGER NOT NULL)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_model_notes_modelId` ON `model_notes` (`modelId`)",
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `personal_tags` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`modelId` INTEGER NOT NULL, " +
+                "`tag` TEXT NOT NULL, " +
+                "`addedAt` INTEGER NOT NULL)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_personal_tags_modelId` ON `personal_tags` (`modelId`)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_personal_tags_tag` ON `personal_tags` (`tag`)",
+        )
+    }
+}
+
 // Seed data is inserted via onOpen (not in migrations) because Room migrations only run on
 // upgrades — a fresh install starts directly at the latest schema version, skipping all
 // migration callbacks. Using INSERT OR IGNORE in onOpen ensures required rows are always
@@ -626,6 +663,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_24_25,
             MIGRATION_25_26,
             MIGRATION_26_27,
+            MIGRATION_27_28,
         )
         .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())

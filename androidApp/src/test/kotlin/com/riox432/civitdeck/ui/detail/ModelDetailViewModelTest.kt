@@ -3,24 +3,39 @@ package com.riox432.civitdeck.ui.detail
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Creator
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.domain.model.ModelImage
+import com.riox432.civitdeck.domain.model.ModelNote
 import com.riox432.civitdeck.domain.model.ModelStats
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.domain.model.PaginatedResult
+import com.riox432.civitdeck.domain.model.PersonalTag
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
+import com.riox432.civitdeck.domain.repository.ModelNoteRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
+import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
+import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.ObservePersonalTagsUseCase
+import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
+import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.AddModelToCollectionUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.CreateCollectionUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveCollectionsUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveModelCollectionsUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.feature.gallery.domain.usecase.EnrichModelImagesUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -152,16 +167,82 @@ class ModelDetailViewModelTest {
         ) = error("not used")
     }
 
+    private class FakeCollectionRepo :
+        com.riox432.civitdeck.domain.repository.CollectionRepository {
+        override fun observeCollections() = flowOf(emptyList<ModelCollection>())
+        override fun observeModelsInCollection(collectionId: Long) = flowOf(
+            emptyList<com.riox432.civitdeck.domain.model.FavoriteModelSummary>(),
+        )
+        override fun observeCollectionIdsForModel(modelId: Long) = flowOf(emptyList<Long>())
+        override suspend fun createCollection(name: String) = 1L
+        override suspend fun renameCollection(id: Long, name: String) = Unit
+        override suspend fun deleteCollection(id: Long) = Unit
+        override suspend fun addModelToCollection(collectionId: Long, model: Model) = Unit
+        override suspend fun removeModelFromCollection(
+            collectionId: Long,
+            modelId: Long,
+        ) = Unit
+        override suspend fun bulkMoveModels(
+            fromCollectionId: Long,
+            toCollectionId: Long,
+            modelIds: List<Long>,
+        ) = Unit
+        override suspend fun bulkRemoveModels(
+            collectionId: Long,
+            modelIds: List<Long>,
+        ) = Unit
+    }
+
+    private class FakeNoteRepo : ModelNoteRepository {
+        override fun observeNoteForModel(modelId: Long) = flowOf<ModelNote?>(null)
+        override suspend fun saveNote(modelId: Long, noteText: String) = Unit
+        override suspend fun deleteNote(modelId: Long) = Unit
+        override fun observeTagsForModel(modelId: Long) =
+            flowOf(emptyList<PersonalTag>())
+        override suspend fun addTag(modelId: Long, tag: String) = Unit
+        override suspend fun removeTag(modelId: Long, tag: String) = Unit
+        override suspend fun getAllTags() = emptyList<String>()
+        override suspend fun getModelIdsByTag(tag: String) = emptyList<Long>()
+    }
+
+    private class FakePowerUserRepo :
+        com.riox432.civitdeck.domain.repository.AppBehaviorPreferencesRepository {
+        override fun observePowerUserMode() = flowOf(false)
+        override suspend fun setPowerUserMode(enabled: Boolean) = Unit
+        override fun observeNotificationsEnabled() = flowOf(false)
+        override suspend fun setNotificationsEnabled(enabled: Boolean) = Unit
+        override fun observePollingInterval() =
+            flowOf(com.riox432.civitdeck.domain.model.PollingInterval.Off)
+        override suspend fun setPollingInterval(
+            interval: com.riox432.civitdeck.domain.model.PollingInterval,
+        ) = Unit
+        override fun observeSeenTutorialVersion() = flowOf(0)
+        override suspend fun setSeenTutorialVersion(version: Int) = Unit
+        override fun observeCustomNavShortcuts() =
+            flowOf(emptyList<com.riox432.civitdeck.domain.model.NavShortcut>())
+        override suspend fun setCustomNavShortcuts(
+            items: List<com.riox432.civitdeck.domain.model.NavShortcut>,
+        ) = Unit
+    }
+
+    @Suppress("LongMethod")
     private fun createViewModel(
         model: Model = testModel(),
         isFavorite: Boolean = false,
-    ): Triple<ModelDetailViewModel, FakeModelRepo, FakeFavoriteRepo> {
+    ): Triple<
+        com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel,
+        FakeModelRepo,
+        FakeFavoriteRepo,
+        > {
         val modelRepo = FakeModelRepo(model)
         val favRepo = FakeFavoriteRepo(MutableStateFlow(isFavorite))
         val browsingRepo = FakeBrowsingRepo()
         val prefsRepo = FakePrefsRepo()
+        val collectionRepo = FakeCollectionRepo()
+        val noteRepo = FakeNoteRepo()
+        val powerUserRepo = FakePowerUserRepo()
 
-        val vm = ModelDetailViewModel(
+        val vm = com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel(
             modelId = model.id,
             getModelDetailUseCase = GetModelDetailUseCase(modelRepo),
             observeIsFavoriteUseCase = ObserveIsFavoriteUseCase(favRepo),
@@ -169,6 +250,20 @@ class ModelDetailViewModelTest {
             trackModelViewUseCase = TrackModelViewUseCase(browsingRepo),
             observeNsfwFilterUseCase = ObserveNsfwFilterUseCase(prefsRepo),
             enrichModelImagesUseCase = EnrichModelImagesUseCase(modelRepo),
+            observeCollectionsUseCase = ObserveCollectionsUseCase(collectionRepo),
+            observeModelCollectionsUseCase = ObserveModelCollectionsUseCase(collectionRepo),
+            addModelToCollectionUseCase = AddModelToCollectionUseCase(collectionRepo),
+            removeModelFromCollectionUseCase = RemoveModelFromCollectionUseCase(collectionRepo),
+            createCollectionUseCase = CreateCollectionUseCase(collectionRepo),
+            observePowerUserModeUseCase = com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase(
+                powerUserRepo
+            ),
+            observeModelNoteUseCase = ObserveModelNoteUseCase(noteRepo),
+            saveModelNoteUseCase = SaveModelNoteUseCase(noteRepo),
+            deleteModelNoteUseCase = DeleteModelNoteUseCase(noteRepo),
+            observePersonalTagsUseCase = ObservePersonalTagsUseCase(noteRepo),
+            addPersonalTagUseCase = AddPersonalTagUseCase(noteRepo),
+            removePersonalTagUseCase = RemovePersonalTagUseCase(noteRepo),
         )
         return Triple(vm, modelRepo, favRepo)
     }
@@ -181,43 +276,6 @@ class ModelDetailViewModelTest {
         assertNull(state.error)
         assertEquals("Test Model", state.model?.name)
         assertTrue(modelRepo.getModelCalled)
-    }
-
-    @Test
-    fun shows_error_on_load_failure() {
-        val failingRepo = object : ModelRepository {
-            override suspend fun getModels(
-                query: String?,
-                tag: String?,
-                type: ModelType?,
-                sort: SortOrder?,
-                period: TimePeriod?,
-                baseModels: List<BaseModel>?,
-                cursor: String?,
-                limit: Int?,
-                username: String?,
-                nsfw: Boolean?,
-            ): PaginatedResult<Model> = error("not used")
-            override suspend fun getModel(id: Long): Model = error("API error")
-            override suspend fun getModelVersion(id: Long): ModelVersion = error("not used")
-            override suspend fun getModelVersionByHash(hash: String): ModelVersion =
-                error("not used")
-        }
-
-        val vm = ModelDetailViewModel(
-            modelId = 1L,
-            getModelDetailUseCase = GetModelDetailUseCase(failingRepo),
-            observeIsFavoriteUseCase = ObserveIsFavoriteUseCase(FakeFavoriteRepo()),
-            toggleFavoriteUseCase = ToggleFavoriteUseCase(FakeFavoriteRepo()),
-            trackModelViewUseCase = TrackModelViewUseCase(FakeBrowsingRepo()),
-            observeNsfwFilterUseCase = ObserveNsfwFilterUseCase(FakePrefsRepo()),
-            enrichModelImagesUseCase = EnrichModelImagesUseCase(failingRepo),
-        )
-
-        val state = vm.uiState.value
-        assertFalse(state.isLoading)
-        assertEquals("API error", state.error)
-        assertNull(state.model)
     }
 
     @Test

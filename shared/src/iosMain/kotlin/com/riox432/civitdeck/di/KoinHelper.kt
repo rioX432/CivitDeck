@@ -132,6 +132,14 @@ import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseC
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ActivateExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.DeleteExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerCapabilitiesUseCase
+import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
+import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
+import com.riox432.civitdeck.domain.usecase.GetAllPersonalTagsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveModelNoteUseCase
+import com.riox432.civitdeck.domain.usecase.ObservePersonalTagsUseCase
+import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
+import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
+import com.riox432.civitdeck.domain.usecase.SearchModelsByTagUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerImagesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveActiveExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveExternalServerConfigsUseCase
@@ -360,4 +368,14 @@ object KoinHelper {
     fun getTestExternalServerConnectionUseCase(): TestExternalServerConnectionUseCase = getKoin().get()
     fun getGetExternalServerCapabilitiesUseCase(): GetExternalServerCapabilitiesUseCase = getKoin().get()
     fun getGetExternalServerImagesUseCase(): GetExternalServerImagesUseCase = getKoin().get()
+
+    // Model notes & personal tags use cases
+    fun getObserveModelNoteUseCase(): ObserveModelNoteUseCase = getKoin().get()
+    fun getSaveModelNoteUseCase(): SaveModelNoteUseCase = getKoin().get()
+    fun getDeleteModelNoteUseCase(): DeleteModelNoteUseCase = getKoin().get()
+    fun getObservePersonalTagsUseCase(): ObservePersonalTagsUseCase = getKoin().get()
+    fun getAddPersonalTagUseCase(): AddPersonalTagUseCase = getKoin().get()
+    fun getRemovePersonalTagUseCase(): RemovePersonalTagUseCase = getKoin().get()
+    fun getGetAllPersonalTagsUseCase(): GetAllPersonalTagsUseCase = getKoin().get()
+    fun getSearchModelsByTagUseCase(): SearchModelsByTagUseCase = getKoin().get()
 }

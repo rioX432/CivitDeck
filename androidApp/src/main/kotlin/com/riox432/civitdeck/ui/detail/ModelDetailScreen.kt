@@ -113,6 +113,7 @@ import com.riox432.civitdeck.util.FormatUtils
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
+@Suppress("LongParameterList")
 fun ModelDetailScreen(
     viewModel: ModelDetailViewModel,
     modelId: Long,
@@ -162,6 +163,9 @@ fun ModelDetailScreen(
             onCreatorClick = onCreatorClick,
             onTryInComfyUI = onTryInComfyUI,
             onSendToPC = { showSendToPCSheet = true },
+            onSaveNote = viewModel::saveNote,
+            onAddTag = viewModel::addTag,
+            onRemoveTag = viewModel::removeTag,
             contentPadding = padding,
         )
     }
@@ -271,6 +275,9 @@ private fun ModelDetailBody(
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     onSendToPC: () -> Unit = {},
+    onSaveNote: (String) -> Unit = {},
+    onAddTag: (String) -> Unit = {},
+    onRemoveTag: (String) -> Unit = {},
     contentPadding: PaddingValues,
 ) {
     val model = uiState.model
@@ -303,6 +310,9 @@ private fun ModelDetailBody(
             onCreatorClick = onCreatorClick,
             onTryInComfyUI = onTryInComfyUI,
             onSendToPC = onSendToPC,
+            onSaveNote = onSaveNote,
+            onAddTag = onAddTag,
+            onRemoveTag = onRemoveTag,
             bottomPadding = contentPadding.calculateBottomPadding(),
             modifier = Modifier.weight(1f),
             carouselContent = {
@@ -425,6 +435,9 @@ private fun DetailStateContent(
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     onSendToPC: () -> Unit = {},
+    onSaveNote: (String) -> Unit = {},
+    onAddTag: (String) -> Unit = {},
+    onRemoveTag: (String) -> Unit = {},
     bottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
     carouselContent: @Composable () -> Unit = {},
@@ -465,6 +478,9 @@ private fun DetailStateContent(
                         onCreatorClick = onCreatorClick,
                         onTryInComfyUI = onTryInComfyUI,
                         onSendToPC = onSendToPC,
+                        onSaveNote = onSaveNote,
+                        onAddTag = onAddTag,
+                        onRemoveTag = onRemoveTag,
                         bottomPadding = bottomPadding,
                         carouselContent = carouselContent,
                     )
@@ -540,6 +556,9 @@ private fun ModelDetailContentBody(
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     onSendToPC: () -> Unit = {},
+    onSaveNote: (String) -> Unit = {},
+    onAddTag: (String) -> Unit = {},
+    onRemoveTag: (String) -> Unit = {},
     bottomPadding: androidx.compose.ui.unit.Dp,
     carouselContent: @Composable () -> Unit = {},
 ) {
@@ -572,6 +591,9 @@ private fun ModelDetailContentBody(
             onCreatorClick = onCreatorClick,
             onTryInComfyUI = onTryInComfyUI,
             onSendToPC = onSendToPC,
+            onSaveNote = onSaveNote,
+            onAddTag = onAddTag,
+            onRemoveTag = onRemoveTag,
             carouselContent = carouselContent,
         )
     }
@@ -589,6 +611,9 @@ private fun LazyListScope.modelDetailItems(
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     onSendToPC: () -> Unit = {},
+    onSaveNote: (String) -> Unit = {},
+    onAddTag: (String) -> Unit = {},
+    onRemoveTag: (String) -> Unit = {},
     carouselContent: @Composable () -> Unit,
 ) {
     item { carouselContent() }
@@ -618,6 +643,14 @@ private fun LazyListScope.modelDetailItems(
         )
     }
     if (model.tags.isNotEmpty()) { item { TagsSection(tags = model.tags) } }
+    item { ModelNotesSection(note = uiState.note, onSaveNote = onSaveNote) }
+    item {
+        PersonalTagsSection(
+            tags = uiState.personalTags,
+            onAddTag = onAddTag,
+            onRemoveTag = onRemoveTag,
+        )
+    }
     if (!model.description.isNullOrBlank()) {
         item { DescriptionSection(description = model.description!!) }
     }
