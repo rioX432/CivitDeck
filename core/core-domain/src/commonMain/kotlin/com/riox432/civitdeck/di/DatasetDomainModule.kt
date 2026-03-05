@@ -5,6 +5,7 @@ import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
 import com.riox432.civitdeck.domain.usecase.CreateDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DetectDuplicatesUseCase
+import com.riox432.civitdeck.domain.usecase.ExportDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
 import com.riox432.civitdeck.domain.usecase.FilterByResolutionUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelLicenseUseCase
@@ -39,4 +40,5 @@ val datasetDomainModule = module {
     factory { MarkImageExcludedUseCase(get()) }
     factory { StorePHashUseCase(get()) }
     factory { StoreImageDimensionsUseCase(get()) }
+    factory { ExportDatasetUseCase(get()) }
 }

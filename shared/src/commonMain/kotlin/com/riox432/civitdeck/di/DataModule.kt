@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.di
 
+import com.riox432.civitdeck.data.export.ExportRepositoryImpl
 import com.riox432.civitdeck.data.image.ImageSaver
 import com.riox432.civitdeck.data.repository.AuthRepositoryImpl
 import com.riox432.civitdeck.data.repository.BrowsingHistoryRepositoryImpl
@@ -16,6 +17,7 @@ import com.riox432.civitdeck.domain.repository.CacheRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.ModelDirectoryRepository
 import com.riox432.civitdeck.domain.repository.ModelFileHashRepository
+import com.riox432.civitdeck.domain.repository.ExportRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.domain.repository.ModelScanRepository
 import com.riox432.civitdeck.domain.repository.ModelVersionCheckpointRepository
@@ -44,4 +46,7 @@ val dataModule = module {
         bind<ModelFileHashRepository>()
     }
     single<ModelVersionCheckpointRepository> { ModelVersionCheckpointRepositoryImpl(get()) }
+
+    // Export
+    single<ExportRepository> { ExportRepositoryImpl(get(), get()) }
 }
