@@ -16,6 +16,7 @@ struct SettingsScreen: View {
                 notificationsSection
                 storageSection
                 advancedSection
+                analyticsSection
                 datasetsSection
                 aboutSection
             }
@@ -91,6 +92,14 @@ struct SettingsScreen: View {
             }
             NavigationLink(destination: AdvancedSettingsView(viewModel: viewModel)) {
                 Text("Advanced")
+            }
+        }
+    }
+
+    private var analyticsSection: some View {
+        Section("Analytics") {
+            NavigationLink(destination: AnalyticsView()) {
+                Label("Usage Stats", systemImage: "chart.bar.xaxis")
             }
         }
     }

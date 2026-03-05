@@ -18,5 +18,6 @@ val domainModule = module {
         civitaiLinkDomainModule,
         datasetDomainModule,
         notesDomainModule,
+        analyticsDomainModule,
     )
 }

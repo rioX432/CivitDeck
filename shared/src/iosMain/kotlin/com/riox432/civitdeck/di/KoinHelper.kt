@@ -135,6 +135,7 @@ import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalSe
 import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.GetAllPersonalTagsUseCase
+import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePersonalTagsUseCase
 import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
@@ -378,4 +379,7 @@ object KoinHelper {
     fun getRemovePersonalTagUseCase(): RemovePersonalTagUseCase = getKoin().get()
     fun getGetAllPersonalTagsUseCase(): GetAllPersonalTagsUseCase = getKoin().get()
     fun getSearchModelsByTagUseCase(): SearchModelsByTagUseCase = getKoin().get()
+
+    // Analytics use cases
+    fun getBrowsingStatsUseCase(): GetBrowsingStatsUseCase = getKoin().get()
 }

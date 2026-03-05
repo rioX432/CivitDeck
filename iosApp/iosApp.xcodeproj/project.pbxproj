@@ -29,6 +29,8 @@
 		CDQR02012F8A0002000CD001 /* QRCodeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDQR02002F8A0002000CD001 /* QRCodeSheet.swift */; };
 		CDQR03012F8A0003000CD001 /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDQR03002F8A0003000CD001 /* QRScannerView.swift */; };
 		CDQR04012F8A0004000CD001 /* QRScannerFab.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDQR04002F8A0004000CD001 /* QRScannerFab.swift */; };
+		CDAN01012F9B0001000CD001 /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDAN01002F9B0001000CD001 /* AnalyticsView.swift */; };
+		CDAN02012F9B0002000CD001 /* AnalyticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDAN02002F9B0002000CD001 /* AnalyticsViewModel.swift */; };
 		CD0005012D000005000CD001 /* ImageGalleryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005002D000005000CD001 /* ImageGalleryViewModel.swift */; };
 		CD0005032D000005000CD001 /* ImageGalleryScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005022D000005000CD001 /* ImageGalleryScreen.swift */; };
 		CD0005052D000005000CD001 /* ImageViewerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005042D000005000CD001 /* ImageViewerScreen.swift */; };
@@ -162,6 +164,8 @@
 		CDQR02002F8A0002000CD001 /* QRCodeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeSheet.swift; sourceTree = "<group>"; };
 		CDQR03002F8A0003000CD001 /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
 		CDQR04002F8A0004000CD001 /* QRScannerFab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerFab.swift; sourceTree = "<group>"; };
+		CDAN01002F9B0001000CD001 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
+		CDAN02002F9B0002000CD001 /* AnalyticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsViewModel.swift; sourceTree = "<group>"; };
 		CD0005002D000005000CD001 /* ImageGalleryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageGalleryViewModel.swift; sourceTree = "<group>"; };
 		CD0005022D000005000CD001 /* ImageGalleryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageGalleryScreen.swift; sourceTree = "<group>"; };
 		CD0005042D000005000CD001 /* ImageViewerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewerScreen.swift; sourceTree = "<group>"; };
@@ -417,6 +421,7 @@
 				CD00FB042D5CC001000CD001 /* ModelFileBrowser */,
 				CD0009042D000009000CD001 /* Prompts */,
 				CDQR0A002F8A0000000CD001 /* QRCode */,
+				CDAN0A002F9B0000000CD001 /* Analytics */,
 				CD000A042D00000A000CD001 /* Settings */,
 				CDSC0A002EA00001000CD001 /* Shortcuts */,
 				CD00GT082D6CC001000CD001 /* Tutorial */,
@@ -464,6 +469,15 @@
 				CDQR04002F8A0004000CD001 /* QRScannerFab.swift */,
 			);
 			path = QRCode;
+			sourceTree = "<group>";
+		};
+		CDAN0A002F9B0000000CD001 /* Analytics */ = {
+			isa = PBXGroup;
+			children = (
+				CDAN01002F9B0001000CD001 /* AnalyticsView.swift */,
+				CDAN02002F9B0002000CD001 /* AnalyticsViewModel.swift */,
+			);
+			path = Analytics;
 			sourceTree = "<group>";
 		};
 		CDSC0A002EA00001000CD001 /* Shortcuts */ = {
@@ -809,6 +823,8 @@
 				CDQR02012F8A0002000CD001 /* QRCodeSheet.swift in Sources */,
 				CDQR03012F8A0003000CD001 /* QRScannerView.swift in Sources */,
 				CDQR04012F8A0004000CD001 /* QRScannerFab.swift in Sources */,
+				CDAN01012F9B0001000CD001 /* AnalyticsView.swift in Sources */,
+				CDAN02012F9B0002000CD001 /* AnalyticsViewModel.swift in Sources */,
 				CD00FB012D5CC001000CD001 /* ModelFileBrowserViewModel.swift in Sources */,
 				CD00FB032D5CC001000CD001 /* ModelFileBrowserScreen.swift in Sources */,
 				CD00GT012D6CC001000CD001 /* GestureTutorialViewModel.swift in Sources */,

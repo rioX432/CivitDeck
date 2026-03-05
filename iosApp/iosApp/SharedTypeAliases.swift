@@ -153,6 +153,10 @@ typealias ToggleFavoriteUseCase = Core_domainToggleFavoriteUseCase
 typealias TrackModelViewUseCase = Core_domainTrackModelViewUseCase
 typealias ValidateApiKeyUseCase = Core_domainValidateApiKeyUseCase
 typealias VerifyModelHashUseCase = Core_domainVerifyModelHashUseCase
+typealias GetBrowsingStatsUseCase = Core_domainGetBrowsingStatsUseCase
+typealias BrowsingStats = Core_domainBrowsingStats
+typealias DailyViewCount = Core_domainDailyViewCount
+typealias CategoryStat = Core_domainCategoryStat
 
 // MARK: - Feature: Collections
 

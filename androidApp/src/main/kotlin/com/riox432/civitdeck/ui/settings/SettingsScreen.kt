@@ -83,6 +83,7 @@ fun SettingsScreen(
     onNavigateToStorage: () -> Unit = {},
     onNavigateToAdvanced: () -> Unit = {},
     onNavigateToNavShortcuts: () -> Unit = {},
+    onNavigateToAnalytics: () -> Unit = {},
     onNavigateToLicenses: () -> Unit = {},
     scrollToTopTrigger: Int = 0,
 ) {
@@ -117,6 +118,8 @@ fun SettingsScreen(
             }
             item { SectionHeader("Advanced") }
             item { SubScreenRow("Advanced", onNavigateToAdvanced) }
+            item { SectionHeader("Analytics") }
+            item { SubScreenRow("Usage Stats", onNavigateToAnalytics) }
             item { SectionHeader("About") }
             item { InfoRow("App Version", BuildConfig.VERSION_NAME) }
             item { NavigationRow("Open Source Licenses", onNavigateToLicenses) }

@@ -3,10 +3,12 @@ package com.riox432.civitdeck.di
 import com.riox432.civitdeck.data.local.CivitDeckDatabase
 import com.riox432.civitdeck.data.local.LocalCacheDataSource
 import com.riox432.civitdeck.data.local.getRoomDatabase
+import com.riox432.civitdeck.data.local.repository.AnalyticsRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.CaptionRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.DatasetCollectionRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ImageTagRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ModelNoteRepositoryImpl
+import com.riox432.civitdeck.domain.repository.AnalyticsRepository
 import com.riox432.civitdeck.domain.repository.CaptionRepository
 import com.riox432.civitdeck.domain.repository.DatasetCollectionRepository
 import com.riox432.civitdeck.domain.repository.ImageTagRepository
@@ -45,4 +47,7 @@ val databaseModule = module {
 
     // Notes & Personal Tags
     single<ModelNoteRepository> { ModelNoteRepositoryImpl(get(), get()) }
+
+    // Analytics
+    single<AnalyticsRepository> { AnalyticsRepositoryImpl(get(), get(), get()) }
 }

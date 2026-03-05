@@ -23,4 +23,15 @@ interface SearchHistoryDao {
 
     @Query("DELETE FROM search_history WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("SELECT COUNT(*) FROM search_history")
+    suspend fun count(): Int
+
+    @Query(
+        "SELECT query AS name, COUNT(*) AS cnt " +
+            "FROM search_history GROUP BY query ORDER BY cnt DESC LIMIT :limit",
+    )
+    suspend fun getTopQueries(limit: Int = 10): List<SearchQueryCount>
 }
+
+data class SearchQueryCount(val name: String, val cnt: Int)

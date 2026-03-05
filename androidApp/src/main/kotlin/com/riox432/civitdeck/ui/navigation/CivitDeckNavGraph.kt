@@ -68,6 +68,8 @@ import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
+import com.riox432.civitdeck.ui.analytics.AnalyticsScreen
+import com.riox432.civitdeck.ui.analytics.AnalyticsViewModel
 import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.CollectionsScreen
 import com.riox432.civitdeck.ui.comfyui.CivitaiLinkSettingsScreen
@@ -203,6 +205,8 @@ data class BatchTagEditorRoute(val datasetId: Long)
 data class DuplicateReviewRoute(val datasetId: Long)
 
 data object QRScannerRoute
+
+data object AnalyticsRoute
 
 internal enum class Tab(
     val label: String,
@@ -430,6 +434,7 @@ private fun CivitDeckNavDisplay(
             duplicateReviewEntry(backStack)
             detailEntry(backStack)
             qrScannerEntry(backStack)
+            analyticsEntry(backStack)
             creatorEntry(backStack)
             galleryEntry(backStack)
             compareEntry(backStack)
@@ -445,6 +450,7 @@ private fun CivitDeckNavDisplay(
                     onNavigateToStorage = { backStack.add(StorageSettingsRoute) },
                     onNavigateToAdvanced = { backStack.add(AdvancedSettingsRoute) },
                     onNavigateToNavShortcuts = { backStack.add(NavShortcutsSettingsRoute) },
+                    onNavigateToAnalytics = { backStack.add(AnalyticsRoute) },
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
                     scrollToTopTrigger = settingsScrollTrigger,
                 )
@@ -636,6 +642,16 @@ private fun EntryProviderScope<Any>.qrScannerEntry(backStack: MutableList<Any>) 
                 backStack.removeLastOrNull()
                 backStack.add(DetailRoute(modelId))
             },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.analyticsEntry(backStack: MutableList<Any>) {
+    entry<AnalyticsRoute> {
+        val viewModel: AnalyticsViewModel = koinViewModel()
+        AnalyticsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
         )
     }
 }
