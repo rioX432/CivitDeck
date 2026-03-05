@@ -7,8 +7,12 @@ import Shared
 final class PromptTemplateEngine {
     static let shared = PromptTemplateEngine()
 
-    // swiftlint:disable:next force_try
-    private let pattern = try! NSRegularExpression(pattern: "\\{([^{}]+)\\}")
+    private let pattern: NSRegularExpression = {
+        guard let regex = try? NSRegularExpression(pattern: "\\{([^{}]+)\\}") else {
+            fatalError("Invalid regex pattern in SharedServices")
+        }
+        return regex
+    }()
     private let openPlaceholder = "\u{0000}OPEN\u{0000}"
     private let closePlaceholder = "\u{0000}CLOSE\u{0000}"
 
