@@ -32,6 +32,7 @@ struct ModelStatsRow: View {
         HStack(spacing: 2) {
             Image(systemName: icon)
                 .font(.system(size: IconSize.statIcon))
+                .accessibilityHidden(true)
             Text(value)
                 .font(.civitLabelSmall)
         }
