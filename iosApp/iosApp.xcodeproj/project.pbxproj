@@ -124,6 +124,7 @@
 		CDDT10012F300010000CD001 /* DuplicateReviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT10002F300010000CD001 /* DuplicateReviewSheet.swift */; };
 		CDDT11012F300011000CD001 /* DuplicateReviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT11002F300011000CD001 /* DuplicateReviewViewModel.swift */; };
 		CDDT12012F300012000CD001 /* ResolutionFilterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT12002F300012000CD001 /* ResolutionFilterSheet.swift */; };
+		CDDT13012F300013000CD001 /* ExportDatasetSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT13002F300013000CD001 /* ExportDatasetSheet.swift */; };
 		CDES01012F400001000CD001 /* ExternalServerSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES01002F400001000CD001 /* ExternalServerSettingsViewModel.swift */; };
 		CDES02012F400002000CD001 /* ExternalServerSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES02002F400002000CD001 /* ExternalServerSettingsView.swift */; };
 		CDES03012F400003000CD001 /* ExternalServerGalleryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES03002F400003000CD001 /* ExternalServerGalleryViewModel.swift */; };
@@ -254,6 +255,7 @@
 		CDDT10002F300010000CD001 /* DuplicateReviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateReviewSheet.swift; sourceTree = "<group>"; };
 		CDDT11002F300011000CD001 /* DuplicateReviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateReviewViewModel.swift; sourceTree = "<group>"; };
 		CDDT12002F300012000CD001 /* ResolutionFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolutionFilterSheet.swift; sourceTree = "<group>"; };
+		CDDT13002F300013000CD001 /* ExportDatasetSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportDatasetSheet.swift; sourceTree = "<group>"; };
 		CDES01002F400001000CD001 /* ExternalServerSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerSettingsViewModel.swift; sourceTree = "<group>"; };
 		CDES02002F400002000CD001 /* ExternalServerSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerSettingsView.swift; sourceTree = "<group>"; };
 		CDES03002F400003000CD001 /* ExternalServerGalleryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerGalleryViewModel.swift; sourceTree = "<group>"; };
@@ -426,6 +428,7 @@
 			CDDT10002F300010000CD001 /* DuplicateReviewSheet.swift */,
 			CDDT11002F300011000CD001 /* DuplicateReviewViewModel.swift */,
 			CDDT12002F300012000CD001 /* ResolutionFilterSheet.swift */,
+			CDDT13002F300013000CD001 /* ExportDatasetSheet.swift */,
 			);
 			path = Dataset;
 			sourceTree = "<group>";
@@ -832,6 +835,7 @@
 			CDDT10012F300010000CD001 /* DuplicateReviewSheet.swift in Sources */,
 			CDDT11012F300011000CD001 /* DuplicateReviewViewModel.swift in Sources */,
 			CDDT12012F300012000CD001 /* ResolutionFilterSheet.swift in Sources */,
+				CDDT13012F300013000CD001 /* ExportDatasetSheet.swift in Sources */,
 			CDES01012F400001000CD001 /* ExternalServerSettingsViewModel.swift in Sources */,
 			CDES02012F400002000CD001 /* ExternalServerSettingsView.swift in Sources */,
 			CDES03012F400003000CD001 /* ExternalServerGalleryViewModel.swift in Sources */,
