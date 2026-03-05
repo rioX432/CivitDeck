@@ -149,7 +149,7 @@ struct PersonalTagsSection: View {
             } label: {
                 Image(systemName: "xmark")
                     .accessibilityLabel("Remove tag")
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.civitLabelXSmallSemibold)
             }
         }
         .padding(.horizontal, Spacing.smPlus)

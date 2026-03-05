@@ -425,7 +425,7 @@ private struct SingleImageViewer: View {
                 .padding(.horizontal, Spacing.lg)
                 .padding(.vertical, Spacing.smPlus)
                 .background(.ultraThinMaterial, in: Capsule())
-                .padding(.bottom, 80)
+                .padding(.bottom, Spacing.floatingOffset)
         }
         .transition(.opacity)
     }
