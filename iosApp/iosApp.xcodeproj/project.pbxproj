@@ -20,6 +20,7 @@
 		CD00DC032D0DD003000CD001 /* SearchFilterConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC022D0DD003000CD001 /* SearchFilterConstants.swift */; };
 		CD00DC052D0DD004000CD001 /* TagFilterSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC042D0DD004000CD001 /* TagFilterSection.swift */; };
 		CD00DC072D0E0001000CD001 /* SavedFiltersSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC062D0E0001000CD001 /* SavedFiltersSheet.swift */; };
+		CD00DC092D0E0002000CD001 /* ModelNsfwFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC082D0E0002000CD001 /* ModelNsfwFilter.swift */; };
 		CD0004012D000004000CD001 /* ModelDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0004002D000004000CD001 /* ModelDetailViewModel.swift */; };
 		CD0004032D000004000CD001 /* ModelDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0004022D000004000CD001 /* ModelDetailScreen.swift */; };
 		CD00DC012D0DD001000CD001 /* ModelDetailComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC002D0DD001000CD001 /* ModelDetailComponents.swift */; };
@@ -123,6 +124,10 @@
 		CDDT10012F300010000CD001 /* DuplicateReviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT10002F300010000CD001 /* DuplicateReviewSheet.swift */; };
 		CDDT11012F300011000CD001 /* DuplicateReviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT11002F300011000CD001 /* DuplicateReviewViewModel.swift */; };
 		CDDT12012F300012000CD001 /* ResolutionFilterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDT12002F300012000CD001 /* ResolutionFilterSheet.swift */; };
+		CDES01012F400001000CD001 /* ExternalServerSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES01002F400001000CD001 /* ExternalServerSettingsViewModel.swift */; };
+		CDES02012F400002000CD001 /* ExternalServerSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES02002F400002000CD001 /* ExternalServerSettingsView.swift */; };
+		CDES03012F400003000CD001 /* ExternalServerGalleryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES03002F400003000CD001 /* ExternalServerGalleryViewModel.swift */; };
+		CDES04012F400004000CD001 /* ExternalServerGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES04002F400004000CD001 /* ExternalServerGalleryView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -142,6 +147,7 @@
 		CD00DC022D0DD003000CD001 /* SearchFilterConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFilterConstants.swift; sourceTree = "<group>"; };
 		CD00DC042D0DD004000CD001 /* TagFilterSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagFilterSection.swift; sourceTree = "<group>"; };
 		CD00DC062D0E0001000CD001 /* SavedFiltersSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedFiltersSheet.swift; sourceTree = "<group>"; };
+		CD00DC082D0E0002000CD001 /* ModelNsfwFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelNsfwFilter.swift; sourceTree = "<group>"; };
 		CD0004002D000004000CD001 /* ModelDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailViewModel.swift; sourceTree = "<group>"; };
 		CD0004022D000004000CD001 /* ModelDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailScreen.swift; sourceTree = "<group>"; };
 		CD00DC002D0DD001000CD001 /* ModelDetailComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailComponents.swift; sourceTree = "<group>"; };
@@ -248,6 +254,10 @@
 		CDDT10002F300010000CD001 /* DuplicateReviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateReviewSheet.swift; sourceTree = "<group>"; };
 		CDDT11002F300011000CD001 /* DuplicateReviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateReviewViewModel.swift; sourceTree = "<group>"; };
 		CDDT12002F300012000CD001 /* ResolutionFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolutionFilterSheet.swift; sourceTree = "<group>"; };
+		CDES01002F400001000CD001 /* ExternalServerSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerSettingsViewModel.swift; sourceTree = "<group>"; };
+		CDES02002F400002000CD001 /* ExternalServerSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerSettingsView.swift; sourceTree = "<group>"; };
+		CDES03002F400003000CD001 /* ExternalServerGalleryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerGalleryViewModel.swift; sourceTree = "<group>"; };
+		CDES04002F400004000CD001 /* ExternalServerGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerGalleryView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -388,6 +398,7 @@
 				CD00CE062D2CC001000CD001 /* Compare */,
 				CD0008042D000008000CD001 /* Creator */,
 				CDDT0A002F300000000CD001 /* Dataset */,
+				CDES0A002F400000000CD001 /* ExternalServer */,
 				CD0004042D000004000CD001 /* Detail */,
 				CD00DS0A2D7CC001000CD001 /* Discovery */,
 				CD0005082D000005000CD001 /* Gallery */,
@@ -417,6 +428,17 @@
 			CDDT12002F300012000CD001 /* ResolutionFilterSheet.swift */,
 			);
 			path = Dataset;
+			sourceTree = "<group>";
+		};
+		CDES0A002F400000000CD001 /* ExternalServer */ = {
+			isa = PBXGroup;
+			children = (
+				CDES01002F400001000CD001 /* ExternalServerSettingsViewModel.swift */,
+				CDES02002F400002000CD001 /* ExternalServerSettingsView.swift */,
+				CDES03002F400003000CD001 /* ExternalServerGalleryViewModel.swift */,
+				CDES04002F400004000CD001 /* ExternalServerGalleryView.swift */,
+			);
+			path = ExternalServer;
 			sourceTree = "<group>";
 		};
 		CDSC0A002EA00001000CD001 /* Shortcuts */ = {
@@ -520,6 +542,7 @@
 				CD00DC022D0DD003000CD001 /* SearchFilterConstants.swift */,
 				CD00DC042D0DD004000CD001 /* TagFilterSection.swift */,
 				CD00DC062D0E0001000CD001 /* SavedFiltersSheet.swift */,
+				CD00DC082D0E0002000CD001 /* ModelNsfwFilter.swift */,
 			);
 			path = Search;
 			sourceTree = "<group>";
@@ -705,6 +728,7 @@
 				CD00DC032D0DD003000CD001 /* SearchFilterConstants.swift in Sources */,
 				CD00DC052D0DD004000CD001 /* TagFilterSection.swift in Sources */,
 				CD00DC072D0E0001000CD001 /* SavedFiltersSheet.swift in Sources */,
+				CD00DC092D0E0002000CD001 /* ModelNsfwFilter.swift in Sources */,
 				CD0004012D000004000CD001 /* ModelDetailViewModel.swift in Sources */,
 				CD0004032D000004000CD001 /* ModelDetailScreen.swift in Sources */,
 				CD00DC012D0DD001000CD001 /* ModelDetailComponents.swift in Sources */,
@@ -808,6 +832,10 @@
 			CDDT10012F300010000CD001 /* DuplicateReviewSheet.swift in Sources */,
 			CDDT11012F300011000CD001 /* DuplicateReviewViewModel.swift in Sources */,
 			CDDT12012F300012000CD001 /* ResolutionFilterSheet.swift in Sources */,
+			CDES01012F400001000CD001 /* ExternalServerSettingsViewModel.swift in Sources */,
+			CDES02012F400002000CD001 /* ExternalServerSettingsView.swift in Sources */,
+			CDES03012F400003000CD001 /* ExternalServerGalleryViewModel.swift in Sources */,
+			CDES04012F400004000CD001 /* ExternalServerGalleryView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

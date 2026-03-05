@@ -6,6 +6,7 @@ import com.riox432.civitdeck.feature.collections.di.collectionsModule
 import com.riox432.civitdeck.feature.comfyui.di.comfyuiModule
 import com.riox432.civitdeck.feature.creator.di.creatorModule
 import com.riox432.civitdeck.feature.detail.di.detailModule
+import com.riox432.civitdeck.feature.externalserver.di.externalServerModule
 import com.riox432.civitdeck.feature.gallery.di.galleryModule
 import com.riox432.civitdeck.feature.prompts.di.promptsModule
 import com.riox432.civitdeck.feature.search.di.searchModule
@@ -30,6 +31,7 @@ val sharedModules: List<Module>
         detailModule,
         comfyuiModule,
         searchModule,
+        externalServerModule,
     )
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {

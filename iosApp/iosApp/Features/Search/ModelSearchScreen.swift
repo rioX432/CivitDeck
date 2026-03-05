@@ -378,7 +378,15 @@ struct ModelSearchScreen: View {
         }
     }
 
-    private var typeFilterChips: some View {
+    private func chipButton(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        ChipButton(label: label, isSelected: isSelected, action: action)
+    }
+    private var emptyView: some View {
+        EmptyStateView(icon: "magnifyingglass", title: "No models found")
+    }
+}
+extension ModelSearchScreen { // MARK: - Filter Chips
+    var typeFilterChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.sm) {
                 chipButton(label: "All", isSelected: viewModel.selectedType == nil) {
@@ -394,8 +402,7 @@ struct ModelSearchScreen: View {
             .padding(.vertical, Spacing.sm)
         }
     }
-
-    private var baseModelFilterChips: some View {
+    var baseModelFilterChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.sm) {
                 ForEach(SearchFilter.baseModelOptions, id: \.self) { baseModel in
@@ -411,8 +418,7 @@ struct ModelSearchScreen: View {
             .padding(.bottom, Spacing.sm)
         }
     }
-
-    private var sortAndPeriodChips: some View {
+    var sortAndPeriodChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.sm) {
                 chipButton(label: "Fresh Only", isSelected: viewModel.isFreshFindEnabled) {
@@ -433,14 +439,6 @@ struct ModelSearchScreen: View {
             .padding(.horizontal, Spacing.lg)
             .padding(.bottom, Spacing.sm)
         }
-    }
-
-    private func chipButton(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        ChipButton(label: label, isSelected: isSelected, action: action)
-    }
-
-    private var emptyView: some View {
-        EmptyStateView(icon: "magnifyingglass", title: "No models found")
     }
 }
 extension ModelSearchScreen { // MARK: - Filter FAB
