@@ -4,11 +4,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelCollection
+import com.riox432.civitdeck.domain.model.ModelNote
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.domain.model.PersonalTag
+import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
+import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.ObservePersonalTagsUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
+import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.AddModelToCollectionUseCase
@@ -34,6 +42,8 @@ data class ModelDetailUiState(
     val selectedVersionIndex: Int = 0,
     val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
     val powerUserMode: Boolean = false,
+    val note: ModelNote? = null,
+    val personalTags: List<PersonalTag> = emptyList(),
 )
 
 @Suppress("LongParameterList")
@@ -51,6 +61,12 @@ class ModelDetailViewModel(
     private val removeModelFromCollectionUseCase: RemoveModelFromCollectionUseCase,
     private val createCollectionUseCase: CreateCollectionUseCase,
     private val observePowerUserModeUseCase: ObservePowerUserModeUseCase,
+    private val observeModelNoteUseCase: ObserveModelNoteUseCase,
+    private val saveModelNoteUseCase: SaveModelNoteUseCase,
+    private val deleteModelNoteUseCase: DeleteModelNoteUseCase,
+    private val observePersonalTagsUseCase: ObservePersonalTagsUseCase,
+    private val addPersonalTagUseCase: AddPersonalTagUseCase,
+    private val removePersonalTagUseCase: RemovePersonalTagUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelDetailUiState())
@@ -70,6 +86,8 @@ class ModelDetailViewModel(
         observeFavorite()
         observeNsfwFilter()
         observePowerUserMode()
+        observeNote()
+        observePersonalTags()
     }
 
     fun onVersionSelected(index: Int) {
@@ -92,6 +110,48 @@ class ModelDetailViewModel(
 
     fun retry() {
         loadModel()
+    }
+
+    fun saveNote(text: String) {
+        viewModelScope.launch {
+            try {
+                if (text.isBlank()) {
+                    deleteModelNoteUseCase(modelId)
+                } else {
+                    saveModelNoteUseCase(modelId, text)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // Note save failure is non-critical
+            }
+        }
+    }
+
+    fun addTag(tag: String) {
+        val trimmed = tag.trim().lowercase()
+        if (trimmed.isBlank()) return
+        viewModelScope.launch {
+            try {
+                addPersonalTagUseCase(modelId, trimmed)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // Tag add failure is non-critical
+            }
+        }
+    }
+
+    fun removeTag(tag: String) {
+        viewModelScope.launch {
+            try {
+                removePersonalTagUseCase(modelId, tag)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // Tag remove failure is non-critical
+            }
+        }
     }
 
     private fun loadModel() {
@@ -193,6 +253,22 @@ class ModelDetailViewModel(
         viewModelScope.launch {
             observePowerUserModeUseCase().collect { enabled ->
                 _uiState.update { it.copy(powerUserMode = enabled) }
+            }
+        }
+    }
+
+    private fun observeNote() {
+        viewModelScope.launch {
+            observeModelNoteUseCase(modelId).collect { note ->
+                _uiState.update { it.copy(note = note) }
+            }
+        }
+    }
+
+    private fun observePersonalTags() {
+        viewModelScope.launch {
+            observePersonalTagsUseCase(modelId).collect { tags ->
+                _uiState.update { it.copy(personalTags = tags) }
             }
         }
     }

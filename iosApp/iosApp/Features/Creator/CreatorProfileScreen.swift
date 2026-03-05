@@ -27,6 +27,13 @@ struct CreatorProfileScreen: View {
         }
         .navigationTitle(viewModel.username)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: viewModel.toggleFollow) {
+                    Image(systemName: viewModel.isFollowing ? "person.badge.minus" : "person.badge.plus")
+                }
+            }
+        }
     }
 
     private var modelGrid: some View {

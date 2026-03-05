@@ -24,6 +24,15 @@
 		CD0004012D000004000CD001 /* ModelDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0004002D000004000CD001 /* ModelDetailViewModel.swift */; };
 		CD0004032D000004000CD001 /* ModelDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0004022D000004000CD001 /* ModelDetailScreen.swift */; };
 		CD00DC012D0DD001000CD001 /* ModelDetailComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC002D0DD001000CD001 /* ModelDetailComponents.swift */; };
+		CD186N012D5CC001000CD001 /* ModelNotesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD186N002D5CC001000CD001 /* ModelNotesSection.swift */; };
+		CDQR01012F8A0001000CD001 /* QRCodeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDQR01002F8A0001000CD001 /* QRCodeGenerator.swift */; };
+		CDQR02012F8A0002000CD001 /* QRCodeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDQR02002F8A0002000CD001 /* QRCodeSheet.swift */; };
+		CDQR03012F8A0003000CD001 /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDQR03002F8A0003000CD001 /* QRScannerView.swift */; };
+		CDQR04012F8A0004000CD001 /* QRScannerFab.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDQR04002F8A0004000CD001 /* QRScannerFab.swift */; };
+		CDAN01012F9B0001000CD001 /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDAN01002F9B0001000CD001 /* AnalyticsView.swift */; };
+		CDAN02012F9B0002000CD001 /* AnalyticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDAN02002F9B0002000CD001 /* AnalyticsViewModel.swift */; };
+		CDFE01012FAB0001000CD001 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFE01002FAB0001000CD001 /* FeedView.swift */; };
+		CDFE02012FAB0002000CD001 /* FeedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFE02002FAB0002000CD001 /* FeedViewModel.swift */; };
 		CD0005012D000005000CD001 /* ImageGalleryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005002D000005000CD001 /* ImageGalleryViewModel.swift */; };
 		CD0005032D000005000CD001 /* ImageGalleryScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005022D000005000CD001 /* ImageGalleryScreen.swift */; };
 		CD0005052D000005000CD001 /* ImageViewerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005042D000005000CD001 /* ImageViewerScreen.swift */; };
@@ -152,6 +161,15 @@
 		CD0004002D000004000CD001 /* ModelDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailViewModel.swift; sourceTree = "<group>"; };
 		CD0004022D000004000CD001 /* ModelDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailScreen.swift; sourceTree = "<group>"; };
 		CD00DC002D0DD001000CD001 /* ModelDetailComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailComponents.swift; sourceTree = "<group>"; };
+		CD186N002D5CC001000CD001 /* ModelNotesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelNotesSection.swift; sourceTree = "<group>"; };
+		CDQR01002F8A0001000CD001 /* QRCodeGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeGenerator.swift; sourceTree = "<group>"; };
+		CDQR02002F8A0002000CD001 /* QRCodeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeSheet.swift; sourceTree = "<group>"; };
+		CDQR03002F8A0003000CD001 /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
+		CDQR04002F8A0004000CD001 /* QRScannerFab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerFab.swift; sourceTree = "<group>"; };
+		CDAN01002F9B0001000CD001 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
+		CDAN02002F9B0002000CD001 /* AnalyticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsViewModel.swift; sourceTree = "<group>"; };
+		CDFE01002FAB0001000CD001 /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
+		CDFE02002FAB0002000CD001 /* FeedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewModel.swift; sourceTree = "<group>"; };
 		CD0005002D000005000CD001 /* ImageGalleryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageGalleryViewModel.swift; sourceTree = "<group>"; };
 		CD0005022D000005000CD001 /* ImageGalleryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageGalleryScreen.swift; sourceTree = "<group>"; };
 		CD0005042D000005000CD001 /* ImageViewerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewerScreen.swift; sourceTree = "<group>"; };
@@ -406,6 +424,9 @@
 				CD0005082D000005000CD001 /* Gallery */,
 				CD00FB042D5CC001000CD001 /* ModelFileBrowser */,
 				CD0009042D000009000CD001 /* Prompts */,
+				CDQR0A002F8A0000000CD001 /* QRCode */,
+				CDAN0A002F9B0000000CD001 /* Analytics */,
+				CDFE0A002FAB0000000CD001 /* Feed */,
 				CD000A042D00000A000CD001 /* Settings */,
 				CDSC0A002EA00001000CD001 /* Shortcuts */,
 				CD00GT082D6CC001000CD001 /* Tutorial */,
@@ -442,6 +463,35 @@
 				CDES04002F400004000CD001 /* ExternalServerGalleryView.swift */,
 			);
 			path = ExternalServer;
+			sourceTree = "<group>";
+		};
+		CDQR0A002F8A0000000CD001 /* QRCode */ = {
+			isa = PBXGroup;
+			children = (
+				CDQR01002F8A0001000CD001 /* QRCodeGenerator.swift */,
+				CDQR02002F8A0002000CD001 /* QRCodeSheet.swift */,
+				CDQR03002F8A0003000CD001 /* QRScannerView.swift */,
+				CDQR04002F8A0004000CD001 /* QRScannerFab.swift */,
+			);
+			path = QRCode;
+			sourceTree = "<group>";
+		};
+		CDAN0A002F9B0000000CD001 /* Analytics */ = {
+			isa = PBXGroup;
+			children = (
+				CDAN01002F9B0001000CD001 /* AnalyticsView.swift */,
+				CDAN02002F9B0002000CD001 /* AnalyticsViewModel.swift */,
+			);
+			path = Analytics;
+			sourceTree = "<group>";
+		};
+		CDFE0A002FAB0000000CD001 /* Feed */ = {
+			isa = PBXGroup;
+			children = (
+				CDFE01002FAB0001000CD001 /* FeedView.swift */,
+				CDFE02002FAB0002000CD001 /* FeedViewModel.swift */,
+			);
+			path = Feed;
 			sourceTree = "<group>";
 		};
 		CDSC0A002EA00001000CD001 /* Shortcuts */ = {
@@ -531,6 +581,7 @@
 				CD0004022D000004000CD001 /* ModelDetailScreen.swift */,
 				CD00DC002D0DD001000CD001 /* ModelDetailComponents.swift */,
 				CD00VD002D4CC001000CD001 /* VersionDetailSection.swift */,
+				CD186N002D5CC001000CD001 /* ModelNotesSection.swift */,
 			);
 			path = Detail;
 			sourceTree = "<group>";
@@ -781,6 +832,15 @@
 				CD00IS012D6CC001000CD001 /* ImageComparisonSlider.swift in Sources */,
 				CD00IO012D6CC001000CD001 /* ImageComparisonOverlay.swift in Sources */,
 				CD00VD012D4CC001000CD001 /* VersionDetailSection.swift in Sources */,
+				CD186N012D5CC001000CD001 /* ModelNotesSection.swift in Sources */,
+				CDQR01012F8A0001000CD001 /* QRCodeGenerator.swift in Sources */,
+				CDQR02012F8A0002000CD001 /* QRCodeSheet.swift in Sources */,
+				CDQR03012F8A0003000CD001 /* QRScannerView.swift in Sources */,
+				CDQR04012F8A0004000CD001 /* QRScannerFab.swift in Sources */,
+				CDAN01012F9B0001000CD001 /* AnalyticsView.swift in Sources */,
+				CDAN02012F9B0002000CD001 /* AnalyticsViewModel.swift in Sources */,
+				CDFE01012FAB0001000CD001 /* FeedView.swift in Sources */,
+				CDFE02012FAB0002000CD001 /* FeedViewModel.swift in Sources */,
 				CD00FB012D5CC001000CD001 /* ModelFileBrowserViewModel.swift in Sources */,
 				CD00FB032D5CC001000CD001 /* ModelFileBrowserScreen.swift in Sources */,
 				CD00GT012D6CC001000CD001 /* GestureTutorialViewModel.swift in Sources */,

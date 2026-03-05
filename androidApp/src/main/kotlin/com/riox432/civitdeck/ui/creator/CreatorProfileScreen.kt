@@ -19,6 +19,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -67,13 +69,11 @@ fun CreatorProfileScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(uiState.username) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
+            CreatorTopBar(
+                username = uiState.username,
+                isFollowing = uiState.isFollowing,
+                onBack = onBack,
+                onToggleFollow = viewModel::toggleFollow,
             )
         },
     ) { padding ->
@@ -85,6 +85,36 @@ fun CreatorProfileScreen(
             contentPadding = padding,
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CreatorTopBar(
+    username: String,
+    isFollowing: Boolean,
+    onBack: () -> Unit,
+    onToggleFollow: () -> Unit,
+) {
+    TopAppBar(
+        title = { Text(username) },
+        navigationIcon = {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+        },
+        actions = {
+            IconButton(onClick = onToggleFollow) {
+                Icon(
+                    imageVector = if (isFollowing) {
+                        Icons.Filled.PersonRemove
+                    } else {
+                        Icons.Filled.PersonAdd
+                    },
+                    contentDescription = if (isFollowing) "Unfollow" else "Follow",
+                )
+            }
+        },
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

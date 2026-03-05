@@ -15,12 +15,14 @@ import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.FolderCopy
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.RssFeed
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.FolderCopy
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material.icons.outlined.RssFeed
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -68,6 +70,8 @@ import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
+import com.riox432.civitdeck.ui.analytics.AnalyticsScreen
+import com.riox432.civitdeck.ui.analytics.AnalyticsViewModel
 import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.CollectionsScreen
 import com.riox432.civitdeck.ui.comfyui.CivitaiLinkSettingsScreen
@@ -95,8 +99,11 @@ import com.riox432.civitdeck.ui.detail.ModelDetailScreen
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsScreen
+import com.riox432.civitdeck.ui.feed.FeedScreen
+import com.riox432.civitdeck.ui.feed.FeedViewModel
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
 import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserScreen
+import com.riox432.civitdeck.ui.qrcode.QRScannerScreen
 import com.riox432.civitdeck.ui.search.ModelSearchScreen
 import com.riox432.civitdeck.ui.settings.AdvancedSettingsScreen
 import com.riox432.civitdeck.ui.settings.AppearanceSettingsScreen
@@ -201,6 +208,12 @@ data class BatchTagEditorRoute(val datasetId: Long)
 
 data class DuplicateReviewRoute(val datasetId: Long)
 
+data object QRScannerRoute
+
+data object AnalyticsRoute
+
+data object FeedRoute
+
 internal enum class Tab(
     val label: String,
     val activeIcon: ImageVector,
@@ -208,6 +221,7 @@ internal enum class Tab(
 ) {
     Search("Search", Icons.Filled.Explore, Icons.Outlined.Explore),
     Collections("Saved", Icons.Filled.FolderCopy, Icons.Outlined.FolderCopy),
+    Feed("Feed", Icons.Filled.RssFeed, Icons.Outlined.RssFeed),
     Settings("Settings", Icons.Filled.Settings, Icons.Outlined.Settings),
 }
 
@@ -261,6 +275,7 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Search) {
         mapOf(
             Tab.Search.name to TabState(mutableStateListOf<Any>(SearchRoute)),
             Tab.Collections.name to TabState(mutableStateListOf<Any>(CollectionsRoute)),
+            Tab.Feed.name to TabState(mutableStateListOf<Any>(FeedRoute)),
             Tab.Settings.name to TabState(mutableStateListOf<Any>(SettingsRoute)),
         )
     }
@@ -278,6 +293,7 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Search) {
     val navItems = buildList {
         add(Tab.Search)
         add(Tab.Collections)
+        add(Tab.Feed)
         activeShortcuts.forEach { shortcut ->
             add(shortcut)
         }
@@ -416,6 +432,7 @@ private fun CivitDeckNavDisplay(
                     onCancelCompare = onCancelCompare,
                     onDiscoverClick = { backStack.add(DiscoveryRoute) },
                     onCompareModel = onCompareModel,
+                    onScanQRCode = { backStack.add(QRScannerRoute) },
                 )
             }
             collectionsEntry(backStack)
@@ -425,6 +442,9 @@ private fun CivitDeckNavDisplay(
             batchTagEditorEntry(backStack)
             duplicateReviewEntry(backStack)
             detailEntry(backStack)
+            qrScannerEntry(backStack)
+            analyticsEntry(backStack)
+            feedEntry(backStack)
             creatorEntry(backStack)
             galleryEntry(backStack)
             compareEntry(backStack)
@@ -440,6 +460,7 @@ private fun CivitDeckNavDisplay(
                     onNavigateToStorage = { backStack.add(StorageSettingsRoute) },
                     onNavigateToAdvanced = { backStack.add(AdvancedSettingsRoute) },
                     onNavigateToNavShortcuts = { backStack.add(NavShortcutsSettingsRoute) },
+                    onNavigateToAnalytics = { backStack.add(AnalyticsRoute) },
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
                     scrollToTopTrigger = settingsScrollTrigger,
                 )
@@ -619,6 +640,40 @@ private fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {
             } else {
                 null
             },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.qrScannerEntry(backStack: MutableList<Any>) {
+    entry<QRScannerRoute> {
+        QRScannerScreen(
+            onBack = { backStack.removeLastOrNull() },
+            onModelScanned = { modelId ->
+                backStack.removeLastOrNull()
+                backStack.add(DetailRoute(modelId))
+            },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.analyticsEntry(backStack: MutableList<Any>) {
+    entry<AnalyticsRoute> {
+        val viewModel: AnalyticsViewModel = koinViewModel()
+        AnalyticsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.feedEntry(backStack: MutableList<Any>) {
+    entry<FeedRoute> {
+        val viewModel: FeedViewModel = koinViewModel()
+        FeedScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onModelClick = { modelId -> backStack.add(DetailRoute(modelId)) },
+            onCreatorClick = { username -> backStack.add(CreatorRoute(username)) },
         )
     }
 }

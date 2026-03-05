@@ -16,6 +16,7 @@ struct ModelDetailScreen: View {
     @State private var showCollectionSheet = false
     @State private var showComfyUIGeneration = false
     @State private var showLinkSheet = false
+    @State private var showQRCodeSheet = false
 
     var body: some View {
         Group {
@@ -45,12 +46,25 @@ struct ModelDetailScreen: View {
         .task {
             await viewModel.observePowerUserMode()
         }
+        .task {
+            await viewModel.observeNote()
+        }
+        .task {
+            await viewModel.observePersonalTags()
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     showCollectionSheet = true
                 } label: {
                     Image(systemName: "folder.badge.plus")
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showQRCodeSheet = true
+                } label: {
+                    Image(systemName: "qrcode")
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -120,6 +134,14 @@ struct ModelDetailScreen: View {
                 CivitaiLinkSendSheet(model: model)
             }
         }
+        .sheet(isPresented: $showQRCodeSheet) {
+            if let model = viewModel.model {
+                QRCodeSheet(
+                    modelId: model.id,
+                    modelName: model.name
+                )
+            }
+        }
     }
 
     // MARK: - Content
@@ -140,6 +162,15 @@ struct ModelDetailScreen: View {
                     imageActionsRow(modelVersionId: version.id)
                 }
                 tagsSection(tags: model.tags)
+                ModelNotesSection(
+                    note: viewModel.note,
+                    onSave: { viewModel.saveNote($0) }
+                )
+                PersonalTagsSection(
+                    tags: viewModel.personalTags,
+                    onAdd: { viewModel.addTag($0) },
+                    onRemove: { viewModel.removeTag($0) }
+                )
                 descriptionSection(description: model.description_)
                 versionSelector(model: model)
                 versionDetail

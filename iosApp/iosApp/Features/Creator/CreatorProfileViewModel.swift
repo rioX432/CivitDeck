@@ -6,21 +6,30 @@ final class CreatorProfileViewModel: ObservableObject {
     @Published var models: [Model] = []
     @Published var isLoading: Bool = false
     @Published var isLoadingMore: Bool = false
+    @Published var isFollowing: Bool = false
     @Published var error: String?
     @Published var hasMore: Bool = true
 
     let username: String
 
     private let getCreatorModelsUseCase: GetCreatorModelsUseCase
+    private let isFollowingCreatorUseCase: IsFollowingCreatorUseCase
+    private let followCreatorUseCase: FollowCreatorUseCase
+    private let unfollowCreatorUseCase: UnfollowCreatorUseCase
     private var nextCursor: String?
     private var loadTask: Task<Void, Never>?
+    private var followObserveTask: Task<Void, Never>?
 
     private let pageSize: Int32 = 20
 
     init(username: String) {
         self.username = username
         self.getCreatorModelsUseCase = KoinHelper.shared.getCreatorModelsUseCase()
+        self.isFollowingCreatorUseCase = KoinHelper.shared.getIsFollowingCreatorUseCase()
+        self.followCreatorUseCase = KoinHelper.shared.getFollowCreatorUseCase()
+        self.unfollowCreatorUseCase = KoinHelper.shared.getUnfollowCreatorUseCase()
         loadModels()
+        observeFollowState()
     }
 
     func loadMore() {
@@ -34,6 +43,32 @@ final class CreatorProfileViewModel: ObservableObject {
         hasMore = true
         loadModels(isRefresh: true)
         await loadTask?.value
+    }
+
+    func toggleFollow() {
+        Task {
+            if isFollowing {
+                try? await unfollowCreatorUseCase.invoke(username: username)
+            } else {
+                let creator = models.first?.creator
+                try? await followCreatorUseCase.invoke(
+                    username: username,
+                    displayName: creator?.username ?? username,
+                    avatarUrl: creator?.image
+                )
+            }
+        }
+    }
+
+    private func observeFollowState() {
+        followObserveTask = Task {
+            for await following in isFollowingCreatorUseCase.invoke(username: username) {
+                guard !Task.isCancelled else { return }
+                if let boolValue = following as? Bool {
+                    self.isFollowing = boolValue
+                }
+            }
+        }
     }
 
     private func loadModels(isLoadMore: Bool = false, isRefresh: Bool = false) {

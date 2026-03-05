@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
@@ -104,6 +105,7 @@ import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
 import com.riox432.civitdeck.ui.navigation.LocalSharedTransitionScope
 import com.riox432.civitdeck.ui.navigation.SharedElementKeys
+import com.riox432.civitdeck.ui.qrcode.QRCodeSheet
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -113,6 +115,7 @@ import com.riox432.civitdeck.util.FormatUtils
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
+@Suppress("LongParameterList")
 fun ModelDetailScreen(
     viewModel: ModelDetailViewModel,
     modelId: Long,
@@ -135,6 +138,7 @@ fun ModelDetailScreen(
     val modelCollectionIds by viewModel.modelCollectionIds.collectAsStateWithLifecycle()
     var showCollectionSheet by remember { mutableStateOf(false) }
     var showSendToPCSheet by remember { mutableStateOf(false) }
+    var showQRCodeSheet by remember { mutableStateOf(false) }
     val haptic = rememberHapticFeedback()
 
     Scaffold(
@@ -147,6 +151,7 @@ fun ModelDetailScreen(
                     viewModel.onFavoriteToggle()
                 },
                 onAddToCollection = { showCollectionSheet = true },
+                onShowQRCode = { showQRCodeSheet = true },
             )
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -162,15 +167,48 @@ fun ModelDetailScreen(
             onCreatorClick = onCreatorClick,
             onTryInComfyUI = onTryInComfyUI,
             onSendToPC = { showSendToPCSheet = true },
+            onSaveNote = viewModel::saveNote,
+            onAddTag = viewModel::addTag,
+            onRemoveTag = viewModel::removeTag,
             contentPadding = padding,
         )
     }
 
+    ModelDetailSheets(
+        showSendToPCSheet = showSendToPCSheet,
+        onDismissSendToPC = { showSendToPCSheet = false },
+        uiState = uiState,
+        showCollectionSheet = showCollectionSheet,
+        onDismissCollection = { showCollectionSheet = false },
+        collections = collections,
+        modelCollectionIds = modelCollectionIds,
+        viewModel = viewModel,
+        showQRCodeSheet = showQRCodeSheet,
+        onDismissQRCode = { showQRCodeSheet = false },
+        modelId = modelId,
+    )
+}
+
+@Composable
+@Suppress("LongParameterList")
+private fun ModelDetailSheets(
+    showSendToPCSheet: Boolean,
+    onDismissSendToPC: () -> Unit,
+    uiState: ModelDetailUiState,
+    showCollectionSheet: Boolean,
+    onDismissCollection: () -> Unit,
+    collections: List<com.riox432.civitdeck.domain.model.ModelCollection>,
+    modelCollectionIds: List<Long>,
+    viewModel: ModelDetailViewModel,
+    showQRCodeSheet: Boolean,
+    onDismissQRCode: () -> Unit,
+    modelId: Long,
+) {
     if (showSendToPCSheet) {
         CivitaiLinkSendSheet(
             model = uiState.model,
             selectedVersionIndex = uiState.selectedVersionIndex,
-            onDismiss = { showSendToPCSheet = false },
+            onDismiss = onDismissSendToPC,
         )
     }
 
@@ -180,7 +218,15 @@ fun ModelDetailScreen(
             modelCollectionIds = modelCollectionIds,
             onToggleCollection = viewModel::toggleCollection,
             onCreateCollection = viewModel::createCollectionAndAdd,
-            onDismiss = { showCollectionSheet = false },
+            onDismiss = onDismissCollection,
+        )
+    }
+
+    if (showQRCodeSheet) {
+        QRCodeSheet(
+            modelId = modelId,
+            modelName = uiState.model?.name ?: "",
+            onDismiss = onDismissQRCode,
         )
     }
 }
@@ -192,6 +238,7 @@ private fun ModelDetailTopBar(
     onBack: () -> Unit,
     onFavoriteToggle: () -> Unit,
     onAddToCollection: () -> Unit,
+    onShowQRCode: () -> Unit,
 ) {
     val context = LocalContext.current
     TopAppBar(
@@ -211,6 +258,9 @@ private fun ModelDetailTopBar(
         actions = {
             IconButton(onClick = onAddToCollection) {
                 Icon(Icons.Default.CreateNewFolder, contentDescription = "Add to collection")
+            }
+            IconButton(onClick = onShowQRCode) {
+                Icon(Icons.Default.QrCode2, contentDescription = "Share QR code")
             }
             IconButton(
                 onClick = {
@@ -271,6 +321,9 @@ private fun ModelDetailBody(
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     onSendToPC: () -> Unit = {},
+    onSaveNote: (String) -> Unit = {},
+    onAddTag: (String) -> Unit = {},
+    onRemoveTag: (String) -> Unit = {},
     contentPadding: PaddingValues,
 ) {
     val model = uiState.model
@@ -303,6 +356,9 @@ private fun ModelDetailBody(
             onCreatorClick = onCreatorClick,
             onTryInComfyUI = onTryInComfyUI,
             onSendToPC = onSendToPC,
+            onSaveNote = onSaveNote,
+            onAddTag = onAddTag,
+            onRemoveTag = onRemoveTag,
             bottomPadding = contentPadding.calculateBottomPadding(),
             modifier = Modifier.weight(1f),
             carouselContent = {
@@ -425,6 +481,9 @@ private fun DetailStateContent(
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     onSendToPC: () -> Unit = {},
+    onSaveNote: (String) -> Unit = {},
+    onAddTag: (String) -> Unit = {},
+    onRemoveTag: (String) -> Unit = {},
     bottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
     carouselContent: @Composable () -> Unit = {},
@@ -465,6 +524,9 @@ private fun DetailStateContent(
                         onCreatorClick = onCreatorClick,
                         onTryInComfyUI = onTryInComfyUI,
                         onSendToPC = onSendToPC,
+                        onSaveNote = onSaveNote,
+                        onAddTag = onAddTag,
+                        onRemoveTag = onRemoveTag,
                         bottomPadding = bottomPadding,
                         carouselContent = carouselContent,
                     )
@@ -540,6 +602,9 @@ private fun ModelDetailContentBody(
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     onSendToPC: () -> Unit = {},
+    onSaveNote: (String) -> Unit = {},
+    onAddTag: (String) -> Unit = {},
+    onRemoveTag: (String) -> Unit = {},
     bottomPadding: androidx.compose.ui.unit.Dp,
     carouselContent: @Composable () -> Unit = {},
 ) {
@@ -572,6 +637,9 @@ private fun ModelDetailContentBody(
             onCreatorClick = onCreatorClick,
             onTryInComfyUI = onTryInComfyUI,
             onSendToPC = onSendToPC,
+            onSaveNote = onSaveNote,
+            onAddTag = onAddTag,
+            onRemoveTag = onRemoveTag,
             carouselContent = carouselContent,
         )
     }
@@ -589,6 +657,9 @@ private fun LazyListScope.modelDetailItems(
     onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     onSendToPC: () -> Unit = {},
+    onSaveNote: (String) -> Unit = {},
+    onAddTag: (String) -> Unit = {},
+    onRemoveTag: (String) -> Unit = {},
     carouselContent: @Composable () -> Unit,
 ) {
     item { carouselContent() }
@@ -618,6 +689,14 @@ private fun LazyListScope.modelDetailItems(
         )
     }
     if (model.tags.isNotEmpty()) { item { TagsSection(tags = model.tags) } }
+    item { ModelNotesSection(note = uiState.note, onSaveNote = onSaveNote) }
+    item {
+        PersonalTagsSection(
+            tags = uiState.personalTags,
+            onAddTag = onAddTag,
+            onRemoveTag = onRemoveTag,
+        )
+    }
     if (!model.description.isNullOrBlank()) {
         item { DescriptionSection(description = model.description!!) }
     }

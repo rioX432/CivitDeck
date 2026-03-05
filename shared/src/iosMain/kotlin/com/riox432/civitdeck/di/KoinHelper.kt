@@ -4,24 +4,34 @@ import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.usecase.AddImageToDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
+import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
 import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
 import com.riox432.civitdeck.domain.usecase.CreateDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.DetectDuplicatesUseCase
 import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ExportDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.FilterByResolutionUseCase
+import com.riox432.civitdeck.domain.usecase.FollowCreatorUseCase
+import com.riox432.civitdeck.domain.usecase.GetAllPersonalTagsUseCase
+import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
 import com.riox432.civitdeck.domain.usecase.GetCacheInfoUseCase
+import com.riox432.civitdeck.domain.usecase.GetCreatorFeedUseCase
+import com.riox432.civitdeck.domain.usecase.GetFollowedCreatorsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelLicenseUseCase
 import com.riox432.civitdeck.domain.usecase.GetNonTrainableImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
+import com.riox432.civitdeck.domain.usecase.GetUnreadFeedCountUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
+import com.riox432.civitdeck.domain.usecase.IsFollowingCreatorUseCase
+import com.riox432.civitdeck.domain.usecase.MarkFeedReadUseCase
 import com.riox432.civitdeck.domain.usecase.MarkImageExcludedUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
@@ -38,20 +48,25 @@ import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveLocalModelFilesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelDirectoriesUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNetworkStatusUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
+import com.riox432.civitdeck.domain.usecase.ObservePersonalTagsUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveImageFromDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelDirectoryUseCase
+import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.RenameDatasetCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
+import com.riox432.civitdeck.domain.usecase.SearchModelsByTagUseCase
 import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.SetAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
@@ -73,6 +88,7 @@ import com.riox432.civitdeck.domain.usecase.StoreImageDimensionsUseCase
 import com.riox432.civitdeck.domain.usecase.StorePHashUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.domain.usecase.UnfollowCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.UpdateTrainableUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
@@ -360,4 +376,26 @@ object KoinHelper {
     fun getTestExternalServerConnectionUseCase(): TestExternalServerConnectionUseCase = getKoin().get()
     fun getGetExternalServerCapabilitiesUseCase(): GetExternalServerCapabilitiesUseCase = getKoin().get()
     fun getGetExternalServerImagesUseCase(): GetExternalServerImagesUseCase = getKoin().get()
+
+    // Model notes & personal tags use cases
+    fun getObserveModelNoteUseCase(): ObserveModelNoteUseCase = getKoin().get()
+    fun getSaveModelNoteUseCase(): SaveModelNoteUseCase = getKoin().get()
+    fun getDeleteModelNoteUseCase(): DeleteModelNoteUseCase = getKoin().get()
+    fun getObservePersonalTagsUseCase(): ObservePersonalTagsUseCase = getKoin().get()
+    fun getAddPersonalTagUseCase(): AddPersonalTagUseCase = getKoin().get()
+    fun getRemovePersonalTagUseCase(): RemovePersonalTagUseCase = getKoin().get()
+    fun getGetAllPersonalTagsUseCase(): GetAllPersonalTagsUseCase = getKoin().get()
+    fun getSearchModelsByTagUseCase(): SearchModelsByTagUseCase = getKoin().get()
+
+    // Analytics use cases
+    fun getBrowsingStatsUseCase(): GetBrowsingStatsUseCase = getKoin().get()
+
+    // Creator follow use cases
+    fun getFollowCreatorUseCase(): FollowCreatorUseCase = getKoin().get()
+    fun getUnfollowCreatorUseCase(): UnfollowCreatorUseCase = getKoin().get()
+    fun getIsFollowingCreatorUseCase(): IsFollowingCreatorUseCase = getKoin().get()
+    fun getCreatorFeedUseCase(): GetCreatorFeedUseCase = getKoin().get()
+    fun getUnreadFeedCountUseCase(): GetUnreadFeedCountUseCase = getKoin().get()
+    fun getMarkFeedReadUseCase(): MarkFeedReadUseCase = getKoin().get()
+    fun getFollowedCreatorsUseCase(): GetFollowedCreatorsUseCase = getKoin().get()
 }

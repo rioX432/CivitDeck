@@ -10,5 +10,5 @@ import org.koin.dsl.module
 val creatorModule = module {
     single<CreatorRepository> { CreatorRepositoryImpl(get()) }
     factory { GetCreatorModelsUseCase(get()) }
-    viewModel { params -> CreatorProfileViewModel(params.get(), get()) }
+    viewModel { params -> CreatorProfileViewModel(params.get(), get(), get(), get(), get()) }
 }

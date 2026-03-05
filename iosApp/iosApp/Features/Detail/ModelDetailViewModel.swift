@@ -12,6 +12,8 @@ final class ModelDetailViewModel: ObservableObject {
     @Published var collections: [ModelCollection] = []
     @Published var modelCollectionIds: [Int64] = []
     @Published var powerUserMode: Bool = false
+    @Published var note: ModelNote?
+    @Published var personalTags: [PersonalTag] = []
 
     private let modelId: Int64
     private let getModelDetailUseCase: GetModelDetailUseCase
@@ -26,6 +28,12 @@ final class ModelDetailViewModel: ObservableObject {
     private let removeModelFromCollectionUseCase: RemoveModelFromCollectionUseCase
     private let createCollectionUseCase: CreateCollectionUseCase
     private let observePowerUserModeUseCase: ObservePowerUserModeUseCase
+    private let observeModelNoteUseCase: ObserveModelNoteUseCase
+    private let saveModelNoteUseCase: SaveModelNoteUseCase
+    private let deleteModelNoteUseCase: DeleteModelNoteUseCase
+    private let observePersonalTagsUseCase: ObservePersonalTagsUseCase
+    private let addPersonalTagUseCase: AddPersonalTagUseCase
+    private let removePersonalTagUseCase: RemovePersonalTagUseCase
     private var enrichedVersionIds: Set<Int64> = []
 
     var selectedVersion: ModelVersion? {
@@ -49,6 +57,12 @@ final class ModelDetailViewModel: ObservableObject {
         self.removeModelFromCollectionUseCase = KoinHelper.shared.getRemoveModelFromCollectionUseCase()
         self.createCollectionUseCase = KoinHelper.shared.getCreateCollectionUseCase()
         self.observePowerUserModeUseCase = KoinHelper.shared.getObservePowerUserModeUseCase()
+        self.observeModelNoteUseCase = KoinHelper.shared.getObserveModelNoteUseCase()
+        self.saveModelNoteUseCase = KoinHelper.shared.getSaveModelNoteUseCase()
+        self.deleteModelNoteUseCase = KoinHelper.shared.getDeleteModelNoteUseCase()
+        self.observePersonalTagsUseCase = KoinHelper.shared.getObservePersonalTagsUseCase()
+        self.addPersonalTagUseCase = KoinHelper.shared.getAddPersonalTagUseCase()
+        self.removePersonalTagUseCase = KoinHelper.shared.getRemovePersonalTagUseCase()
         loadModel()
     }
 
@@ -72,10 +86,46 @@ final class ModelDetailViewModel: ObservableObject {
         }
     }
 
+    func observeNote() async {
+        for await value in observeModelNoteUseCase.invoke(modelId: modelId) {
+            note = value
+        }
+    }
+
+    func observePersonalTags() async {
+        for await list in observePersonalTagsUseCase.invoke(modelId: modelId) {
+            personalTags = list.compactMap { $0 as? PersonalTag }
+        }
+    }
+
     func onFavoriteToggle() {
         guard let model else { return }
         Task {
             try? await toggleFavoriteUseCase.invoke(model: model)
+        }
+    }
+
+    func saveNote(_ text: String) {
+        Task {
+            if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                try? await deleteModelNoteUseCase.invoke(modelId: modelId)
+            } else {
+                try? await saveModelNoteUseCase.invoke(modelId: modelId, noteText: text)
+            }
+        }
+    }
+
+    func addTag(_ tag: String) {
+        let trimmed = tag.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !trimmed.isEmpty else { return }
+        Task {
+            try? await addPersonalTagUseCase.invoke(modelId: modelId, tag: trimmed)
+        }
+    }
+
+    func removeTag(_ tag: String) {
+        Task {
+            try? await removePersonalTagUseCase.invoke(modelId: modelId, tag: tag)
         }
     }
 

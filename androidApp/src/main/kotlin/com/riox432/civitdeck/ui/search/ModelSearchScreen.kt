@@ -48,6 +48,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Style
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.FilterList
@@ -165,6 +166,7 @@ fun ModelSearchScreen(
     onCancelCompare: () -> Unit = {},
     onDiscoverClick: () -> Unit = {},
     onCompareModel: (Long, String) -> Unit = { _, _ -> },
+    onScanQRCode: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
@@ -204,6 +206,7 @@ fun ModelSearchScreen(
         favoriteIds = favoriteIds,
         onToggleFavorite = viewModel::toggleFavorite,
         onCompareModel = onCompareModel,
+        onScanQRCode = onScanQRCode,
     )
 }
 
@@ -255,6 +258,7 @@ private fun SearchScreenBody(
     favoriteIds: Set<Long> = emptySet(),
     onToggleFavorite: (Model) -> Unit = {},
     onCompareModel: (Long, String) -> Unit = { _, _ -> },
+    onScanQRCode: () -> Unit = {},
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
@@ -309,12 +313,20 @@ private fun SearchScreenBody(
             viewModel = viewModel,
         )
 
+        QRScannerFab(
+            visible = isFabVisible,
+            onClick = onScanQRCode,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = QR_FAB_BOTTOM_PADDING, end = Spacing.lg),
+        )
+
         DiscoverFab(
             visible = isFabVisible,
             onClick = onDiscoverClick,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom = 80.dp, end = Spacing.lg),
+                .padding(bottom = DISCOVER_FAB_BOTTOM_PADDING, end = Spacing.lg),
         )
 
         FilterFab(
@@ -535,6 +547,36 @@ private fun DiscoverFab(
             Icon(
                 Icons.Filled.Style,
                 contentDescription = "Discover",
+            )
+        }
+    }
+}
+
+@Composable
+private fun QRScannerFab(
+    visible: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = slideInVertically(
+            initialOffsetY = { it },
+            animationSpec = tween(Duration.fast, easing = Easing.standard),
+        ) + fadeIn(animationSpec = tween(Duration.fast, easing = Easing.standard)),
+        exit = slideOutVertically(
+            targetOffsetY = { it },
+            animationSpec = tween(Duration.fast, easing = Easing.standard),
+        ) + fadeOut(animationSpec = tween(Duration.fast, easing = Easing.standard)),
+    ) {
+        SmallFloatingActionButton(
+            onClick = onClick,
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        ) {
+            Icon(
+                Icons.Filled.QrCodeScanner,
+                contentDescription = "Scan QR code",
             )
         }
     }
@@ -1417,3 +1459,6 @@ private fun Model.isOwnedBy(ownedHashes: Set<String>): Boolean =
             file.hashes["SHA256"]?.lowercase() in ownedHashes
         }
     }
+
+private val DISCOVER_FAB_BOTTOM_PADDING = 80.dp
+private val QR_FAB_BOTTOM_PADDING = 136.dp

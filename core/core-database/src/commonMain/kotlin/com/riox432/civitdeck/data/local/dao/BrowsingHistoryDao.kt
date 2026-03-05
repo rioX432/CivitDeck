@@ -6,6 +6,10 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
 
+data class DayCount(val day: Long, val cnt: Int)
+
+data class NameCount(val name: String, val cnt: Int)
+
 @Dao
 interface BrowsingHistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -25,4 +29,24 @@ interface BrowsingHistoryDao {
 
     @Query("DELETE FROM browsing_history")
     suspend fun deleteAll()
+
+    @Query(
+        "SELECT (viewedAt / 86400000) * 86400000 AS day, COUNT(*) AS cnt " +
+            "FROM browsing_history WHERE viewedAt >= :sinceMillis " +
+            "GROUP BY day ORDER BY day ASC",
+    )
+    suspend fun getDailyViewCounts(sinceMillis: Long): List<DayCount>
+
+    @Query(
+        "SELECT modelType AS name, COUNT(*) AS cnt " +
+            "FROM browsing_history GROUP BY modelType ORDER BY cnt DESC LIMIT :limit",
+    )
+    suspend fun getTopModelTypes(limit: Int = 10): List<NameCount>
+
+    @Query(
+        "SELECT creatorName AS name, COUNT(*) AS cnt " +
+            "FROM browsing_history WHERE creatorName IS NOT NULL " +
+            "GROUP BY creatorName ORDER BY cnt DESC LIMIT :limit",
+    )
+    suspend fun getTopCreators(limit: Int = 10): List<NameCount>
 }
