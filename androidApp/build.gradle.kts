@@ -10,8 +10,8 @@ android {
 
     defaultConfig {
         applicationId = "com.riox432.civitdeck"
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.2.0"
     }
 
     buildFeatures {
