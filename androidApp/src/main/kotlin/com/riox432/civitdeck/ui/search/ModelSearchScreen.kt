@@ -759,7 +759,10 @@ private fun SearchHistoryDropdown(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onItemClick(item) }
+                    .clickable(
+                        onClick = { onItemClick(item) },
+                        onClickLabel = "Select search suggestion",
+                    )
                     .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -782,7 +785,7 @@ private fun SearchHistoryDropdown(
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
-                .clickable(onClick = onClearAll)
+                .clickable(onClick = onClearAll, onClickLabel = "Clear all filters")
                 .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
         )
     }
@@ -1033,7 +1036,7 @@ private fun TagChip(
         Icon(
             imageVector = Icons.Default.Close,
             contentDescription = "Remove $tag",
-            modifier = Modifier.size(14.dp).clickable(onClick = onRemove),
+            modifier = Modifier.size(14.dp).clickable(onClick = onRemove, onClickLabel = "Remove tag"),
             tint = foreground,
         )
     }
@@ -1092,10 +1095,13 @@ private fun FilterChipItem(
             .defaultMinSize(minHeight = 40.dp)
             .clip(RoundedCornerShape(CornerRadius.chip))
             .background(backgroundColor)
-            .clickable {
-                haptic(HapticFeedbackType.Selection)
-                onClick()
-            }
+            .clickable(
+                onClickLabel = "Toggle filter",
+                onClick = {
+                    haptic(HapticFeedbackType.Selection)
+                    onClick()
+                },
+            )
             .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.xs),

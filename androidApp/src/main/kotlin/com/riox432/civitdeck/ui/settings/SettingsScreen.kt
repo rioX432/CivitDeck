@@ -139,7 +139,7 @@ internal fun SubScreenRow(label: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(onClick = onClick, onClickLabel = "Open setting")
             .padding(horizontal = Spacing.lg, vertical = Spacing.md),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -227,7 +227,7 @@ internal fun AccentColorSwatch(
                     Modifier
                 },
             )
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick, onClickLabel = "Select color theme"),
         contentAlignment = Alignment.Center,
     ) {
         if (isSelected) {
@@ -756,7 +756,7 @@ internal fun SettingsClickRow(label: String, detail: String? = null, onClick: ()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(onClick = onClick, onClickLabel = "Open setting")
             .padding(horizontal = Spacing.lg, vertical = Spacing.md),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -888,7 +888,7 @@ internal fun NavigationRow(label: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(onClick = onClick, onClickLabel = "Open setting")
             .padding(horizontal = Spacing.lg, vertical = Spacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {

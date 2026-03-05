@@ -200,7 +200,7 @@ private fun ConnectionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onActivate),
+            .clickable(onClick = onActivate, onClickLabel = "Select connection"),
         shape = RoundedCornerShape(12.dp),
     ) {
         Row(

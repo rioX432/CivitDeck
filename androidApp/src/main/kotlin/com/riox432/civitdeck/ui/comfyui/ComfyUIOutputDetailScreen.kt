@@ -169,7 +169,7 @@ private fun DetailBody(
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(onClick = onImageClick),
+                    .clickable(onClick = onImageClick, onClickLabel = "View image details"),
             )
             Spacer(modifier = Modifier.height(Spacing.md))
         }

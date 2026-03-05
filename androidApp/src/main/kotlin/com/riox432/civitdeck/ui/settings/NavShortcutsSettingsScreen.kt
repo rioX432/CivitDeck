@@ -84,7 +84,7 @@ private fun NavShortcutRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = !isDisabled, onClick = onToggle)
+            .clickable(enabled = !isDisabled, onClick = onToggle, onClickLabel = "Toggle shortcut")
             .padding(horizontal = Spacing.lg, vertical = Spacing.md)
             .alpha(if (isDisabled) 0.4f else 1f),
         horizontalArrangement = Arrangement.SpaceBetween,
