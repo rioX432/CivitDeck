@@ -41,10 +41,10 @@ import com.riox432.civitdeck.data.local.entity.ExternalServerConfigEntity
 import com.riox432.civitdeck.data.local.entity.FeedCacheEntity
 import com.riox432.civitdeck.data.local.entity.FollowedCreatorEntity
 import com.riox432.civitdeck.data.local.entity.HiddenModelEntity
-import com.riox432.civitdeck.data.local.entity.ModelNoteEntity
 import com.riox432.civitdeck.data.local.entity.ImageTagEntity
 import com.riox432.civitdeck.data.local.entity.LocalModelFileEntity
 import com.riox432.civitdeck.data.local.entity.ModelDirectoryEntity
+import com.riox432.civitdeck.data.local.entity.ModelNoteEntity
 import com.riox432.civitdeck.data.local.entity.ModelVersionCheckpointEntity
 import com.riox432.civitdeck.data.local.entity.PersonalTagEntity
 import com.riox432.civitdeck.data.local.entity.SDWebUIConnectionEntity

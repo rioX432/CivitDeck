@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.data.local.repository
 
+import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.ModelNoteDao
 import com.riox432.civitdeck.data.local.dao.PersonalTagDao
 import com.riox432.civitdeck.data.local.entity.ModelNoteEntity
@@ -9,7 +10,6 @@ import com.riox432.civitdeck.domain.model.PersonalTag
 import com.riox432.civitdeck.domain.repository.ModelNoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import com.riox432.civitdeck.data.local.currentTimeMillis
 
 class ModelNoteRepositoryImpl(
     private val noteDao: ModelNoteDao,
