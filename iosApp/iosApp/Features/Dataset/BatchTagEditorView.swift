@@ -148,8 +148,8 @@ struct BatchTagEditorView: View {
             if count > 0 {
                 Text("\(count)")
                     .font(.system(size: 9, weight: .bold))
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 2)
+                    .padding(.horizontal, Spacing.xs)
+                    .padding(.vertical, Spacing.xxs)
                     .background(Color.civitSecondary.opacity(0.85))
                     .foregroundColor(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 4))

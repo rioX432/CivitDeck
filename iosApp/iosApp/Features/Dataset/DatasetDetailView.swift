@@ -272,8 +272,8 @@ private struct SourceBadgeMiniView: View {
     var body: some View {
         Text(label)
             .font(.system(size: 9, weight: .bold))
-            .padding(.horizontal, 4)
-            .padding(.vertical, 2)
+            .padding(.horizontal, Spacing.xs)
+            .padding(.vertical, Spacing.xxs)
             .background(badgeColor.opacity(0.85))
             .foregroundColor(.white)
             .clipShape(RoundedRectangle(cornerRadius: 4))

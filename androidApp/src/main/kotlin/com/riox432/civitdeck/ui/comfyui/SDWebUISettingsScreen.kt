@@ -178,7 +178,7 @@ private fun SDWebUIConnectionCard(
     onDelete: () -> Unit,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onActivate),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onActivate, onClickLabel = "Select connection"),
         shape = RoundedCornerShape(12.dp),
     ) {
         Row(

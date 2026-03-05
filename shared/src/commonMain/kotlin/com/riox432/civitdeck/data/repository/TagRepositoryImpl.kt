@@ -7,11 +7,16 @@ import com.riox432.civitdeck.domain.model.PageMetadata
 import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.Tag
 import com.riox432.civitdeck.domain.repository.TagRepository
+import com.riox432.civitdeck.util.Logger
 import kotlinx.serialization.SerializationException
 
 class TagRepositoryImpl(
     private val api: CivitAiApi,
 ) : TagRepository {
+
+    private companion object {
+        const val TAG = "TagRepositoryImpl"
+    }
 
     override suspend fun getTags(
         query: String?,
@@ -29,10 +34,10 @@ class TagRepositoryImpl(
                 metadata = response.metadata.toDomain(),
             )
         } catch (@Suppress("SwallowedException") e: DataParseException) {
-            println("TagRepositoryImpl: Parse error fetching tags, returning empty: ${e.message}")
+            Logger.w(TAG, "Parse error fetching tags, returning empty: ${e.message}")
             PaginatedResult(items = emptyList(), metadata = PageMetadata(null, null))
         } catch (@Suppress("SwallowedException") e: SerializationException) {
-            println("TagRepositoryImpl: Serialization error fetching tags, returning empty: ${e.message}")
+            Logger.w(TAG, "Serialization error fetching tags, returning empty: ${e.message}")
             PaginatedResult(items = emptyList(), metadata = PageMetadata(null, null))
         }
     }

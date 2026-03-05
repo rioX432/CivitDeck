@@ -38,6 +38,7 @@ struct ModelNotesSection: View {
                     isEditing = true
                 } label: {
                     Image(systemName: note != nil ? "pencil" : "plus")
+                        .accessibilityLabel(note != nil ? "Edit note" : "Add note")
                         .font(.caption)
                 }
             }
@@ -120,6 +121,7 @@ struct PersonalTagsSection: View {
                 showAddField.toggle()
             } label: {
                 Image(systemName: "plus")
+                    .accessibilityLabel("Add tag")
                     .font(.caption)
             }
         }
@@ -146,7 +148,8 @@ struct PersonalTagsSection: View {
                 onRemove(tag)
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 10, weight: .semibold))
+                    .accessibilityLabel("Remove tag")
+                    .font(.civitLabelXSmallSemibold)
             }
         }
         .padding(.horizontal, Spacing.smPlus)

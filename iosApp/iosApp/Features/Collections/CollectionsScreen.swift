@@ -44,6 +44,7 @@ struct CollectionsScreen: View {
                             showCreateSheet = true
                         } label: {
                             Image(systemName: "plus")
+                                .accessibilityLabel("Create collection")
                         }
                     }
                 }
@@ -160,6 +161,7 @@ private struct CollectionRow: View {
             }
             Spacer()
             Image(systemName: "chevron.right")
+                .accessibilityHidden(true)
                 .foregroundColor(.civitOnSurfaceVariant)
                 .font(.caption)
         }

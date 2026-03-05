@@ -58,6 +58,7 @@ struct ModelDetailScreen: View {
                     showCollectionSheet = true
                 } label: {
                     Image(systemName: "folder.badge.plus")
+                        .accessibilityLabel("Add to collection")
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -65,6 +66,7 @@ struct ModelDetailScreen: View {
                     showQRCodeSheet = true
                 } label: {
                     Image(systemName: "qrcode")
+                        .accessibilityLabel("QR code")
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -72,6 +74,7 @@ struct ModelDetailScreen: View {
                    let url = URL(string: "https://civitai.com/models/\(model.id)") {
                     ShareLink(item: url) {
                         Image(systemName: "square.and.arrow.up")
+                            .accessibilityLabel("Share")
                     }
                 }
             }
@@ -81,6 +84,7 @@ struct ModelDetailScreen: View {
                     viewModel.onFavoriteToggle()
                 } label: {
                     Image(systemName: viewModel.isFavorite ? "heart.fill" : "heart")
+                        .accessibilityLabel(viewModel.isFavorite ? "Remove from favorites" : "Add to favorites")
                         .foregroundColor(viewModel.isFavorite ? .civitError : .civitOnSurface)
                 }
             }

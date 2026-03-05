@@ -67,7 +67,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -106,6 +105,7 @@ import com.riox432.civitdeck.ui.gallery.ViewerImage
 import com.riox432.civitdeck.ui.navigation.LocalSharedTransitionScope
 import com.riox432.civitdeck.ui.navigation.SharedElementKeys
 import com.riox432.civitdeck.ui.qrcode.QRCodeSheet
+import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -412,7 +412,7 @@ private fun CarouselWithGridButton(
                     .align(Alignment.BottomEnd)
                     .padding(Spacing.sm)
                     .clip(RoundedCornerShape(CornerRadius.chip))
-                    .background(Color.Black.copy(alpha = 0.55f))
+                    .background(CivitDeckColors.scrim.copy(alpha = 0.55f))
                     .clickable(onClick = onShowGrid)
                     .padding(horizontal = Spacing.sm, vertical = Spacing.xs),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -420,13 +420,13 @@ private fun CarouselWithGridButton(
                 Icon(
                     imageVector = Icons.Default.GridView,
                     contentDescription = "View all images",
-                    tint = Color.White,
+                    tint = CivitDeckColors.onScrim,
                     modifier = Modifier.size(16.dp),
                 )
                 Text(
                     text = "${pagerState.currentPage + 1}/${images.size}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.White,
+                    color = CivitDeckColors.onScrim,
                 )
             }
         }

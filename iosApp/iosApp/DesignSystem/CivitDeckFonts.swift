@@ -30,4 +30,7 @@ extension Font {
 
     // labelXSmall: 10pt Bold — tiny tag remove icons
     static let civitLabelXSmall = Font.system(size: 10, weight: .bold)
+
+    // labelXSmallSemibold: 10pt Semibold — tag action icons
+    static let civitLabelXSmallSemibold = Font.system(size: 10, weight: .semibold)
 }

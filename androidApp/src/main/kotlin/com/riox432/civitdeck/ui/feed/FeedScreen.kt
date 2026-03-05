@@ -157,7 +157,7 @@ private fun FeedItemCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onModelClick),
+            .clickable(onClick = onModelClick, onClickLabel = "View model details"),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
@@ -197,7 +197,7 @@ private fun FeedItemMeta(
             text = item.creatorUsername,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.clickable(onClick = onCreatorClick),
+            modifier = Modifier.clickable(onClick = onCreatorClick, onClickLabel = "View creator profile"),
         )
         Spacer(modifier = Modifier.width(Spacing.sm))
         Text(
@@ -207,6 +207,7 @@ private fun FeedItemMeta(
         )
         if (item.isUnread) {
             Spacer(modifier = Modifier.width(Spacing.xs))
+            val unreadColor = MaterialTheme.colorScheme.primary
             Box(
                 modifier = Modifier
                     .size(8.dp)
@@ -220,7 +221,7 @@ private fun FeedItemMeta(
                 ) {
                     // Unread dot
                     androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
-                        drawCircle(color = androidx.compose.ui.graphics.Color(0xFF2196F3))
+                        drawCircle(color = unreadColor)
                     }
                 }
             }

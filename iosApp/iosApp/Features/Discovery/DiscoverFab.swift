@@ -8,6 +8,7 @@ struct DiscoverFab: View {
     var body: some View {
         NavigationLink(value: DiscoveryDestination()) {
             Image(systemName: "rectangle.stack")
+                .accessibilityLabel("Discover")
                 .font(.body)
                 .foregroundColor(.civitPrimary)
                 .frame(width: 44, height: 44)

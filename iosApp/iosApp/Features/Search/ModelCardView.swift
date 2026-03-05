@@ -25,8 +25,8 @@ struct ModelCardView: View {
 
                 Text(model.type.name)
                     .font(.civitLabelSmall)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
+                    .padding(.horizontal, Spacing.xsPlus)
+                    .padding(.vertical, Spacing.xxs)
                     .background(Color.civitSurfaceVariant)
                     .clipShape(Capsule())
 

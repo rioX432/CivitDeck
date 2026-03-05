@@ -39,7 +39,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,6 +48,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,9 +85,9 @@ fun QRScannerScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Black.copy(alpha = OVERLAY_ALPHA),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
+                    containerColor = CivitDeckColors.scrim.copy(alpha = OVERLAY_ALPHA),
+                    titleContentColor = CivitDeckColors.onScrim,
+                    navigationIconContentColor = CivitDeckColors.onScrim,
                 ),
             )
         },
@@ -202,7 +202,7 @@ private fun ScannerOverlay() {
                     .size(VIEWFINDER_SIZE)
                     .border(
                         width = 2.dp,
-                        color = Color.White.copy(alpha = BORDER_ALPHA),
+                        color = CivitDeckColors.onScrim.copy(alpha = BORDER_ALPHA),
                         shape = RoundedCornerShape(Spacing.md),
                     ),
             )
@@ -210,10 +210,10 @@ private fun ScannerOverlay() {
             Text(
                 text = "Point at a CivitAI model QR code",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.White,
+                color = CivitDeckColors.onScrim,
                 modifier = Modifier
                     .background(
-                        Color.Black.copy(alpha = OVERLAY_ALPHA),
+                        CivitDeckColors.scrim.copy(alpha = OVERLAY_ALPHA),
                         RoundedCornerShape(Spacing.sm),
                     )
                     .padding(horizontal = Spacing.md, vertical = Spacing.sm),
