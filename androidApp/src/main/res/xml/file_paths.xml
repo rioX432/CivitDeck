@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
     <cache-path name="dataset_exports" path="dataset_exports/" />
+    <cache-path name="qr_codes" path="qr_codes/" />
 </paths>

@@ -97,6 +97,7 @@ import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsScreen
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
 import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserScreen
+import com.riox432.civitdeck.ui.qrcode.QRScannerScreen
 import com.riox432.civitdeck.ui.search.ModelSearchScreen
 import com.riox432.civitdeck.ui.settings.AdvancedSettingsScreen
 import com.riox432.civitdeck.ui.settings.AppearanceSettingsScreen
@@ -200,6 +201,8 @@ data class DatasetDetailRoute(val datasetId: Long, val datasetName: String)
 data class BatchTagEditorRoute(val datasetId: Long)
 
 data class DuplicateReviewRoute(val datasetId: Long)
+
+data object QRScannerRoute
 
 internal enum class Tab(
     val label: String,
@@ -416,6 +419,7 @@ private fun CivitDeckNavDisplay(
                     onCancelCompare = onCancelCompare,
                     onDiscoverClick = { backStack.add(DiscoveryRoute) },
                     onCompareModel = onCompareModel,
+                    onScanQRCode = { backStack.add(QRScannerRoute) },
                 )
             }
             collectionsEntry(backStack)
@@ -425,6 +429,7 @@ private fun CivitDeckNavDisplay(
             batchTagEditorEntry(backStack)
             duplicateReviewEntry(backStack)
             detailEntry(backStack)
+            qrScannerEntry(backStack)
             creatorEntry(backStack)
             galleryEntry(backStack)
             compareEntry(backStack)
@@ -618,6 +623,18 @@ private fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {
                 }
             } else {
                 null
+            },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.qrScannerEntry(backStack: MutableList<Any>) {
+    entry<QRScannerRoute> {
+        QRScannerScreen(
+            onBack = { backStack.removeLastOrNull() },
+            onModelScanned = { modelId ->
+                backStack.removeLastOrNull()
+                backStack.add(DetailRoute(modelId))
             },
         )
     }

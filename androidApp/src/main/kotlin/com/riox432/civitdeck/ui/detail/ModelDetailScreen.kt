@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
@@ -104,6 +105,7 @@ import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
 import com.riox432.civitdeck.ui.navigation.LocalSharedTransitionScope
 import com.riox432.civitdeck.ui.navigation.SharedElementKeys
+import com.riox432.civitdeck.ui.qrcode.QRCodeSheet
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -136,6 +138,7 @@ fun ModelDetailScreen(
     val modelCollectionIds by viewModel.modelCollectionIds.collectAsStateWithLifecycle()
     var showCollectionSheet by remember { mutableStateOf(false) }
     var showSendToPCSheet by remember { mutableStateOf(false) }
+    var showQRCodeSheet by remember { mutableStateOf(false) }
     val haptic = rememberHapticFeedback()
 
     Scaffold(
@@ -148,6 +151,7 @@ fun ModelDetailScreen(
                     viewModel.onFavoriteToggle()
                 },
                 onAddToCollection = { showCollectionSheet = true },
+                onShowQRCode = { showQRCodeSheet = true },
             )
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -170,11 +174,41 @@ fun ModelDetailScreen(
         )
     }
 
+    ModelDetailSheets(
+        showSendToPCSheet = showSendToPCSheet,
+        onDismissSendToPC = { showSendToPCSheet = false },
+        uiState = uiState,
+        showCollectionSheet = showCollectionSheet,
+        onDismissCollection = { showCollectionSheet = false },
+        collections = collections,
+        modelCollectionIds = modelCollectionIds,
+        viewModel = viewModel,
+        showQRCodeSheet = showQRCodeSheet,
+        onDismissQRCode = { showQRCodeSheet = false },
+        modelId = modelId,
+    )
+}
+
+@Composable
+@Suppress("LongParameterList")
+private fun ModelDetailSheets(
+    showSendToPCSheet: Boolean,
+    onDismissSendToPC: () -> Unit,
+    uiState: ModelDetailUiState,
+    showCollectionSheet: Boolean,
+    onDismissCollection: () -> Unit,
+    collections: List<com.riox432.civitdeck.domain.model.ModelCollection>,
+    modelCollectionIds: List<Long>,
+    viewModel: ModelDetailViewModel,
+    showQRCodeSheet: Boolean,
+    onDismissQRCode: () -> Unit,
+    modelId: Long,
+) {
     if (showSendToPCSheet) {
         CivitaiLinkSendSheet(
             model = uiState.model,
             selectedVersionIndex = uiState.selectedVersionIndex,
-            onDismiss = { showSendToPCSheet = false },
+            onDismiss = onDismissSendToPC,
         )
     }
 
@@ -184,7 +218,15 @@ fun ModelDetailScreen(
             modelCollectionIds = modelCollectionIds,
             onToggleCollection = viewModel::toggleCollection,
             onCreateCollection = viewModel::createCollectionAndAdd,
-            onDismiss = { showCollectionSheet = false },
+            onDismiss = onDismissCollection,
+        )
+    }
+
+    if (showQRCodeSheet) {
+        QRCodeSheet(
+            modelId = modelId,
+            modelName = uiState.model?.name ?: "",
+            onDismiss = onDismissQRCode,
         )
     }
 }
@@ -196,6 +238,7 @@ private fun ModelDetailTopBar(
     onBack: () -> Unit,
     onFavoriteToggle: () -> Unit,
     onAddToCollection: () -> Unit,
+    onShowQRCode: () -> Unit,
 ) {
     val context = LocalContext.current
     TopAppBar(
@@ -215,6 +258,9 @@ private fun ModelDetailTopBar(
         actions = {
             IconButton(onClick = onAddToCollection) {
                 Icon(Icons.Default.CreateNewFolder, contentDescription = "Add to collection")
+            }
+            IconButton(onClick = onShowQRCode) {
+                Icon(Icons.Default.QrCode2, contentDescription = "Share QR code")
             }
             IconButton(
                 onClick = {

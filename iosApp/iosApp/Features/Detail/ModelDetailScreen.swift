@@ -16,6 +16,7 @@ struct ModelDetailScreen: View {
     @State private var showCollectionSheet = false
     @State private var showComfyUIGeneration = false
     @State private var showLinkSheet = false
+    @State private var showQRCodeSheet = false
 
     var body: some View {
         Group {
@@ -57,6 +58,13 @@ struct ModelDetailScreen: View {
                     showCollectionSheet = true
                 } label: {
                     Image(systemName: "folder.badge.plus")
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showQRCodeSheet = true
+                } label: {
+                    Image(systemName: "qrcode")
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -124,6 +132,14 @@ struct ModelDetailScreen: View {
         .sheet(isPresented: $showLinkSheet) {
             if let model = viewModel.model {
                 CivitaiLinkSendSheet(model: model)
+            }
+        }
+        .sheet(isPresented: $showQRCodeSheet) {
+            if let model = viewModel.model {
+                QRCodeSheet(
+                    modelId: model.id,
+                    modelName: model.name
+                )
             }
         }
     }

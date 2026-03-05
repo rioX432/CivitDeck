@@ -23,6 +23,14 @@ skie = "0.10.9"
 aboutlibraries = "12.1.2"
 
 [libraries]
+# QR Code
+zxing-core = { module = "com.google.zxing:core", version = "3.5.3" }
+mlkit-barcode = { module = "com.google.mlkit:barcode-scanning", version = "17.3.0" }
+androidx-camera-core = { module = "androidx.camera:camera-core", version = "1.4.2" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version = "1.4.2" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version = "1.4.2" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version = "1.4.2" }
+
 # Ktor
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }

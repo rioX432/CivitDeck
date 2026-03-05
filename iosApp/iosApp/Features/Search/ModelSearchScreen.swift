@@ -36,7 +36,6 @@ struct ModelSearchScreen: View {
             ZStack(alignment: .bottom) {
                 VStack(spacing: 0) {
                     collapsibleHeader
-
                     ZStack {
                         if viewModel.isLoading && viewModel.models.isEmpty {
                             LoadingStateView()
@@ -59,12 +58,14 @@ struct ModelSearchScreen: View {
                     .frame(maxHeight: .infinity)
                 }
                 .clipped()
-
                 HStack {
                     Spacer()
-                    VStack(spacing: Spacing.sm) { DiscoverFab(visible: headerVisible); filterFab }
+                    VStack(spacing: Spacing.sm) {
+                        QRScannerFab(visible: headerVisible)
+                        DiscoverFab(visible: headerVisible)
+                        filterFab
+                    }
                 }
-
                 if comparisonState.isActive {
                     ComparisonBottomBar(
                         modelName: comparisonState.selectedModelName ?? "",
@@ -89,13 +90,13 @@ struct ModelSearchScreen: View {
                 CreatorProfileScreen(username: username)
             }
             .navigationDestination(for: CompareDestination.self) { dest in
-                ModelCompareScreen(
-                    leftModelId: dest.leftModelId,
-                    rightModelId: dest.rightModelId
-                )
+                ModelCompareScreen(leftModelId: dest.leftModelId, rightModelId: dest.rightModelId)
             }
             .navigationDestination(for: DiscoveryDestination.self) { _ in
                 SwipeDiscoveryView(onModelDetail: { modelId in navigationPath.append(modelId) })
+            }
+            .navigationDestination(for: QRScannerDestination.self) { _ in
+                QRScannerView { navigationPath.removeLast(); navigationPath.append($0) }
             }
             .task { await viewModel.observeSearchHistory() }
             .task { await viewModel.observeGridColumns() }
