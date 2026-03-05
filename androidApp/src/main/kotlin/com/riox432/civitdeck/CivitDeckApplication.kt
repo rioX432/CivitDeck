@@ -150,7 +150,7 @@ val androidModule = module {
     viewModel { ExternalServerSettingsViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { ExternalServerGalleryViewModel(get()) }
     viewModel { DatasetListViewModel(get(), get(), get(), get()) }
-    viewModel { params -> DatasetDetailViewModel(params.get(), get(), get(), get(), get(), get()) }
+    viewModel { params -> DatasetDetailViewModel(params.get(), get(), get(), get(), get(), get(), get()) }
     viewModel { params -> BatchTagEditorViewModel(params.get(), get(), get(), get()) }
     viewModel { params -> DuplicateReviewViewModel(params.get(), get(), get()) }
 }

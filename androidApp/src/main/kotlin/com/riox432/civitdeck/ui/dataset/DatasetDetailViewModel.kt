@@ -3,9 +3,11 @@ package com.riox432.civitdeck.ui.dataset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.DatasetImage
+import com.riox432.civitdeck.domain.model.ExportProgress
 import com.riox432.civitdeck.domain.model.ImageSource
 import com.riox432.civitdeck.domain.usecase.DetectDuplicatesUseCase
 import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
+import com.riox432.civitdeck.domain.usecase.ExportDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveImageFromDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.UpdateTrainableUseCase
@@ -25,6 +27,7 @@ class DatasetDetailViewModel(
     private val editCaptionUseCase: EditCaptionUseCase,
     private val updateTrainableUseCase: UpdateTrainableUseCase,
     detectDuplicatesUseCase: DetectDuplicatesUseCase,
+    private val exportDatasetUseCase: ExportDatasetUseCase,
 ) : ViewModel() {
 
     val images: StateFlow<List<DatasetImage>> =
@@ -61,6 +64,23 @@ class DatasetDetailViewModel(
         detectDuplicatesUseCase(datasetId)
             .map { groups -> groups.sumOf { it.images.size } - groups.size }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), 0)
+
+    val showExportSheet = MutableStateFlow(false)
+    val exportProgress = MutableStateFlow<ExportProgress?>(null)
+
+    fun openExportSheet() { showExportSheet.value = true }
+    fun dismissExportSheet() { showExportSheet.value = false }
+
+    fun startExport() {
+        showExportSheet.value = false
+        viewModelScope.launch {
+            exportDatasetUseCase(datasetId).collect { progress ->
+                exportProgress.value = progress
+            }
+        }
+    }
+
+    fun dismissExportResult() { exportProgress.value = null }
 
     fun enterSelectionMode(imageId: Long) {
         isSelectionMode.value = true

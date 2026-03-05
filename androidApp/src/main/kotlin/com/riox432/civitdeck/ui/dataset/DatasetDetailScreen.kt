@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FindReplace
 import androidx.compose.material.icons.filled.PhotoSizeSelectLarge
 import androidx.compose.material.icons.filled.SelectAll
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.DatasetImage
+import com.riox432.civitdeck.domain.model.ExportProgress
 import com.riox432.civitdeck.domain.model.ImageSource
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
@@ -100,6 +102,9 @@ fun DatasetDetailScreen(
     val duplicateCount by viewModel.duplicateCount.collectAsStateWithLifecycle()
     val lowResImages by viewModel.lowResImages.collectAsStateWithLifecycle()
     val resFilter = collectResolutionFilterState(viewModel)
+    val showExportSheet by viewModel.showExportSheet.collectAsStateWithLifecycle()
+    val exportProgress by viewModel.exportProgress.collectAsStateWithLifecycle()
+    val allImages by viewModel.images.collectAsStateWithLifecycle()
     var captionSheetImageId by remember { mutableStateOf<Long?>(null) }
     var captionSheetInitial by remember { mutableStateOf("") }
     val callbacks = buildCallbacks(viewModel, onNavigateToBatchTagEditor) { id, text ->
@@ -124,6 +129,13 @@ fun DatasetDetailScreen(
         onNavigateToBatchTagEditor = onNavigateToBatchTagEditor,
         onNavigateToDuplicateReview = onNavigateToDuplicateReview,
         onDismissCaption = { captionSheetImageId = null },
+        showExportSheet = showExportSheet,
+        exportProgress = exportProgress,
+        allImages = allImages,
+        onOpenExport = viewModel::openExportSheet,
+        onDismissExport = viewModel::dismissExportSheet,
+        onStartExport = viewModel::startExport,
+        onDismissExportResult = viewModel::dismissExportResult,
     )
 }
 
@@ -148,6 +160,13 @@ private fun DatasetDetailScaffold(
     onNavigateToBatchTagEditor: (Long) -> Unit,
     onNavigateToDuplicateReview: (Long) -> Unit,
     onDismissCaption: () -> Unit,
+    showExportSheet: Boolean = false,
+    exportProgress: ExportProgress? = null,
+    allImages: List<DatasetImage> = emptyList(),
+    onOpenExport: () -> Unit = {},
+    onDismissExport: () -> Unit = {},
+    onStartExport: () -> Unit = {},
+    onDismissExportResult: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -160,6 +179,7 @@ private fun DatasetDetailScaffold(
                 onSelectAll = viewModel::selectAll,
                 onReviewDuplicates = { onNavigateToDuplicateReview(viewModel.datasetId) },
                 onResolutionFilter = viewModel::openResolutionFilter,
+                onExport = onOpenExport,
             )
         },
         bottomBar = {
@@ -193,6 +213,22 @@ private fun DatasetDetailScaffold(
         onTrainableToggle = { id, trainable -> viewModel.updateTrainable(id, trainable) },
         onDismissDetail = viewModel::dismissDetail,
     )
+    if (showExportSheet) {
+        val trainableCount = allImages.count { it.trainable && !it.excluded }
+        val nonTrainableCount = allImages.size - trainableCount
+        ExportDatasetSheet(
+            imageCount = trainableCount,
+            nonTrainableCount = nonTrainableCount,
+            onExport = onStartExport,
+            onDismiss = onDismissExport,
+        )
+    }
+    exportProgress?.let { progress ->
+        ExportProgressOverlay(
+            progress = progress,
+            onDismiss = onDismissExportResult,
+        )
+    }
 }
 
 @Composable
@@ -273,6 +309,7 @@ private fun DatasetDetailTopBar(
     onSelectAll: () -> Unit,
     onReviewDuplicates: () -> Unit,
     onResolutionFilter: () -> Unit,
+    onExport: () -> Unit = {},
 ) {
     TopAppBar(
         title = {
@@ -298,6 +335,9 @@ private fun DatasetDetailTopBar(
                     Icon(Icons.Default.SelectAll, contentDescription = "Select all")
                 }
             } else {
+                IconButton(onClick = onExport) {
+                    Icon(Icons.Default.FileDownload, contentDescription = "Export dataset")
+                }
                 IconButton(onClick = onReviewDuplicates) {
                     Icon(Icons.Default.FindReplace, contentDescription = "Review duplicates")
                 }
