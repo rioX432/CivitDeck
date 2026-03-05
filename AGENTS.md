@@ -43,8 +43,8 @@ CivitDeck/
 ├── shared/                   # KMP coordinator — re-exports core modules via api(); KoinHelper for iOS
 ├── core/
 │   ├── core-domain/          # Domain layer: models, repository interfaces, use cases, DomainModule (Koin)
-│   ├── core-network/         # Network layer: Ktor client, DTOs (CivitAI + ComfyUI), NetworkModule (Koin)
-│   ├── core-database/        # Database layer: Room KMP entities/DAOs/migrations (v24), DatabaseModule (Koin)
+│   ├── core-network/         # Network layer: Ktor client, DTOs (CivitAI + ComfyUI + WebUI + ExternalServer), NetworkModule (Koin)
+│   ├── core-database/        # Database layer: Room KMP entities/DAOs/migrations (v27), DatabaseModule (Koin)
 │   └── core-ui/              # Shared Compose components + design tokens (Android-only)
 ├── feature/
 │   ├── feature-search/       # Model search & swipe discovery
@@ -54,13 +54,14 @@ CivitDeck/
 │   ├── feature-collections/  # User model collections (create, rename, bulk manage)
 │   ├── feature-prompts/      # Saved prompts + template library (built-in & user-created)
 │   ├── feature-settings/     # App settings (NSFW, appearance, notifications, storage)
-│   └── feature-comfyui/      # ComfyUI integration: generation, queue, LoRA/ControlNet, workflow import
+│   ├── feature-comfyui/      # ComfyUI integration: generation, queue, LoRA/ControlNet, workflow import
+│   └── feature-externalserver/ # Custom external server: connection management, image gallery, filters
 ├── androidApp/               # Android app entry point, Navigation 3, ModelCard, widgets, tiles
 │   └── ui/dataset/           # Dataset list/detail screens + AddToDataset sheet (in androidApp, not feature module)
 └── iosApp/                   # iOS app entry point (SwiftUI)
     └── iosApp/
         ├── Features/         # Feature screens + ViewModels (Search, Detail, Gallery, Creator, Collections,
-        │                     #   Prompts, Settings, ComfyUI, Dataset, Compare, ModelFileBrowser, Tutorial)
+        │                     #   Prompts, Settings, ComfyUI, Dataset, Compare, ExternalServer, ModelFileBrowser, Tutorial)
         └── DesignSystem/     # Design tokens (CivitDeckColors, CivitDeckFonts, CivitDeckSpacing,
                               #   CivitDeckMotion, CivitDeckShapes) + CachedAsyncImage, ShimmerModifier
 ```

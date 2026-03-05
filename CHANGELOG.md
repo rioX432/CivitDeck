@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Custom External Server Integration
+- Add custom external server integration — Android + iOS (#358) (4017cda)
+
+#### Saved Search Filters
+- Add saved search filters feature — Android + iOS (b95cb83)
+
 #### Dataset Feature
 - Add DatasetCollection domain models + ImageSource enum (#280) (d154c8f)
 - Add Dataset Room entities, DAOs, migration v23→v24, repository + use cases (#281) (ccca6f4)
@@ -17,7 +23,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add 'Add to Dataset' action in ComfyUI gallery + detail screen (#290) (ef0410d)
 - Add 'Add to Dataset' action in iOS ComfyUI output detail and gallery (#291) (291d7cf)
 
+#### Dataset Curation
+- Add tag/caption repositories and batch edit use cases (#284) (a4c0a7a)
+- Add caption editor and batch tag editor for Android (#285) (d8891d4)
+- Add caption editor and batch tag editor for iOS (#286) (dacd504)
+- Add trainable, licenseNote, pHash, excluded, and duplicate detection (#292, #294) (dab58fc)
+- Add source badge, trainable toggle, and source filter UI (#293) (28b5428)
+- Add duplicate review UI and resolution filter for Android (#295) (4df27ca)
+- Add duplicate review UI and resolution filter for iOS (#296) (2f4c25e)
+
 #### Output Gallery
+- Add horizontal swipe navigation and scroll-to-top for Output Gallery (eb696a4)
 - Add fullscreen image viewer to Output Gallery Detail (#338) (a6441b1)
 - Add sort/filter controls to Output Gallery (#337) (3b7ea72)
 - Add Output Gallery shortcut to Advanced Settings (#336) (4334e3e)
@@ -37,12 +53,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Civitai Link integration (#179) (659cf91)
 
 #### Error Handling & Accessibility
+- Add missing key parameters to LazyColumn/LazyRow items calls (#355) (21fd04e)
 - Add error handling to AuthRepositoryImpl.validateApiKey using Result<String> (#316) (dde32e1)
 - Add accessibilityLabel to images in iOS views (#311) (7450d4b)
 - Add onClickLabel to clickable containers in SettingsScreen, ImageGallery, Collections (#308) (b151d2e)
 - Add contentDescription to navigation arrow icon in SettingsScreen (#307) (e3adba4)
 
 ### Changed
+
+#### External Server
+- Fix hardcoded spacing/corner-radius values in ExternalServerGalleryView (61d184c)
 
 #### Navigation & UX
 - Merge Prompts into Collections tab and add custom bottom nav shortcuts (334588d)
@@ -78,6 +98,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix stale ComfyUI output image: append promptId to URL for cache busting (ecbcef5)
+- Fix iOS type errors: use native Swift types for non-nullable KMP params (#296) (da3bb49)
+- Fix missing error handling in TagRepositoryImpl.getTags (#354) (bec058d)
+- Fix missing error handling in CivitAiApi getModel/Version methods (#353) (c48c6c9)
+- Revert SKIE type mapping: restore KotlinInt/KotlinBoolean wrappers (#351) (fef773f)
+- Revert CachedAsyncImage in widget — target not yet set up as Xcode native target (#352) (b4e3e2d)
+- Fix Color.civitError, reorder imports (detekt), add DB schema v25 (214590f)
 - Fix Output Gallery: remove meaningless workflow filter, move shortcut to Settings main (#336 #337) (994ecca)
 - Fix inverted sort order in Output Gallery (#337) (c8070c8)
 - Fix misaligned dividers in ComfyUIOutputDetailScreen (#339) (86deea1)
@@ -107,6 +134,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Infrastructure
 
+- Fix SwiftLint file_length and type_body_length violations in ModelSearch files (41218c1)
+- Add iOS build step to Quality Gate in dev and dev-all skills (9a08f33)
+- Fix Android smart cast and detekt TooManyFunctions violations (ebabdea)
 - Fix import ordering (detekt autocorrect) + add Room schema v24 (0823e17)
 - Add cross-feature integration design document (#342) (5229598)
 - Fix lint issues (line length) (fa15ffd)

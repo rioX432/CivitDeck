@@ -17,12 +17,13 @@ This policy covers the CivitDeck Android and iOS applications.
 - Local database (Room KMP) — data leakage, unauthorized access to stored models/prompts/collections
 - API key storage — insecure storage of CivitAI API credentials
 - Network requests — MITM, insecure TLS configuration
-- ComfyUI connection — insecure local server communication
+- ComfyUI / SD WebUI connection — insecure local server communication
+- Custom external server connection — API key storage, insecure communication
 - Input handling — injection vulnerabilities in search/filter inputs
 
 **Out of scope:**
 - CivitAI's own servers or API (report those to Civitai Inc. directly)
-- ComfyUI's own server software (report upstream)
+- ComfyUI's / SD WebUI's own server software (report upstream)
 - Issues in third-party libraries (report upstream)
 
 ## Reporting a Vulnerability

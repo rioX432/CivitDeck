@@ -46,7 +46,9 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Favorites & Collections** — organize saved models into named collections
 - **ComfyUI & SD WebUI Integration** — send models to ComfyUI or Automatic1111/Forge, manage the generation queue, browse generation history, import custom workflows, and use LoRA/ControlNet support
 - **Civitai Link** — sync models directly to your ComfyUI instance via Civitai Link key
-- **AI Training Datasets** — collect ComfyUI generation outputs into labeled datasets with auto-tagging (seed, sampler, prompt hash) for model training
+- **AI Training Datasets** — collect ComfyUI generation outputs into labeled datasets with auto-tagging (seed, sampler, prompt hash), caption/tag batch editing, duplicate detection, and source tracking for model training
+- **Saved Search Filters** — save and quickly recall named search presets with filters (type, sort, period, tags, NSFW level)
+- **Custom External Servers** — connect to any REST API image server, browse its gallery with filters, and integrate alongside CivitAI
 - **Model Comparison** — compare two models side-by-side
 - **Model File Browser** — detect local model files with CivitAI hash matching
 - **Fresh Find** — discover recently published models before they trend

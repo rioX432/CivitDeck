@@ -21,12 +21,12 @@ CivitDeck/
 │   │       └── di/                   # DomainModule (Koin)
 │   ├── core-network/         # Network layer: Ktor client, DTOs, API services
 │   │   └── src/commonMain/kotlin/.../
-│   │       ├── data/api/             # CivitAI + ComfyUI API clients, DTOs
+│   │       ├── data/api/             # CivitAI, ComfyUI, SD WebUI, ExternalServer API clients + DTOs
 │   │       └── di/                   # NetworkModule (Koin)
 │   ├── core-database/        # Database layer: Room KMP entities, DAOs, migrations
 │   │   └── src/commonMain/kotlin/.../
-│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v24)
-│   │       ├── data/local/migration/ # Sequential migrations (1→2 … 23→24)
+│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v27)
+│   │       ├── data/local/migration/ # Sequential migrations (1→2 … 26→27)
 │   │       └── di/                   # DatabaseModule (Koin)
 │   └── core-ui/              # Shared Compose components + design tokens (Android-only)
 │       └── src/main/kotlin/.../
@@ -40,7 +40,8 @@ CivitDeck/
 │   ├── feature-collections/  # User model collections (create, rename, bulk manage)
 │   ├── feature-prompts/      # Saved prompts + template library (built-in & user-created)
 │   ├── feature-settings/     # App settings (NSFW, appearance, notifications, storage)
-│   └── feature-comfyui/      # ComfyUI integration: generation, queue, LoRA/ControlNet, workflow import
+│   ├── feature-comfyui/      # ComfyUI integration: generation, queue, LoRA/ControlNet, workflow import
+│   └── feature-externalserver/ # Custom external server: connection management, image gallery, filters
 ├── androidApp/               # Android app entry point
 │   └── src/main/kotlin/
 │       ├── CivitDeckApplication.kt   # Koin init + ViewModel DI
@@ -57,7 +58,7 @@ CivitDeck/
         │   ├── Search/       │   ├── Detail/       │   ├── Gallery/
         │   ├── Creator/      │   ├── Collections/  │   ├── Prompts/
         │   ├── Settings/     │   ├── ComfyUI/      │   ├── Dataset/
-        │   ├── Compare/      │   └── ModelFileBrowser/
+        │   ├── Compare/      │   ├── ExternalServer/ │ └── ModelFileBrowser/
         └── DesignSystem/     # Design tokens + shared components
             ├── CivitDeckColors.swift   ├── CivitDeckFonts.swift
             ├── CivitDeckSpacing.swift  ├── CivitDeckMotion.swift
@@ -84,8 +85,8 @@ graph TB
 
 ### Data Layer (`core/core-network/` + `core/core-database/`)
 
-- **API** (`core-network`): Ktor HTTP client targeting `https://civitai.com/api/v1`. Endpoints include `/models`, `/models/:id`, `/model-versions/:id`, `/images`, `/creators`, and `/tags`. Pagination is cursor-based for images and page-based for others. Also includes a ComfyUI API client for local generation workflows.
-- **Local** (`core-database`): Room KMP database (version 24) for offline favorites, user collections, saved prompts, SD WebUI connections, dataset collections, and response caching with TTL. Migrations tracked sequentially from version 1.
+- **API** (`core-network`): Ktor HTTP client targeting `https://civitai.com/api/v1`. Endpoints include `/models`, `/models/:id`, `/model-versions/:id`, `/images`, `/creators`, and `/tags`. Pagination is cursor-based for images and page-based for others. Also includes ComfyUI, SD WebUI (Automatic1111/Forge), and custom External Server API clients.
+- **Local** (`core-database`): Room KMP database (version 27) for offline favorites, user collections, saved prompts, saved search filters, SD WebUI/ComfyUI connections, external server configs, dataset collections, and response caching with TTL. Migrations tracked sequentially from version 1.
 - **Repository Implementations**: Combine remote API calls with local cache. Return domain models, not DTOs.
 
 ### Domain Layer (`core/core-domain/`)
@@ -132,7 +133,7 @@ AndroidX Navigation 3 is the latest navigation library with full type-safe route
 
 Koin is used as the DI framework across all modules:
 
-- **core-network** (`core/core-network/.../di/NetworkModule`): Ktor client, CivitAI and ComfyUI API services
+- **core-network** (`core/core-network/.../di/NetworkModule`): Ktor client, CivitAI, ComfyUI, SD WebUI, and ExternalServer API services
 - **core-database** (`core/core-database/.../di/DatabaseModule`): Room DB instance, all DAOs
 - **core-domain** (`core/core-domain/.../di/DomainModule`): Repository bindings, use case factory
 - **shared** (`shared/src/commonMain/di/`): Re-exports core modules; `ViewModelModule` for SettingsViewModel

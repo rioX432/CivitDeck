@@ -73,21 +73,21 @@ Bridge CivitAI browsing with your local generation setup.
 
 ---
 
-## Phase 4 -- ComfyUI Output Gallery (Next)
+## Phase 4 -- ComfyUI Output Gallery (Complete)
 
 Retrieve and browse locally generated ComfyUI output images from mobile. Bridge generation results into collections and the dataset pipeline.
 
 Epic: [#270](https://github.com/rioX432/CivitDeck/issues/270) ComfyUI Output Gallery Integration
 
-- [ ] [#277](https://github.com/rioX432/CivitDeck/issues/277) KMP: `/history` API client + `FetchComfyUIHistoryUseCase`
-- [ ] [#278](https://github.com/rioX432/CivitDeck/issues/278) Android: Output gallery screen + generation metadata detail
-- [ ] [#279](https://github.com/rioX432/CivitDeck/issues/279) iOS: Output gallery screen + generation metadata detail
+- [x] [#277](https://github.com/rioX432/CivitDeck/issues/277) KMP: `/history` API client + `FetchComfyUIHistoryUseCase`
+- [x] [#278](https://github.com/rioX432/CivitDeck/issues/278) Android: Output gallery screen + generation metadata detail
+- [x] [#279](https://github.com/rioX432/CivitDeck/issues/279) iOS: Output gallery screen + generation metadata detail
 
 **DoD**: `/history` image list retrieval → full metadata detail (prompt, seed, sampler, LoRA, CFG) → save to favorites / collections
 
 ---
 
-## Phase 5 -- Dataset Collection & Curation
+## Phase 5 -- Dataset Collection & Curation (Complete)
 
 Enable LoRA training dataset collection, organization, and quality control directly from mobile.
 
@@ -95,46 +95,46 @@ Enable LoRA training dataset collection, organization, and quality control direc
 
 Epic: [#271](https://github.com/rioX432/CivitDeck/issues/271) Dataset Collection System (Core)
 
-- [ ] [#280](https://github.com/rioX432/CivitDeck/issues/280) KMP: Domain models (`DatasetCollection`, `DatasetImage`, `ImageSource`)
-- [ ] [#281](https://github.com/rioX432/CivitDeck/issues/281) KMP: Room entities + DAOs + migration + Repository + UseCases
-- [ ] [#282](https://github.com/rioX432/CivitDeck/issues/282) Android: Dataset list screen (CRUD)
-- [ ] [#283](https://github.com/rioX432/CivitDeck/issues/283) iOS: Dataset list screen (CRUD)
+- [x] [#280](https://github.com/rioX432/CivitDeck/issues/280) KMP: Domain models (`DatasetCollection`, `DatasetImage`, `ImageSource`)
+- [x] [#281](https://github.com/rioX432/CivitDeck/issues/281) KMP: Room entities + DAOs + migration + Repository + UseCases
+- [x] [#282](https://github.com/rioX432/CivitDeck/issues/282) Android: Dataset list screen (CRUD)
+- [x] [#283](https://github.com/rioX432/CivitDeck/issues/283) iOS: Dataset list screen (CRUD)
 
 ### 5b. Caption & Tag Editing
 
 Epic: [#272](https://github.com/rioX432/CivitDeck/issues/272) Caption & Tag Batch Editor
 
-- [ ] [#284](https://github.com/rioX432/CivitDeck/issues/284) KMP: Tag/Caption domain + `BatchEditTagsUseCase` + `EditCaptionUseCase`
-- [ ] [#285](https://github.com/rioX432/CivitDeck/issues/285) Android: Caption editor + batch tag editor
-- [ ] [#286](https://github.com/rioX432/CivitDeck/issues/286) iOS: Caption editor + batch tag editor
+- [x] [#284](https://github.com/rioX432/CivitDeck/issues/284) KMP: Tag/Caption domain + `BatchEditTagsUseCase` + `EditCaptionUseCase`
+- [x] [#285](https://github.com/rioX432/CivitDeck/issues/285) Android: Caption editor + batch tag editor
+- [x] [#286](https://github.com/rioX432/CivitDeck/issues/286) iOS: Caption editor + batch tag editor
 
 ### 5c. Generated Image → Dataset Pipeline
 
 Epic: [#274](https://github.com/rioX432/CivitDeck/issues/274) Generated Image → Dataset Pipeline *(depends on #270, #271)*
 
-- [ ] [#290](https://github.com/rioX432/CivitDeck/issues/290) Android: One-tap add to dataset from ComfyUI / SD WebUI gallery
-- [ ] [#291](https://github.com/rioX432/CivitDeck/issues/291) iOS: One-tap add to dataset from ComfyUI / SD WebUI gallery
+- [x] [#290](https://github.com/rioX432/CivitDeck/issues/290) Android: One-tap add to dataset from ComfyUI / SD WebUI gallery
+- [x] [#291](https://github.com/rioX432/CivitDeck/issues/291) iOS: One-tap add to dataset from ComfyUI / SD WebUI gallery
 
 ### 5d. License & Source Tracking
 
 Epic: [#275](https://github.com/rioX432/CivitDeck/issues/275) License & Source Tracking System *(depends on #271)*
 
-- [ ] [#292](https://github.com/rioX432/CivitDeck/issues/292) KMP: `ImageSource` domain extension + `trainable` flag + export warning logic
-- [ ] [#293](https://github.com/rioX432/CivitDeck/issues/293) Android + iOS: Source badge + trainable toggle UI
+- [x] [#292](https://github.com/rioX432/CivitDeck/issues/292) KMP: `ImageSource` domain extension + `trainable` flag + export warning logic
+- [x] [#293](https://github.com/rioX432/CivitDeck/issues/293) Android + iOS: Source badge + trainable toggle UI
 
 ### 5e. Duplicate & Quality Filtering
 
 Epic: [#276](https://github.com/rioX432/CivitDeck/issues/276) Duplicate & Quality Filtering *(depends on #271)*
 
-- [ ] [#294](https://github.com/rioX432/CivitDeck/issues/294) KMP: pHash duplicate detection + resolution filter UseCase
-- [ ] [#295](https://github.com/rioX432/CivitDeck/issues/295) Android: Duplicate review UI + resolution filter settings
-- [ ] [#296](https://github.com/rioX432/CivitDeck/issues/296) iOS: Duplicate review UI + resolution filter settings
+- [x] [#294](https://github.com/rioX432/CivitDeck/issues/294) KMP: pHash duplicate detection + resolution filter UseCase
+- [x] [#295](https://github.com/rioX432/CivitDeck/issues/295) Android: Duplicate review UI + resolution filter settings
+- [x] [#296](https://github.com/rioX432/CivitDeck/issues/296) iOS: Duplicate review UI + resolution filter settings
 
 **DoD**: Group images into a dataset → edit captions and tags → flag non-trainable content → filter duplicates and low-quality images
 
 ---
 
-## Phase 6 -- Training Pipeline Export
+## Phase 6 -- Training Pipeline Export (Next)
 
 Export datasets in formats compatible with kohya-ss / sd-scripts for handoff to a training machine. No on-device training.
 
