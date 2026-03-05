@@ -207,6 +207,7 @@ private fun FeedItemMeta(
         )
         if (item.isUnread) {
             Spacer(modifier = Modifier.width(Spacing.xs))
+            val unreadColor = MaterialTheme.colorScheme.primary
             Box(
                 modifier = Modifier
                     .size(8.dp)
@@ -220,7 +221,7 @@ private fun FeedItemMeta(
                 ) {
                     // Unread dot
                     androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
-                        drawCircle(color = androidx.compose.ui.graphics.Color(0xFF2196F3))
+                        drawCircle(color = unreadColor)
                     }
                 }
             }
