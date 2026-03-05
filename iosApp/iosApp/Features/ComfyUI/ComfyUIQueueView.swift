@@ -66,6 +66,7 @@ private struct QueueJobRow: View {
             } else if job.status != .completed {
                 Button(role: .destructive, action: onCancel) {
                     Image(systemName: "xmark.circle.fill")
+                        .accessibilityLabel("Cancel job")
                         .foregroundColor(.civitError)
                 }
                 .buttonStyle(.plain)

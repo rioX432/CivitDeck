@@ -8,6 +8,7 @@ struct QRScannerFab: View {
     var body: some View {
         NavigationLink(value: QRScannerDestination()) {
             Image(systemName: "qrcode.viewfinder")
+                .accessibilityLabel("QR scanner")
                 .font(.body)
                 .foregroundColor(.civitPrimary)
                 .frame(width: 44, height: 44)

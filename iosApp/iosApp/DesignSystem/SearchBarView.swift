@@ -9,6 +9,7 @@ struct SearchBarView: View {
     var body: some View {
         HStack {
             Image(systemName: "magnifyingglass")
+                .accessibilityHidden(true)
                 .foregroundColor(.civitOnSurfaceVariant)
             textField
             if !text.isEmpty {
@@ -16,6 +17,7 @@ struct SearchBarView: View {
                     text = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
+                        .accessibilityLabel("Clear search")
                         .foregroundColor(.civitOnSurfaceVariant)
                 }
             }

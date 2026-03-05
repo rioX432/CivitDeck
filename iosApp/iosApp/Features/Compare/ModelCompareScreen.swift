@@ -120,6 +120,7 @@ struct ModelCompareScreen: View {
                     .aspectRatio(1, contentMode: .fit)
                     .overlay {
                         Image(systemName: "photo")
+                            .accessibilityHidden(true)
                             .foregroundColor(.civitOnSurfaceVariant)
                     }
             } else {
@@ -155,6 +156,7 @@ struct ModelCompareScreen: View {
             .fill(Color.civitSurfaceVariant)
             .overlay {
                 Image(systemName: "photo")
+                    .accessibilityHidden(true)
                     .foregroundColor(.civitOnSurfaceVariant)
             }
     }
