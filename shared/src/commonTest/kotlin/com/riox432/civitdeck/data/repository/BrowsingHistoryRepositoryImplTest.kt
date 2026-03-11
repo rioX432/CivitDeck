@@ -1,6 +1,8 @@
 package com.riox432.civitdeck.data.repository
 
 import com.riox432.civitdeck.data.local.dao.BrowsingHistoryDao
+import com.riox432.civitdeck.data.local.dao.DayCount
+import com.riox432.civitdeck.data.local.dao.NameCount
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -32,6 +34,25 @@ class BrowsingHistoryRepositoryImplTest {
         override suspend fun count(): Int = entities.size
 
         override suspend fun deleteAll() { entities.clear() }
+
+        override suspend fun getDailyViewCounts(sinceMillis: Long): List<DayCount> =
+            entities.filter { it.viewedAt >= sinceMillis }
+                .groupBy { (it.viewedAt / 86400000) * 86400000 }
+                .map { (day, list) -> DayCount(day, list.size) }
+                .sortedBy { it.day }
+
+        override suspend fun getTopModelTypes(limit: Int): List<NameCount> =
+            entities.groupBy { it.modelType }
+                .map { (type, list) -> NameCount(type, list.size) }
+                .sortedByDescending { it.cnt }
+                .take(limit)
+
+        override suspend fun getTopCreators(limit: Int): List<NameCount> =
+            entities.filter { it.creatorName != null }
+                .groupBy { it.creatorName!! }
+                .map { (name, list) -> NameCount(name, list.size) }
+                .sortedByDescending { it.cnt }
+                .take(limit)
     }
 
     @Test
