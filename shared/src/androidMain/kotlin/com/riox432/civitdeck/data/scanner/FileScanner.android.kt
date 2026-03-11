@@ -5,6 +5,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import java.io.File
+import com.riox432.civitdeck.util.Logger
 import java.security.MessageDigest
 import kotlin.coroutines.coroutineContext
 
@@ -33,7 +34,7 @@ actual class FileScanner actual constructor() {
                     sizeBytes = file.length(),
                 )
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                println("FileScanner: Failed to scan file ${file.absolutePath}, skipping: ${e.message}")
+                Logger.w("FileScanner", "Failed to scan file ${file.absolutePath}, skipping: ${e.message}")
                 null
             }
         }

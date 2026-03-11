@@ -4,6 +4,7 @@ import com.riox432.civitdeck.domain.model.ModelUpdate
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.domain.repository.ModelVersionCheckpointRepository
+import com.riox432.civitdeck.util.Logger
 
 private const val MAX_MODELS_PER_CHECK = 20
 
@@ -44,7 +45,7 @@ class CheckModelUpdatesUseCase(
                 newCheckpoints[modelId] = latestVersion.id
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 // Skip models that fail to fetch (deleted, network error, etc.)
-                println("CheckModelUpdatesUseCase: Failed to fetch model $modelId, skipping: ${e.message}")
+                Logger.w("CheckModelUpdates", "Failed to fetch model $modelId, skipping: ${e.message}")
             }
         }
 
