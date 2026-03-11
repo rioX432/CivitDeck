@@ -54,6 +54,7 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
+import com.riox432.civitdeck.domain.model.MediaContentType
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.Duration
@@ -64,6 +65,7 @@ import kotlin.math.abs
 data class ViewerImage(
     val url: String,
     val meta: ImageGenerationMeta? = null,
+    val contentType: MediaContentType = MediaContentType.IMAGE,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,14 +105,23 @@ private fun ImageViewerContent(
         // Layer 1: Background (stays in place, fades with drag)
         Box(Modifier.fillMaxSize().background(CivitDeckColors.scrim.copy(alpha = backgroundAlpha(currentDragY))))
 
-        // Layer 2: Image pager
+        // Layer 2: Image/Video pager
         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
-            ZoomableImage(
-                imageUrl = images[page].url,
-                onDismiss = if (page == pagerState.currentPage) onDismiss else null,
-                onDragYChanged = { if (page == pagerState.currentPage) currentDragY = it },
-                onTap = { controlsVisible = !controlsVisible },
-            )
+            val image = images[page]
+            if (image.contentType == MediaContentType.VIDEO) {
+                VideoPlayerView(
+                    videoUrl = image.url,
+                    showControls = true,
+                    autoPlay = page == pagerState.currentPage,
+                )
+            } else {
+                ZoomableImage(
+                    imageUrl = image.url,
+                    onDismiss = if (page == pagerState.currentPage) onDismiss else null,
+                    onDragYChanged = { if (page == pagerState.currentPage) currentDragY = it },
+                    onTap = { controlsVisible = !controlsVisible },
+                )
+            }
         }
 
         // Layer 3: Controls (stays in place)

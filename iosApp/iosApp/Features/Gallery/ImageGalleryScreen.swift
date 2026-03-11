@@ -174,30 +174,38 @@ struct ImageGalleryScreen: View {
             viewModel.onImageSelected(index)
         } label: {
             NsfwBlurView(blurRadius: blurRadius) {
-                CachedAsyncImage(url: URL(string: image.url)) { phase in
-                    switch phase {
-                    case .success(let img):
-                        img
-                            .resizable()
-                            .scaledToFill()
-                            .transition(.opacity)
-                    case .failure:
-                        Rectangle()
-                            .fill(Color.civitSurfaceVariant)
-                            .overlay {
-                                SwiftUI.Image(systemName: "photo")
-                                    .foregroundColor(.civitOnSurfaceVariant)
-                            }
-                    case .empty:
-                        Rectangle()
-                            .fill(Color.civitSurfaceVariant)
-                            .shimmer()
-                    @unknown default:
-                        EmptyView()
+                ZStack {
+                    CachedAsyncImage(url: URL(string: image.url)) { phase in
+                        switch phase {
+                        case .success(let img):
+                            img
+                                .resizable()
+                                .scaledToFill()
+                                .transition(.opacity)
+                        case .failure:
+                            Rectangle()
+                                .fill(Color.civitSurfaceVariant)
+                                .overlay {
+                                    SwiftUI.Image(systemName: "photo")
+                                        .foregroundColor(.civitOnSurfaceVariant)
+                                }
+                        case .empty:
+                            Rectangle()
+                                .fill(Color.civitSurfaceVariant)
+                                .shimmer()
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                    .aspectRatio(aspectRatio, contentMode: .fill)
+                    .clipped()
+
+                    if image.contentType == .video {
+                        SwiftUI.Image(systemName: "play.circle.fill")
+                            .font(.system(size: 44))
+                            .foregroundColor(.white.opacity(0.85))
                     }
                 }
-                .aspectRatio(aspectRatio, contentMode: .fill)
-                .clipped()
             }
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
         }

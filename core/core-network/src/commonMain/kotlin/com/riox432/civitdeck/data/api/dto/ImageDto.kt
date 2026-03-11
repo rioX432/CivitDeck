@@ -36,6 +36,7 @@ data class ImageDto(
     val username: String? = null,
     val stats: ImageStatsDto? = null,
     val meta: ImageMetaDto? = null,
+    val type: String? = null,
 )
 
 @Serializable

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
@@ -20,6 +21,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridS
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,12 +37,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.AspectRatioFilter
 import com.riox432.civitdeck.domain.model.Image
+import com.riox432.civitdeck.domain.model.MediaContentType
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
@@ -83,7 +88,9 @@ fun ImageGalleryScreen(
 
     if (uiState.selectedImageIndex != null) {
         ImageViewerOverlay(
-            images = uiState.images.map { ViewerImage(url = it.url, meta = it.meta) },
+            images = uiState.images.map {
+                ViewerImage(url = it.url, meta = it.meta, contentType = it.contentType)
+            },
             initialIndex = uiState.selectedImageIndex!!,
             onDismiss = viewModel::onDismissViewer,
             onSavePrompt = viewModel::savePrompt,
@@ -273,14 +280,26 @@ private fun ImageGridItem(
             .clip(RoundedCornerShape(CornerRadius.image))
             .clickable(onClickLabel = stringResource(R.string.cd_open_image), onClick = onClick),
     ) {
-        CivitAsyncImage(
-            imageUrl = image.url,
-            contentDescription = contentDescription,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(aspectRatio),
-        )
+        Box {
+            CivitAsyncImage(
+                imageUrl = image.url,
+                contentDescription = contentDescription,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(aspectRatio),
+            )
+            if (image.contentType == MediaContentType.VIDEO) {
+                Icon(
+                    imageVector = Icons.Default.PlayCircle,
+                    contentDescription = "Video",
+                    tint = Color.White.copy(alpha = 0.85f),
+                    modifier = Modifier
+                        .size(48.dp)
+                        .align(Alignment.Center),
+                )
+            }
+        }
     }
 }
 

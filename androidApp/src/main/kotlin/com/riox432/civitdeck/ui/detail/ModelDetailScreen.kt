@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Info
@@ -67,6 +68,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -79,6 +81,7 @@ import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.CivitaiLinkResource
 import com.riox432.civitdeck.domain.model.CivitaiLinkStatus
 import com.riox432.civitdeck.domain.model.HapticFeedbackType
+import com.riox432.civitdeck.domain.model.MediaContentType
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
@@ -446,7 +449,7 @@ private fun DetailOverlays(
 ) {
     if (selectedCarouselIndex != null && images.isNotEmpty()) {
         ImageViewerOverlay(
-            images = images.map { ViewerImage(url = it.url, meta = it.meta) },
+            images = images.map { ViewerImage(url = it.url, meta = it.meta, contentType = it.contentType) },
             initialIndex = selectedCarouselIndex,
             onDismiss = onDismissCarousel,
         )
@@ -462,7 +465,7 @@ private fun DetailOverlays(
 
     if (gridSelectedIndex != null && images.isNotEmpty()) {
         ImageViewerOverlay(
-            images = images.map { ViewerImage(url = it.url, meta = it.meta) },
+            images = images.map { ViewerImage(url = it.url, meta = it.meta, contentType = it.contentType) },
             initialIndex = gridSelectedIndex,
             onDismiss = onDismissGridViewer,
         )
@@ -813,33 +816,53 @@ private fun CarouselPage(
             .clip(MaterialTheme.shapes.medium)
     }
 
-    SubcomposeAsyncImage(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(image.url)
-            .crossfade(Duration.normal)
-            .build(),
-        contentDescription = "Model image",
-        contentScale = ContentScale.Fit,
-        modifier = pageModifier
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .clickable(onClick = onClick),
-        loading = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(CAROUSEL_ASPECT_RATIO)
-                    .shimmer(),
+    CarouselImage(image = image, modifier = pageModifier, onClick = onClick, onError = onError)
+}
+
+@Composable
+private fun CarouselImage(
+    image: ModelImage,
+    modifier: Modifier,
+    onClick: () -> Unit,
+    onError: () -> Unit,
+) {
+    Box(contentAlignment = Alignment.Center) {
+        SubcomposeAsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(image.url)
+                .crossfade(Duration.normal)
+                .build(),
+            contentDescription = "Model image",
+            contentScale = ContentScale.Fit,
+            modifier = modifier
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                .clickable(onClick = onClick),
+            loading = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(CAROUSEL_ASPECT_RATIO)
+                        .shimmer(),
+                )
+            },
+            error = {
+                LaunchedEffect(image.url) { onError() }
+                ImageErrorPlaceholder(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(CAROUSEL_ASPECT_RATIO),
+                )
+            },
+        )
+        if (image.contentType == MediaContentType.VIDEO) {
+            Icon(
+                imageVector = Icons.Default.PlayCircle,
+                contentDescription = "Video",
+                tint = Color.White.copy(alpha = 0.85f),
+                modifier = Modifier.size(48.dp),
             )
-        },
-        error = {
-            LaunchedEffect(image.url) { onError() }
-            ImageErrorPlaceholder(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(CAROUSEL_ASPECT_RATIO),
-            )
-        },
-    )
+        }
+    }
 }
 
 @Composable
@@ -963,16 +986,26 @@ private fun ImageGridItem(
         1f
     }
 
-    CivitAsyncImage(
-        imageUrl = image.url,
-        contentDescription = "Version image",
-        contentScale = ContentScale.Crop,
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(aspectRatio)
-            .clip(RoundedCornerShape(CornerRadius.image))
-            .clickable(onClick = onClick),
-    )
+    Box(contentAlignment = Alignment.Center) {
+        CivitAsyncImage(
+            imageUrl = image.url,
+            contentDescription = "Version image",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(aspectRatio)
+                .clip(RoundedCornerShape(CornerRadius.image))
+                .clickable(onClick = onClick),
+        )
+        if (image.contentType == MediaContentType.VIDEO) {
+            Icon(
+                imageVector = Icons.Default.PlayCircle,
+                contentDescription = "Video",
+                tint = Color.White.copy(alpha = 0.85f),
+                modifier = Modifier.size(48.dp),
+            )
+        }
+    }
 }
 
 @Composable
