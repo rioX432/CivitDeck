@@ -4,6 +4,9 @@ import Shared
 struct VersionDetailSection: View {
     let version: ModelVersion
     let powerUserMode: Bool
+    var downloads: [Int64: ModelDownload] = [:]
+    var onDownload: ((ModelFile) -> Void)?
+    var onCancelDownload: ((Int64) -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
@@ -66,28 +69,84 @@ struct VersionDetailSection: View {
     // MARK: - File Info Row
 
     private func fileInfoRow(file: ModelFile) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            Text(file.name)
-                .font(.civitBodySmall)
-                .lineLimit(1)
-                .truncationMode(.middle)
-            HStack(spacing: Spacing.sm) {
-                Text(FormatUtils.shared.formatFileSize(sizeKB: file.sizeKB))
-                    .font(.civitLabelSmall)
-                    .foregroundColor(.civitOnSurfaceVariant)
-                if let format = file.format {
-                    Text(format)
+        HStack {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(file.name)
+                    .font(.civitBodySmall)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                HStack(spacing: Spacing.sm) {
+                    Text(FormatUtils.shared.formatFileSize(sizeKB: file.sizeKB))
                         .font(.civitLabelSmall)
                         .foregroundColor(.civitOnSurfaceVariant)
-                }
-                if let fp = file.fp {
-                    Text(fp)
-                        .font(.civitLabelSmall)
-                        .foregroundColor(.civitOnSurfaceVariant)
+                    if let format = file.format {
+                        Text(format)
+                            .font(.civitLabelSmall)
+                            .foregroundColor(.civitOnSurfaceVariant)
+                    }
+                    if let fp = file.fp {
+                        Text(fp)
+                            .font(.civitLabelSmall)
+                            .foregroundColor(.civitOnSurfaceVariant)
+                    }
+                    if let dl = downloads[file.id], dl.status == .downloading {
+                        let pct = dl.fileSizeBytes > 0
+                            ? Int((dl.downloadedBytes * 100) / dl.fileSizeBytes)
+                            : 0
+                        Text("\(pct)%")
+                            .font(.civitLabelSmall)
+                            .foregroundColor(.civitPrimary)
+                    }
                 }
             }
+            Spacer()
+            downloadButton(for: file)
         }
         .padding(.vertical, Spacing.xs)
+    }
+
+    @ViewBuilder
+    private func downloadButton(for file: ModelFile) -> some View {
+        let state = downloads[file.id]
+        switch state?.status {
+        case nil, .cancelled:
+            Button { onDownload?(file) } label: {
+                Image(systemName: "arrow.down.circle")
+                    .foregroundColor(.civitPrimary)
+                    .accessibilityLabel("Download")
+            }
+        case .pending:
+            ProgressView()
+                .controlSize(.small)
+        case .downloading:
+            HStack(spacing: Spacing.xs) {
+                ProgressView()
+                    .controlSize(.small)
+                Button { onCancelDownload?(state!.id) } label: {
+                    Image(systemName: "xmark.circle")
+                        .foregroundColor(.civitError)
+                        .accessibilityLabel("Cancel download")
+                }
+            }
+        case .completed:
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundColor(.civitPrimary)
+                .accessibilityLabel("Downloaded")
+        case .failed:
+            Button { onDownload?(file) } label: {
+                Image(systemName: "arrow.clockwise.circle")
+                    .foregroundColor(.civitError)
+                    .accessibilityLabel("Retry download")
+            }
+        case .paused:
+            Button { onDownload?(file) } label: {
+                Image(systemName: "arrow.down.circle")
+                    .foregroundColor(.civitPrimary)
+                    .accessibilityLabel("Resume download")
+            }
+        default:
+            EmptyView()
+        }
     }
 
     // MARK: - Advanced File Info

@@ -83,11 +83,13 @@ import com.riox432.civitdeck.domain.model.CivitaiLinkStatus
 import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.MediaContentType
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelDownload
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
 import com.riox432.civitdeck.domain.model.stripCdnWidth
+import com.riox432.civitdeck.download.DownloadScheduler
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailUiState
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
@@ -114,11 +116,10 @@ import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
-import com.riox432.civitdeck.util.FormatUtils
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "LongMethod")
 fun ModelDetailScreen(
     viewModel: ModelDetailViewModel,
     modelId: Long,
@@ -143,6 +144,13 @@ fun ModelDetailScreen(
     var showSendToPCSheet by remember { mutableStateOf(false) }
     var showQRCodeSheet by remember { mutableStateOf(false) }
     val haptic = rememberHapticFeedback()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.downloadEnqueuedEvent.collect { downloadId ->
+            DownloadScheduler.enqueue(context, downloadId)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -173,6 +181,8 @@ fun ModelDetailScreen(
             onSaveNote = viewModel::saveNote,
             onAddTag = viewModel::addTag,
             onRemoveTag = viewModel::removeTag,
+            onDownloadFile = viewModel::downloadFile,
+            onCancelDownload = viewModel::cancelDownload,
             contentPadding = padding,
         )
     }
@@ -309,7 +319,7 @@ private fun prepareImages(
     return listOf(filtered[idx]) + filtered.subList(0, idx) + filtered.subList(idx + 1, filtered.size)
 }
 
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "LongMethod")
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ModelDetailBody(
@@ -327,6 +337,8 @@ private fun ModelDetailBody(
     onSaveNote: (String) -> Unit = {},
     onAddTag: (String) -> Unit = {},
     onRemoveTag: (String) -> Unit = {},
+    onDownloadFile: (ModelFile) -> Unit = {},
+    onCancelDownload: (Long) -> Unit = {},
     contentPadding: PaddingValues,
 ) {
     val model = uiState.model
@@ -362,6 +374,8 @@ private fun ModelDetailBody(
             onSaveNote = onSaveNote,
             onAddTag = onAddTag,
             onRemoveTag = onRemoveTag,
+            onDownloadFile = onDownloadFile,
+            onCancelDownload = onCancelDownload,
             bottomPadding = contentPadding.calculateBottomPadding(),
             modifier = Modifier.weight(1f),
             carouselContent = {
@@ -487,6 +501,8 @@ private fun DetailStateContent(
     onSaveNote: (String) -> Unit = {},
     onAddTag: (String) -> Unit = {},
     onRemoveTag: (String) -> Unit = {},
+    onDownloadFile: (ModelFile) -> Unit = {},
+    onCancelDownload: (Long) -> Unit = {},
     bottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
     carouselContent: @Composable () -> Unit = {},
@@ -530,6 +546,8 @@ private fun DetailStateContent(
                         onSaveNote = onSaveNote,
                         onAddTag = onAddTag,
                         onRemoveTag = onRemoveTag,
+                        onDownloadFile = onDownloadFile,
+                        onCancelDownload = onCancelDownload,
                         bottomPadding = bottomPadding,
                         carouselContent = carouselContent,
                     )
@@ -608,6 +626,8 @@ private fun ModelDetailContentBody(
     onSaveNote: (String) -> Unit = {},
     onAddTag: (String) -> Unit = {},
     onRemoveTag: (String) -> Unit = {},
+    onDownloadFile: (ModelFile) -> Unit = {},
+    onCancelDownload: (Long) -> Unit = {},
     bottomPadding: androidx.compose.ui.unit.Dp,
     carouselContent: @Composable () -> Unit = {},
 ) {
@@ -643,6 +663,8 @@ private fun ModelDetailContentBody(
             onSaveNote = onSaveNote,
             onAddTag = onAddTag,
             onRemoveTag = onRemoveTag,
+            onDownloadFile = onDownloadFile,
+            onCancelDownload = onCancelDownload,
             carouselContent = carouselContent,
         )
     }
@@ -663,6 +685,8 @@ private fun LazyListScope.modelDetailItems(
     onSaveNote: (String) -> Unit = {},
     onAddTag: (String) -> Unit = {},
     onRemoveTag: (String) -> Unit = {},
+    onDownloadFile: (ModelFile) -> Unit = {},
+    onCancelDownload: (Long) -> Unit = {},
     carouselContent: @Composable () -> Unit,
 ) {
     item { carouselContent() }
@@ -712,7 +736,15 @@ private fun LazyListScope.modelDetailItems(
             )
         }
     }
-    item { VersionDetail(version = selectedVersion, powerUserMode = uiState.powerUserMode) }
+    item {
+        VersionDetail(
+            version = selectedVersion,
+            powerUserMode = uiState.powerUserMode,
+            downloads = uiState.downloads.associateBy { it.fileId },
+            onDownloadFile = onDownloadFile,
+            onCancelDownload = onCancelDownload,
+        )
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -1036,8 +1068,15 @@ private fun VersionSelector(
     }
 }
 
+@Suppress("LongParameterList")
 @Composable
-private fun VersionDetail(version: ModelVersion, powerUserMode: Boolean = false) {
+private fun VersionDetail(
+    version: ModelVersion,
+    powerUserMode: Boolean = false,
+    downloads: Map<Long, ModelDownload> = emptyMap(),
+    onDownloadFile: (ModelFile) -> Unit = {},
+    onCancelDownload: (Long) -> Unit = {},
+) {
     Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
         if (version.baseModel != null) {
             DetailRow(label = "Base Model", value = version.baseModel!!)
@@ -1059,7 +1098,12 @@ private fun VersionDetail(version: ModelVersion, powerUserMode: Boolean = false)
             SectionHeader(title = "Files", showDivider = false)
             Spacer(modifier = Modifier.height(Spacing.xs))
             version.files.forEach { file ->
-                FileInfoRow(file = file)
+                FileDownloadRow(
+                    file = file,
+                    downloadState = downloads[file.id],
+                    onDownload = onDownloadFile,
+                    onCancel = onCancelDownload,
+                )
                 if (powerUserMode) {
                     AdvancedFileInfo(file = file)
                 }
@@ -1230,45 +1274,5 @@ private fun DetailRow(label: String, value: String) {
             text = value,
             style = MaterialTheme.typography.bodyMedium,
         )
-    }
-}
-
-@Composable
-private fun FileInfoRow(file: ModelFile) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Spacing.xs),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = file.name,
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                Text(
-                    text = FormatUtils.formatFileSize(file.sizeKB),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                file.format?.let { format ->
-                    Text(
-                        text = format,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                file.fp?.let { fp ->
-                    Text(
-                        text = fp,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
     }
 }

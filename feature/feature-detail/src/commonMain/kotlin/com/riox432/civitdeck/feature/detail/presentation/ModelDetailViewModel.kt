@@ -2,15 +2,21 @@ package com.riox432.civitdeck.feature.detail.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelCollection
+import com.riox432.civitdeck.domain.model.ModelDownload
+import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelNote
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PersonalTag
 import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
+import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
+import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveModelDownloadsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePersonalTagsUseCase
@@ -26,7 +32,9 @@ import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveModelColl
 import com.riox432.civitdeck.feature.collections.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.feature.gallery.domain.usecase.EnrichModelImagesUseCase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,6 +52,7 @@ data class ModelDetailUiState(
     val powerUserMode: Boolean = false,
     val note: ModelNote? = null,
     val personalTags: List<PersonalTag> = emptyList(),
+    val downloads: List<ModelDownload> = emptyList(),
 )
 
 @Suppress("LongParameterList")
@@ -67,11 +76,17 @@ class ModelDetailViewModel(
     private val observePersonalTagsUseCase: ObservePersonalTagsUseCase,
     private val addPersonalTagUseCase: AddPersonalTagUseCase,
     private val removePersonalTagUseCase: RemovePersonalTagUseCase,
+    private val observeModelDownloadsUseCase: ObserveModelDownloadsUseCase,
+    private val enqueueDownloadUseCase: EnqueueDownloadUseCase,
+    private val cancelDownloadUseCase: CancelDownloadUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelDetailUiState())
     val uiState: StateFlow<ModelDetailUiState> = _uiState.asStateFlow()
     private val enrichedVersionIds = mutableSetOf<Long>()
+
+    private val _downloadEnqueuedEvent = MutableSharedFlow<Long>(extraBufferCapacity = 1)
+    val downloadEnqueuedEvent: SharedFlow<Long> = _downloadEnqueuedEvent
 
     val collections: StateFlow<List<ModelCollection>> =
         observeCollectionsUseCase()
@@ -88,6 +103,7 @@ class ModelDetailViewModel(
         observePowerUserMode()
         observeNote()
         observePersonalTags()
+        observeDownloads()
     }
 
     fun onVersionSelected(index: Int) {
@@ -272,6 +288,54 @@ class ModelDetailViewModel(
             }
         }
     }
+
+    private fun observeDownloads() {
+        viewModelScope.launch {
+            observeModelDownloadsUseCase(modelId).collect { downloads ->
+                _uiState.update { it.copy(downloads = downloads) }
+            }
+        }
+    }
+
+    fun downloadFile(file: ModelFile) {
+        val model = _uiState.value.model ?: return
+        val version = model.modelVersions.getOrNull(_uiState.value.selectedVersionIndex) ?: return
+        viewModelScope.launch {
+            try {
+                val download = ModelDownload(
+                    modelId = model.id,
+                    modelName = model.name,
+                    versionId = version.id,
+                    versionName = version.name,
+                    fileId = file.id,
+                    fileName = file.name,
+                    fileUrl = file.downloadUrl,
+                    fileSizeBytes = (file.sizeKB * KB_TO_BYTES).toLong(),
+                    status = DownloadStatus.Pending,
+                    modelType = model.type.name,
+                )
+                val id = enqueueDownloadUseCase(download)
+                _downloadEnqueuedEvent.tryEmit(id)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // Download enqueue failure is non-critical
+            }
+        }
+    }
+
+    fun cancelDownload(downloadId: Long) {
+        viewModelScope.launch {
+            try {
+                cancelDownloadUseCase(downloadId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // Cancel failure is non-critical
+            }
+        }
+    }
 }
 
 private const val STOP_TIMEOUT = 5_000L
+private const val KB_TO_BYTES = 1024.0

@@ -5,6 +5,11 @@ import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.usecase.AddImageToDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
+import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
+import com.riox432.civitdeck.domain.usecase.ClearCompletedDownloadsUseCase
+import com.riox432.civitdeck.domain.usecase.DeleteDownloadUseCase
+import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
+import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
 import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
@@ -42,6 +47,8 @@ import com.riox432.civitdeck.domain.usecase.ObserveCustomNavShortcutsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveDownloadsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveModelDownloadsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
@@ -398,4 +405,13 @@ object KoinHelper {
     fun getUnreadFeedCountUseCase(): GetUnreadFeedCountUseCase = getKoin().get()
     fun getMarkFeedReadUseCase(): MarkFeedReadUseCase = getKoin().get()
     fun getFollowedCreatorsUseCase(): GetFollowedCreatorsUseCase = getKoin().get()
+
+    // Download
+    fun getModelDownloadRepository(): ModelDownloadRepository = getKoin().get()
+    fun getEnqueueDownloadUseCase(): EnqueueDownloadUseCase = getKoin().get()
+    fun getObserveDownloadsUseCase(): ObserveDownloadsUseCase = getKoin().get()
+    fun getObserveModelDownloadsUseCase(): ObserveModelDownloadsUseCase = getKoin().get()
+    fun getCancelDownloadUseCase(): CancelDownloadUseCase = getKoin().get()
+    fun getDeleteDownloadUseCase(): DeleteDownloadUseCase = getKoin().get()
+    fun getClearCompletedDownloadsUseCase(): ClearCompletedDownloadsUseCase = getKoin().get()
 }
