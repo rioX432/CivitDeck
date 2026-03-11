@@ -20,7 +20,7 @@ final class DownloadService: NSObject, ObservableObject {
         KoinHelper.shared.getModelDownloadRepository()
     }()
 
-    private override init() {
+    override private init() {
         super.init()
         downloadDelegate.service = self
     }
