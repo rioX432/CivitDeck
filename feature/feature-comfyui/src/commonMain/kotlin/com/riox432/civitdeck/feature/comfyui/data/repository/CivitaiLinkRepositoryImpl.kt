@@ -7,6 +7,7 @@ import com.riox432.civitdeck.domain.model.CivitaiLinkActivity
 import com.riox432.civitdeck.domain.model.CivitaiLinkResource
 import com.riox432.civitdeck.domain.model.CivitaiLinkStatus
 import com.riox432.civitdeck.domain.repository.CivitaiLinkRepository
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -53,7 +54,7 @@ class CivitaiLinkRepositoryImpl(
                 }
                 _status.value = CivitaiLinkStatus.Disconnected
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                println("CivitaiLinkRepositoryImpl: Connection failed: ${e.message}")
+                Logger.w("CivitaiLinkRepository", "Connection failed: ${e.message}")
                 _status.value = CivitaiLinkStatus.Error
             }
         }

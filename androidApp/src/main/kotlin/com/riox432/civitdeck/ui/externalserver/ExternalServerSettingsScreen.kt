@@ -36,7 +36,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.ExternalServerConfig
 import com.riox432.civitdeck.domain.model.ExternalServerConnectionStatus
@@ -166,7 +165,7 @@ private fun ExternalServerStatusCard(
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                 if (state.activeConfig != null) {
                     if (state.isTesting) {
-                        CircularProgressIndicator(modifier = Modifier.padding(4.dp))
+                        CircularProgressIndicator(modifier = Modifier.padding(Spacing.xs))
                     } else {
                         TextButton(onClick = onTest) { Text("Test Connection") }
                     }

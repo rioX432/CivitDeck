@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.data.scanner
 
+import com.riox432.civitdeck.util.Logger
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.reinterpret
@@ -46,7 +47,7 @@ actual class FileScanner actual constructor() {
                     sizeBytes = size,
                 )
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                println("FileScanner: Failed to scan file $filePath, skipping: ${e.message}")
+                Logger.w("FileScanner", "Failed to scan file $filePath, skipping: ${e.message}")
                 null
             }
         }

@@ -211,8 +211,7 @@ private fun FeedItemMeta(
             Box(
                 modifier = Modifier
                     .size(8.dp)
-                    .clip(CircleShape)
-                    .padding(0.dp),
+                    .clip(CircleShape),
             ) {
                 Box(
                     modifier = Modifier

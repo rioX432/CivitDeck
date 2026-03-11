@@ -86,13 +86,13 @@ private fun AnalyticsContent(state: AnalyticsUiState, modifier: Modifier = Modif
         }
         if (state.topCreators.isNotEmpty()) {
             item { SectionTitle("Most Viewed Creators") }
-            items(state.topCreators.take(TOP_N)) { stat ->
+            items(state.topCreators.take(TOP_N), key = { it.name }) { stat ->
                 RankedRow(stat)
             }
         }
         if (state.topSearchQueries.isNotEmpty()) {
             item { SectionTitle("Top Searches") }
-            items(state.topSearchQueries.take(TOP_N)) { stat ->
+            items(state.topSearchQueries.take(TOP_N), key = { it.name }) { stat ->
                 RankedRow(stat)
             }
         }

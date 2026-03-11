@@ -28,6 +28,7 @@ import com.riox432.civitdeck.domain.export.WorkflowExportService
 import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
+import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,8 +87,8 @@ private fun PromptSection(
             text = prompt,
             style = MaterialTheme.typography.bodySmall,
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             OutlinedButton(
                 onClick = {
                     haptic(HapticFeedbackType.Success)
@@ -100,7 +101,7 @@ private fun PromptSection(
                 Text("Save Prompt")
             }
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(Spacing.sm))
     }
     meta.negativePrompt?.let { negPrompt ->
         MetadataLabel("Negative Prompt")
@@ -108,10 +109,10 @@ private fun PromptSection(
             text = negPrompt,
             style = MaterialTheme.typography.bodySmall,
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(Spacing.sm))
     }
     if (meta.prompt != null || meta.negativePrompt != null) {
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
     }
 }
 
@@ -124,13 +125,13 @@ private fun MetadataParams(meta: ImageGenerationMeta) {
     meta.seed?.let { MetadataRow("Seed", it.toString()) }
     meta.size?.let { MetadataRow("Size", it) }
     if (meta.additionalParams.isNotEmpty()) {
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
         Text(
             text = "Advanced Parameters",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.primary,
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(Spacing.xs))
         meta.additionalParams.forEach { (key, value) ->
             MetadataRow(key, value)
         }
@@ -144,7 +145,7 @@ private fun MetadataLabel(label: String) {
         style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.primary,
     )
-    Spacer(modifier = Modifier.height(4.dp))
+    Spacer(modifier = Modifier.height(Spacing.xs))
 }
 
 @Composable
@@ -152,7 +153,7 @@ private fun MetadataRow(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = Spacing.xs),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
@@ -169,14 +170,14 @@ private fun MetadataRow(label: String, value: String) {
 
 @Composable
 private fun ExportSection(meta: ImageGenerationMeta, context: Context) {
-    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+    HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
     Text(
         text = "Export",
         style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.primary,
     )
-    Spacer(modifier = Modifier.height(8.dp))
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Spacer(modifier = Modifier.height(Spacing.sm))
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         OutlinedButton(onClick = {
             val text = WorkflowExportService.generateComfyUIWorkflow(meta)
             shareText(context, text, "Export ComfyUI Workflow")

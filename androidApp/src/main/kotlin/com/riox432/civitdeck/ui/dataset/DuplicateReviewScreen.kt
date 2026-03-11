@@ -181,7 +181,7 @@ private fun DuplicateImageThumbnail(image: DatasetImage) {
             ExcludedBadge(
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(4.dp),
+                    .padding(Spacing.xs),
             )
         }
     }

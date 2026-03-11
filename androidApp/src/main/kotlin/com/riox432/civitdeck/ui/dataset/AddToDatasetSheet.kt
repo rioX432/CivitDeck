@@ -62,7 +62,7 @@ fun AddToDatasetSheet(
                 onClick = { showCreateDialog = true },
                 modifier = Modifier.padding(horizontal = Spacing.md),
             ) {
-                Icon(Icons.Default.Add, contentDescription = null)
+                Icon(Icons.Default.Add, contentDescription = "Create new dataset")
                 Text("Create New Dataset", modifier = Modifier.padding(start = Spacing.sm))
             }
         }

@@ -66,7 +66,7 @@ fun AddToCollectionSheet(
                 onClick = { showCreateDialog = true },
                 modifier = Modifier.padding(horizontal = Spacing.md),
             ) {
-                Icon(Icons.Default.Add, contentDescription = null)
+                Icon(Icons.Default.Add, contentDescription = "Create new collection")
                 Text("Create New Collection", modifier = Modifier.padding(start = Spacing.sm))
             }
         }
