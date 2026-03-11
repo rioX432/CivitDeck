@@ -12,8 +12,8 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PersonalTag
 import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
-import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
+import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelDownloadsUseCase
