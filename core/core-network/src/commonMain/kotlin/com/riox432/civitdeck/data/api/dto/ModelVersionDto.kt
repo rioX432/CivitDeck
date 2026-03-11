@@ -65,4 +65,5 @@ data class ModelImageDto(
     val height: Int = 0,
     val hash: String? = null,
     val meta: ImageMetaDto? = null,
+    val type: String? = null,
 )

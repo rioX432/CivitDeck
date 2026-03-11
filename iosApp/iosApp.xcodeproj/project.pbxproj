@@ -45,6 +45,7 @@
 		CD00060B2D000006000CD001 /* CivitDeckMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00060A2D000006000CD001 /* CivitDeckMotion.swift */; };
 		CD0006112D000036000CD001 /* ShimmerModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0006102D000036000CD001 /* ShimmerModifier.swift */; };
 		CD171A012E4F0171000CD001 /* AnimationModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD171A002E4F0171000CD001 /* AnimationModifiers.swift */; };
+		CDVP01012F000004000CD001 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDVP01002F000004000CD001 /* VideoPlayerView.swift */; };
 		CDAA01012E5F0001000CD001 /* StaggeredGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDAA01002E5F0001000CD001 /* StaggeredGrid.swift */; };
 		CDBB01012E6F0001000CD001 /* HeroTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDBB01002E6F0001000CD001 /* HeroTransition.swift */; };
 		CDLS01012EFF0001000CD001 /* LoadingStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDLS01002EFF0001000CD001 /* LoadingStateView.swift */; };
@@ -182,6 +183,7 @@
 		CD00060A2D000006000CD001 /* CivitDeckMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitDeckMotion.swift; sourceTree = "<group>"; };
 		CD0006102D000036000CD001 /* ShimmerModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmerModifier.swift; sourceTree = "<group>"; };
 		CD171A002E4F0171000CD001 /* AnimationModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationModifiers.swift; sourceTree = "<group>"; };
+		CDVP01002F000004000CD001 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		CDAA01002E5F0001000CD001 /* StaggeredGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaggeredGrid.swift; sourceTree = "<group>"; };
 		CDBB01002E6F0001000CD001 /* HeroTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroTransition.swift; sourceTree = "<group>"; };
 		CDLS01002EFF0001000CD001 /* LoadingStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingStateView.swift; sourceTree = "<group>"; };
@@ -405,6 +407,7 @@
 		CDCB01002EFF0001000CD001 /* ChipButton.swift */,
 			CDDR01002F000001000CD001 /* DetailRow.swift */,
 			CDSB01002F000002000CD001 /* SearchBarView.swift */,
+			CDVP01002F000004000CD001 /* VideoPlayerView.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -807,6 +810,7 @@
 		CDCB01012EFF0001000CD001 /* ChipButton.swift in Sources */,
 				CDDR01012F000001000CD001 /* DetailRow.swift in Sources */,
 				CDSB01012F000002000CD001 /* SearchBarView.swift in Sources */,
+				CDVP01012F000004000CD001 /* VideoPlayerView.swift in Sources */,
 				CD00C0012D3CC001000CD001 /* CollectionsScreen.swift in Sources */,
 				CD00C0032D3CC001000CD001 /* CollectionsViewModel.swift in Sources */,
 				CD00C0052D3CC001000CD001 /* CollectionDetailScreen.swift in Sources */,

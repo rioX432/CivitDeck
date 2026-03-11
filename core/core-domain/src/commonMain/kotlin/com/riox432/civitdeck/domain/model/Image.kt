@@ -13,6 +13,7 @@ data class Image(
     val username: String?,
     val stats: ImageStats?,
     val meta: ImageGenerationMeta?,
+    val contentType: MediaContentType = MediaContentType.IMAGE,
 )
 
 data class ImageStats(

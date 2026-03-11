@@ -1,3 +1,4 @@
+import AVKit
 import SwiftUI
 import Shared
 
@@ -17,13 +18,19 @@ struct CarouselViewer: View {
                     set: { selectedIndex = $0 }
                 )) {
                     ForEach(Array(images.enumerated()), id: \.offset) { i, image in
-                        ZoomableImageView(
-                            url: image.url,
-                            pageIndex: i,
-                            currentPageIndex: startIndex
-                        )
-                        .ignoresSafeArea()
-                        .tag(i)
+                        if image.contentType == .video, let videoUrl = URL(string: image.url) {
+                            VideoPlayerView(url: videoUrl, autoPlay: i == startIndex)
+                                .ignoresSafeArea()
+                                .tag(i)
+                        } else {
+                            ZoomableImageView(
+                                url: image.url,
+                                pageIndex: i,
+                                currentPageIndex: startIndex
+                            )
+                            .ignoresSafeArea()
+                            .tag(i)
+                        }
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))
@@ -91,22 +98,30 @@ struct ImageGridSheet: View {
                 onImageSelected(index)
             }
         } label: {
-            CachedAsyncImage(url: URL(string: image.url)) { phase in
-                switch phase {
-                case .success(let img):
-                    img.resizable().scaledToFill().transition(.opacity)
-                case .failure:
-                    Rectangle().fill(Color.civitSurfaceVariant)
-                        .overlay { SwiftUI.Image(systemName: "photo")
-                            .foregroundColor(.civitOnSurfaceVariant) }
-                case .empty:
-                    Rectangle().fill(Color.civitSurfaceVariant).shimmer()
-                @unknown default:
-                    EmptyView()
+            ZStack {
+                CachedAsyncImage(url: URL(string: image.url)) { phase in
+                    switch phase {
+                    case .success(let img):
+                        img.resizable().scaledToFill().transition(.opacity)
+                    case .failure:
+                        Rectangle().fill(Color.civitSurfaceVariant)
+                            .overlay { SwiftUI.Image(systemName: "photo")
+                                .foregroundColor(.civitOnSurfaceVariant) }
+                    case .empty:
+                        Rectangle().fill(Color.civitSurfaceVariant).shimmer()
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+                .aspectRatio(aspectRatio, contentMode: .fill)
+                .clipped()
+
+                if image.contentType == .video {
+                    SwiftUI.Image(systemName: "play.circle.fill")
+                        .font(.system(size: 44))
+                        .foregroundColor(.white.opacity(0.85))
                 }
             }
-            .aspectRatio(aspectRatio, contentMode: .fill)
-            .clipped()
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
         }
         .buttonStyle(.plain)
@@ -128,13 +143,19 @@ struct GridImageViewer: View {
                     set: { selectedIndex = $0 }
                 )) {
                     ForEach(Array(images.enumerated()), id: \.offset) { i, image in
-                        ZoomableImageView(
-                            url: image.url,
-                            pageIndex: i,
-                            currentPageIndex: startIndex
-                        )
-                        .ignoresSafeArea()
-                        .tag(i)
+                        if image.contentType == .video, let videoUrl = URL(string: image.url) {
+                            VideoPlayerView(url: videoUrl, autoPlay: i == startIndex)
+                                .ignoresSafeArea()
+                                .tag(i)
+                        } else {
+                            ZoomableImageView(
+                                url: image.url,
+                                pageIndex: i,
+                                currentPageIndex: startIndex
+                            )
+                            .ignoresSafeArea()
+                            .tag(i)
+                        }
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))

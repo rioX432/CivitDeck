@@ -41,21 +41,33 @@ object ImageDownloader {
         fileName: String,
         bytes: ByteArray,
     ): Boolean {
+        val mimeType = guessMimeType(fileName)
+        val isVideo = mimeType.startsWith("video/")
+        val contentUri = if (isVideo) {
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+        } else {
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        }
+        val relativePath = if (isVideo) {
+            "${Environment.DIRECTORY_MOVIES}/CivitDeck"
+        } else {
+            "Pictures/CivitDeck"
+        }
+
         val values = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
-            put(MediaStore.Images.Media.MIME_TYPE, guessMimeType(fileName))
-            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CivitDeck")
-            put(MediaStore.Images.Media.IS_PENDING, 1)
+            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+            put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
         }
 
         val resolver = context.contentResolver
-        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-            ?: return false
+        val uri = resolver.insert(contentUri, values) ?: return false
 
         return try {
             resolver.openOutputStream(uri)?.use { it.write(bytes) }
             values.clear()
-            values.put(MediaStore.Images.Media.IS_PENDING, 0)
+            values.put(MediaStore.MediaColumns.IS_PENDING, 0)
             resolver.update(uri, values, null, null)
             true
         } catch (_: Exception) {
@@ -84,6 +96,9 @@ object ImageDownloader {
             "png" -> "image/png"
             "webp" -> "image/webp"
             "gif" -> "image/gif"
+            "mp4" -> "video/mp4"
+            "webm" -> "video/webm"
+            "mov" -> "video/quicktime"
             else -> "image/jpeg"
         }
     }

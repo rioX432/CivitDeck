@@ -4,6 +4,7 @@ import com.riox432.civitdeck.domain.model.Creator
 import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.domain.model.ImageStats
+import com.riox432.civitdeck.domain.model.MediaContentType
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
@@ -81,6 +82,7 @@ fun ModelImageDto.toDomain(): ModelImage = ModelImage(
     height = height,
     hash = hash,
     meta = meta?.toDomain(),
+    contentType = MediaContentType.fromApiType(type) ?: MediaContentType.fromUrl(url),
 )
 
 fun ModelCreatorDto.toDomain(): Creator = Creator(
@@ -103,6 +105,7 @@ fun ImageDto.toDomain(): Image = Image(
     username = username,
     stats = stats?.toDomain(),
     meta = meta?.toDomain(),
+    contentType = MediaContentType.fromApiType(type) ?: MediaContentType.fromUrl(url),
 )
 
 fun ImageStatsDto.toDomain(): ImageStats = ImageStats(

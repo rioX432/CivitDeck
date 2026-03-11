@@ -44,6 +44,7 @@ data class ModelImage(
     val height: Int,
     val hash: String?,
     val meta: ImageGenerationMeta?,
+    val contentType: MediaContentType = MediaContentType.IMAGE,
 )
 
 /**

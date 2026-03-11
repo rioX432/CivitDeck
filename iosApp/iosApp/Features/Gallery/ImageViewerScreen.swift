@@ -25,26 +25,47 @@ struct ImageViewerScreen: View {
                     .opacity(backgroundOpacity)
                     .ignoresSafeArea()
 
-                // Layer 2: Image pager
+                // Layer 2: Image/Video pager
                 TabView(selection: Binding(
                     get: { index },
                     set: { selectedIndex = $0 }
                 )) {
                     ForEach(Array(images.enumerated()), id: \.element.id) { i, image in
-                        ZoomableImageView(
-                            url: image.url,
-                            onFocusModeChanged: { isFocusMode in
-                                controlsVisible = !isFocusMode
-                            },
-                            onDismiss: {
-                                selectedIndex = nil
-                            },
-                            onDragYChanged: { dragOffset = $0 },
-                            pageIndex: i,
-                            currentPageIndex: index
-                        )
-                        .ignoresSafeArea()
-                        .tag(i)
+                        if image.contentType == .video, let videoUrl = URL(string: image.url) {
+                            if image.url.hasSuffix(".webm") {
+                                VStack {
+                                    Spacer()
+                                    SwiftUI.Image(systemName: "play.slash")
+                                        .font(.largeTitle)
+                                        .foregroundColor(.civitInverseOnSurface)
+                                    Text("WebM format not supported on iOS")
+                                        .font(.civitBodyMedium)
+                                        .foregroundColor(.civitInverseOnSurface)
+                                        .padding(.top, Spacing.sm)
+                                    Spacer()
+                                }
+                                .tag(i)
+                            } else {
+                                VideoPlayerView(url: videoUrl, autoPlay: i == index)
+                                    .ignoresSafeArea()
+                                    .tag(i)
+                            }
+                        } else {
+                            ZoomableImageView(
+                                url: image.url,
+                                onFocusModeChanged: { isFocusMode in
+                                    controlsVisible = !isFocusMode
+                                },
+                                onDismiss: {
+                                    selectedIndex = nil
+                                },
+                                onDragYChanged: { dragOffset = $0 },
+                                pageIndex: i,
+                                currentPageIndex: index
+                            )
+                            .ignoresSafeArea()
+                            .tag(i)
+                        }
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))
@@ -119,21 +140,28 @@ struct ImageViewerScreen: View {
     // MARK: - Download
 
     private func downloadImage(at index: Int) {
-        guard let urlString = images[safe: index]?.url,
-              let url = URL(string: urlString) else {
+        guard let image = images[safe: index],
+              let url = URL(string: image.url) else {
             showToast("Download failed")
             return
         }
+
+        let isVideo = image.contentType == .video
 
         Task {
             do {
                 let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
                 let (data, _) = try await ImageURLSession.shared.data(for: request)
-                guard let image = UIImage(data: data) else {
-                    showToast("Download failed")
-                    return
+
+                if isVideo {
+                    try await saveVideoToPhotoLibrary(data: data, url: url)
+                } else {
+                    guard let uiImage = UIImage(data: data) else {
+                        showToast("Download failed")
+                        return
+                    }
+                    try await saveImageToPhotoLibrary(image: uiImage)
                 }
-                try await saveToPhotoLibrary(image: image)
                 showToast("Saved to Photos")
             } catch {
                 showToast("Download failed")
@@ -141,13 +169,30 @@ struct ImageViewerScreen: View {
         }
     }
 
-    private func saveToPhotoLibrary(image: UIImage) async throws {
+    private func saveImageToPhotoLibrary(image: UIImage) async throws {
         let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard status == .authorized || status == .limited else {
             throw DownloadError.permissionDenied
         }
         try await PHPhotoLibrary.shared().performChanges {
             PHAssetChangeRequest.creationRequestForAsset(from: image)
+        }
+    }
+
+    private func saveVideoToPhotoLibrary(data: Data, url: URL) async throws {
+        let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+        guard status == .authorized || status == .limited else {
+            throw DownloadError.permissionDenied
+        }
+        let ext = url.pathExtension.isEmpty ? "mp4" : url.pathExtension
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension(ext)
+        try data.write(to: tempURL)
+        defer { try? FileManager.default.removeItem(at: tempURL) }
+        try await PHPhotoLibrary.shared().performChanges {
+            let request = PHAssetCreationRequest.forAsset()
+            request.addResource(with: .video, fileURL: tempURL, options: nil)
         }
     }
 
