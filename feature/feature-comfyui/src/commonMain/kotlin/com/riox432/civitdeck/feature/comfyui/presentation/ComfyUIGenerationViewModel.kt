@@ -16,6 +16,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCas
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -113,7 +114,8 @@ class ComfyUIGenerationViewModel(
             try {
                 val list = fetchLoras()
                 _uiState.update { it.copy(availableLoras = list, isLoadingLoras = false) }
-            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.w("ComfyUIGeneration", "Failed to fetch loras: ${e.message}")
                 _uiState.update { it.copy(isLoadingLoras = false) }
             }
         }
@@ -125,7 +127,8 @@ class ComfyUIGenerationViewModel(
             try {
                 val list = fetchControlNets()
                 _uiState.update { it.copy(availableControlNets = list, isLoadingControlNets = false) }
-            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.w("ComfyUIGeneration", "Failed to fetch control nets: ${e.message}")
                 _uiState.update { it.copy(isLoadingControlNets = false) }
             }
         }
