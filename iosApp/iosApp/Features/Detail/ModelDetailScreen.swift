@@ -44,6 +44,7 @@ struct ModelDetailScreen: View {
                 group.addTask { await viewModel.observePowerUserMode() }
                 group.addTask { await viewModel.observeNote() }
                 group.addTask { await viewModel.observePersonalTags() }
+                group.addTask { await viewModel.observeDownloads() }
             }
         }
         .toolbar {
@@ -377,7 +378,12 @@ struct ModelDetailScreen: View {
         if let version = viewModel.selectedVersion {
             VersionDetailSection(
                 version: version,
-                powerUserMode: viewModel.powerUserMode
+                powerUserMode: viewModel.powerUserMode,
+                downloads: Dictionary(
+                    uniqueKeysWithValues: viewModel.downloads.map { ($0.fileId, $0) }
+                ),
+                onDownload: { viewModel.downloadFile($0) },
+                onCancelDownload: { viewModel.cancelDownload($0) }
             )
         }
     }

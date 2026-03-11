@@ -14,6 +14,7 @@ final class ModelDetailViewModel: ObservableObject {
     @Published var powerUserMode: Bool = false
     @Published var note: ModelNote?
     @Published var personalTags: [PersonalTag] = []
+    @Published var downloads: [ModelDownload] = []
 
     private let modelId: Int64
     private let getModelDetailUseCase: GetModelDetailUseCase
@@ -34,6 +35,9 @@ final class ModelDetailViewModel: ObservableObject {
     private let observePersonalTagsUseCase: ObservePersonalTagsUseCase
     private let addPersonalTagUseCase: AddPersonalTagUseCase
     private let removePersonalTagUseCase: RemovePersonalTagUseCase
+    private let observeModelDownloadsUseCase: ObserveModelDownloadsUseCase
+    private let enqueueDownloadUseCase: EnqueueDownloadUseCase
+    private let cancelDownloadUseCase: CancelDownloadUseCase
     private var enrichedVersionIds: Set<Int64> = []
 
     var selectedVersion: ModelVersion? {
@@ -63,6 +67,9 @@ final class ModelDetailViewModel: ObservableObject {
         self.observePersonalTagsUseCase = KoinHelper.shared.getObservePersonalTagsUseCase()
         self.addPersonalTagUseCase = KoinHelper.shared.getAddPersonalTagUseCase()
         self.removePersonalTagUseCase = KoinHelper.shared.getRemovePersonalTagUseCase()
+        self.observeModelDownloadsUseCase = KoinHelper.shared.getObserveModelDownloadsUseCase()
+        self.enqueueDownloadUseCase = KoinHelper.shared.getEnqueueDownloadUseCase()
+        self.cancelDownloadUseCase = KoinHelper.shared.getCancelDownloadUseCase()
         loadModel()
     }
 
@@ -210,6 +217,55 @@ final class ModelDetailViewModel: ObservableObject {
             } catch {
                 enrichedVersionIds.remove(versionId)
             }
+        }
+    }
+
+    func observeDownloads() async {
+        for await list in observeModelDownloadsUseCase.invoke(modelId: modelId) {
+            downloads = list.compactMap { $0 as? ModelDownload }
+        }
+    }
+
+    func downloadFile(_ file: ModelFile) {
+        guard let model else { return }
+        guard let version = selectedVersion else { return }
+        let apiKey = KoinHelper.shared.getApiKeyProvider().apiKey
+        Task {
+            let download = ModelDownload(
+                id: 0,
+                modelId: model.id,
+                modelName: model.name,
+                versionId: version.id,
+                versionName: version.name,
+                fileId: file.id,
+                fileName: file.name,
+                fileUrl: file.downloadUrl,
+                fileSizeBytes: Int64(file.sizeKB * 1024),
+                downloadedBytes: 0,
+                status: .pending,
+                modelType: model.type.name,
+                destinationPath: nil,
+                errorMessage: nil,
+                createdAt: 0,
+                updatedAt: 0
+            )
+            let downloadId = try await enqueueDownloadUseCase.invoke(download: download)
+            let existingDownload = downloads.first(where: { $0.fileId == file.id })
+            // Only start download if status is pending (new or re-enqueued)
+            if existingDownload == nil || existingDownload?.status == .pending {
+                DownloadService.shared.startDownload(
+                    downloadId: downloadId.int64Value,
+                    url: file.downloadUrl,
+                    apiKey: apiKey
+                )
+            }
+        }
+    }
+
+    func cancelDownload(_ downloadId: Int64) {
+        DownloadService.shared.cancelDownload(downloadId: downloadId)
+        Task {
+            try? await cancelDownloadUseCase.invoke(id: downloadId)
         }
     }
 
