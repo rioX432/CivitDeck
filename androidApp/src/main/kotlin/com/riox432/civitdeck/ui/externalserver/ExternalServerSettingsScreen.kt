@@ -166,7 +166,7 @@ private fun ExternalServerStatusCard(
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                 if (state.activeConfig != null) {
                     if (state.isTesting) {
-                        CircularProgressIndicator(modifier = Modifier.padding(4.dp))
+                        CircularProgressIndicator(modifier = Modifier.padding(Spacing.xs))
                     } else {
                         TextButton(onClick = onTest) { Text("Test Connection") }
                     }

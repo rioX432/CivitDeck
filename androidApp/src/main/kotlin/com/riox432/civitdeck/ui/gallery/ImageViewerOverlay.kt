@@ -57,6 +57,7 @@ import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.theme.CivitDeckColors
+import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Duration
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -303,18 +304,18 @@ private fun ViewerControls(
     Box(modifier = Modifier.fillMaxSize()) {
         IconButton(
             onClick = onDismiss,
-            modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
+            modifier = Modifier.align(Alignment.TopStart).padding(Spacing.lg),
             colors = IconButtonDefaults.iconButtonColors(contentColor = CivitDeckColors.onScrim),
         ) {
             Icon(Icons.Default.Close, contentDescription = "Close")
         }
 
-        Row(modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
+        Row(modifier = Modifier.align(Alignment.BottomEnd).padding(Spacing.lg)) {
             ControlButton(onClick = onDownloadClick, icon = Icons.Outlined.Download, label = "Download")
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(Spacing.sm))
             ControlButton(onClick = onShareClick, icon = Icons.Default.Share, label = "Share")
             if (hasMetadata) {
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(Spacing.sm))
                 ControlButton(onClick = onInfoClick, icon = Icons.Default.Info, label = "Metadata")
             }
         }

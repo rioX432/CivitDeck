@@ -44,9 +44,9 @@ fun GestureTutorialScreen(onDismiss: () -> Unit) {
         SkipButton(onDismiss)
         Spacer(modifier = Modifier.weight(1f))
         TutorialPager(pagerState)
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(Spacing.xl))
         PageIndicator(pagerState)
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(Spacing.xl))
         NavigationButtons(
             pagerState = pagerState,
             onNext = { scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) } },
