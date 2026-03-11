@@ -1353,7 +1353,7 @@ private fun ModelContextMenu(
                     onDismiss()
                 },
                 leadingIcon = {
-                    Icon(Icons.Default.ContentCopy, contentDescription = null)
+                    Icon(Icons.Default.ContentCopy, contentDescription = "Compare")
                 },
             )
         }
@@ -1364,7 +1364,7 @@ private fun ModelContextMenu(
                 onDismiss()
             },
             leadingIcon = {
-                Icon(Icons.Default.VisibilityOff, contentDescription = null)
+                Icon(Icons.Default.VisibilityOff, contentDescription = "Hide model")
             },
         )
     }

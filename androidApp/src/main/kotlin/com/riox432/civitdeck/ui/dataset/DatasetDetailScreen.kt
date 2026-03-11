@@ -365,7 +365,7 @@ private fun DatasetSelectionBottomBar(
             Button(onClick = onEditTags) {
                 Icon(
                     imageVector = Icons.Default.Style,
-                    contentDescription = null,
+                    contentDescription = "Edit tags",
                     modifier = Modifier.size(18.dp),
                 )
                 Text(
@@ -376,7 +376,7 @@ private fun DatasetSelectionBottomBar(
             Button(onClick = onRemove) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = null,
+                    contentDescription = "Remove",
                     modifier = Modifier.size(18.dp),
                 )
                 Text(

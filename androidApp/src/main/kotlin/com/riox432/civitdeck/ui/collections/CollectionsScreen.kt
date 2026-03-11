@@ -286,7 +286,7 @@ private fun CollectionOverflowMenu(
         ) {
             DropdownMenuItem(
                 text = { Text("Rename") },
-                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = "Rename") },
                 onClick = {
                     onToggleMenu(false)
                     onRename()
@@ -294,7 +294,7 @@ private fun CollectionOverflowMenu(
             )
             DropdownMenuItem(
                 text = { Text("Delete") },
-                leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete") },
                 onClick = {
                     onToggleMenu(false)
                     onDelete()

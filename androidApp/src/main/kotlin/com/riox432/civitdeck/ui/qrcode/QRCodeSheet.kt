@@ -145,7 +145,7 @@ private fun ShareButton(onShare: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {
-            Icon(Icons.Default.Share, contentDescription = null)
+            Icon(Icons.Default.Share, contentDescription = "Share")
             Spacer(modifier = Modifier.width(Spacing.sm))
             Text("Share QR Code")
         }

@@ -289,7 +289,7 @@ private fun MatchedModelInfo(match: com.riox432.civitdeck.domain.model.MatchedMo
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 Icons.Default.Warning,
-                contentDescription = null,
+                contentDescription = "Update available",
                 modifier = Modifier.size(14.dp),
                 tint = MaterialTheme.colorScheme.tertiary,
             )
