@@ -1261,6 +1261,7 @@ private fun ModelGrid(
         items(
             count = lazyPagingItems.itemCount,
             key = lazyPagingItems.itemKey { it.id },
+            contentType = { "model" },
         ) { index ->
             val model = lazyPagingItems[index] ?: return@items
             val thumbnailUrl = model.modelVersions

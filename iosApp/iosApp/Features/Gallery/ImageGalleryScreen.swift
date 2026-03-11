@@ -126,6 +126,10 @@ struct ImageGalleryScreen: View {
 
     private var imageGrid: some View {
         let colCount = AdaptiveGrid.columnCount(sizeClass: sizeClass)
+        let indexLookup = Dictionary(
+            viewModel.images.enumerated().map { ($1.id, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
         return ScrollView {
             StaggeredGrid(
                 data: viewModel.images,
@@ -134,7 +138,7 @@ struct ImageGalleryScreen: View {
                 id: \.id,
                 aspectRatio: imageAspectRatio
             ) { image in
-                staggeredImageCell(image: image)
+                staggeredImageCell(image: image, index: indexLookup[image.id] ?? 0)
             }
             .padding(.horizontal, Spacing.sm)
 
@@ -151,9 +155,8 @@ struct ImageGalleryScreen: View {
             : 1.0
     }
 
-    private func staggeredImageCell(image: CivitImage) -> some View {
-        let index = viewModel.images.firstIndex(where: { $0.id == image.id }) ?? 0
-        return imageCell(image: image, index: index)
+    private func staggeredImageCell(image: CivitImage, index: Int) -> some View {
+        imageCell(image: image, index: index)
             .task {
                 if index >= viewModel.images.count - 6 {
                     viewModel.loadMore()
