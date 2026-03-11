@@ -38,19 +38,13 @@ struct ModelDetailScreen: View {
         .navigationTitle(viewModel.model?.name ?? "")
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            await viewModel.observeFavorite()
-        }
-        .task {
-            await viewModel.observeNsfwFilter()
-        }
-        .task {
-            await viewModel.observePowerUserMode()
-        }
-        .task {
-            await viewModel.observeNote()
-        }
-        .task {
-            await viewModel.observePersonalTags()
+            await withTaskGroup(of: Void.self) { group in
+                group.addTask { await viewModel.observeFavorite() }
+                group.addTask { await viewModel.observeNsfwFilter() }
+                group.addTask { await viewModel.observePowerUserMode() }
+                group.addTask { await viewModel.observeNote() }
+                group.addTask { await viewModel.observePersonalTags() }
+            }
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -90,10 +84,10 @@ struct ModelDetailScreen: View {
             }
         }
         .task {
-            await viewModel.observeCollections()
-        }
-        .task {
-            await viewModel.observeModelCollections()
+            await withTaskGroup(of: Void.self) { group in
+                group.addTask { await viewModel.observeCollections() }
+                group.addTask { await viewModel.observeModelCollections() }
+            }
         }
         .sheet(isPresented: $showCollectionSheet) {
             AddToCollectionSheet(
