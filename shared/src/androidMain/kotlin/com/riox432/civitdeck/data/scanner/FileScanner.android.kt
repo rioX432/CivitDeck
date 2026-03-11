@@ -1,11 +1,11 @@
 package com.riox432.civitdeck.data.scanner
 
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import java.io.File
-import com.riox432.civitdeck.util.Logger
 import java.security.MessageDigest
 import kotlin.coroutines.coroutineContext
 
