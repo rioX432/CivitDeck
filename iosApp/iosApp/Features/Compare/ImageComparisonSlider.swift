@@ -55,7 +55,11 @@ struct ImageComparisonSlider: View {
                     .offset(offset)
             case .failure:
                 Color.civitSurfaceVariant
-                    .overlay { Image(systemName: "photo").foregroundColor(.civitOnSurfaceVariant).accessibilityHidden(true) }
+                    .overlay {
+                        Image(systemName: "photo")
+                            .foregroundColor(.civitOnSurfaceVariant)
+                            .accessibilityHidden(true)
+                    }
             case .empty:
                 Color.civitSurfaceVariant.shimmer()
             @unknown default:
