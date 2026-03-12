@@ -17,6 +17,7 @@ struct ModelDetailScreen: View {
     @State private var showComfyUIGeneration = false
     @State private var showLinkSheet = false
     @State private var showQRCodeSheet = false
+    @State private var showSubmitReviewSheet = false
 
     var body: some View {
         Group {
@@ -47,6 +48,7 @@ struct ModelDetailScreen: View {
                 group.addTask { await viewModel.observeDownloads() }
             }
         }
+        .task { viewModel.loadReviews() }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -141,6 +143,10 @@ struct ModelDetailScreen: View {
                 )
             }
         }
+        .sheet(isPresented: $showSubmitReviewSheet) { submitReviewSheet }
+        .onChange(of: viewModel.reviewSubmitSuccess) { success in
+            if success { showSubmitReviewSheet = false; viewModel.dismissReviewSuccess() }
+        }
     }
 
     // MARK: - Content
@@ -169,6 +175,14 @@ struct ModelDetailScreen: View {
                     tags: viewModel.personalTags,
                     onAdd: { viewModel.addTag($0) },
                     onRemove: { viewModel.removeTag($0) }
+                )
+                ReviewsSection(
+                    reviews: viewModel.reviews,
+                    ratingTotals: viewModel.ratingTotals,
+                    sortOrder: viewModel.reviewSortOrder,
+                    isLoading: viewModel.isReviewsLoading,
+                    onSortChanged: { viewModel.onReviewSortChanged($0) },
+                    onWriteReview: { showSubmitReviewSheet = true }
                 )
                 descriptionSection(description: model.description_)
                 versionSelector(model: model)
@@ -386,6 +400,20 @@ struct ModelDetailScreen: View {
                 onCancelDownload: { viewModel.cancelDownload($0) }
             )
         }
+    }
+
+    private var submitReviewSheet: some View {
+        SubmitReviewSheet(
+            isSubmitting: viewModel.isSubmittingReview,
+            onSubmit: { rating, recommended, details in
+                guard let version = viewModel.selectedVersion else { return }
+                viewModel.submitReview(
+                    modelVersionId: version.id, rating: rating,
+                    recommended: recommended, details: details
+                )
+            },
+            onDismiss: { showSubmitReviewSheet = false }
+        )
     }
 }
 

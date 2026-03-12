@@ -9,6 +9,7 @@ import com.riox432.civitdeck.data.repository.FavoriteRepositoryImpl
 import com.riox432.civitdeck.data.repository.LocalModelFileRepositoryImpl
 import com.riox432.civitdeck.data.repository.ModelRepositoryImpl
 import com.riox432.civitdeck.data.repository.ModelVersionCheckpointRepositoryImpl
+import com.riox432.civitdeck.data.repository.ReviewRepositoryImpl
 import com.riox432.civitdeck.data.repository.TagRepositoryImpl
 import com.riox432.civitdeck.data.scanner.FileScanner
 import com.riox432.civitdeck.domain.repository.AuthRepository
@@ -21,6 +22,7 @@ import com.riox432.civitdeck.domain.repository.ModelFileHashRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.domain.repository.ModelScanRepository
 import com.riox432.civitdeck.domain.repository.ModelVersionCheckpointRepository
+import com.riox432.civitdeck.domain.repository.ReviewRepository
 import com.riox432.civitdeck.domain.repository.TagRepository
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
@@ -46,6 +48,7 @@ val dataModule = module {
         bind<ModelFileHashRepository>()
     }
     single<ModelVersionCheckpointRepository> { ModelVersionCheckpointRepositoryImpl(get()) }
+    single<ReviewRepository> { ReviewRepositoryImpl(get(), get()) }
 
     // Export
     single<ExportRepository> { ExportRepositoryImpl(get(), get()) }

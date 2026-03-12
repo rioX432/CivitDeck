@@ -143,6 +143,7 @@ fun ModelDetailScreen(
     var showCollectionSheet by remember { mutableStateOf(false) }
     var showSendToPCSheet by remember { mutableStateOf(false) }
     var showQRCodeSheet by remember { mutableStateOf(false) }
+    var showSubmitReviewSheet by remember { mutableStateOf(false) }
     val haptic = rememberHapticFeedback()
     val context = LocalContext.current
 
@@ -183,8 +184,29 @@ fun ModelDetailScreen(
             onRemoveTag = viewModel::removeTag,
             onDownloadFile = viewModel::downloadFile,
             onCancelDownload = viewModel::cancelDownload,
+            onReviewSortChanged = viewModel::onReviewSortChanged,
+            onWriteReview = { showSubmitReviewSheet = true },
             contentPadding = padding,
         )
+    }
+
+    if (showSubmitReviewSheet) {
+        SubmitReviewSheet(
+            isSubmitting = uiState.isSubmittingReview,
+            onSubmit = { rating, recommended, details ->
+                val versionId = uiState.model?.modelVersions
+                    ?.getOrNull(uiState.selectedVersionIndex)?.id ?: return@SubmitReviewSheet
+                viewModel.submitReview(versionId, rating, recommended, details)
+            },
+            onDismiss = { showSubmitReviewSheet = false },
+        )
+    }
+
+    LaunchedEffect(uiState.reviewSubmitSuccess) {
+        if (uiState.reviewSubmitSuccess) {
+            showSubmitReviewSheet = false
+            viewModel.dismissReviewSuccess()
+        }
     }
 
     ModelDetailSheets(
@@ -339,6 +361,8 @@ private fun ModelDetailBody(
     onRemoveTag: (String) -> Unit = {},
     onDownloadFile: (ModelFile) -> Unit = {},
     onCancelDownload: (Long) -> Unit = {},
+    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit = {},
+    onWriteReview: () -> Unit = {},
     contentPadding: PaddingValues,
 ) {
     val model = uiState.model
@@ -376,6 +400,8 @@ private fun ModelDetailBody(
             onRemoveTag = onRemoveTag,
             onDownloadFile = onDownloadFile,
             onCancelDownload = onCancelDownload,
+            onReviewSortChanged = onReviewSortChanged,
+            onWriteReview = onWriteReview,
             bottomPadding = contentPadding.calculateBottomPadding(),
             modifier = Modifier.weight(1f),
             carouselContent = {
@@ -503,6 +529,8 @@ private fun DetailStateContent(
     onRemoveTag: (String) -> Unit = {},
     onDownloadFile: (ModelFile) -> Unit = {},
     onCancelDownload: (Long) -> Unit = {},
+    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit = {},
+    onWriteReview: () -> Unit = {},
     bottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
     carouselContent: @Composable () -> Unit = {},
@@ -548,6 +576,8 @@ private fun DetailStateContent(
                         onRemoveTag = onRemoveTag,
                         onDownloadFile = onDownloadFile,
                         onCancelDownload = onCancelDownload,
+                        onReviewSortChanged = onReviewSortChanged,
+                        onWriteReview = onWriteReview,
                         bottomPadding = bottomPadding,
                         carouselContent = carouselContent,
                     )
@@ -628,6 +658,8 @@ private fun ModelDetailContentBody(
     onRemoveTag: (String) -> Unit = {},
     onDownloadFile: (ModelFile) -> Unit = {},
     onCancelDownload: (Long) -> Unit = {},
+    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit = {},
+    onWriteReview: () -> Unit = {},
     bottomPadding: androidx.compose.ui.unit.Dp,
     carouselContent: @Composable () -> Unit = {},
 ) {
@@ -665,6 +697,8 @@ private fun ModelDetailContentBody(
             onRemoveTag = onRemoveTag,
             onDownloadFile = onDownloadFile,
             onCancelDownload = onCancelDownload,
+            onReviewSortChanged = onReviewSortChanged,
+            onWriteReview = onWriteReview,
             carouselContent = carouselContent,
         )
     }
@@ -687,6 +721,8 @@ private fun LazyListScope.modelDetailItems(
     onRemoveTag: (String) -> Unit = {},
     onDownloadFile: (ModelFile) -> Unit = {},
     onCancelDownload: (Long) -> Unit = {},
+    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit = {},
+    onWriteReview: () -> Unit = {},
     carouselContent: @Composable () -> Unit,
 ) {
     item { carouselContent() }
@@ -700,6 +736,44 @@ private fun LazyListScope.modelDetailItems(
             modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
         )
     }
+    modelDetailActionItems(
+        model = model,
+        uiState = uiState,
+        selectedVersion = selectedVersion,
+        images = images,
+        onViewImages = onViewImages,
+        onTryInComfyUI = onTryInComfyUI,
+        onSendToPC = onSendToPC,
+        onSaveNote = onSaveNote,
+        onAddTag = onAddTag,
+        onRemoveTag = onRemoveTag,
+        onReviewSortChanged = onReviewSortChanged,
+        onWriteReview = onWriteReview,
+        onVersionSelected = onVersionSelected,
+        onDownloadFile = onDownloadFile,
+        onCancelDownload = onCancelDownload,
+    )
+}
+
+@Suppress("LongParameterList")
+private fun LazyListScope.modelDetailActionItems(
+    model: Model,
+    uiState: ModelDetailUiState,
+    selectedVersion: ModelVersion,
+    images: List<ModelImage>,
+    onViewImages: (Long) -> Unit,
+    onTryInComfyUI:
+    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
+    onSendToPC: () -> Unit,
+    onSaveNote: (String) -> Unit,
+    onAddTag: (String) -> Unit,
+    onRemoveTag: (String) -> Unit,
+    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit,
+    onWriteReview: () -> Unit,
+    onVersionSelected: (Int) -> Unit,
+    onDownloadFile: (ModelFile) -> Unit,
+    onCancelDownload: (Long) -> Unit,
+) {
     item {
         val primaryFile = selectedVersion.files.firstOrNull { it.primary } ?: selectedVersion.files.firstOrNull()
         val sha256 = primaryFile?.hashes?.get("SHA256") ?: primaryFile?.hashes?.get("sha256")
@@ -722,6 +796,16 @@ private fun LazyListScope.modelDetailItems(
             tags = uiState.personalTags,
             onAddTag = onAddTag,
             onRemoveTag = onRemoveTag,
+        )
+    }
+    item {
+        ReviewsSection(
+            reviews = uiState.reviews,
+            ratingTotals = uiState.ratingTotals,
+            sortOrder = uiState.reviewSortOrder,
+            isLoading = uiState.isReviewsLoading,
+            onSortChanged = onReviewSortChanged,
+            onWriteReview = onWriteReview,
         )
     }
     if (!model.description.isNullOrBlank()) {
