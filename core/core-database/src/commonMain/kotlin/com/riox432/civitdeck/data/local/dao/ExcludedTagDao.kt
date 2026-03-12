@@ -14,6 +14,12 @@ interface ExcludedTagDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(entity: ExcludedTagEntity)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(entities: List<ExcludedTagEntity>)
+
+    @Query("DELETE FROM excluded_tags")
+    suspend fun deleteAll()
+
     @Query("DELETE FROM excluded_tags WHERE tag = :tag")
     suspend fun delete(tag: String)
 }

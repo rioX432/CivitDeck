@@ -55,6 +55,19 @@ class SimpleRepositoriesImplTest {
             updates.value++
         }
 
+        override suspend fun getAllUserCreated(): List<SavedPromptEntity> =
+            entities.filter { it.id > 0 }
+
+        override suspend fun insertAll(entities: List<SavedPromptEntity>) {
+            this.entities.addAll(entities)
+            updates.value++
+        }
+
+        override suspend fun deleteAllUserCreated() {
+            entities.removeAll { it.id > 0 }
+            updates.value++
+        }
+
         override suspend fun deleteById(id: Long) {
             entities.removeAll { it.id == id }
             updates.value++

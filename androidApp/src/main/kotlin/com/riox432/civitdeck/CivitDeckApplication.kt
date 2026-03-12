@@ -37,6 +37,7 @@ import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
 import com.riox432.civitdeck.ui.analytics.AnalyticsViewModel
+import com.riox432.civitdeck.ui.backup.BackupViewModel
 import com.riox432.civitdeck.ui.dataset.BatchTagEditorViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetListViewModel
@@ -158,4 +159,5 @@ val androidModule = module {
     viewModel { params -> DuplicateReviewViewModel(params.get(), get(), get()) }
     viewModel { AnalyticsViewModel(get()) }
     viewModel { FeedViewModel(get(), get(), get()) }
+    viewModel { BackupViewModel(get(), get(), get()) }
 }

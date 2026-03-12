@@ -178,6 +178,11 @@ typealias RatingTotals = Core_domainRatingTotals
 typealias ResourceReview = Core_domainResourceReview
 typealias ReviewPage = Core_domainReviewPage
 typealias SubmitReviewUseCase = Core_domainSubmitReviewUseCase
+typealias BackupCategory = Core_domainBackupCategory
+typealias RestoreStrategy = Core_domainRestoreStrategy
+typealias CreateBackupUseCase = Core_domainCreateBackupUseCase
+typealias RestoreBackupUseCase = Core_domainRestoreBackupUseCase
+typealias ParseBackupUseCase = Core_domainParseBackupUseCase
 
 // ReviewSortOrder is not exported from KMP (no public API uses it), so define in Swift
 enum ReviewSortOrder: CaseIterable {

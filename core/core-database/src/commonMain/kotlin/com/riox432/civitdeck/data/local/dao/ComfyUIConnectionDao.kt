@@ -2,11 +2,13 @@ package com.riox432.civitdeck.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import kotlinx.coroutines.flow.Flow
 
+@Suppress("TooManyFunctions")
 @Dao
 interface ComfyUIConnectionDao {
     @Query("SELECT * FROM comfyui_connections ORDER BY createdAt DESC")
@@ -21,8 +23,14 @@ interface ComfyUIConnectionDao {
     @Query("SELECT * FROM comfyui_connections WHERE id = :id")
     suspend fun getById(id: Long): ComfyUIConnectionEntity?
 
+    @Query("SELECT * FROM comfyui_connections ORDER BY createdAt DESC")
+    suspend fun getAll(): List<ComfyUIConnectionEntity>
+
     @Insert
     suspend fun insert(entity: ComfyUIConnectionEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entities: List<ComfyUIConnectionEntity>)
 
     @Update
     suspend fun update(entity: ComfyUIConnectionEntity)
@@ -40,4 +48,7 @@ interface ComfyUIConnectionDao {
 
     @Query("DELETE FROM comfyui_connections WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("DELETE FROM comfyui_connections")
+    suspend fun deleteAll()
 }

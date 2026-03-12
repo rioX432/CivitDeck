@@ -88,6 +88,21 @@ class FavoriteRepositoryImplTest {
         override fun observeCollectionThumbnail(collectionId: Long): Flow<String?> =
             flow.map { entries.filter { it.collectionId == collectionId }.maxByOrNull { it.addedAt }?.thumbnailUrl }
 
+        override suspend fun getAll(): List<CollectionEntity> = collections.toList()
+        override suspend fun getAllEntries(): List<CollectionModelEntity> = entries.toList()
+        override suspend fun insertCollections(collections: List<CollectionEntity>) {
+            this.collections.addAll(collections)
+            flow.value++
+        }
+        override suspend fun deleteAllEntries() {
+            entries.clear()
+            flow.value++
+        }
+        override suspend fun deleteAllNonDefault() {
+            collections.removeAll { !it.isDefault }
+            flow.value++
+        }
+
         override fun observeAllCollectionsWithCount(): Flow<List<CollectionWithCount>> =
             flow.map {
                 collections.map { c ->

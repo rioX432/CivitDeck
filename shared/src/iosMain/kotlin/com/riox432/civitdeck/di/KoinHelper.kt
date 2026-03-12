@@ -12,6 +12,7 @@ import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCompletedDownloadsUseCase
+import com.riox432.civitdeck.domain.usecase.CreateBackupUseCase
 import com.riox432.civitdeck.domain.usecase.CreateDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDownloadUseCase
@@ -69,10 +70,12 @@ import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveThemeModeUseCase
+import com.riox432.civitdeck.domain.usecase.ParseBackupUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveImageFromDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.RenameDatasetCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.RestoreBackupUseCase
 import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.SearchModelsByTagUseCase
@@ -422,4 +425,9 @@ object KoinHelper {
     fun getCancelDownloadUseCase(): CancelDownloadUseCase = getKoin().get()
     fun getDeleteDownloadUseCase(): DeleteDownloadUseCase = getKoin().get()
     fun getClearCompletedDownloadsUseCase(): ClearCompletedDownloadsUseCase = getKoin().get()
+
+    // Backup
+    fun getCreateBackupUseCase(): CreateBackupUseCase = getKoin().get()
+    fun getRestoreBackupUseCase(): RestoreBackupUseCase = getKoin().get()
+    fun getParseBackupUseCase(): ParseBackupUseCase = getKoin().get()
 }

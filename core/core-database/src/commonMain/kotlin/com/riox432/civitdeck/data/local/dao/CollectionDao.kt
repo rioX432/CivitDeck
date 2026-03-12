@@ -95,6 +95,23 @@ interface CollectionDao {
     @Query("SELECT type, COUNT(*) as cnt FROM collection_model_entries WHERE collectionId = 1 GROUP BY type")
     suspend fun getFavoriteTypeCounts(): List<TypeCount>
 
+    // --- Bulk queries (for backup) ---
+
+    @Query("SELECT * FROM collections ORDER BY id ASC")
+    suspend fun getAll(): List<CollectionEntity>
+
+    @Query("SELECT * FROM collection_model_entries ORDER BY collectionId ASC, addedAt DESC")
+    suspend fun getAllEntries(): List<CollectionModelEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCollections(collections: List<CollectionEntity>)
+
+    @Query("DELETE FROM collection_model_entries")
+    suspend fun deleteAllEntries()
+
+    @Query("DELETE FROM collections WHERE isDefault = 0")
+    suspend fun deleteAllNonDefault()
+
     // --- Cross-collection queries ---
 
     @Query("SELECT collectionId FROM collection_model_entries WHERE modelId = :modelId")

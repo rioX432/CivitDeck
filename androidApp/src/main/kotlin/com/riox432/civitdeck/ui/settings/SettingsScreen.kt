@@ -84,6 +84,7 @@ fun SettingsScreen(
     onNavigateToAdvanced: () -> Unit = {},
     onNavigateToNavShortcuts: () -> Unit = {},
     onNavigateToAnalytics: () -> Unit = {},
+    onNavigateToBackup: () -> Unit = {},
     onNavigateToLicenses: () -> Unit = {},
     scrollToTopTrigger: Int = 0,
 ) {
@@ -118,6 +119,8 @@ fun SettingsScreen(
             }
             item { SectionHeader("Advanced") }
             item { SubScreenRow("Advanced", onNavigateToAdvanced) }
+            item { SectionHeader("Data") }
+            item { SubScreenRow("Backup & Restore", onNavigateToBackup) }
             item { SectionHeader("Analytics") }
             item { SubScreenRow("Usage Stats", onNavigateToAnalytics) }
             item { SectionHeader("About") }
