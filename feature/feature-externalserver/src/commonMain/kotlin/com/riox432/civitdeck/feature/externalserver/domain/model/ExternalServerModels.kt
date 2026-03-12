@@ -49,3 +49,67 @@ data class ExternalServerImageFilters(
         if (search.isNotBlank()) put("search", search)
     }
 }
+
+// Generation models
+
+data class GenerationOption(
+    val key: String,
+    val label: String,
+    val type: GenerationOptionType,
+    val choices: List<GenerationChoice> = emptyList(),
+    val dependsOn: String? = null,
+    val choicesEndpoint: String? = null,
+    val placeholder: String? = null,
+    val defaultValue: String? = null,
+    val min: Int? = null,
+    val max: Int? = null,
+)
+
+enum class GenerationOptionType {
+    SELECT,
+    TEXT,
+    NUMBER,
+    ;
+
+    companion object {
+        fun fromString(value: String): GenerationOptionType = when (value) {
+            "select" -> SELECT
+            "text" -> TEXT
+            "number" -> NUMBER
+            else -> TEXT
+        }
+    }
+}
+
+data class GenerationChoice(
+    val value: String,
+    val label: String,
+    val description: String? = null,
+)
+
+data class GenerationJob(
+    val jobId: String,
+    val status: GenerationJobStatus,
+    val progress: Float = 0f,
+    val completed: Int = 0,
+    val total: Int = 0,
+    val message: String = "",
+)
+
+enum class GenerationJobStatus {
+    QUEUED,
+    RUNNING,
+    COMPLETED,
+    ERROR,
+    ;
+
+    companion object {
+        fun fromString(value: String): GenerationJobStatus = when (value) {
+            "queued" -> QUEUED
+            "running" -> RUNNING
+            "completed" -> COMPLETED
+            "error" -> ERROR
+            else -> ERROR
+        }
+    }
+}

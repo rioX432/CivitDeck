@@ -2,6 +2,9 @@ package com.riox432.civitdeck.feature.externalserver.domain.usecase
 
 import com.riox432.civitdeck.domain.model.ExternalServerConfig
 import com.riox432.civitdeck.feature.externalserver.domain.model.ExternalServerImageFilters
+import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationChoice
+import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationJob
+import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationOption
 import com.riox432.civitdeck.feature.externalserver.domain.model.PaginatedImagesResponse
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerCapabilities
 import com.riox432.civitdeck.feature.externalserver.domain.repository.ExternalServerConfigRepository
@@ -65,4 +68,31 @@ class GetExternalServerImagesUseCase(
         perPage: Int,
         filters: ExternalServerImageFilters,
     ): PaginatedImagesResponse = repository.getImages(page, perPage, filters)
+}
+
+class GetGenerationOptionsUseCase(
+    private val repository: ExternalServerImagesRepository,
+) {
+    suspend operator fun invoke(): List<GenerationOption> = repository.getGenerationOptions()
+}
+
+class GetDependentChoicesUseCase(
+    private val repository: ExternalServerImagesRepository,
+) {
+    suspend operator fun invoke(endpoint: String): List<GenerationChoice> =
+        repository.getDependentChoices(endpoint)
+}
+
+class ExecuteGenerationUseCase(
+    private val repository: ExternalServerImagesRepository,
+) {
+    suspend operator fun invoke(params: Map<String, String>): GenerationJob =
+        repository.executeGeneration(params)
+}
+
+class GetGenerationStatusUseCase(
+    private val repository: ExternalServerImagesRepository,
+) {
+    suspend operator fun invoke(jobId: String): GenerationJob =
+        repository.getGenerationStatus(jobId)
 }

@@ -4,7 +4,11 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
 import io.ktor.http.URLBuilder
+import io.ktor.http.contentType
 
 class ExternalServerApi(
     private val client: HttpClient,
@@ -37,6 +41,36 @@ class ExternalServerApi(
         }.buildString()
         return client.get(url) {
             if (apiKey.isNotBlank()) header("X-API-Key", apiKey)
+        }.body()
+    }
+
+    suspend fun getGenerationOptions(): GenerationOptionsResponseDto {
+        return client.get("$baseUrl/api/generation/options") {
+            if (apiKey.isNotBlank()) header("X-API-Key", apiKey)
+        }.body()
+    }
+
+    suspend fun getDependentChoices(endpoint: String): List<GenerationChoiceDto> {
+        val url = if (endpoint.startsWith("/")) "$baseUrl$endpoint" else "$baseUrl/$endpoint"
+        return client.get(url) {
+            if (apiKey.isNotBlank()) header("X-API-Key", apiKey)
+        }.body()
+    }
+
+    suspend fun executeGeneration(
+        params: Map<String, String>,
+    ): GenerationExecuteResponseDto {
+        return client.post("$baseUrl/api/generation/execute") {
+            if (apiKey.isNotBlank()) header("X-API-Key", apiKey)
+            contentType(ContentType.Application.Json)
+            setBody(GenerationExecuteRequestDto(params))
+        }.body()
+    }
+
+    suspend fun getGenerationStatus(jobId: String): GenerationStatusResponseDto {
+        return client.get("$baseUrl/api/generation/status") {
+            if (apiKey.isNotBlank()) header("X-API-Key", apiKey)
+            url { parameters.append("job_id", jobId) }
         }.body()
     }
 
