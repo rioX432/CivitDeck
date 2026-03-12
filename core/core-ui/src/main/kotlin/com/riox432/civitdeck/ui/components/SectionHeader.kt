@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.ui.components
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -14,12 +15,13 @@ fun SectionHeader(
     modifier: Modifier = Modifier,
     showDivider: Boolean = true,
 ) {
-    if (showDivider) {
-        HorizontalDivider(modifier = Modifier.padding(bottom = Spacing.sm))
+    Column(modifier = modifier) {
+        if (showDivider) {
+            HorizontalDivider(modifier = Modifier.padding(bottom = Spacing.sm))
+        }
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+        )
     }
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleSmall,
-        modifier = modifier,
-    )
 }

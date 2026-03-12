@@ -1162,7 +1162,7 @@ private fun VersionDetail(
     onDownloadFile: (ModelFile) -> Unit = {},
     onCancelDownload: (Long) -> Unit = {},
 ) {
-    Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
+    Column(modifier = Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.sm)) {
         if (version.baseModel != null) {
             DetailRow(label = "Base Model", value = version.baseModel!!)
         }
