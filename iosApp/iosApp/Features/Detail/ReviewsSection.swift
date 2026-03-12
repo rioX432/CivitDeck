@@ -96,7 +96,7 @@ struct RatingDistributionChart: View {
         let maxCount = max(
             totals.star1, totals.star2, totals.star3, totals.star4, totals.star5, 1
         )
-        VStack(spacing: 2) {
+        VStack(spacing: Spacing.xxs) {
             ForEach((1...5).reversed(), id: \.self) { star in
                 ratingBar(star: star, count: Int(totals.countForStar(star: Int32(star))), maxCount: Int(maxCount))
             }
@@ -176,7 +176,7 @@ struct ReviewCardView: View {
         }
         .padding(Spacing.md)
         .background(Color.civitSurfaceVariant.opacity(0.5))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.card))
     }
 
     private func starRating(rating: Int) -> some View {

@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.RatingTotals
 import com.riox432.civitdeck.domain.model.ResourceReview
 import com.riox432.civitdeck.domain.model.ReviewSortOrder
+import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -88,8 +90,10 @@ fun ReviewsSection(
             )
         } else {
             reviews.take(MAX_VISIBLE_REVIEWS).forEach { review ->
-                ReviewCard(review = review)
-                Spacer(Modifier.height(Spacing.sm))
+                key(review.id) {
+                    ReviewCard(review = review)
+                    Spacer(Modifier.height(Spacing.sm))
+                }
             }
         }
     }
@@ -244,7 +248,7 @@ fun ReviewCard(review: ResourceReview, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(Spacing.sm))
+            .clip(RoundedCornerShape(CornerRadius.card))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .padding(Spacing.md),
     ) {
@@ -337,9 +341,7 @@ private fun StarRating(rating: Int) {
     }
 }
 
-private fun formatReviewDate(isoDate: String): String {
-    return isoDate.take(DATE_PREFIX_LENGTH).replace("T", " ")
-}
+private fun formatReviewDate(isoDate: String): String = isoDate.take(DATE_PREFIX_LENGTH)
 
 private fun ReviewSortOrder.label(): String = when (this) {
     ReviewSortOrder.Newest -> "Newest"
