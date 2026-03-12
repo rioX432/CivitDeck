@@ -27,19 +27,21 @@ struct ModelNotesSection: View {
     }
 
     private var noteHeader: some View {
-        HStack {
+        VStack(spacing: Spacing.sm) {
             Divider()
-            Text("My Notes")
-                .font(.civitTitleSmall)
-            Spacer()
-            if !isEditing {
-                Button {
-                    editText = note?.noteText ?? ""
-                    isEditing = true
-                } label: {
-                    Image(systemName: note != nil ? "pencil" : "plus")
-                        .accessibilityLabel(note != nil ? "Edit note" : "Add note")
-                        .font(.caption)
+            HStack {
+                Text("My Notes")
+                    .font(.civitTitleSmall)
+                Spacer()
+                if !isEditing {
+                    Button {
+                        editText = note?.noteText ?? ""
+                        isEditing = true
+                    } label: {
+                        Image(systemName: note != nil ? "pencil" : "plus")
+                            .accessibilityLabel(note != nil ? "Edit note" : "Add note")
+                            .font(.caption)
+                    }
                 }
             }
         }
@@ -114,17 +116,19 @@ struct PersonalTagsSection: View {
     }
 
     private var tagsHeader: some View {
-        HStack {
+        VStack(spacing: Spacing.sm) {
             Divider()
-            Text("My Tags")
-                .font(.civitTitleSmall)
-            Spacer()
-            Button {
-                showAddField.toggle()
-            } label: {
-                Image(systemName: "plus")
-                    .accessibilityLabel("Add tag")
-                    .font(.caption)
+            HStack {
+                Text("My Tags")
+                    .font(.civitTitleSmall)
+                Spacer()
+                Button {
+                    showAddField.toggle()
+                } label: {
+                    Image(systemName: "plus")
+                        .accessibilityLabel("Add tag")
+                        .font(.caption)
+                }
             }
         }
     }

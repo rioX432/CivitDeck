@@ -11,7 +11,6 @@ struct VersionDetailSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             Divider()
-                .padding(.horizontal, Spacing.lg)
 
             baseModelRow
             trainedWordsSection
