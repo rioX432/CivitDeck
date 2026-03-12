@@ -354,7 +354,7 @@ private fun VersionChipRow(
         contentPadding = PaddingValues(horizontal = Spacing.xs),
         horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
-        itemsIndexed(versions) { index, version ->
+        itemsIndexed(versions, key = { _, version -> version.id }) { index, version ->
             FilterChip(
                 selected = index == selectedIndex,
                 onClick = { onSelected(index) },
