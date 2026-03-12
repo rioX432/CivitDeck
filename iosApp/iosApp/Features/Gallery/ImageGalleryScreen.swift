@@ -188,6 +188,7 @@ struct ImageGalleryScreen: View {
                                 .overlay {
                                     SwiftUI.Image(systemName: "photo")
                                         .foregroundColor(.civitOnSurfaceVariant)
+                                        .accessibilityHidden(true)
                                 }
                         case .empty:
                             Rectangle()
@@ -204,6 +205,7 @@ struct ImageGalleryScreen: View {
                         SwiftUI.Image(systemName: "play.circle.fill")
                             .font(.civitIconLarge)
                             .foregroundColor(.white.opacity(0.85))
+                            .accessibilityHidden(true)
                     }
                 }
             }

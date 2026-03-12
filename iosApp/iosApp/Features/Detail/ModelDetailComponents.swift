@@ -106,7 +106,8 @@ struct ImageGridSheet: View {
                     case .failure:
                         Rectangle().fill(Color.civitSurfaceVariant)
                             .overlay { SwiftUI.Image(systemName: "photo")
-                                .foregroundColor(.civitOnSurfaceVariant) }
+                                .foregroundColor(.civitOnSurfaceVariant)
+                                .accessibilityHidden(true) }
                     case .empty:
                         Rectangle().fill(Color.civitSurfaceVariant).shimmer()
                     @unknown default:
@@ -120,6 +121,7 @@ struct ImageGridSheet: View {
                     SwiftUI.Image(systemName: "play.circle.fill")
                         .font(.civitIconLarge)
                         .foregroundColor(.white.opacity(0.85))
+                        .accessibilityHidden(true)
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
