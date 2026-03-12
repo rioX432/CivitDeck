@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Add backup and restore with granular category selection (#190) (48d2c70)
+
+### Fixed
+
+- Fix review findings: add deleteAll to connection DAOs, fix modifier ordering and key usage (d2c89c1)
+- Fix test fake DAOs: add missing abstract method implementations (721b0ce)
+
+---
+
 ## [1.2.0] - 2026-03-05
 
 ### Added

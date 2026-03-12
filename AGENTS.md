@@ -44,7 +44,7 @@ CivitDeck/
 ├── core/
 │   ├── core-domain/          # Domain layer: models, repository interfaces, use cases, DomainModule (Koin)
 │   ├── core-network/         # Network layer: Ktor client, DTOs (CivitAI + ComfyUI + WebUI + ExternalServer), NetworkModule (Koin)
-│   ├── core-database/        # Database layer: Room KMP entities/DAOs/migrations (v27), DatabaseModule (Koin)
+│   ├── core-database/        # Database layer: Room KMP entities/DAOs/migrations (v30), DatabaseModule (Koin)
 │   └── core-ui/              # Shared Compose components + design tokens (Android-only)
 ├── feature/
 │   ├── feature-search/       # Model search & swipe discovery
@@ -57,11 +57,12 @@ CivitDeck/
 │   ├── feature-comfyui/      # ComfyUI integration: generation, queue, LoRA/ControlNet, workflow import
 │   └── feature-externalserver/ # Custom external server: connection management, image gallery, filters
 ├── androidApp/               # Android app entry point, Navigation 3, ModelCard, widgets, tiles
-│   └── ui/dataset/           # Dataset list/detail screens + AddToDataset sheet (in androidApp, not feature module)
+│   └── ui/                   # Screens: dataset, compare, analytics, backup, feed, download (in androidApp, not feature module)
 └── iosApp/                   # iOS app entry point (SwiftUI)
     └── iosApp/
         ├── Features/         # Feature screens + ViewModels (Search, Detail, Gallery, Creator, Collections,
-        │                     #   Prompts, Settings, ComfyUI, Dataset, Compare, ExternalServer, ModelFileBrowser, Tutorial)
+        │                     #   Prompts, Settings, ComfyUI, Dataset, Compare, ExternalServer, ModelFileBrowser,
+        │                     #   Analytics, Backup, Discovery, Feed, Download, QRCode, Shortcuts, Tutorial)
         └── DesignSystem/     # Design tokens (CivitDeckColors, CivitDeckFonts, CivitDeckSpacing,
                               #   CivitDeckMotion, CivitDeckShapes) + CachedAsyncImage, ShimmerModifier
 ```

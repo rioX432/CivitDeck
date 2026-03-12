@@ -51,6 +51,13 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Custom External Servers** — connect to any REST API image server, browse its gallery with filters, and integrate alongside CivitAI
 - **Model Comparison** — compare two models side-by-side
 - **Model File Browser** — detect local model files with CivitAI hash matching
+- **Creator Follow & Feed** — follow creators and get a personalized feed of their latest models with pull-to-refresh
+- **Analytics** — usage analytics with browsing/search frequency charts and model popularity insights
+- **QR Code Sharing** — share and scan model links via QR code
+- **Model Notes & Tags** — add personal notes and tags to any model for your own organization
+- **Community Reviews** — read and submit reviews on models
+- **Backup & Restore** — export/import app data (collections, prompts, filters, notes, datasets) with granular category selection
+- **Background Downloads** — download model files with background progress tracking and notifications
 - **Fresh Find** — discover recently published models before they trend
 - **Cross-Platform** — native Android (Jetpack Compose) & iOS (SwiftUI) from a shared KMP codebase
 

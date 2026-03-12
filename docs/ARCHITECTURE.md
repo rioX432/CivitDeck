@@ -25,8 +25,8 @@ CivitDeck/
 │   │       └── di/                   # NetworkModule (Koin)
 │   ├── core-database/        # Database layer: Room KMP entities, DAOs, migrations
 │   │   └── src/commonMain/kotlin/.../
-│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v27)
-│   │       ├── data/local/migration/ # Sequential migrations (1→2 … 26→27)
+│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v30)
+│   │       ├── data/local/migration/ # Sequential migrations (1→2 … 29→30)
 │   │       └── di/                   # DatabaseModule (Koin)
 │   └── core-ui/              # Shared Compose components + design tokens (Android-only)
 │       └── src/main/kotlin/.../
@@ -49,6 +49,10 @@ CivitDeck/
 │       ├── ui/components/            # ModelCard, SwipeableModelCard (Nav3 dependency)
 │       ├── ui/dataset/               # Dataset list/detail screens + AddToDataset sheet
 │       ├── ui/compare/               # Model comparison screen
+│       ├── ui/analytics/             # Usage analytics screen
+│       ├── ui/backup/                # Backup & restore screen
+│       ├── ui/feed/                  # Creator follow feed screen
+│       ├── download/                 # Background model downloads (WorkManager)
 │       ├── widget/                   # Glance home screen widgets
 │       ├── tile/                     # Quick Settings tile
 │       └── notification/             # Background polling notifications
@@ -58,7 +62,10 @@ CivitDeck/
         │   ├── Search/       │   ├── Detail/       │   ├── Gallery/
         │   ├── Creator/      │   ├── Collections/  │   ├── Prompts/
         │   ├── Settings/     │   ├── ComfyUI/      │   ├── Dataset/
-        │   ├── Compare/      │   ├── ExternalServer/ │ └── ModelFileBrowser/
+        │   ├── Compare/      │   ├── ExternalServer/ │   ├── ModelFileBrowser/
+        │   ├── Analytics/    │   ├── Backup/       │   ├── Discovery/
+        │   ├── Feed/         │   ├── Download/     │   ├── QRCode/
+        │   └── Tutorial/     │   └── Shortcuts/
         └── DesignSystem/     # Design tokens + shared components
             ├── CivitDeckColors.swift   ├── CivitDeckFonts.swift
             ├── CivitDeckSpacing.swift  ├── CivitDeckMotion.swift
@@ -86,7 +93,7 @@ graph TB
 ### Data Layer (`core/core-network/` + `core/core-database/`)
 
 - **API** (`core-network`): Ktor HTTP client targeting `https://civitai.com/api/v1`. Endpoints include `/models`, `/models/:id`, `/model-versions/:id`, `/images`, `/creators`, and `/tags`. Pagination is cursor-based for images and page-based for others. Also includes ComfyUI, SD WebUI (Automatic1111/Forge), and custom External Server API clients.
-- **Local** (`core-database`): Room KMP database (version 27) for offline favorites, user collections, saved prompts, saved search filters, SD WebUI/ComfyUI connections, external server configs, dataset collections, and response caching with TTL. Migrations tracked sequentially from version 1.
+- **Local** (`core-database`): Room KMP database (version 30) for offline favorites, user collections, saved prompts, saved search filters, SD WebUI/ComfyUI connections, external server configs, dataset collections, model notes, followed creators, feed cache, model downloads, and response caching with TTL. Migrations tracked sequentially from version 1.
 - **Repository Implementations**: Combine remote API calls with local cache. Return domain models, not DTOs.
 
 ### Domain Layer (`core/core-domain/`)
