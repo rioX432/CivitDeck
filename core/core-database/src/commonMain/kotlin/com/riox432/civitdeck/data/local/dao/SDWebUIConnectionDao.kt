@@ -2,11 +2,13 @@ package com.riox432.civitdeck.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.riox432.civitdeck.data.local.entity.SDWebUIConnectionEntity
 import kotlinx.coroutines.flow.Flow
 
+@Suppress("TooManyFunctions")
 @Dao
 interface SDWebUIConnectionDao {
     @Query("SELECT * FROM sdwebui_connections ORDER BY createdAt DESC")
@@ -18,8 +20,14 @@ interface SDWebUIConnectionDao {
     @Query("SELECT * FROM sdwebui_connections WHERE isActive = 1 LIMIT 1")
     suspend fun getActive(): SDWebUIConnectionEntity?
 
+    @Query("SELECT * FROM sdwebui_connections ORDER BY createdAt DESC")
+    suspend fun getAll(): List<SDWebUIConnectionEntity>
+
     @Insert
     suspend fun insert(entity: SDWebUIConnectionEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entities: List<SDWebUIConnectionEntity>)
 
     @Update
     suspend fun update(entity: SDWebUIConnectionEntity)

@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.di
 
+import com.riox432.civitdeck.data.backup.BackupRepositoryImpl
 import com.riox432.civitdeck.data.export.ExportRepositoryImpl
 import com.riox432.civitdeck.data.image.ImageSaver
 import com.riox432.civitdeck.data.repository.AuthRepositoryImpl
@@ -13,6 +14,7 @@ import com.riox432.civitdeck.data.repository.ReviewRepositoryImpl
 import com.riox432.civitdeck.data.repository.TagRepositoryImpl
 import com.riox432.civitdeck.data.scanner.FileScanner
 import com.riox432.civitdeck.domain.repository.AuthRepository
+import com.riox432.civitdeck.domain.repository.BackupRepository
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.CacheRepository
 import com.riox432.civitdeck.domain.repository.ExportRepository
@@ -52,4 +54,12 @@ val dataModule = module {
 
     // Export
     single<ExportRepository> { ExportRepositoryImpl(get(), get()) }
+
+    // Backup
+    single<BackupRepository> {
+        BackupRepositoryImpl(
+            get(), get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(), get(),
+        )
+    }
 }

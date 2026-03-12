@@ -17,6 +17,12 @@ interface HiddenModelDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(entity: HiddenModelEntity)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(entities: List<HiddenModelEntity>)
+
+    @Query("DELETE FROM hidden_models")
+    suspend fun deleteAll()
+
     @Query("DELETE FROM hidden_models WHERE modelId = :modelId")
     suspend fun delete(modelId: Long)
 }

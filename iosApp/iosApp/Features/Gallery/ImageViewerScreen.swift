@@ -283,7 +283,7 @@ private struct ControlCircleButton: View {
 
 // MARK: - Share Sheet
 
-private struct ShareSheet: UIViewControllerRepresentable {
+struct ShareSheet: UIViewControllerRepresentable {
     let items: [Any]
 
     func makeUIViewController(context: Context) -> UIActivityViewController {

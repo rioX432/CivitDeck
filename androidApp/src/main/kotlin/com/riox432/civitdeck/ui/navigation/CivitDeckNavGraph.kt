@@ -72,6 +72,8 @@ import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
 import com.riox432.civitdeck.ui.analytics.AnalyticsScreen
 import com.riox432.civitdeck.ui.analytics.AnalyticsViewModel
+import com.riox432.civitdeck.ui.backup.BackupScreen
+import com.riox432.civitdeck.ui.backup.BackupViewModel
 import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.CollectionsScreen
 import com.riox432.civitdeck.ui.comfyui.CivitaiLinkSettingsScreen
@@ -207,6 +209,8 @@ data class DatasetDetailRoute(val datasetId: Long, val datasetName: String)
 data class BatchTagEditorRoute(val datasetId: Long)
 
 data class DuplicateReviewRoute(val datasetId: Long)
+
+data object BackupRoute
 
 data object QRScannerRoute
 
@@ -461,6 +465,7 @@ private fun CivitDeckNavDisplay(
                     onNavigateToAdvanced = { backStack.add(AdvancedSettingsRoute) },
                     onNavigateToNavShortcuts = { backStack.add(NavShortcutsSettingsRoute) },
                     onNavigateToAnalytics = { backStack.add(AnalyticsRoute) },
+                    onNavigateToBackup = { backStack.add(BackupRoute) },
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
                     scrollToTopTrigger = settingsScrollTrigger,
                 )
@@ -789,6 +794,13 @@ private fun EntryProviderScope<Any>.settingsSubScreenEntries(backStack: MutableL
     entry<NavShortcutsSettingsRoute> {
         val viewModel: SettingsViewModel = koinViewModel()
         NavShortcutsSettingsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+    entry<BackupRoute> {
+        val viewModel: BackupViewModel = koinViewModel()
+        BackupScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
         )

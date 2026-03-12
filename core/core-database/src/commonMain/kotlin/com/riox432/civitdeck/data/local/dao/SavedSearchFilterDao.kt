@@ -12,8 +12,17 @@ interface SavedSearchFilterDao {
     @Query("SELECT * FROM saved_search_filters ORDER BY savedAt DESC")
     fun observeAll(): Flow<List<SavedSearchFilterEntity>>
 
+    @Query("SELECT * FROM saved_search_filters ORDER BY savedAt DESC")
+    suspend fun getAll(): List<SavedSearchFilterEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: SavedSearchFilterEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entities: List<SavedSearchFilterEntity>)
+
+    @Query("DELETE FROM saved_search_filters")
+    suspend fun deleteAll()
 
     @Query("DELETE FROM saved_search_filters WHERE id = :id")
     suspend fun deleteById(id: Long)

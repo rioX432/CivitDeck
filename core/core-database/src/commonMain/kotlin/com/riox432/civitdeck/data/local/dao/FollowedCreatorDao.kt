@@ -12,6 +12,12 @@ interface FollowedCreatorDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: FollowedCreatorEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entities: List<FollowedCreatorEntity>)
+
+    @Query("DELETE FROM followed_creators")
+    suspend fun deleteAll()
+
     @Query("DELETE FROM followed_creators WHERE username = :username")
     suspend fun delete(username: String)
 

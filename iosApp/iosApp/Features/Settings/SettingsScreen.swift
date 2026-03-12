@@ -16,6 +16,7 @@ struct SettingsScreen: View {
                 notificationsSection
                 storageSection
                 advancedSection
+                backupSection
                 analyticsSection
                 datasetsSection
                 aboutSection
@@ -92,6 +93,14 @@ struct SettingsScreen: View {
             }
             NavigationLink(destination: AdvancedSettingsView(viewModel: viewModel)) {
                 Text("Advanced")
+            }
+        }
+    }
+
+    private var backupSection: some View {
+        Section("Data") {
+            NavigationLink(destination: BackupView()) {
+                Label("Backup & Restore", systemImage: "arrow.up.arrow.down.circle")
             }
         }
     }
