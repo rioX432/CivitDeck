@@ -1028,7 +1028,7 @@ private fun TagChip(
         modifier = Modifier
             .background(background, RoundedCornerShape(CornerRadius.chip))
             .padding(start = Spacing.sm, end = Spacing.xs)
-            .padding(vertical = 4.dp),
+            .padding(vertical = Spacing.xs),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
