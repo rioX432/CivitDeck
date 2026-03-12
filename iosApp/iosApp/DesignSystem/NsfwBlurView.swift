@@ -17,6 +17,8 @@ struct NsfwBlurView<Content: View>: View {
             if !isRevealed && blurRadius > 0 {
                 Color.clear
                     .contentShape(Rectangle())
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityLabel("Show content")
                     .onTapGesture {
                         withAnimation(MotionAnimation.standard) {
                             isRevealed = true
