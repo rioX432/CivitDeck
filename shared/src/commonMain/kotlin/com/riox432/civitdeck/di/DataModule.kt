@@ -1,6 +1,10 @@
 package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.backup.BackupRepositoryImpl
+import com.riox432.civitdeck.data.backup.CollectionDaos
+import com.riox432.civitdeck.data.backup.ConnectionDaos
+import com.riox432.civitdeck.data.backup.ContentDaos
+import com.riox432.civitdeck.data.backup.PreferenceDaos
 import com.riox432.civitdeck.data.export.ExportRepositoryImpl
 import com.riox432.civitdeck.data.image.ImageSaver
 import com.riox432.civitdeck.data.repository.AuthRepositoryImpl
@@ -55,11 +59,10 @@ val dataModule = module {
     // Export
     single<ExportRepository> { ExportRepositoryImpl(get(), get()) }
 
-    // Backup
-    single<BackupRepository> {
-        BackupRepositoryImpl(
-            get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(),
-        )
-    }
+    // Backup DAO wrappers
+    single { CollectionDaos(get()) }
+    single { ConnectionDaos(get(), get(), get()) }
+    single { ContentDaos(get(), get(), get(), get(), get()) }
+    single { PreferenceDaos(get(), get(), get()) }
+    single<BackupRepository> { BackupRepositoryImpl(get(), get(), get(), get()) }
 }

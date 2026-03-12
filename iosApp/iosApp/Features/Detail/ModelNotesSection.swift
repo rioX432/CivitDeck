@@ -55,6 +55,8 @@ struct ModelNotesSection: View {
                 Text("Tap + to add a personal note")
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityLabel("Add note")
                     .onTapGesture { isEditing = true }
             }
         }

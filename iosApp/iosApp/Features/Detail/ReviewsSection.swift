@@ -73,6 +73,7 @@ struct ReviewsSection: View {
                 SwiftUI.Image(systemName: "hand.thumbsup")
                     .font(.caption2)
                     .foregroundColor(.civitPrimary)
+                    .accessibilityHidden(true)
                 Text("\(up)")
                     .font(.civitLabelSmall)
             }
@@ -80,6 +81,7 @@ struct ReviewsSection: View {
                 SwiftUI.Image(systemName: "hand.thumbsdown")
                     .font(.caption2)
                     .foregroundColor(.civitError)
+                    .accessibilityHidden(true)
                 Text("\(down)")
                     .font(.civitLabelSmall)
             }
@@ -109,8 +111,9 @@ struct RatingDistributionChart: View {
                 .font(.civitLabelSmall)
                 .frame(width: 12)
             SwiftUI.Image(systemName: "star.fill")
-                .font(.system(size: 10))
+                .font(.civitLabelXSmall)
                 .foregroundColor(.civitPrimary)
+                .accessibilityHidden(true)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 2)
@@ -156,8 +159,9 @@ struct ReviewCardView: View {
             if review.recommended {
                 HStack(spacing: Spacing.xs) {
                     SwiftUI.Image(systemName: "hand.thumbsup")
-                        .font(.system(size: 10))
+                        .font(.civitLabelXSmall)
                         .foregroundColor(.civitPrimary)
+                        .accessibilityHidden(true)
                     Text("Recommended")
                         .font(.civitLabelSmall)
                         .foregroundColor(.civitPrimary)
@@ -183,8 +187,9 @@ struct ReviewCardView: View {
         HStack(spacing: 1) {
             ForEach(1...5, id: \.self) { i in
                 SwiftUI.Image(systemName: i <= rating ? "star.fill" : "star")
-                    .font(.system(size: 10))
+                    .font(.civitLabelXSmall)
                     .foregroundColor(i <= rating ? .civitPrimary : .civitOnSurfaceVariant.opacity(0.3))
+                    .accessibilityHidden(true)
             }
         }
     }

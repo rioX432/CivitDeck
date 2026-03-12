@@ -129,7 +129,7 @@ private fun EditorContent(
         }
         item { TypeSelector(type = type, onTypeChange = onTypeChange) }
         item { VariablesHeader(onAdd = { onVariablesChange(variables + newVariable(variables.size)) }) }
-        itemsIndexed(variables) { index, variable ->
+        itemsIndexed(variables, key = { _, variable -> variable.name }) { index, variable ->
             VariableEditor(
                 variable = variable,
                 onUpdate = { updated ->

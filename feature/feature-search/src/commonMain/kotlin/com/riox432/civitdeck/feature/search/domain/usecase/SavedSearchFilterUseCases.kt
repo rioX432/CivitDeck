@@ -1,8 +1,8 @@
 package com.riox432.civitdeck.feature.search.domain.usecase
 
-import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.domain.model.SavedSearchFilter
 import com.riox432.civitdeck.domain.repository.SavedSearchFilterRepository
+import com.riox432.civitdeck.domain.util.currentTimeMillis
 import kotlinx.coroutines.flow.Flow
 
 class ObserveSavedSearchFiltersUseCase(private val repository: SavedSearchFilterRepository) {

@@ -235,18 +235,18 @@ struct ModelCompareScreen: View {
             )
             specRow(
                 label: "Downloads",
-                leftValue: FormatUtils.shared.formatCount(count: left.stats.downloadCount),
-                rightValue: FormatUtils.shared.formatCount(count: right.stats.downloadCount)
+                leftValue: FormatHelper.formatCount(Int(left.stats.downloadCount)),
+                rightValue: FormatHelper.formatCount(Int(right.stats.downloadCount))
             )
             specRow(
                 label: "Favorites",
-                leftValue: FormatUtils.shared.formatCount(count: left.stats.favoriteCount),
-                rightValue: FormatUtils.shared.formatCount(count: right.stats.favoriteCount)
+                leftValue: FormatHelper.formatCount(Int(left.stats.favoriteCount)),
+                rightValue: FormatHelper.formatCount(Int(right.stats.favoriteCount))
             )
             specRow(
                 label: "Rating",
-                leftValue: FormatUtils.shared.formatRating(rating: left.stats.rating),
-                rightValue: FormatUtils.shared.formatRating(rating: right.stats.rating)
+                leftValue: FormatHelper.formatRating(left.stats.rating),
+                rightValue: FormatHelper.formatRating(right.stats.rating)
             )
             specRow(
                 label: "File Size",
@@ -294,7 +294,7 @@ struct ModelCompareScreen: View {
         guard let version = selectedVersion(model: model, index: versionIndex) else { return "-" }
         let file = version.files.first { $0.primary } ?? version.files.first
         guard let file else { return "-" }
-        return FormatUtils.shared.formatFileSize(sizeKB: file.sizeKB)
+        return FormatHelper.formatFileSize(sizeKB: file.sizeKB)
     }
 }
 

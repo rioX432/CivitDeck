@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.ui.theme.Spacing
 import kotlinx.coroutines.launch
 
@@ -79,7 +78,7 @@ private fun TutorialPageContent(step: TutorialStep) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         StepAnimation(step)
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(Spacing.xxl))
         Text(
             text = step.title,
             style = MaterialTheme.typography.headlineSmall,
@@ -92,7 +91,7 @@ private fun TutorialPageContent(step: TutorialStep) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 24.dp),
+            modifier = Modifier.padding(horizontal = Spacing.xl),
         )
     }
 }
@@ -117,7 +116,7 @@ private fun PageIndicator(pagerState: PagerState) {
             }
             Box(
                 modifier = Modifier
-                    .size(8.dp)
+                    .size(Spacing.sm)
                     .clip(CircleShape)
                     .background(color),
             )

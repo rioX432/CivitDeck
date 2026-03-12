@@ -76,7 +76,7 @@ struct VersionDetailSection: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
                 HStack(spacing: Spacing.sm) {
-                    Text(FormatUtils.shared.formatFileSize(sizeKB: file.sizeKB))
+                    Text(FormatHelper.formatFileSize(sizeKB: file.sizeKB))
                         .font(.civitLabelSmall)
                         .foregroundColor(.civitOnSurfaceVariant)
                     if let format = file.format {
@@ -207,7 +207,7 @@ struct VersionDetailSection: View {
                         )
                         DetailRow(
                             label: "Rating",
-                            value: "\(FormatUtils.shared.formatRating(rating: stats.rating))"
+                            value: "\(FormatHelper.formatRating(stats.rating))"
                                 + " (\(stats.ratingCount))"
                         )
                     }

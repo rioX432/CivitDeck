@@ -4,6 +4,7 @@ import Shared
 @MainActor
 final class CollectionsViewModel: ObservableObject {
     @Published var collections: [ModelCollection] = []
+    @Published var isLoading = true
 
     private let observeCollectionsUseCase: ObserveCollectionsUseCase
     private let createCollectionUseCase: CreateCollectionUseCase
@@ -27,6 +28,7 @@ final class CollectionsViewModel: ObservableObject {
         for await list in observeCollectionsUseCase.invoke() {
             let items = list.compactMap { $0 as? ModelCollection }
             self.collections = items
+            if isLoading { isLoading = false }
         }
     }
 

@@ -471,7 +471,7 @@ private struct CivitaiLinkSendSheet: View {
 
     private var notConnectedView: some View {
         VStack(spacing: Spacing.md) {
-            Image(systemName: "link.circle").font(.system(size: 48))
+            Image(systemName: "link.circle").font(.civitIconExtraLarge)
             Text("Civitai Link not configured").font(.civitTitleMedium)
             Text("Set up Civitai Link in Settings \u{2192} Advanced to send models to your PC")
                 .font(.civitBodySmall)

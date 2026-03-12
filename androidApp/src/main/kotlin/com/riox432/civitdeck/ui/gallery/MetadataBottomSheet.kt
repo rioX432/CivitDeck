@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.export.WorkflowExportService
 import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
@@ -57,15 +56,15 @@ private fun MetadataContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .padding(bottom = 32.dp),
+            .padding(horizontal = Spacing.lg, vertical = Spacing.sm)
+            .padding(bottom = Spacing.xxl),
     ) {
         Text(
             text = "Generation Info",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(Spacing.md))
 
         PromptSection(meta = meta, context = context, onSavePrompt = onSavePrompt)
         MetadataParams(meta = meta)

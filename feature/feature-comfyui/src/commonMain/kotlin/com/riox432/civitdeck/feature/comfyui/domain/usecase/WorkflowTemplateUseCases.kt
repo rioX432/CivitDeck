@@ -1,6 +1,5 @@
 package com.riox432.civitdeck.feature.comfyui.domain.usecase
 
-import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.SavedPrompt
 import com.riox432.civitdeck.domain.model.TemplateVariable
@@ -8,6 +7,7 @@ import com.riox432.civitdeck.domain.model.TemplateVariableType
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
 import com.riox432.civitdeck.domain.model.WorkflowTemplateType
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
+import com.riox432.civitdeck.domain.util.currentTimeMillis
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString

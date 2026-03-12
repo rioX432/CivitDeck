@@ -33,4 +33,13 @@ extension Font {
 
     // labelXSmallSemibold: 10pt Semibold — tag action icons
     static let civitLabelXSmallSemibold = Font.system(size: 10, weight: .semibold)
+
+    // iconLarge: 44pt Regular — large icon overlays (e.g. play buttons)
+    static let civitIconLarge = Font.system(size: 44)
+
+    // iconExtraLarge: 48pt Regular — large status/placeholder icons
+    static let civitIconExtraLarge = Font.system(size: 48)
+
+    // iconXSmall: 9pt Bold — tiny compact badges
+    static let civitIconXSmall = Font.system(size: 9, weight: .bold)
 }

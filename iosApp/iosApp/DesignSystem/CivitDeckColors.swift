@@ -48,9 +48,9 @@ extension Color {
     static let civitInversePrimary = Color(light: hex(0xB8C4FF), dark: hex(0x3755C3))
 
     // MARK: - AMOLED Dark Mode
-    static let amoledSurface = Color(red: 0, green: 0, blue: 0)
-    static let amoledSurfaceContainer = Color(red: 0.06, green: 0.06, blue: 0.06)
-    static let amoledSurfaceContainerHigh = Color(red: 0.09, green: 0.09, blue: 0.09)
+    static let amoledSurface = hex(0x000000)
+    static let amoledSurfaceContainer = hex(0x0F0F0F)
+    static let amoledSurfaceContainerHigh = hex(0x171717)
 }
 
 // MARK: - Accent Color Tint

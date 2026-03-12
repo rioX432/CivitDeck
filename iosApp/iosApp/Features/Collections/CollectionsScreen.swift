@@ -26,7 +26,9 @@ struct CollectionsScreen: View {
 
                 switch selectedTab {
                 case .collections:
-                    if viewModel.collections.isEmpty {
+                    if viewModel.isLoading && viewModel.collections.isEmpty {
+                        LoadingStateView()
+                    } else if viewModel.collections.isEmpty {
                         emptyView
                     } else {
                         collectionsList
