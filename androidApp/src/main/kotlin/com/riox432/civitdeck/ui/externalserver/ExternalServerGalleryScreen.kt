@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.ui.externalserver
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,15 +15,19 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Rocket
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -49,10 +54,29 @@ fun ExternalServerGalleryScreen(
     viewModel: ExternalServerGalleryViewModel,
     serverName: String,
     onBack: () -> Unit,
+    onNavigateToImageDetail: (ServerImage) -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val gridState = rememberLazyGridState()
 
+    InfiniteScrollEffect(gridState = gridState, state = state, viewModel = viewModel)
+
+    Scaffold(
+        topBar = { GalleryTopBar(serverName, state, viewModel, onBack) },
+        floatingActionButton = { GenerationFab(state, viewModel) },
+    ) { padding ->
+        GalleryContent(padding, state, gridState, viewModel, onNavigateToImageDetail)
+    }
+
+    GalleryDialogs(state, viewModel)
+}
+
+@Composable
+private fun InfiniteScrollEffect(
+    gridState: LazyGridState,
+    state: ExternalServerGalleryUiState,
+    viewModel: ExternalServerGalleryViewModel,
+) {
     val shouldLoadMore by remember {
         derivedStateOf {
             val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
@@ -60,38 +84,96 @@ fun ExternalServerGalleryScreen(
             lastVisible >= totalItems - 12
         }
     }
-
     LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore && !state.isLoadingMore) {
-            viewModel.onLoadMore()
+        if (shouldLoadMore && !state.isLoadingMore) viewModel.onLoadMore()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun GalleryTopBar(
+    serverName: String,
+    state: ExternalServerGalleryUiState,
+    viewModel: ExternalServerGalleryViewModel,
+    onBack: () -> Unit,
+) {
+    TopAppBar(
+        title = { Text(serverName) },
+        navigationIcon = {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+            }
+        },
+        actions = {
+            if (state.supportsFilters) {
+                IconButton(onClick = viewModel::onShowFilterSheet) {
+                    Icon(Icons.Default.FilterList, "Filters")
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun GenerationFab(
+    state: ExternalServerGalleryUiState,
+    viewModel: ExternalServerGalleryViewModel,
+) {
+    if (state.supportsGeneration) {
+        FloatingActionButton(onClick = viewModel::onShowGenerationSheet) {
+            Icon(Icons.Default.Rocket, "Generate")
         }
     }
+}
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(serverName) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
-                    }
-                },
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun GalleryContent(
+    padding: PaddingValues,
+    state: ExternalServerGalleryUiState,
+    gridState: LazyGridState,
+    viewModel: ExternalServerGalleryViewModel,
+    onNavigateToImageDetail: (ServerImage) -> Unit,
+) {
+    Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+        when {
+            state.isLoading -> LoadingStateOverlay()
+            state.error != null && state.images.isEmpty() -> ErrorStateView(
+                message = state.error ?: "Failed to load images",
+                onRetry = viewModel::onRetry,
             )
-        },
-    ) { padding ->
-        Box(modifier = Modifier.padding(padding).fillMaxSize()) {
-            when {
-                state.isLoading -> LoadingStateOverlay()
-                state.error != null && state.images.isEmpty() -> ErrorStateView(
-                    message = state.error ?: "Failed to load images",
-                    onRetry = viewModel::onRetry,
-                )
-                else -> ImageGrid(
-                    state = state,
-                    gridState = gridState,
-                )
+            else -> PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = viewModel::onRefresh,
+            ) {
+                ImageGrid(state = state, gridState = gridState, onImageClick = onNavigateToImageDetail)
             }
         }
+    }
+}
+
+@Composable
+private fun GalleryDialogs(
+    state: ExternalServerGalleryUiState,
+    viewModel: ExternalServerGalleryViewModel,
+) {
+    if (state.showFilterSheet) {
+        ExternalServerFilterSheet(
+            filters = state.filters,
+            onFiltersChanged = viewModel::onFiltersChanged,
+            onDismiss = viewModel::onDismissFilterSheet,
+        )
+    }
+    if (state.showGenerationSheet) {
+        ExternalServerGenerationSheet(
+            state = state,
+            onParamChanged = viewModel::onGenerationParamChanged,
+            onSubmit = viewModel::onSubmitGeneration,
+            onDismiss = viewModel::onDismissGenerationSheet,
+        )
+    }
+    state.activeJob?.let { job ->
+        GenerationJobDialog(job = job, onDismiss = viewModel::onDismissJobStatus)
     }
 }
 
@@ -99,6 +181,7 @@ fun ExternalServerGalleryScreen(
 private fun ImageGrid(
     state: ExternalServerGalleryUiState,
     gridState: LazyGridState,
+    onImageClick: (ServerImage) -> Unit,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
@@ -109,25 +192,23 @@ private fun ImageGrid(
         modifier = Modifier.fillMaxSize(),
     ) {
         items(state.images, key = { it.id }) { image ->
-            ServerImageCard(image = image)
+            ServerImageCard(image = image, onClick = { onImageClick(image) })
         }
         if (state.isLoadingMore) {
             item {
                 Box(
                     modifier = Modifier.fillMaxWidth().padding(Spacing.md),
                     contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator()
-                }
+                ) { CircularProgressIndicator() }
             }
         }
     }
 }
 
 @Composable
-private fun ServerImageCard(image: ServerImage) {
+private fun ServerImageCard(image: ServerImage, onClick: () -> Unit) {
     val context = LocalContext.current
-    Card {
+    Card(modifier = Modifier.clickable(onClick = onClick)) {
         Box {
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(context)
@@ -142,18 +223,14 @@ private fun ServerImageCard(image: ServerImage) {
                         contentAlignment = Alignment.Center,
                     ) { CircularProgressIndicator() }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f),
+                modifier = Modifier.fillMaxWidth().aspectRatio(1f),
             )
             if (image.aestheticScore != null) {
                 Text(
                     text = "%.1f".format(image.aestheticScore),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(Spacing.xs),
+                    modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.xs),
                 )
             }
         }

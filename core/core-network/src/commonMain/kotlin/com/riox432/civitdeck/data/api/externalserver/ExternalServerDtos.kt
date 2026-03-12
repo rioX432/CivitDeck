@@ -35,3 +35,52 @@ data class PaginatedImagesResponseDto(
     @SerialName("per_page") val perPage: Int = 96,
     @SerialName("total_pages") val totalPages: Int = 0,
 )
+
+// Generation option types
+@Serializable
+data class GenerationOptionsResponseDto(
+    val options: List<GenerationOptionDto> = emptyList(),
+)
+
+@Serializable
+data class GenerationOptionDto(
+    val key: String,
+    val label: String,
+    val type: String, // "select", "text", "number"
+    val choices: List<GenerationChoiceDto> = emptyList(),
+    @SerialName("depends_on") val dependsOn: String? = null,
+    @SerialName("choices_endpoint") val choicesEndpoint: String? = null,
+    val placeholder: String? = null,
+    val default: kotlinx.serialization.json.JsonPrimitive? = null,
+    val min: Int? = null,
+    val max: Int? = null,
+)
+
+@Serializable
+data class GenerationChoiceDto(
+    val value: String,
+    val label: String,
+    val description: String? = null,
+)
+
+@Serializable
+data class GenerationExecuteRequestDto(
+    val params: Map<String, String>,
+)
+
+@Serializable
+data class GenerationExecuteResponseDto(
+    @SerialName("job_id") val jobId: String,
+    val status: String,
+    val message: String = "",
+)
+
+@Serializable
+data class GenerationStatusResponseDto(
+    @SerialName("job_id") val jobId: String,
+    val status: String, // "queued", "running", "completed", "error"
+    val progress: Float = 0f,
+    val completed: Int = 0,
+    val total: Int = 0,
+    val message: String = "",
+)

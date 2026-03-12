@@ -6,8 +6,12 @@ import com.riox432.civitdeck.feature.externalserver.domain.repository.ExternalSe
 import com.riox432.civitdeck.feature.externalserver.domain.repository.ExternalServerImagesRepository
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ActivateExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.DeleteExternalServerConfigUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.ExecuteGenerationUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetDependentChoicesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerCapabilitiesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerImagesUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationOptionsUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationStatusUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveActiveExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveExternalServerConfigsUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.SaveExternalServerConfigUseCase
@@ -28,4 +32,8 @@ val externalServerModule = module {
     factory { TestExternalServerConnectionUseCase(get(), get()) }
     factory { GetExternalServerCapabilitiesUseCase(get()) }
     factory { GetExternalServerImagesUseCase(get()) }
+    factory { GetGenerationOptionsUseCase(get()) }
+    factory { GetDependentChoicesUseCase(get()) }
+    factory { ExecuteGenerationUseCase(get()) }
+    factory { GetGenerationStatusUseCase(get()) }
 }

@@ -160,8 +160,12 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectio
 import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ActivateExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.DeleteExternalServerConfigUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.ExecuteGenerationUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetDependentChoicesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerCapabilitiesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerImagesUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationOptionsUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationStatusUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveActiveExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveExternalServerConfigsUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.SaveExternalServerConfigUseCase
@@ -389,6 +393,10 @@ object KoinHelper {
     fun getTestExternalServerConnectionUseCase(): TestExternalServerConnectionUseCase = getKoin().get()
     fun getGetExternalServerCapabilitiesUseCase(): GetExternalServerCapabilitiesUseCase = getKoin().get()
     fun getGetExternalServerImagesUseCase(): GetExternalServerImagesUseCase = getKoin().get()
+    fun getGetGenerationOptionsUseCase(): GetGenerationOptionsUseCase = getKoin().get()
+    fun getGetDependentChoicesUseCase(): GetDependentChoicesUseCase = getKoin().get()
+    fun getExecuteGenerationUseCase(): ExecuteGenerationUseCase = getKoin().get()
+    fun getGetGenerationStatusUseCase(): GetGenerationStatusUseCase = getKoin().get()
 
     // Model notes & personal tags use cases
     fun getObserveModelNoteUseCase(): ObserveModelNoteUseCase = getKoin().get()

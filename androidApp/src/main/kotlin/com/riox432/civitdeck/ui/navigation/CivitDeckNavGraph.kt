@@ -100,6 +100,7 @@ import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryScreen
+import com.riox432.civitdeck.ui.externalserver.ExternalServerImageDetailScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsScreen
 import com.riox432.civitdeck.ui.feed.FeedScreen
 import com.riox432.civitdeck.ui.feed.FeedViewModel
@@ -201,6 +202,8 @@ data object NavShortcutsSettingsRoute
 data object ExternalServerSettingsRoute
 
 data object ExternalServerGalleryRoute
+
+data class ExternalServerImageDetailRoute(val imageId: Int)
 
 data object DatasetListRoute
 
@@ -921,7 +924,21 @@ private fun EntryProviderScope<Any>.externalServerEntries(backStack: MutableList
             viewModel = galleryVm,
             serverName = settingsState.activeConfig?.name ?: "Gallery",
             onBack = { backStack.removeLastOrNull() },
+            onNavigateToImageDetail = { image ->
+                backStack.add(ExternalServerImageDetailRoute(image.id))
+            },
         )
+    }
+    entry<ExternalServerImageDetailRoute> { route ->
+        val galleryVm: ExternalServerGalleryViewModel = koinViewModel()
+        val state by galleryVm.uiState.collectAsStateWithLifecycle()
+        val image = state.images.find { it.id == route.imageId }
+        if (image != null) {
+            ExternalServerImageDetailScreen(
+                image = image,
+                onBack = { backStack.removeLastOrNull() },
+            )
+        }
     }
 }
 
