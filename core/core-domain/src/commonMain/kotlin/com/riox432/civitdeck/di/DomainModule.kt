@@ -21,5 +21,6 @@ val domainModule = module {
         analyticsDomainModule,
         followDomainModule,
         downloadDomainModule,
+        reviewDomainModule,
     )
 }

@@ -15,6 +15,12 @@ final class ModelDetailViewModel: ObservableObject {
     @Published var note: ModelNote?
     @Published var personalTags: [PersonalTag] = []
     @Published var downloads: [ModelDownload] = []
+    @Published var reviews: [ResourceReview] = []
+    @Published var ratingTotals: RatingTotals?
+    @Published var reviewSortOrder: ReviewSortOrder = .newest
+    @Published var isReviewsLoading: Bool = false
+    @Published var isSubmittingReview: Bool = false
+    @Published var reviewSubmitSuccess: Bool = false
 
     private let modelId: Int64
     private let getModelDetailUseCase: GetModelDetailUseCase
@@ -38,6 +44,9 @@ final class ModelDetailViewModel: ObservableObject {
     private let observeModelDownloadsUseCase: ObserveModelDownloadsUseCase
     private let enqueueDownloadUseCase: EnqueueDownloadUseCase
     private let cancelDownloadUseCase: CancelDownloadUseCase
+    private let getModelReviewsUseCase: GetModelReviewsUseCase
+    private let getRatingTotalsUseCase: GetRatingTotalsUseCase
+    private let submitReviewUseCase: SubmitReviewUseCase
     private var enrichedVersionIds: Set<Int64> = []
 
     var selectedVersion: ModelVersion? {
@@ -70,6 +79,9 @@ final class ModelDetailViewModel: ObservableObject {
         self.observeModelDownloadsUseCase = KoinHelper.shared.getObserveModelDownloadsUseCase()
         self.enqueueDownloadUseCase = KoinHelper.shared.getEnqueueDownloadUseCase()
         self.cancelDownloadUseCase = KoinHelper.shared.getCancelDownloadUseCase()
+        self.getModelReviewsUseCase = KoinHelper.shared.getModelReviewsUseCase()
+        self.getRatingTotalsUseCase = KoinHelper.shared.getRatingTotalsUseCase()
+        self.submitReviewUseCase = KoinHelper.shared.getSubmitReviewUseCase()
         loadModel()
     }
 
@@ -266,6 +278,68 @@ final class ModelDetailViewModel: ObservableObject {
         DownloadService.shared.cancelDownload(downloadId: downloadId)
         Task {
             try? await cancelDownloadUseCase.invoke(id: downloadId)
+        }
+    }
+
+    func loadReviews() {
+        Task {
+            isReviewsLoading = true
+            do {
+                let totals = try await getRatingTotalsUseCase.invoke(modelId: modelId, modelVersionId: nil)
+                let page = try await getModelReviewsUseCase.invoke(
+                    modelId: modelId, modelVersionId: nil, limit: 20, cursor: nil
+                )
+                let sorted = sortReviews(page.items.compactMap { $0 as? ResourceReview })
+                ratingTotals = totals
+                reviews = sorted
+                isReviewsLoading = false
+            } catch is CancellationError {
+                return
+            } catch {
+                isReviewsLoading = false
+            }
+        }
+    }
+
+    func onReviewSortChanged(_ order: ReviewSortOrder) {
+        reviewSortOrder = order
+        reviews = sortReviews(reviews)
+    }
+
+    func submitReview(modelVersionId: Int64, rating: Int32, recommended: Bool, details: String?) {
+        Task {
+            isSubmittingReview = true
+            do {
+                try await submitReviewUseCase.invoke(
+                    modelId: modelId,
+                    modelVersionId: modelVersionId,
+                    rating: rating,
+                    recommended: recommended,
+                    details: details
+                )
+                isSubmittingReview = false
+                reviewSubmitSuccess = true
+                loadReviews()
+            } catch is CancellationError {
+                return
+            } catch {
+                isSubmittingReview = false
+            }
+        }
+    }
+
+    func dismissReviewSuccess() {
+        reviewSubmitSuccess = false
+    }
+
+    private func sortReviews(_ reviews: [ResourceReview]) -> [ResourceReview] {
+        switch reviewSortOrder {
+        case .newest:
+            return reviews.sorted { $0.createdAt > $1.createdAt }
+        case .highestRated:
+            return reviews.sorted { $0.rating > $1.rating }
+        case .lowestRated:
+            return reviews.sorted { $0.rating < $1.rating }
         }
     }
 

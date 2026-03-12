@@ -31,7 +31,9 @@ import com.riox432.civitdeck.domain.usecase.GetFollowedCreatorsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelLicenseUseCase
+import com.riox432.civitdeck.domain.usecase.GetModelReviewsUseCase
 import com.riox432.civitdeck.domain.usecase.GetNonTrainableImagesUseCase
+import com.riox432.civitdeck.domain.usecase.GetRatingTotalsUseCase
 import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadFeedCountUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
@@ -93,6 +95,7 @@ import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.SetThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.StoreImageDimensionsUseCase
 import com.riox432.civitdeck.domain.usecase.StorePHashUseCase
+import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnfollowCreatorUseCase
@@ -405,6 +408,11 @@ object KoinHelper {
     fun getUnreadFeedCountUseCase(): GetUnreadFeedCountUseCase = getKoin().get()
     fun getMarkFeedReadUseCase(): MarkFeedReadUseCase = getKoin().get()
     fun getFollowedCreatorsUseCase(): GetFollowedCreatorsUseCase = getKoin().get()
+
+    // Review use cases
+    fun getModelReviewsUseCase(): GetModelReviewsUseCase = getKoin().get()
+    fun getRatingTotalsUseCase(): GetRatingTotalsUseCase = getKoin().get()
+    fun getSubmitReviewUseCase(): SubmitReviewUseCase = getKoin().get()
 
     // Download
     fun getModelDownloadRepository(): ModelDownloadRepository = getKoin().get()

@@ -10,11 +10,16 @@ import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelNote
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PersonalTag
+import com.riox432.civitdeck.domain.model.RatingTotals
+import com.riox432.civitdeck.domain.model.ResourceReview
+import com.riox432.civitdeck.domain.model.ReviewSortOrder
 import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
+import com.riox432.civitdeck.domain.usecase.GetModelReviewsUseCase
+import com.riox432.civitdeck.domain.usecase.GetRatingTotalsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelDownloadsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelNoteUseCase
@@ -23,6 +28,7 @@ import com.riox432.civitdeck.domain.usecase.ObservePersonalTagsUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
+import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.AddModelToCollectionUseCase
@@ -53,6 +59,13 @@ data class ModelDetailUiState(
     val note: ModelNote? = null,
     val personalTags: List<PersonalTag> = emptyList(),
     val downloads: List<ModelDownload> = emptyList(),
+    val reviews: List<ResourceReview> = emptyList(),
+    val ratingTotals: RatingTotals? = null,
+    val reviewSortOrder: ReviewSortOrder = ReviewSortOrder.Newest,
+    val isReviewsLoading: Boolean = false,
+    val reviewsError: String? = null,
+    val isSubmittingReview: Boolean = false,
+    val reviewSubmitSuccess: Boolean = false,
 )
 
 @Suppress("LongParameterList")
@@ -79,6 +92,9 @@ class ModelDetailViewModel(
     private val observeModelDownloadsUseCase: ObserveModelDownloadsUseCase,
     private val enqueueDownloadUseCase: EnqueueDownloadUseCase,
     private val cancelDownloadUseCase: CancelDownloadUseCase,
+    private val getModelReviewsUseCase: GetModelReviewsUseCase,
+    private val getRatingTotalsUseCase: GetRatingTotalsUseCase,
+    private val submitReviewUseCase: SubmitReviewUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelDetailUiState())
@@ -104,6 +120,7 @@ class ModelDetailViewModel(
         observeNote()
         observePersonalTags()
         observeDownloads()
+        loadReviews()
     }
 
     fun onVersionSelected(index: Int) {
@@ -334,6 +351,71 @@ class ModelDetailViewModel(
                 // Cancel failure is non-critical
             }
         }
+    }
+
+    fun onReviewSortChanged(order: ReviewSortOrder) {
+        _uiState.update { it.copy(reviewSortOrder = order) }
+        loadReviews()
+    }
+
+    @Suppress("LongParameterList")
+    fun submitReview(
+        modelVersionId: Long,
+        rating: Int,
+        recommended: Boolean,
+        details: String?,
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSubmittingReview = true) }
+            try {
+                submitReviewUseCase(modelId, modelVersionId, rating, recommended, details)
+                _uiState.update {
+                    it.copy(isSubmittingReview = false, reviewSubmitSuccess = true)
+                }
+                loadReviews()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                _uiState.update { it.copy(isSubmittingReview = false) }
+            }
+        }
+    }
+
+    fun dismissReviewSuccess() {
+        _uiState.update { it.copy(reviewSubmitSuccess = false) }
+    }
+
+    private fun loadReviews() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isReviewsLoading = true, reviewsError = null) }
+            try {
+                val totals = getRatingTotalsUseCase(modelId)
+                val page = getModelReviewsUseCase(modelId)
+                val sorted = sortReviews(page.items, _uiState.value.reviewSortOrder)
+                _uiState.update {
+                    it.copy(
+                        reviews = sorted,
+                        ratingTotals = totals,
+                        isReviewsLoading = false,
+                    )
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(isReviewsLoading = false, reviewsError = e.message)
+                }
+            }
+        }
+    }
+
+    private fun sortReviews(
+        reviews: List<ResourceReview>,
+        order: ReviewSortOrder,
+    ): List<ResourceReview> = when (order) {
+        ReviewSortOrder.Newest -> reviews.sortedByDescending { it.createdAt }
+        ReviewSortOrder.HighestRated -> reviews.sortedByDescending { it.rating }
+        ReviewSortOrder.LowestRated -> reviews.sortedBy { it.rating }
     }
 }
 

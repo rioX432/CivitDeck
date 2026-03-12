@@ -172,6 +172,17 @@ typealias GetCreatorFeedUseCase = Core_domainGetCreatorFeedUseCase
 typealias GetUnreadFeedCountUseCase = Core_domainGetUnreadFeedCountUseCase
 typealias MarkFeedReadUseCase = Core_domainMarkFeedReadUseCase
 typealias GetFollowedCreatorsUseCase = Core_domainGetFollowedCreatorsUseCase
+typealias GetModelReviewsUseCase = Core_domainGetModelReviewsUseCase
+typealias GetRatingTotalsUseCase = Core_domainGetRatingTotalsUseCase
+typealias RatingTotals = Core_domainRatingTotals
+typealias ResourceReview = Core_domainResourceReview
+typealias ReviewPage = Core_domainReviewPage
+typealias SubmitReviewUseCase = Core_domainSubmitReviewUseCase
+
+// ReviewSortOrder is not exported from KMP (no public API uses it), so define in Swift
+enum ReviewSortOrder: CaseIterable {
+    case newest, highestRated, lowestRated
+}
 
 // MARK: - Feature: Collections
 
