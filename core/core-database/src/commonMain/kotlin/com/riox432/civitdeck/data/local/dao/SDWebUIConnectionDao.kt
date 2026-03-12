@@ -45,4 +45,7 @@ interface SDWebUIConnectionDao {
 
     @Query("DELETE FROM sdwebui_connections WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("DELETE FROM sdwebui_connections")
+    suspend fun deleteAll()
 }

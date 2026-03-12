@@ -195,18 +195,14 @@ class BackupRepositoryImpl(
     }
 
     private suspend fun restoreConnections(backup: BackupDto, strategy: RestoreStrategy) {
-        backup.comfyUIConnections?.let { conns ->
-            if (strategy == RestoreStrategy.OVERWRITE) {
-                // Cannot bulk delete without adding method; insert with REPLACE handles it
-            }
-            comfyUIConnectionDao.insertAll(conns.map { it.toEntity() })
+        if (strategy == RestoreStrategy.OVERWRITE) {
+            if (backup.comfyUIConnections != null) comfyUIConnectionDao.deleteAll()
+            if (backup.sdWebUIConnections != null) sdWebUIConnectionDao.deleteAll()
+            if (backup.externalServerConfigs != null) externalServerConfigDao.deleteAll()
         }
-        backup.sdWebUIConnections?.let { conns ->
-            sdWebUIConnectionDao.insertAll(conns.map { it.toEntity() })
-        }
-        backup.externalServerConfigs?.let { configs ->
-            externalServerConfigDao.insertAll(configs.map { it.toEntity() })
-        }
+        backup.comfyUIConnections?.let { comfyUIConnectionDao.insertAll(it.map { c -> c.toEntity() }) }
+        backup.sdWebUIConnections?.let { sdWebUIConnectionDao.insertAll(it.map { c -> c.toEntity() }) }
+        backup.externalServerConfigs?.let { externalServerConfigDao.insertAll(it.map { c -> c.toEntity() }) }
     }
 
     private suspend fun restoreHiddenModels(backup: BackupDto, strategy: RestoreStrategy) {

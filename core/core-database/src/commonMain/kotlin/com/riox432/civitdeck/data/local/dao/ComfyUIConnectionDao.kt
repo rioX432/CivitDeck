@@ -48,4 +48,7 @@ interface ComfyUIConnectionDao {
 
     @Query("DELETE FROM comfyui_connections WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("DELETE FROM comfyui_connections")
+    suspend fun deleteAll()
 }

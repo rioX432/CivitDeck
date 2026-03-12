@@ -38,6 +38,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -184,8 +185,8 @@ private fun CategoryRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onToggle)
-            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+            .padding(horizontal = Spacing.lg, vertical = Spacing.sm)
+            .clickable(onClick = onToggle),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(checked = isSelected, onCheckedChange = { onToggle() })
@@ -247,48 +248,7 @@ private fun ImportConfirmationDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Restore Backup") },
-        text = {
-            Column {
-                Text(
-                    "Found data for ${state.importCategories.size} categories.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Spacer(Modifier.height(Spacing.md))
-                Text("Restore Strategy:", style = MaterialTheme.typography.titleSmall)
-                RestoreStrategy.entries.forEach { strategy ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onStrategyChanged(strategy) }
-                            .padding(vertical = Spacing.xs),
-                    ) {
-                        RadioButton(
-                            selected = state.restoreStrategy == strategy,
-                            onClick = { onStrategyChanged(strategy) },
-                        )
-                        Text(strategy.displayName, style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-                Spacer(Modifier.height(Spacing.sm))
-                Text("Categories to restore:", style = MaterialTheme.typography.titleSmall)
-                state.importCategories.forEach { category ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onToggleCategory(category) }
-                            .padding(vertical = Spacing.xs),
-                    ) {
-                        Checkbox(
-                            checked = category in state.selectedCategories,
-                            onCheckedChange = { onToggleCategory(category) },
-                        )
-                        Text(category.displayName, style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-            }
-        },
+        text = { ImportDialogContent(state, onStrategyChanged, onToggleCategory) },
         confirmButton = {
             TextButton(
                 onClick = onConfirm,
@@ -299,6 +259,58 @@ private fun ImportConfirmationDialog(
             TextButton(onClick = onDismiss) { Text("Cancel") }
         },
     )
+}
+
+@Composable
+private fun ImportDialogContent(
+    state: BackupUiState,
+    onStrategyChanged: (RestoreStrategy) -> Unit,
+    onToggleCategory: (BackupCategory) -> Unit,
+) {
+    Column {
+        Text(
+            "Found data for ${state.importCategories.size} categories.",
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Spacer(Modifier.height(Spacing.md))
+        Text("Restore Strategy:", style = MaterialTheme.typography.titleSmall)
+        RestoreStrategy.entries.forEach { strategy ->
+            key(strategy.name) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Spacing.xs)
+                        .clickable { onStrategyChanged(strategy) },
+                ) {
+                    RadioButton(
+                        selected = state.restoreStrategy == strategy,
+                        onClick = { onStrategyChanged(strategy) },
+                    )
+                    Text(strategy.displayName, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        }
+        Spacer(Modifier.height(Spacing.sm))
+        Text("Categories to restore:", style = MaterialTheme.typography.titleSmall)
+        state.importCategories.forEach { category ->
+            key(category.name) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Spacing.xs)
+                        .clickable { onToggleCategory(category) },
+                ) {
+                    Checkbox(
+                        checked = category in state.selectedCategories,
+                        onCheckedChange = { onToggleCategory(category) },
+                    )
+                    Text(category.displayName, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        }
+    }
 }
 
 private fun readFileContent(context: Context, uri: Uri): String? {

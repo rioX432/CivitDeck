@@ -48,4 +48,7 @@ interface ExternalServerConfigDao {
 
     @Query("DELETE FROM external_server_configs WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("DELETE FROM external_server_configs")
+    suspend fun deleteAll()
 }
