@@ -31,7 +31,7 @@ struct ModelStatsRow: View {
     private func statItem(icon: String, value: String) -> some View {
         HStack(spacing: 2) {
             Image(systemName: icon)
-                .font(.system(size: IconSize.statIcon))
+                .font(.civitLabelXSmall)
                 .accessibilityHidden(true)
             Text(value)
                 .font(.civitLabelSmall)

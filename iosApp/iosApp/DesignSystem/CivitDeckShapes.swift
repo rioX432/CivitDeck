@@ -8,5 +8,5 @@ enum CornerRadius {
 }
 
 enum IconSize {
-    static let statIcon: CGFloat = 10
+    // Icon sizes now defined as Font tokens in CivitDeckFonts.swift
 }

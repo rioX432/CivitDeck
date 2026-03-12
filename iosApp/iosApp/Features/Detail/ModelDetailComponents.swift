@@ -118,7 +118,7 @@ struct ImageGridSheet: View {
 
                 if image.contentType == .video {
                     SwiftUI.Image(systemName: "play.circle.fill")
-                        .font(.system(size: 44))
+                        .font(.civitIconLarge)
                         .foregroundColor(.white.opacity(0.85))
                 }
             }

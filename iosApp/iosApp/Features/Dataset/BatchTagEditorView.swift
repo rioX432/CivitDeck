@@ -147,7 +147,7 @@ struct BatchTagEditorView: View {
         return Group {
             if count > 0 {
                 Text("\(count)")
-                    .font(.system(size: 9, weight: .bold))
+                    .font(.civitIconXSmall)
                     .padding(.horizontal, Spacing.xs)
                     .padding(.vertical, Spacing.xxs)
                     .background(Color.civitSecondary.opacity(0.85))

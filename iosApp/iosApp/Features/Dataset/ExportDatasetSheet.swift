@@ -105,7 +105,7 @@ struct ExportProgressOverlay: View {
             Spacer()
             VStack(spacing: Spacing.md) {
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 48))
+                    .font(.civitIconExtraLarge)
                     .foregroundColor(.green)
                 Text("Export Complete").font(.civitTitleMedium)
                 Text(fileName).font(.civitBodySmall).foregroundColor(.secondary)
@@ -137,7 +137,7 @@ struct ExportProgressOverlay: View {
             Spacer()
             VStack(spacing: Spacing.md) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 48))
+                    .font(.civitIconExtraLarge)
                     .foregroundColor(.civitError)
                 Text("Export Failed").font(.civitTitleMedium)
                 Text(message).font(.civitBodySmall).foregroundColor(.secondary)

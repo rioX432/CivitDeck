@@ -17,7 +17,7 @@ struct ModelCardView: View {
                         .lineLimit(1)
                     if isOwned {
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: IconSize.statIcon))
+                            .font(.civitLabelXSmall)
                             .foregroundColor(.civitPrimary)
                             .accessibilityLabel("Owned")
                     }

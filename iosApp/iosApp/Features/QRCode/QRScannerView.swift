@@ -52,7 +52,7 @@ struct QRScannerView: View {
     private var permissionDeniedView: some View {
         VStack(spacing: Spacing.md) {
             Image(systemName: "camera.fill")
-                .font(.system(size: 48))
+                .font(.civitIconExtraLarge)
                 .foregroundColor(.civitOnSurfaceVariant)
             Text("Camera permission is required to scan QR codes")
                 .font(.civitBodyMedium)

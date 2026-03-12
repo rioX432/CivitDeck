@@ -109,7 +109,7 @@ struct RatingDistributionChart: View {
                 .font(.civitLabelSmall)
                 .frame(width: 12)
             SwiftUI.Image(systemName: "star.fill")
-                .font(.system(size: 10))
+                .font(.civitLabelXSmall)
                 .foregroundColor(.civitPrimary)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
@@ -156,7 +156,7 @@ struct ReviewCardView: View {
             if review.recommended {
                 HStack(spacing: Spacing.xs) {
                     SwiftUI.Image(systemName: "hand.thumbsup")
-                        .font(.system(size: 10))
+                        .font(.civitLabelXSmall)
                         .foregroundColor(.civitPrimary)
                     Text("Recommended")
                         .font(.civitLabelSmall)
@@ -183,7 +183,7 @@ struct ReviewCardView: View {
         HStack(spacing: 1) {
             ForEach(1...5, id: \.self) { i in
                 SwiftUI.Image(systemName: i <= rating ? "star.fill" : "star")
-                    .font(.system(size: 10))
+                    .font(.civitLabelXSmall)
                     .foregroundColor(i <= rating ? .civitPrimary : .civitOnSurfaceVariant.opacity(0.3))
             }
         }
