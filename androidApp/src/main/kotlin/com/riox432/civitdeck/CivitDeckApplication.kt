@@ -43,6 +43,7 @@ import com.riox432.civitdeck.ui.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetListViewModel
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.feed.FeedViewModel
+import com.riox432.civitdeck.ui.plugin.PluginManagementViewModel
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
 import com.riox432.civitdeck.widget.WidgetRefreshWorker
 import kotlinx.coroutines.CoroutineScope
@@ -160,4 +161,5 @@ val androidModule = module {
     viewModel { AnalyticsViewModel(get()) }
     viewModel { FeedViewModel(get(), get(), get()) }
     viewModel { BackupViewModel(get(), get(), get()) }
+    viewModel { PluginManagementViewModel(get(), get(), get(), get(), get(), get()) }
 }

@@ -183,6 +183,16 @@ typealias RestoreStrategy = Core_domainRestoreStrategy
 typealias CreateBackupUseCase = Core_domainCreateBackupUseCase
 typealias RestoreBackupUseCase = Core_domainRestoreBackupUseCase
 typealias ParseBackupUseCase = Core_domainParseBackupUseCase
+typealias InstalledPlugin = Core_domainInstalledPlugin
+typealias InstalledPluginState = Core_domainInstalledPluginState
+typealias InstalledPluginType = Core_domainInstalledPluginType
+typealias ActivatePluginUseCase = Core_domainActivatePluginUseCase
+typealias DeactivatePluginUseCase = Core_domainDeactivatePluginUseCase
+typealias GetPluginConfigUseCase = Core_domainGetPluginConfigUseCase
+typealias InstallPluginUseCase = Core_domainInstallPluginUseCase
+typealias ObserveInstalledPluginsUseCase = Core_domainObserveInstalledPluginsUseCase
+typealias UninstallPluginUseCase = Core_domainUninstallPluginUseCase
+typealias UpdatePluginConfigUseCase = Core_domainUpdatePluginConfigUseCase
 
 // ReviewSortOrder is not exported from KMP (no public API uses it), so define in Swift
 enum ReviewSortOrder: CaseIterable {

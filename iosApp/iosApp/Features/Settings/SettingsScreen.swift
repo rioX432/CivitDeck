@@ -17,6 +17,7 @@ struct SettingsScreen: View {
                 storageSection
                 advancedSection
                 backupSection
+                pluginsSection
                 analyticsSection
                 datasetsSection
                 aboutSection
@@ -101,6 +102,14 @@ struct SettingsScreen: View {
         Section("Data") {
             NavigationLink(destination: BackupView()) {
                 Label("Backup & Restore", systemImage: "arrow.up.arrow.down.circle")
+            }
+        }
+    }
+
+    private var pluginsSection: some View {
+        Section("Plugins") {
+            NavigationLink(destination: PluginListView()) {
+                Label("Plugins", systemImage: "puzzlepiece.extension")
             }
         }
     }

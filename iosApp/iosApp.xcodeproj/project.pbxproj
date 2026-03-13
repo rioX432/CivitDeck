@@ -36,6 +36,10 @@
 		CDFE02012FAB0002000CD001 /* FeedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFE02002FAB0002000CD001 /* FeedViewModel.swift */; };
 		CDBK01012FBC0001000CD001 /* BackupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDBK01002FBC0001000CD001 /* BackupView.swift */; };
 		CDBK02012FBC0002000CD001 /* BackupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDBK02002FBC0002000CD001 /* BackupViewModel.swift */; };
+		CDPL01012FCC0001000CD001 /* PluginListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDPL01002FCC0001000CD001 /* PluginListView.swift */; };
+		CDPL02012FCC0002000CD001 /* PluginListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDPL02002FCC0002000CD001 /* PluginListViewModel.swift */; };
+		CDPL03012FCC0003000CD001 /* PluginDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDPL03002FCC0003000CD001 /* PluginDetailView.swift */; };
+		CDPL04012FCC0004000CD001 /* PluginDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDPL04002FCC0004000CD001 /* PluginDetailViewModel.swift */; };
 		CD0005012D000005000CD001 /* ImageGalleryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005002D000005000CD001 /* ImageGalleryViewModel.swift */; };
 		CD0005032D000005000CD001 /* ImageGalleryScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005022D000005000CD001 /* ImageGalleryScreen.swift */; };
 		CD0005052D000005000CD001 /* ImageViewerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0005042D000005000CD001 /* ImageViewerScreen.swift */; };
@@ -183,6 +187,10 @@
 		CDFE02002FAB0002000CD001 /* FeedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewModel.swift; sourceTree = "<group>"; };
 		CDBK01002FBC0001000CD001 /* BackupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupView.swift; sourceTree = "<group>"; };
 		CDBK02002FBC0002000CD001 /* BackupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupViewModel.swift; sourceTree = "<group>"; };
+		CDPL01002FCC0001000CD001 /* PluginListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginListView.swift; sourceTree = "<group>"; };
+		CDPL02002FCC0002000CD001 /* PluginListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginListViewModel.swift; sourceTree = "<group>"; };
+		CDPL03002FCC0003000CD001 /* PluginDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginDetailView.swift; sourceTree = "<group>"; };
+		CDPL04002FCC0004000CD001 /* PluginDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginDetailViewModel.swift; sourceTree = "<group>"; };
 		CD0005002D000005000CD001 /* ImageGalleryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageGalleryViewModel.swift; sourceTree = "<group>"; };
 		CD0005022D000005000CD001 /* ImageGalleryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageGalleryScreen.swift; sourceTree = "<group>"; };
 		CD0005042D000005000CD001 /* ImageViewerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewerScreen.swift; sourceTree = "<group>"; };
@@ -448,6 +456,7 @@
 				CD00FB042D5CC001000CD001 /* ModelFileBrowser */,
 				CD0009042D000009000CD001 /* Prompts */,
 				CDQR0A002F8A0000000CD001 /* QRCode */,
+				CDPL0A002FCC0000000CD001 /* Plugin */,
 				CDAN0A002F9B0000000CD001 /* Analytics */,
 				CDFE0A002FAB0000000CD001 /* Feed */,
 				CDBK0A002FBC0000000CD001 /* Backup */,
@@ -509,6 +518,17 @@
 				CDQR04002F8A0004000CD001 /* QRScannerFab.swift */,
 			);
 			path = QRCode;
+			sourceTree = "<group>";
+		};
+		CDPL0A002FCC0000000CD001 /* Plugin */ = {
+			isa = PBXGroup;
+			children = (
+				CDPL01002FCC0001000CD001 /* PluginListView.swift */,
+				CDPL02002FCC0002000CD001 /* PluginListViewModel.swift */,
+				CDPL03002FCC0003000CD001 /* PluginDetailView.swift */,
+				CDPL04002FCC0004000CD001 /* PluginDetailViewModel.swift */,
+			);
+			path = Plugin;
 			sourceTree = "<group>";
 		};
 		CDAN0A002F9B0000000CD001 /* Analytics */ = {
@@ -956,6 +976,10 @@
 			CDES06012F400006000CD001 /* ExternalServerImageDetailView.swift in Sources */,
 			CDES07012F400007000CD001 /* ExternalServerGenerationSheet.swift in Sources */,
 			CDDL01012FBB0001000CD001 /* DownloadService.swift in Sources */,
+			CDPL01012FCC0001000CD001 /* PluginListView.swift in Sources */,
+			CDPL02012FCC0002000CD001 /* PluginListViewModel.swift in Sources */,
+			CDPL03012FCC0003000CD001 /* PluginDetailView.swift in Sources */,
+			CDPL04012FCC0004000CD001 /* PluginDetailViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
