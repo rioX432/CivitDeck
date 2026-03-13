@@ -3,6 +3,7 @@ package com.riox432.civitdeck.di
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
+import com.riox432.civitdeck.domain.usecase.ActivatePluginUseCase
 import com.riox432.civitdeck.domain.usecase.AddImageToDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
@@ -14,6 +15,7 @@ import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCompletedDownloadsUseCase
 import com.riox432.civitdeck.domain.usecase.CreateBackupUseCase
 import com.riox432.civitdeck.domain.usecase.CreateDatasetCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.DeactivatePluginUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
@@ -34,10 +36,12 @@ import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelLicenseUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelReviewsUseCase
 import com.riox432.civitdeck.domain.usecase.GetNonTrainableImagesUseCase
+import com.riox432.civitdeck.domain.usecase.GetPluginConfigUseCase
 import com.riox432.civitdeck.domain.usecase.GetRatingTotalsUseCase
 import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadFeedCountUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
+import com.riox432.civitdeck.domain.usecase.InstallPluginUseCase
 import com.riox432.civitdeck.domain.usecase.IsFollowingCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.MarkFeedReadUseCase
 import com.riox432.civitdeck.domain.usecase.MarkImageExcludedUseCase
@@ -54,6 +58,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDownloadsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveInstalledPluginsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveLocalModelFilesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelDirectoriesUseCase
@@ -102,6 +107,8 @@ import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnfollowCreatorUseCase
+import com.riox432.civitdeck.domain.usecase.UninstallPluginUseCase
+import com.riox432.civitdeck.domain.usecase.UpdatePluginConfigUseCase
 import com.riox432.civitdeck.domain.usecase.UpdateTrainableUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
@@ -438,4 +445,13 @@ object KoinHelper {
     fun getCreateBackupUseCase(): CreateBackupUseCase = getKoin().get()
     fun getRestoreBackupUseCase(): RestoreBackupUseCase = getKoin().get()
     fun getParseBackupUseCase(): ParseBackupUseCase = getKoin().get()
+
+    // Plugin management
+    fun getInstallPluginUseCase(): InstallPluginUseCase = getKoin().get()
+    fun getUninstallPluginUseCase(): UninstallPluginUseCase = getKoin().get()
+    fun getActivatePluginUseCase(): ActivatePluginUseCase = getKoin().get()
+    fun getDeactivatePluginUseCase(): DeactivatePluginUseCase = getKoin().get()
+    fun getObserveInstalledPluginsUseCase(): ObserveInstalledPluginsUseCase = getKoin().get()
+    fun getGetPluginConfigUseCase(): GetPluginConfigUseCase = getKoin().get()
+    fun getUpdatePluginConfigUseCase(): UpdatePluginConfigUseCase = getKoin().get()
 }
