@@ -11,6 +11,7 @@ import com.riox432.civitdeck.feature.gallery.di.galleryModule
 import com.riox432.civitdeck.feature.prompts.di.promptsModule
 import com.riox432.civitdeck.feature.search.di.searchModule
 import com.riox432.civitdeck.feature.settings.di.settingsModule
+import com.riox432.civitdeck.plugin.di.pluginModule
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.KoinAppDeclaration
@@ -32,6 +33,7 @@ val sharedModules: List<Module>
         comfyuiModule,
         searchModule,
         externalServerModule,
+        pluginModule,
     )
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
