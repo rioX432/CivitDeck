@@ -10,6 +10,9 @@ struct iOSApp: App {
 
     init() {
         KoinKt.doInitKoin(appDeclaration: { _ in })
+        WorkflowPluginInitializerKt.registerWorkflowPlugins()
+        ExportPluginInitializerKt.registerExportPlugins()
+        Task { try? await ThemePluginInitializerKt.registerThemePlugins() }
         Task { try? await KoinKt.initializeAuth() }
     }
 
@@ -25,6 +28,7 @@ struct iOSApp: App {
                 .task { await themeManager.observeAccentColor() }
                 .task { await themeManager.observeAmoledDarkMode() }
                 .task { await themeManager.observeThemeMode() }
+                .task { await themeManager.observeActiveTheme() }
                 .onOpenURL { url in
                     if let deepLink = DeepLinkHandler.handle(url) {
                         router.route(to: deepLink)

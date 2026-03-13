@@ -14,6 +14,9 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import com.riox432.civitdeck.di.initKoin
 import com.riox432.civitdeck.di.initializeAuth
+import com.riox432.civitdeck.di.registerExportPlugins
+import com.riox432.civitdeck.di.registerThemePlugins
+import com.riox432.civitdeck.di.registerWorkflowPlugins
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
@@ -43,6 +46,7 @@ import com.riox432.civitdeck.ui.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetListViewModel
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.feed.FeedViewModel
+import com.riox432.civitdeck.ui.plugin.PluginManagementViewModel
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
 import com.riox432.civitdeck.widget.WidgetRefreshWorker
 import kotlinx.coroutines.CoroutineScope
@@ -68,6 +72,9 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
             androidContext(this@CivitDeckApplication)
             modules(androidModule)
         }
+        registerWorkflowPlugins()
+        registerExportPlugins()
+        CoroutineScope(Dispatchers.IO).launch { registerThemePlugins() }
         CoroutineScope(Dispatchers.IO).launch { initializeAuth() }
         observeAndScheduleNotifications()
         scheduleWidgetRefresh()
@@ -154,10 +161,11 @@ val androidModule = module {
     viewModel { ExternalServerSettingsViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { ExternalServerGalleryViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { DatasetListViewModel(get(), get(), get(), get()) }
-    viewModel { params -> DatasetDetailViewModel(params.get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { params -> DatasetDetailViewModel(params.get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { params -> BatchTagEditorViewModel(params.get(), get(), get(), get()) }
     viewModel { params -> DuplicateReviewViewModel(params.get(), get(), get()) }
     viewModel { AnalyticsViewModel(get()) }
     viewModel { FeedViewModel(get(), get(), get()) }
     viewModel { BackupViewModel(get(), get(), get()) }
+    viewModel { PluginManagementViewModel(get(), get(), get(), get(), get(), get()) }
 }

@@ -15,6 +15,8 @@ final class DatasetDetailViewModel: ObservableObject {
     @Published var minWidth = 0
     @Published var minHeight = 0
     @Published var duplicateImageCount = 0
+    @Published var availableExportFormats: [PluginExportFormat] = []
+    @Published var selectedExportFormatId: String?
 
     let datasetId: Int64
 
@@ -25,10 +27,12 @@ final class DatasetDetailViewModel: ObservableObject {
     private let detectDuplicatesUseCase: DetectDuplicatesUseCase
     private let filterByResolutionUseCase: FilterByResolutionUseCase
     private let markImageExcludedUseCase: MarkImageExcludedUseCase
-    private let exportDatasetUseCase: ExportDatasetUseCase
+    private let exportWithPluginUseCase: ExportWithPluginUseCase
+    private let getAvailableExportFormatsUseCase: GetAvailableExportFormatsUseCase
     private var observeTask: Task<Void, Never>?
     private var duplicatesTask: Task<Void, Never>?
     private var exportTask: Task<Void, Never>?
+    private var formatsTask: Task<Void, Never>?
 
     init(datasetId: Int64) {
         self.datasetId = datasetId
@@ -39,15 +43,18 @@ final class DatasetDetailViewModel: ObservableObject {
         self.detectDuplicatesUseCase = KoinHelper.shared.getDetectDuplicatesUseCase()
         self.filterByResolutionUseCase = KoinHelper.shared.getFilterByResolutionUseCase()
         self.markImageExcludedUseCase = KoinHelper.shared.getMarkImageExcludedUseCase()
-        self.exportDatasetUseCase = KoinHelper.shared.getExportDatasetUseCase()
+        self.exportWithPluginUseCase = KoinHelper.shared.getExportWithPluginUseCase()
+        self.getAvailableExportFormatsUseCase = KoinHelper.shared.getGetAvailableExportFormatsUseCase()
         observeTask = Task { await observeImages() }
         duplicatesTask = Task { await observeDuplicateCount() }
+        formatsTask = Task { await observeExportFormats() }
     }
 
     deinit {
         observeTask?.cancel()
         duplicatesTask?.cancel()
         exportTask?.cancel()
+        formatsTask?.cancel()
     }
 
     var filteredImages: [DatasetImage] {
@@ -77,6 +84,16 @@ final class DatasetDetailViewModel: ObservableObject {
         ) {
             let groups = result.compactMap { $0 as? DuplicateGroup }
             duplicateImageCount = groups.reduce(0) { $0 + $1.images.count } - groups.count
+        }
+    }
+
+    private func observeExportFormats() async {
+        for await formats in getAvailableExportFormatsUseCase.invoke() {
+            let items = formats.compactMap { $0 as? PluginExportFormat }
+            self.availableExportFormats = items
+            if selectedExportFormatId == nil, let first = items.first {
+                selectedExportFormatId = first.id
+            }
         }
     }
 
@@ -145,19 +162,25 @@ final class DatasetDetailViewModel: ObservableObject {
         images.count - trainableImageCount
     }
 
+    func selectExportFormat(_ formatId: String) {
+        selectedExportFormatId = formatId
+    }
+
     func startExport() {
+        guard let formatId = selectedExportFormatId ?? availableExportFormats.first?.id else { return }
         showExportSheet = false
-        exportTask = Task { await runExport() }
+        exportTask = Task { await runExport(formatId: formatId) }
     }
 
     func dismissExportResult() {
         exportProgress = nil
     }
 
-    private func runExport() async {
-        for await progress in exportDatasetUseCase.invoke(
+    private func runExport(formatId: String) async {
+        for await progress in exportWithPluginUseCase.invoke(
             datasetId: datasetId,
-            format: .zip
+            formatId: formatId,
+            options: [:]
         ) {
             guard let value = progress as? ExportProgress else { continue }
             self.exportProgress = value

@@ -86,6 +86,7 @@ fun SettingsScreen(
     onNavigateToAnalytics: () -> Unit = {},
     onNavigateToBackup: () -> Unit = {},
     onNavigateToLicenses: () -> Unit = {},
+    onNavigateToPlugins: () -> Unit = {},
     scrollToTopTrigger: Int = 0,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -121,6 +122,8 @@ fun SettingsScreen(
             item { SubScreenRow("Advanced", onNavigateToAdvanced) }
             item { SectionHeader("Data") }
             item { SubScreenRow("Backup & Restore", onNavigateToBackup) }
+            item { SectionHeader("Plugins") }
+            item { SubScreenRow("Plugins", onNavigateToPlugins) }
             item { SectionHeader("Analytics") }
             item { SubScreenRow("Usage Stats", onNavigateToAnalytics) }
             item { SectionHeader("About") }

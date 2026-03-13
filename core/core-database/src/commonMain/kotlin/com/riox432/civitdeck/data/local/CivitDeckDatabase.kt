@@ -24,6 +24,7 @@ import com.riox432.civitdeck.data.local.dao.ModelDownloadDao
 import com.riox432.civitdeck.data.local.dao.ModelNoteDao
 import com.riox432.civitdeck.data.local.dao.ModelVersionCheckpointDao
 import com.riox432.civitdeck.data.local.dao.PersonalTagDao
+import com.riox432.civitdeck.data.local.dao.PluginDao
 import com.riox432.civitdeck.data.local.dao.SDWebUIConnectionDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
 import com.riox432.civitdeck.data.local.dao.SavedSearchFilterDao
@@ -49,6 +50,7 @@ import com.riox432.civitdeck.data.local.entity.ModelDownloadEntity
 import com.riox432.civitdeck.data.local.entity.ModelNoteEntity
 import com.riox432.civitdeck.data.local.entity.ModelVersionCheckpointEntity
 import com.riox432.civitdeck.data.local.entity.PersonalTagEntity
+import com.riox432.civitdeck.data.local.entity.PluginEntity
 import com.riox432.civitdeck.data.local.entity.SDWebUIConnectionEntity
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import com.riox432.civitdeck.data.local.entity.SavedSearchFilterEntity
@@ -84,8 +86,9 @@ import kotlinx.coroutines.IO
         FollowedCreatorEntity::class,
         FeedCacheEntity::class,
         ModelDownloadEntity::class,
+        PluginEntity::class,
     ],
-    version = 30,
+    version = 31,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -110,6 +113,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun followedCreatorDao(): FollowedCreatorDao
     abstract fun feedCacheDao(): FeedCacheDao
     abstract fun modelDownloadDao(): ModelDownloadDao
+    abstract fun pluginDao(): PluginDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -664,6 +668,27 @@ val MIGRATION_29_30 = object : Migration(29, 30) {
     }
 }
 
+val MIGRATION_30_31 = object : Migration(30, 31) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `plugins` (" +
+                "`id` TEXT NOT NULL, " +
+                "`name` TEXT NOT NULL, " +
+                "`version` TEXT NOT NULL, " +
+                "`author` TEXT NOT NULL, " +
+                "`description` TEXT NOT NULL, " +
+                "`pluginType` TEXT NOT NULL, " +
+                "`capabilities` TEXT NOT NULL, " +
+                "`minAppVersion` TEXT NOT NULL, " +
+                "`state` TEXT NOT NULL, " +
+                "`configJson` TEXT NOT NULL DEFAULT '{}', " +
+                "`installedAt` INTEGER NOT NULL, " +
+                "`updatedAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`id`))",
+        )
+    }
+}
+
 // Seed data is inserted via onOpen (not in migrations) because Room migrations only run on
 // upgrades — a fresh install starts directly at the latest schema version, skipping all
 // migration callbacks. Using INSERT OR IGNORE in onOpen ensures required rows are always
@@ -747,6 +772,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_27_28,
             MIGRATION_28_29,
             MIGRATION_29_30,
+            MIGRATION_30_31,
         )
         .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())

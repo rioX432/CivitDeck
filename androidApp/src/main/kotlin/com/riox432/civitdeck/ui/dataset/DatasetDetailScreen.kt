@@ -59,6 +59,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.domain.model.ExportProgress
 import com.riox432.civitdeck.domain.model.ImageSource
+import com.riox432.civitdeck.plugin.PluginExportFormat
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.FilterChipRow
@@ -105,6 +106,8 @@ fun DatasetDetailScreen(
     val showExportSheet by viewModel.showExportSheet.collectAsStateWithLifecycle()
     val exportProgress by viewModel.exportProgress.collectAsStateWithLifecycle()
     val allImages by viewModel.images.collectAsStateWithLifecycle()
+    val availableExportFormats by viewModel.availableExportFormats.collectAsStateWithLifecycle()
+    val selectedExportFormatId by viewModel.selectedExportFormatId.collectAsStateWithLifecycle()
     var captionSheetImageId by remember { mutableStateOf<Long?>(null) }
     var captionSheetInitial by remember { mutableStateOf("") }
     val callbacks = buildCallbacks(viewModel, onNavigateToBatchTagEditor) { id, text ->
@@ -132,8 +135,11 @@ fun DatasetDetailScreen(
         showExportSheet = showExportSheet,
         exportProgress = exportProgress,
         allImages = allImages,
+        availableExportFormats = availableExportFormats,
+        selectedExportFormatId = selectedExportFormatId,
         onOpenExport = viewModel::openExportSheet,
         onDismissExport = viewModel::dismissExportSheet,
+        onExportFormatSelected = viewModel::selectExportFormat,
         onStartExport = viewModel::startExport,
         onDismissExportResult = viewModel::dismissExportResult,
     )
@@ -163,9 +169,12 @@ private fun DatasetDetailScaffold(
     showExportSheet: Boolean = false,
     exportProgress: ExportProgress? = null,
     allImages: List<DatasetImage> = emptyList(),
+    availableExportFormats: List<PluginExportFormat> = emptyList(),
+    selectedExportFormatId: String? = null,
     onOpenExport: () -> Unit = {},
     onDismissExport: () -> Unit = {},
-    onStartExport: () -> Unit = {},
+    onExportFormatSelected: (String) -> Unit = {},
+    onStartExport: (String) -> Unit = {},
     onDismissExportResult: () -> Unit = {},
 ) {
     Scaffold(
@@ -219,6 +228,9 @@ private fun DatasetDetailScaffold(
         ExportDatasetSheet(
             imageCount = trainableCount,
             nonTrainableCount = nonTrainableCount,
+            availableFormats = availableExportFormats,
+            selectedFormatId = selectedExportFormatId,
+            onFormatSelected = onExportFormatSelected,
             onExport = onStartExport,
             onDismiss = onDismissExport,
         )

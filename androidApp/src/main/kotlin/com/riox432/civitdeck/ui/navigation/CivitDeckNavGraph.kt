@@ -106,6 +106,9 @@ import com.riox432.civitdeck.ui.feed.FeedScreen
 import com.riox432.civitdeck.ui.feed.FeedViewModel
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
 import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserScreen
+import com.riox432.civitdeck.ui.plugin.PluginDetailScreen
+import com.riox432.civitdeck.ui.plugin.PluginManagementScreen
+import com.riox432.civitdeck.ui.plugin.PluginManagementViewModel
 import com.riox432.civitdeck.ui.qrcode.QRScannerScreen
 import com.riox432.civitdeck.ui.search.ModelSearchScreen
 import com.riox432.civitdeck.ui.settings.AdvancedSettingsScreen
@@ -218,6 +221,10 @@ data object BackupRoute
 data object QRScannerRoute
 
 data object AnalyticsRoute
+
+data object PluginManagementRoute
+
+data class PluginDetailRoute(val pluginId: String)
 
 data object FeedRoute
 
@@ -470,6 +477,7 @@ private fun CivitDeckNavDisplay(
                     onNavigateToAnalytics = { backStack.add(AnalyticsRoute) },
                     onNavigateToBackup = { backStack.add(BackupRoute) },
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
+                    onNavigateToPlugins = { backStack.add(PluginManagementRoute) },
                     scrollToTopTrigger = settingsScrollTrigger,
                 )
             }
@@ -808,6 +816,7 @@ private fun EntryProviderScope<Any>.settingsSubScreenEntries(backStack: MutableL
             onBack = { backStack.removeLastOrNull() },
         )
     }
+    pluginEntries(backStack)
 }
 
 private fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>, outputScrollTrigger: Int) {
@@ -939,6 +948,25 @@ private fun EntryProviderScope<Any>.externalServerEntries(backStack: MutableList
                 onBack = { backStack.removeLastOrNull() },
             )
         }
+    }
+}
+
+private fun EntryProviderScope<Any>.pluginEntries(backStack: MutableList<Any>) {
+    entry<PluginManagementRoute> {
+        val viewModel: PluginManagementViewModel = koinViewModel()
+        PluginManagementScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onPluginClick = { pluginId -> backStack.add(PluginDetailRoute(pluginId)) },
+        )
+    }
+    entry<PluginDetailRoute> { key ->
+        val viewModel: PluginManagementViewModel = koinViewModel()
+        PluginDetailScreen(
+            pluginId = key.pluginId,
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
     }
 }
 

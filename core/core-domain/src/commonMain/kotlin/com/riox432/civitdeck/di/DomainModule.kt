@@ -23,5 +23,6 @@ val domainModule = module {
         downloadDomainModule,
         reviewDomainModule,
         backupDomainModule,
+        pluginDomainModule,
     )
 }

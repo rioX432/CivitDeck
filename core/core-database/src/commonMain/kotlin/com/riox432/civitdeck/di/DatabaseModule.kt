@@ -10,6 +10,7 @@ import com.riox432.civitdeck.data.local.repository.DatasetCollectionRepositoryIm
 import com.riox432.civitdeck.data.local.repository.ImageTagRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ModelDownloadRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ModelNoteRepositoryImpl
+import com.riox432.civitdeck.data.local.repository.PluginRepositoryImpl
 import com.riox432.civitdeck.domain.repository.AnalyticsRepository
 import com.riox432.civitdeck.domain.repository.CaptionRepository
 import com.riox432.civitdeck.domain.repository.CreatorFollowRepository
@@ -17,6 +18,7 @@ import com.riox432.civitdeck.domain.repository.DatasetCollectionRepository
 import com.riox432.civitdeck.domain.repository.ImageTagRepository
 import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
 import com.riox432.civitdeck.domain.repository.ModelNoteRepository
+import com.riox432.civitdeck.domain.repository.PluginRepository
 import org.koin.dsl.module
 
 val databaseModule = module {
@@ -43,6 +45,7 @@ val databaseModule = module {
     single { get<CivitDeckDatabase>().followedCreatorDao() }
     single { get<CivitDeckDatabase>().feedCacheDao() }
     single { get<CivitDeckDatabase>().modelDownloadDao() }
+    single { get<CivitDeckDatabase>().pluginDao() }
 
     // Data Sources
     single { LocalCacheDataSource(get()) }
@@ -63,4 +66,7 @@ val databaseModule = module {
 
     // Downloads
     single<ModelDownloadRepository> { ModelDownloadRepositoryImpl(get()) }
+
+    // Plugins
+    single<PluginRepository> { PluginRepositoryImpl(get()) }
 }

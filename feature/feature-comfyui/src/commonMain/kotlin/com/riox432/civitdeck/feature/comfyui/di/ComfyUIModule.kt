@@ -55,6 +55,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.SendResourceToPCUseC
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.plugin.ComfyUIWorkflowPlugin
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
@@ -125,4 +126,7 @@ val comfyuiModule = module {
     factory { DisconnectCivitaiLinkUseCase(get()) }
     factory { SendResourceToPCUseCase(get()) }
     factory { CancelLinkActivityUseCase(get()) }
+
+    // Plugin adapter
+    single { ComfyUIWorkflowPlugin(get()) }
 }
