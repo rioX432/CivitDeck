@@ -31,6 +31,7 @@ struct CreatorProfileScreen: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: viewModel.toggleFollow) {
                     Image(systemName: viewModel.isFollowing ? "person.badge.minus" : "person.badge.plus")
+                        .accessibilityLabel(viewModel.isFollowing ? "Unfollow" : "Follow")
                 }
             }
         }
