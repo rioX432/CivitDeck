@@ -70,6 +70,8 @@ private struct DuplicateGroupRow: View {
     }
 }
 
+private let duplicateThumbnailSize: CGFloat = 120
+
 private struct DuplicateImageCell: View {
     let image: DatasetImage
     let onKeep: () -> Void
@@ -87,8 +89,8 @@ private struct DuplicateImageCell: View {
                     Color.civitSurfaceVariant
                 }
             }
-            .frame(width: 120, height: 120)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .frame(width: duplicateThumbnailSize, height: duplicateThumbnailSize)
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
             .overlay(alignment: .top) {
                 if image.excluded {
                     Text("Excluded")
@@ -111,6 +113,6 @@ private struct DuplicateImageCell: View {
                     .font(.caption)
             }
         }
-        .frame(width: 120)
+        .frame(width: duplicateThumbnailSize)
     }
 }

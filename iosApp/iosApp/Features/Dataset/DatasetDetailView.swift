@@ -155,7 +155,7 @@ struct DatasetDetailView: View {
     private func imageCell(image: DatasetImage) -> some View {
         let isSelected = viewModel.selectedImageIds.contains(image.id)
         return imageThumbnail(image: image)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
             .overlay(alignment: .topLeading) {
                 if viewModel.isSelectionMode {
                     selectionIndicator(isSelected: isSelected)
@@ -227,7 +227,7 @@ struct DatasetDetailView: View {
     private func selectionIndicator(isSelected: Bool) -> some View {
         Circle()
             .fill(isSelected ? Color.accentColor : Color.white.opacity(0.7))
-            .frame(width: 24, height: 24)
+            .frame(width: Spacing.xl, height: Spacing.xl)
             .overlay {
                 if isSelected {
                     Image(systemName: "checkmark")
@@ -278,7 +278,7 @@ private struct SourceBadgeMiniView: View {
             .padding(.vertical, Spacing.xxs)
             .background(badgeColor.opacity(0.85))
             .foregroundColor(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 4))
+            .clipShape(RoundedRectangle(cornerRadius: Spacing.xs))
     }
 
     private var label: String {

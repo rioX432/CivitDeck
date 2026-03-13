@@ -22,7 +22,7 @@ struct PluginListView: View {
     private var emptyState: some View {
         VStack(spacing: Spacing.md) {
             Image(systemName: "puzzlepiece.extension")
-                .font(.system(size: 48))
+                .font(.civitIconExtraLarge)
                 .foregroundColor(.civitOnSurfaceVariant)
             Text("No plugins installed")
                 .font(.civitBodyMedium)
@@ -45,6 +45,8 @@ struct PluginListView: View {
     }
 }
 
+private let pluginIconSize: CGFloat = 40
+
 private struct PluginRow: View {
     let plugin: InstalledPlugin
     let viewModel: PluginListViewModel
@@ -66,16 +68,16 @@ private struct PluginRow: View {
 
     private var pluginIcon: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: CornerRadius.image)
                 .fill(Color.civitPrimaryContainer)
-                .frame(width: 40, height: 40)
+                .frame(width: pluginIconSize, height: pluginIconSize)
             Image(systemName: "puzzlepiece.extension")
                 .foregroundColor(.civitOnPrimaryContainer)
         }
     }
 
     private var pluginInfo: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
             Text(plugin.name)
                 .font(.civitBodyMedium)
                 .foregroundColor(.civitOnSurface)
@@ -91,7 +93,7 @@ private struct PluginRow: View {
     private var statusDot: some View {
         Circle()
             .fill(statusColor)
-            .frame(width: 8, height: 8)
+            .frame(width: Spacing.sm, height: Spacing.sm)
     }
 
     private var statusColor: Color {
@@ -114,8 +116,8 @@ private struct PluginTypeBadge: View {
             .font(.civitLabelSmall)
             .foregroundColor(.civitOnSecondaryContainer)
             .padding(.horizontal, Spacing.sm)
-            .padding(.vertical, 2)
+            .padding(.vertical, Spacing.xxs)
             .background(Color.civitSecondaryContainer)
-            .cornerRadius(4)
+            .cornerRadius(Spacing.xs)
     }
 }

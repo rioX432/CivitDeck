@@ -1,5 +1,8 @@
 import SwiftUI
 
+private let promptEditorMinHeight: CGFloat = 80
+private let negativePromptEditorMinHeight: CGFloat = 60
+
 struct SDWebUIGenerationView: View {
     @StateObject private var viewModel = SDWebUIGenerationViewModel()
     @State private var showError = false
@@ -55,12 +58,12 @@ struct SDWebUIGenerationView: View {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Prompt").font(.civitBodySmall).foregroundColor(.civitOnSurfaceVariant)
                 TextEditor(text: $viewModel.prompt)
-                    .frame(minHeight: 80)
+                    .frame(minHeight: promptEditorMinHeight)
             }
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Negative Prompt").font(.civitBodySmall).foregroundColor(.civitOnSurfaceVariant)
                 TextEditor(text: $viewModel.negativePrompt)
-                    .frame(minHeight: 60)
+                    .frame(minHeight: negativePromptEditorMinHeight)
             }
         }
     }

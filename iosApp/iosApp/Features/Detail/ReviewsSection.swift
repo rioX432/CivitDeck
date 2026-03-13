@@ -1,6 +1,12 @@
 import SwiftUI
 import Shared
 
+private let starLabelWidth: CGFloat = 12
+private let ratingBarHeight: CGFloat = 6
+private let ratingCountWidth: CGFloat = 28
+private let avatarSize: CGFloat = 28
+private let textEditorMinHeight: CGFloat = 80
+
 struct ReviewsSection: View {
     let reviews: [ResourceReview]
     let ratingTotals: RatingTotals?
@@ -109,7 +115,7 @@ struct RatingDistributionChart: View {
         HStack(spacing: Spacing.xs) {
             Text("\(star)")
                 .font(.civitLabelSmall)
-                .frame(width: 12)
+                .frame(width: starLabelWidth)
             SwiftUI.Image(systemName: "star.fill")
                 .font(.civitLabelXSmall)
                 .foregroundColor(.civitPrimary)
@@ -125,11 +131,11 @@ struct RatingDistributionChart: View {
                                : 0)
                 }
             }
-            .frame(height: 6)
+            .frame(height: ratingBarHeight)
             Text("\(count)")
                 .font(.civitLabelSmall)
                 .foregroundColor(.civitOnSurfaceVariant)
-                .frame(width: 28, alignment: .trailing)
+                .frame(width: ratingCountWidth, alignment: .trailing)
         }
     }
 }
@@ -144,7 +150,7 @@ struct ReviewCardView: View {
             HStack {
                 Circle()
                     .fill(Color.civitPrimary.opacity(0.2))
-                    .frame(width: 28, height: 28)
+                    .frame(width: avatarSize, height: avatarSize)
                     .overlay(
                         Text(String((review.username?.first ?? Character("?")).uppercased()))
                             .font(.civitLabelSmall)
@@ -238,7 +244,7 @@ struct SubmitReviewSheet: View {
 
                 Section("Details (optional)") {
                     TextEditor(text: $details)
-                        .frame(minHeight: 80)
+                        .frame(minHeight: textEditorMinHeight)
                 }
 
                 Section {
