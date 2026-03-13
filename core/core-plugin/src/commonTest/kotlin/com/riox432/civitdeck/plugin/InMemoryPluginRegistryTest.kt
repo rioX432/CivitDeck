@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 
 class InMemoryPluginRegistryTest {
 
-    private val registry = InMemoryPluginRegistry()
+    private fun createRegistry() = InMemoryPluginRegistry()
 
     private fun createTestPlugin(
         id: String = "test-plugin",
@@ -39,6 +39,7 @@ class InMemoryPluginRegistryTest {
 
     @Test
     fun registerPluginSucceeds() {
+        val registry = createRegistry()
         val plugin = createTestPlugin()
         val result = registry.register(plugin)
         assertTrue(result.isSuccess)
@@ -47,6 +48,7 @@ class InMemoryPluginRegistryTest {
 
     @Test
     fun registerDuplicatePluginFails() {
+        val registry = createRegistry()
         registry.register(createTestPlugin())
         val result = registry.register(createTestPlugin())
         assertTrue(result.isFailure)
@@ -55,6 +57,7 @@ class InMemoryPluginRegistryTest {
 
     @Test
     fun unregisterPluginSucceeds() {
+        val registry = createRegistry()
         registry.register(createTestPlugin())
         val result = registry.unregister("test-plugin")
         assertTrue(result.isSuccess)
@@ -63,6 +66,7 @@ class InMemoryPluginRegistryTest {
 
     @Test
     fun unregisterNonexistentPluginFails() {
+        val registry = createRegistry()
         val result = registry.unregister("nonexistent")
         assertTrue(result.isFailure)
         assertIs<PluginError.NotFound>(result.exceptionOrNull())
@@ -70,6 +74,7 @@ class InMemoryPluginRegistryTest {
 
     @Test
     fun getPluginsByTypeFiltersCorrectly() {
+        val registry = createRegistry()
         registry.register(createTestPlugin(id = "wf-1", type = PluginType.WORKFLOW_ENGINE))
         registry.register(createTestPlugin(id = "exp-1", type = PluginType.EXPORT_FORMAT))
         registry.register(createTestPlugin(id = "wf-2", type = PluginType.WORKFLOW_ENGINE))
@@ -80,10 +85,14 @@ class InMemoryPluginRegistryTest {
 
         val exports = registry.getPluginsByType(PluginType.EXPORT_FORMAT)
         assertEquals(1, exports.size)
+
+        val themes = registry.getPluginsByType(PluginType.THEME)
+        assertEquals(emptyList(), themes)
     }
 
     @Test
     fun observePluginsEmitsUpdates() = runTest {
+        val registry = createRegistry()
         registry.observePlugins().test {
             assertEquals(emptyList(), awaitItem())
 
@@ -94,7 +103,9 @@ class InMemoryPluginRegistryTest {
             assertEquals(2, awaitItem().size)
 
             registry.unregister("p1")
-            assertEquals(1, awaitItem().size)
+            val remaining = awaitItem()
+            assertEquals(1, remaining.size)
+            assertEquals("p2", remaining.first().manifest.id)
 
             cancelAndIgnoreRemainingEvents()
         }
@@ -102,6 +113,7 @@ class InMemoryPluginRegistryTest {
 
     @Test
     fun observePluginsByTypeEmitsFilteredUpdates() = runTest {
+        val registry = createRegistry()
         registry.observePluginsByType(PluginType.THEME).test {
             assertEquals(emptyList(), awaitItem())
 
@@ -116,7 +128,18 @@ class InMemoryPluginRegistryTest {
     }
 
     @Test
+    fun unregisterThenReRegisterSucceeds() {
+        val registry = createRegistry()
+        registry.register(createTestPlugin())
+        registry.unregister("test-plugin")
+        val result = registry.register(createTestPlugin())
+        assertTrue(result.isSuccess)
+        assertEquals("test-plugin", registry.getPlugin("test-plugin")?.manifest?.id)
+    }
+
+    @Test
     fun getPluginReturnsNullForUnknownId() {
+        val registry = createRegistry()
         assertNull(registry.getPlugin("unknown"))
     }
 }

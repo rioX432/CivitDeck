@@ -13,19 +13,39 @@ class InMemoryPluginRegistry : PluginRegistry {
 
     override fun register(plugin: Plugin): Result<Unit> {
         val id = plugin.manifest.id
-        if (plugins.value.containsKey(id)) {
-            return Result.failure(PluginError.AlreadyRegistered(id))
+        var alreadyPresent = false
+        plugins.update { current ->
+            if (current.containsKey(id)) {
+                alreadyPresent = true
+                current
+            } else {
+                alreadyPresent = false
+                current + (id to plugin)
+            }
         }
-        plugins.update { it + (id to plugin) }
-        return Result.success(Unit)
+        return if (alreadyPresent) {
+            Result.failure(PluginError.AlreadyRegistered(id))
+        } else {
+            Result.success(Unit)
+        }
     }
 
     override fun unregister(pluginId: String): Result<Unit> {
-        if (!plugins.value.containsKey(pluginId)) {
-            return Result.failure(PluginError.NotFound(pluginId))
+        var wasPresent = false
+        plugins.update { current ->
+            if (current.containsKey(pluginId)) {
+                wasPresent = true
+                current - pluginId
+            } else {
+                wasPresent = false
+                current
+            }
         }
-        plugins.update { it - pluginId }
-        return Result.success(Unit)
+        return if (wasPresent) {
+            Result.success(Unit)
+        } else {
+            Result.failure(PluginError.NotFound(pluginId))
+        }
     }
 
     override fun getPlugin(pluginId: String): Plugin? =
