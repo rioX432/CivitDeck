@@ -1,126 +1,51 @@
 package com.riox432.civitdeck.ui.detail
 
 import android.content.Intent
-import android.text.Html
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
-import coil3.compose.SubcomposeAsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
-import com.riox432.civitdeck.domain.model.CivitaiLinkResource
-import com.riox432.civitdeck.domain.model.CivitaiLinkStatus
 import com.riox432.civitdeck.domain.model.HapticFeedbackType
-import com.riox432.civitdeck.domain.model.MediaContentType
 import com.riox432.civitdeck.domain.model.Model
-import com.riox432.civitdeck.domain.model.ModelDownload
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
-import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
 import com.riox432.civitdeck.domain.model.stripCdnWidth
 import com.riox432.civitdeck.download.DownloadScheduler
-import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailUiState
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
-import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
-import com.riox432.civitdeck.ui.components.CivitAsyncImage
-import com.riox432.civitdeck.ui.components.EmptyStateMessage
-import com.riox432.civitdeck.ui.components.ErrorStateView
-import com.riox432.civitdeck.ui.components.ExpandableTextSection
-import com.riox432.civitdeck.ui.components.FilterChipRow
-import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
-import com.riox432.civitdeck.ui.components.LoadingStateOverlay
-import com.riox432.civitdeck.ui.components.ModelStatsRow
-import com.riox432.civitdeck.ui.components.SectionHeader
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
-import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
-import com.riox432.civitdeck.ui.gallery.ViewerImage
-import com.riox432.civitdeck.ui.navigation.LocalSharedTransitionScope
-import com.riox432.civitdeck.ui.navigation.SharedElementKeys
 import com.riox432.civitdeck.ui.qrcode.QRCodeSheet
-import com.riox432.civitdeck.ui.theme.CivitDeckColors
-import com.riox432.civitdeck.ui.theme.CornerRadius
-import com.riox432.civitdeck.ui.theme.Duration
-import com.riox432.civitdeck.ui.theme.Easing
-import com.riox432.civitdeck.ui.theme.Spacing
-import com.riox432.civitdeck.ui.theme.shimmer
-import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList")
 fun ModelDetailScreen(
     viewModel: ModelDetailViewModel,
     modelId: Long,
@@ -154,61 +79,29 @@ fun ModelDetailScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            ModelDetailTopBar(
-                uiState = uiState,
-                onBack = onBack,
-                onFavoriteToggle = {
-                    haptic(HapticFeedbackType.Impact)
-                    viewModel.onFavoriteToggle()
-                },
-                onAddToCollection = { showCollectionSheet = true },
-                onShowQRCode = { showQRCodeSheet = true },
-            )
-        },
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-    ) { padding ->
-        ModelDetailBody(
-            uiState = uiState,
-            modelId = modelId,
-            initialThumbnailUrl = initialThumbnailUrl,
-            sharedElementSuffix = sharedElementSuffix,
-            onRetry = viewModel::retry,
-            onVersionSelected = viewModel::onVersionSelected,
-            onViewImages = onViewImages,
-            onCreatorClick = onCreatorClick,
-            onTryInComfyUI = onTryInComfyUI,
-            onSendToPC = { showSendToPCSheet = true },
-            onSaveNote = viewModel::saveNote,
-            onAddTag = viewModel::addTag,
-            onRemoveTag = viewModel::removeTag,
-            onDownloadFile = viewModel::downloadFile,
-            onCancelDownload = viewModel::cancelDownload,
-            onReviewSortChanged = viewModel::onReviewSortChanged,
-            onWriteReview = { showSubmitReviewSheet = true },
-            contentPadding = padding,
-        )
-    }
+    ModelDetailScaffold(
+        uiState = uiState,
+        viewModel = viewModel,
+        modelId = modelId,
+        initialThumbnailUrl = initialThumbnailUrl,
+        sharedElementSuffix = sharedElementSuffix,
+        haptic = haptic,
+        onBack = onBack,
+        onViewImages = onViewImages,
+        onCreatorClick = onCreatorClick,
+        onTryInComfyUI = onTryInComfyUI,
+        onShowCollectionSheet = { showCollectionSheet = true },
+        onShowSendToPCSheet = { showSendToPCSheet = true },
+        onShowQRCodeSheet = { showQRCodeSheet = true },
+        onShowSubmitReviewSheet = { showSubmitReviewSheet = true },
+    )
 
-    if (showSubmitReviewSheet) {
-        SubmitReviewSheet(
-            isSubmitting = uiState.isSubmittingReview,
-            onSubmit = { rating, recommended, details ->
-                val versionId = uiState.model?.modelVersions
-                    ?.getOrNull(uiState.selectedVersionIndex)?.id ?: return@SubmitReviewSheet
-                viewModel.submitReview(versionId, rating, recommended, details)
-            },
-            onDismiss = { showSubmitReviewSheet = false },
-        )
-    }
-
-    LaunchedEffect(uiState.reviewSubmitSuccess) {
-        if (uiState.reviewSubmitSuccess) {
-            showSubmitReviewSheet = false
-            viewModel.dismissReviewSuccess()
-        }
-    }
+    ReviewSubmitHandler(
+        uiState = uiState,
+        viewModel = viewModel,
+        showSubmitReviewSheet = showSubmitReviewSheet,
+        onDismissSubmitReview = { showSubmitReviewSheet = false },
+    )
 
     ModelDetailSheets(
         showSendToPCSheet = showSendToPCSheet,
@@ -223,6 +116,90 @@ fun ModelDetailScreen(
         onDismissQRCode = { showQRCodeSheet = false },
         modelId = modelId,
     )
+}
+
+@Suppress("LongParameterList")
+@Composable
+private fun ModelDetailScaffold(
+    uiState: ModelDetailUiState,
+    viewModel: ModelDetailViewModel,
+    modelId: Long,
+    initialThumbnailUrl: String?,
+    sharedElementSuffix: String,
+    haptic: (HapticFeedbackType) -> Unit,
+    onBack: () -> Unit,
+    onViewImages: (Long) -> Unit,
+    onCreatorClick: (String) -> Unit,
+    onTryInComfyUI:
+    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
+    onShowCollectionSheet: () -> Unit,
+    onShowSendToPCSheet: () -> Unit,
+    onShowQRCodeSheet: () -> Unit,
+    onShowSubmitReviewSheet: () -> Unit,
+) {
+    Scaffold(
+        topBar = {
+            ModelDetailTopBar(
+                uiState = uiState,
+                onBack = onBack,
+                onFavoriteToggle = {
+                    haptic(HapticFeedbackType.Impact)
+                    viewModel.onFavoriteToggle()
+                },
+                onAddToCollection = onShowCollectionSheet,
+                onShowQRCode = onShowQRCodeSheet,
+            )
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+    ) { padding ->
+        ModelDetailBody(
+            uiState = uiState,
+            modelId = modelId,
+            initialThumbnailUrl = initialThumbnailUrl,
+            sharedElementSuffix = sharedElementSuffix,
+            onRetry = viewModel::retry,
+            onVersionSelected = viewModel::onVersionSelected,
+            onViewImages = onViewImages,
+            onCreatorClick = onCreatorClick,
+            onTryInComfyUI = onTryInComfyUI,
+            onSendToPC = onShowSendToPCSheet,
+            onSaveNote = viewModel::saveNote,
+            onAddTag = viewModel::addTag,
+            onRemoveTag = viewModel::removeTag,
+            onDownloadFile = viewModel::downloadFile,
+            onCancelDownload = viewModel::cancelDownload,
+            onReviewSortChanged = viewModel::onReviewSortChanged,
+            onWriteReview = onShowSubmitReviewSheet,
+            contentPadding = padding,
+        )
+    }
+}
+
+@Composable
+private fun ReviewSubmitHandler(
+    uiState: ModelDetailUiState,
+    viewModel: ModelDetailViewModel,
+    showSubmitReviewSheet: Boolean,
+    onDismissSubmitReview: () -> Unit,
+) {
+    if (showSubmitReviewSheet) {
+        SubmitReviewSheet(
+            isSubmitting = uiState.isSubmittingReview,
+            onSubmit = { rating, recommended, details ->
+                val versionId = uiState.model?.modelVersions
+                    ?.getOrNull(uiState.selectedVersionIndex)?.id ?: return@SubmitReviewSheet
+                viewModel.submitReview(versionId, rating, recommended, details)
+            },
+            onDismiss = onDismissSubmitReview,
+        )
+    }
+
+    LaunchedEffect(uiState.reviewSubmitSuccess) {
+        if (uiState.reviewSubmitSuccess) {
+            onDismissSubmitReview()
+            viewModel.dismissReviewSuccess()
+        }
+    }
 }
 
 @Composable
@@ -342,7 +319,7 @@ private fun prepareImages(
     return listOf(filtered[idx]) + filtered.subList(0, idx) + filtered.subList(idx + 1, filtered.size)
 }
 
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList")
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ModelDetailBody(
@@ -375,6 +352,61 @@ private fun ModelDetailBody(
     var showImageGrid by remember { mutableStateOf(false) }
     var gridSelectedIndex by remember { mutableStateOf<Int?>(null) }
 
+    ModelDetailBodyLayout(
+        uiState = uiState, model = model, modelId = modelId,
+        initialThumbnailUrl = initialThumbnailUrl, sharedElementSuffix = sharedElementSuffix,
+        images = images, contentPadding = contentPadding,
+        onRetry = onRetry, onVersionSelected = onVersionSelected,
+        onViewImages = onViewImages, onCreatorClick = onCreatorClick,
+        onTryInComfyUI = onTryInComfyUI, onSendToPC = onSendToPC,
+        onSaveNote = onSaveNote, onAddTag = onAddTag, onRemoveTag = onRemoveTag,
+        onDownloadFile = onDownloadFile, onCancelDownload = onCancelDownload,
+        onReviewSortChanged = onReviewSortChanged, onWriteReview = onWriteReview,
+        onImageClick = { selectedCarouselIndex = it },
+        onImageError = { url -> failedImageUrls = failedImageUrls + url },
+        onShowGrid = { showImageGrid = true },
+    )
+
+    DetailOverlays(
+        images = images,
+        selectedCarouselIndex = selectedCarouselIndex,
+        onDismissCarousel = { selectedCarouselIndex = null },
+        showImageGrid = showImageGrid,
+        onDismissGrid = { showImageGrid = false },
+        onGridImageClick = { gridSelectedIndex = it },
+        gridSelectedIndex = gridSelectedIndex,
+        onDismissGridViewer = { gridSelectedIndex = null },
+    )
+}
+
+@Suppress("LongParameterList")
+@Composable
+private fun ModelDetailBodyLayout(
+    uiState: ModelDetailUiState,
+    model: Model?,
+    modelId: Long,
+    initialThumbnailUrl: String?,
+    sharedElementSuffix: String,
+    images: List<ModelImage>,
+    contentPadding: PaddingValues,
+    onRetry: () -> Unit,
+    onVersionSelected: (Int) -> Unit,
+    onViewImages: (Long) -> Unit,
+    onCreatorClick: (String) -> Unit,
+    onTryInComfyUI:
+    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
+    onSendToPC: () -> Unit,
+    onSaveNote: (String) -> Unit,
+    onAddTag: (String) -> Unit,
+    onRemoveTag: (String) -> Unit,
+    onDownloadFile: (ModelFile) -> Unit,
+    onCancelDownload: (Long) -> Unit,
+    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit,
+    onWriteReview: () -> Unit,
+    onImageClick: (Int) -> Unit,
+    onImageError: (String) -> Unit,
+    onShowGrid: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -410,958 +442,11 @@ private fun ModelDetailBody(
                     images = images,
                     modelId = modelId,
                     sharedElementSuffix = sharedElementSuffix,
-                    onImageClick = { selectedCarouselIndex = it },
-                    onImageError = { url -> failedImageUrls = failedImageUrls + url },
-                    onShowGrid = { showImageGrid = true },
+                    onImageClick = onImageClick,
+                    onImageError = onImageError,
+                    onShowGrid = onShowGrid,
                 )
             },
-        )
-    }
-
-    DetailOverlays(
-        images = images,
-        selectedCarouselIndex = selectedCarouselIndex,
-        onDismissCarousel = { selectedCarouselIndex = null },
-        showImageGrid = showImageGrid,
-        onDismissGrid = { showImageGrid = false },
-        onGridImageClick = { gridSelectedIndex = it },
-        gridSelectedIndex = gridSelectedIndex,
-        onDismissGridViewer = { gridSelectedIndex = null },
-    )
-}
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Composable
-private fun CarouselWithGridButton(
-    images: List<ModelImage>,
-    modelId: Long,
-    sharedElementSuffix: String,
-    onImageClick: (Int) -> Unit,
-    onImageError: (String) -> Unit,
-    onShowGrid: () -> Unit,
-) {
-    val pagerState = rememberPagerState { images.size }
-    Box {
-        ImageCarousel(
-            images = images,
-            modelId = modelId,
-            sharedElementSuffix = sharedElementSuffix,
-            pagerState = pagerState,
-            onImageClick = onImageClick,
-            onImageError = onImageError,
-        )
-        if (images.isNotEmpty()) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(Spacing.sm)
-                    .clip(RoundedCornerShape(CornerRadius.chip))
-                    .background(CivitDeckColors.scrim.copy(alpha = 0.55f))
-                    .clickable(onClick = onShowGrid)
-                    .padding(horizontal = Spacing.sm, vertical = Spacing.xs),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Icon(
-                    imageVector = Icons.Default.GridView,
-                    contentDescription = "View all images",
-                    tint = CivitDeckColors.onScrim,
-                    modifier = Modifier.size(16.dp),
-                )
-                Text(
-                    text = "${pagerState.currentPage + 1}/${images.size}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = CivitDeckColors.onScrim,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun DetailOverlays(
-    images: List<ModelImage>,
-    selectedCarouselIndex: Int?,
-    onDismissCarousel: () -> Unit,
-    showImageGrid: Boolean,
-    onDismissGrid: () -> Unit,
-    onGridImageClick: (Int) -> Unit,
-    gridSelectedIndex: Int?,
-    onDismissGridViewer: () -> Unit,
-) {
-    if (selectedCarouselIndex != null && images.isNotEmpty()) {
-        ImageViewerOverlay(
-            images = images.map { ViewerImage(url = it.url, meta = it.meta, contentType = it.contentType) },
-            initialIndex = selectedCarouselIndex,
-            onDismiss = onDismissCarousel,
-        )
-    }
-
-    if (showImageGrid && images.isNotEmpty()) {
-        ImageGridBottomSheet(
-            images = images,
-            onDismiss = onDismissGrid,
-            onImageClick = onGridImageClick,
-        )
-    }
-
-    if (gridSelectedIndex != null && images.isNotEmpty()) {
-        ImageViewerOverlay(
-            images = images.map { ViewerImage(url = it.url, meta = it.meta, contentType = it.contentType) },
-            initialIndex = gridSelectedIndex,
-            onDismiss = onDismissGridViewer,
-        )
-    }
-}
-
-@Suppress("LongParameterList")
-@Composable
-private fun DetailStateContent(
-    uiState: ModelDetailUiState,
-    model: Model?,
-    onRetry: () -> Unit,
-    onVersionSelected: (Int) -> Unit,
-    onViewImages: (Long) -> Unit,
-    onCreatorClick: (String) -> Unit,
-    onTryInComfyUI:
-    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
-    onSendToPC: () -> Unit = {},
-    onSaveNote: (String) -> Unit = {},
-    onAddTag: (String) -> Unit = {},
-    onRemoveTag: (String) -> Unit = {},
-    onDownloadFile: (ModelFile) -> Unit = {},
-    onCancelDownload: (Long) -> Unit = {},
-    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit = {},
-    onWriteReview: () -> Unit = {},
-    bottomPadding: androidx.compose.ui.unit.Dp,
-    modifier: Modifier = Modifier,
-    carouselContent: @Composable () -> Unit = {},
-) {
-    val stateKey = when {
-        uiState.isLoading -> "loading"
-        uiState.error != null -> "error"
-        model != null -> "content"
-        else -> "loading"
-    }
-
-    AnimatedContent(
-        targetState = stateKey,
-        transitionSpec = {
-            fadeIn(tween(Duration.normal, easing = Easing.standard)) togetherWith
-                fadeOut(tween(Duration.normal, easing = Easing.standard))
-        },
-        modifier = modifier,
-        label = "detailBody",
-    ) { state ->
-        when (state) {
-            "loading" -> {
-                LoadingStateOverlay()
-            }
-            "error" -> {
-                ErrorStateView(
-                    message = uiState.error ?: "Unknown error",
-                    onRetry = onRetry,
-                )
-            }
-            else -> {
-                if (model != null) {
-                    ModelDetailContentBody(
-                        model = model,
-                        uiState = uiState,
-                        onVersionSelected = onVersionSelected,
-                        onViewImages = onViewImages,
-                        onCreatorClick = onCreatorClick,
-                        onTryInComfyUI = onTryInComfyUI,
-                        onSendToPC = onSendToPC,
-                        onSaveNote = onSaveNote,
-                        onAddTag = onAddTag,
-                        onRemoveTag = onRemoveTag,
-                        onDownloadFile = onDownloadFile,
-                        onCancelDownload = onCancelDownload,
-                        onReviewSortChanged = onReviewSortChanged,
-                        onWriteReview = onWriteReview,
-                        bottomPadding = bottomPadding,
-                        carouselContent = carouselContent,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Composable
-private fun SharedThumbnailPlaceholder(
-    thumbnailUrl: String,
-    modelId: Long,
-    sharedElementSuffix: String = "",
-) {
-    val sharedTransitionScope = LocalSharedTransitionScope.current
-    val animatedContentScope = LocalNavAnimatedContentScope.current
-
-    val imageModifier = if (sharedTransitionScope != null) {
-        with(sharedTransitionScope) {
-            Modifier
-                .fillMaxWidth()
-                .aspectRatio(CAROUSEL_ASPECT_RATIO)
-                .sharedElement(
-                    rememberSharedContentState(
-                        key = SharedElementKeys.modelThumbnail(modelId, sharedElementSuffix),
-                    ),
-                    animatedVisibilityScope = animatedContentScope,
-                )
-        }
-    } else {
-        Modifier
-            .fillMaxWidth()
-            .aspectRatio(CAROUSEL_ASPECT_RATIO)
-    }
-
-    SubcomposeAsyncImage(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(thumbnailUrl)
-            .crossfade(Duration.normal)
-            .build(),
-        contentDescription = "Model thumbnail",
-        contentScale = ContentScale.Fit,
-        modifier = imageModifier
-            .background(MaterialTheme.colorScheme.surfaceContainerLow),
-        loading = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(CAROUSEL_ASPECT_RATIO)
-                    .shimmer(),
-            )
-        },
-        error = {
-            ImageErrorPlaceholder(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(CAROUSEL_ASPECT_RATIO),
-            )
-        },
-    )
-}
-
-@Suppress("LongParameterList")
-@Composable
-private fun ModelDetailContentBody(
-    model: Model,
-    uiState: ModelDetailUiState,
-    onVersionSelected: (Int) -> Unit,
-    onViewImages: (Long) -> Unit,
-    onCreatorClick: (String) -> Unit,
-    onTryInComfyUI:
-    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
-    onSendToPC: () -> Unit = {},
-    onSaveNote: (String) -> Unit = {},
-    onAddTag: (String) -> Unit = {},
-    onRemoveTag: (String) -> Unit = {},
-    onDownloadFile: (ModelFile) -> Unit = {},
-    onCancelDownload: (Long) -> Unit = {},
-    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit = {},
-    onWriteReview: () -> Unit = {},
-    bottomPadding: androidx.compose.ui.unit.Dp,
-    carouselContent: @Composable () -> Unit = {},
-) {
-    val selectedVersion = model.modelVersions.getOrNull(uiState.selectedVersionIndex)
-    val images = (selectedVersion?.images ?: emptyList()).let { allImages ->
-        allImages.filterByNsfwLevel(uiState.nsfwFilterLevel)
-    }
-
-    if (selectedVersion == null) {
-        EmptyStateMessage(
-            icon = Icons.Outlined.Info,
-            title = "Version not available",
-            subtitle = "The selected version is no longer available.",
-            modifier = Modifier.fillMaxSize(),
-        )
-        return
-    }
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = bottomPadding + Spacing.lg),
-    ) {
-        modelDetailItems(
-            model = model,
-            uiState = uiState,
-            selectedVersion = selectedVersion,
-            images = images,
-            onVersionSelected = onVersionSelected,
-            onViewImages = onViewImages,
-            onCreatorClick = onCreatorClick,
-            onTryInComfyUI = onTryInComfyUI,
-            onSendToPC = onSendToPC,
-            onSaveNote = onSaveNote,
-            onAddTag = onAddTag,
-            onRemoveTag = onRemoveTag,
-            onDownloadFile = onDownloadFile,
-            onCancelDownload = onCancelDownload,
-            onReviewSortChanged = onReviewSortChanged,
-            onWriteReview = onWriteReview,
-            carouselContent = carouselContent,
-        )
-    }
-}
-
-@Suppress("LongParameterList")
-private fun LazyListScope.modelDetailItems(
-    model: Model,
-    uiState: ModelDetailUiState,
-    selectedVersion: ModelVersion,
-    images: List<ModelImage>,
-    onVersionSelected: (Int) -> Unit,
-    onViewImages: (Long) -> Unit,
-    onCreatorClick: (String) -> Unit,
-    onTryInComfyUI:
-    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
-    onSendToPC: () -> Unit = {},
-    onSaveNote: (String) -> Unit = {},
-    onAddTag: (String) -> Unit = {},
-    onRemoveTag: (String) -> Unit = {},
-    onDownloadFile: (ModelFile) -> Unit = {},
-    onCancelDownload: (Long) -> Unit = {},
-    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit = {},
-    onWriteReview: () -> Unit = {},
-    carouselContent: @Composable () -> Unit,
-) {
-    item { carouselContent() }
-    item { ModelHeader(model = model, onCreatorClick = onCreatorClick) }
-    item {
-        ModelStatsRow(
-            downloadCount = model.stats.downloadCount,
-            favoriteCount = model.stats.favoriteCount,
-            rating = model.stats.rating,
-            commentCount = model.stats.commentCount,
-            modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
-        )
-    }
-    modelDetailActionItems(
-        model = model,
-        uiState = uiState,
-        selectedVersion = selectedVersion,
-        images = images,
-        onViewImages = onViewImages,
-        onTryInComfyUI = onTryInComfyUI,
-        onSendToPC = onSendToPC,
-        onSaveNote = onSaveNote,
-        onAddTag = onAddTag,
-        onRemoveTag = onRemoveTag,
-        onReviewSortChanged = onReviewSortChanged,
-        onWriteReview = onWriteReview,
-        onVersionSelected = onVersionSelected,
-        onDownloadFile = onDownloadFile,
-        onCancelDownload = onCancelDownload,
-    )
-}
-
-@Suppress("LongParameterList")
-private fun LazyListScope.modelDetailActionItems(
-    model: Model,
-    uiState: ModelDetailUiState,
-    selectedVersion: ModelVersion,
-    images: List<ModelImage>,
-    onViewImages: (Long) -> Unit,
-    onTryInComfyUI:
-    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
-    onSendToPC: () -> Unit,
-    onSaveNote: (String) -> Unit,
-    onAddTag: (String) -> Unit,
-    onRemoveTag: (String) -> Unit,
-    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit,
-    onWriteReview: () -> Unit,
-    onVersionSelected: (Int) -> Unit,
-    onDownloadFile: (ModelFile) -> Unit,
-    onCancelDownload: (Long) -> Unit,
-) {
-    item {
-        val primaryFile = selectedVersion.files.firstOrNull { it.primary } ?: selectedVersion.files.firstOrNull()
-        val sha256 = primaryFile?.hashes?.get("SHA256") ?: primaryFile?.hashes?.get("sha256")
-        val sampleMeta = images.firstOrNull()?.meta
-        ImageActionsRow(
-            onViewImages = { onViewImages(selectedVersion.id) },
-            showTryInComfyUI = onTryInComfyUI != null,
-            onTryInComfyUI = {
-                if (onTryInComfyUI != null && sha256 != null) {
-                    onTryInComfyUI(sha256, model.name, sampleMeta)
-                }
-            },
-            onSendToPC = onSendToPC,
-        )
-    }
-    if (model.tags.isNotEmpty()) { item { TagsSection(tags = model.tags) } }
-    item { ModelNotesSection(note = uiState.note, onSaveNote = onSaveNote) }
-    item {
-        PersonalTagsSection(
-            tags = uiState.personalTags,
-            onAddTag = onAddTag,
-            onRemoveTag = onRemoveTag,
-        )
-    }
-    item {
-        ReviewsSection(
-            reviews = uiState.reviews,
-            ratingTotals = uiState.ratingTotals,
-            sortOrder = uiState.reviewSortOrder,
-            isLoading = uiState.isReviewsLoading,
-            onSortChanged = onReviewSortChanged,
-            onWriteReview = onWriteReview,
-        )
-    }
-    if (!model.description.isNullOrBlank()) {
-        item { DescriptionSection(description = model.description!!) }
-    }
-    if (model.modelVersions.size > 1) {
-        item {
-            VersionSelector(
-                versions = model.modelVersions,
-                selectedIndex = uiState.selectedVersionIndex,
-                onVersionSelected = onVersionSelected,
-            )
-        }
-    }
-    item {
-        VersionDetail(
-            version = selectedVersion,
-            powerUserMode = uiState.powerUserMode,
-            downloads = uiState.downloads.associateBy { it.fileId },
-            onDownloadFile = onDownloadFile,
-            onCancelDownload = onCancelDownload,
-        )
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun ImageActionsRow(
-    onViewImages: () -> Unit,
-    showTryInComfyUI: Boolean = false,
-    onTryInComfyUI: () -> Unit = {},
-    onSendToPC: () -> Unit = {},
-) {
-    FlowRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
-    ) {
-        Button(
-            onClick = onViewImages,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-            ),
-        ) {
-            Text("View Community Images")
-        }
-        OutlinedButton(onClick = onSendToPC) {
-            Text("Send to PC")
-        }
-        if (showTryInComfyUI) {
-            Button(
-                onClick = onTryInComfyUI,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                ),
-            ) {
-                Text("Try in ComfyUI")
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Composable
-private fun ImageCarousel(
-    images: List<ModelImage>,
-    modelId: Long,
-    pagerState: PagerState,
-    sharedElementSuffix: String = "",
-    onImageClick: (Int) -> Unit = {},
-    onImageError: (String) -> Unit = {},
-) {
-    if (images.isEmpty()) return
-
-    HorizontalPager(
-        state = pagerState,
-        modifier = Modifier.fillMaxWidth(),
-    ) { page ->
-        CarouselPage(
-            image = images[page],
-            modelId = modelId,
-            sharedElementSuffix = sharedElementSuffix,
-            applySharedElement = page == pagerState.currentPage,
-            onClick = { onImageClick(page) },
-            onError = { onImageError(images[page].url) },
-        )
-    }
-}
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Composable
-private fun CarouselPage(
-    image: ModelImage,
-    modelId: Long,
-    sharedElementSuffix: String = "",
-    applySharedElement: Boolean,
-    onClick: () -> Unit = {},
-    onError: () -> Unit = {},
-) {
-    val sharedTransitionScope = LocalSharedTransitionScope.current
-    val animatedContentScope = LocalNavAnimatedContentScope.current
-
-    val pageModifier = if (applySharedElement && sharedTransitionScope != null) {
-        with(sharedTransitionScope) {
-            Modifier
-                .fillMaxWidth()
-                .aspectRatio(CAROUSEL_ASPECT_RATIO)
-                .clip(MaterialTheme.shapes.medium)
-                .sharedElement(
-                    rememberSharedContentState(
-                        key = SharedElementKeys.modelThumbnail(modelId, sharedElementSuffix),
-                    ),
-                    animatedVisibilityScope = animatedContentScope,
-                )
-        }
-    } else {
-        Modifier
-            .fillMaxWidth()
-            .aspectRatio(CAROUSEL_ASPECT_RATIO)
-            .clip(MaterialTheme.shapes.medium)
-    }
-
-    CarouselImage(image = image, modifier = pageModifier, onClick = onClick, onError = onError)
-}
-
-@Composable
-private fun CarouselImage(
-    image: ModelImage,
-    modifier: Modifier,
-    onClick: () -> Unit,
-    onError: () -> Unit,
-) {
-    Box(contentAlignment = Alignment.Center) {
-        SubcomposeAsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(image.url)
-                .crossfade(Duration.normal)
-                .build(),
-            contentDescription = "Model image",
-            contentScale = ContentScale.Fit,
-            modifier = modifier
-                .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                .clickable(onClick = onClick),
-            loading = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(CAROUSEL_ASPECT_RATIO)
-                        .shimmer(),
-                )
-            },
-            error = {
-                LaunchedEffect(image.url) { onError() }
-                ImageErrorPlaceholder(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(CAROUSEL_ASPECT_RATIO),
-                )
-            },
-        )
-        if (image.contentType == MediaContentType.VIDEO) {
-            Icon(
-                imageVector = Icons.Default.PlayCircle,
-                contentDescription = "Video",
-                tint = Color.White.copy(alpha = 0.85f),
-                modifier = Modifier.size(48.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun ModelHeader(model: Model, onCreatorClick: (String) -> Unit) {
-    Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.md)) {
-        Text(
-            text = model.name,
-            style = MaterialTheme.typography.headlineSmall,
-        )
-        Spacer(modifier = Modifier.height(Spacing.xs))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-        ) {
-            SuggestionChip(
-                onClick = {},
-                label = {
-                    Text(
-                        text = model.type.name,
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-                },
-            )
-            if (model.creator != null) {
-                Text(
-                    text = "by ${model.creator!!.username}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable {
-                        onCreatorClick(model.creator!!.username)
-                    },
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun TagsSection(tags: List<String>) {
-    Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
-        Text(
-            text = "Tags",
-            style = MaterialTheme.typography.titleSmall,
-        )
-        Spacer(modifier = Modifier.height(Spacing.sm))
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-            verticalArrangement = Arrangement.spacedBy(Spacing.xs),
-        ) {
-            tags.forEach { tag ->
-                SuggestionChip(
-                    onClick = {},
-                    label = { Text(tag, style = MaterialTheme.typography.labelSmall) },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun DescriptionSection(description: String) {
-    val plainText = remember(description) {
-        Html.fromHtml(description, Html.FROM_HTML_MODE_COMPACT).toString()
-    }
-    Column(modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm)) {
-        SectionHeader(title = "Description", showDivider = true)
-        Spacer(modifier = Modifier.height(Spacing.sm))
-        ExpandableTextSection(
-            text = plainText,
-            collapsedMaxLines = DESCRIPTION_COLLAPSED_LINES,
-        )
-    }
-}
-
-private const val CAROUSEL_ASPECT_RATIO = 1f
-private const val DESCRIPTION_COLLAPSED_LINES = 4
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ImageGridBottomSheet(
-    images: List<ModelImage>,
-    onDismiss: () -> Unit,
-    onImageClick: (Int) -> Unit,
-) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-    ) {
-        Text(
-            text = "Version Images (${images.size})",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
-        )
-        LazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Fixed(adaptiveGridColumns()),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-            verticalItemSpacing = Spacing.sm,
-            contentPadding = PaddingValues(Spacing.sm),
-        ) {
-            itemsIndexed(images, key = { _, img -> img.url }) { index, image ->
-                ImageGridItem(
-                    image = image,
-                    onClick = { onImageClick(index) },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ImageGridItem(
-    image: ModelImage,
-    onClick: () -> Unit,
-) {
-    val aspectRatio = if (image.width > 0 && image.height > 0) {
-        image.width.toFloat() / image.height.toFloat()
-    } else {
-        1f
-    }
-
-    Box(contentAlignment = Alignment.Center) {
-        CivitAsyncImage(
-            imageUrl = image.url,
-            contentDescription = "Version image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(aspectRatio)
-                .clip(RoundedCornerShape(CornerRadius.image))
-                .clickable(onClick = onClick),
-        )
-        if (image.contentType == MediaContentType.VIDEO) {
-            Icon(
-                imageVector = Icons.Default.PlayCircle,
-                contentDescription = "Video",
-                tint = Color.White.copy(alpha = 0.85f),
-                modifier = Modifier.size(48.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun VersionSelector(
-    versions: List<ModelVersion>,
-    selectedIndex: Int,
-    onVersionSelected: (Int) -> Unit,
-) {
-    val haptic = rememberHapticFeedback()
-
-    Column(modifier = Modifier.padding(vertical = Spacing.sm)) {
-        SectionHeader(
-            title = "Versions",
-            modifier = Modifier.padding(horizontal = Spacing.lg),
-            showDivider = true,
-        )
-        Spacer(modifier = Modifier.height(Spacing.sm))
-        FilterChipRow(
-            options = versions,
-            selected = versions[selectedIndex],
-            onSelect = { version ->
-                haptic(HapticFeedbackType.Selection)
-                onVersionSelected(versions.indexOf(version))
-            },
-            label = { it.name },
-            modifier = Modifier.padding(horizontal = Spacing.lg),
-        )
-    }
-}
-
-@Suppress("LongParameterList")
-@Composable
-private fun VersionDetail(
-    version: ModelVersion,
-    powerUserMode: Boolean = false,
-    downloads: Map<Long, ModelDownload> = emptyMap(),
-    onDownloadFile: (ModelFile) -> Unit = {},
-    onCancelDownload: (Long) -> Unit = {},
-) {
-    Column(modifier = Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.sm)) {
-        if (version.baseModel != null) {
-            DetailRow(label = "Base Model", value = version.baseModel!!)
-        }
-
-        if (version.trainedWords.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            SectionHeader(title = "Trained Words", showDivider = false)
-            Spacer(modifier = Modifier.height(Spacing.xs))
-            Text(
-                text = version.trainedWords.joinToString(", "),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-
-        if (version.files.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(Spacing.md))
-            SectionHeader(title = "Files", showDivider = false)
-            Spacer(modifier = Modifier.height(Spacing.xs))
-            version.files.forEach { file ->
-                FileDownloadRow(
-                    file = file,
-                    downloadState = downloads[file.id],
-                    onDownload = onDownloadFile,
-                    onCancel = onCancelDownload,
-                )
-                if (powerUserMode) {
-                    AdvancedFileInfo(file = file)
-                }
-                Spacer(modifier = Modifier.height(Spacing.xs))
-            }
-        }
-
-        if (powerUserMode) {
-            AdvancedVersionInfo(version = version)
-        }
-    }
-}
-
-@Composable
-private fun AdvancedFileInfo(file: ModelFile) {
-    Column(modifier = Modifier.padding(start = Spacing.sm)) {
-        file.hashes.forEach { (algorithm, hash) ->
-            DetailRow(label = algorithm, value = hash)
-        }
-        file.pickleScanResult?.let { DetailRow(label = "Pickle Scan", value = it) }
-        file.virusScanResult?.let { DetailRow(label = "Virus Scan", value = it) }
-        file.scannedAt?.let { DetailRow(label = "Scanned At", value = it) }
-    }
-}
-
-@Composable
-private fun AdvancedVersionInfo(version: ModelVersion) {
-    var expanded by remember { mutableStateOf(false) }
-    Spacer(modifier = Modifier.height(Spacing.md))
-    HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { expanded = !expanded },
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = "Advanced Info",
-            style = MaterialTheme.typography.titleSmall,
-        )
-        Text(
-            text = if (expanded) "Hide" else "Show",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
-    }
-    if (expanded) {
-        Column(modifier = Modifier.animateContentSize()) {
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            version.createdAt.takeIf { it.isNotBlank() }?.let {
-                DetailRow(label = "Created", value = it)
-            }
-            version.stats?.let { stats ->
-                DetailRow(label = "Downloads", value = stats.downloadCount.toString())
-                DetailRow(label = "Rating", value = "${stats.rating} (${stats.ratingCount})")
-            }
-            version.description?.takeIf { it.isNotBlank() }?.let { desc ->
-                Spacer(modifier = Modifier.height(Spacing.sm))
-                Text(
-                    text = "Version Notes",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(modifier = Modifier.height(Spacing.xs))
-                Text(
-                    text = Html.fromHtml(desc, Html.FROM_HTML_MODE_COMPACT).toString(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CivitaiLinkSendSheet(
-    model: Model?,
-    selectedVersionIndex: Int,
-    onDismiss: () -> Unit,
-) {
-    val sendViewModel: CivitaiLinkSendViewModel = koinViewModel()
-    val status by sendViewModel.status.collectAsStateWithLifecycle()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
-        CivitaiLinkSendSheetContent(
-            model = model,
-            selectedVersionIndex = selectedVersionIndex,
-            status = status,
-            onSend = { resource ->
-                sendViewModel.sendToPC(resource)
-                onDismiss()
-            },
-        )
-    }
-}
-
-@Composable
-private fun CivitaiLinkSendSheetContent(
-    model: Model?,
-    selectedVersionIndex: Int,
-    status: CivitaiLinkStatus,
-    onSend: (CivitaiLinkResource) -> Unit,
-) {
-    if (status != CivitaiLinkStatus.Connected) {
-        CivitaiLinkNotConnectedMessage()
-        return
-    }
-    val safeModel = model ?: return
-    val version = safeModel.modelVersions.getOrNull(selectedVersionIndex) ?: return
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(Spacing.lg),
-        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-    ) {
-        Text("Send to PC", style = MaterialTheme.typography.titleMedium)
-        Button(
-            onClick = {
-                onSend(
-                    CivitaiLinkResource(
-                        versionId = version.id,
-                        modelId = safeModel.id,
-                        versionName = version.name,
-                        downloadUrl = "https://civitai.com/api/download/models/${version.id}",
-                    )
-                )
-            },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text("Send ${version.name} to PC")
-        }
-    }
-}
-
-@Composable
-private fun CivitaiLinkNotConnectedMessage() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(Spacing.lg),
-        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text("Civitai Link not configured", style = MaterialTheme.typography.titleMedium)
-        Text(
-            text = "Set up Civitai Link in Settings \u2192 Advanced to send models to your PC",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun DetailRow(label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            text = value,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.End,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
         )
     }
 }
