@@ -16,6 +16,7 @@ import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveActive
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveExternalServerConfigsUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.SaveExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.TestExternalServerConnectionUseCase
+import com.riox432.civitdeck.feature.externalserver.plugin.ExternalServerWorkflowPlugin
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -36,4 +37,7 @@ val externalServerModule = module {
     factory { GetDependentChoicesUseCase(get()) }
     factory { ExecuteGenerationUseCase(get()) }
     factory { GetGenerationStatusUseCase(get()) }
+
+    // Plugin adapter
+    single { ExternalServerWorkflowPlugin(get(), get()) }
 }

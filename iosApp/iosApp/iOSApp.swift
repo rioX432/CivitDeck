@@ -10,6 +10,7 @@ struct iOSApp: App {
 
     init() {
         KoinKt.doInitKoin(appDeclaration: { _ in })
+        WorkflowPluginInitializerKt.registerWorkflowPlugins()
         Task { try? await KoinKt.initializeAuth() }
     }
 

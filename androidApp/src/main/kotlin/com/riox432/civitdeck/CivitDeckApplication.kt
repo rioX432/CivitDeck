@@ -14,6 +14,7 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import com.riox432.civitdeck.di.initKoin
 import com.riox432.civitdeck.di.initializeAuth
+import com.riox432.civitdeck.di.registerWorkflowPlugins
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
@@ -69,6 +70,7 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
             androidContext(this@CivitDeckApplication)
             modules(androidModule)
         }
+        registerWorkflowPlugins()
         CoroutineScope(Dispatchers.IO).launch { initializeAuth() }
         observeAndScheduleNotifications()
         scheduleWidgetRefresh()
