@@ -33,8 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.RatingTotals
 import com.riox432.civitdeck.domain.model.ResourceReview
@@ -68,7 +66,7 @@ fun ReviewsSection(
 
         if (ratingTotals != null && ratingTotals.total > 0) {
             Spacer(Modifier.height(Spacing.sm))
-            ThumbsDistributionChart(totals = ratingTotals)
+            ThumbsSummary(up = ratingTotals.thumbsUp, down = ratingTotals.thumbsDown)
         }
 
         Spacer(Modifier.height(Spacing.md))
@@ -150,71 +148,28 @@ private fun SortDropdown(
 }
 
 @Composable
-private fun ThumbsDistributionChart(
-    totals: RatingTotals,
-    modifier: Modifier = Modifier,
-) {
-    val maxCount = maxOf(totals.thumbsUp, totals.thumbsDown, 1)
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        ThumbsBar(
-            icon = Icons.Outlined.ThumbUp,
-            label = "Recommended",
-            count = totals.thumbsUp,
-            maxCount = maxCount,
-            tint = MaterialTheme.colorScheme.primary,
-        )
-        ThumbsBar(
-            icon = Icons.Outlined.ThumbDown,
-            label = "Not recommended",
-            count = totals.thumbsDown,
-            maxCount = maxCount,
-            tint = MaterialTheme.colorScheme.error,
-        )
-    }
-}
-
-@Composable
-private fun ThumbsBar(
-    icon: ImageVector,
-    label: String,
-    count: Int,
-    maxCount: Int,
-    tint: Color,
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = tint,
-            modifier = Modifier.size(14.dp),
-        )
-        Spacer(Modifier.width(Spacing.xs))
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .height(BAR_HEIGHT)
-                .clip(RoundedCornerShape(2.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-        ) {
-            val fraction = if (maxCount > 0) count.toFloat() / maxCount else 0f
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(fraction)
-                    .height(BAR_HEIGHT)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(tint),
+private fun ThumbsSummary(up: Int, down: Int) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.lg)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                Icons.Outlined.ThumbUp,
+                contentDescription = "Recommended",
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.primary,
             )
+            Spacer(Modifier.width(Spacing.xs))
+            Text("$up", style = MaterialTheme.typography.labelSmall)
         }
-        Spacer(Modifier.width(Spacing.xs))
-        Text(
-            text = "$count",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.width(28.dp),
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                Icons.Outlined.ThumbDown,
+                contentDescription = "Not recommended",
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.error,
+            )
+            Spacer(Modifier.width(Spacing.xs))
+            Text("$down", style = MaterialTheme.typography.labelSmall)
+        }
     }
 }
 
@@ -313,6 +268,5 @@ private fun ReviewSortOrder.label(): String = when (this) {
     ReviewSortOrder.LowestRated -> "Lowest"
 }
 
-private val BAR_HEIGHT = 6.dp
 private const val MAX_VISIBLE_REVIEWS = 5
 private const val DATE_PREFIX_LENGTH = 10

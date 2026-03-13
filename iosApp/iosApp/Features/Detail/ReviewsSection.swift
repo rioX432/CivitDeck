@@ -1,8 +1,6 @@
 import SwiftUI
 import Shared
 
-private let ratingBarHeight: CGFloat = 6
-private let ratingCountWidth: CGFloat = 28
 private let avatarSize: CGFloat = 28
 private let textEditorMinHeight: CGFloat = 80
 
@@ -19,7 +17,7 @@ struct ReviewsSection: View {
             Divider()
             reviewsHeader
             if let totals = ratingTotals, totals.total > 0 {
-                ThumbsDistributionChart(totals: totals)
+                thumbsSummary(up: Int(totals.thumbsUp), down: Int(totals.thumbsDown))
             }
             reviewsList
         }
@@ -70,51 +68,25 @@ struct ReviewsSection: View {
     }
 }
 
-// MARK: - Thumbs Distribution Chart
+// MARK: - Thumbs Summary
 
-struct ThumbsDistributionChart: View {
-    let totals: RatingTotals
-
-    var body: some View {
-        let maxCount = max(Int(totals.thumbsUp), Int(totals.thumbsDown), 1)
-        VStack(spacing: Spacing.xs) {
-            thumbsBar(
-                icon: "hand.thumbsup",
-                count: Int(totals.thumbsUp),
-                maxCount: maxCount,
-                tint: .civitPrimary
-            )
-            thumbsBar(
-                icon: "hand.thumbsdown",
-                count: Int(totals.thumbsDown),
-                maxCount: maxCount,
-                tint: .civitError
-            )
-        }
-    }
-
-    private func thumbsBar(icon: String, count: Int, maxCount: Int, tint: Color) -> some View {
+private func thumbsSummary(up: Int, down: Int) -> some View {
+    HStack(spacing: Spacing.lg) {
         HStack(spacing: Spacing.xs) {
-            SwiftUI.Image(systemName: icon)
-                .font(.civitLabelXSmall)
-                .foregroundColor(tint)
+            SwiftUI.Image(systemName: "hand.thumbsup")
+                .font(.caption2)
+                .foregroundColor(.civitPrimary)
                 .accessibilityHidden(true)
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.civitSurfaceVariant)
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(tint)
-                        .frame(width: maxCount > 0
-                               ? geo.size.width * CGFloat(count) / CGFloat(maxCount)
-                               : 0)
-                }
-            }
-            .frame(height: ratingBarHeight)
-            Text("\(count)")
+            Text("\(up)")
                 .font(.civitLabelSmall)
-                .foregroundColor(.civitOnSurfaceVariant)
-                .frame(width: ratingCountWidth, alignment: .trailing)
+        }
+        HStack(spacing: Spacing.xs) {
+            SwiftUI.Image(systemName: "hand.thumbsdown")
+                .font(.caption2)
+                .foregroundColor(.civitError)
+                .accessibilityHidden(true)
+            Text("\(down)")
+                .font(.civitLabelSmall)
         }
     }
 }
