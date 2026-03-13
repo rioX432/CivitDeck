@@ -4,17 +4,21 @@ import Shared
 struct ExportDatasetSheet: View {
     let imageCount: Int
     let nonTrainableCount: Int
+    let availableFormats: [PluginExportFormat]
+    @Binding var selectedFormatId: String?
     let onExport: () -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var showLicenseWarning = false
 
+    private var effectiveFormatId: String? {
+        selectedFormatId ?? availableFormats.first?.id
+    }
+
     var body: some View {
         NavigationView {
             VStack(alignment: .leading, spacing: Spacing.md) {
-                Text("Format: ZIP (kohya-ss compatible)")
-                    .font(.civitBodyMedium)
-                    .foregroundColor(.civitOnSurfaceVariant)
+                exportFormatSelector
                 Text("\(imageCount) trainable images will be exported")
                     .font(.civitBodyMedium)
                 if nonTrainableCount > 0 {
@@ -35,6 +39,7 @@ struct ExportDatasetSheet: View {
                         }
                     }
                     .buttonStyle(.borderedProminent)
+                    .disabled(effectiveFormatId == nil)
                 }
             }
             .padding(Spacing.lg)
@@ -47,6 +52,56 @@ struct ExportDatasetSheet: View {
             Button("Export Anyway", role: .destructive) { onExport() }
         } message: {
             Text("\(nonTrainableCount) images are non-trainable or have license restrictions. They will be excluded from the export.")
+        }
+    }
+
+    @ViewBuilder
+    private var exportFormatSelector: some View {
+        if availableFormats.count <= 1 {
+            let format = availableFormats.first
+            Text("Format: \(format?.name ?? "ZIP (kohya-ss compatible)")")
+                .font(.civitBodyMedium)
+                .foregroundColor(.civitOnSurfaceVariant)
+        } else {
+            Text("Format")
+                .font(.civitLabelMedium)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Spacing.sm) {
+                    ForEach(availableFormats, id: \.id) { format in
+                        formatChip(format: format, isSelected: format.id == effectiveFormatId)
+                    }
+                }
+            }
+            if let selected = availableFormats.first(where: { $0.id == effectiveFormatId }) {
+                Text(selected.description_)
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func formatChip(format: PluginExportFormat, isSelected: Bool) -> some View {
+        if isSelected {
+            Button {
+                selectedFormatId = format.id
+            } label: {
+                Text(format.name)
+                    .font(.civitBodySmall)
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, Spacing.xs)
+            }
+            .buttonStyle(.borderedProminent)
+        } else {
+            Button {
+                selectedFormatId = format.id
+            } label: {
+                Text(format.name)
+                    .font(.civitBodySmall)
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, Spacing.xs)
+            }
+            .buttonStyle(.bordered)
         }
     }
 }
@@ -80,12 +135,12 @@ struct ExportProgressOverlay: View {
             Spacer()
             VStack(spacing: Spacing.sm) {
                 Text(title).font(.civitTitleMedium)
-                if let value = value {
+                if let value {
                     ProgressView(value: value)
                 } else {
                     ProgressView()
                 }
-                if let label = label {
+                if let label {
                     Text(label).font(.civitBodySmall).foregroundColor(.secondary)
                 }
             }

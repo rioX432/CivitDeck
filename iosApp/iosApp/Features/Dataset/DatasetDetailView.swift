@@ -73,6 +73,8 @@ struct DatasetDetailView: View {
             ExportDatasetSheet(
                 imageCount: viewModel.trainableImageCount,
                 nonTrainableCount: viewModel.nonTrainableImageCount,
+                availableFormats: viewModel.availableExportFormats,
+                selectedFormatId: $viewModel.selectedExportFormatId,
                 onExport: { viewModel.startExport() }
             )
         }

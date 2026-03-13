@@ -25,6 +25,8 @@ import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ExportDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.FilterByResolutionUseCase
+import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
+import com.riox432.civitdeck.usecase.GetAvailableExportFormatsUseCase
 import com.riox432.civitdeck.domain.usecase.FollowCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.GetAllPersonalTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
@@ -390,6 +392,8 @@ object KoinHelper {
     fun getStorePHashUseCase(): StorePHashUseCase = getKoin().get()
     fun getStoreImageDimensionsUseCase(): StoreImageDimensionsUseCase = getKoin().get()
     fun getExportDatasetUseCase(): ExportDatasetUseCase = getKoin().get()
+    fun getGetAvailableExportFormatsUseCase(): GetAvailableExportFormatsUseCase = getKoin().get()
+    fun getExportWithPluginUseCase(): ExportWithPluginUseCase = getKoin().get()
 
     // External Server use cases
     fun getObserveExternalServerConfigsUseCase(): ObserveExternalServerConfigsUseCase = getKoin().get()

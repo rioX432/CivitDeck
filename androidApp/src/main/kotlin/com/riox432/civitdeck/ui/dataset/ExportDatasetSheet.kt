@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
 import com.riox432.civitdeck.domain.model.ExportProgress
+import com.riox432.civitdeck.plugin.PluginExportFormat
 import com.riox432.civitdeck.ui.theme.Spacing
 import java.io.File
 
@@ -34,18 +36,26 @@ import java.io.File
 fun ExportDatasetSheet(
     imageCount: Int,
     nonTrainableCount: Int,
-    onExport: () -> Unit,
+    availableFormats: List<PluginExportFormat>,
+    selectedFormatId: String?,
+    onFormatSelected: (String) -> Unit,
+    onExport: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showLicenseWarning by remember { mutableStateOf(false) }
+    val effectiveFormatId = selectedFormatId ?: availableFormats.firstOrNull()?.id
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
         ExportSheetContent(
             imageCount = imageCount,
             nonTrainableCount = nonTrainableCount,
+            availableFormats = availableFormats,
+            selectedFormatId = effectiveFormatId,
+            onFormatSelected = onFormatSelected,
             onExport = {
-                if (nonTrainableCount > 0) showLicenseWarning = true else onExport()
+                val formatId = effectiveFormatId ?: return@ExportSheetContent
+                if (nonTrainableCount > 0) showLicenseWarning = true else onExport(formatId)
             },
             onDismiss = onDismiss,
         )
@@ -56,7 +66,7 @@ fun ExportDatasetSheet(
             count = nonTrainableCount,
             onConfirm = {
                 showLicenseWarning = false
-                onExport()
+                effectiveFormatId?.let { onExport(it) }
             },
             onDismiss = { showLicenseWarning = false },
         )
@@ -67,6 +77,9 @@ fun ExportDatasetSheet(
 private fun ExportSheetContent(
     imageCount: Int,
     nonTrainableCount: Int,
+    availableFormats: List<PluginExportFormat>,
+    selectedFormatId: String?,
+    onFormatSelected: (String) -> Unit,
     onExport: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -75,10 +88,10 @@ private fun ExportSheetContent(
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
         Text(text = "Export Dataset", style = MaterialTheme.typography.titleMedium)
-        Text(
-            text = "Format: ZIP (kohya-ss compatible)",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        ExportFormatSelector(
+            formats = availableFormats,
+            selectedFormatId = selectedFormatId,
+            onFormatSelected = onFormatSelected,
         )
         Text(text = "$imageCount trainable images will be exported", style = MaterialTheme.typography.bodyMedium)
         if (nonTrainableCount > 0) {
@@ -93,7 +106,41 @@ private fun ExportSheetContent(
             horizontalArrangement = Arrangement.spacedBy(Spacing.sm, androidx.compose.ui.Alignment.End),
         ) {
             OutlinedButton(onClick = onDismiss) { Text("Cancel") }
-            Button(onClick = onExport) { Text("Export") }
+            Button(onClick = onExport, enabled = selectedFormatId != null) { Text("Export") }
+        }
+    }
+}
+
+@Composable
+private fun ExportFormatSelector(
+    formats: List<PluginExportFormat>,
+    selectedFormatId: String?,
+    onFormatSelected: (String) -> Unit,
+) {
+    if (formats.size <= 1) {
+        val format = formats.firstOrNull()
+        Text(
+            text = "Format: ${format?.name ?: "ZIP (kohya-ss compatible)"}",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    } else {
+        Text(text = "Format", style = MaterialTheme.typography.labelMedium)
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            formats.forEach { format ->
+                FilterChip(
+                    selected = format.id == selectedFormatId,
+                    onClick = { onFormatSelected(format.id) },
+                    label = { Text(format.name) },
+                )
+            }
+        }
+        formats.firstOrNull { it.id == selectedFormatId }?.let { selected ->
+            Text(
+                text = selected.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -171,7 +218,7 @@ private fun ExportCompletedDialog(
         title = { Text("Export Complete") },
         text = {
             Column {
-                Text("ZIP file ready: ${File(outputPath).name}")
+                Text("File ready: ${File(outputPath).name}")
                 if (warningCount > 0) {
                     Text(
                         text = "$warningCount images were excluded",

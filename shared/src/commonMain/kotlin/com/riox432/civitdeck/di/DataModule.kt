@@ -6,7 +6,10 @@ import com.riox432.civitdeck.data.backup.ConnectionDaos
 import com.riox432.civitdeck.data.backup.ContentDaos
 import com.riox432.civitdeck.data.backup.PreferenceDaos
 import com.riox432.civitdeck.data.export.ExportRepositoryImpl
+import com.riox432.civitdeck.data.export.KohyaZipExportPlugin
 import com.riox432.civitdeck.data.image.ImageSaver
+import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
+import com.riox432.civitdeck.usecase.GetAvailableExportFormatsUseCase
 import com.riox432.civitdeck.data.repository.AuthRepositoryImpl
 import com.riox432.civitdeck.data.repository.BrowsingHistoryRepositoryImpl
 import com.riox432.civitdeck.data.repository.CacheRepositoryImpl
@@ -58,6 +61,9 @@ val dataModule = module {
 
     // Export
     single<ExportRepository> { ExportRepositoryImpl(get(), get()) }
+    single { KohyaZipExportPlugin(get()) }
+    factory { GetAvailableExportFormatsUseCase(get()) }
+    factory { ExportWithPluginUseCase(get()) }
 
     // Backup DAO wrappers
     single { CollectionDaos(get()) }

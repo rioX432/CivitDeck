@@ -7,10 +7,12 @@ import com.riox432.civitdeck.domain.model.ExportProgress
 import com.riox432.civitdeck.domain.model.ImageSource
 import com.riox432.civitdeck.domain.usecase.DetectDuplicatesUseCase
 import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
-import com.riox432.civitdeck.domain.usecase.ExportDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveImageFromDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.UpdateTrainableUseCase
+import com.riox432.civitdeck.plugin.PluginExportFormat
+import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
+import com.riox432.civitdeck.usecase.GetAvailableExportFormatsUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,7 +29,8 @@ class DatasetDetailViewModel(
     private val editCaptionUseCase: EditCaptionUseCase,
     private val updateTrainableUseCase: UpdateTrainableUseCase,
     detectDuplicatesUseCase: DetectDuplicatesUseCase,
-    private val exportDatasetUseCase: ExportDatasetUseCase,
+    private val exportWithPluginUseCase: ExportWithPluginUseCase,
+    getAvailableExportFormatsUseCase: GetAvailableExportFormatsUseCase,
 ) : ViewModel() {
 
     val images: StateFlow<List<DatasetImage>> =
@@ -67,14 +70,21 @@ class DatasetDetailViewModel(
 
     val showExportSheet = MutableStateFlow(false)
     val exportProgress = MutableStateFlow<ExportProgress?>(null)
+    val selectedExportFormatId = MutableStateFlow<String?>(null)
+
+    val availableExportFormats: StateFlow<List<PluginExportFormat>> =
+        getAvailableExportFormatsUseCase()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
     fun openExportSheet() { showExportSheet.value = true }
     fun dismissExportSheet() { showExportSheet.value = false }
 
-    fun startExport() {
+    fun selectExportFormat(formatId: String) { selectedExportFormatId.value = formatId }
+
+    fun startExport(formatId: String) {
         showExportSheet.value = false
         viewModelScope.launch {
-            exportDatasetUseCase(datasetId).collect { progress ->
+            exportWithPluginUseCase(datasetId, formatId).collect { progress ->
                 exportProgress.value = progress
             }
         }
