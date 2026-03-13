@@ -24,7 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -249,7 +249,7 @@ private fun CarouselImage(
             Icon(
                 imageVector = Icons.Default.PlayCircle,
                 contentDescription = "Video",
-                tint = Color.White.copy(alpha = 0.85f),
+                tint = CivitDeckColors.onScrim,
                 modifier = Modifier.size(48.dp),
             )
         }
