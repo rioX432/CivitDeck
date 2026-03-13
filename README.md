@@ -58,6 +58,8 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Community Reviews** — read and submit reviews on models
 - **Backup & Restore** — export/import app data (collections, prompts, filters, notes, datasets) with granular category selection
 - **Background Downloads** — download model files with background progress tracking and notifications
+- **Plugin System** — extend CivitDeck with plugins for workflow engines (ComfyUI, External Server), export formats (kohya-ss), and themes
+- **Video Preview** — play video previews directly in gallery and model detail screens
 - **Fresh Find** — discover recently published models before they trend
 - **Cross-Platform** — native Android (Jetpack Compose) & iOS (SwiftUI) from a shared KMP codebase
 

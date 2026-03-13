@@ -25,13 +25,19 @@ CivitDeck/
 │   │       └── di/                   # NetworkModule (Koin)
 │   ├── core-database/        # Database layer: Room KMP entities, DAOs, migrations
 │   │   └── src/commonMain/kotlin/.../
-│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v30)
-│   │       ├── data/local/migration/ # Sequential migrations (1→2 … 29→30)
+│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v31)
+│   │       ├── data/local/migration/ # Sequential migrations (1→2 … 30→31)
 │   │       └── di/                   # DatabaseModule (Koin)
-│   └── core-ui/              # Shared Compose components + design tokens (Android-only)
-│       └── src/main/kotlin/.../
-│           ├── ui/components/        # LoadingStateOverlay, ErrorStateView, ModelStatsRow, …
-│           └── ui/theme/             # CivitDeckColors, CivitDeckTypography, CivitDeckSpacing
+│   ├── core-ui/              # Shared Compose components + design tokens (Android-only)
+│   │   └── src/main/kotlin/.../
+│   │       ├── ui/components/        # LoadingStateOverlay, ErrorStateView, ModelStatsRow, …
+│   │       └── ui/theme/             # CivitDeckColors, CivitDeckTypography, CivitDeckSpacing
+│   └── core-plugin/          # Plugin system: interfaces, registry, capability adapters
+│       └── src/commonMain/kotlin/.../
+│           ├── plugin/               # Plugin API, PluginRegistry, InMemoryPluginRegistry
+│           ├── plugin/capability/    # ExportFormatPlugin, ThemePlugin, WorkflowEnginePlugin
+│           ├── plugin/model/         # Plugin data models
+│           └── plugin/di/            # PluginModule (Koin)
 ├── feature/
 │   ├── feature-search/       # Model search & swipe discovery
 │   ├── feature-detail/       # Model detail view + model comparison
@@ -52,6 +58,7 @@ CivitDeck/
 │       ├── ui/analytics/             # Usage analytics screen
 │       ├── ui/backup/                # Backup & restore screen
 │       ├── ui/feed/                  # Creator follow feed screen
+│       ├── ui/plugin/               # Plugin management screen
 │       ├── download/                 # Background model downloads (WorkManager)
 │       ├── widget/                   # Glance home screen widgets
 │       ├── tile/                     # Quick Settings tile
@@ -65,7 +72,7 @@ CivitDeck/
         │   ├── Compare/      │   ├── ExternalServer/ │   ├── ModelFileBrowser/
         │   ├── Analytics/    │   ├── Backup/       │   ├── Discovery/
         │   ├── Feed/         │   ├── Download/     │   ├── QRCode/
-        │   └── Tutorial/     │   └── Shortcuts/
+        │   └── Plugin/       │   └── Tutorial/     │   └── Shortcuts/
         └── DesignSystem/     # Design tokens + shared components
             ├── CivitDeckColors.swift   ├── CivitDeckFonts.swift
             ├── CivitDeckSpacing.swift  ├── CivitDeckMotion.swift
@@ -93,7 +100,7 @@ graph TB
 ### Data Layer (`core/core-network/` + `core/core-database/`)
 
 - **API** (`core-network`): Ktor HTTP client targeting `https://civitai.com/api/v1`. Endpoints include `/models`, `/models/:id`, `/model-versions/:id`, `/images`, `/creators`, and `/tags`. Pagination is cursor-based for images and page-based for others. Also includes ComfyUI, SD WebUI (Automatic1111/Forge), and custom External Server API clients.
-- **Local** (`core-database`): Room KMP database (version 30) for offline favorites, user collections, saved prompts, saved search filters, SD WebUI/ComfyUI connections, external server configs, dataset collections, model notes, followed creators, feed cache, model downloads, and response caching with TTL. Migrations tracked sequentially from version 1.
+- **Local** (`core-database`): Room KMP database (version 31) for offline favorites, user collections, saved prompts, saved search filters, SD WebUI/ComfyUI connections, external server configs, dataset collections, model notes, followed creators, feed cache, model downloads, plugin data, and response caching with TTL. Migrations tracked sequentially from version 1.
 - **Repository Implementations**: Combine remote API calls with local cache. Return domain models, not DTOs.
 
 ### Domain Layer (`core/core-domain/`)
@@ -143,6 +150,7 @@ Koin is used as the DI framework across all modules:
 - **core-network** (`core/core-network/.../di/NetworkModule`): Ktor client, CivitAI, ComfyUI, SD WebUI, and ExternalServer API services
 - **core-database** (`core/core-database/.../di/DatabaseModule`): Room DB instance, all DAOs
 - **core-domain** (`core/core-domain/.../di/DomainModule`): Repository bindings, use case factory
+- **core-plugin** (`core/core-plugin/.../di/PluginModule`): Plugin registry, built-in capability adapters
 - **shared** (`shared/src/commonMain/di/`): Re-exports core modules; `ViewModelModule` for SettingsViewModel
 - **Android** (`androidApp/CivitDeckApplication.kt`): Platform-specific ViewModel registrations, platform drivers
 - **iOS** (`shared/src/iosMain/di/KoinHelper.kt`): Use case accessors for SwiftUI ViewModels via `KoinHelper.shared.getXxx()`

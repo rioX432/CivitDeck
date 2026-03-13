@@ -9,12 +9,87 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Plugin System
+- Add core-plugin module with Plugin API, registry, and DI wiring (9e7b9f1)
+- Add plugin storage, persistence and management use cases (#410) (e64707e)
+- Add plugin management UI for Android and iOS (#411) (a94cf57)
+- Add WorkflowEnginePlugin interface and ExternalServer/ComfyUI adapters (#412) (9221224)
+- Add ExportFormatPlugin interface and kohya-ss adapter (#413) (d9c28fe)
+- Add ThemePlugin interface with JSON import and theme selection (#414) (45339e7)
+
+#### Community & Social
+- Add community reviews and ratings to model detail (#189) (fedcd3e)
+- Add creator follow and activity feed (#123) (538f982)
+- Add QR code sharing (#188) (08c0180)
+- Add model notes and personal tags (#186) (9862bff)
+
+#### Analytics & Backup
+- Add usage stats and analytics screen (#191) (9a371ac)
 - Add backup and restore with granular category selection (#190) (48d2c70)
+
+#### Dataset Export
+- Add ExportRepository + ExportDatasetUseCase for dataset export (#287) (87fd4f9)
+- Add Android dataset export UI with share sheet (#288) (855f3e4)
+- Add iOS dataset export UI with share sheet (#289) (19b40c1)
+
+#### Media
+- Add video preview support in gallery and detail screens (#187) (d860743)
+- Add background model file download manager (#382, #383, #384) (502a4be)
+
+#### Accessibility
+- Add accessibility labels to clickable elements (#366) (d28cc22)
+- Add accessibility labels to iOS icon buttons (#367) (65f3731)
+- Add accessibilityHidden to decorative stat icons (#369) (5f53e47)
+- Add contentDescription to actionable Icon/AsyncImage components (#373) (897d3a1)
+- Add accessibility annotations to decorative Image elements (#398) (5302204)
+- Add accessibility traits to tappable elements (#399) (d029563)
+
+#### Code Quality
+- Add key parameter to items() in AnalyticsScreen (#374) (95ba429)
+- Add key params to itemsIndexed to prevent state leaks (#388) (d5f7e8a)
+- Add logging to swallowed exceptions in ComfyUIGenerationViewModel (#372) (6a031fd)
+
+### Changed
+
+#### External Server
+- Enhance External Server with filters, image detail, generation, and pull-to-refresh (f665055)
+
+#### Performance
+- Improve performance: O(1) gallery lookup, batch observe tasks, add contentType (#377, #378, #379) (54751ed)
+
+#### Design Token Migration
+- Replace FormatUtils with native Swift formatting (#401) (ef0e390)
+- Replace hardcoded font sizes with CivitDeckFonts tokens (#396) (c4595ec)
+- Replace hardcoded AMOLED colors with design tokens (#397) (eaeef34)
+- Replace hardcoded padding with Spacing tokens (#395) (c4d9b2e)
+- Replace hardcoded dp values with Spacing tokens (#375) (f9265d8)
+- Replace magic number paddings with Spacing tokens (#368) (30e1025)
+- Replace hardcoded colors with theme tokens (#365) (08dd87c)
+
+#### Code Quality
+- Replace println() with Logger utility (#371, #363) (556cca2, 400fed0)
+- Replace force try with safe regex init (#364) (7829758)
 
 ### Fixed
 
+- Fix thread-safe register/unregister and isolate test instances (739847c)
+- Fix SectionHeader divider layout in Row and reduce VersionDetail top spacing (611781)
+- Fix Notes/Tags divider layout and reduce Base Model section top spacing (3290f9c)
+- Fix CollectionsScreen empty state during initial loading (#392) (68b70da)
+- Fix DetailRow text overflow in model detail (#391) (2cfcaa2)
 - Fix review findings: add deleteAll to connection DAOs, fix modifier ordering and key usage (d2c89c1)
-- Fix test fake DAOs: add missing abstract method implementations (721b0ce)
+- Fix review findings: add key() to reviews loop, use design tokens (505ce1f)
+- Fix test fake DAOs: add missing abstract method implementations (721b0ce, c33958b)
+
+### Removed
+
+- Remove data layer dependency from domain use cases (#400) (cda072d)
+
+### Infrastructure
+
+- Reduce BackupRepositoryImpl complexity (#394) (abe8155)
+- Extract ZoomableImageView to separate file for SwiftLint file_length (ae2e3a9)
+- Fix detekt ImportOrdering and SwiftLint violations (bbadea0, 9faa0df, 48e61f8, 0f55f30, d4bb667, fde76fb, f9073fc, cb845ae)
 
 ---
 
