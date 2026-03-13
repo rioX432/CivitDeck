@@ -1,9 +1,6 @@
 import SwiftUI
 import Shared
 
-private let starLabelWidth: CGFloat = 12
-private let ratingBarHeight: CGFloat = 6
-private let ratingCountWidth: CGFloat = 28
 private let avatarSize: CGFloat = 28
 private let textEditorMinHeight: CGFloat = 80
 
@@ -20,7 +17,6 @@ struct ReviewsSection: View {
             Divider()
             reviewsHeader
             if let totals = ratingTotals, totals.total > 0 {
-                RatingDistributionChart(totals: totals)
                 thumbsSummary(up: Int(totals.thumbsUp), down: Int(totals.thumbsDown))
             }
             reviewsList
@@ -70,72 +66,27 @@ struct ReviewsSection: View {
             }
         }
     }
-
-    // MARK: - Thumbs Summary
-
-    private func thumbsSummary(up: Int, down: Int) -> some View {
-        HStack(spacing: Spacing.lg) {
-            HStack(spacing: Spacing.xs) {
-                SwiftUI.Image(systemName: "hand.thumbsup")
-                    .font(.caption2)
-                    .foregroundColor(.civitPrimary)
-                    .accessibilityHidden(true)
-                Text("\(up)")
-                    .font(.civitLabelSmall)
-            }
-            HStack(spacing: Spacing.xs) {
-                SwiftUI.Image(systemName: "hand.thumbsdown")
-                    .font(.caption2)
-                    .foregroundColor(.civitError)
-                    .accessibilityHidden(true)
-                Text("\(down)")
-                    .font(.civitLabelSmall)
-            }
-        }
-    }
 }
 
-// MARK: - Rating Distribution Chart
+// MARK: - Thumbs Summary
 
-struct RatingDistributionChart: View {
-    let totals: RatingTotals
-
-    var body: some View {
-        let maxCount = max(
-            totals.star1, totals.star2, totals.star3, totals.star4, totals.star5, 1
-        )
-        VStack(spacing: Spacing.xxs) {
-            ForEach((1...5).reversed(), id: \.self) { star in
-                ratingBar(star: star, count: Int(totals.countForStar(star: Int32(star))), maxCount: Int(maxCount))
-            }
-        }
-    }
-
-    private func ratingBar(star: Int, count: Int, maxCount: Int) -> some View {
+private func thumbsSummary(up: Int, down: Int) -> some View {
+    HStack(spacing: Spacing.lg) {
         HStack(spacing: Spacing.xs) {
-            Text("\(star)")
-                .font(.civitLabelSmall)
-                .frame(width: starLabelWidth)
-            SwiftUI.Image(systemName: "star.fill")
-                .font(.civitLabelXSmall)
+            SwiftUI.Image(systemName: "hand.thumbsup")
+                .font(.caption2)
                 .foregroundColor(.civitPrimary)
                 .accessibilityHidden(true)
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.civitSurfaceVariant)
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.civitPrimary)
-                        .frame(width: maxCount > 0
-                               ? geo.size.width * CGFloat(count) / CGFloat(maxCount)
-                               : 0)
-                }
-            }
-            .frame(height: ratingBarHeight)
-            Text("\(count)")
+            Text("\(up)")
                 .font(.civitLabelSmall)
-                .foregroundColor(.civitOnSurfaceVariant)
-                .frame(width: ratingCountWidth, alignment: .trailing)
+        }
+        HStack(spacing: Spacing.xs) {
+            SwiftUI.Image(systemName: "hand.thumbsdown")
+                .font(.caption2)
+                .foregroundColor(.civitError)
+                .accessibilityHidden(true)
+            Text("\(down)")
+                .font(.civitLabelSmall)
         }
     }
 }
@@ -159,19 +110,20 @@ struct ReviewCardView: View {
                 Text(review.username ?? "Anonymous")
                     .font(.civitLabelMedium)
                 Spacer()
-                starRating(rating: Int(review.rating))
+                SwiftUI.Image(systemName: review.recommended ? "hand.thumbsup" : "hand.thumbsdown")
+                    .font(.civitLabelSmall)
+                    .foregroundColor(review.recommended ? .civitPrimary : .civitError)
+                    .accessibilityLabel(review.recommended ? "Recommended" : "Not recommended")
             }
 
-            if review.recommended {
-                HStack(spacing: Spacing.xs) {
-                    SwiftUI.Image(systemName: "hand.thumbsup")
-                        .font(.civitLabelXSmall)
-                        .foregroundColor(.civitPrimary)
-                        .accessibilityHidden(true)
-                    Text("Recommended")
-                        .font(.civitLabelSmall)
-                        .foregroundColor(.civitPrimary)
-                }
+            HStack(spacing: Spacing.xs) {
+                SwiftUI.Image(systemName: review.recommended ? "hand.thumbsup" : "hand.thumbsdown")
+                    .font(.civitLabelXSmall)
+                    .foregroundColor(review.recommended ? .civitPrimary : .civitError)
+                    .accessibilityHidden(true)
+                Text(review.recommended ? "Recommended" : "Not Recommended")
+                    .font(.civitLabelSmall)
+                    .foregroundColor(review.recommended ? .civitPrimary : .civitError)
             }
 
             if let details = review.details, !details.isEmpty {
@@ -187,17 +139,6 @@ struct ReviewCardView: View {
         .padding(Spacing.md)
         .background(Color.civitSurfaceVariant.opacity(0.5))
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.card))
-    }
-
-    private func starRating(rating: Int) -> some View {
-        HStack(spacing: 1) {
-            ForEach(1...5, id: \.self) { i in
-                SwiftUI.Image(systemName: i <= rating ? "star.fill" : "star")
-                    .font(.civitLabelXSmall)
-                    .foregroundColor(i <= rating ? .civitPrimary : .civitOnSurfaceVariant.opacity(0.3))
-                    .accessibilityHidden(true)
-            }
-        }
     }
 
     private func formatDate(_ isoDate: String) -> String {

@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.CircularProgressIndicator
@@ -67,8 +65,6 @@ fun ReviewsSection(
         )
 
         if (ratingTotals != null && ratingTotals.total > 0) {
-            Spacer(Modifier.height(Spacing.sm))
-            RatingDistributionChart(totals = ratingTotals)
             Spacer(Modifier.height(Spacing.sm))
             ThumbsSummary(up = ratingTotals.thumbsUp, down = ratingTotals.thumbsDown)
         }
@@ -152,74 +148,8 @@ private fun SortDropdown(
 }
 
 @Composable
-fun RatingDistributionChart(
-    totals: RatingTotals,
-    modifier: Modifier = Modifier,
-) {
-    val maxCount = maxOf(
-        totals.star1,
-        totals.star2,
-        totals.star3,
-        totals.star4,
-        totals.star5,
-        1,
-    )
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        for (star in STAR_RANGE downTo 1) {
-            RatingBar(star = star, count = totals.countForStar(star), maxCount = maxCount)
-        }
-    }
-}
-
-@Composable
-private fun RatingBar(star: Int, count: Int, maxCount: Int) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Text(
-            text = "$star",
-            style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.width(12.dp),
-        )
-        Icon(
-            imageVector = Icons.Filled.Star,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(12.dp),
-        )
-        Spacer(Modifier.width(Spacing.xs))
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .height(BAR_HEIGHT)
-                .clip(RoundedCornerShape(2.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-        ) {
-            val fraction = if (maxCount > 0) count.toFloat() / maxCount else 0f
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(fraction)
-                    .height(BAR_HEIGHT)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(MaterialTheme.colorScheme.primary),
-            )
-        }
-        Spacer(Modifier.width(Spacing.xs))
-        Text(
-            text = "$count",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.width(28.dp),
-        )
-    }
-}
-
-@Composable
 private fun ThumbsSummary(up: Int, down: Int) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(Spacing.lg),
-    ) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.lg)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 Icons.Outlined.ThumbUp,
@@ -280,28 +210,35 @@ private fun ReviewCardHeader(review: ResourceReview) {
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.weight(1f),
         )
-        StarRating(rating = review.rating)
+        Icon(
+            imageVector = if (review.recommended) Icons.Outlined.ThumbUp else Icons.Outlined.ThumbDown,
+            contentDescription = if (review.recommended) "Recommended" else "Not recommended",
+            modifier = Modifier.size(14.dp),
+            tint = if (review.recommended) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.error
+            },
+        )
     }
 }
 
 @Composable
 private fun ReviewCardRecommendation(recommended: Boolean) {
-    if (recommended) {
-        Spacer(Modifier.height(Spacing.xs))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                Icons.Outlined.ThumbUp,
-                contentDescription = null,
-                modifier = Modifier.size(12.dp),
-                tint = MaterialTheme.colorScheme.primary,
-            )
-            Spacer(Modifier.width(Spacing.xs))
-            Text(
-                "Recommended",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-            )
-        }
+    Spacer(Modifier.height(Spacing.xs))
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = if (recommended) Icons.Outlined.ThumbUp else Icons.Outlined.ThumbDown,
+            contentDescription = null,
+            modifier = Modifier.size(12.dp),
+            tint = if (recommended) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+        )
+        Spacer(Modifier.width(Spacing.xs))
+        Text(
+            text = if (recommended) "Recommended" else "Not Recommended",
+            style = MaterialTheme.typography.labelSmall,
+            color = if (recommended) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+        )
     }
 }
 
@@ -323,24 +260,6 @@ private fun ReviewCardBody(details: String?, createdAt: String) {
     )
 }
 
-@Composable
-private fun StarRating(rating: Int) {
-    Row {
-        for (i in 1..MAX_STARS) {
-            Icon(
-                imageVector = if (i <= rating) Icons.Filled.Star else Icons.Outlined.StarOutline,
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = if (i <= rating) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.outlineVariant
-                },
-            )
-        }
-    }
-}
-
 private fun formatReviewDate(isoDate: String): String = isoDate.take(DATE_PREFIX_LENGTH)
 
 private fun ReviewSortOrder.label(): String = when (this) {
@@ -349,8 +268,5 @@ private fun ReviewSortOrder.label(): String = when (this) {
     ReviewSortOrder.LowestRated -> "Lowest"
 }
 
-private val BAR_HEIGHT = 6.dp
 private const val MAX_VISIBLE_REVIEWS = 5
-private const val MAX_STARS = 5
 private const val DATE_PREFIX_LENGTH = 10
-private const val STAR_RANGE = 5

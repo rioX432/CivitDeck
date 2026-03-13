@@ -22,16 +22,7 @@ data class RatingTotals(
     val thumbsUp: Int,
     val thumbsDown: Int,
 ) {
-    val total: Int get() = star1 + star2 + star3 + star4 + star5
-
-    fun countForStar(star: Int): Int = when (star) {
-        1 -> star1
-        2 -> star2
-        3 -> star3
-        4 -> star4
-        5 -> star5
-        else -> 0
-    }
+    val total: Int get() = thumbsUp + thumbsDown
 }
 
 enum class ReviewSortOrder {
