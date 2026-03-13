@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.ui.feed
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -219,7 +220,7 @@ private fun FeedItemMeta(
                         .clip(CircleShape),
                 ) {
                     // Unread dot
-                    androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
                         drawCircle(color = unreadColor)
                     }
                 }

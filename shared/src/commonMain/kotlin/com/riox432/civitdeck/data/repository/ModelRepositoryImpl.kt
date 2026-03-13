@@ -163,7 +163,8 @@ class ModelRepositoryImpl(
                     allowDerivatives = it.allowDerivatives,
                 )
             }
-        } catch (_: Exception) {
+        } catch (@Suppress("SwallowedException") e: Exception) {
+            Logger.w(TAG, "Failed to fetch license for version $versionId: ${e.message}")
             null
         }
     }

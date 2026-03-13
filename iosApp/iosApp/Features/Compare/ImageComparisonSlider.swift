@@ -113,9 +113,12 @@ struct ImageComparisonSlider: View {
                       : "arrow.up.and.down")
                     .font(.system(size: iconSize, weight: .semibold))
                     .foregroundColor(.civitOnSurface)
+                    .accessibilityHidden(true)
             }
             .position(x: posX, y: posY)
             .gesture(dragGesture(size: size))
+            .accessibilityLabel("Comparison slider")
+            .accessibilityValue("\(Int(sliderFraction * 100))%")
     }
 
     // MARK: - Gestures

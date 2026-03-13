@@ -1,6 +1,10 @@
 import SwiftUI
 import Shared
 
+private let cardStackOffset: CGFloat = 12
+private let undoButtonSize: CGFloat = 48
+private let actionButtonSize: CGFloat = 56
+
 struct SwipeDiscoveryView: View {
     @StateObject private var viewModel = SwipeDiscoveryViewModel()
     @Environment(\.dismiss) private var dismiss
@@ -45,7 +49,7 @@ struct SwipeDiscoveryView: View {
         ZStack {
             ForEach(Array(visibleCards.enumerated().reversed()), id: \.element.id) { index, model in
                 let scale = 1.0 - Double(index) * 0.05
-                let offsetY = CGFloat(index) * 12
+                let offsetY = CGFloat(index) * cardStackOffset
 
                 if index == 0 {
                     SwipeCardView(
@@ -72,7 +76,7 @@ struct SwipeDiscoveryView: View {
             Button(action: viewModel.undoLastSwipe) {
                 Image(systemName: "arrow.uturn.backward")
                     .font(.title3)
-                    .frame(width: 48, height: 48)
+                    .frame(width: undoButtonSize, height: undoButtonSize)
                     .foregroundColor(.civitOnSurface)
                     .background(Color.civitSurfaceContainerHigh)
                     .clipShape(Circle())
@@ -89,7 +93,7 @@ struct SwipeDiscoveryView: View {
             }) {
                 Image(systemName: "xmark")
                     .font(.title2)
-                    .frame(width: 56, height: 56)
+                    .frame(width: actionButtonSize, height: actionButtonSize)
                     .foregroundColor(.civitError)
                     .background(Color.civitSurfaceContainerHigh)
                     .clipShape(Circle())
@@ -105,7 +109,7 @@ struct SwipeDiscoveryView: View {
             }) {
                 Image(systemName: "heart.fill")
                     .font(.title2)
-                    .frame(width: 56, height: 56)
+                    .frame(width: actionButtonSize, height: actionButtonSize)
                     .foregroundColor(.civitPrimary)
                     .background(Color.civitSurfaceContainerHigh)
                     .clipShape(Circle())

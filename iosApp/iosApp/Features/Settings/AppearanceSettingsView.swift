@@ -111,6 +111,7 @@ struct AppearanceSettingsView: View {
                 Spacer()
                 if noneActive {
                     Image(systemName: "checkmark")
+                        .accessibilityHidden(true)
                         .foregroundColor(.accentColor)
                 }
             }
@@ -134,6 +135,7 @@ struct AppearanceSettingsView: View {
                 Spacer()
                 if plugin.state == PluginState.active {
                     Image(systemName: "checkmark")
+                        .accessibilityHidden(true)
                         .foregroundColor(.accentColor)
                 }
             }

@@ -37,7 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -57,6 +56,7 @@ import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.FilterChipRow
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.components.NsfwBlurOverlay
+import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -293,7 +293,7 @@ private fun ImageGridItem(
                 Icon(
                     imageVector = Icons.Default.PlayCircle,
                     contentDescription = "Video",
-                    tint = Color.White.copy(alpha = 0.85f),
+                    tint = CivitDeckColors.onScrim,
                     modifier = Modifier
                         .size(48.dp)
                         .align(Alignment.Center),

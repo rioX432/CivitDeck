@@ -1,6 +1,9 @@
 import SwiftUI
 import Charts
 
+private let chartHeight: CGFloat = 180
+private let barRowHeight: CGFloat = 36
+
 struct AnalyticsView: View {
     @StateObject private var viewModel = AnalyticsViewModel()
 
@@ -61,7 +64,7 @@ struct AnalyticsView: View {
                 )
                 .foregroundStyle(Color.civitPrimary)
             }
-            .frame(height: 180)
+            .frame(height: chartHeight)
             .chartXAxis {
                 AxisMarks(values: .stride(by: .day, count: 7)) { _ in
                     AxisGridLine()
@@ -80,7 +83,7 @@ struct AnalyticsView: View {
                 )
                 .foregroundStyle(Color.civitPrimary)
             }
-            .frame(height: CGFloat(min(viewModel.topModelTypes.count, 5)) * 36)
+            .frame(height: CGFloat(min(viewModel.topModelTypes.count, 5)) * barRowHeight)
         }
     }
 

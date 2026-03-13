@@ -72,9 +72,11 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
             androidContext(this@CivitDeckApplication)
             modules(androidModule)
         }
-        registerWorkflowPlugins()
-        registerExportPlugins()
-        CoroutineScope(Dispatchers.IO).launch { registerThemePlugins() }
+        CoroutineScope(Dispatchers.IO).launch {
+            registerWorkflowPlugins()
+            registerExportPlugins()
+            registerThemePlugins()
+        }
         CoroutineScope(Dispatchers.IO).launch { initializeAuth() }
         observeAndScheduleNotifications()
         scheduleWidgetRefresh()

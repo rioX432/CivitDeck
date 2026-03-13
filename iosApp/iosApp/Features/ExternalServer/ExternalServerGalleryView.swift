@@ -35,6 +35,7 @@ struct ExternalServerGalleryView: View {
                     LazyVGrid(columns: columns, spacing: Spacing.xxs) {
                         ForEach(viewModel.images, id: \.id) { image in
                             ServerImageCell(image: image)
+                                .accessibilityLabel("Select image")
                                 .onTapGesture { selectedImage = image }
                                 .onAppear {
                                     if image.id == viewModel.images.last?.id {
@@ -60,6 +61,7 @@ struct ExternalServerGalleryView: View {
                         viewModel.showFilterSheet = true
                     } label: {
                         Image(systemName: "line.3.horizontal.decrease.circle")
+                            .accessibilityLabel("Filters")
                     }
                 }
                 if viewModel.supportsGeneration {
@@ -70,6 +72,7 @@ struct ExternalServerGalleryView: View {
                         }
                     } label: {
                         Image(systemName: "bolt.fill")
+                            .accessibilityLabel("Generate")
                     }
                 }
             }

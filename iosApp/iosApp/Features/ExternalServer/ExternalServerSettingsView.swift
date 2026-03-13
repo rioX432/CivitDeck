@@ -25,6 +25,7 @@ struct ExternalServerSettingsView: View {
                     viewModel.showAddSheet = true
                 } label: {
                     Image(systemName: "plus")
+                        .accessibilityLabel("Add server")
                 }
             }
         }
@@ -73,6 +74,7 @@ struct ExternalServerSettingsView: View {
                 HStack {
                     Image(systemName: config.id == viewModel.activeConfig?.id ? "checkmark.circle.fill" : "circle")
                         .foregroundColor(config.id == viewModel.activeConfig?.id ? .civitPrimary : .civitOnSurfaceVariant)
+                        .accessibilityLabel("Activate configuration")
                         .onTapGesture { viewModel.onActivate(id: config.id) }
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text(config.name).font(.civitBodyMedium)
@@ -86,6 +88,7 @@ struct ExternalServerSettingsView: View {
                         viewModel.showAddSheet = true
                     } label: {
                         Image(systemName: "pencil")
+                            .accessibilityLabel("Edit server")
                     }
                     .buttonStyle(.plain)
                     .foregroundColor(.civitOnSurfaceVariant)
