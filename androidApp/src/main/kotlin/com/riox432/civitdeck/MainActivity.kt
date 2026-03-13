@@ -18,6 +18,7 @@ import com.riox432.civitdeck.ui.navigation.Tab
 import com.riox432.civitdeck.ui.theme.CivitDeckTheme
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialScreen
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
+import com.riox432.civitdeck.usecase.GetActiveThemeUseCase
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -27,6 +28,7 @@ class MainActivity : ComponentActivity(), KoinComponent {
     private val observeAccentColor: ObserveAccentColorUseCase by inject()
     private val observeAmoledDarkMode: ObserveAmoledDarkModeUseCase by inject()
     private val observeThemeMode: ObserveThemeModeUseCase by inject()
+    private val getActiveTheme: GetActiveThemeUseCase by inject()
 
     companion object {
         const val EXTRA_INITIAL_ROUTE = "extra_initial_route"
@@ -53,11 +55,14 @@ class MainActivity : ComponentActivity(), KoinComponent {
                 ThemeMode.DARK -> true
                 ThemeMode.SYSTEM -> systemDark
             }
+            val activeTheme by getActiveTheme.observeColorScheme(darkTheme)
+                .collectAsStateWithLifecycle(null)
 
             CivitDeckTheme(
                 darkTheme = darkTheme,
                 accentColor = accentColor,
                 amoledDarkMode = amoledDarkMode,
+                customTheme = activeTheme,
             ) {
                 val tutorialVm: GestureTutorialViewModel = koinViewModel()
                 val showTutorial by tutorialVm.shouldShowTutorial.collectAsStateWithLifecycle()

@@ -15,6 +15,7 @@ import coil3.request.crossfade
 import com.riox432.civitdeck.di.initKoin
 import com.riox432.civitdeck.di.initializeAuth
 import com.riox432.civitdeck.di.registerExportPlugins
+import com.riox432.civitdeck.di.registerThemePlugins
 import com.riox432.civitdeck.di.registerWorkflowPlugins
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
@@ -73,6 +74,7 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
         }
         registerWorkflowPlugins()
         registerExportPlugins()
+        CoroutineScope(Dispatchers.IO).launch { registerThemePlugins() }
         CoroutineScope(Dispatchers.IO).launch { initializeAuth() }
         observeAndScheduleNotifications()
         scheduleWidgetRefresh()

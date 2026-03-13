@@ -8,8 +8,6 @@ import com.riox432.civitdeck.data.backup.PreferenceDaos
 import com.riox432.civitdeck.data.export.ExportRepositoryImpl
 import com.riox432.civitdeck.data.export.KohyaZipExportPlugin
 import com.riox432.civitdeck.data.image.ImageSaver
-import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
-import com.riox432.civitdeck.usecase.GetAvailableExportFormatsUseCase
 import com.riox432.civitdeck.data.repository.AuthRepositoryImpl
 import com.riox432.civitdeck.data.repository.BrowsingHistoryRepositoryImpl
 import com.riox432.civitdeck.data.repository.CacheRepositoryImpl
@@ -33,6 +31,12 @@ import com.riox432.civitdeck.domain.repository.ModelScanRepository
 import com.riox432.civitdeck.domain.repository.ModelVersionCheckpointRepository
 import com.riox432.civitdeck.domain.repository.ReviewRepository
 import com.riox432.civitdeck.domain.repository.TagRepository
+import com.riox432.civitdeck.usecase.ActivateThemePluginUseCase
+import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
+import com.riox432.civitdeck.usecase.GetActiveThemeUseCase
+import com.riox432.civitdeck.usecase.GetAvailableExportFormatsUseCase
+import com.riox432.civitdeck.usecase.ImportThemeUseCase
+import com.riox432.civitdeck.usecase.ObserveThemePluginsUseCase
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -64,6 +68,12 @@ val dataModule = module {
     single { KohyaZipExportPlugin(get()) }
     factory { GetAvailableExportFormatsUseCase(get()) }
     factory { ExportWithPluginUseCase(get()) }
+
+    // Theme plugins
+    factory { ImportThemeUseCase(get(), get()) }
+    factory { GetActiveThemeUseCase(get()) }
+    factory { ObserveThemePluginsUseCase(get()) }
+    factory { ActivateThemePluginUseCase(get(), get()) }
 
     // Backup DAO wrappers
     single { CollectionDaos(get()) }

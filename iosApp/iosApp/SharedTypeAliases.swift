@@ -199,6 +199,10 @@ typealias UpdatePluginConfigUseCase = Core_domainUpdatePluginConfigUseCase
 typealias PluginExportFormat = Core_pluginPluginExportFormat
 typealias PluginExportProgress = Core_pluginPluginExportProgress
 typealias ExportFormatPlugin = Core_pluginExportFormatPlugin
+typealias ThemePlugin = Core_pluginThemePlugin
+typealias ThemeColorScheme = Core_pluginThemeColorScheme
+typealias PluginState = Core_pluginPluginState
+typealias PluginManifest = Core_pluginPluginManifest
 
 // ReviewSortOrder is not exported from KMP (no public API uses it), so define in Swift
 enum ReviewSortOrder: CaseIterable {

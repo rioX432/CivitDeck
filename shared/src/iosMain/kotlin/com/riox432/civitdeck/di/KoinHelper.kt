@@ -25,8 +25,6 @@ import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ExportDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.FilterByResolutionUseCase
-import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
-import com.riox432.civitdeck.usecase.GetAvailableExportFormatsUseCase
 import com.riox432.civitdeck.domain.usecase.FollowCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.GetAllPersonalTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
@@ -205,6 +203,12 @@ import com.riox432.civitdeck.feature.search.domain.usecase.RemoveExcludedTagUseC
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
+import com.riox432.civitdeck.usecase.ActivateThemePluginUseCase
+import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
+import com.riox432.civitdeck.usecase.GetActiveThemeUseCase
+import com.riox432.civitdeck.usecase.GetAvailableExportFormatsUseCase
+import com.riox432.civitdeck.usecase.ImportThemeUseCase
+import com.riox432.civitdeck.usecase.ObserveThemePluginsUseCase
 import org.koin.mp.KoinPlatform.getKoin
 
 @Suppress("TooManyFunctions")
@@ -458,4 +462,10 @@ object KoinHelper {
     fun getObserveInstalledPluginsUseCase(): ObserveInstalledPluginsUseCase = getKoin().get()
     fun getGetPluginConfigUseCase(): GetPluginConfigUseCase = getKoin().get()
     fun getUpdatePluginConfigUseCase(): UpdatePluginConfigUseCase = getKoin().get()
+
+    // Theme plugin use cases
+    fun getImportThemeUseCase(): ImportThemeUseCase = getKoin().get()
+    fun getGetActiveThemeUseCase(): GetActiveThemeUseCase = getKoin().get()
+    fun getObserveThemePluginsUseCase(): ObserveThemePluginsUseCase = getKoin().get()
+    fun getActivateThemePluginUseCase(): ActivateThemePluginUseCase = getKoin().get()
 }
