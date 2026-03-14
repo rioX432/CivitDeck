@@ -1,8 +1,11 @@
 import SwiftUI
 import Shared
 
+// MARK: - Deprecated: Notifications are now part of ContentFilterSettingsView ("Content & Behavior")
+// This file is kept to avoid pbxproj changes. Will be removed in a future cleanup.
+
 struct NotificationsSettingsView: View {
-    @ObservedObject var viewModel: SettingsViewModelOwner
+    @ObservedObject var viewModel: AppBehaviorSettingsViewModelOwner
 
     var body: some View {
         List {

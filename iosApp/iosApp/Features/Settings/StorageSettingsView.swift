@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct StorageSettingsView: View {
-    @ObservedObject var viewModel: SettingsViewModelOwner
+    @ObservedObject var viewModel: StorageSettingsViewModelOwner
 
     var body: some View {
         List {
@@ -12,6 +12,11 @@ struct StorageSettingsView: View {
                     cacheSizeLimitPicker
                 }
                 cacheInfoRow
+            }
+            Section("Backup") {
+                NavigationLink(destination: BackupView()) {
+                    Label("Backup & Restore", systemImage: "arrow.up.arrow.down.circle")
+                }
             }
             Section("Data Management") {
                 NavigationLink {
@@ -33,7 +38,7 @@ struct StorageSettingsView: View {
                 ClearActionButton(label: "Clear Cache", action: viewModel.onClearCache)
             }
         }
-        .navigationTitle("Storage")
+        .navigationTitle("Data & Storage")
         .navigationBarTitleDisplayMode(.inline)
     }
 

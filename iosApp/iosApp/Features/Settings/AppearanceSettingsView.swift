@@ -3,7 +3,7 @@ import Shared
 import UniformTypeIdentifiers
 
 struct AppearanceSettingsView: View {
-    @ObservedObject var viewModel: SettingsViewModelOwner
+    @ObservedObject var viewModel: DisplaySettingsViewModelOwner
     @StateObject private var themePickerVM = ThemePickerViewModel()
     @State private var showingFilePicker = false
     @State private var importError: String?

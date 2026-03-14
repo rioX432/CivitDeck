@@ -2,7 +2,9 @@ import SwiftUI
 import Shared
 
 struct ContentFilterSettingsView: View {
-    @ObservedObject var viewModel: SettingsViewModelOwner
+    @ObservedObject var viewModel: ContentFilterSettingsViewModelOwner
+    @ObservedObject var displayViewModel: DisplaySettingsViewModelOwner
+    @ObservedObject var appBehaviorViewModel: AppBehaviorSettingsViewModelOwner
 
     var body: some View {
         List {
@@ -36,8 +38,9 @@ struct ContentFilterSettingsView: View {
                     }
                 }
             }
+            notificationsSection
         }
-        .navigationTitle("Content & Filters")
+        .navigationTitle("Content & Behavior")
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -58,8 +61,8 @@ struct ContentFilterSettingsView: View {
 
     private var sortOrderPicker: some View {
         Picker("Default Sort", selection: Binding(
-            get: { viewModel.defaultSortOrder },
-            set: { viewModel.onSortOrderChanged($0) }
+            get: { displayViewModel.defaultSortOrder },
+            set: { displayViewModel.onSortOrderChanged($0) }
         )) {
             ForEach(SearchFilter.sortOptions, id: \.self) { sort in
                 Text(SearchFilter.sortLabel(sort)).tag(sort)
@@ -69,11 +72,46 @@ struct ContentFilterSettingsView: View {
 
     private var timePeriodPicker: some View {
         Picker("Default Period", selection: Binding(
-            get: { viewModel.defaultTimePeriod },
-            set: { viewModel.onTimePeriodChanged($0) }
+            get: { displayViewModel.defaultTimePeriod },
+            set: { displayViewModel.onTimePeriodChanged($0) }
         )) {
             ForEach(SearchFilter.periodOptions, id: \.self) { period in
                 Text(SearchFilter.periodLabel(period)).tag(period)
+            }
+        }
+    }
+
+    private var notificationsSection: some View {
+        Section("Notifications") {
+            notificationsToggle
+            if appBehaviorViewModel.notificationsEnabled {
+                pollingIntervalPicker
+            }
+        }
+    }
+
+    private var notificationsToggle: some View {
+        Toggle(isOn: Binding(
+            get: { appBehaviorViewModel.notificationsEnabled },
+            set: { appBehaviorViewModel.onNotificationsEnabledChanged($0) }
+        )) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("Model Update Alerts")
+                    .font(.civitBodyMedium)
+                Text("Notify when favorited models get new versions")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+            }
+        }
+    }
+
+    private var pollingIntervalPicker: some View {
+        Picker("Check Frequency", selection: Binding(
+            get: { appBehaviorViewModel.pollingInterval },
+            set: { appBehaviorViewModel.onPollingIntervalChanged($0) }
+        )) {
+            ForEach(PollingInterval.allCases.filter { $0 != .off }, id: \.self) { interval in
+                Text(interval.displayName).tag(interval)
             }
         }
     }

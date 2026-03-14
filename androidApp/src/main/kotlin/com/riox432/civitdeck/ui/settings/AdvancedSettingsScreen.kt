@@ -14,26 +14,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 
-@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdvancedSettingsScreen(
-    viewModel: SettingsViewModel,
+    viewModel: AppBehaviorSettingsViewModel,
     onBack: () -> Unit,
-    onNavigateToComfyUI: () -> Unit = {},
+    onNavigateToIntegrations: () -> Unit = {},
     onNavigateToModelFiles: () -> Unit = {},
-    onNavigateToTemplates: () -> Unit = {},
-    onNavigateToSDWebUI: () -> Unit = {},
-    onNavigateToCivitaiLink: () -> Unit = {},
-    onNavigateToExternalServer: () -> Unit = {},
+    onNavigateToPlugins: () -> Unit = {},
+    onNavigateToNavShortcuts: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Advanced") },
+                title = { Text("Advanced & Integrations") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -46,18 +43,15 @@ fun AdvancedSettingsScreen(
             item { SectionHeader("Power User") }
             item { PowerUserModeRow(state.powerUserMode, viewModel::onPowerUserModeChanged) }
             if (state.powerUserMode) {
-                item { SectionHeader("ComfyUI") }
-                item { SubScreenRow("Server Connections", onNavigateToComfyUI) }
-                item { SubScreenRow("Workflow Templates", onNavigateToTemplates) }
-                item { SectionHeader("SD WebUI") }
-                item { SubScreenRow("SD WebUI Connections", onNavigateToSDWebUI) }
-                item { SectionHeader("Civitai Link") }
-                item { SubScreenRow("Civitai Link Setup", onNavigateToCivitaiLink) }
-                item { SectionHeader("Custom Server") }
-                item { SubScreenRow("Custom Server Integration", onNavigateToExternalServer) }
+                item { SectionHeader("Integrations") }
+                item { SubScreenRow("Server Integrations", onNavigateToIntegrations) }
                 item { SectionHeader("Model Files") }
                 item { SubScreenRow("Model File Browser", onNavigateToModelFiles) }
+                item { SectionHeader("Navigation") }
+                item { SubScreenRow("Navigation Shortcuts", onNavigateToNavShortcuts) }
             }
+            item { SectionHeader("Plugins") }
+            item { SubScreenRow("Plugins", onNavigateToPlugins) }
         }
     }
 }

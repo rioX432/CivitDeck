@@ -301,7 +301,11 @@ typealias GetGenerationStatusUseCase = Feature_externalserverGetGenerationStatus
 
 // MARK: - Feature: Settings
 
-typealias SettingsViewModel = Feature_settingsSettingsViewModel
+typealias ContentFilterSettingsViewModel = Feature_settingsContentFilterSettingsViewModel
+typealias DisplaySettingsViewModel = Feature_settingsDisplaySettingsViewModel
+typealias AppBehaviorSettingsViewModel = Feature_settingsAppBehaviorSettingsViewModel
+typealias AuthSettingsViewModel = Feature_settingsAuthSettingsViewModel
+typealias StorageSettingsViewModel = Feature_settingsStorageSettingsViewModel
 
 // MARK: - ModelImage Swift Extensions
 // Kotlin extension functions are not exported to Swift, so we mirror them here.

@@ -2,29 +2,43 @@ import SwiftUI
 import Shared
 
 struct SettingsScreen: View {
-    @StateObject private var viewModel = SettingsViewModelOwner()
+    @StateObject private var authViewModel = AuthSettingsViewModelOwner()
+    @StateObject private var appBehaviorViewModel = AppBehaviorSettingsViewModelOwner()
+    @StateObject private var storageViewModel = StorageSettingsViewModelOwner()
+    @StateObject private var displayViewModel = DisplaySettingsViewModelOwner()
+    @StateObject private var contentFilterViewModel = ContentFilterSettingsViewModelOwner()
 
     var body: some View {
         NavigationStack {
             List {
-                if !viewModel.isOnline {
+                if !storageViewModel.isOnline {
                     offlineBanner
                 }
                 accountSection
                 appearanceSection
-                contentFilterSection
-                notificationsSection
-                storageSection
-                advancedSection
-                backupSection
-                pluginsSection
-                analyticsSection
-                datasetsSection
+                contentBehaviorSection
+                dataStorageSection
+                advancedIntegrationsSection
+                if appBehaviorViewModel.powerUserMode {
+                    analyticsSection
+                    datasetsSection
+                }
                 aboutSection
+                if !appBehaviorViewModel.powerUserMode {
+                    Section {
+                        Text("Enable Power User Mode in Advanced & Integrations for more features")
+                            .font(.civitBodySmall)
+                            .foregroundColor(.civitOnSurfaceVariant)
+                    }
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
-            .task { await viewModel.observeUiState() }
+            .task { await authViewModel.observeUiState() }
+            .task { await appBehaviorViewModel.observeUiState() }
+            .task { await storageViewModel.observeUiState() }
+            .task { await displayViewModel.observeUiState() }
+            .task { await contentFilterViewModel.observeUiState() }
         }
     }
 
@@ -41,13 +55,13 @@ struct SettingsScreen: View {
 
     private var accountSection: some View {
         Section("Account") {
-            if let username = viewModel.connectedUsername, viewModel.apiKey != nil {
-                ConnectedAccountRow(username: username, onClear: viewModel.onClearApiKey)
+            if let username = authViewModel.connectedUsername, authViewModel.apiKey != nil {
+                ConnectedAccountRow(username: username, onClear: authViewModel.onClearApiKey)
             } else {
                 ApiKeyInputRow(
-                    isValidating: viewModel.isValidatingApiKey,
-                    error: viewModel.apiKeyError,
-                    onValidateAndSave: viewModel.onValidateAndSaveApiKey
+                    isValidating: authViewModel.isValidatingApiKey,
+                    error: authViewModel.apiKeyError,
+                    onValidateAndSave: authViewModel.onValidateAndSaveApiKey
                 )
             }
         }
@@ -55,61 +69,39 @@ struct SettingsScreen: View {
 
     private var appearanceSection: some View {
         Section {
-            NavigationLink(destination: AppearanceSettingsView(viewModel: viewModel)) {
+            NavigationLink(destination: AppearanceSettingsView(viewModel: displayViewModel)) {
                 Text("Appearance")
             }
         }
     }
 
-    private var contentFilterSection: some View {
+    private var contentBehaviorSection: some View {
         Section {
-            NavigationLink(destination: ContentFilterSettingsView(viewModel: viewModel)) {
-                Text("Content & Filters")
+            NavigationLink(destination: ContentFilterSettingsView(
+                viewModel: contentFilterViewModel,
+                displayViewModel: displayViewModel,
+                appBehaviorViewModel: appBehaviorViewModel
+            )) {
+                Text("Content & Behavior")
             }
         }
     }
 
-    private var notificationsSection: some View {
+    private var dataStorageSection: some View {
         Section {
-            NavigationLink(destination: NotificationsSettingsView(viewModel: viewModel)) {
-                Text("Notifications")
+            NavigationLink(destination: StorageSettingsView(viewModel: storageViewModel)) {
+                Text("Data & Storage")
             }
         }
     }
 
-    private var storageSection: some View {
+    private var advancedIntegrationsSection: some View {
         Section {
-            NavigationLink(destination: StorageSettingsView(viewModel: viewModel)) {
-                Text("Storage")
-            }
-        }
-    }
-
-    private var advancedSection: some View {
-        Section {
-            if viewModel.powerUserMode {
-                NavigationLink(destination: NavShortcutsSettingsView(viewModel: viewModel)) {
-                    Text("Navigation Shortcuts")
-                }
-            }
-            NavigationLink(destination: AdvancedSettingsView(viewModel: viewModel)) {
-                Text("Advanced")
-            }
-        }
-    }
-
-    private var backupSection: some View {
-        Section("Data") {
-            NavigationLink(destination: BackupView()) {
-                Label("Backup & Restore", systemImage: "arrow.up.arrow.down.circle")
-            }
-        }
-    }
-
-    private var pluginsSection: some View {
-        Section("Plugins") {
-            NavigationLink(destination: PluginListView()) {
-                Label("Plugins", systemImage: "puzzlepiece.extension")
+            NavigationLink(destination: AdvancedSettingsView(
+                viewModel: appBehaviorViewModel,
+                displayViewModel: displayViewModel
+            )) {
+                Text("Advanced & Integrations")
             }
         }
     }

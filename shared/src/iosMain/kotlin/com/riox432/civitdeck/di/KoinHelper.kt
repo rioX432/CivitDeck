@@ -202,7 +202,11 @@ import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryU
 import com.riox432.civitdeck.feature.search.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.UnhideModelUseCase
-import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import com.riox432.civitdeck.usecase.ActivateThemePluginUseCase
 import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
 import com.riox432.civitdeck.usecase.GetActiveThemeUseCase
@@ -350,8 +354,12 @@ object KoinHelper {
     fun getImportWorkflowTemplateUseCase(): ImportWorkflowTemplateUseCase = getKoin().get()
     fun getApplyWorkflowTemplateUseCase(): ApplyWorkflowTemplateUseCase = getKoin().get()
 
-    // ViewModels
-    fun createSettingsViewModel(): SettingsViewModel = getKoin().get()
+    // Settings ViewModels
+    fun createContentFilterSettingsViewModel(): ContentFilterSettingsViewModel = getKoin().get()
+    fun createDisplaySettingsViewModel(): DisplaySettingsViewModel = getKoin().get()
+    fun createAppBehaviorSettingsViewModel(): AppBehaviorSettingsViewModel = getKoin().get()
+    fun createAuthSettingsViewModel(): AuthSettingsViewModel = getKoin().get()
+    fun createStorageSettingsViewModel(): StorageSettingsViewModel = getKoin().get()
 
     // Civitai Link use cases
     fun getObserveCivitaiLinkKeyUseCase(): ObserveCivitaiLinkKeyUseCase = getKoin().get()

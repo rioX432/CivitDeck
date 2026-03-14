@@ -14,19 +14,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StorageSettingsScreen(
-    viewModel: SettingsViewModel,
+    viewModel: StorageSettingsViewModel,
     onBack: () -> Unit,
+    onNavigateToBackup: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Storage") },
+                title = { Text("Data & Storage") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -53,6 +54,8 @@ fun StorageSettingsScreen(
             item { ClearActionRow("Clear Search History", viewModel::onClearSearchHistory) }
             item { ClearActionRow("Clear Browsing History", viewModel::onClearBrowsingHistory) }
             item { ClearActionRow("Clear Cache", viewModel::onClearCache) }
+            item { SectionHeader("Backup") }
+            item { SubScreenRow("Backup & Restore", onNavigateToBackup) }
         }
     }
 }
