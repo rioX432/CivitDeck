@@ -36,6 +36,7 @@ import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettings
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.DesktopRoute
+import com.riox432.civitdeck.util.removeLastOrNull
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupScreen
 import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel

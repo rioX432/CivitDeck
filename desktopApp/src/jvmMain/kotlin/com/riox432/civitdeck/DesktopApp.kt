@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.riox432.civitdeck.util.removeLastOrNull
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
@@ -197,6 +198,3 @@ private fun DesktopContent(
         )
     }
 }
-
-private fun <T> MutableList<T>.removeLastOrNull(): T? =
-    if (isNotEmpty()) removeAt(lastIndex) else null
