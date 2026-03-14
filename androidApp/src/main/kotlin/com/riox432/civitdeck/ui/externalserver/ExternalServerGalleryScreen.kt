@@ -208,7 +208,7 @@ private fun ImageGrid(
 @Composable
 private fun ServerImageCard(image: ServerImage, onClick: () -> Unit) {
     val context = LocalContext.current
-    Card(modifier = Modifier.clickable(onClick = onClick)) {
+    Card(modifier = Modifier.clickable(onClickLabel = "View image", onClick = onClick)) {
         Box {
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(context)

@@ -105,7 +105,7 @@ private fun NoteDisplay(noteText: String?, onEdit: () -> Unit) {
             text = "Tap + to add a personal note",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.clickable(onClick = onEdit),
+            modifier = Modifier.clickable(onClickLabel = "Edit note", onClick = onEdit),
         )
     } else {
         Text(

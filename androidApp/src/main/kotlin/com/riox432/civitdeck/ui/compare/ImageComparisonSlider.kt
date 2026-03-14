@@ -32,12 +32,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.riox432.civitdeck.R
+import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.Duration
+import com.riox432.civitdeck.ui.theme.shimmer
 import kotlin.math.roundToInt
 
 /** Slider orientation for image comparison. */
@@ -119,12 +121,18 @@ fun ImageComparisonSlider(
 
 @Composable
 private fun ComparisonImage(imageUrl: String, modifier: Modifier = Modifier) {
-    AsyncImage(
+    SubcomposeAsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
             .data(imageUrl).crossfade(Duration.normal).build(),
         contentDescription = null,
         contentScale = ContentScale.Fit,
         modifier = modifier,
+        loading = {
+            Box(modifier = Modifier.fillMaxSize().shimmer())
+        },
+        error = {
+            ImageErrorPlaceholder(modifier = Modifier.fillMaxSize())
+        },
     )
 }
 

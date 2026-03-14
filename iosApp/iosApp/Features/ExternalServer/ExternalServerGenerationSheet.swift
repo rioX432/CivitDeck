@@ -27,7 +27,7 @@ struct ExternalServerGenerationSheet: View {
                         if let error = viewModel.generationError {
                             Section {
                                 Text(error)
-                                    .foregroundColor(.red)
+                                    .foregroundColor(.civitError)
                                     .font(.civitBodySmall)
                             }
                         }

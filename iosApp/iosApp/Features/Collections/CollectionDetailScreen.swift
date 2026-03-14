@@ -279,7 +279,7 @@ private struct CollectionModelCard: View {
 
     private var selectionIndicator: some View {
         Circle()
-            .fill(isSelected ? Color.accentColor : Color.white.opacity(0.7))
+            .fill(isSelected ? Color.accentColor : Color.civitSurface.opacity(0.7))
             .frame(width: 24, height: 24)
             .overlay {
                 if isSelected {

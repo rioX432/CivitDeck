@@ -55,7 +55,7 @@ struct SwipeableModelCardView: View {
         }
         .padding(.trailing, Spacing.sm)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.red.opacity(0.85))
+        .background(Color.civitError.opacity(0.85))
     }
 
     private var swipeGesture: some Gesture {

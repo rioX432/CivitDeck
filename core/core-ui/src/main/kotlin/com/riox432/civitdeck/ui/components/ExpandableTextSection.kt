@@ -43,7 +43,7 @@ fun ExpandableTextSection(
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
-                .clickable { isExpanded = !isExpanded }
+                .clickable(onClickLabel = "Toggle expand") { isExpanded = !isExpanded }
                 .padding(vertical = Spacing.xs),
         )
     }

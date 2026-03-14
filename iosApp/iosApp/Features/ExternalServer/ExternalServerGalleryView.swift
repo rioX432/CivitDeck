@@ -140,7 +140,7 @@ private struct ServerImageCell: View {
             if let score = image.aestheticScore {
                 Text(String(format: "%.1f", Double(score)))
                     .font(.civitLabelSmall)
-                    .foregroundColor(.white)
+                    .foregroundColor(.civitOnSurface)
                     .padding(Spacing.xs)
                     .background(Color.black.opacity(0.5))
                     .cornerRadius(Spacing.xs)

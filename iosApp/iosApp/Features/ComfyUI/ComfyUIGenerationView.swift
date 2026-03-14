@@ -186,7 +186,7 @@ struct ComfyUIGenerationView: View {
             VStack(spacing: Spacing.md) {
                 Text("Paste ComfyUI Workflow JSON").font(.civitBodyMedium)
                 TextEditor(text: $workflowInputText)
-                    .font(.system(.caption, design: .monospaced))
+                    .font(.civitMonoCaption)
                     .frame(maxWidth: .infinity, minHeight: 200)
                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.civitOnSurfaceVariant.opacity(0.4)))
                 if let err = viewModel.workflowImportError {
@@ -219,7 +219,7 @@ struct ComfyUIGenerationView: View {
         return Button(action: viewModel.onGenerate) {
             HStack {
                 if isGenerating {
-                    ProgressView().tint(.white)
+                    ProgressView().tint(.civitOnPrimary)
                 }
                 Text(isGenerating ? "Generating..." : "Generate")
             }

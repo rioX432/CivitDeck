@@ -84,7 +84,7 @@ struct ImageComparisonSlider: View {
                 path.move(to: CGPoint(x: 0, y: posY))
                 path.addLine(to: CGPoint(x: canvasSize.width, y: posY))
             }
-            context.stroke(path, with: .color(.white), lineWidth: dividerWidth)
+            context.stroke(path, with: .color(.civitOnSurface), lineWidth: dividerWidth)
         }
         .allowsHitTesting(false)
     }
@@ -105,13 +105,13 @@ struct ImageComparisonSlider: View {
         }
 
         return Circle()
-            .fill(Color.white.opacity(handleAlpha))
+            .fill(Color.civitSurface.opacity(handleAlpha))
             .frame(width: handleSize, height: handleSize)
             .overlay {
                 Image(systemName: orientation == .horizontal
                       ? "arrow.left.and.right"
                       : "arrow.up.and.down")
-                    .font(.system(size: iconSize, weight: .semibold))
+                    .font(.civitIconSmallSemibold)
                     .foregroundColor(.civitOnSurface)
                     .accessibilityHidden(true)
             }
@@ -180,7 +180,6 @@ private let minScale: CGFloat = 1.0
 private let maxScale: CGFloat = 5.0
 private let dividerWidth: CGFloat = 3
 private let handleSize: CGFloat = 40
-private let iconSize: CGFloat = 16
 private let handleAlpha: Double = 0.85
 private let imageMaxPixelSize: CGFloat = 1200
 
