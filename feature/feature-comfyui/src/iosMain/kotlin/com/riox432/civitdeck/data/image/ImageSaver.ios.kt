@@ -7,12 +7,12 @@ import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
-
-private const val TAG = "ImageSaver"
 import platform.Foundation.NSData
 import platform.Foundation.create
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageWriteToSavedPhotosAlbum
+
+private const val TAG = "ImageSaver"
 
 actual class ImageSaver actual constructor() {
 
