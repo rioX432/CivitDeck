@@ -28,12 +28,14 @@ fun AdvancedSettingsScreen(
     onNavigateToSDWebUI: () -> Unit = {},
     onNavigateToCivitaiLink: () -> Unit = {},
     onNavigateToExternalServer: () -> Unit = {},
+    onNavigateToPlugins: () -> Unit = {},
+    onNavigateToNavShortcuts: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Advanced") },
+                title = { Text("Advanced & Integrations") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -57,7 +59,11 @@ fun AdvancedSettingsScreen(
                 item { SubScreenRow("Custom Server Integration", onNavigateToExternalServer) }
                 item { SectionHeader("Model Files") }
                 item { SubScreenRow("Model File Browser", onNavigateToModelFiles) }
+                item { SectionHeader("Navigation") }
+                item { SubScreenRow("Navigation Shortcuts", onNavigateToNavShortcuts) }
             }
+            item { SectionHeader("Plugins") }
+            item { SubScreenRow("Plugins", onNavigateToPlugins) }
         }
     }
 }

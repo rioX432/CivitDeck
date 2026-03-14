@@ -120,7 +120,6 @@ import com.riox432.civitdeck.ui.settings.AppearanceSettingsScreen
 import com.riox432.civitdeck.ui.settings.ContentFilterSettingsScreen
 import com.riox432.civitdeck.ui.settings.LicensesScreen
 import com.riox432.civitdeck.ui.settings.NavShortcutsSettingsScreen
-import com.riox432.civitdeck.ui.settings.NotificationsSettingsScreen
 import com.riox432.civitdeck.ui.settings.SettingsScreen
 import com.riox432.civitdeck.ui.settings.StorageSettingsScreen
 import com.riox432.civitdeck.ui.theme.Duration
@@ -189,8 +188,6 @@ data object SDWebUIGenerationRoute
 data object AppearanceSettingsRoute
 
 data object ContentFilterSettingsRoute
-
-data object NotificationsSettingsRoute
 
 data object StorageSettingsRoute
 
@@ -472,22 +469,16 @@ private fun CivitDeckNavDisplay(
             browseImagesEntry(backStack)
             entry<SettingsRoute> {
                 val authVm: AuthSettingsViewModel = koinViewModel()
-                val behaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
                 val storageVm: StorageSettingsViewModel = koinViewModel()
                 SettingsScreen(
                     authViewModel = authVm,
-                    appBehaviorViewModel = behaviorVm,
                     storageViewModel = storageVm,
                     onNavigateToAppearance = { backStack.add(AppearanceSettingsRoute) },
                     onNavigateToContentFilter = { backStack.add(ContentFilterSettingsRoute) },
-                    onNavigateToNotifications = { backStack.add(NotificationsSettingsRoute) },
                     onNavigateToStorage = { backStack.add(StorageSettingsRoute) },
                     onNavigateToAdvanced = { backStack.add(AdvancedSettingsRoute) },
-                    onNavigateToNavShortcuts = { backStack.add(NavShortcutsSettingsRoute) },
                     onNavigateToAnalytics = { backStack.add(AnalyticsRoute) },
-                    onNavigateToBackup = { backStack.add(BackupRoute) },
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
-                    onNavigateToPlugins = { backStack.add(PluginManagementRoute) },
                     scrollToTopTrigger = settingsScrollTrigger,
                 )
             }
@@ -794,9 +785,11 @@ private fun EntryProviderScope<Any>.settingsDisplayEntries(backStack: MutableLis
     entry<ContentFilterSettingsRoute> {
         val viewModel: ContentFilterSettingsViewModel = koinViewModel()
         val displayVm: DisplaySettingsViewModel = koinViewModel()
+        val behaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
         ContentFilterSettingsScreen(
             viewModel = viewModel,
             displayViewModel = displayVm,
+            appBehaviorViewModel = behaviorVm,
             onBack = { backStack.removeLastOrNull() },
         )
     }
@@ -810,18 +803,12 @@ private fun EntryProviderScope<Any>.settingsDisplayEntries(backStack: MutableLis
 }
 
 private fun EntryProviderScope<Any>.settingsBehaviorEntries(backStack: MutableList<Any>) {
-    entry<NotificationsSettingsRoute> {
-        val viewModel: AppBehaviorSettingsViewModel = koinViewModel()
-        NotificationsSettingsScreen(
-            viewModel = viewModel,
-            onBack = { backStack.removeLastOrNull() },
-        )
-    }
     entry<StorageSettingsRoute> {
         val viewModel: StorageSettingsViewModel = koinViewModel()
         StorageSettingsScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
+            onNavigateToBackup = { backStack.add(BackupRoute) },
         )
     }
     entry<AdvancedSettingsRoute> {
@@ -835,6 +822,8 @@ private fun EntryProviderScope<Any>.settingsBehaviorEntries(backStack: MutableLi
             onNavigateToSDWebUI = { backStack.add(SDWebUISettingsRoute) },
             onNavigateToCivitaiLink = { backStack.add(CivitaiLinkSettingsRoute) },
             onNavigateToExternalServer = { backStack.add(ExternalServerSettingsRoute) },
+            onNavigateToPlugins = { backStack.add(PluginManagementRoute) },
+            onNavigateToNavShortcuts = { backStack.add(NavShortcutsSettingsRoute) },
         )
     }
 }

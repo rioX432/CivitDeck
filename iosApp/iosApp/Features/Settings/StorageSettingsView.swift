@@ -13,6 +13,11 @@ struct StorageSettingsView: View {
                 }
                 cacheInfoRow
             }
+            Section("Backup") {
+                NavigationLink(destination: BackupView()) {
+                    Label("Backup & Restore", systemImage: "arrow.up.arrow.down.circle")
+                }
+            }
             Section("Data Management") {
                 NavigationLink {
                     HiddenModelsView(
@@ -33,7 +38,7 @@ struct StorageSettingsView: View {
                 ClearActionButton(label: "Clear Cache", action: viewModel.onClearCache)
             }
         }
-        .navigationTitle("Storage")
+        .navigationTitle("Data & Storage")
         .navigationBarTitleDisplayMode(.inline)
     }
 

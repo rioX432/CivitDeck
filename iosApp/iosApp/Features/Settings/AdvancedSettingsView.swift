@@ -3,6 +3,7 @@ import Shared
 
 struct AdvancedSettingsView: View {
     @ObservedObject var viewModel: AppBehaviorSettingsViewModelOwner
+    @ObservedObject var displayViewModel: DisplaySettingsViewModelOwner
 
     var body: some View {
         List {
@@ -61,9 +62,19 @@ struct AdvancedSettingsView: View {
                         Label("Model File Browser", systemImage: "folder.badge.gearshape")
                     }
                 }
+                Section("Navigation") {
+                    NavigationLink(destination: NavShortcutsSettingsView(viewModel: displayViewModel)) {
+                        Text("Navigation Shortcuts")
+                    }
+                }
+            }
+            Section("Plugins") {
+                NavigationLink(destination: PluginListView()) {
+                    Label("Plugins", systemImage: "puzzlepiece.extension")
+                }
             }
         }
-        .navigationTitle("Advanced")
+        .navigationTitle("Advanced & Integrations")
         .navigationBarTitleDisplayMode(.inline)
     }
 

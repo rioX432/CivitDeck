@@ -68,7 +68,6 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
-import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsUiState
 import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
@@ -79,22 +78,16 @@ import com.riox432.civitdeck.ui.theme.Spacing
 @Composable
 fun SettingsScreen(
     authViewModel: AuthSettingsViewModel,
-    appBehaviorViewModel: AppBehaviorSettingsViewModel,
     storageViewModel: StorageSettingsViewModel,
     onNavigateToAppearance: () -> Unit = {},
     onNavigateToContentFilter: () -> Unit = {},
-    onNavigateToNotifications: () -> Unit = {},
     onNavigateToStorage: () -> Unit = {},
     onNavigateToAdvanced: () -> Unit = {},
-    onNavigateToNavShortcuts: () -> Unit = {},
     onNavigateToAnalytics: () -> Unit = {},
-    onNavigateToBackup: () -> Unit = {},
     onNavigateToLicenses: () -> Unit = {},
-    onNavigateToPlugins: () -> Unit = {},
     scrollToTopTrigger: Int = 0,
 ) {
     val authState by authViewModel.uiState.collectAsStateWithLifecycle()
-    val appBehaviorState by appBehaviorViewModel.uiState.collectAsStateWithLifecycle()
     val storageState by storageViewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     var lastHandledTrigger by rememberSaveable { mutableIntStateOf(scrollToTopTrigger) }
@@ -114,22 +107,12 @@ fun SettingsScreen(
             settingsAccountItems(authState, authViewModel)
             item { SectionHeader("Appearance") }
             item { SubScreenRow("Appearance", onNavigateToAppearance) }
-            item { SectionHeader("Content & Filters") }
-            item { SubScreenRow("Content & Filters", onNavigateToContentFilter) }
-            item { SectionHeader("Notifications") }
-            item { SubScreenRow("Notifications", onNavigateToNotifications) }
-            item { SectionHeader("Storage") }
-            item { SubScreenRow("Storage", onNavigateToStorage) }
-            if (appBehaviorState.powerUserMode) {
-                item { SectionHeader("Navigation") }
-                item { SubScreenRow("Navigation Shortcuts", onNavigateToNavShortcuts) }
-            }
-            item { SectionHeader("Advanced") }
-            item { SubScreenRow("Advanced", onNavigateToAdvanced) }
-            item { SectionHeader("Data") }
-            item { SubScreenRow("Backup & Restore", onNavigateToBackup) }
-            item { SectionHeader("Plugins") }
-            item { SubScreenRow("Plugins", onNavigateToPlugins) }
+            item { SectionHeader("Content & Behavior") }
+            item { SubScreenRow("Content & Behavior", onNavigateToContentFilter) }
+            item { SectionHeader("Data & Storage") }
+            item { SubScreenRow("Data & Storage", onNavigateToStorage) }
+            item { SectionHeader("Advanced & Integrations") }
+            item { SubScreenRow("Advanced & Integrations", onNavigateToAdvanced) }
             item { SectionHeader("Analytics") }
             item { SubScreenRow("Usage Stats", onNavigateToAnalytics) }
             item { SectionHeader("About") }

@@ -16,12 +16,9 @@ struct SettingsScreen: View {
                 }
                 accountSection
                 appearanceSection
-                contentFilterSection
-                notificationsSection
-                storageSection
-                advancedSection
-                backupSection
-                pluginsSection
+                contentBehaviorSection
+                dataStorageSection
+                advancedIntegrationsSection
                 analyticsSection
                 datasetsSection
                 aboutSection
@@ -69,58 +66,33 @@ struct SettingsScreen: View {
         }
     }
 
-    private var contentFilterSection: some View {
+    private var contentBehaviorSection: some View {
         Section {
             NavigationLink(destination: ContentFilterSettingsView(
                 viewModel: contentFilterViewModel,
-                displayViewModel: displayViewModel
+                displayViewModel: displayViewModel,
+                appBehaviorViewModel: appBehaviorViewModel
             )) {
-                Text("Content & Filters")
+                Text("Content & Behavior")
             }
         }
     }
 
-    private var notificationsSection: some View {
-        Section {
-            NavigationLink(destination: NotificationsSettingsView(viewModel: appBehaviorViewModel)) {
-                Text("Notifications")
-            }
-        }
-    }
-
-    private var storageSection: some View {
+    private var dataStorageSection: some View {
         Section {
             NavigationLink(destination: StorageSettingsView(viewModel: storageViewModel)) {
-                Text("Storage")
+                Text("Data & Storage")
             }
         }
     }
 
-    private var advancedSection: some View {
+    private var advancedIntegrationsSection: some View {
         Section {
-            if appBehaviorViewModel.powerUserMode {
-                NavigationLink(destination: NavShortcutsSettingsView(viewModel: displayViewModel)) {
-                    Text("Navigation Shortcuts")
-                }
-            }
-            NavigationLink(destination: AdvancedSettingsView(viewModel: appBehaviorViewModel)) {
-                Text("Advanced")
-            }
-        }
-    }
-
-    private var backupSection: some View {
-        Section("Data") {
-            NavigationLink(destination: BackupView()) {
-                Label("Backup & Restore", systemImage: "arrow.up.arrow.down.circle")
-            }
-        }
-    }
-
-    private var pluginsSection: some View {
-        Section("Plugins") {
-            NavigationLink(destination: PluginListView()) {
-                Label("Plugins", systemImage: "puzzlepiece.extension")
+            NavigationLink(destination: AdvancedSettingsView(
+                viewModel: appBehaviorViewModel,
+                displayViewModel: displayViewModel
+            )) {
+                Text("Advanced & Integrations")
             }
         }
     }
