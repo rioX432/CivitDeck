@@ -116,7 +116,7 @@ struct MetadataSheet: View {
         Text("Export")
             .font(.caption)
             .foregroundColor(.accentColor)
-        HStack(spacing: 8) {
+        HStack(spacing: Spacing.sm) {
             Button("ComfyUI Workflow") {
                 let text = WorkflowExportService.shared.generateComfyUIWorkflow(meta: meta)
                 presentShareSheet(text: text)

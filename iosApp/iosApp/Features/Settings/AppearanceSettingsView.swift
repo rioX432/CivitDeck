@@ -125,7 +125,7 @@ struct AppearanceSettingsView: View {
             Task { await themePickerVM.activateTheme(plugin.manifest.id) }
         } label: {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
                     Text(plugin.manifest.name)
                         .foregroundColor(.primary)
                     if !plugin.manifest.author.isEmpty {
