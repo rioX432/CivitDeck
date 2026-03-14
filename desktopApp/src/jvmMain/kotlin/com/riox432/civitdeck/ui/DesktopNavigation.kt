@@ -13,4 +13,10 @@ sealed class DesktopRoute {
     ) : DesktopRoute()
     data class CreatorProfile(val username: String) : DesktopRoute()
     data class CollectionDetail(val collectionId: Long, val collectionName: String) : DesktopRoute()
+    data object DatasetList : DesktopRoute()
+    data class DatasetDetail(val datasetId: Long, val datasetName: String) : DesktopRoute()
+    data object Backup : DesktopRoute()
+    data object PluginList : DesktopRoute()
+    data class PluginDetail(val pluginId: String) : DesktopRoute()
+    data class ModelCompare(val leftModelId: Long, val rightModelId: Long) : DesktopRoute()
 }

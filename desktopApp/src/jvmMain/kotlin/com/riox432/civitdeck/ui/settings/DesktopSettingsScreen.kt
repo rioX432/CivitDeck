@@ -47,6 +47,9 @@ fun DesktopSettingsScreen(
     appBehaviorSettingsViewModel: AppBehaviorSettingsViewModel,
     storageSettingsViewModel: StorageSettingsViewModel,
     analyticsViewModel: DesktopAnalyticsViewModel,
+    onNavigateToDatasets: () -> Unit = {},
+    onNavigateToBackup: () -> Unit = {},
+    onNavigateToPlugins: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -54,11 +57,31 @@ fun DesktopSettingsScreen(
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
         AuthSettingsSection(authSettingsViewModel)
+        ToolsSection(
+            onNavigateToDatasets = onNavigateToDatasets,
+            onNavigateToBackup = onNavigateToBackup,
+            onNavigateToPlugins = onNavigateToPlugins,
+        )
         DisplaySettingsSection(displaySettingsViewModel)
         ContentFilterSection(contentFilterSettingsViewModel)
         AppBehaviorSection(appBehaviorSettingsViewModel)
         StorageSection(storageSettingsViewModel)
         AnalyticsSection(analyticsViewModel)
+    }
+}
+
+@Composable
+private fun ToolsSection(
+    onNavigateToDatasets: () -> Unit,
+    onNavigateToBackup: () -> Unit,
+    onNavigateToPlugins: () -> Unit,
+) {
+    SettingsCard(title = "Tools") {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            OutlinedButton(onClick = onNavigateToDatasets) { Text("Datasets") }
+            OutlinedButton(onClick = onNavigateToBackup) { Text("Backup & Restore") }
+            OutlinedButton(onClick = onNavigateToPlugins) { Text("Plugins") }
+        }
     }
 }
 

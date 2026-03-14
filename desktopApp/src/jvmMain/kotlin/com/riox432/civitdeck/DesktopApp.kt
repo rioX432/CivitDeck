@@ -89,6 +89,6 @@ private fun DesktopContent(
         DesktopTab.Collections -> CollectionsTabContent(backstack = backstack, modifier = modifier)
         DesktopTab.Prompts -> PromptsTabContent(modifier = modifier)
         DesktopTab.Feed -> FeedTabContent(backstack = backstack, modifier = modifier)
-        DesktopTab.Settings -> SettingsTabContent(modifier = modifier)
+        DesktopTab.Settings -> SettingsTabContent(backstack = backstack, modifier = modifier)
     }
 }

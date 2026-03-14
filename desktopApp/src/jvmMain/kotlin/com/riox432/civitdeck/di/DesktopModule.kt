@@ -15,7 +15,11 @@ import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettings
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
+import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
+import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailViewModel
+import com.riox432.civitdeck.ui.dataset.DesktopDatasetListViewModel
 import com.riox432.civitdeck.ui.feed.DesktopFeedViewModel
+import com.riox432.civitdeck.ui.plugin.DesktopPluginViewModel
 import com.riox432.civitdeck.ui.search.DesktopSearchViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -80,5 +84,20 @@ val desktopModule = module {
     }
     viewModel {
         ExternalServerGalleryViewModel(get(), get(), get(), get(), get(), get())
+    }
+    // Dataset ViewModels
+    viewModel {
+        DesktopDatasetListViewModel(get(), get(), get(), get())
+    }
+    viewModel { params ->
+        DesktopDatasetDetailViewModel(params.get(), get(), get(), get(), get(), get(), get())
+    }
+    // Backup ViewModel
+    viewModel {
+        DesktopBackupViewModel(get(), get(), get())
+    }
+    // Plugin ViewModel
+    viewModel {
+        DesktopPluginViewModel(get(), get(), get(), get(), get(), get())
     }
 }

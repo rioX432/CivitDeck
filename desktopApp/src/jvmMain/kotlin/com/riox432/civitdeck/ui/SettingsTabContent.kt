@@ -1,6 +1,7 @@
 package com.riox432.civitdeck
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -32,7 +34,17 @@ import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
+import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
+import com.riox432.civitdeck.ui.backup.DesktopBackupScreen
+import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
+import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailScreen
+import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailViewModel
+import com.riox432.civitdeck.ui.dataset.DesktopDatasetListScreen
+import com.riox432.civitdeck.ui.dataset.DesktopDatasetListViewModel
+import com.riox432.civitdeck.ui.plugin.DesktopPluginDetailScreen
+import com.riox432.civitdeck.ui.plugin.DesktopPluginListScreen
+import com.riox432.civitdeck.ui.plugin.DesktopPluginViewModel
 import com.riox432.civitdeck.ui.settings.ComfyUIGenerationSection
 import com.riox432.civitdeck.ui.settings.ComfyUIHistorySection
 import com.riox432.civitdeck.ui.settings.ComfyUISettingsSection
@@ -43,6 +55,7 @@ import com.riox432.civitdeck.ui.settings.SDWebUIGenerationSection
 import com.riox432.civitdeck.ui.settings.SDWebUISettingsSection
 import com.riox432.civitdeck.ui.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 private enum class SettingsSection(val label: String) {
     General("General"),
@@ -53,7 +66,74 @@ private enum class SettingsSection(val label: String) {
 
 @Composable
 fun SettingsTabContent(
+    backstack: SnapshotStateList<DesktopRoute>,
     modifier: Modifier = Modifier,
+) {
+    val currentRoute = backstack.lastOrNull()
+
+    Box(modifier = modifier.fillMaxSize()) {
+        SettingsMainContent(
+            onNavigateToDatasets = { backstack.add(DesktopRoute.DatasetList) },
+            onNavigateToBackup = { backstack.add(DesktopRoute.Backup) },
+            onNavigateToPlugins = { backstack.add(DesktopRoute.PluginList) },
+        )
+
+        when (currentRoute) {
+            is DesktopRoute.DatasetList -> {
+                val vm: DesktopDatasetListViewModel = koinViewModel()
+                DesktopDatasetListScreen(
+                    viewModel = vm,
+                    onDatasetClick = { id, name ->
+                        backstack.add(DesktopRoute.DatasetDetail(id, name))
+                    },
+                    onBack = { backstack.removeLastOrNull() },
+                )
+            }
+            is DesktopRoute.DatasetDetail -> {
+                val vm: DesktopDatasetDetailViewModel = koinViewModel(
+                    key = "dataset_detail_${currentRoute.datasetId}",
+                ) { parametersOf(currentRoute.datasetId) }
+                DesktopDatasetDetailScreen(
+                    datasetName = currentRoute.datasetName,
+                    viewModel = vm,
+                    onBack = { backstack.removeLastOrNull() },
+                )
+            }
+            is DesktopRoute.Backup -> {
+                val vm: DesktopBackupViewModel = koinViewModel()
+                DesktopBackupScreen(
+                    viewModel = vm,
+                    onBack = { backstack.removeLastOrNull() },
+                )
+            }
+            is DesktopRoute.PluginList -> {
+                val vm: DesktopPluginViewModel = koinViewModel()
+                DesktopPluginListScreen(
+                    viewModel = vm,
+                    onPluginClick = { pluginId ->
+                        backstack.add(DesktopRoute.PluginDetail(pluginId))
+                    },
+                    onBack = { backstack.removeLastOrNull() },
+                )
+            }
+            is DesktopRoute.PluginDetail -> {
+                val vm: DesktopPluginViewModel = koinViewModel()
+                DesktopPluginDetailScreen(
+                    pluginId = currentRoute.pluginId,
+                    viewModel = vm,
+                    onBack = { backstack.removeLastOrNull() },
+                )
+            }
+            else -> { /* Settings main screen is always shown underneath */ }
+        }
+    }
+}
+
+@Composable
+private fun SettingsMainContent(
+    onNavigateToDatasets: () -> Unit,
+    onNavigateToBackup: () -> Unit,
+    onNavigateToPlugins: () -> Unit,
 ) {
     val authVm: AuthSettingsViewModel = koinViewModel()
     val displayVm: DisplaySettingsViewModel = koinViewModel()
@@ -71,7 +151,7 @@ fun SettingsTabContent(
 
     var selectedSection by remember { mutableStateOf(SettingsSection.General) }
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
         SettingsSectionTabs(
             selected = selectedSection,
             onSelected = { selectedSection = it },
@@ -91,6 +171,9 @@ fun SettingsTabContent(
                     appBehaviorSettingsViewModel = appBehaviorVm,
                     storageSettingsViewModel = storageVm,
                     analyticsViewModel = analyticsVm,
+                    onNavigateToDatasets = onNavigateToDatasets,
+                    onNavigateToBackup = onNavigateToBackup,
+                    onNavigateToPlugins = onNavigateToPlugins,
                 )
                 SettingsSection.ComfyUI -> {
                     ComfyUISettingsSection(comfySettingsVm)
@@ -136,3 +219,6 @@ private fun SettingsSectionTabs(
         }
     }
 }
+
+private fun <T> MutableList<T>.removeLastOrNull(): T? =
+    if (isNotEmpty()) removeAt(lastIndex) else null

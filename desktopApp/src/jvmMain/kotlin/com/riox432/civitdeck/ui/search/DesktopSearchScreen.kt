@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,7 +13,11 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,6 +36,7 @@ fun DesktopSearchScreen(
     viewModel: DesktopSearchViewModel,
     onModelClick: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
+    onUrlImportClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -49,11 +55,23 @@ fun DesktopSearchScreen(
     }
 
     Column(modifier = modifier.fillMaxSize()) {
-        DesktopSearchBar(
-            query = uiState.query,
-            onQueryChange = viewModel::onQueryChange,
-            onSearch = viewModel::onSearch,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            DesktopSearchBar(
+                query = uiState.query,
+                onQueryChange = viewModel::onQueryChange,
+                onSearch = viewModel::onSearch,
+                modifier = Modifier.weight(1f),
+            )
+            IconButton(onClick = onUrlImportClick) {
+                Icon(
+                    Icons.Default.Link,
+                    contentDescription = "Import from URL",
+                )
+            }
+        }
 
         DesktopFilterBar(
             uiState = uiState,
