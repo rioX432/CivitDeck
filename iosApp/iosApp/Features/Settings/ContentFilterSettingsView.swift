@@ -83,7 +83,7 @@ struct ContentFilterSettingsView: View {
     }
 
     private var feedQualitySection: some View {
-        Section("Feed Quality") {
+        Section("Search Quality Filter") {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 HStack {
                     Text("Quality Threshold")
@@ -93,7 +93,7 @@ struct ContentFilterSettingsView: View {
                         .font(.civitBodySmall)
                         .foregroundColor(.civitOnSurfaceVariant)
                 }
-                Text("Filter low-quality models from your creator feed")
+                Text("Threshold for the quality filter in search results")
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
                 Slider(
