@@ -73,6 +73,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePersonalTagsUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.ParseBackupUseCase
@@ -99,6 +100,7 @@ import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SetOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.SetQualityThresholdUseCase
 import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.SetThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.StoreImageDimensionsUseCase
@@ -470,6 +472,10 @@ object KoinHelper {
     fun getObserveInstalledPluginsUseCase(): ObserveInstalledPluginsUseCase = getKoin().get()
     fun getGetPluginConfigUseCase(): GetPluginConfigUseCase = getKoin().get()
     fun getUpdatePluginConfigUseCase(): UpdatePluginConfigUseCase = getKoin().get()
+
+    // Quality threshold use cases
+    fun getObserveQualityThresholdUseCase(): ObserveQualityThresholdUseCase = getKoin().get()
+    fun getSetQualityThresholdUseCase(): SetQualityThresholdUseCase = getKoin().get()
 
     // Theme plugin use cases
     fun getImportThemeUseCase(): ImportThemeUseCase = getKoin().get()
