@@ -18,6 +18,7 @@ import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetListViewModel
+import com.riox432.civitdeck.ui.discovery.DesktopDiscoveryViewModel
 import com.riox432.civitdeck.ui.feed.DesktopFeedViewModel
 import com.riox432.civitdeck.ui.plugin.DesktopPluginViewModel
 import com.riox432.civitdeck.ui.search.DesktopSearchViewModel
@@ -42,6 +43,9 @@ val desktopModule = module {
     }
     viewModel {
         DesktopFeedViewModel(get(), get())
+    }
+    viewModel {
+        DesktopDiscoveryViewModel(get())
     }
     viewModel {
         DesktopAnalyticsViewModel(get())
