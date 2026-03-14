@@ -63,6 +63,11 @@ CivitDeck/
 │       ├── widget/                   # Glance home screen widgets
 │       ├── tile/                     # Quick Settings tile
 │       └── notification/             # Background polling notifications
+├── desktopApp/               # Desktop app entry point (Compose Desktop / JVM)
+│   └── src/main/kotlin/
+│       ├── Main.kt                   # Application entry point, Window setup
+│       ├── navigation/               # State-based routing (no Navigation 3)
+│       └── viewmodel/                # Desktop ViewModels (plain classes with CoroutineScope)
 └── iosApp/                   # iOS app entry point (SwiftUI)
     └── iosApp/
         ├── Features/         # Feature-based screens + ViewModels
@@ -90,8 +95,10 @@ graph TB
     room["Room KMP (cache)"] <--> repo
     repo --> usecase["Use Case"]
     usecase -- "Flow&lt;T&gt;" --> avm["Android ViewModel"]
+    usecase -- "Flow&lt;T&gt;" --> dvm["Desktop ViewModel"]
     usecase -- "Flow&lt;T&gt;" --> ivm["iOS ViewModel"]
     avm --> compose["Jetpack Compose"]
+    dvm --> desktop["Compose Desktop"]
     ivm --> swiftui["SwiftUI Views"]
 ```
 
@@ -112,13 +119,14 @@ graph TB
 ### UI Layer (Platform-specific)
 
 - **Android**: Jetpack Compose with Material Design 3. Navigation uses AndroidX Navigation 3 with type-safe routes. ViewModels extend `androidx.lifecycle.ViewModel`.
+- **Desktop**: Compose Desktop (JVM target) with Material Design 3. Navigation uses state-based routing (Navigation 3 is not available on JVM). ViewModels are plain classes with `CoroutineScope`. Uses `collectAsState()` (not `collectAsStateWithLifecycle()`). Coil image loading without context. Supports keyboard shortcuts.
 - **iOS**: SwiftUI with native navigation (`NavigationStack`). Feature-based structure under `Features/`. ViewModels use `ObservableObject` protocol. Custom `CachedAsyncImage` for image loading (no third-party dependency). Design tokens in `DesignSystem/`.
 
 ## Key Design Decisions
 
 ### Why KMP?
 
-Kotlin Multiplatform allows sharing business logic (networking, caching, domain models) between Android and iOS while keeping UI fully native. This avoids the compromises of cross-platform UI frameworks while eliminating duplicate business logic.
+Kotlin Multiplatform allows sharing business logic (networking, caching, domain models) between Android, iOS, and Desktop while keeping UI fully native. This avoids the compromises of cross-platform UI frameworks while eliminating duplicate business logic.
 
 ### Why Clean Architecture?
 
@@ -135,6 +143,7 @@ Room KMP provides the same API as Jetpack Room (familiar to Android developers) 
 
 ViewModels are intentionally **not** in the shared module. Each platform has its own lifecycle and state management patterns:
 - Android: `androidx.lifecycle.ViewModel` with `viewModelScope`
+- Desktop: Plain classes with `CoroutineScope` (no Android lifecycle dependency)
 - iOS: `ObservableObject` with `@Published` properties
 
 The shared module exposes `UseCase` classes returning `Flow`, which each platform's ViewModel subscribes to.
@@ -153,6 +162,7 @@ Koin is used as the DI framework across all modules:
 - **core-plugin** (`core/core-plugin/.../di/PluginModule`): Plugin registry, built-in capability adapters
 - **shared** (`shared/src/commonMain/di/`): Re-exports core modules; `ViewModelModule` for SettingsViewModel
 - **Android** (`androidApp/CivitDeckApplication.kt`): Platform-specific ViewModel registrations, platform drivers
+- **Desktop** (`desktopApp/`): Desktop ViewModel registrations, JVM platform drivers
 - **iOS** (`shared/src/iosMain/di/KoinHelper.kt`): Use case accessors for SwiftUI ViewModels via `KoinHelper.shared.getXxx()`
 
 ## CI/CD
@@ -160,6 +170,7 @@ Koin is used as the DI framework across all modules:
 GitHub Actions runs on every push to `master` and on pull requests:
 
 1. **Android job**: Shared unit tests → Detekt lint → Debug APK build
-2. **iOS job**: SwiftLint → Xcode build for iOS Simulator
+2. **Desktop job**: Desktop app compilation check (`./gradlew :desktopApp:run` or build verification)
+3. **iOS job**: SwiftLint → Xcode build for iOS Simulator
 
 See `.github/workflows/ci.yml` for the full configuration.

@@ -48,3 +48,9 @@ This applies to:
 - Room KMP: migrations don't run on fresh installs — use `onOpen` callback with `INSERT OR IGNORE` for seed data (e.g. default collections)
 - pbxproj needs 4 entries for new files: PBXBuildFile, PBXFileReference, group children, PBXSourcesBuildPhase
 - SKIE suspend functions: K/N adds `do` prefix to `init`-prefixed functions (e.g. `initKoin` → `doInitKoin`), but SKIE generates its own Swift async extension without the prefix. Call `KoinKt.initializeAuth()`, NOT `KoinKt.doInitializeAuth()`
+- Desktop: No `LocalContext.current` — Compose Desktop (JVM) does not have an Android Context
+- Desktop: No Navigation 3 — use state-based routing with sealed class screens and `mutableStateOf`
+- Desktop: Coil image loading does not require context on JVM target
+- Desktop: Use `collectAsState()` instead of `collectAsStateWithLifecycle()` (no Android lifecycle)
+- Desktop: ViewModels live in `desktopApp/`, not in feature modules — plain classes with `CoroutineScope`
+- Desktop: Keyboard shortcuts available via `Modifier.onKeyEvent` or `Window` key handlers

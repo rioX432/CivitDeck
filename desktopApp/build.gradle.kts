@@ -19,6 +19,8 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.ui)
             implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.okhttp)
         }
@@ -29,9 +31,16 @@ compose.desktop {
     application {
         mainClass = "com.riox432.civitdeck.MainKt"
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "CivitDeck"
             packageVersion = "1.0.0"
+            description = "Browse and manage CivitAI models from your desktop"
+            vendor = "riox432"
+
+            macOS {
+                bundleID = "com.riox432.civitdeck"
+                minimumSystemVersion = "12.0"
+            }
         }
     }
 }
