@@ -93,7 +93,12 @@ class FeedViewModel(
     private fun filterByQuality(items: List<FeedItem>): List<FeedItem> {
         if (qualityThreshold <= 0) return items
         return items.filter { item ->
-            QualityScoreCalculator.calculate(item.stats) >= qualityThreshold
+            val stats = item.stats
+            // Skip filtering for items with unknown stats (e.g., migrated cache entries)
+            if (stats.downloadCount <= 0 && stats.favoriteCount <= 0 && stats.ratingCount <= 0) {
+                return@filter true
+            }
+            QualityScoreCalculator.calculate(stats) >= qualityThreshold
         }
     }
 

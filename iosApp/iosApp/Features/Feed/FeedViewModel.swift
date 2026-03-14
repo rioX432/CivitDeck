@@ -70,7 +70,12 @@ final class FeedViewModel: ObservableObject {
     private func filterByQuality(_ items: [FeedItem]) -> [FeedItem] {
         guard qualityThreshold > 0 else { return items }
         return items.filter { item in
-            let score = FeedQualityScoreHelper.calculate(stats: item.stats)
+            let stats = item.stats
+            // Skip filtering for items with unknown stats (e.g., migrated cache entries)
+            if stats.downloadCount <= 0 && stats.favoriteCount <= 0 && stats.ratingCount <= 0 {
+                return true
+            }
+            let score = FeedQualityScoreHelper.calculate(stats: stats)
             return score >= qualityThreshold
         }
     }
