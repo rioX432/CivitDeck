@@ -40,7 +40,7 @@ struct BatchTagEditorView: View {
                 Button(viewModel.isAddMode ? "Add" : "Remove") {
                     viewModel.toggleMode()
                 }
-                .foregroundColor(viewModel.isAddMode ? .civitPrimary : .red)
+                .foregroundColor(viewModel.isAddMode ? .civitPrimary : .civitError)
             }
         }
     }
@@ -134,7 +134,7 @@ struct BatchTagEditorView: View {
 
     private func selectionIndicator(isSelected: Bool) -> some View {
         Circle()
-            .fill(isSelected ? Color.accentColor : Color.white.opacity(0.7))
+            .fill(isSelected ? Color.accentColor : Color.civitSurface.opacity(0.7))
             .frame(width: 24, height: 24)
             .overlay {
                 if isSelected {
@@ -155,7 +155,7 @@ struct BatchTagEditorView: View {
                     .padding(.horizontal, Spacing.xs)
                     .padding(.vertical, Spacing.xxs)
                     .background(Color.civitSecondary.opacity(0.85))
-                    .foregroundColor(.white)
+                    .foregroundColor(.civitOnSecondary)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
                     .padding(Spacing.xs)
             }

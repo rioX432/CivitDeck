@@ -218,7 +218,7 @@ struct DatasetDetailView: View {
                 .font(.caption2.bold())
                 .padding(.horizontal, Spacing.xs)
                 .background(Color.civitError)
-                .foregroundColor(.white)
+                .foregroundColor(.civitOnError)
                 .clipShape(Capsule())
                 .padding(Spacing.xs)
         }
@@ -226,7 +226,7 @@ struct DatasetDetailView: View {
 
     private func selectionIndicator(isSelected: Bool) -> some View {
         Circle()
-            .fill(isSelected ? Color.accentColor : Color.white.opacity(0.7))
+            .fill(isSelected ? Color.accentColor : Color.civitSurface.opacity(0.7))
             .frame(width: Spacing.xl, height: Spacing.xl)
             .overlay {
                 if isSelected {
@@ -277,7 +277,7 @@ private struct SourceBadgeMiniView: View {
             .padding(.horizontal, Spacing.xs)
             .padding(.vertical, Spacing.xxs)
             .background(badgeColor.opacity(0.85))
-            .foregroundColor(.white)
+            .foregroundColor(.civitOnPrimary)
             .clipShape(RoundedRectangle(cornerRadius: Spacing.xs))
     }
 

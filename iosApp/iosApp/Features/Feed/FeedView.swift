@@ -69,11 +69,11 @@ private struct FeedItemCard: View {
                                 .aspectRatio(16 / 9, contentMode: .fill)
                         case .failure:
                             Rectangle()
-                                .fill(Color.gray.opacity(0.2))
+                                .fill(Color.civitSurfaceVariant.opacity(0.2))
                                 .aspectRatio(16 / 9, contentMode: .fill)
                         default:
                             Rectangle()
-                                .fill(Color.gray.opacity(0.2))
+                                .fill(Color.civitSurfaceVariant.opacity(0.2))
                                 .aspectRatio(16 / 9, contentMode: .fill)
                                 .modifier(ShimmerModifier())
                         }

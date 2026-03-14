@@ -105,7 +105,7 @@ struct ImageComparisonSlider: View {
         }
 
         return Circle()
-            .fill(Color.white.opacity(handleAlpha))
+            .fill(Color.civitSurface.opacity(handleAlpha))
             .frame(width: handleSize, height: handleSize)
             .overlay {
                 Image(systemName: orientation == .horizontal
