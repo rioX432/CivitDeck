@@ -3,6 +3,7 @@ import Shared
 
 @MainActor
 class ComfyUIGenerationViewModel: ObservableObject {
+    private static let pollIntervalNanoseconds: UInt64 = 3_000_000_000
     @Published var checkpoints: [String] = []
     @Published var selectedCheckpoint = ""
     @Published var prompt = ""
@@ -184,7 +185,7 @@ class ComfyUIGenerationViewModel: ObservableObject {
 
     private func pollForResult(promptId: String) async {
         for _ in 0..<120 {
-            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            try? await Task.sleep(nanoseconds: Self.pollIntervalNanoseconds)
             do {
                 let result = try await pollResult.invoke(promptId: promptId)
                 let status = result.status
