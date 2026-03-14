@@ -226,6 +226,7 @@ private fun ImageGridPanel(
                         .clickable { onImageSelect(index) },
                     contentScale = ContentScale.Crop,
                     loading = { Box(Modifier.fillMaxSize().shimmer()) },
+                    error = { ImageErrorPlaceholder(modifier = Modifier.fillMaxSize()) },
                 )
             }
         }

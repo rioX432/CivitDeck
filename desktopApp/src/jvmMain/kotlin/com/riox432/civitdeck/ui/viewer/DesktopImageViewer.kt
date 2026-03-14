@@ -36,6 +36,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.SubcomposeAsyncImage
+import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -140,6 +141,7 @@ fun DesktopImageViewer(
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.onSurface)
                 }
             },
+            error = { ImageErrorPlaceholder(modifier = Modifier.fillMaxSize()) },
         )
 
         IconButton(
