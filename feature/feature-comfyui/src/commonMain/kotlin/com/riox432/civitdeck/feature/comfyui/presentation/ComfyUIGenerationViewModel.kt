@@ -101,6 +101,7 @@ class ComfyUIGenerationViewModel(
                     )
                 }
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.e(TAG, "Failed to load checkpoints: ${e.message}")
                 _uiState.update {
                     it.copy(isLoadingCheckpoints = false, error = e.message)
                 }
@@ -115,7 +116,7 @@ class ComfyUIGenerationViewModel(
                 val list = fetchLoras()
                 _uiState.update { it.copy(availableLoras = list, isLoadingLoras = false) }
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                Logger.w("ComfyUIGeneration", "Failed to fetch loras: ${e.message}")
+                Logger.w(TAG, "Failed to fetch loras: ${e.message}")
                 _uiState.update { it.copy(isLoadingLoras = false) }
             }
         }
@@ -128,7 +129,7 @@ class ComfyUIGenerationViewModel(
                 val list = fetchControlNets()
                 _uiState.update { it.copy(availableControlNets = list, isLoadingControlNets = false) }
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                Logger.w("ComfyUIGeneration", "Failed to fetch control nets: ${e.message}")
+                Logger.w(TAG, "Failed to fetch control nets: ${e.message}")
                 _uiState.update { it.copy(isLoadingControlNets = false) }
             }
         }
@@ -249,6 +250,7 @@ class ComfyUIGenerationViewModel(
                     pollForResult(promptId)
                 }
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.e(TAG, "Generation submission failed: ${e.message}")
                 _uiState.update {
                     it.copy(generationStatus = GenerationStatus.Error, error = e.message)
                 }
@@ -310,6 +312,7 @@ class ComfyUIGenerationViewModel(
                 }
             }
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.e(TAG, "Failed to fetch final result: ${e.message}")
             _uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
         }
     }
@@ -336,6 +339,7 @@ class ComfyUIGenerationViewModel(
                     else -> attempts++
                 }
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.e(TAG, "Poll for result failed: ${e.message}")
                 _uiState.update {
                     it.copy(generationStatus = GenerationStatus.Error, error = e.message)
                 }
@@ -348,6 +352,7 @@ class ComfyUIGenerationViewModel(
     }
 
     companion object {
+        private const val TAG = "ComfyUIGenerationVM"
         private const val POLL_INTERVAL_MS = 3000L
         private const val MAX_POLL_ATTEMPTS = 120
     }

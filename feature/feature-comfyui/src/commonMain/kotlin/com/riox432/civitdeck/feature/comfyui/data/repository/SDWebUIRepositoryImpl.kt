@@ -12,6 +12,7 @@ import com.riox432.civitdeck.domain.model.SDWebUIGenerationProgress
 import com.riox432.civitdeck.domain.repository.SDWebUIAssetRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIGenerationRepository
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
+private const val TAG = "SDWebUIRepositoryImpl"
 private const val PROGRESS_POLL_MS = 500L
 
 class SDWebUIRepositoryImpl(
@@ -60,6 +62,7 @@ class SDWebUIRepositoryImpl(
             api.getSamplers()
             true
         } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            Logger.w(TAG, "Connection test failed: ${e.message}")
             false
         }
     }
@@ -98,6 +101,7 @@ class SDWebUIRepositoryImpl(
                     emit(SDWebUIGenerationProgress.Completed(result.images))
                 }
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.e(TAG, "Image generation failed: ${e.message}")
                 emit(SDWebUIGenerationProgress.Error(e.message ?: "Generation failed"))
             }
         }
@@ -116,6 +120,7 @@ class SDWebUIRepositoryImpl(
                 fraction = p.progress,
             )
         } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            Logger.w(TAG, "Failed to poll progress: ${e.message}")
             SDWebUIGenerationProgress.Generating(0, 0, 0.0)
         }
     }

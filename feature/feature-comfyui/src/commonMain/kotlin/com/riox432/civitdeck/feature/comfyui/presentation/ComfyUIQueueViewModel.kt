@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.QueueJob
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.CancelComfyUIJobUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIQueueUseCase
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -49,11 +50,16 @@ class ComfyUIQueueViewModel(
             try {
                 cancelJob(promptId)
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.e(TAG, "Failed to cancel job $promptId: ${e.message}")
                 _uiState.update { it.copy(error = e.message) }
             } finally {
                 _uiState.update { it.copy(cancellingIds = it.cancellingIds - promptId) }
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "ComfyUIQueueVM"
     }
 
     fun dismissError() {

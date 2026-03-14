@@ -11,6 +11,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -82,6 +83,7 @@ class ModelFileBrowserViewModel(
                 verifyAllHashes()
                 _scanState.value = ScanStateHolder(status = ScanStatus.Completed)
             } catch (e: Exception) {
+                Logger.e(TAG, "Scan failed: ${e.message}")
                 _scanState.value = ScanStateHolder(
                     status = ScanStatus.Error,
                     error = e.message ?: "Scan failed",
@@ -106,6 +108,7 @@ class ModelFileBrowserViewModel(
     }
 
     companion object {
+        private const val TAG = "ModelFileBrowserVM"
         private const val STOP_TIMEOUT = 5_000L
     }
 }

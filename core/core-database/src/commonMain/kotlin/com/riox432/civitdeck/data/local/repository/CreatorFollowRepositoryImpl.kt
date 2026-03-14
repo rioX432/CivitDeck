@@ -11,6 +11,7 @@ import com.riox432.civitdeck.domain.model.FeedItem
 import com.riox432.civitdeck.domain.model.FollowedCreator
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.repository.CreatorFollowRepository
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -131,8 +132,9 @@ class CreatorFollowRepositoryImpl(
                     )
                 }
                 feedCacheDao.insertAll(entities)
-            } catch (_: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 // Skip this creator on network error, use cached data
+                Logger.w(TAG, "Failed to refresh feed for ${creator.username}: ${e.message}")
             }
         }
     }
@@ -152,6 +154,7 @@ class CreatorFollowRepositoryImpl(
     )
 
     companion object {
+        private const val TAG = "CreatorFollowRepositoryImpl"
         private const val CACHE_TTL_MS = 60 * 60 * 1000L // 1 hour
         private const val FEED_PAGE_SIZE = 10
     }
