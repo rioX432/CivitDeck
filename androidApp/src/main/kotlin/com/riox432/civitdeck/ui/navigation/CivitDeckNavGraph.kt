@@ -693,7 +693,11 @@ private fun EntryProviderScope<Any>.feedEntry(backStack: MutableList<Any>) {
         val viewModel: FeedViewModel = koinViewModel()
         FeedScreen(
             viewModel = viewModel,
-            onBack = { backStack.removeLastOrNull() },
+            onBack = if (backStack.size > 1) {
+                { backStack.removeLastOrNull() }
+            } else {
+                null
+            },
             onModelClick = { modelId -> backStack.add(DetailRoute(modelId)) },
             onCreatorClick = { username -> backStack.add(CreatorRoute(username)) },
         )

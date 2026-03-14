@@ -52,7 +52,7 @@ import com.riox432.civitdeck.ui.theme.Spacing
 @Composable
 fun FeedScreen(
     viewModel: FeedViewModel,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onModelClick: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
 ) {
@@ -63,8 +63,10 @@ fun FeedScreen(
             TopAppBar(
                 title = { Text("Feed") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    if (onBack != null) {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
                     }
                 },
             )
