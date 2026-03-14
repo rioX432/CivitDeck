@@ -136,20 +136,8 @@ private fun SettingsMainContent(
     onNavigateToBackup: () -> Unit,
     onNavigateToPlugins: () -> Unit,
 ) {
-    val authVm: AuthSettingsViewModel = koinViewModel()
-    val displayVm: DisplaySettingsViewModel = koinViewModel()
-    val contentFilterVm: ContentFilterSettingsViewModel = koinViewModel()
+    // AppBehaviorVM is always needed (controls power user mode / section visibility)
     val appBehaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
-    val storageVm: StorageSettingsViewModel = koinViewModel()
-    val analyticsVm: DesktopAnalyticsViewModel = koinViewModel()
-    val comfySettingsVm: ComfyUISettingsViewModel = koinViewModel()
-    val comfyGenVm: ComfyUIGenerationViewModel = koinViewModel()
-    val comfyHistoryVm: ComfyUIHistoryViewModel = koinViewModel()
-    val sdWebuiSettingsVm: SDWebUISettingsViewModel = koinViewModel()
-    val sdWebuiGenVm: SDWebUIGenerationViewModel = koinViewModel()
-    val extServerSettingsVm: ExternalServerSettingsViewModel = koinViewModel()
-    val extServerGalleryVm: ExternalServerGalleryViewModel = koinViewModel()
-
     val appBehaviorState by appBehaviorVm.uiState.collectAsState()
     val isPowerUser = appBehaviorState.powerUserMode
 
@@ -173,27 +161,41 @@ private fun SettingsMainContent(
             verticalArrangement = Arrangement.spacedBy(Spacing.md),
         ) {
             when (selectedSection) {
-                SettingsSection.General -> DesktopSettingsScreen(
-                    authSettingsViewModel = authVm,
-                    displaySettingsViewModel = displayVm,
-                    contentFilterSettingsViewModel = contentFilterVm,
-                    appBehaviorSettingsViewModel = appBehaviorVm,
-                    storageSettingsViewModel = storageVm,
-                    analyticsViewModel = analyticsVm,
-                    onNavigateToDatasets = onNavigateToDatasets,
-                    onNavigateToBackup = onNavigateToBackup,
-                    onNavigateToPlugins = onNavigateToPlugins,
-                )
+                SettingsSection.General -> {
+                    val authVm: AuthSettingsViewModel = koinViewModel()
+                    val displayVm: DisplaySettingsViewModel = koinViewModel()
+                    val contentFilterVm: ContentFilterSettingsViewModel = koinViewModel()
+                    val storageVm: StorageSettingsViewModel = koinViewModel()
+                    val analyticsVm: DesktopAnalyticsViewModel = koinViewModel()
+                    DesktopSettingsScreen(
+                        authSettingsViewModel = authVm,
+                        displaySettingsViewModel = displayVm,
+                        contentFilterSettingsViewModel = contentFilterVm,
+                        appBehaviorSettingsViewModel = appBehaviorVm,
+                        storageSettingsViewModel = storageVm,
+                        analyticsViewModel = analyticsVm,
+                        onNavigateToDatasets = onNavigateToDatasets,
+                        onNavigateToBackup = onNavigateToBackup,
+                        onNavigateToPlugins = onNavigateToPlugins,
+                    )
+                }
                 SettingsSection.ComfyUI -> {
+                    val comfySettingsVm: ComfyUISettingsViewModel = koinViewModel()
+                    val comfyGenVm: ComfyUIGenerationViewModel = koinViewModel()
+                    val comfyHistoryVm: ComfyUIHistoryViewModel = koinViewModel()
                     ComfyUISettingsSection(comfySettingsVm)
                     ComfyUIGenerationSection(comfyGenVm)
                     ComfyUIHistorySection(comfyHistoryVm)
                 }
                 SettingsSection.SDWebUI -> {
+                    val sdWebuiSettingsVm: SDWebUISettingsViewModel = koinViewModel()
+                    val sdWebuiGenVm: SDWebUIGenerationViewModel = koinViewModel()
                     SDWebUISettingsSection(sdWebuiSettingsVm)
                     SDWebUIGenerationSection(sdWebuiGenVm)
                 }
                 SettingsSection.ExternalServer -> {
+                    val extServerSettingsVm: ExternalServerSettingsViewModel = koinViewModel()
+                    val extServerGalleryVm: ExternalServerGalleryViewModel = koinViewModel()
                     ExternalServerSettingsSection(extServerSettingsVm)
                     ExternalServerGallerySection(extServerGalleryVm)
                 }
@@ -235,6 +237,3 @@ private fun SettingsSectionTabs(
         }
     }
 }
-
-private fun <T> MutableList<T>.removeLastOrNull(): T? =
-    if (isNotEmpty()) removeAt(lastIndex) else null
