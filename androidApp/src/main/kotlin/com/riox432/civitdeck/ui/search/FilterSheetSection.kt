@@ -91,7 +91,7 @@ internal fun FilterBottomSheet(
     }
 }
 
-@Suppress("LongMethod", "LongParameterList")
+@Suppress("LongParameterList")
 @Composable
 private fun FilterSheetContent(
     uiState: ModelSearchUiState,
@@ -124,66 +124,107 @@ private fun FilterSheetContent(
                 },
             )
         }
-        item {
-            TypeFilterSection(
-                selectedType = uiState.selectedType,
-                onTypeSelected = onTypeSelected,
-            )
-        }
-        item {
-            BaseModelFilterSection(
-                selectedBaseModels = uiState.selectedBaseModels,
-                onBaseModelToggled = onBaseModelToggled,
-            )
-        }
-        item { HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg)) }
-        item {
-            SortFilterSection(
-                selectedSort = uiState.selectedSort,
-                onSortSelected = onSortSelected,
-            )
-        }
-        item {
-            PeriodFilterSection(
-                selectedPeriod = uiState.selectedPeriod,
-                onPeriodSelected = onPeriodSelected,
-            )
-        }
-        item { HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg)) }
-        item {
-            FreshOnlyToggleRow(
-                isFreshFindEnabled = uiState.isFreshFindEnabled,
-                onFreshFindToggled = onFreshFindToggled,
-            )
-        }
-        item {
-            QualityFilterToggleRow(
-                isQualityFilterEnabled = uiState.isQualityFilterEnabled,
-                onQualityFilterToggled = onQualityFilterToggled,
-            )
-        }
-        item {
-            TagFilterSection(
-                tags = uiState.includedTags,
-                onAddTag = onAddIncludedTag,
-                onRemoveTag = onRemoveIncludedTag,
-                placeholder = "Include tag...",
-                header = "Tags",
-                headerSubtitle = "(include)",
-                chipBackground = { MaterialTheme.colorScheme.primaryContainer },
-                chipForeground = { MaterialTheme.colorScheme.onPrimaryContainer },
-            )
-        }
-        item {
-            TagFilterSection(
-                tags = uiState.excludedTags,
-                onAddTag = onAddExcludedTag,
-                onRemoveTag = onRemoveExcludedTag,
-                placeholder = "Exclude tag...",
-                chipBackground = { MaterialTheme.colorScheme.errorContainer },
-                chipForeground = { MaterialTheme.colorScheme.onErrorContainer },
-            )
-        }
+        filterModelSections(uiState, onTypeSelected, onBaseModelToggled)
+        filterSortSections(uiState, onSortSelected, onPeriodSelected)
+        filterToggleSections(uiState, onFreshFindToggled, onQualityFilterToggled)
+        filterTagSections(
+            uiState,
+            onAddIncludedTag,
+            onRemoveIncludedTag,
+            onAddExcludedTag,
+            onRemoveExcludedTag,
+        )
+    }
+}
+
+private fun androidx.compose.foundation.lazy.LazyListScope.filterModelSections(
+    uiState: ModelSearchUiState,
+    onTypeSelected: (ModelType?) -> Unit,
+    onBaseModelToggled: (BaseModel) -> Unit,
+) {
+    item {
+        TypeFilterSection(
+            selectedType = uiState.selectedType,
+            onTypeSelected = onTypeSelected,
+        )
+    }
+    item {
+        BaseModelFilterSection(
+            selectedBaseModels = uiState.selectedBaseModels,
+            onBaseModelToggled = onBaseModelToggled,
+        )
+    }
+    item { HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg)) }
+}
+
+private fun androidx.compose.foundation.lazy.LazyListScope.filterSortSections(
+    uiState: ModelSearchUiState,
+    onSortSelected: (SortOrder) -> Unit,
+    onPeriodSelected: (TimePeriod) -> Unit,
+) {
+    item {
+        SortFilterSection(
+            selectedSort = uiState.selectedSort,
+            onSortSelected = onSortSelected,
+        )
+    }
+    item {
+        PeriodFilterSection(
+            selectedPeriod = uiState.selectedPeriod,
+            onPeriodSelected = onPeriodSelected,
+        )
+    }
+    item { HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg)) }
+}
+
+private fun androidx.compose.foundation.lazy.LazyListScope.filterToggleSections(
+    uiState: ModelSearchUiState,
+    onFreshFindToggled: () -> Unit,
+    onQualityFilterToggled: () -> Unit,
+) {
+    item {
+        FreshOnlyToggleRow(
+            isFreshFindEnabled = uiState.isFreshFindEnabled,
+            onFreshFindToggled = onFreshFindToggled,
+        )
+    }
+    item {
+        QualityFilterToggleRow(
+            isQualityFilterEnabled = uiState.isQualityFilterEnabled,
+            onQualityFilterToggled = onQualityFilterToggled,
+        )
+    }
+}
+
+@Suppress("LongParameterList")
+private fun androidx.compose.foundation.lazy.LazyListScope.filterTagSections(
+    uiState: ModelSearchUiState,
+    onAddIncludedTag: (String) -> Unit,
+    onRemoveIncludedTag: (String) -> Unit,
+    onAddExcludedTag: (String) -> Unit,
+    onRemoveExcludedTag: (String) -> Unit,
+) {
+    item {
+        TagFilterSection(
+            tags = uiState.includedTags,
+            onAddTag = onAddIncludedTag,
+            onRemoveTag = onRemoveIncludedTag,
+            placeholder = "Include tag...",
+            header = "Tags",
+            headerSubtitle = "(include)",
+            chipBackground = { MaterialTheme.colorScheme.primaryContainer },
+            chipForeground = { MaterialTheme.colorScheme.onPrimaryContainer },
+        )
+    }
+    item {
+        TagFilterSection(
+            tags = uiState.excludedTags,
+            onAddTag = onAddExcludedTag,
+            onRemoveTag = onRemoveExcludedTag,
+            placeholder = "Exclude tag...",
+            chipBackground = { MaterialTheme.colorScheme.errorContainer },
+            chipForeground = { MaterialTheme.colorScheme.onErrorContainer },
+        )
     }
 }
 
