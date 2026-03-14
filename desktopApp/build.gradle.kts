@@ -23,6 +23,7 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.okhttp)
+            implementation(libs.kotlinx.coroutines.swing)
         }
     }
 }
