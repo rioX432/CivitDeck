@@ -20,7 +20,7 @@ struct CaptionEditorSheet: View {
                     .frame(minHeight: 120)
                     .padding(Spacing.sm)
                     .background(Color.civitSurfaceVariant.opacity(0.3))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
                 Text("\(text.count) characters")
                     .font(.caption)
                     .foregroundColor(.secondary)

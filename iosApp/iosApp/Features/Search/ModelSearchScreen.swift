@@ -453,7 +453,7 @@ extension ModelSearchScreen { // MARK: - Filter FAB
                     .foregroundColor(.civitPrimary)
                     .frame(width: 56, height: 56)
                     .background(Color.civitSurfaceContainerHigh)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
                     .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
                 if activeFilterCount > 0 {
                     Text("\(activeFilterCount)")

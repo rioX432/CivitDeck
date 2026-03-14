@@ -59,7 +59,7 @@ struct QRCodeSheet: View {
         .padding(Spacing.lg)
         .frame(maxWidth: .infinity)
         .background(Color.civitSurfaceVariant.opacity(0.5))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.card))
     }
 
     // MARK: - Share
