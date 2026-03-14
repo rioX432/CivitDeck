@@ -84,7 +84,7 @@ private struct FeedItemCard: View {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(item.title)
                         .font(.civitTitleMedium)
-                        .foregroundColor(.primary)
+                        .foregroundColor(.civitOnSurface)
                         .lineLimit(2)
 
                     HStack(spacing: Spacing.sm) {
@@ -94,7 +94,7 @@ private struct FeedItemCard: View {
 
                         Text(item.type.name)
                             .font(.civitLabelSmall)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.civitOnSurfaceVariant)
 
                         if item.isUnread {
                             Circle()

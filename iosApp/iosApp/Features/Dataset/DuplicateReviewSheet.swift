@@ -53,7 +53,7 @@ private struct DuplicateGroupRow: View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             Text("Duplicate group (\(group.count) images)")
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(.civitOnSurfaceVariant)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Spacing.sm) {
                     ForEach(group, id: \.id) { image in

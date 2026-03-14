@@ -141,7 +141,7 @@ struct ExportProgressOverlay: View {
                     ProgressView()
                 }
                 if let label {
-                    Text(label).font(.civitBodySmall).foregroundColor(.secondary)
+                    Text(label).font(.civitBodySmall).foregroundColor(.civitOnSurfaceVariant)
                 }
             }
             .padding(Spacing.xl)
@@ -161,13 +161,13 @@ struct ExportProgressOverlay: View {
             VStack(spacing: Spacing.md) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.civitIconExtraLarge)
-                    .foregroundColor(.green)
+                    .foregroundColor(.civitPrimary)
                 Text("Export Complete").font(.civitTitleMedium)
-                Text(fileName).font(.civitBodySmall).foregroundColor(.secondary)
+                Text(fileName).font(.civitBodySmall).foregroundColor(.civitOnSurfaceVariant)
                 if warnings > 0 {
                     Text("\(warnings) images were excluded")
                         .font(.civitBodySmall)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.civitOnSurfaceVariant)
                 }
                 HStack(spacing: Spacing.md) {
                     Button("Close") { onDismiss() }.buttonStyle(.bordered)
@@ -195,7 +195,7 @@ struct ExportProgressOverlay: View {
                     .font(.civitIconExtraLarge)
                     .foregroundColor(.civitError)
                 Text("Export Failed").font(.civitTitleMedium)
-                Text(message).font(.civitBodySmall).foregroundColor(.secondary)
+                Text(message).font(.civitBodySmall).foregroundColor(.civitOnSurfaceVariant)
                 Button("OK") { onDismiss() }.buttonStyle(.borderedProminent)
             }
             .padding(Spacing.xl)

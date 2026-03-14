@@ -84,7 +84,7 @@ struct ImageComparisonSlider: View {
                 path.move(to: CGPoint(x: 0, y: posY))
                 path.addLine(to: CGPoint(x: canvasSize.width, y: posY))
             }
-            context.stroke(path, with: .color(.white), lineWidth: dividerWidth)
+            context.stroke(path, with: .color(.civitOnSurface), lineWidth: dividerWidth)
         }
         .allowsHitTesting(false)
     }

@@ -219,7 +219,7 @@ struct ComfyUIGenerationView: View {
         return Button(action: viewModel.onGenerate) {
             HStack {
                 if isGenerating {
-                    ProgressView().tint(.white)
+                    ProgressView().tint(.civitOnPrimary)
                 }
                 Text(isGenerating ? "Generating..." : "Generate")
             }

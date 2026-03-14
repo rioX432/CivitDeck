@@ -127,7 +127,7 @@ struct DatasetDetailView: View {
                         " · \(viewModel.lowResImageCount) low-res"
                     )
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.civitOnSurfaceVariant)
                     .padding(.horizontal, Spacing.sm)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
