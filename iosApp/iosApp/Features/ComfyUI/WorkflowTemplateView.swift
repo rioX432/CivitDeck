@@ -101,7 +101,7 @@ struct WorkflowTemplateView: View {
         NavigationStack {
             VStack(spacing: Spacing.md) {
                 TextEditor(text: $importText)
-                    .font(.system(.caption, design: .monospaced))
+                    .font(.civitMonoCaption)
                     .frame(maxWidth: .infinity, minHeight: 200)
                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.civitOnSurfaceVariant.opacity(0.4)))
                     .padding(.horizontal, Spacing.md)

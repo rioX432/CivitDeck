@@ -42,4 +42,10 @@ extension Font {
 
     // iconXSmall: 9pt Bold — tiny compact badges
     static let civitIconXSmall = Font.system(size: 9, weight: .bold)
+
+    // monoCaption: caption monospaced — code/JSON editors
+    static let civitMonoCaption = Font.system(.caption, design: .monospaced)
+
+    // iconSmallSemibold: 16pt Semibold — small icon overlays (e.g. comparison slider)
+    static let civitIconSmallSemibold = Font.system(size: 16, weight: .semibold)
 }

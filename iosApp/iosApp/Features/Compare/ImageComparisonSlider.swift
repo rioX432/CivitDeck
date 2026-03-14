@@ -111,7 +111,7 @@ struct ImageComparisonSlider: View {
                 Image(systemName: orientation == .horizontal
                       ? "arrow.left.and.right"
                       : "arrow.up.and.down")
-                    .font(.system(size: iconSize, weight: .semibold))
+                    .font(.civitIconSmallSemibold)
                     .foregroundColor(.civitOnSurface)
                     .accessibilityHidden(true)
             }
