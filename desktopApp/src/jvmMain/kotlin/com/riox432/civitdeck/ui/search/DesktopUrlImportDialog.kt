@@ -15,6 +15,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import com.riox432.civitdeck.ui.theme.Spacing
 
 /**
@@ -36,6 +41,14 @@ fun DesktopUrlImportDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.onPreviewKeyEvent { event ->
+            if (event.type == KeyEventType.KeyDown && event.key == Key.Enter && modelId != null) {
+                onModelFound(modelId)
+                true
+            } else {
+                false
+            }
+        },
         title = { Text("Import Model from URL") },
         text = {
             Column {
