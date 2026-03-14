@@ -128,7 +128,7 @@ private fun AdvancedVersionInfo(version: ModelVersion) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { expanded = !expanded },
+            .clickable(onClickLabel = "Toggle details") { expanded = !expanded },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {

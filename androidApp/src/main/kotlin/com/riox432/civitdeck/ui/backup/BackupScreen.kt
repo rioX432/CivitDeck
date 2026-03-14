@@ -186,7 +186,7 @@ private fun CategoryRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Spacing.lg, vertical = Spacing.sm)
-            .clickable(onClick = onToggle),
+            .clickable(onClickLabel = "Toggle selection", onClick = onToggle),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(checked = isSelected, onCheckedChange = { onToggle() })
@@ -281,7 +281,7 @@ private fun ImportDialogContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = Spacing.xs)
-                        .clickable { onStrategyChanged(strategy) },
+                        .clickable(onClickLabel = "Select strategy") { onStrategyChanged(strategy) },
                 ) {
                     RadioButton(
                         selected = state.restoreStrategy == strategy,

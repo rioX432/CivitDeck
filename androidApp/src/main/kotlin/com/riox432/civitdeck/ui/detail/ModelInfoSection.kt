@@ -54,7 +54,7 @@ internal fun ModelHeader(model: Model, onCreatorClick: (String) -> Unit) {
                     text = "by ${model.creator!!.username}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable {
+                    modifier = Modifier.clickable(onClickLabel = "View creator profile") {
                         onCreatorClick(model.creator!!.username)
                     },
                 )

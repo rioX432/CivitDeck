@@ -284,7 +284,7 @@ private fun BatchImageItem(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier.combinedClickable(onClick = onToggle),
+        modifier = modifier.combinedClickable(onClickLabel = "Toggle image selection", onClick = onToggle),
     ) {
         CivitAsyncImage(
             imageUrl = image.imageUrl,
