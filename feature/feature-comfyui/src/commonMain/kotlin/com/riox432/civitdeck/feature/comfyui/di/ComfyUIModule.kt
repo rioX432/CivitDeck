@@ -11,7 +11,9 @@ import com.riox432.civitdeck.domain.repository.SDWebUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIGenerationRepository
 import com.riox432.civitdeck.feature.comfyui.data.repository.CivitaiLinkRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIHistoryRepositoryImpl
-import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIRepositoryImpl
+import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIConnectionRepositoryImpl
+import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIGenerationRepositoryImpl
+import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIQueueRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.SDWebUIRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateSDWebUIConnectionUseCase
@@ -62,11 +64,9 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val comfyuiModule = module {
-    singleOf(::ComfyUIRepositoryImpl) {
-        bind<ComfyUIConnectionRepository>()
-        bind<ComfyUIGenerationRepository>()
-        bind<ComfyUIQueueRepository>()
-    }
+    single<ComfyUIConnectionRepository> { ComfyUIConnectionRepositoryImpl(get(), get()) }
+    single<ComfyUIGenerationRepository> { ComfyUIGenerationRepositoryImpl(get(), get(), get(), get()) }
+    single<ComfyUIQueueRepository> { ComfyUIQueueRepositoryImpl(get(), get()) }
     single<ComfyUIHistoryRepository> { ComfyUIHistoryRepositoryImpl(get(), get()) }
     factory { FetchComfyUIHistoryUseCase(get()) }
     factory { FetchComfyUIHistoryItemUseCase(get()) }
