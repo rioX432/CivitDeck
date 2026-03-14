@@ -99,6 +99,10 @@ class UserPreferencesUseCasesTest {
         val customNavShortcuts = MutableStateFlow<List<NavShortcut>>(emptyList())
         override fun observeCustomNavShortcuts(): Flow<List<NavShortcut>> = customNavShortcuts
         override suspend fun setCustomNavShortcuts(items: List<NavShortcut>) { customNavShortcuts.value = items }
+
+        val feedQualityThreshold = MutableStateFlow(30)
+        override fun observeFeedQualityThreshold(): Flow<Int> = feedQualityThreshold
+        override suspend fun setFeedQualityThreshold(threshold: Int) { feedQualityThreshold.value = threshold }
     }
 
     private val repo = FakeUserPreferencesRepository()
