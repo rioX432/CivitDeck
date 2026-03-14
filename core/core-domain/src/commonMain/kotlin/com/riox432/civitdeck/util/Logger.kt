@@ -2,8 +2,7 @@ package com.riox432.civitdeck.util
 
 /**
  * Minimal logging utility for the shared module.
- * Wraps [println] with tag-based formatting so log output
- * can be filtered and disabled globally.
+ * Uses platform-specific logging via expect/actual.
  */
 object Logger {
     /** Set to `false` to silence all log output (e.g. in release builds). */
@@ -11,11 +10,15 @@ object Logger {
 
     /** Warning-level log. */
     fun w(tag: String, message: String) {
-        if (enabled) println("[W/$tag] $message")
+        if (enabled) platformLog(LogLevel.WARN, tag, message)
     }
 
     /** Error-level log. */
     fun e(tag: String, message: String) {
-        if (enabled) println("[E/$tag] $message")
+        if (enabled) platformLog(LogLevel.ERROR, tag, message)
     }
 }
+
+enum class LogLevel { WARN, ERROR }
+
+expect fun platformLog(level: LogLevel, tag: String, message: String)

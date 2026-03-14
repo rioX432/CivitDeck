@@ -7,8 +7,10 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import kotlin.concurrent.Volatile
 
 class SDWebUIApi(private val client: HttpClient) {
+    @Volatile
     private var baseUrl: String = ""
 
     fun setBaseUrl(hostname: String, port: Int) {
