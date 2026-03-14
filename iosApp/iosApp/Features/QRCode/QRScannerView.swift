@@ -17,7 +17,7 @@ struct QRScannerView: View {
             } else if cameraPermission == .denied {
                 permissionDeniedView
             } else {
-                Color.black.ignoresSafeArea()
+                Color.civitScrim.ignoresSafeArea()
             }
         }
         .navigationTitle("Scan QR Code")
@@ -41,7 +41,7 @@ struct QRScannerView: View {
                 .foregroundColor(.civitOnSurface)
                 .padding(.horizontal, Spacing.md)
                 .padding(.vertical, Spacing.sm)
-                .background(Color.black.opacity(0.6))
+                .background(Color.civitScrim.opacity(0.6))
                 .clipShape(RoundedRectangle(cornerRadius: Spacing.sm))
             Spacer()
         }

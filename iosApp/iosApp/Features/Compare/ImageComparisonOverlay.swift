@@ -14,7 +14,7 @@ struct ImageComparisonOverlay: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.civitScrim.ignoresSafeArea()
 
             ImageComparisonSlider(
                 beforeImageUrl: beforeImageUrl,
@@ -92,7 +92,7 @@ private struct ComparisonLabelChip: View {
             .foregroundColor(.civitInverseOnSurface)
             .padding(.horizontal, chipHPadding)
             .padding(.vertical, chipVPadding)
-            .background(Color.black.opacity(chipAlpha), in: Capsule())
+            .background(Color.civitScrim.opacity(chipAlpha), in: Capsule())
     }
 }
 

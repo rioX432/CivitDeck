@@ -21,7 +21,7 @@ struct ImageViewerScreen: View {
         if let index = selectedIndex {
             ZStack {
                 // Layer 1: Background (stays in place, fades)
-                Color.black
+                Color.civitScrim
                     .opacity(backgroundOpacity)
                     .ignoresSafeArea()
 
