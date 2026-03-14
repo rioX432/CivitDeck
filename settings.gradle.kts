@@ -29,6 +29,7 @@ dependencyResolutionManagement {
 rootProject.name = "CivitDeck"
 include(":shared")
 include(":androidApp")
+include(":desktopApp")
 include(":core:core-domain")
 include(":core:core-network")
 include(":core:core-database")

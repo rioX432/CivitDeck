@@ -1,0 +1,37 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
+plugins {
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.compose.compiler)
+}
+
+kotlin {
+    jvm()
+
+    sourceSets {
+        jvmMain.dependencies {
+            implementation(project(":shared"))
+            implementation(project(":core:core-ui"))
+            implementation(compose.desktop.currentOs)
+            implementation(compose.material3)
+            implementation(compose.materialIconsExtended)
+            implementation(compose.foundation)
+            implementation(compose.ui)
+            implementation(libs.koin.core)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.okhttp)
+        }
+    }
+}
+
+compose.desktop {
+    application {
+        mainClass = "com.riox432.civitdeck.MainKt"
+        nativeDistributions {
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            packageName = "CivitDeck"
+            packageVersion = "1.0.0"
+        }
+    }
+}
