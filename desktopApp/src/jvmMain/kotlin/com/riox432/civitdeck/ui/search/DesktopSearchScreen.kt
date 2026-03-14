@@ -30,7 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun DesktopSearchScreen(
@@ -42,6 +44,8 @@ fun DesktopSearchScreen(
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val displayViewModel: DisplaySettingsViewModel = koinViewModel()
+    val displayState by displayViewModel.uiState.collectAsState()
     val gridState = rememberLazyGridState()
 
     // Trigger load more near the end
@@ -106,8 +110,9 @@ fun DesktopSearchScreen(
                 }
             }
             else -> {
+                val columns = displayState.gridColumns
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = CARD_MIN_WIDTH),
+                    columns = if (columns > 0) GridCells.Fixed(columns) else GridCells.Adaptive(minSize = CARD_MIN_WIDTH),
                     state = gridState,
                     contentPadding = PaddingValues(Spacing.md),
                     horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
