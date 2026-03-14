@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
+import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -241,25 +243,34 @@ private fun BatchImageGrid(
     onToggleSelection: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(BATCH_GRID_COLUMNS),
-        contentPadding = PaddingValues(
-            start = Spacing.md,
-            end = Spacing.md,
-            top = Spacing.sm,
-            bottom = Spacing.lg,
-        ),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
-        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        items(items = images, key = { it.id }) { image ->
-            BatchImageItem(
-                image = image,
-                isSelected = image.id in selectedIds,
-                onToggle = { onToggleSelection(image.id) },
-                modifier = Modifier.animateItem(),
-            )
+    if (images.isEmpty()) {
+        EmptyStateMessage(
+            icon = Icons.Default.PhotoLibrary,
+            title = "No images",
+            subtitle = "Add images to this dataset to start tagging",
+            modifier = modifier.fillMaxWidth(),
+        )
+    } else {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(BATCH_GRID_COLUMNS),
+            contentPadding = PaddingValues(
+                start = Spacing.md,
+                end = Spacing.md,
+                top = Spacing.sm,
+                bottom = Spacing.lg,
+            ),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+            verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+            modifier = modifier.fillMaxWidth(),
+        ) {
+            items(items = images, key = { it.id }) { image ->
+                BatchImageItem(
+                    image = image,
+                    isSelected = image.id in selectedIds,
+                    onToggle = { onToggleSelection(image.id) },
+                    modifier = Modifier.animateItem(),
+                )
+            }
         }
     }
 }
