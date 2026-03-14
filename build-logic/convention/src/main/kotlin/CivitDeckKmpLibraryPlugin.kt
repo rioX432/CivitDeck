@@ -26,6 +26,7 @@ class CivitDeckKmpLibraryPlugin : Plugin<Project> {
             }
 
             extensions.configure<KotlinMultiplatformExtension> {
+                jvm()
                 androidTarget {
                     compilerOptions {
                         jvmTarget.set(JvmTarget.JVM_17)

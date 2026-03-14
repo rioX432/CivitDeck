@@ -1,6 +1,5 @@
 package com.riox432.civitdeck.ui.components
 
-import android.provider.Settings
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.spring
@@ -14,7 +13,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Parallax
@@ -23,19 +21,11 @@ import androidx.compose.animation.core.Spring as SpringSpec
 
 /**
  * Returns true when the system-level animator duration scale is 0 (reduced motion).
+ * Platform-specific: Android checks Settings.Global.ANIMATOR_DURATION_SCALE.
+ * Other platforms return false (animations always enabled).
  */
 @Composable
-fun isReducedMotionEnabled(): Boolean {
-    val context = LocalContext.current
-    return remember {
-        val scale = Settings.Global.getFloat(
-            context.contentResolver,
-            Settings.Global.ANIMATOR_DURATION_SCALE,
-            1f,
-        )
-        scale == 0f
-    }
-}
+expect fun isReducedMotionEnabled(): Boolean
 
 /**
  * Modifier that applies a staggered fade-in + slide-up entrance animation.

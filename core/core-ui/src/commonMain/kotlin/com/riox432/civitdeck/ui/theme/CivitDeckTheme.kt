@@ -1,15 +1,10 @@
 package com.riox432.civitdeck.ui.theme
 
-import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.plugin.ThemeColorScheme
 
@@ -23,14 +18,7 @@ fun CivitDeckTheme(
 ) {
     val colorScheme = resolveColorScheme(darkTheme, accentColor, amoledDarkMode, customTheme)
 
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.surface.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
-        }
-    }
+    ApplyPlatformTheming(colorScheme, darkTheme)
 
     MaterialTheme(
         colorScheme = colorScheme,
@@ -39,6 +27,13 @@ fun CivitDeckTheme(
         content = content,
     )
 }
+
+/**
+ * Platform-specific theming side effects (e.g. status bar styling on Android).
+ * No-op on non-Android platforms.
+ */
+@Composable
+internal expect fun ApplyPlatformTheming(colorScheme: ColorScheme, darkTheme: Boolean)
 
 private fun resolveColorScheme(
     darkTheme: Boolean,

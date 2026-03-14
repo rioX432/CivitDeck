@@ -7,12 +7,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalView
 import com.riox432.civitdeck.domain.model.HapticFeedbackType
 
-/**
- * Provides a performHaptic function that triggers platform-appropriate haptic feedback.
- * Automatically respects system haptic settings via Android's View haptic feedback API.
- */
 @Composable
-fun rememberHapticFeedback(): (HapticFeedbackType) -> Unit {
+actual fun rememberHapticFeedback(): (HapticFeedbackType) -> Unit {
     val view = LocalView.current
     return remember(view) {
         {
