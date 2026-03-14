@@ -4,111 +4,352 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.domain.model.AccentColor
+import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.domain.model.PollingInterval
+import com.riox432.civitdeck.domain.model.ThemeMode
+import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
 fun DesktopSettingsScreen(
     authSettingsViewModel: AuthSettingsViewModel,
+    displaySettingsViewModel: DisplaySettingsViewModel,
+    contentFilterSettingsViewModel: ContentFilterSettingsViewModel,
+    appBehaviorSettingsViewModel: AppBehaviorSettingsViewModel,
+    storageSettingsViewModel: StorageSettingsViewModel,
     analyticsViewModel: DesktopAnalyticsViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val analyticsState by analyticsViewModel.uiState.collectAsState()
-
-    Column(modifier = modifier.fillMaxSize()) {
-        SettingsTopBar()
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(Spacing.lg),
-            verticalArrangement = Arrangement.spacedBy(Spacing.md),
-        ) {
-            AnalyticsCard(
-                totalViews = analyticsState.totalViews,
-                totalFavorites = analyticsState.totalFavorites,
-                totalSearches = analyticsState.totalSearches,
-                isLoading = analyticsState.isLoading,
-                onRefresh = analyticsViewModel::refresh,
-            )
-            TopStatsCard(
-                title = "Top Model Types",
-                items = analyticsState.topModelTypes.map { "${it.name}: ${it.count}" },
-            )
-            TopStatsCard(
-                title = "Top Creators",
-                items = analyticsState.topCreators.map { "${it.name}: ${it.count}" },
-            )
-        }
-    }
-}
-
-@Composable
-private fun SettingsTopBar() {
-    Surface(tonalElevation = 1.dp) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(Spacing.sm),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "Settings & Analytics",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = Spacing.sm),
-            )
-        }
-    }
-}
-
-@Composable
-private fun AnalyticsCard(
-    totalViews: Int,
-    totalFavorites: Int,
-    totalSearches: Int,
-    isLoading: Boolean,
-    onRefresh: () -> Unit,
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
-        Column(modifier = Modifier.padding(Spacing.lg)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text("Analytics", style = MaterialTheme.typography.titleSmall)
-                TextButton(onClick = onRefresh, enabled = !isLoading) {
+        AuthSettingsSection(authSettingsViewModel)
+        DisplaySettingsSection(displaySettingsViewModel)
+        ContentFilterSection(contentFilterSettingsViewModel)
+        AppBehaviorSection(appBehaviorSettingsViewModel)
+        StorageSection(storageSettingsViewModel)
+        AnalyticsSection(analyticsViewModel)
+    }
+}
+
+// region Auth Settings
+
+@Composable
+private fun AuthSettingsSection(viewModel: AuthSettingsViewModel) {
+    val state by viewModel.uiState.collectAsState()
+    var apiKeyInput by remember { mutableStateOf("") }
+
+    SettingsCard(title = "Authentication") {
+        if (state.connectedUsername != null) {
+            Text(
+                text = "Connected as: ${state.connectedUsername}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(modifier = Modifier.height(Spacing.sm))
+            Row {
+                OutlinedButton(onClick = viewModel::onRefreshUsername) {
                     Text("Refresh")
                 }
+                Spacer(modifier = Modifier.width(Spacing.sm))
+                OutlinedButton(onClick = viewModel::onClearApiKey) {
+                    Text("Disconnect")
+                }
             }
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            Row(
+        } else {
+            OutlinedTextField(
+                value = apiKeyInput,
+                onValueChange = { apiKeyInput = it },
+                label = { Text("CivitAI API Key") },
+                singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                isError = state.apiKeyError != null,
+                supportingText = state.apiKeyError?.let { { Text(it) } },
+            )
+            Spacer(modifier = Modifier.height(Spacing.sm))
+            Button(
+                onClick = { viewModel.onValidateAndSaveApiKey(apiKeyInput) },
+                enabled = !state.isValidatingApiKey && apiKeyInput.isNotBlank(),
             ) {
-                StatItem(label = "Views", value = totalViews)
-                StatItem(label = "Favorites", value = totalFavorites)
-                StatItem(label = "Searches", value = totalSearches)
+                Text(if (state.isValidatingApiKey) "Validating..." else "Connect")
+            }
+        }
+    }
+}
+
+// endregion
+
+// region Display Settings
+
+@Composable
+private fun DisplaySettingsSection(viewModel: DisplaySettingsViewModel) {
+    val state by viewModel.uiState.collectAsState()
+
+    SettingsCard(title = "Display") {
+        SettingsDropdown(
+            label = "Theme",
+            selected = state.themeMode.name,
+            options = ThemeMode.entries.map { it.name },
+            onSelected = { viewModel.onThemeModeChanged(ThemeMode.valueOf(it)) },
+        )
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        SettingsDropdown(
+            label = "Accent Color",
+            selected = state.accentColor.displayName,
+            options = AccentColor.entries.map { it.displayName },
+            onSelected = { name ->
+                AccentColor.entries.find { it.displayName == name }
+                    ?.let { viewModel.onAccentColorChanged(it) }
+            },
+        )
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        SliderSetting(
+            label = "Grid Columns",
+            value = state.gridColumns.toFloat(),
+            valueRange = 1f..6f,
+            steps = 4,
+            valueLabel = state.gridColumns.toString(),
+            onValueChange = { viewModel.onGridColumnsChanged(it.toInt()) },
+        )
+    }
+}
+
+// endregion
+
+// region Content Filter
+
+@Composable
+private fun ContentFilterSection(viewModel: ContentFilterSettingsViewModel) {
+    val state by viewModel.uiState.collectAsState()
+
+    SettingsCard(title = "Content Filter") {
+        SettingsDropdown(
+            label = "NSFW Filter",
+            selected = state.nsfwFilterLevel.name,
+            options = NsfwFilterLevel.entries.map { it.name },
+            onSelected = { viewModel.onNsfwFilterChanged(NsfwFilterLevel.valueOf(it)) },
+        )
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        SliderSetting(
+            label = "Soft Blur Intensity",
+            value = state.nsfwBlurSettings.softIntensity.toFloat(),
+            valueRange = 0f..100f,
+            steps = 9,
+            valueLabel = "${state.nsfwBlurSettings.softIntensity}%",
+            onValueChange = {
+                viewModel.onNsfwBlurSettingsChanged(
+                    state.nsfwBlurSettings.copy(softIntensity = it.toInt()),
+                )
+            },
+        )
+        Spacer(modifier = Modifier.height(Spacing.xs))
+        SliderSetting(
+            label = "Mature Blur Intensity",
+            value = state.nsfwBlurSettings.matureIntensity.toFloat(),
+            valueRange = 0f..100f,
+            steps = 9,
+            valueLabel = "${state.nsfwBlurSettings.matureIntensity}%",
+            onValueChange = {
+                viewModel.onNsfwBlurSettingsChanged(
+                    state.nsfwBlurSettings.copy(matureIntensity = it.toInt()),
+                )
+            },
+        )
+        Spacer(modifier = Modifier.height(Spacing.xs))
+        SliderSetting(
+            label = "Explicit Blur Intensity",
+            value = state.nsfwBlurSettings.explicitIntensity.toFloat(),
+            valueRange = 0f..100f,
+            steps = 9,
+            valueLabel = "${state.nsfwBlurSettings.explicitIntensity}%",
+            onValueChange = {
+                viewModel.onNsfwBlurSettingsChanged(
+                    state.nsfwBlurSettings.copy(explicitIntensity = it.toInt()),
+                )
+            },
+        )
+        if (state.excludedTags.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(Spacing.sm))
+            Text("Excluded Tags:", style = MaterialTheme.typography.labelMedium)
+            state.excludedTags.forEach { tag ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(tag, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                    TextButton(onClick = { viewModel.onRemoveExcludedTag(tag) }) {
+                        Text("Remove")
+                    }
+                }
+            }
+        }
+    }
+}
+
+// endregion
+
+// region App Behavior
+
+@Composable
+private fun AppBehaviorSection(viewModel: AppBehaviorSettingsViewModel) {
+    val state by viewModel.uiState.collectAsState()
+
+    SettingsCard(title = "App Behavior") {
+        SwitchSetting(
+            label = "Power User Mode",
+            checked = state.powerUserMode,
+            onCheckedChange = viewModel::onPowerUserModeChanged,
+        )
+        SwitchSetting(
+            label = "Notifications",
+            checked = state.notificationsEnabled,
+            onCheckedChange = viewModel::onNotificationsEnabledChanged,
+        )
+        if (state.notificationsEnabled) {
+            Spacer(modifier = Modifier.height(Spacing.sm))
+            SettingsDropdown(
+                label = "Polling Interval",
+                selected = state.pollingInterval.displayName,
+                options = PollingInterval.entries.map { it.displayName },
+                onSelected = { name ->
+                    PollingInterval.entries.find { it.displayName == name }
+                        ?.let { viewModel.onPollingIntervalChanged(it) }
+                },
+            )
+        }
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        SliderSetting(
+            label = "Feed Quality Threshold",
+            value = state.feedQualityThreshold.toFloat(),
+            valueRange = 0f..100f,
+            steps = 9,
+            valueLabel = state.feedQualityThreshold.toString(),
+            onValueChange = { viewModel.onFeedQualityThresholdChanged(it.toInt()) },
+        )
+    }
+}
+
+// endregion
+
+// region Storage
+
+@Composable
+private fun StorageSection(viewModel: StorageSettingsViewModel) {
+    val state by viewModel.uiState.collectAsState()
+
+    SettingsCard(title = "Storage & Cache") {
+        Text(
+            text = if (state.isOnline) "Status: Online" else "Status: Offline",
+            style = MaterialTheme.typography.bodySmall,
+            color = if (state.isOnline) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.error
+            },
+        )
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        SwitchSetting(
+            label = "Offline Cache",
+            checked = state.offlineCacheEnabled,
+            onCheckedChange = viewModel::onOfflineCacheEnabledChanged,
+        )
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        SliderSetting(
+            label = "Cache Size Limit",
+            value = state.cacheSizeLimitMb.toFloat(),
+            valueRange = 50f..1000f,
+            steps = 18,
+            valueLabel = "${state.cacheSizeLimitMb} MB",
+            onValueChange = { viewModel.onCacheSizeLimitChanged(it.toInt()) },
+        )
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        Text(
+            text = "Cache: ${state.cacheInfo.sizeBytes / 1024 / 1024} MB " +
+                "(${state.cacheInfo.entryCount} entries)",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            OutlinedButton(onClick = viewModel::onClearCache) { Text("Clear Cache") }
+            OutlinedButton(onClick = viewModel::onClearSearchHistory) { Text("Clear Search") }
+            OutlinedButton(onClick = viewModel::onClearBrowsingHistory) { Text("Clear History") }
+        }
+    }
+}
+
+// endregion
+
+// region Analytics
+
+@Composable
+private fun AnalyticsSection(viewModel: DesktopAnalyticsViewModel) {
+    val state by viewModel.uiState.collectAsState()
+
+    SettingsCard(title = "Analytics") {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("Usage Statistics", style = MaterialTheme.typography.labelMedium)
+            TextButton(onClick = viewModel::refresh, enabled = !state.isLoading) {
+                Text("Refresh")
+            }
+        }
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            StatItem(label = "Views", value = state.totalViews)
+            StatItem(label = "Favorites", value = state.totalFavorites)
+            StatItem(label = "Searches", value = state.totalSearches)
+        }
+        if (state.topModelTypes.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(Spacing.sm))
+            Text("Top Model Types", style = MaterialTheme.typography.labelMedium)
+            state.topModelTypes.take(MAX_STATS_ITEMS).forEachIndexed { index, item ->
+                Text(
+                    text = "${index + 1}. ${item.name}: ${item.count}",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+        if (state.topCreators.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(Spacing.sm))
+            Text("Top Creators", style = MaterialTheme.typography.labelMedium)
+            state.topCreators.take(MAX_STATS_ITEMS).forEachIndexed { index, item ->
+                Text(
+                    text = "${index + 1}. ${item.name}: ${item.count}",
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
         }
     }
@@ -117,10 +358,7 @@ private fun AnalyticsCard(
 @Composable
 private fun StatItem(label: String, value: Int) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = value.toString(),
-            style = MaterialTheme.typography.headlineMedium,
-        )
+        Text(text = value.toString(), style = MaterialTheme.typography.headlineMedium)
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
@@ -129,26 +367,103 @@ private fun StatItem(label: String, value: Int) {
     }
 }
 
-@Composable
-private fun TopStatsCard(title: String, items: List<String>) {
-    if (items.isEmpty()) return
+// endregion
 
+// region Shared Components
+
+@Composable
+internal fun SettingsCard(
+    title: String,
+    content: @Composable () -> Unit,
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Column(modifier = Modifier.padding(Spacing.lg)) {
             Text(title, style = MaterialTheme.typography.titleSmall)
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            items.take(MAX_STATS_ITEMS).forEachIndexed { index, item ->
-                Text(
-                    text = "${index + 1}. $item",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(vertical = Spacing.xs),
-                )
+            Spacer(modifier = Modifier.height(Spacing.md))
+            content()
+        }
+    }
+}
+
+@Composable
+internal fun SwitchSetting(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, style = MaterialTheme.typography.bodyMedium)
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
+    }
+}
+
+@Composable
+internal fun SettingsDropdown(
+    label: String,
+    selected: String,
+    options: List<String>,
+    onSelected: (String) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column {
+        Text(label, style = MaterialTheme.typography.labelMedium)
+        Spacer(modifier = Modifier.height(Spacing.xs))
+        androidx.compose.foundation.layout.Box {
+            OutlinedButton(onClick = { expanded = true }) {
+                Text(selected)
+            }
+            androidx.compose.material3.DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                options.forEach { option ->
+                    androidx.compose.material3.DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            onSelected(option)
+                            expanded = false
+                        },
+                    )
+                }
             }
         }
     }
 }
+
+@Composable
+internal fun SliderSetting(
+    label: String,
+    value: Float,
+    valueRange: ClosedFloatingPointRange<Float>,
+    steps: Int,
+    valueLabel: String,
+    onValueChange: (Float) -> Unit,
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(label, style = MaterialTheme.typography.labelMedium)
+            Text(valueLabel, style = MaterialTheme.typography.bodySmall)
+        }
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = valueRange,
+            steps = steps,
+        )
+    }
+}
+
+// endregion
 
 private const val MAX_STATS_ITEMS = 10
