@@ -24,7 +24,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -66,7 +65,7 @@ fun DesktopImageViewer(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = OVERLAY_ALPHA))
+            .background(MaterialTheme.colorScheme.scrim.copy(alpha = OVERLAY_ALPHA))
             .focusRequester(focusRequester)
             .focusable()
             .onKeyEvent { keyEvent ->
@@ -116,7 +115,7 @@ fun DesktopImageViewer(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    CircularProgressIndicator(color = Color.White)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onSurface)
                 }
             },
         )
@@ -128,13 +127,13 @@ fun DesktopImageViewer(
             Icon(
                 Icons.Default.Close,
                 contentDescription = "Close",
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.onSurface,
             )
         }
 
         Text(
             text = "${currentIndex + 1} / ${imageUrls.size}",
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.align(Alignment.BottomCenter).padding(Spacing.lg),
         )

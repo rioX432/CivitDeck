@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.data.api.comfyui
 
+import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -14,11 +15,13 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlin.concurrent.Volatile
 
 class ComfyUIApi(
     private val client: HttpClient,
     private val json: Json,
 ) {
+    @Volatile
     private var baseUrl: String = ""
 
     fun setBaseUrl(hostname: String, port: Int) {
@@ -142,8 +145,13 @@ class ComfyUIApi(
             val namesList = fieldArray.firstOrNull() as? kotlinx.serialization.json.JsonArray
                 ?: return emptyList()
             namesList.mapNotNull { (it as? kotlinx.serialization.json.JsonPrimitive)?.content }
-        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.w(TAG, "Failed to parse node input list ($nodeType/$fieldName): ${e.message}")
             emptyList()
         }
+    }
+
+    private companion object {
+        const val TAG = "ComfyUIApi"
     }
 }

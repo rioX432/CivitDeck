@@ -531,7 +531,7 @@ private fun DatasetImageItem(
     ) {
         CivitAsyncImage(
             imageUrl = image.imageUrl,
-            contentDescription = null,
+            contentDescription = "Dataset image",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()

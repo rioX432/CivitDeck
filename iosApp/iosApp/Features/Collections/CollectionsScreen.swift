@@ -125,7 +125,7 @@ struct CollectionsScreen: View {
                         } label: {
                             Label("Rename", systemImage: "pencil")
                         }
-                        .tint(.orange)
+                        .tint(.civitTertiary)
                     }
                 }
             }

@@ -45,6 +45,7 @@ import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIConnectionStatus
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsUiState
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
+import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -201,7 +202,7 @@ private fun ConnectionCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onActivate, onClickLabel = "Select connection"),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(CornerRadius.card),
     ) {
         Row(
             modifier = Modifier

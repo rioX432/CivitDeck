@@ -109,10 +109,10 @@ private struct ComfyUIOutputDetailPage: View {
                 img
                     .resizable()
                     .scaledToFit()
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.card))
                     .transition(.opacity)
             case .failure:
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: CornerRadius.card)
                     .fill(Color.civitSurfaceVariant)
                     .frame(height: 200)
                     .overlay {
@@ -120,7 +120,7 @@ private struct ComfyUIOutputDetailPage: View {
                             .foregroundColor(.civitOnSurfaceVariant)
                     }
             case .empty:
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: CornerRadius.card)
                     .fill(Color.civitSurfaceVariant)
                     .frame(height: 200)
                     .shimmer()

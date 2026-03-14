@@ -43,6 +43,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.swing.JFileChooser
+import javax.swing.SwingUtilities
 import javax.swing.filechooser.FileNameExtensionFilter
 
 @Composable
@@ -266,28 +267,32 @@ private fun ImportConfirmationDialog(
 }
 
 private fun saveBackupToFile(json: String) {
-    val chooser = JFileChooser().apply {
-        dialogTitle = "Save Backup"
-        fileFilter = FileNameExtensionFilter("JSON files", "json")
-        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-        selectedFile = File("civitdeck_backup_$timestamp.json")
-    }
-    if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-        var file = chooser.selectedFile
-        if (!file.name.endsWith(".json")) {
-            file = File(file.absolutePath + ".json")
+    SwingUtilities.invokeLater {
+        val chooser = JFileChooser().apply {
+            dialogTitle = "Save Backup"
+            fileFilter = FileNameExtensionFilter("JSON files", "json")
+            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+            selectedFile = File("civitdeck_backup_$timestamp.json")
         }
-        file.writeText(json)
+        if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+            var file = chooser.selectedFile
+            if (!file.name.endsWith(".json")) {
+                file = File(file.absolutePath + ".json")
+            }
+            file.writeText(json)
+        }
     }
 }
 
 private fun loadBackupFromFile(viewModel: DesktopBackupViewModel) {
-    val chooser = JFileChooser().apply {
-        dialogTitle = "Open Backup File"
-        fileFilter = FileNameExtensionFilter("JSON files", "json")
-    }
-    if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-        val json = chooser.selectedFile.readText()
-        viewModel.onImportFileLoaded(json)
+    SwingUtilities.invokeLater {
+        val chooser = JFileChooser().apply {
+            dialogTitle = "Open Backup File"
+            fileFilter = FileNameExtensionFilter("JSON files", "json")
+        }
+        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            val json = chooser.selectedFile.readText()
+            viewModel.onImportFileLoaded(json)
+        }
     }
 }

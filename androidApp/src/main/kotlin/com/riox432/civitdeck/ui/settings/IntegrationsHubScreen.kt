@@ -136,7 +136,7 @@ private fun IntegrationRow(
         }
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-            contentDescription = null,
+            contentDescription = "Navigate forward",
             modifier = Modifier.size(16.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )

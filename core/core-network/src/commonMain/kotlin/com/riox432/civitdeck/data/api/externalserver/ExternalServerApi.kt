@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.data.api.externalserver
 
+import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -9,11 +10,15 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.URLBuilder
 import io.ktor.http.contentType
+import kotlin.concurrent.Volatile
 
 class ExternalServerApi(
     private val client: HttpClient,
 ) {
+    @Volatile
     private var baseUrl: String = ""
+
+    @Volatile
     private var apiKey: String = ""
 
     fun configure(baseUrl: String, apiKey: String) {
@@ -82,7 +87,12 @@ class ExternalServerApi(
             if (apiKey.isNotBlank()) header("X-API-Key", apiKey)
         }
         true
-    } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+    } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+        Logger.w(TAG, "Connection test failed: ${e.message}")
         false
+    }
+
+    private companion object {
+        const val TAG = "ExternalServerApi"
     }
 }

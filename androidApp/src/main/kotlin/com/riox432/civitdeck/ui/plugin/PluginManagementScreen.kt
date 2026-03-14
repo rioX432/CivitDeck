@@ -38,6 +38,7 @@ import com.riox432.civitdeck.domain.model.InstalledPlugin
 import com.riox432.civitdeck.domain.model.InstalledPluginState
 import com.riox432.civitdeck.domain.model.InstalledPluginType
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
+import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -155,7 +156,7 @@ private fun PluginIcon() {
     ) {
         Icon(
             Icons.Default.Extension,
-            contentDescription = null,
+            contentDescription = "Plugin",
             tint = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier.size(24.dp),
         )
@@ -211,7 +212,7 @@ private fun StatusIndicator(state: InstalledPluginState) {
     Box(
         modifier = Modifier
             .size(8.dp)
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(CornerRadius.xs))
             .background(color),
     )
 }

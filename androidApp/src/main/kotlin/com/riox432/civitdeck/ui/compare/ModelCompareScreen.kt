@@ -288,7 +288,7 @@ private fun CompareCarouselPage(image: ModelImage) {
             .data(image.url)
             .crossfade(Duration.normal)
             .build(),
-        contentDescription = null,
+        contentDescription = "Model comparison image",
         contentScale = ContentScale.Fit,
         modifier = Modifier
             .fillMaxWidth()

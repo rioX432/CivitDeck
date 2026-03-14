@@ -3,6 +3,7 @@ package com.riox432.civitdeck.ui.compare
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -32,7 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
+import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
@@ -40,6 +42,7 @@ import com.riox432.civitdeck.domain.model.filterByNsfwLevel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailUiState
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.ui.theme.shimmer
 import com.riox432.civitdeck.util.FormatUtils
 
 @Composable
@@ -167,13 +170,15 @@ private fun CompareModelPanel(
 
     Column(modifier = modifier.padding(Spacing.xs)) {
         if (images.isNotEmpty()) {
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = images.first().url,
-                contentDescription = null,
+                contentDescription = "Model comparison image",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f),
+                loading = { Box(Modifier.fillMaxSize().shimmer()) },
+                error = { ImageErrorPlaceholder(modifier = Modifier.fillMaxSize()) },
             )
         } else {
             Box(

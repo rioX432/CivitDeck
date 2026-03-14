@@ -44,6 +44,7 @@ import com.riox432.civitdeck.domain.model.SDWebUIConnection
 import com.riox432.civitdeck.domain.model.SDWebUIConnectionStatus
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsUiState
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
+import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -179,7 +180,7 @@ private fun SDWebUIConnectionCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onActivate, onClickLabel = "Select connection"),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(CornerRadius.card),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(Spacing.md),

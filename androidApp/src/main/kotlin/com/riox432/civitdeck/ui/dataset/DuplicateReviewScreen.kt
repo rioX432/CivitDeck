@@ -170,7 +170,7 @@ private fun DuplicateImageThumbnail(image: DatasetImage) {
     Box {
         CivitAsyncImage(
             imageUrl = image.imageUrl,
-            contentDescription = null,
+            contentDescription = "Duplicate image",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
