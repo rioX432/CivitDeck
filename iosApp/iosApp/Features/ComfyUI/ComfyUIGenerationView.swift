@@ -191,7 +191,10 @@ struct ComfyUIGenerationView: View {
                 TextEditor(text: $workflowInputText)
                     .font(.civitMonoCaption)
                     .frame(maxWidth: .infinity, minHeight: workflowTextEditorMinHeight)
-                    .overlay(RoundedRectangle(cornerRadius: CornerRadius.image).stroke(Color.civitOnSurfaceVariant.opacity(0.4)))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.image)
+                            .stroke(Color.civitOnSurfaceVariant.opacity(0.4))
+                    )
                 if let err = viewModel.workflowImportError {
                     Text(err).font(.civitBodySmall).foregroundColor(.civitError)
                 }
