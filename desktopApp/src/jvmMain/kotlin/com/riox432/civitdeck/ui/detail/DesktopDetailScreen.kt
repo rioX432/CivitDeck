@@ -45,8 +45,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
-import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
+import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
@@ -257,13 +257,15 @@ private fun ModelInfoHeader(
                     modifier = Modifier.clickable { onCreatorClick(creator.username) },
                 ) {
                     creator.image?.let { avatarUrl ->
-                        AsyncImage(
+                        SubcomposeAsyncImage(
                             model = avatarUrl,
                             contentDescription = creator.username,
                             modifier = Modifier
                                 .size(AVATAR_SIZE)
                                 .clip(CircleShape),
                             contentScale = ContentScale.Crop,
+                            loading = { Box(Modifier.fillMaxSize().shimmer()) },
+                            error = { ImageErrorPlaceholder(modifier = Modifier.fillMaxSize()) },
                         )
                         Spacer(modifier = Modifier.width(Spacing.xs))
                     }

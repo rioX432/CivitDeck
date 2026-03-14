@@ -106,7 +106,7 @@ private fun DatasetListToolbar(
                 modifier = Modifier.weight(1f).padding(start = Spacing.sm),
             )
             Button(onClick = onCreate) {
-                Icon(Icons.Default.Add, contentDescription = null)
+                Icon(Icons.Default.Add, contentDescription = "Create new dataset")
                 Text("New Dataset", modifier = Modifier.padding(start = Spacing.xs))
             }
         }
