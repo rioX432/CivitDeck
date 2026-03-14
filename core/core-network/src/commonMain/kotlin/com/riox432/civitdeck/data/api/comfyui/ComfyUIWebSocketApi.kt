@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.data.api.comfyui
 
+import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.websocket.Frame
@@ -21,6 +22,8 @@ private const val MAX_DELAY_MS = 16_000L
  * The returned Flow reconnects automatically on failure using exponential backoff (max 5 retries).
  * Messages are filtered to the given [promptId] so callers only receive events for their job.
  */
+private const val TAG = "ComfyUIWebSocketApi"
+
 class ComfyUIWebSocketApi(
     private val client: HttpClient,
     private val json: Json,
@@ -45,6 +48,7 @@ class ComfyUIWebSocketApi(
                 // Session ended normally — return without retrying
                 attempt = MAX_RETRIES + 1
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.w(TAG, "WebSocket connection failed (attempt $attempt): ${e.message}")
                 lastError = e
                 attempt++
                 if (attempt <= MAX_RETRIES) {
@@ -121,6 +125,7 @@ class ComfyUIWebSocketApi(
                 else -> ComfyUIWebSocketMessage.Unknown(envelope.type)
             }
         } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            Logger.w(TAG, "Failed to parse WebSocket message: ${e.message}")
             null
         }
     }

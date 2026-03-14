@@ -4,12 +4,15 @@ import com.riox432.civitdeck.domain.model.ExportFormat
 import com.riox432.civitdeck.domain.model.ExportProgress
 import com.riox432.civitdeck.domain.repository.DatasetCollectionRepository
 import com.riox432.civitdeck.domain.repository.ExportRepository
+import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+
+private const val TAG = "ExportRepositoryImpl"
 
 class ExportRepositoryImpl(
     private val datasetRepo: DatasetCollectionRepository,
@@ -60,6 +63,7 @@ class ExportRepositoryImpl(
 
             emit(ExportProgress.Completed(outputPath, warningCount))
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.e(TAG, "Export failed for dataset $datasetId: ${e.message}")
             emit(ExportProgress.Failed(e.message ?: "Export failed"))
         }
     }

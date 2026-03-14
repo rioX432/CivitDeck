@@ -9,6 +9,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUISamplers
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIVaesUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.GenerateSDWebUIImageUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptSDWebUIGenerationUseCase
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -72,6 +73,7 @@ class SDWebUIGenerationViewModel(
                     )
                 }
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.e(TAG, "Failed to load resources: ${e.message}")
                 _uiState.update { it.copy(isLoading = false, error = e.message) }
             }
         }
@@ -127,6 +129,10 @@ class SDWebUIGenerationViewModel(
                 it.copy(isGenerating = false, error = progress.message)
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "SDWebUIGenerationVM"
     }
 
     fun onInterrupt() {

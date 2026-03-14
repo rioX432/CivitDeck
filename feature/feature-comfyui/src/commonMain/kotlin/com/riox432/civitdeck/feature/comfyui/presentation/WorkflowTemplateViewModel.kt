@@ -11,6 +11,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExportWorkflowTempla
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.GetWorkflowTemplatesUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveWorkflowTemplateUseCase
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -58,6 +59,7 @@ class WorkflowTemplateViewModel(
             try {
                 deleteTemplate(id)
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.e(TAG, "Failed to delete template $id: ${e.message}")
                 _uiState.update { it.copy(error = e.message) }
             }
         }
@@ -78,6 +80,7 @@ class WorkflowTemplateViewModel(
                 importTemplate(jsonString)
                 _uiState.update { it.copy(importError = null) }
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.e(TAG, "Failed to import template: ${e.message}")
                 _uiState.update { it.copy(importError = e.message) }
             }
         }
@@ -92,6 +95,7 @@ class WorkflowTemplateViewModel(
             try {
                 saveTemplate(template)
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.e(TAG, "Failed to save template: ${e.message}")
                 _uiState.update { it.copy(error = e.message) }
             }
         }
@@ -102,6 +106,8 @@ class WorkflowTemplateViewModel(
     }
 
     companion object {
+        private const val TAG = "WorkflowTemplateVM"
+
         fun emptyTemplate(type: WorkflowTemplateType = WorkflowTemplateType.TXT2IMG): WorkflowTemplate =
             WorkflowTemplate(
                 id = 0L,

@@ -5,6 +5,7 @@
 
 import WidgetKit
 import SwiftUI
+import ImageIO
 
 // MARK: - Data model
 
@@ -103,7 +104,7 @@ struct TrendingModelWidgetView: View {
     @ViewBuilder
     private var thumbnailView: some View {
         if let url = entry.thumbnailURL {
-            AsyncImage(url: url) { phase in
+            WidgetCachedImage(url: url) { phase in
                 switch phase {
                 case .success(let image):
                     image
@@ -148,4 +149,60 @@ struct CivitDeckTrendingWidget: Widget {
         .description("Shows today's trending AI model from CivitAI.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
+}
+
+// MARK: - Cached image loader for widgets
+
+/// Drop-in replacement for AsyncImage with disk caching via URLSession.
+/// Mirrors the app's CachedAsyncImage but self-contained for the widget target.
+private struct WidgetCachedImage<Content: View>: View {
+    let url: URL?
+    @ViewBuilder let content: (AsyncImagePhase) -> Content
+    @State private var phase: AsyncImagePhase = .empty
+
+    var body: some View {
+        content(phase)
+            .task(id: url) { await loadImage() }
+    }
+
+    private func loadImage() async {
+        guard let url else {
+            phase = .empty
+            return
+        }
+        let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
+        do {
+            let (data, _) = try await WidgetImageSession.shared.data(for: request)
+            guard let image = downsampledImage(data: data) else {
+                phase = .failure(URLError(.cannotDecodeContentData))
+                return
+            }
+            phase = .success(Image(uiImage: image))
+        } catch {
+            if !Task.isCancelled { phase = .failure(error) }
+        }
+    }
+
+    private func downsampledImage(data: Data) -> UIImage? {
+        let opts: [CFString: Any] = [kCGImageSourceShouldCache: false]
+        guard let src = CGImageSourceCreateWithData(data as CFData, opts as CFDictionary) else { return nil }
+        let thumbOpts: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: 300,
+            kCGImageSourceShouldCacheImmediately: true,
+        ]
+        guard let cg = CGImageSourceCreateThumbnailAtIndex(src, 0, thumbOpts as CFDictionary) else { return nil }
+        return UIImage(cgImage: cg)
+    }
+}
+
+private enum WidgetImageSession {
+    static let shared: URLSession = {
+        let cache = URLCache(memoryCapacity: 5 * 1024 * 1024, diskCapacity: 50 * 1024 * 1024)
+        let config = URLSessionConfiguration.default
+        config.urlCache = cache
+        config.requestCachePolicy = .returnCacheDataElseLoad
+        return URLSession(configuration: config)
+    }()
 }
