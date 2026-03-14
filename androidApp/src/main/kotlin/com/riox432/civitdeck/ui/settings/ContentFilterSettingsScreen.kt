@@ -49,6 +49,7 @@ fun ContentFilterSettingsScreen(
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
             contentFilterItems(state, viewModel, displayState, displayViewModel)
+            feedQualityItems(behaviorState, appBehaviorViewModel)
             notificationItems(behaviorState, appBehaviorViewModel)
         }
     }
@@ -91,5 +92,18 @@ internal fun LazyListScope.notificationItems(
     item { NotificationsToggleRow(state.notificationsEnabled, viewModel::onNotificationsEnabledChanged) }
     if (state.notificationsEnabled) {
         item { PollingIntervalRow(state.pollingInterval, viewModel::onPollingIntervalChanged) }
+    }
+}
+
+internal fun LazyListScope.feedQualityItems(
+    state: AppBehaviorSettingsUiState,
+    viewModel: AppBehaviorSettingsViewModel,
+) {
+    item { SectionHeader("Feed Quality") }
+    item {
+        FeedQualityThresholdRow(
+            threshold = state.feedQualityThreshold,
+            onChanged = viewModel::onFeedQualityThresholdChanged,
+        )
     }
 }

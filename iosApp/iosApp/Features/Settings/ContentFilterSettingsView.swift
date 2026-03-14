@@ -38,6 +38,7 @@ struct ContentFilterSettingsView: View {
                     }
                 }
             }
+            feedQualitySection
             notificationsSection
         }
         .navigationTitle("Content & Behavior")
@@ -77,6 +78,32 @@ struct ContentFilterSettingsView: View {
         )) {
             ForEach(SearchFilter.periodOptions, id: \.self) { period in
                 Text(SearchFilter.periodLabel(period)).tag(period)
+            }
+        }
+    }
+
+    private var feedQualitySection: some View {
+        Section("Feed Quality") {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                HStack {
+                    Text("Quality Threshold")
+                        .font(.civitBodyMedium)
+                    Spacer()
+                    Text(appBehaviorViewModel.feedQualityThreshold == 0 ? "Off" : "\(appBehaviorViewModel.feedQualityThreshold)")
+                        .font(.civitBodySmall)
+                        .foregroundColor(.civitOnSurfaceVariant)
+                }
+                Text("Filter low-quality models from your creator feed")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+                Slider(
+                    value: Binding(
+                        get: { Double(appBehaviorViewModel.feedQualityThreshold) },
+                        set: { appBehaviorViewModel.onFeedQualityThresholdChanged(Int32($0)) }
+                    ),
+                    in: 0...100,
+                    step: 1
+                )
             }
         }
     }

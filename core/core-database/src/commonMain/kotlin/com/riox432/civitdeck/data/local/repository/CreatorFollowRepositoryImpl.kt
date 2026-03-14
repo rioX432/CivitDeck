@@ -9,6 +9,7 @@ import com.riox432.civitdeck.data.local.entity.FeedCacheEntity
 import com.riox432.civitdeck.data.local.entity.FollowedCreatorEntity
 import com.riox432.civitdeck.domain.model.FeedItem
 import com.riox432.civitdeck.domain.model.FollowedCreator
+import com.riox432.civitdeck.domain.model.ModelStats
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.repository.CreatorFollowRepository
 import com.riox432.civitdeck.util.Logger
@@ -81,6 +82,13 @@ class CreatorFollowRepositoryImpl(
                 type = entity.type.toModelType(),
                 publishedAt = entity.publishedAt,
                 isUnread = entity.cachedAt > lastCheckedMin,
+                stats = ModelStats(
+                    downloadCount = entity.downloadCount,
+                    favoriteCount = entity.favoriteCount,
+                    commentCount = entity.commentCount,
+                    ratingCount = entity.ratingCount,
+                    rating = entity.rating,
+                ),
             )
         }
     }
@@ -129,6 +137,11 @@ class CreatorFollowRepositoryImpl(
                         type = domain.type.name,
                         publishedAt = latestVersion?.createdAt ?: "",
                         cachedAt = now,
+                        downloadCount = domain.stats.downloadCount,
+                        favoriteCount = domain.stats.favoriteCount,
+                        commentCount = domain.stats.commentCount,
+                        ratingCount = domain.stats.ratingCount,
+                        rating = domain.stats.rating,
                     )
                 }
                 feedCacheDao.insertAll(entities)

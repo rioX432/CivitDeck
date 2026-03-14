@@ -19,4 +19,9 @@ data class FeedCacheEntity(
     val type: String,
     val publishedAt: String,
     val cachedAt: Long,
+    val downloadCount: Int = 0,
+    val favoriteCount: Int = 0,
+    val commentCount: Int = 0,
+    val ratingCount: Int = 0,
+    val rating: Double = 0.0,
 )

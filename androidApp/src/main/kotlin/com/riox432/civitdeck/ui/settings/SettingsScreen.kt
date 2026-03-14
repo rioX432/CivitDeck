@@ -894,6 +894,37 @@ internal fun ApiKeyInputRow(
 }
 
 @Composable
+internal fun FeedQualityThresholdRow(threshold: Int, onChanged: (Int) -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text("Quality Threshold", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = if (threshold == 0) "Off" else "$threshold",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Text(
+            "Filter low-quality models from your creator feed",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Slider(
+            value = threshold.toFloat(),
+            onValueChange = { onChanged(it.toInt()) },
+            valueRange = 0f..100f,
+        )
+    }
+}
+
+@Composable
 internal fun NavigationRow(label: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier

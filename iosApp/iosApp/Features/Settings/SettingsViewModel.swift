@@ -122,6 +122,7 @@ final class AppBehaviorSettingsViewModelOwner: ObservableObject {
     @Published var powerUserMode: Bool = false
     @Published var notificationsEnabled: Bool = false
     @Published var pollingInterval: PollingInterval = .off
+    @Published var feedQualityThreshold: Int32 = 30
 
     private let vm: AppBehaviorSettingsViewModel
     private let store: ViewModelStore
@@ -139,6 +140,7 @@ final class AppBehaviorSettingsViewModelOwner: ObservableObject {
             powerUserMode = state.powerUserMode
             notificationsEnabled = state.notificationsEnabled
             pollingInterval = state.pollingInterval
+            feedQualityThreshold = state.feedQualityThreshold
         }
     }
 
@@ -152,6 +154,10 @@ final class AppBehaviorSettingsViewModelOwner: ObservableObject {
 
     func onPollingIntervalChanged(_ interval: PollingInterval) {
         vm.onPollingIntervalChanged(interval: interval)
+    }
+
+    func onFeedQualityThresholdChanged(_ threshold: Int32) {
+        vm.onFeedQualityThresholdChanged(threshold: threshold)
     }
 }
 
