@@ -12,23 +12,26 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.contentType
 import kotlin.concurrent.Volatile
 
+/**
+ * Holds the server configuration as an immutable snapshot so that
+ * [baseUrl] and [apiKey] are always read together consistently.
+ */
+private data class ServerConfig(val baseUrl: String = "", val apiKey: String = "")
+
 class ExternalServerApi(
     private val client: HttpClient,
 ) {
     @Volatile
-    private var baseUrl: String = ""
-
-    @Volatile
-    private var apiKey: String = ""
+    private var config: ServerConfig = ServerConfig()
 
     fun configure(baseUrl: String, apiKey: String) {
-        this.baseUrl = baseUrl.trimEnd('/')
-        this.apiKey = apiKey
+        config = ServerConfig(baseUrl.trimEnd('/'), apiKey)
     }
 
     suspend fun getCapabilities(): CapabilitiesResponseDto {
-        return client.get("$baseUrl/api/capabilities") {
-            if (apiKey.isNotBlank()) header("X-API-Key", apiKey)
+        val cfg = config
+        return client.get("${cfg.baseUrl}/api/capabilities") {
+            if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
         }.body()
     }
 
@@ -37,7 +40,8 @@ class ExternalServerApi(
         perPage: Int,
         filters: Map<String, String>,
     ): PaginatedImagesResponseDto {
-        val url = URLBuilder("$baseUrl/api/images").apply {
+        val cfg = config
+        val url = URLBuilder("${cfg.baseUrl}/api/images").apply {
             parameters.append("page", page.toString())
             parameters.append("per_page", perPage.toString())
             filters.forEach { (key, value) ->
@@ -45,36 +49,40 @@ class ExternalServerApi(
             }
         }.buildString()
         return client.get(url) {
-            if (apiKey.isNotBlank()) header("X-API-Key", apiKey)
+            if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
         }.body()
     }
 
     suspend fun getGenerationOptions(): GenerationOptionsResponseDto {
-        return client.get("$baseUrl/api/generation/options") {
-            if (apiKey.isNotBlank()) header("X-API-Key", apiKey)
+        val cfg = config
+        return client.get("${cfg.baseUrl}/api/generation/options") {
+            if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
         }.body()
     }
 
     suspend fun getDependentChoices(endpoint: String): List<GenerationChoiceDto> {
-        val url = if (endpoint.startsWith("/")) "$baseUrl$endpoint" else "$baseUrl/$endpoint"
+        val cfg = config
+        val url = if (endpoint.startsWith("/")) "${cfg.baseUrl}$endpoint" else "${cfg.baseUrl}/$endpoint"
         return client.get(url) {
-            if (apiKey.isNotBlank()) header("X-API-Key", apiKey)
+            if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
         }.body()
     }
 
     suspend fun executeGeneration(
         params: Map<String, String>,
     ): GenerationExecuteResponseDto {
-        return client.post("$baseUrl/api/generation/execute") {
-            if (apiKey.isNotBlank()) header("X-API-Key", apiKey)
+        val cfg = config
+        return client.post("${cfg.baseUrl}/api/generation/execute") {
+            if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
             contentType(ContentType.Application.Json)
             setBody(GenerationExecuteRequestDto(params))
         }.body()
     }
 
     suspend fun getGenerationStatus(jobId: String): GenerationStatusResponseDto {
-        return client.get("$baseUrl/api/generation/status") {
-            if (apiKey.isNotBlank()) header("X-API-Key", apiKey)
+        val cfg = config
+        return client.get("${cfg.baseUrl}/api/generation/status") {
+            if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
             url { parameters.append("job_id", jobId) }
         }.body()
     }
@@ -83,8 +91,9 @@ class ExternalServerApi(
      * Health check: tries GET /api/capabilities and returns true if reachable.
      */
     suspend fun testConnection(): Boolean = try {
-        client.get("$baseUrl/api/capabilities") {
-            if (apiKey.isNotBlank()) header("X-API-Key", apiKey)
+        val cfg = config
+        client.get("${cfg.baseUrl}/api/capabilities") {
+            if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
         }
         true
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {

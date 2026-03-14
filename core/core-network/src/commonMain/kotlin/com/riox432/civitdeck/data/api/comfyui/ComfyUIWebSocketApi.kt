@@ -124,7 +124,7 @@ class ComfyUIWebSocketApi(
                 }
                 else -> ComfyUIWebSocketMessage.Unknown(envelope.type)
             }
-        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Logger.w(TAG, "Failed to parse WebSocket message: ${e.message}")
             null
         }

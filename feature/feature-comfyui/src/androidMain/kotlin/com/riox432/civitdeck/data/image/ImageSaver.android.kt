@@ -5,10 +5,13 @@ import android.content.Context
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+
+private const val TAG = "ImageSaver"
 
 actual class ImageSaver actual constructor() : KoinComponent {
     private val context: Context by inject()
@@ -39,7 +42,8 @@ actual class ImageSaver actual constructor() : KoinComponent {
                     context.contentResolver.update(uri, values, null, null)
                 }
                 true
-            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.e(TAG, "Failed to save image to gallery: ${e.message}", e)
                 false
             }
         }

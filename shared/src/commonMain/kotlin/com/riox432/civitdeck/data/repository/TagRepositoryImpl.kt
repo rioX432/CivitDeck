@@ -33,10 +33,10 @@ class TagRepositoryImpl(
                 items = response.items.map { it.toDomain() },
                 metadata = response.metadata.toDomain(),
             )
-        } catch (@Suppress("SwallowedException") e: DataParseException) {
+        } catch (e: DataParseException) {
             Logger.w(TAG, "Parse error fetching tags, returning empty: ${e.message}")
             PaginatedResult(items = emptyList(), metadata = PageMetadata(null, null))
-        } catch (@Suppress("SwallowedException") e: SerializationException) {
+        } catch (e: SerializationException) {
             Logger.w(TAG, "Serialization error fetching tags, returning empty: ${e.message}")
             PaginatedResult(items = emptyList(), metadata = PageMetadata(null, null))
         }

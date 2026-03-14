@@ -150,7 +150,7 @@ private fun PluginIcon() {
     Box(
         modifier = Modifier
             .size(40.dp)
-            .clip(RoundedCornerShape(Spacing.sm))
+            .clip(RoundedCornerShape(CornerRadius.image))
             .background(MaterialTheme.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center,
     ) {
@@ -195,7 +195,7 @@ internal fun PluginTypeBadge(type: InstalledPluginType) {
         modifier = Modifier
             .background(
                 MaterialTheme.colorScheme.secondaryContainer,
-                RoundedCornerShape(Spacing.xs),
+                RoundedCornerShape(CornerRadius.xs),
             )
             .padding(horizontal = Spacing.sm, vertical = 2.dp),
     )

@@ -83,7 +83,7 @@ struct DatasetListView: View {
                     } label: {
                         Label("Rename", systemImage: "pencil")
                     }
-                    .tint(.orange)
+                    .tint(.civitTertiary)
                 }
                 .contextMenu {
                     Button {

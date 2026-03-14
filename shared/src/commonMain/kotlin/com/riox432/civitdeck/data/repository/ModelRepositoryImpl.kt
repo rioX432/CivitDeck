@@ -74,10 +74,10 @@ class ModelRepositoryImpl(
                 items = response.items.map { it.toDomain() },
                 metadata = response.metadata.toDomain(),
             )
-        } catch (@Suppress("SwallowedException") e: DataParseException) {
+        } catch (e: DataParseException) {
             Logger.w(TAG, "Parse error fetching models, falling back to cache: ${e.message}")
             getModelsFromCacheOrEmpty(cacheKey)
-        } catch (@Suppress("SwallowedException") e: SerializationException) {
+        } catch (e: SerializationException) {
             Logger.w(TAG, "Serialization error fetching models, falling back to cache: ${e.message}")
             getModelsFromCacheOrEmpty(cacheKey)
         } catch (e: Exception) {
@@ -163,7 +163,7 @@ class ModelRepositoryImpl(
                     allowDerivatives = it.allowDerivatives,
                 )
             }
-        } catch (@Suppress("SwallowedException") e: Exception) {
+        } catch (e: Exception) {
             Logger.w(TAG, "Failed to fetch license for version $versionId: ${e.message}")
             null
         }
