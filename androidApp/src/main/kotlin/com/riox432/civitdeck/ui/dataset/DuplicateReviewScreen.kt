@@ -33,8 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.domain.model.DuplicateGroup
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
@@ -60,7 +62,7 @@ fun DuplicateReviewScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.cd_navigate_back),
                         )
                     }
                 },

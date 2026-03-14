@@ -5,4 +5,10 @@
     <string name="cd_open_dropdown">Open dropdown</string>
     <string name="cd_open_image">Open image</string>
     <string name="cd_open_collection">Open collection</string>
+    <string name="cd_navigate_back">Back</string>
+    <string name="cd_close">Close</string>
+    <string name="cd_share">Share</string>
+    <string name="cd_clear">Clear</string>
+    <string name="cd_delete">Delete</string>
+    <string name="cd_remove">Remove</string>
 </resources>
