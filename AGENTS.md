@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents working with this repository.
 
 ## Project Overview
 
-CivitDeck is a power-user mobile client for [CivitAI](https://civitai.com/) — the largest open-source generative AI community. It provides a native Android & iOS experience for browsing models, images, creators, prompts, and galleries, built with Kotlin Multiplatform (KMP).
+CivitDeck is a power-user client for [CivitAI](https://civitai.com/) — the largest open-source generative AI community. It provides a native Android, iOS & Desktop experience for browsing models, images, creators, prompts, and galleries, built with Kotlin Multiplatform (KMP).
 
 ## Commands
 
@@ -14,6 +14,12 @@ CivitDeck is a power-user mobile client for [CivitAI](https://civitai.com/) — 
 ./gradlew :androidApp:assembleDebug   # Build Android debug APK
 ./gradlew :androidApp:assembleRelease # Build Android release APK
 ./gradlew :shared:testDebugUnitTest   # Run shared module tests
+
+# Desktop (Compose Desktop / JVM)
+./gradlew :desktopApp:run             # Run desktop app
+./gradlew :desktopApp:packageDmg      # Package macOS .dmg
+./gradlew :desktopApp:packageMsi      # Package Windows .msi
+./gradlew :desktopApp:packageDeb      # Package Linux .deb
 
 # iOS (no CocoaPods — uses Kotlin/Native framework directly)
 open iosApp/iosApp.xcodeproj          # Open in Xcode
@@ -26,13 +32,14 @@ cd iosApp && swiftlint --strict       # SwiftLint (config: iosApp/.swiftlint.yml
 ## Architecture
 
 ### Tech Stack
-- Kotlin Multiplatform (KMP) — shared logic across Android & iOS
+- Kotlin Multiplatform (KMP) — shared logic across Android, iOS & Desktop
 - Ktor Client — HTTP client for CivitAI REST API
 - Kotlinx Serialization — JSON parsing
 - Room KMP — local database (favorites, cache)
 - Koin — dependency injection
-- Jetpack Compose (Android) / SwiftUI (iOS) — UI
+- Jetpack Compose (Android) / SwiftUI (iOS) / Compose Desktop (JVM) — UI
 - Navigation 3 (`androidx.navigation3`) — Android screen navigation
+- Desktop navigation — state-based routing (no Navigation 3)
 - Clean Architecture + MVVM pattern with UDF (Unidirectional Data Flow)
 
 ### Module Structure
@@ -59,6 +66,7 @@ CivitDeck/
 │   └── feature-externalserver/ # Custom external server: connection management, image gallery, filters
 ├── androidApp/               # Android app entry point, Navigation 3, ModelCard, widgets, tiles
 │   └── ui/                   # Screens: dataset, compare, analytics, backup, feed, download, plugin (in androidApp, not feature module)
+├── desktopApp/               # Desktop app entry point (Compose Desktop / JVM), state-based navigation, Desktop ViewModels
 └── iosApp/                   # iOS app entry point (SwiftUI)
     └── iosApp/
         ├── Features/         # Feature screens + ViewModels (Search, Detail, Gallery, Creator, Collections,
@@ -71,7 +79,7 @@ CivitDeck/
 ### Key Design Patterns
 
 **MVVM + UDF**
-- ViewModels are platform-specific: `androidx.lifecycle.ViewModel` (Android), `ObservableObject` (iOS)
+- ViewModels are platform-specific: `androidx.lifecycle.ViewModel` (Android), `ObservableObject` (iOS), plain classes with `CoroutineScope` (Desktop)
 - Shared module exposes UseCases returning `Flow`/`StateFlow` — ViewModels subscribe to these
 - Complex screens may use sealed class Action/State for UDF; simple screens use plain StateFlow
 
@@ -94,6 +102,7 @@ CivitDeck/
 
 **Image Loading**
 - Android: Coil 3.x with `SubcomposeAsyncImage` for loading states
+- Desktop: Coil 3.x (no context required — JVM target does not use `LocalContext`)
 - iOS: Custom `CachedAsyncImage` in `DesignSystem/` (no third-party dependency)
 
 ## Code Quality
