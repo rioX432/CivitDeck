@@ -1,9 +1,12 @@
 package com.riox432.civitdeck
 
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -53,12 +56,15 @@ fun main() {
             )
         }
 
+        var currentScreen by remember { mutableStateOf("Search") }
+        val windowTitle = "CivitDeck — $currentScreen"
+
         Window(
             onCloseRequest = {
                 WindowPreferences.save(windowState)
                 exitApplication()
             },
-            title = "CivitDeck",
+            title = windowTitle,
             state = windowState,
         ) {
             window.minimumSize = java.awt.Dimension(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
@@ -67,7 +73,15 @@ fun main() {
                 onDispose { WindowPreferences.save(windowState) }
             }
 
-            DesktopApp()
+            // Periodic window state save every 30 seconds
+            LaunchedEffect(Unit) {
+                while (true) {
+                    delay(PERIODIC_SAVE_INTERVAL_MS)
+                    WindowPreferences.save(windowState)
+                }
+            }
+
+            DesktopApp(onScreenChanged = { currentScreen = it })
         }
     }
 }
@@ -108,8 +122,9 @@ private data class WindowPreferences(
 
 private const val DEFAULT_WIDTH = 1200
 private const val DEFAULT_HEIGHT = 800
-private const val MIN_WINDOW_WIDTH = 800
+private const val MIN_WINDOW_WIDTH = 1024
 private const val MIN_WINDOW_HEIGHT = 600
+private const val PERIODIC_SAVE_INTERVAL_MS = 30_000L
 
 private fun setupCoilImageLoader() {
     val cacheDir = System.getProperty("user.home") + "/.civitdeck/image_cache"

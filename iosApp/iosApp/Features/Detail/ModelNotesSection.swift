@@ -1,6 +1,9 @@
 import SwiftUI
 import Shared
 
+private let noteEditorMinHeight: CGFloat = 60
+private let noteEditorMaxHeight: CGFloat = 120
+
 // MARK: - Notes Section
 
 struct ModelNotesSection: View {
@@ -68,7 +71,7 @@ struct ModelNotesSection: View {
         VStack(alignment: .trailing, spacing: Spacing.sm) {
             TextEditor(text: $editText)
                 .font(.civitBodyMedium)
-                .frame(minHeight: 60, maxHeight: 120)
+                .frame(minHeight: noteEditorMinHeight, maxHeight: noteEditorMaxHeight)
                 .overlay(
                     RoundedRectangle(cornerRadius: CornerRadius.image)
                         .stroke(Color.civitOutline, lineWidth: 1)
@@ -146,7 +149,7 @@ struct PersonalTagsSection: View {
     }
 
     private func tagChip(_ tag: String) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Spacing.xs) {
             Text(tag)
                 .font(.civitLabelMedium)
                 .lineLimit(1)

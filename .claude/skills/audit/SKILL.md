@@ -40,14 +40,16 @@ Create task tracker:
 2. "Scan tech debt (TODOs, deprecated APIs, code smells)"
 3. "Scan Android UI/UX issues"
 4. "Scan iOS UI/UX issues"
-5. "Scan architecture issues (KMP shared module)"
-6. "Aggregate findings"
-7. "Create GitHub Issues"
+5. "Scan Desktop UI issues"
+6. "Scan architecture issues (KMP shared module)"
+7. "Aggregate findings"
+8. "Create GitHub Issues"
 
 Parse `$ARGUMENTS`:
-- `android` → skip iOS scan and swiftlint
-- `ios` → skip Android scan and detekt
-- `shared` → skip both platform scans, only architecture + tech debt
+- `android` → skip iOS, Desktop scans and swiftlint
+- `ios` → skip Android, Desktop scans and detekt
+- `desktop` → skip Android, iOS scans and swiftlint
+- `shared` → skip all platform scans, only architecture + tech debt
 - `all` or empty → run everything
 
 ---
@@ -86,7 +88,7 @@ Mark task 1 `completed`.
 
 ## Step 3: Parallel Code Scans
 
-Mark tasks 2–5 `in_progress`. Launch **4 Task subagents in parallel** (`subagent_type: "Explore"`, `model: "haiku"`).
+Mark tasks 2–6 `in_progress`. Launch **5 Task subagents in parallel** (`subagent_type: "Explore"`, `model: "haiku"`).
 
 ---
 
@@ -258,7 +260,58 @@ Return the same JSON format as Subagent A.
 
 ---
 
-### Subagent D: Architecture Scanner (KMP Shared Module)
+### Subagent D: Desktop UI Scanner (skip if scope = android, ios, or shared)
+
+```
+Audit Desktop (Compose Desktop / JVM) code quality in the CivitDeck desktop app.
+
+Root: /Users/rio/workspace/projects/CivitDeck/desktopApp/
+
+Architecture context:
+- Compose Desktop (JVM target) — no Android Context, lifecycle, or Navigation 3
+- ViewModels are plain classes with CoroutineScope (NOT androidx.lifecycle.ViewModel)
+- Coil 3.x for image loading without Context
+- State-based routing: sealed class screens + mutableStateOf
+- Design tokens shared with Android via core-ui module
+
+## Checks to perform:
+
+### 1. Android API leaks (Critical)
+- `LocalContext.current` usage — does not exist on JVM
+- `collectAsStateWithLifecycle()` — use `collectAsState()` instead
+- `androidx.lifecycle.ViewModel` — Desktop uses plain classes
+- Navigation 3 imports (`androidx.navigation3.*`) — not available on JVM
+- `WorkManager`, `NotificationManager`, `Glance*` — Android-only APIs
+
+### 2. Compose correctness
+- `LazyColumn/LazyRow` items WITHOUT `key(...)` — search for `items(` not followed by `key =`
+- `remember {}` without keys for values that depend on state/props
+- State reads inside lambdas that should be deferred for perf
+
+### 3. Design token violations
+- Hardcoded colors: `Color(0x`, `Color.Red`, `Color.Blue`, `Color.White`, `Color.Black`, `Color.Gray`
+- Hardcoded text sizes: `fontSize = NN.sp` (not from tokens)
+- Hardcoded padding/spacing: `padding(NN.dp)` where NN is a magic number
+
+### 4. Navigation correctness
+- Verify sealed class screen definitions exist
+- Check for proper back navigation state management
+- Ensure screen transitions use state changes, not imperative navigation
+
+### 5. Keyboard shortcuts
+- `Modifier.onKeyEvent` or `Window` key handlers properly implemented
+- Common shortcuts present: Ctrl+F (search), Escape (back), arrow keys
+
+### 6. Image loading
+- `ImageRequest.Builder` called with Android Context — should be context-free on JVM
+- Verify `SubcomposeAsyncImage` used for loading states
+
+Return the same JSON format as Subagent A.
+```
+
+---
+
+### Subagent E: Architecture Scanner (KMP Shared Module)
 
 ```
 Audit the KMP shared module architecture in CivitDeck.
@@ -312,7 +365,7 @@ Return the same JSON format as Subagent A.
 
 ## Step 4: Aggregate Findings
 
-Mark tasks 2–5 `completed`. Mark task 6 `in_progress`.
+Mark tasks 2–6 `completed`. Mark task 7 `in_progress`.
 
 Collect results from:
 - Static analysis (detekt + swiftlint output)
@@ -337,9 +390,10 @@ If the same file+line appears in both static analysis and code scan, merge into 
 2. **Tech Debt** (TODO/FIXME, deprecated APIs, dead code)
 3. **UI/UX — Android**
 4. **UI/UX — iOS**
-5. **Architecture**
+5. **UI/UX — Desktop**
+6. **Architecture**
 
-Mark task 6 `completed`.
+Mark task 7 `completed`.
 
 ---
 
@@ -366,6 +420,9 @@ Found: {N} issues across {K} files
 ...
 
 ### UI/UX — iOS (N)
+...
+
+### UI/UX — Desktop (N)
 ...
 
 ### Architecture (N)
@@ -395,7 +452,7 @@ If user selects "Let me select by category", ask a follow-up listing the categor
 
 ## Step 6: Create GitHub Issues
 
-Mark task 7 `in_progress`.
+Mark task 8 `in_progress`.
 
 For each selected finding, create a GitHub Issue:
 
@@ -436,6 +493,7 @@ EOF
 | Tech Debt | `tech-debt` |
 | UI/UX Android | `ui-ux`, `android` |
 | UI/UX iOS | `ui-ux`, `ios` |
+| UI/UX Desktop | `ui-ux`, `desktop` |
 | Architecture | `tech-debt`, `architecture` |
 
 If a label doesn't exist in the repo, skip it (do not fail).
@@ -447,7 +505,7 @@ If more than 5 issues will be created, show the full list first and ask:
 About to create {N} GitHub Issues. Proceed?
 ```
 
-Mark task 7 `completed`.
+Mark task 8 `completed`.
 
 ---
 
@@ -466,6 +524,7 @@ GitHub Issues created: {N} / {selected}
 | Tech Debt | N | N |
 | UI/UX Android | N | N |
 | UI/UX iOS | N | N |
+| UI/UX Desktop | N | N |
 | Architecture | N | N |
 
 Skipped: {reasons — e.g. "user selected report-only"}

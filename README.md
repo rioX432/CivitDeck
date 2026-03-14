@@ -6,11 +6,11 @@
 
 **The power user client for CivitAI — browse, compare, and bridge to your generation workflow**
 
-Built with Kotlin Multiplatform (KMP) | Android & iOS
+Built with Kotlin Multiplatform (KMP) | Android, iOS & Desktop
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
-[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-6366F1?style=flat-square)]()
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Desktop-6366F1?style=flat-square)]()
 [![CI](https://github.com/rioX432/CivitDeck/actions/workflows/ci.yml/badge.svg)](https://github.com/rioX432/CivitDeck/actions/workflows/ci.yml)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/rioX432?style=flat-square&logo=github)](https://github.com/sponsors/rioX432)
 
@@ -61,7 +61,9 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Plugin System** — extend CivitDeck with plugins for workflow engines (ComfyUI, External Server), export formats (kohya-ss), and themes
 - **Video Preview** — play video previews directly in gallery and model detail screens
 - **Fresh Find** — discover recently published models before they trend
-- **Cross-Platform** — native Android (Jetpack Compose) & iOS (SwiftUI) from a shared KMP codebase
+- **Quality Filter** — filter models by calculated quality score based on downloads, favorites, and ratings
+- **Integrations Hub** — unified management screen for ComfyUI, SD WebUI, Civitai Link, and external servers
+- **Cross-Platform** — native Android (Jetpack Compose), iOS (SwiftUI) & Desktop (Compose Desktop) from a shared KMP codebase
 
 See the full [Roadmap](docs/ROADMAP.md) for planned features.
 
@@ -77,6 +79,7 @@ See the full [Roadmap](docs/ROADMAP.md) for planned features.
 |-------|-----------|
 | **Shared (KMP)** | Ktor Client, Kotlinx Serialization, Room KMP, Koin |
 | **Android** | Jetpack Compose, Material Design 3, Navigation 3, Coil |
+| **Desktop** | Compose Desktop (JVM), Material Design 3, Coil |
 | **iOS** | SwiftUI |
 | **Architecture** | Clean Architecture + MVVM (UDF) |
 | **CI/CD** | GitHub Actions |
@@ -94,10 +97,14 @@ graph TB
     subgraph android["Android"]
         avm["ViewModel"] --> compose["Compose"]
     end
+    subgraph desktop["Desktop"]
+        dvm["ViewModel"] --> cdesktop["Compose Desktop"]
+    end
     subgraph ios["iOS"]
         ivm["ViewModel"] --> swiftui["SwiftUI"]
     end
     usecase --> avm
+    usecase --> dvm
     usecase --> ivm
 ```
 
@@ -118,6 +125,9 @@ cd CivitDeck
 
 # Android
 ./gradlew :androidApp:installDebug
+
+# Desktop (macOS / Windows / Linux)
+./gradlew :desktopApp:run
 
 # iOS
 open iosApp/iosApp.xcodeproj

@@ -156,7 +156,7 @@ struct BatchTagEditorView: View {
                     .padding(.vertical, Spacing.xxs)
                     .background(Color.civitSecondary.opacity(0.85))
                     .foregroundColor(.civitOnSecondary)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.small))
                     .padding(Spacing.xs)
             }
         }

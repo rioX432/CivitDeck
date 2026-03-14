@@ -12,7 +12,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -69,7 +68,7 @@ import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
 
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ModelSearchContent(
@@ -98,6 +97,47 @@ internal fun ModelSearchContent(
         else -> "content"
     }
 
+    SearchContentPullToRefresh(
+        refreshState = refreshState,
+        lazyPagingItems = lazyPagingItems,
+        topPadding = topPadding,
+        stateKey = stateKey,
+        refreshError = refreshError,
+        recommendations = recommendations,
+        gridState = gridState,
+        onModelClick = onModelClick,
+        onHideModel = onHideModel,
+        bottomPadding = bottomPadding,
+        gridColumns = gridColumns,
+        ownedHashes = ownedHashes,
+        favoriteIds = favoriteIds,
+        onToggleFavorite = onToggleFavorite,
+        onCompareModel = onCompareModel,
+        isComparing = isComparing,
+    )
+}
+
+@Suppress("LongParameterList")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchContentPullToRefresh(
+    refreshState: LoadState,
+    lazyPagingItems: LazyPagingItems<Model>,
+    topPadding: androidx.compose.ui.unit.Dp,
+    stateKey: String,
+    refreshError: Throwable?,
+    recommendations: List<RecommendationSection>,
+    gridState: LazyGridState,
+    onModelClick: (Long, String?, String) -> Unit,
+    onHideModel: (Long, String) -> Unit,
+    bottomPadding: androidx.compose.ui.unit.Dp,
+    gridColumns: Int,
+    ownedHashes: Set<String>,
+    favoriteIds: Set<Long>,
+    onToggleFavorite: (Model) -> Unit,
+    onCompareModel: (Long, String) -> Unit,
+    isComparing: Boolean,
+) {
     val pullToRefreshState = rememberPullToRefreshState()
 
     PullToRefreshBox(
@@ -115,52 +155,86 @@ internal fun ModelSearchContent(
             )
         },
     ) {
-        Crossfade(
-            targetState = stateKey,
-            animationSpec = tween(
-                durationMillis = Duration.normal,
-                easing = Easing.standard,
-            ),
-            label = "searchContent",
-        ) { state ->
-            when (state) {
-                "loading" -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
+        SearchContentCrossfade(
+            stateKey = stateKey,
+            refreshError = refreshError,
+            lazyPagingItems = lazyPagingItems,
+            recommendations = recommendations,
+            gridState = gridState,
+            onModelClick = onModelClick,
+            onHideModel = onHideModel,
+            topPadding = topPadding,
+            bottomPadding = bottomPadding,
+            gridColumns = gridColumns,
+            ownedHashes = ownedHashes,
+            favoriteIds = favoriteIds,
+            onToggleFavorite = onToggleFavorite,
+            onCompareModel = onCompareModel,
+            isComparing = isComparing,
+        )
+    }
+}
+
+@Suppress("LongParameterList")
+@Composable
+private fun SearchContentCrossfade(
+    stateKey: String,
+    refreshError: Throwable?,
+    lazyPagingItems: LazyPagingItems<Model>,
+    recommendations: List<RecommendationSection>,
+    gridState: LazyGridState,
+    onModelClick: (Long, String?, String) -> Unit,
+    onHideModel: (Long, String) -> Unit,
+    topPadding: androidx.compose.ui.unit.Dp,
+    bottomPadding: androidx.compose.ui.unit.Dp,
+    gridColumns: Int,
+    ownedHashes: Set<String>,
+    favoriteIds: Set<Long>,
+    onToggleFavorite: (Model) -> Unit,
+    onCompareModel: (Long, String) -> Unit,
+    isComparing: Boolean,
+) {
+    Crossfade(
+        targetState = stateKey,
+        animationSpec = tween(durationMillis = Duration.normal, easing = Easing.standard),
+        label = "searchContent",
+    ) { state ->
+        when (state) {
+            "loading" -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
-                "error" -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = refreshError?.message ?: "Unknown error",
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
-                }
-                else -> {
-                    ModelGrid(
-                        lazyPagingItems = lazyPagingItems,
-                        recommendations = recommendations,
-                        gridState = gridState,
-                        onModelClick = onModelClick,
-                        onHideModel = onHideModel,
-                        topPadding = topPadding,
-                        bottomPadding = bottomPadding,
-                        gridColumns = gridColumns,
-                        ownedHashes = ownedHashes,
-                        favoriteIds = favoriteIds,
-                        onToggleFavorite = onToggleFavorite,
-                        onCompareModel = onCompareModel,
-                        isComparing = isComparing,
+            }
+            "error" -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = refreshError?.message ?: "Unknown error",
+                        color = MaterialTheme.colorScheme.error,
                     )
                 }
+            }
+            else -> {
+                ModelGrid(
+                    lazyPagingItems = lazyPagingItems,
+                    recommendations = recommendations,
+                    gridState = gridState,
+                    onModelClick = onModelClick,
+                    onHideModel = onHideModel,
+                    topPadding = topPadding,
+                    bottomPadding = bottomPadding,
+                    gridColumns = gridColumns,
+                    ownedHashes = ownedHashes,
+                    favoriteIds = favoriteIds,
+                    onToggleFavorite = onToggleFavorite,
+                    onCompareModel = onCompareModel,
+                    isComparing = isComparing,
+                )
             }
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList")
 @Composable
 private fun ModelGrid(
     lazyPagingItems: LazyPagingItems<Model>,
@@ -192,57 +266,90 @@ private fun ModelGrid(
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
-        recommendations.forEachIndexed { index, section ->
-            item(
-                key = "rec_${section.title}",
-                span = { GridItemSpan(maxLineSpan) },
-            ) {
-                RecommendationRow(
-                    section = section,
-                    sharedElementSuffix = "rec$index",
-                    onModelClick = onModelClick,
-                )
-            }
-        }
-        items(
-            count = lazyPagingItems.itemCount,
-            key = lazyPagingItems.itemKey { it.id },
-            contentType = { "model" },
-        ) { index ->
-            val model = lazyPagingItems[index] ?: return@items
-            val thumbnailUrl = model.modelVersions
-                .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
-            val isOwned = ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
+        recommendationItems(recommendations, onModelClick)
+        modelPagingItems(
+            lazyPagingItems, gridState, ownedHashes, favoriteIds,
+            isComparing, reducedMotion, onModelClick, onHideModel,
+            onToggleFavorite, onCompareModel,
+        )
+        appendLoadingItem(isAppendLoading)
+    }
+}
 
-            @Suppress("UnusedPrivateProperty")
-            val parallaxOffset = rememberGridItemScrollOffset(gridState, index)
-            val staggerAnimatable = remember { Animatable(0f) }
-            LaunchStaggerAnimation(index = index, animatable = staggerAnimatable, reducedMotion = reducedMotion)
-            ModelGridItem(
-                model = model,
-                isFavorite = model.id in favoriteIds,
-                thumbnailUrl = thumbnailUrl,
-                isOwned = isOwned,
-                isComparing = isComparing,
+private fun androidx.compose.foundation.lazy.grid.LazyGridScope.recommendationItems(
+    recommendations: List<RecommendationSection>,
+    onModelClick: (Long, String?, String) -> Unit,
+) {
+    recommendations.forEachIndexed { index, section ->
+        item(
+            key = "rec_${section.title}",
+            span = { GridItemSpan(maxLineSpan) },
+        ) {
+            RecommendationRow(
+                section = section,
+                sharedElementSuffix = "rec$index",
                 onModelClick = onModelClick,
-                onHideModel = onHideModel,
-                onToggleFavorite = onToggleFavorite,
-                onCompareModel = onCompareModel,
-                modifier = Modifier.animateItem(),
             )
         }
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            AnimatedVisibility(
-                visible = isAppendLoading,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically(),
+    }
+}
+
+@Suppress("LongParameterList")
+private fun androidx.compose.foundation.lazy.grid.LazyGridScope.modelPagingItems(
+    lazyPagingItems: LazyPagingItems<Model>,
+    gridState: LazyGridState,
+    ownedHashes: Set<String>,
+    favoriteIds: Set<Long>,
+    isComparing: Boolean,
+    reducedMotion: Boolean,
+    onModelClick: (Long, String?, String) -> Unit,
+    onHideModel: (Long, String) -> Unit,
+    onToggleFavorite: (Model) -> Unit,
+    onCompareModel: (Long, String) -> Unit,
+) {
+    items(
+        count = lazyPagingItems.itemCount,
+        key = lazyPagingItems.itemKey { it.id },
+        contentType = { "model" },
+    ) { index ->
+        val model = lazyPagingItems[index] ?: return@items
+        val thumbnailUrl = model.modelVersions
+            .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
+        val isOwned = ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
+
+        @Suppress("UnusedPrivateProperty")
+        val parallaxOffset = rememberGridItemScrollOffset(gridState, index)
+        val staggerAnimatable = remember { Animatable(0f) }
+        LaunchStaggerAnimation(index = index, animatable = staggerAnimatable, reducedMotion = reducedMotion)
+        ModelGridItem(
+            model = model,
+            isFavorite = model.id in favoriteIds,
+            thumbnailUrl = thumbnailUrl,
+            isOwned = isOwned,
+            isComparing = isComparing,
+            onModelClick = onModelClick,
+            onHideModel = onHideModel,
+            onToggleFavorite = onToggleFavorite,
+            onCompareModel = onCompareModel,
+            modifier = Modifier.animateItem(),
+        )
+    }
+}
+
+private fun androidx.compose.foundation.lazy.grid.LazyGridScope.appendLoadingItem(
+    isAppendLoading: Boolean,
+) {
+    item(span = { GridItemSpan(maxLineSpan) }) {
+        AnimatedVisibility(
+            visible = isAppendLoading,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically(),
+        ) {
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
+                contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator()
-                }
+                CircularProgressIndicator()
             }
         }
     }

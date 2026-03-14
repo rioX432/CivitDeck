@@ -3,6 +3,7 @@ import Shared
 
 @MainActor
 final class ExternalServerGalleryViewModel: ObservableObject {
+    private static let pollIntervalNanoseconds: UInt64 = 2_000_000_000
     @Published var images: [ServerImage] = []
     @Published var isLoading = false
     @Published var isLoadingMore = false
@@ -191,7 +192,7 @@ final class ExternalServerGalleryViewModel: ObservableObject {
         pollTask?.cancel()
         pollTask = Task {
             while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                try? await Task.sleep(nanoseconds: Self.pollIntervalNanoseconds)
                 guard !Task.isCancelled else { return }
                 do {
                     let job = try await getGenerationStatusUC.invoke(jobId: jobId)

@@ -1,6 +1,8 @@
 import SwiftUI
 import Shared
 
+private let captionEditorMinHeight: CGFloat = 120
+
 struct CaptionEditorSheet: View {
     let image: DatasetImage
     let onSave: (String) -> Void
@@ -17,10 +19,10 @@ struct CaptionEditorSheet: View {
         NavigationStack {
             VStack(alignment: .leading, spacing: Spacing.md) {
                 TextEditor(text: $text)
-                    .frame(minHeight: 120)
+                    .frame(minHeight: captionEditorMinHeight)
                     .padding(Spacing.sm)
                     .background(Color.civitSurfaceVariant.opacity(0.3))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
                 Text("\(text.count) characters")
                     .font(.caption)
                     .foregroundColor(.secondary)

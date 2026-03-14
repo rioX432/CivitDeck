@@ -43,10 +43,10 @@ import org.koin.dsl.module
 
 val dataModule = module {
     // File Scanner
-    single { FileScanner() }
+    factory { FileScanner() }
 
     // Image Saver (platform-specific via expect/actual)
-    single { ImageSaver() }
+    factory { ImageSaver() }
 
     // Repositories
     single<AuthRepository> { AuthRepositoryImpl(get()) }

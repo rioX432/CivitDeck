@@ -13,6 +13,7 @@ import com.riox432.civitdeck.ui.detail.DesktopDetailScreen
 import com.riox432.civitdeck.ui.feed.DesktopFeedScreen
 import com.riox432.civitdeck.ui.feed.DesktopFeedViewModel
 import com.riox432.civitdeck.ui.viewer.DesktopImageViewer
+import com.riox432.civitdeck.util.removeLastOrNull
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -74,6 +75,3 @@ fun FeedTabContent(
         }
     }
 }
-
-private fun <T> MutableList<T>.removeLastOrNull(): T? =
-    if (isNotEmpty()) removeAt(lastIndex) else null

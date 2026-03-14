@@ -9,6 +9,8 @@ enum QRCodeGenerator {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
         guard let data = string.data(using: .utf8) else { return nil }
+        // KVC-based API is the standard CIFilter interface for QR code generation;
+        // there is no typed alternative for inputMessage/inputCorrectionLevel.
         filter.setValue(data, forKey: "inputMessage")
         filter.setValue("M", forKey: "inputCorrectionLevel")
 

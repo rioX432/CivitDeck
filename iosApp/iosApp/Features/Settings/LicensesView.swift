@@ -13,7 +13,7 @@ struct LicensesView: View {
 
     var body: some View {
         List(libraries) { library in
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(library.name)
                     .font(.civitBodyMedium)
                 Text(library.license)

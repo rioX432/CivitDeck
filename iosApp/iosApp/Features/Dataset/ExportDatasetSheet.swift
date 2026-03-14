@@ -146,7 +146,7 @@ struct ExportProgressOverlay: View {
             }
             .padding(Spacing.xl)
             .background(.regularMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
             .padding(Spacing.xl)
             Spacer()
         }
@@ -179,7 +179,7 @@ struct ExportProgressOverlay: View {
             }
             .padding(Spacing.xl)
             .background(.regularMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
             .padding(Spacing.xl)
             Spacer()
         }
@@ -200,7 +200,7 @@ struct ExportProgressOverlay: View {
             }
             .padding(Spacing.xl)
             .background(.regularMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
             .padding(Spacing.xl)
             Spacer()
         }

@@ -46,6 +46,28 @@ fun DesktopImageViewer(
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (imageUrls.isEmpty()) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.scrim.copy(alpha = OVERLAY_ALPHA)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("No images available", color = MaterialTheme.colorScheme.onSurface)
+            IconButton(
+                onClick = onClose,
+                modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.lg),
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Close",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+        return
+    }
+
     var currentIndex by remember { mutableIntStateOf(initialIndex.coerceIn(0, imageUrls.lastIndex)) }
     var scale by remember { mutableFloatStateOf(1f) }
     var offsetX by remember { mutableFloatStateOf(0f) }

@@ -78,11 +78,14 @@ struct CachedAsyncImage<Content: View>: View {
 // MARK: - Shared URLSession
 
 enum ImageURLSession {
-    /// Shared URLSession with a 20MB memory / 200MB disk cache.
+    static let memoryCacheCapacity = 20 * 1024 * 1024   // 20 MB
+    static let diskCacheCapacity   = 200 * 1024 * 1024   // 200 MB
+
+    /// Shared URLSession with a dedicated URLCache.
     static let shared: URLSession = {
         let cache = URLCache(
-            memoryCapacity: 20 * 1024 * 1024,
-            diskCapacity: 200 * 1024 * 1024
+            memoryCapacity: memoryCacheCapacity,
+            diskCapacity: diskCacheCapacity
         )
         let config = URLSessionConfiguration.default
         config.urlCache = cache

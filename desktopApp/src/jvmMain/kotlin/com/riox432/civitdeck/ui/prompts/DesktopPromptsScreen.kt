@@ -164,7 +164,6 @@ private fun PromptsList(
     }
 }
 
-@Suppress("DEPRECATION")
 @Composable
 private fun PromptCard(
     prompt: SavedPrompt,

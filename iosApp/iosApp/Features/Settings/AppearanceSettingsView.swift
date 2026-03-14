@@ -7,6 +7,7 @@ struct AppearanceSettingsView: View {
     @StateObject private var themePickerVM = ThemePickerViewModel()
     @State private var showingFilePicker = false
     @State private var importError: String?
+    @State private var showImportError = false
 
     var body: some View {
         List {
@@ -40,7 +41,8 @@ struct AppearanceSettingsView: View {
         ) { result in
             handleFileImport(result)
         }
-        .alert("Import Error", isPresented: .constant(importError != nil)) {
+        .onChange(of: importError != nil) { showImportError = $0 }
+        .alert("Import Error", isPresented: $showImportError) {
             Button("OK") { importError = nil }
         } message: {
             if let error = importError {
@@ -123,7 +125,7 @@ struct AppearanceSettingsView: View {
             Task { await themePickerVM.activateTheme(plugin.manifest.id) }
         } label: {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
                     Text(plugin.manifest.name)
                         .foregroundColor(.primary)
                     if !plugin.manifest.author.isEmpty {

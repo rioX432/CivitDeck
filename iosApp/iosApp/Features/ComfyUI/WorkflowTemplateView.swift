@@ -1,6 +1,8 @@
 import SwiftUI
 import Shared
 
+private let templateJsonEditorMinHeight: CGFloat = 200
+
 struct WorkflowTemplateView: View {
     @StateObject private var viewModel = WorkflowTemplateViewModel()
     let isPicker: Bool
@@ -102,8 +104,11 @@ struct WorkflowTemplateView: View {
             VStack(spacing: Spacing.md) {
                 TextEditor(text: $importText)
                     .font(.civitMonoCaption)
-                    .frame(maxWidth: .infinity, minHeight: 200)
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.civitOnSurfaceVariant.opacity(0.4)))
+                    .frame(maxWidth: .infinity, minHeight: templateJsonEditorMinHeight)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.image)
+                            .stroke(Color.civitOnSurfaceVariant.opacity(0.4))
+                    )
                     .padding(.horizontal, Spacing.md)
             }
             .padding(.top, Spacing.md)

@@ -15,6 +15,7 @@ import com.riox432.civitdeck.ui.collections.DesktopCollectionsScreen
 import com.riox432.civitdeck.ui.creator.DesktopCreatorScreen
 import com.riox432.civitdeck.ui.detail.DesktopDetailScreen
 import com.riox432.civitdeck.ui.viewer.DesktopImageViewer
+import com.riox432.civitdeck.util.removeLastOrNull
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -86,6 +87,3 @@ fun CollectionsTabContent(
         }
     }
 }
-
-private fun <T> MutableList<T>.removeLastOrNull(): T? =
-    if (isNotEmpty()) removeAt(lastIndex) else null

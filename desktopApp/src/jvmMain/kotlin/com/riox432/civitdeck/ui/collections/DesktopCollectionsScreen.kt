@@ -42,7 +42,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.PlatformContext
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.size.Size
 import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
@@ -158,7 +161,10 @@ private fun CollectionCard(
         ) {
             if (collection.thumbnailUrl != null) {
                 AsyncImage(
-                    model = collection.thumbnailUrl,
+                    model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                        .data(collection.thumbnailUrl)
+                        .size(Size(COLLECTION_THUMBNAIL_PX, COLLECTION_THUMBNAIL_PX))
+                        .build(),
                     contentDescription = collection.name,
                     modifier = Modifier
                         .size(THUMBNAIL_SIZE)
@@ -229,3 +235,4 @@ private fun CreateCollectionDialog(
 
 private val THUMBNAIL_SIZE = 56.dp
 private val EMPTY_ICON_SIZE = 48.dp
+private const val COLLECTION_THUMBNAIL_PX = 112
