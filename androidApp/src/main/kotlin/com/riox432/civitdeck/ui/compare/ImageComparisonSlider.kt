@@ -37,9 +37,9 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
-import com.riox432.civitdeck.ui.theme.shimmer
 import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.Duration
+import com.riox432.civitdeck.ui.theme.shimmer
 import kotlin.math.roundToInt
 
 /** Slider orientation for image comparison. */
