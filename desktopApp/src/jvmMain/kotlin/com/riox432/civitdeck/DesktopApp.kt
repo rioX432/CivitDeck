@@ -24,14 +24,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.riox432.civitdeck.util.removeLastOrNull
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.focus.focusTarget
 import com.riox432.civitdeck.domain.model.ThemeMode
+import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.theme.CivitDeckTheme
@@ -81,11 +86,23 @@ fun DesktopApp(
         val isMac = remember {
             System.getProperty("os.name").lowercase().contains("mac")
         }
+        val focusManager = LocalFocusManager.current
 
         Surface(
             color = MaterialTheme.colorScheme.background,
             modifier = Modifier.onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+
+                // Tab / Shift+Tab → move focus between interactive elements
+                if (event.key == Key.Tab) {
+                    if (event.isShiftPressed) {
+                        focusManager.moveFocus(FocusDirection.Previous)
+                    } else {
+                        focusManager.moveFocus(FocusDirection.Next)
+                    }
+                    return@onPreviewKeyEvent true
+                }
+
                 val hasModifier = if (isMac) event.isMetaPressed else event.isCtrlPressed
                 handleKeyboardShortcut(
                     key = event.key,
@@ -172,6 +189,7 @@ private fun DesktopNavigationRail(
                 onClick = { onTabSelected(tab) },
                 icon = { Icon(tab.icon, contentDescription = tab.label) },
                 label = { Text(tab.label) },
+                modifier = Modifier.desktopFocusRing().focusTarget(),
             )
         }
     }

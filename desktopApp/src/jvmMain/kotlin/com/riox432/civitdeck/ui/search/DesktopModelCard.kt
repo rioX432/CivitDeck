@@ -8,12 +8,14 @@ import coil3.PlatformContext
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.size.Size
+import androidx.compose.ui.focus.focusTarget
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.components.ModelCardLayout
 import com.riox432.civitdeck.ui.components.NsfwBlurOverlay
+import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.shimmer
 
 @Composable
@@ -29,7 +31,7 @@ fun DesktopModelCard(
     ModelCardLayout(
         model = model,
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.desktopFocusRing().focusTarget(),
     ) { thumbnailUrl, contentDescription, imageModifier, onError ->
         NsfwBlurOverlay(
             nsfwLevel = nsfwLevel,
