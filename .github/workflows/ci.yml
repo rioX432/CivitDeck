@@ -17,6 +17,7 @@ jobs:
     outputs:
       android: ${{ steps.filter.outputs.android }}
       ios: ${{ steps.filter.outputs.ios }}
+      desktop: ${{ steps.filter.outputs.desktop }}
       shared: ${{ steps.filter.outputs.shared }}
       ci: ${{ steps.filter.outputs.ci }}
     steps:
@@ -36,6 +37,8 @@ jobs:
               - 'config/detekt/**'
             ios:
               - 'iosApp/**'
+            desktop:
+              - 'desktopApp/**'
             ci:
               - '.github/workflows/**'
 
@@ -104,3 +107,26 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=YES \
             EXPANDED_CODE_SIGN_IDENTITY=""
+
+  desktop:
+    name: Desktop Build
+    needs: changes
+    if: >-
+      needs.changes.outputs.desktop == 'true' ||
+      needs.changes.outputs.shared == 'true' ||
+      needs.changes.outputs.ci == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compile Desktop
+        run: ./gradlew :desktopApp:compileKotlinJvm

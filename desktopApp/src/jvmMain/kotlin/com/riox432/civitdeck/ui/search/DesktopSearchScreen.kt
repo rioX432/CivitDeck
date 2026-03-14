@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -37,6 +38,7 @@ fun DesktopSearchScreen(
     onModelClick: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
     onUrlImportClick: () -> Unit = {},
+    searchFocusRequester: FocusRequester = FocusRequester(),
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -63,6 +65,7 @@ fun DesktopSearchScreen(
                 query = uiState.query,
                 onQueryChange = viewModel::onQueryChange,
                 onSearch = viewModel::onSearch,
+                focusRequester = searchFocusRequester,
                 modifier = Modifier.weight(1f),
             )
             IconButton(onClick = onUrlImportClick) {
