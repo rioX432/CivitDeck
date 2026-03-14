@@ -1,6 +1,9 @@
 import SwiftUI
 import Shared
 
+private let workflowTextEditorMinHeight: CGFloat = 200
+private let resultImageMinHeight: CGFloat = 150
+
 struct ComfyUIGenerationView: View {
     @StateObject private var viewModel = ComfyUIGenerationViewModel()
     @State private var showWorkflowImport = false
@@ -187,7 +190,7 @@ struct ComfyUIGenerationView: View {
                 Text("Paste ComfyUI Workflow JSON").font(.civitBodyMedium)
                 TextEditor(text: $workflowInputText)
                     .font(.civitMonoCaption)
-                    .frame(maxWidth: .infinity, minHeight: 200)
+                    .frame(maxWidth: .infinity, minHeight: workflowTextEditorMinHeight)
                     .overlay(RoundedRectangle(cornerRadius: CornerRadius.image).stroke(Color.civitOnSurfaceVariant.opacity(0.4)))
                 if let err = viewModel.workflowImportError {
                     Text(err).font(.civitBodySmall).foregroundColor(.civitError)
@@ -279,7 +282,7 @@ struct ComfyUIGenerationView: View {
                                 Color.civitSurfaceVariant.overlay(ProgressView())
                             }
                         }
-                        .frame(minHeight: 150)
+                        .frame(minHeight: resultImageMinHeight)
                         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
                         Button {
                             viewModel.onSaveImage(url: url)

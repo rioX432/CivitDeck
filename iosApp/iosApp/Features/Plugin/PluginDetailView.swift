@@ -1,6 +1,8 @@
 import SwiftUI
 import Shared
 
+private let configEditorMinHeight: CGFloat = 80
+
 struct PluginDetailView: View {
     @StateObject private var viewModel: PluginDetailViewModel
     @Environment(\.dismiss) private var dismiss
@@ -104,7 +106,7 @@ struct PluginDetailView: View {
         Section("Configuration") {
             TextEditor(text: $editedConfig)
                 .font(.civitBodySmall)
-                .frame(minHeight: 80)
+                .frame(minHeight: configEditorMinHeight)
             if editedConfig != viewModel.configJson {
                 Button("Save Config") {
                     viewModel.saveConfig(editedConfig)
