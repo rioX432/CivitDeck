@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Desktop Application
+- Create desktopApp module with Compose Desktop shell (#467) (9acb5cb)
+- Add JVM target to KMP modules with platform implementations (#466) (a9ea572)
+- Convert core-ui from Android library to KMP module (#465) (8b5fd84)
+- Add desktop packaging, keyboard shortcuts, and CI (#473) (e13b63e)
+
 #### Plugin System
 - Add core-plugin module with Plugin API, registry, and DI wiring (9e7b9f1)
 - Add plugin storage, persistence and management use cases (#410) (e64707e)
@@ -16,6 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add WorkflowEnginePlugin interface and ExternalServer/ComfyUI adapters (#412) (9221224)
 - Add ExportFormatPlugin interface and kohya-ss adapter (#413) (d9c28fe)
 - Add ThemePlugin interface with JSON import and theme selection (#414) (45339e7)
+
+#### Quality & Discovery
+- Add quality filter toggle to search screen (#459) (a892527)
+- Add quality score calculator and threshold preference (#457) (08adb03)
+- Add integrations hub to unify server management (#438) (7ddfa25)
 
 #### Community & Social
 - Add community reviews and ratings to model detail (#189) (fedcd3e)
@@ -37,6 +48,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add background model file download manager (#382, #383, #384) (502a4be)
 
 #### Accessibility
+- Add onClickLabel to clickable modifiers for accessibility (#451) (d63c4ef)
+- Add empty state to BatchTagEditorScreen (#449) (89ee79c)
+- Add missing accessibility labels across iOS views (#429) (262fc59)
+- Add accessibility labels in ImageComparisonSlider (#427) (62b577d)
 - Add accessibility labels to clickable elements (#366) (d28cc22)
 - Add accessibility labels to iOS icon buttons (#367) (65f3731)
 - Add accessibilityHidden to decorative stat icons (#369) (5f53e47)
@@ -45,19 +60,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add accessibility traits to tappable elements (#399) (d029563)
 
 #### Code Quality
+- Add logging to swallowed exceptions across core modules (#389) (151ea08)
 - Add key parameter to items() in AnalyticsScreen (#374) (95ba429)
 - Add key params to itemsIndexed to prevent state leaks (#388) (d5f7e8a)
 - Add logging to swallowed exceptions in ComfyUIGenerationViewModel (#372) (6a031fd)
 
 ### Changed
 
+#### Desktop Porting
+- Port dataset, backup, plugins, compare to desktop (#472) (6d6002b)
+- Port settings and server integrations to desktop (#471) (ca4a0b4)
+- Port collections, prompts, and feed to desktop (#470) (9085a0a)
+- Port search, detail, and image viewer to desktop (#469) (9be4534)
+- Extract ModelCard into core-ui for KMP reuse (#468) (cd2a361)
+- Change Feed from card list to adaptive grid layout (all platforms) (e1e5ff1)
+
+#### Settings Redesign
+- Consolidate settings from 11 sub-screens to 5 groups (#437) (a750905)
+- Split SettingsViewModel into 5 domain-scoped ViewModels (#440) (2e9a6b1)
+- Gate Analytics and Datasets behind Power User Mode (#439) (ad23424)
+
 #### External Server
 - Enhance External Server with filters, image detail, generation, and pull-to-refresh (f665055)
 
 #### Performance
 - Improve performance: O(1) gallery lookup, batch observe tasks, add contentType (#377, #378, #379) (54751ed)
+- Replace AsyncImage with SubcomposeAsyncImage in ImageComparisonSlider (#450) (94935e4)
+- Use cached image loader in widget instead of AsyncImage (#428) (d06958e)
 
 #### Design Token Migration
+- Replace remaining hardcoded colors with design tokens in iOS views (#454) (39e61cd)
+- Replace .font(.system()) with design tokens in iOS views (#453) (ac9728d, 6a2d70f)
+- Replace hardcoded colors with design tokens in iOS views (#452) (5ab7a5b, b3e7aa6)
+- Replace hardcoded Color.White with CivitDeckColors.onScrim (#425) (2da74aa)
+- Replace hardcoded magic numbers in iOS views with design tokens (#426) (99c406e)
 - Replace FormatUtils with native Swift formatting (#401) (ef0e390)
 - Replace hardcoded font sizes with CivitDeckFonts tokens (#396) (c4595ec)
 - Replace hardcoded AMOLED colors with design tokens (#397) (eaeef34)
@@ -66,14 +102,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace magic number paddings with Spacing tokens (#368) (30e1025)
 - Replace hardcoded colors with theme tokens (#365) (08dd87c)
 
+#### Architecture
+- Refactor ModelDetailScreen.kt into smaller composables (#421) (1a7b4bf)
+- Refactor ModelSearchScreen.kt into smaller composables (#420) (04e8a7e)
+- Switch review display from 5-star rating to thumbs up/down (cb2306d, e992e75)
+
 #### Code Quality
 - Replace println() with Logger utility (#371, #363) (556cca2, 400fed0)
 - Replace force try with safe regex init (#364) (7829758)
 
 ### Fixed
 
+- Register built-in plugins on desktop startup (acba766)
+- Fix desktop audit issues: settings integration, NSFW, navigation, empty states (63cf05f)
+- Apply theme mode, accent color, and AMOLED settings to desktop (906c6a9)
+- Apply grid columns setting to desktop search screen (7670065)
+- Fix desktop detail screens showing through from previous screen (ad03f9b)
+- Fix desktop crash: add kotlinx-coroutines-swing for Dispatchers.Main (ff39d56)
+- Remove quality filtering from Feed, keep only in Search (5210125)
+- Fix CivitAI API stats mapping: use thumbsUpCount/thumbsDownCount (#458) (b05974b)
+- Fix Feed back button crash when backStack has only root entry (3b5cb08)
+- Fix feed showing empty when cached items have no stats (#458) (0025bc1)
+- Fix built-in plugins not visible in Plugin Management screen (43f7d6f)
 - Fix thread-safe register/unregister and isolate test instances (739847c)
-- Fix SectionHeader divider layout in Row and reduce VersionDetail top spacing (611781)
+- Fix SectionHeader divider layout in Row and reduce VersionDetail top spacing (6117814)
 - Fix Notes/Tags divider layout and reduce Base Model section top spacing (3290f9c)
 - Fix CollectionsScreen empty state during initial loading (#392) (68b70da)
 - Fix DetailRow text overflow in model detail (#391) (2cfcaa2)
@@ -87,9 +139,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Infrastructure
 
+- Update documentation for desktop target (#474) (4116c3f)
+- Update ROADMAP: add Phase 6.5 (completed), Phase 7-10 (planned) (5c6f987)
 - Reduce BackupRepositoryImpl complexity (#394) (abe8155)
 - Extract ZoomableImageView to separate file for SwiftLint file_length (ae2e3a9)
-- Fix detekt ImportOrdering and SwiftLint violations (bbadea0, 9faa0df, 48e61f8, 0f55f30, d4bb667, fde76fb, f9073fc, cb845ae)
+- Fix detekt ImportOrdering and SwiftLint violations (bbadea0, 9faa0df, 48e61f8, 0f55f30, d4bb667, fde76fb, f9073fc, cb845ae, 6548b58, 2d93fe2)
 
 ---
 
