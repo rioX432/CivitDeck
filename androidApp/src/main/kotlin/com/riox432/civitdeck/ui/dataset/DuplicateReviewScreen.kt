@@ -96,7 +96,7 @@ private fun DuplicateReviewContent(
             verticalArrangement = Arrangement.spacedBy(Spacing.md),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(Spacing.md),
         ) {
-            itemsIndexed(items = groups, key = { index, _ -> index }) { index, group ->
+            itemsIndexed(items = groups, key = { _, group -> group.images.first().id }) { index, group ->
                 DuplicateGroupItem(
                     groupIndex = index + 1,
                     group = group,
