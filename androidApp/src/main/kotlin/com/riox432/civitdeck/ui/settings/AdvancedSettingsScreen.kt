@@ -14,13 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 
 @Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdvancedSettingsScreen(
-    viewModel: SettingsViewModel,
+    viewModel: AppBehaviorSettingsViewModel,
     onBack: () -> Unit,
     onNavigateToComfyUI: () -> Unit = {},
     onNavigateToModelFiles: () -> Unit = {},

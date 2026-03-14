@@ -2,12 +2,16 @@ import SwiftUI
 import Shared
 
 struct SettingsScreen: View {
-    @StateObject private var viewModel = SettingsViewModelOwner()
+    @StateObject private var authViewModel = AuthSettingsViewModelOwner()
+    @StateObject private var appBehaviorViewModel = AppBehaviorSettingsViewModelOwner()
+    @StateObject private var storageViewModel = StorageSettingsViewModelOwner()
+    @StateObject private var displayViewModel = DisplaySettingsViewModelOwner()
+    @StateObject private var contentFilterViewModel = ContentFilterSettingsViewModelOwner()
 
     var body: some View {
         NavigationStack {
             List {
-                if !viewModel.isOnline {
+                if !storageViewModel.isOnline {
                     offlineBanner
                 }
                 accountSection
@@ -24,7 +28,11 @@ struct SettingsScreen: View {
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
-            .task { await viewModel.observeUiState() }
+            .task { await authViewModel.observeUiState() }
+            .task { await appBehaviorViewModel.observeUiState() }
+            .task { await storageViewModel.observeUiState() }
+            .task { await displayViewModel.observeUiState() }
+            .task { await contentFilterViewModel.observeUiState() }
         }
     }
 
@@ -41,13 +49,13 @@ struct SettingsScreen: View {
 
     private var accountSection: some View {
         Section("Account") {
-            if let username = viewModel.connectedUsername, viewModel.apiKey != nil {
-                ConnectedAccountRow(username: username, onClear: viewModel.onClearApiKey)
+            if let username = authViewModel.connectedUsername, authViewModel.apiKey != nil {
+                ConnectedAccountRow(username: username, onClear: authViewModel.onClearApiKey)
             } else {
                 ApiKeyInputRow(
-                    isValidating: viewModel.isValidatingApiKey,
-                    error: viewModel.apiKeyError,
-                    onValidateAndSave: viewModel.onValidateAndSaveApiKey
+                    isValidating: authViewModel.isValidatingApiKey,
+                    error: authViewModel.apiKeyError,
+                    onValidateAndSave: authViewModel.onValidateAndSaveApiKey
                 )
             }
         }
@@ -55,7 +63,7 @@ struct SettingsScreen: View {
 
     private var appearanceSection: some View {
         Section {
-            NavigationLink(destination: AppearanceSettingsView(viewModel: viewModel)) {
+            NavigationLink(destination: AppearanceSettingsView(viewModel: displayViewModel)) {
                 Text("Appearance")
             }
         }
@@ -63,7 +71,10 @@ struct SettingsScreen: View {
 
     private var contentFilterSection: some View {
         Section {
-            NavigationLink(destination: ContentFilterSettingsView(viewModel: viewModel)) {
+            NavigationLink(destination: ContentFilterSettingsView(
+                viewModel: contentFilterViewModel,
+                displayViewModel: displayViewModel
+            )) {
                 Text("Content & Filters")
             }
         }
@@ -71,7 +82,7 @@ struct SettingsScreen: View {
 
     private var notificationsSection: some View {
         Section {
-            NavigationLink(destination: NotificationsSettingsView(viewModel: viewModel)) {
+            NavigationLink(destination: NotificationsSettingsView(viewModel: appBehaviorViewModel)) {
                 Text("Notifications")
             }
         }
@@ -79,7 +90,7 @@ struct SettingsScreen: View {
 
     private var storageSection: some View {
         Section {
-            NavigationLink(destination: StorageSettingsView(viewModel: viewModel)) {
+            NavigationLink(destination: StorageSettingsView(viewModel: storageViewModel)) {
                 Text("Storage")
             }
         }
@@ -87,12 +98,12 @@ struct SettingsScreen: View {
 
     private var advancedSection: some View {
         Section {
-            if viewModel.powerUserMode {
-                NavigationLink(destination: NavShortcutsSettingsView(viewModel: viewModel)) {
+            if appBehaviorViewModel.powerUserMode {
+                NavigationLink(destination: NavShortcutsSettingsView(viewModel: displayViewModel)) {
                     Text("Navigation Shortcuts")
                 }
             }
-            NavigationLink(destination: AdvancedSettingsView(viewModel: viewModel)) {
+            NavigationLink(destination: AdvancedSettingsView(viewModel: appBehaviorViewModel)) {
                 Text("Advanced")
             }
         }

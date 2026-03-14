@@ -6,11 +6,12 @@ struct ContentView: View {
     @StateObject private var comparisonState = ComparisonState()
     @StateObject private var tutorialVm = GestureTutorialViewModel()
     @StateObject private var searchViewModel = ModelSearchViewModel()
-    @StateObject private var navBarVm = SettingsViewModelOwner()
+    @StateObject private var appBehaviorVm = AppBehaviorSettingsViewModelOwner()
+    @StateObject private var displayVm = DisplaySettingsViewModelOwner()
     @EnvironmentObject private var router: NavigationRouter
 
     private var activeShortcuts: [NavShortcut] {
-        navBarVm.powerUserMode ? navBarVm.customNavShortcuts : []
+        appBehaviorVm.powerUserMode ? displayVm.customNavShortcuts : []
     }
 
     var body: some View {
@@ -24,7 +25,8 @@ struct ContentView: View {
             }
         }
         .environmentObject(comparisonState)
-        .task { await navBarVm.observeUiState() }
+        .task { await appBehaviorVm.observeUiState() }
+        .task { await displayVm.observeUiState() }
         .onChange(of: router.pendingDeepLink) { link in
             guard let link else { return }
             switch link {

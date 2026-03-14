@@ -15,15 +15,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
-import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentFilterSettingsScreen(
-    viewModel: SettingsViewModel,
+    viewModel: ContentFilterSettingsViewModel,
+    displayViewModel: DisplaySettingsViewModel,
     onBack: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val displayState by displayViewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -48,8 +51,8 @@ fun ContentFilterSettingsScreen(
                 }
             }
             item { SectionHeader("Defaults") }
-            item { SortOrderRow(state.defaultSortOrder, viewModel::onSortOrderChanged) }
-            item { TimePeriodRow(state.defaultTimePeriod, viewModel::onTimePeriodChanged) }
+            item { SortOrderRow(displayState.defaultSortOrder, displayViewModel::onSortOrderChanged) }
+            item { TimePeriodRow(displayState.defaultTimePeriod, displayViewModel::onTimePeriodChanged) }
             item { SectionHeader("Tags") }
             item {
                 ExcludedTagsRow(

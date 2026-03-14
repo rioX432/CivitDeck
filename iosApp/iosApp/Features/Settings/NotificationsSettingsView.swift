@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct NotificationsSettingsView: View {
-    @ObservedObject var viewModel: SettingsViewModelOwner
+    @ObservedObject var viewModel: AppBehaviorSettingsViewModelOwner
 
     var body: some View {
         List {

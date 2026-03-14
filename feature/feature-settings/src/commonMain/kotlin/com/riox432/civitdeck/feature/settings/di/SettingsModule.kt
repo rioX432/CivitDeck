@@ -48,7 +48,11 @@ import com.riox432.civitdeck.feature.search.domain.usecase.GetExcludedTagsUseCas
 import com.riox432.civitdeck.feature.search.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.feature.settings.data.repository.UserPreferencesRepositoryImpl
-import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
@@ -64,61 +68,67 @@ val settingsModule = module {
         bind<StoragePreferencesRepository>()
     }
     viewModel {
-        val observeNsfwFilter: ObserveNsfwFilterUseCase = get()
-        val setNsfwFilter: SetNsfwFilterUseCase = get()
-        val observeNsfwBlur: ObserveNsfwBlurSettingsUseCase = get()
-        val setNsfwBlur: SetNsfwBlurSettingsUseCase = get()
-        val observeSortOrder: ObserveDefaultSortOrderUseCase = get()
-        val setSortOrder: SetDefaultSortOrderUseCase = get()
-        val observeTimePeriod: ObserveDefaultTimePeriodUseCase = get()
-        val setTimePeriod: SetDefaultTimePeriodUseCase = get()
-        val observeGridColumns: ObserveGridColumnsUseCase = get()
-        val setGridColumns: SetGridColumnsUseCase = get()
-        val getHiddenModels: GetHiddenModelsUseCase = get()
-        val unhideModel: UnhideModelUseCase = get()
-        val getExcludedTags: GetExcludedTagsUseCase = get()
-        val addExcludedTag: AddExcludedTagUseCase = get()
-        val removeExcludedTag: RemoveExcludedTagUseCase = get()
-        val clearSearchHistory: ClearSearchHistoryUseCase = get()
-        val clearBrowsingHistory: ClearBrowsingHistoryUseCase = get()
-        val clearCache: ClearCacheUseCase = get()
-        val observeApiKey: ObserveApiKeyUseCase = get()
-        val setApiKey: SetApiKeyUseCase = get()
-        val validateApiKey: ValidateApiKeyUseCase = get()
-        val observePowerUserMode: ObservePowerUserModeUseCase = get()
-        val setPowerUserMode: SetPowerUserModeUseCase = get()
-        val observeNotificationsEnabled: ObserveNotificationsEnabledUseCase = get()
-        val setNotificationsEnabled: SetNotificationsEnabledUseCase = get()
-        val observePollingInterval: ObservePollingIntervalUseCase = get()
-        val setPollingInterval: SetPollingIntervalUseCase = get()
-        val observeAccentColor: ObserveAccentColorUseCase = get()
-        val setAccentColor: SetAccentColorUseCase = get()
-        val observeAmoledDarkMode: ObserveAmoledDarkModeUseCase = get()
-        val setAmoledDarkMode: SetAmoledDarkModeUseCase = get()
-        val observeThemeMode: ObserveThemeModeUseCase = get()
-        val setThemeMode: SetThemeModeUseCase = get()
-        val observeCustomNavShortcuts: ObserveCustomNavShortcutsUseCase = get()
-        val setCustomNavShortcuts: SetCustomNavShortcutsUseCase = get()
-        val observeNetworkStatus: ObserveNetworkStatusUseCase = get()
-        val observeOfflineCacheEnabled: ObserveOfflineCacheEnabledUseCase = get()
-        val setOfflineCacheEnabled: SetOfflineCacheEnabledUseCase = get()
-        val observeCacheSizeLimit: ObserveCacheSizeLimitUseCase = get()
-        val setCacheSizeLimit: SetCacheSizeLimitUseCase = get()
-        val getCacheInfo: GetCacheInfoUseCase = get()
-        val evictCache: EvictCacheUseCase = get()
-        SettingsViewModel(
-            observeNsfwFilter, setNsfwFilter, observeNsfwBlur, setNsfwBlur,
-            observeSortOrder, setSortOrder, observeTimePeriod, setTimePeriod,
-            observeGridColumns, setGridColumns, getHiddenModels, unhideModel,
-            getExcludedTags, addExcludedTag, removeExcludedTag, clearSearchHistory,
-            clearBrowsingHistory, clearCache, observeApiKey, setApiKey,
-            validateApiKey, observePowerUserMode, setPowerUserMode,
-            observeNotificationsEnabled, setNotificationsEnabled,
-            observePollingInterval, setPollingInterval,
-            observeAccentColor, setAccentColor, observeAmoledDarkMode, setAmoledDarkMode,
-            observeThemeMode, setThemeMode, observeCustomNavShortcuts, setCustomNavShortcuts,
-            observeNetworkStatus, observeOfflineCacheEnabled, setOfflineCacheEnabled,
-            observeCacheSizeLimit, setCacheSizeLimit, getCacheInfo, evictCache,
+        ContentFilterSettingsViewModel(
+            observeNsfwFilterUseCase = get<ObserveNsfwFilterUseCase>(),
+            setNsfwFilterUseCase = get<SetNsfwFilterUseCase>(),
+            observeNsfwBlurSettingsUseCase = get<ObserveNsfwBlurSettingsUseCase>(),
+            setNsfwBlurSettingsUseCase = get<SetNsfwBlurSettingsUseCase>(),
+            getHiddenModelsUseCase = get<GetHiddenModelsUseCase>(),
+            unhideModelUseCase = get<UnhideModelUseCase>(),
+            getExcludedTagsUseCase = get<GetExcludedTagsUseCase>(),
+            addExcludedTagUseCase = get<AddExcludedTagUseCase>(),
+            removeExcludedTagUseCase = get<RemoveExcludedTagUseCase>(),
+        )
+    }
+    viewModel {
+        DisplaySettingsViewModel(
+            observeDefaultSortOrderUseCase = get<ObserveDefaultSortOrderUseCase>(),
+            setDefaultSortOrderUseCase = get<SetDefaultSortOrderUseCase>(),
+            observeDefaultTimePeriodUseCase = get<ObserveDefaultTimePeriodUseCase>(),
+            setDefaultTimePeriodUseCase = get<SetDefaultTimePeriodUseCase>(),
+            observeGridColumnsUseCase = get<ObserveGridColumnsUseCase>(),
+            setGridColumnsUseCase = get<SetGridColumnsUseCase>(),
+            observeAccentColorUseCase = get<ObserveAccentColorUseCase>(),
+            setAccentColorUseCase = get<SetAccentColorUseCase>(),
+            observeAmoledDarkModeUseCase = get<ObserveAmoledDarkModeUseCase>(),
+            setAmoledDarkModeUseCase = get<SetAmoledDarkModeUseCase>(),
+            observeThemeModeUseCase = get<ObserveThemeModeUseCase>(),
+            setThemeModeUseCase = get<SetThemeModeUseCase>(),
+            observeCustomNavShortcutsUseCase = get<ObserveCustomNavShortcutsUseCase>(),
+            setCustomNavShortcutsUseCase = get<SetCustomNavShortcutsUseCase>(),
+        )
+    }
+    viewModel {
+        AppBehaviorSettingsViewModel(
+            observePowerUserModeUseCase = get<ObservePowerUserModeUseCase>(),
+            setPowerUserModeUseCase = get<SetPowerUserModeUseCase>(),
+            observeNotificationsEnabledUseCase = get<ObserveNotificationsEnabledUseCase>(),
+            setNotificationsEnabledUseCase = get<SetNotificationsEnabledUseCase>(),
+            observePollingIntervalUseCase = get<ObservePollingIntervalUseCase>(),
+            setPollingIntervalUseCase = get<SetPollingIntervalUseCase>(),
+        )
+    }
+    viewModel {
+        AuthSettingsViewModel(
+            observeApiKeyUseCase = get<ObserveApiKeyUseCase>(),
+            setApiKeyUseCase = get<SetApiKeyUseCase>(),
+            validateApiKeyUseCase = get<ValidateApiKeyUseCase>(),
+        )
+    }
+    viewModel {
+        StorageSettingsViewModel(
+            observeNetworkStatusUseCase = get<ObserveNetworkStatusUseCase>(),
+            observeOfflineCacheEnabledUseCase = get<ObserveOfflineCacheEnabledUseCase>(),
+            setOfflineCacheEnabledUseCase = get<SetOfflineCacheEnabledUseCase>(),
+            observeCacheSizeLimitUseCase = get<ObserveCacheSizeLimitUseCase>(),
+            setCacheSizeLimitUseCase = get<SetCacheSizeLimitUseCase>(),
+            getCacheInfoUseCase = get<GetCacheInfoUseCase>(),
+            evictCacheUseCase = get<EvictCacheUseCase>(),
+            clearSearchHistoryUseCase = get<ClearSearchHistoryUseCase>(),
+            clearBrowsingHistoryUseCase = get<ClearBrowsingHistoryUseCase>(),
+            clearCacheUseCase = get<ClearCacheUseCase>(),
+            getHiddenModelsUseCase = get<GetHiddenModelsUseCase>(),
+            unhideModelUseCase = get<UnhideModelUseCase>(),
         )
     }
 }

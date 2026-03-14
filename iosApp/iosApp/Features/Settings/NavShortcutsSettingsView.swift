@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct NavShortcutsSettingsView: View {
-    @ObservedObject var viewModel: SettingsViewModelOwner
+    @ObservedObject var viewModel: DisplaySettingsViewModelOwner
 
     var body: some View {
         List {

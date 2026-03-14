@@ -25,13 +25,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.NavShortcut
-import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavShortcutsSettingsScreen(
-    viewModel: SettingsViewModel,
+    viewModel: DisplaySettingsViewModel,
     onBack: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()

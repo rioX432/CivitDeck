@@ -14,12 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsSettingsScreen(
-    viewModel: SettingsViewModel,
+    viewModel: AppBehaviorSettingsViewModel,
     onBack: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()

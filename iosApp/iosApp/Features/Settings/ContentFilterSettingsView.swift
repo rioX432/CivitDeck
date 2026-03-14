@@ -2,7 +2,8 @@ import SwiftUI
 import Shared
 
 struct ContentFilterSettingsView: View {
-    @ObservedObject var viewModel: SettingsViewModelOwner
+    @ObservedObject var viewModel: ContentFilterSettingsViewModelOwner
+    @ObservedObject var displayViewModel: DisplaySettingsViewModelOwner
 
     var body: some View {
         List {
@@ -58,8 +59,8 @@ struct ContentFilterSettingsView: View {
 
     private var sortOrderPicker: some View {
         Picker("Default Sort", selection: Binding(
-            get: { viewModel.defaultSortOrder },
-            set: { viewModel.onSortOrderChanged($0) }
+            get: { displayViewModel.defaultSortOrder },
+            set: { displayViewModel.onSortOrderChanged($0) }
         )) {
             ForEach(SearchFilter.sortOptions, id: \.self) { sort in
                 Text(SearchFilter.sortLabel(sort)).tag(sort)
@@ -69,8 +70,8 @@ struct ContentFilterSettingsView: View {
 
     private var timePeriodPicker: some View {
         Picker("Default Period", selection: Binding(
-            get: { viewModel.defaultTimePeriod },
-            set: { viewModel.onTimePeriodChanged($0) }
+            get: { displayViewModel.defaultTimePeriod },
+            set: { displayViewModel.onTimePeriodChanged($0) }
         )) {
             ForEach(SearchFilter.periodOptions, id: \.self) { period in
                 Text(SearchFilter.periodLabel(period)).tag(period)

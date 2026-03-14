@@ -68,15 +68,19 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
-import com.riox432.civitdeck.feature.settings.presentation.SettingsUiState
-import com.riox432.civitdeck.feature.settings.presentation.SettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsUiState
+import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Suppress("LongParameterList")
 @Composable
 fun SettingsScreen(
-    viewModel: SettingsViewModel,
+    authViewModel: AuthSettingsViewModel,
+    appBehaviorViewModel: AppBehaviorSettingsViewModel,
+    storageViewModel: StorageSettingsViewModel,
     onNavigateToAppearance: () -> Unit = {},
     onNavigateToContentFilter: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
@@ -89,7 +93,9 @@ fun SettingsScreen(
     onNavigateToPlugins: () -> Unit = {},
     scrollToTopTrigger: Int = 0,
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val authState by authViewModel.uiState.collectAsStateWithLifecycle()
+    val appBehaviorState by appBehaviorViewModel.uiState.collectAsStateWithLifecycle()
+    val storageState by storageViewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     var lastHandledTrigger by rememberSaveable { mutableIntStateOf(scrollToTopTrigger) }
     LaunchedEffect(scrollToTopTrigger) {
@@ -102,10 +108,10 @@ fun SettingsScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-            if (!state.isOnline) {
+            if (!storageState.isOnline) {
                 item { OfflineBanner() }
             }
-            settingsAccountItems(state, viewModel)
+            settingsAccountItems(authState, authViewModel)
             item { SectionHeader("Appearance") }
             item { SubScreenRow("Appearance", onNavigateToAppearance) }
             item { SectionHeader("Content & Filters") }
@@ -114,7 +120,7 @@ fun SettingsScreen(
             item { SubScreenRow("Notifications", onNavigateToNotifications) }
             item { SectionHeader("Storage") }
             item { SubScreenRow("Storage", onNavigateToStorage) }
-            if (state.powerUserMode) {
+            if (appBehaviorState.powerUserMode) {
                 item { SectionHeader("Navigation") }
                 item { SubScreenRow("Navigation Shortcuts", onNavigateToNavShortcuts) }
             }
@@ -162,8 +168,8 @@ internal fun SubScreenRow(label: String, onClick: () -> Unit) {
 }
 
 internal fun LazyListScope.settingsAccountItems(
-    state: SettingsUiState,
-    viewModel: SettingsViewModel,
+    state: AuthSettingsUiState,
+    viewModel: AuthSettingsViewModel,
 ) {
     item { SectionHeader("Account") }
     item {

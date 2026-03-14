@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct StorageSettingsView: View {
-    @ObservedObject var viewModel: SettingsViewModelOwner
+    @ObservedObject var viewModel: StorageSettingsViewModelOwner
 
     var body: some View {
         List {
