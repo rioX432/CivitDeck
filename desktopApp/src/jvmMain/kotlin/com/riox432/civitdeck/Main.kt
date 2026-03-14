@@ -11,11 +11,14 @@ import coil3.SingletonImageLoader
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.request.crossfade
+import com.riox432.civitdeck.di.desktopModule
 import com.riox432.civitdeck.di.initKoin
 import okio.Path.Companion.toPath
 
 fun main() {
-    initKoin()
+    initKoin {
+        modules(desktopModule)
+    }
     setupCoilImageLoader()
 
     application {

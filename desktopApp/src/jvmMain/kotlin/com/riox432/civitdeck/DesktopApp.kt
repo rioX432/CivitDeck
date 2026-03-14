@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.theme.CivitDeckTheme
 
 enum class DesktopTab(
@@ -41,15 +42,20 @@ enum class DesktopTab(
 fun DesktopApp() {
     CivitDeckTheme {
         var selectedTab by remember { mutableStateOf(DesktopTab.Search) }
+        val backstack = remember { androidx.compose.runtime.mutableStateListOf<DesktopRoute>() }
 
         Surface(color = MaterialTheme.colorScheme.background) {
             Row(modifier = Modifier.fillMaxSize()) {
                 DesktopNavigationRail(
                     selectedTab = selectedTab,
-                    onTabSelected = { selectedTab = it },
+                    onTabSelected = {
+                        selectedTab = it
+                        backstack.clear()
+                    },
                 )
                 DesktopContent(
                     selectedTab = selectedTab,
+                    backstack = backstack,
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                 )
             }
@@ -77,14 +83,23 @@ private fun DesktopNavigationRail(
 @Composable
 private fun DesktopContent(
     selectedTab: DesktopTab,
+    backstack: androidx.compose.runtime.snapshots.SnapshotStateList<DesktopRoute>,
     modifier: Modifier = Modifier,
 ) {
+    when (selectedTab) {
+        DesktopTab.Search -> SearchTabContent(backstack = backstack, modifier = modifier)
+        else -> PlaceholderContent(label = selectedTab.label, modifier = modifier)
+    }
+}
+
+@Composable
+private fun PlaceholderContent(label: String, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier.padding(24.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = "${selectedTab.label} (coming soon)",
+            text = "$label (coming soon)",
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
