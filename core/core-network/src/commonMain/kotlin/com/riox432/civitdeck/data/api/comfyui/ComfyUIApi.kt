@@ -32,14 +32,16 @@ class ComfyUIApi(
      * Health check / queue status: GET /queue
      */
     suspend fun getQueue(): QueueResponse {
-        return client.get("$baseUrl/queue").body()
+        val url = baseUrl
+        return client.get("$url/queue").body()
     }
 
     /**
      * Fetch available checkpoints: GET /object_info/CheckpointLoaderSimple
      */
     suspend fun getCheckpoints(): List<String> {
-        val text = client.get("$baseUrl/object_info/CheckpointLoaderSimple").bodyAsText()
+        val url = baseUrl
+        val text = client.get("$url/object_info/CheckpointLoaderSimple").bodyAsText()
         return parseCheckpointNames(text)
     }
 
@@ -47,7 +49,8 @@ class ComfyUIApi(
      * Fetch available LoRA models: GET /object_info/LoraLoader
      */
     suspend fun getLoras(): List<String> {
-        val text = client.get("$baseUrl/object_info/LoraLoader").bodyAsText()
+        val url = baseUrl
+        val text = client.get("$url/object_info/LoraLoader").bodyAsText()
         return parseNodeInputList(text, "LoraLoader", "lora_name")
     }
 
@@ -55,7 +58,8 @@ class ComfyUIApi(
      * Fetch available ControlNet models: GET /object_info/ControlNetLoader
      */
     suspend fun getControlNets(): List<String> {
-        val text = client.get("$baseUrl/object_info/ControlNetLoader").bodyAsText()
+        val url = baseUrl
+        val text = client.get("$url/object_info/ControlNetLoader").bodyAsText()
         return parseNodeInputList(text, "ControlNetLoader", "control_net_name")
     }
 
@@ -63,8 +67,9 @@ class ComfyUIApi(
      * Submit workflow: POST /prompt
      */
     suspend fun submitPrompt(workflow: JsonObject): PromptResponse {
+        val url = baseUrl
         val body = buildJsonObject { put("prompt", workflow) }
-        return client.post("$baseUrl/prompt") {
+        return client.post("$url/prompt") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }.body()
@@ -74,6 +79,7 @@ class ComfyUIApi(
      * Delete (cancel) queued prompts: POST /queue with {"delete": [...promptIds]}
      */
     suspend fun deleteQueue(promptIds: List<String>) {
+        val url = baseUrl
         val body = buildJsonObject {
             put(
                 "delete",
@@ -82,7 +88,7 @@ class ComfyUIApi(
                 }
             )
         }
-        client.post("$baseUrl/queue") {
+        client.post("$url/queue") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }
@@ -93,7 +99,8 @@ class ComfyUIApi(
      * Returns a map of prompt_id -> HistoryEntry for all completed prompts.
      */
     suspend fun getAllHistory(): Map<String, HistoryEntry> {
-        val text = client.get("$baseUrl/history").bodyAsText()
+        val url = baseUrl
+        val text = client.get("$url/history").bodyAsText()
         return json.decodeFromString(text)
     }
 
@@ -101,7 +108,8 @@ class ComfyUIApi(
      * Get generation history: GET /history/{promptId}
      */
     suspend fun getHistory(promptId: String): HistoryEntry? {
-        val text = client.get("$baseUrl/history/$promptId").bodyAsText()
+        val url = baseUrl
+        val text = client.get("$url/history/$promptId").bodyAsText()
         val root = json.decodeFromString<Map<String, HistoryEntry>>(text)
         return root[promptId]
     }
@@ -111,7 +119,8 @@ class ComfyUIApi(
      * Omits subfolder when empty to avoid ComfyUI rejecting the request.
      */
     fun getImageUrl(image: ComfyUIOutputImage): String {
-        return URLBuilder(baseUrl).apply {
+        val url = baseUrl
+        return URLBuilder(url).apply {
             path("view")
             parameters.append("filename", image.filename)
             parameters.append("type", image.type)

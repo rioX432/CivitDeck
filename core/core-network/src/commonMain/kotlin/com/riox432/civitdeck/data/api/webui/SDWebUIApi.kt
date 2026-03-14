@@ -17,31 +17,44 @@ class SDWebUIApi(private val client: HttpClient) {
         baseUrl = "http://$hostname:$port"
     }
 
-    suspend fun getModels(): List<SDWebUIModelInfo> =
-        client.get("$baseUrl/sdapi/v1/sd-models").body()
+    suspend fun getModels(): List<SDWebUIModelInfo> {
+        val url = baseUrl
+        return client.get("$url/sdapi/v1/sd-models").body()
+    }
 
-    suspend fun getSamplers(): List<SDWebUISamplerInfo> =
-        client.get("$baseUrl/sdapi/v1/samplers").body()
+    suspend fun getSamplers(): List<SDWebUISamplerInfo> {
+        val url = baseUrl
+        return client.get("$url/sdapi/v1/samplers").body()
+    }
 
-    suspend fun getVaes(): List<SDWebUIVaeInfo> =
-        client.get("$baseUrl/sdapi/v1/vae").body()
+    suspend fun getVaes(): List<SDWebUIVaeInfo> {
+        val url = baseUrl
+        return client.get("$url/sdapi/v1/vae").body()
+    }
 
-    suspend fun txt2img(request: SDWebUITxt2ImgRequest): SDWebUIGenerationResponse =
-        client.post("$baseUrl/sdapi/v1/txt2img") {
+    suspend fun txt2img(request: SDWebUITxt2ImgRequest): SDWebUIGenerationResponse {
+        val url = baseUrl
+        return client.post("$url/sdapi/v1/txt2img") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body()
+    }
 
-    suspend fun img2img(request: SDWebUIImg2ImgRequest): SDWebUIGenerationResponse =
-        client.post("$baseUrl/sdapi/v1/img2img") {
+    suspend fun img2img(request: SDWebUIImg2ImgRequest): SDWebUIGenerationResponse {
+        val url = baseUrl
+        return client.post("$url/sdapi/v1/img2img") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body()
+    }
 
-    suspend fun getProgress(): SDWebUIProgressResponse =
-        client.get("$baseUrl/sdapi/v1/progress?skip_current_image=true").body()
+    suspend fun getProgress(): SDWebUIProgressResponse {
+        val url = baseUrl
+        return client.get("$url/sdapi/v1/progress?skip_current_image=true").body()
+    }
 
     suspend fun interrupt() {
-        client.post("$baseUrl/sdapi/v1/interrupt")
+        val url = baseUrl
+        client.post("$url/sdapi/v1/interrupt")
     }
 }
