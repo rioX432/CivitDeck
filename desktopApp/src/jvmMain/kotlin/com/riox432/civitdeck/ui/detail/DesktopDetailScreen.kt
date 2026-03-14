@@ -72,7 +72,11 @@ fun DesktopDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface),
+    ) {
         DetailTopBar(onBack = onBack, title = uiState.model?.name ?: "Loading...")
 
         when {

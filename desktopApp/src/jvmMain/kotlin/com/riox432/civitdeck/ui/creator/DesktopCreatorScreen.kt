@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.ui.creator
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,7 +47,11 @@ fun DesktopCreatorScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface),
+    ) {
         // Top bar
         Surface(tonalElevation = 1.dp) {
             Row(

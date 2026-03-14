@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.ui.collections
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,7 +47,11 @@ fun DesktopCollectionDetailScreen(
 ) {
     val models by viewModel.displayModels.collectAsState()
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface),
+    ) {
         DetailTopBar(title = collectionName, onBack = onBack)
         if (models.isEmpty()) {
             EmptyCollectionView()
