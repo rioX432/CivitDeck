@@ -104,7 +104,7 @@ struct ComfyUIHistoryView: View {
             .frame(maxWidth: .infinity)
             .aspectRatio(1, contentMode: .fit)
             .clipped()
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
         }
         .buttonStyle(.plain)
         .contextMenu {

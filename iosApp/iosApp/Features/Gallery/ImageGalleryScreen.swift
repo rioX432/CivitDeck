@@ -204,7 +204,7 @@ struct ImageGalleryScreen: View {
                     if image.contentType == .video {
                         SwiftUI.Image(systemName: "play.circle.fill")
                             .font(.civitIconLarge)
-                            .foregroundColor(.white.opacity(0.85))
+                            .foregroundColor(.civitInverseOnSurface)
                             .accessibilityHidden(true)
                     }
                 }

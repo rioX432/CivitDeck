@@ -280,7 +280,7 @@ struct ComfyUIGenerationView: View {
                             }
                         }
                         .frame(minHeight: 150)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
                         Button {
                             viewModel.onSaveImage(url: url)
                         } label: {

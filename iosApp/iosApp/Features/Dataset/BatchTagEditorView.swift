@@ -126,7 +126,7 @@ struct BatchTagEditorView: View {
         .frame(maxWidth: .infinity)
         .aspectRatio(1, contentMode: .fit)
         .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
         .overlay(alignment: .topLeading) { selectionIndicator(isSelected: isSelected) }
         .overlay(alignment: .bottomTrailing) { tagCountBadge(image: image) }
         .onTapGesture { viewModel.toggleSelection(image.id) }
