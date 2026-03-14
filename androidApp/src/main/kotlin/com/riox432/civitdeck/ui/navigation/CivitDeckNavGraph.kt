@@ -118,6 +118,7 @@ import com.riox432.civitdeck.ui.search.ModelSearchScreen
 import com.riox432.civitdeck.ui.settings.AdvancedSettingsScreen
 import com.riox432.civitdeck.ui.settings.AppearanceSettingsScreen
 import com.riox432.civitdeck.ui.settings.ContentFilterSettingsScreen
+import com.riox432.civitdeck.ui.settings.IntegrationsHubScreen
 import com.riox432.civitdeck.ui.settings.LicensesScreen
 import com.riox432.civitdeck.ui.settings.NavShortcutsSettingsScreen
 import com.riox432.civitdeck.ui.settings.SettingsScreen
@@ -222,6 +223,8 @@ data object BackupRoute
 data object QRScannerRoute
 
 data object AnalyticsRoute
+
+data object IntegrationsHubRoute
 
 data object PluginManagementRoute
 
@@ -816,14 +819,20 @@ private fun EntryProviderScope<Any>.settingsBehaviorEntries(backStack: MutableLi
         AdvancedSettingsScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
-            onNavigateToComfyUI = { backStack.add(ComfyUISettingsRoute) },
+            onNavigateToIntegrations = { backStack.add(IntegrationsHubRoute) },
             onNavigateToModelFiles = { backStack.add(ModelFileBrowserRoute) },
+            onNavigateToPlugins = { backStack.add(PluginManagementRoute) },
+            onNavigateToNavShortcuts = { backStack.add(NavShortcutsSettingsRoute) },
+        )
+    }
+    entry<IntegrationsHubRoute> {
+        IntegrationsHubScreen(
+            onBack = { backStack.removeLastOrNull() },
+            onNavigateToComfyUI = { backStack.add(ComfyUISettingsRoute) },
             onNavigateToTemplates = { backStack.add(WorkflowTemplateLibraryRoute) },
             onNavigateToSDWebUI = { backStack.add(SDWebUISettingsRoute) },
             onNavigateToCivitaiLink = { backStack.add(CivitaiLinkSettingsRoute) },
             onNavigateToExternalServer = { backStack.add(ExternalServerSettingsRoute) },
-            onNavigateToPlugins = { backStack.add(PluginManagementRoute) },
-            onNavigateToNavShortcuts = { backStack.add(NavShortcutsSettingsRoute) },
         )
     }
 }
