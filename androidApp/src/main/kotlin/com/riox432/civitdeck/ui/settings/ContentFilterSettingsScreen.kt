@@ -99,7 +99,7 @@ internal fun LazyListScope.feedQualityItems(
     state: AppBehaviorSettingsUiState,
     viewModel: AppBehaviorSettingsViewModel,
 ) {
-    item { SectionHeader("Feed Quality") }
+    item { SectionHeader("Search Quality Filter") }
     item {
         FeedQualityThresholdRow(
             threshold = state.feedQualityThreshold,

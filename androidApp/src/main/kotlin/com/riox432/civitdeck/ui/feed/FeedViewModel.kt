@@ -6,8 +6,6 @@ import com.riox432.civitdeck.domain.model.FeedItem
 import com.riox432.civitdeck.domain.usecase.GetCreatorFeedUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadFeedCountUseCase
 import com.riox432.civitdeck.domain.usecase.MarkFeedReadUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
-import com.riox432.civitdeck.domain.usecase.QualityScoreCalculator
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,17 +23,12 @@ class FeedViewModel(
     private val getCreatorFeedUseCase: GetCreatorFeedUseCase,
     private val getUnreadFeedCountUseCase: GetUnreadFeedCountUseCase,
     private val markFeedReadUseCase: MarkFeedReadUseCase,
-    private val observeQualityThresholdUseCase: ObserveQualityThresholdUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FeedUiState())
     val uiState: StateFlow<FeedUiState> = _uiState
 
-    private var allItems: List<FeedItem> = emptyList()
-    private var qualityThreshold: Int = 0
-
     init {
-        observeQualityThreshold()
         loadFeed()
         observeUnreadCount()
     }
@@ -58,13 +51,13 @@ class FeedViewModel(
                 error = null,
             )
             try {
-                allItems = getCreatorFeedUseCase(forceRefresh)
+                val items = getCreatorFeedUseCase(forceRefresh)
                 _uiState.value = _uiState.value.copy(
-                    feedItems = filterByQuality(allItems),
+                    feedItems = items,
                     isLoading = false,
                     isRefreshing = false,
                 )
-                if (allItems.isNotEmpty()) markFeedReadUseCase()
+                if (items.isNotEmpty()) markFeedReadUseCase()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -74,31 +67,6 @@ class FeedViewModel(
                     error = e.message ?: "Failed to load feed",
                 )
             }
-        }
-    }
-
-    private fun observeQualityThreshold() {
-        viewModelScope.launch {
-            observeQualityThresholdUseCase().collect { threshold ->
-                qualityThreshold = threshold
-                if (allItems.isNotEmpty()) {
-                    _uiState.value = _uiState.value.copy(
-                        feedItems = filterByQuality(allItems),
-                    )
-                }
-            }
-        }
-    }
-
-    private fun filterByQuality(items: List<FeedItem>): List<FeedItem> {
-        if (qualityThreshold <= 0) return items
-        return items.filter { item ->
-            val stats = item.stats
-            // Skip filtering for items with unknown stats (e.g., migrated cache entries)
-            if (stats.downloadCount <= 0 && stats.favoriteCount <= 0 && stats.ratingCount <= 0) {
-                return@filter true
-            }
-            QualityScoreCalculator.calculate(stats) >= qualityThreshold
         }
     }
 
