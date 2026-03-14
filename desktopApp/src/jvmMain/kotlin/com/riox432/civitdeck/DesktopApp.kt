@@ -1,15 +1,14 @@
 package com.riox432.civitdeck
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DynamicFeed
 import androidx.compose.material.icons.filled.FolderCopy
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.automirrored.filled.TextSnippet
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
@@ -21,10 +20,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.theme.CivitDeckTheme
 
@@ -34,6 +31,7 @@ enum class DesktopTab(
 ) {
     Search("Search", Icons.Default.Search),
     Collections("Collections", Icons.Default.FolderCopy),
+    Prompts("Prompts", Icons.AutoMirrored.Filled.TextSnippet),
     Feed("Feed", Icons.Default.DynamicFeed),
     Settings("Settings", Icons.Default.Settings),
 }
@@ -88,20 +86,9 @@ private fun DesktopContent(
 ) {
     when (selectedTab) {
         DesktopTab.Search -> SearchTabContent(backstack = backstack, modifier = modifier)
-        else -> PlaceholderContent(label = selectedTab.label, modifier = modifier)
-    }
-}
-
-@Composable
-private fun PlaceholderContent(label: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.padding(24.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = "$label (coming soon)",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+        DesktopTab.Collections -> CollectionsTabContent(backstack = backstack, modifier = modifier)
+        DesktopTab.Prompts -> PromptsTabContent(modifier = modifier)
+        DesktopTab.Feed -> FeedTabContent(backstack = backstack, modifier = modifier)
+        DesktopTab.Settings -> SettingsTabContent(modifier = modifier)
     }
 }

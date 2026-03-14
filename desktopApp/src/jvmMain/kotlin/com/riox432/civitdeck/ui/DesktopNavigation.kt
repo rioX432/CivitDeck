@@ -12,4 +12,5 @@ sealed class DesktopRoute {
         val initialIndex: Int = 0,
     ) : DesktopRoute()
     data class CreatorProfile(val username: String) : DesktopRoute()
+    data class CollectionDetail(val collectionId: Long, val collectionName: String) : DesktopRoute()
 }
