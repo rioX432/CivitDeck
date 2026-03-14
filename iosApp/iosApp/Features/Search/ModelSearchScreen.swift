@@ -118,6 +118,7 @@ struct ModelSearchScreen: View {
         if viewModel.selectedSort != .mostDownloaded { count += 1 }
         if viewModel.selectedPeriod != .allTime { count += 1 }
         if viewModel.isFreshFindEnabled { count += 1 }
+        if viewModel.isQualityFilterEnabled { count += 1 }
         if !viewModel.includedTags.isEmpty { count += 1 }
         if !viewModel.excludedTags.isEmpty { count += 1 }
         return count
@@ -378,10 +379,6 @@ struct ModelSearchScreen: View {
             await viewModel.refresh()
         }
     }
-
-    private func chipButton(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        ChipButton(label: label, isSelected: isSelected, action: action)
-    }
     private var emptyView: some View {
         EmptyStateView(icon: "magnifyingglass", title: "No models found")
     }
@@ -390,11 +387,11 @@ extension ModelSearchScreen { // MARK: - Filter Chips
     var typeFilterChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.sm) {
-                chipButton(label: "All", isSelected: viewModel.selectedType == nil) {
+                ChipButton(label: "All", isSelected: viewModel.selectedType == nil) {
                     viewModel.onTypeSelected(nil)
                 }
                 ForEach(SearchFilter.modelTypeOptions, id: \.self) { type in
-                    chipButton(label: type.name, isSelected: viewModel.selectedType == type) {
+                    ChipButton(label: type.name, isSelected: viewModel.selectedType == type) {
                         viewModel.onTypeSelected(type)
                     }
                 }
@@ -407,7 +404,7 @@ extension ModelSearchScreen { // MARK: - Filter Chips
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.sm) {
                 ForEach(SearchFilter.baseModelOptions, id: \.self) { baseModel in
-                    chipButton(
+                    ChipButton(
                         label: baseModel.displayName,
                         isSelected: viewModel.selectedBaseModels.contains(baseModel)
                     ) {
@@ -422,17 +419,20 @@ extension ModelSearchScreen { // MARK: - Filter Chips
     var sortAndPeriodChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.sm) {
-                chipButton(label: "Fresh Only", isSelected: viewModel.isFreshFindEnabled) {
+                ChipButton(label: "Fresh Only", isSelected: viewModel.isFreshFindEnabled) {
                     viewModel.onFreshFindToggled()
                 }
+                ChipButton(label: "Quality", isSelected: viewModel.isQualityFilterEnabled) {
+                    viewModel.onQualityFilterToggled()
+                }
                 ForEach(SearchFilter.sortOptions, id: \.self) { sort in
-                    chipButton(label: SearchFilter.sortLabel(sort), isSelected: viewModel.selectedSort == sort) {
+                    ChipButton(label: SearchFilter.sortLabel(sort), isSelected: viewModel.selectedSort == sort) {
                         viewModel.onSortSelected(sort)
                     }
                 }
                 ForEach(SearchFilter.periodOptions, id: \.self) { period in
                     let selected = viewModel.selectedPeriod == period
-                    chipButton(label: SearchFilter.periodLabel(period), isSelected: selected) {
+                    ChipButton(label: SearchFilter.periodLabel(period), isSelected: selected) {
                         viewModel.onPeriodSelected(period)
                     }
                 }

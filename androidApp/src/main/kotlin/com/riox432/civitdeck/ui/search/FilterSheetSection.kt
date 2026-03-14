@@ -39,6 +39,7 @@ internal fun countActiveFilters(uiState: ModelSearchUiState): Int {
     if (uiState.selectedSort != SortOrder.MostDownloaded) count++
     if (uiState.selectedPeriod != TimePeriod.AllTime) count++
     if (uiState.isFreshFindEnabled) count++
+    if (uiState.isQualityFilterEnabled) count++
     if (uiState.includedTags.isNotEmpty()) count++
     if (uiState.excludedTags.isNotEmpty()) count++
     return count
@@ -58,6 +59,7 @@ internal fun FilterBottomSheet(
     onSortSelected: (SortOrder) -> Unit,
     onPeriodSelected: (TimePeriod) -> Unit,
     onFreshFindToggled: () -> Unit,
+    onQualityFilterToggled: () -> Unit,
     onAddIncludedTag: (String) -> Unit,
     onRemoveIncludedTag: (String) -> Unit,
     onAddExcludedTag: (String) -> Unit,
@@ -80,6 +82,7 @@ internal fun FilterBottomSheet(
             onSortSelected = onSortSelected,
             onPeriodSelected = onPeriodSelected,
             onFreshFindToggled = onFreshFindToggled,
+            onQualityFilterToggled = onQualityFilterToggled,
             onAddIncludedTag = onAddIncludedTag,
             onRemoveIncludedTag = onRemoveIncludedTag,
             onAddExcludedTag = onAddExcludedTag,
@@ -101,6 +104,7 @@ private fun FilterSheetContent(
     onSortSelected: (SortOrder) -> Unit,
     onPeriodSelected: (TimePeriod) -> Unit,
     onFreshFindToggled: () -> Unit,
+    onQualityFilterToggled: () -> Unit,
     onAddIncludedTag: (String) -> Unit,
     onRemoveIncludedTag: (String) -> Unit,
     onAddExcludedTag: (String) -> Unit,
@@ -150,6 +154,12 @@ private fun FilterSheetContent(
             FreshOnlyToggleRow(
                 isFreshFindEnabled = uiState.isFreshFindEnabled,
                 onFreshFindToggled = onFreshFindToggled,
+            )
+        }
+        item {
+            QualityFilterToggleRow(
+                isQualityFilterEnabled = uiState.isQualityFilterEnabled,
+                onQualityFilterToggled = onQualityFilterToggled,
             )
         }
         item {
@@ -316,5 +326,29 @@ private fun FreshOnlyToggleRow(
     ) {
         Text(text = "Fresh Only", style = MaterialTheme.typography.titleSmall)
         Switch(checked = isFreshFindEnabled, onCheckedChange = { onFreshFindToggled() })
+    }
+}
+
+@Composable
+private fun QualityFilterToggleRow(
+    isQualityFilterEnabled: Boolean,
+    onQualityFilterToggled: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column {
+            Text(text = "Quality Filter", style = MaterialTheme.typography.titleSmall)
+            Text(
+                text = "Hide low-quality results",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(checked = isQualityFilterEnabled, onCheckedChange = { onQualityFilterToggled() })
     }
 }
