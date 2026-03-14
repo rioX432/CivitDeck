@@ -30,8 +30,13 @@ import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import com.riox432.civitdeck.domain.model.ThemeMode
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.theme.CivitDeckTheme
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.collectAsState
+import org.koin.compose.viewmodel.koinViewModel
 
 enum class DesktopTab(
     val label: String,
@@ -46,7 +51,20 @@ enum class DesktopTab(
 
 @Composable
 fun DesktopApp() {
-    CivitDeckTheme {
+    val displayViewModel: DisplaySettingsViewModel = koinViewModel()
+    val displayState by displayViewModel.uiState.collectAsState()
+    val systemDark = isSystemInDarkTheme()
+    val isDark = when (displayState.themeMode) {
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+        ThemeMode.SYSTEM -> systemDark
+    }
+
+    CivitDeckTheme(
+        darkTheme = isDark,
+        accentColor = displayState.accentColor,
+        amoledDarkMode = displayState.amoledDarkMode,
+    ) {
         var selectedTab by remember { mutableStateOf(DesktopTab.Search) }
         val backstack = remember {
             androidx.compose.runtime.mutableStateListOf<DesktopRoute>()
