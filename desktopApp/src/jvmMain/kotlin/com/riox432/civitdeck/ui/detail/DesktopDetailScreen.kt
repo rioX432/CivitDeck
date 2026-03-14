@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -132,23 +134,28 @@ private fun DetailBody(
     val images = (selectedVersion?.images ?: emptyList())
         .filterByNsfwLevel(uiState.nsfwFilterLevel)
 
-    Row(modifier = Modifier.fillMaxSize()) {
-        // Left: image grid
-        ImageGridPanel(
-            images = images,
-            onImageClick = onImageClick,
-            modifier = Modifier.weight(1f),
-        )
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val panelWidth = (maxWidth * INFO_PANEL_FRACTION)
+            .coerceIn(INFO_PANEL_MIN_WIDTH, INFO_PANEL_MAX_WIDTH)
 
-        // Right: info panel
-        InfoPanel(
-            model = model,
-            uiState = uiState,
-            selectedVersion = selectedVersion,
-            onVersionSelected = onVersionSelected,
-            onCreatorClick = onCreatorClick,
-            modifier = Modifier.width(INFO_PANEL_WIDTH),
-        )
+        Row(modifier = Modifier.fillMaxSize()) {
+            // Left: image grid
+            ImageGridPanel(
+                images = images,
+                onImageClick = onImageClick,
+                modifier = Modifier.weight(1f),
+            )
+
+            // Right: info panel
+            InfoPanel(
+                model = model,
+                uiState = uiState,
+                selectedVersion = selectedVersion,
+                onVersionSelected = onVersionSelected,
+                onCreatorClick = onCreatorClick,
+                modifier = Modifier.width(panelWidth),
+            )
+        }
     }
 }
 
@@ -398,6 +405,8 @@ private fun DescriptionSection(description: String) {
     }
 }
 
-private val INFO_PANEL_WIDTH = 360.dp
+private const val INFO_PANEL_FRACTION = 0.35f
+private val INFO_PANEL_MIN_WIDTH = 280.dp
+private val INFO_PANEL_MAX_WIDTH = 400.dp
 private val IMAGE_GRID_MIN_SIZE = 180.dp
 private val AVATAR_SIZE = 24.dp
