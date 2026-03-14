@@ -36,6 +36,7 @@ import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewMo
 import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.theme.CivitDeckTheme
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -51,7 +52,9 @@ enum class DesktopTab(
 }
 
 @Composable
-fun DesktopApp() {
+fun DesktopApp(
+    onScreenChanged: (String) -> Unit = {},
+) {
     val displayViewModel: DisplaySettingsViewModel = koinViewModel()
     val displayState by displayViewModel.uiState.collectAsState()
     val systemDark = isSystemInDarkTheme()
@@ -69,6 +72,10 @@ fun DesktopApp() {
         var selectedTab by remember { mutableStateOf(DesktopTab.Search) }
         val backstack = remember {
             androidx.compose.runtime.mutableStateListOf<DesktopRoute>()
+        }
+
+        LaunchedEffect(selectedTab) {
+            onScreenChanged(selectedTab.label)
         }
         val searchFocusRequester = remember { FocusRequester() }
         val isMac = remember {
