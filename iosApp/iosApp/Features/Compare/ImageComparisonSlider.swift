@@ -180,7 +180,6 @@ private let minScale: CGFloat = 1.0
 private let maxScale: CGFloat = 5.0
 private let dividerWidth: CGFloat = 3
 private let handleSize: CGFloat = 40
-private let iconSize: CGFloat = 16
 private let handleAlpha: Double = 0.85
 private let imageMaxPixelSize: CGFloat = 1200
 
