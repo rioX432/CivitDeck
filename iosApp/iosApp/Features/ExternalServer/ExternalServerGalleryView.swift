@@ -142,7 +142,7 @@ private struct ServerImageCell: View {
                     .font(.civitLabelSmall)
                     .foregroundColor(.civitOnSurface)
                     .padding(Spacing.xs)
-                    .background(Color.black.opacity(0.5))
+                    .background(Color.civitScrim.opacity(0.5))
                     .cornerRadius(Spacing.xs)
                     .padding(Spacing.xs)
             }

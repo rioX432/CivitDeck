@@ -47,6 +47,9 @@ extension Color {
     static let civitInverseOnSurface = Color(light: hex(0xF2F0F4), dark: hex(0x303034))
     static let civitInversePrimary = Color(light: hex(0xB8C4FF), dark: hex(0x3755C3))
 
+    // MARK: - Scrim
+    static let civitScrim = hex(0x000000)
+
     // MARK: - AMOLED Dark Mode
     static let amoledSurface = hex(0x000000)
     static let amoledSurfaceContainer = hex(0x0F0F0F)

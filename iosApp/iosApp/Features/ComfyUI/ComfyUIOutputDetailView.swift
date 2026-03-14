@@ -314,7 +314,7 @@ private struct SingleImageViewer: View {
 
     var body: some View {
         ZStack {
-            Color.black
+            Color.civitScrim
                 .opacity(backgroundOpacity)
                 .ignoresSafeArea()
 

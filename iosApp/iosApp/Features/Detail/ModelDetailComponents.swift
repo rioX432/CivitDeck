@@ -11,7 +11,7 @@ struct CarouselViewer: View {
     var body: some View {
         if let startIndex = selectedIndex, !images.isEmpty {
             ZStack {
-                Color.black.ignoresSafeArea()
+                Color.civitScrim.ignoresSafeArea()
 
                 TabView(selection: Binding(
                     get: { startIndex },
@@ -120,7 +120,7 @@ struct ImageGridSheet: View {
                 if image.contentType == .video {
                     SwiftUI.Image(systemName: "play.circle.fill")
                         .font(.civitIconLarge)
-                        .foregroundColor(.white.opacity(0.85))
+                        .foregroundColor(.civitInverseOnSurface)
                         .accessibilityHidden(true)
                 }
             }
@@ -139,7 +139,7 @@ struct GridImageViewer: View {
     var body: some View {
         if let startIndex = selectedIndex, !images.isEmpty {
             ZStack {
-                Color.black.ignoresSafeArea()
+                Color.civitScrim.ignoresSafeArea()
                 TabView(selection: Binding(
                     get: { startIndex },
                     set: { selectedIndex = $0 }

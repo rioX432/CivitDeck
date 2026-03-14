@@ -151,7 +151,7 @@ struct ExportProgressOverlay: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black.opacity(0.3))
+        .background(Color.civitScrim.opacity(0.3))
     }
 
     private func completedView(path: String, warnings: Int) -> some View {
@@ -184,7 +184,7 @@ struct ExportProgressOverlay: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black.opacity(0.3))
+        .background(Color.civitScrim.opacity(0.3))
     }
 
     private func failedView(message: String) -> some View {
@@ -205,6 +205,6 @@ struct ExportProgressOverlay: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black.opacity(0.3))
+        .background(Color.civitScrim.opacity(0.3))
     }
 }
