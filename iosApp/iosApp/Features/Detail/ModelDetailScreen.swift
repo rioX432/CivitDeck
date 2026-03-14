@@ -265,7 +265,7 @@ struct ModelDetailScreen: View {
                     Button {
                         showImageGrid = true
                     } label: {
-                        VStack(spacing: 2) {
+                        VStack(spacing: Spacing.xxs) {
                             SwiftUI.Image(systemName: "square.grid.2x2")
                                 .font(.title3)
                             Text("\(currentCarouselPage + 1)/\(filteredImages.count)")
@@ -365,7 +365,7 @@ struct ModelDetailScreen: View {
                                     .font(.civitLabelMedium)
                                     .fontWeight(selected ? .semibold : .regular)
                                     .padding(.horizontal, Spacing.md)
-                                    .padding(.vertical, 6)
+                                    .padding(.vertical, Spacing.xsPlus)
                                     .background(
                                         selected
                                             ? Color.civitPrimary.opacity(0.2)

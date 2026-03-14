@@ -50,7 +50,7 @@ struct ContentFilterSettingsView: View {
             get: { viewModel.nsfwFilterLevel != .off },
             set: { _ in viewModel.onNsfwFilterToggle() }
         )) {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("NSFW Content")
                     .font(.civitBodyMedium)
                 Text("Show NSFW content in search results")
@@ -188,7 +188,7 @@ private struct BlurSliderRow: View {
     let onChanged: (Int) -> Void
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: Spacing.xxs) {
             HStack {
                 Text(label)
                     .font(.civitBodyMedium)

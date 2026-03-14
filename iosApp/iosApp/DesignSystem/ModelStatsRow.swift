@@ -29,7 +29,7 @@ struct ModelStatsRow: View {
     }
 
     private func statItem(icon: String, value: String) -> some View {
-        HStack(spacing: 2) {
+        HStack(spacing: Spacing.xxs) {
             Image(systemName: icon)
                 .font(.civitLabelXSmall)
                 .accessibilityHidden(true)
@@ -54,7 +54,7 @@ struct ModelStatsRow: View {
     }
 
     private func statColumn(value: String, label: String) -> some View {
-        VStack(spacing: 2) {
+        VStack(spacing: Spacing.xxs) {
             Text(value)
                 .font(.civitTitleMedium)
             Text(label)

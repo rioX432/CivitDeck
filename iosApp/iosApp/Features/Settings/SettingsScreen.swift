@@ -144,7 +144,7 @@ private struct ConnectedAccountRow: View {
 
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Connected as")
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
@@ -171,7 +171,7 @@ private struct ApiKeyInputRow: View {
     @State private var keyInput = ""
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack {
                 SecureField("Paste API key", text: $keyInput)
                     .textContentType(.password)

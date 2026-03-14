@@ -146,7 +146,7 @@ struct PersonalTagsSection: View {
     }
 
     private func tagChip(_ tag: String) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Spacing.xs) {
             Text(tag)
                 .font(.civitLabelMedium)
                 .lineLimit(1)

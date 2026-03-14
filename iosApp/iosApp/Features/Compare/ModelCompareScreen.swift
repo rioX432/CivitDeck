@@ -195,7 +195,7 @@ struct ModelCompareScreen: View {
                                     .font(.civitLabelSmall)
                                     .fontWeight(index == selectedIndex ? .semibold : .regular)
                                     .padding(.horizontal, Spacing.sm)
-                                    .padding(.vertical, 4)
+                                    .padding(.vertical, Spacing.xs)
                                     .background(
                                         index == selectedIndex
                                             ? Color.civitPrimary.opacity(0.2)
@@ -309,7 +309,7 @@ struct ComparisonBottomBar: View {
             Image(systemName: "rectangle.split.2x1")
                 .foregroundColor(.civitPrimary)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text("Comparing: \(modelName)")
                     .font(.civitLabelMedium)
                     .fontWeight(.medium)

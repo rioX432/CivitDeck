@@ -25,14 +25,14 @@ struct MetadataSheet: View {
     @ViewBuilder
     private var promptSection: some View {
         if let prompt = meta.prompt {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Prompt")
                     .font(.caption)
                     .foregroundColor(.accentColor)
                 Text(prompt)
                     .font(.callout)
 
-                HStack(spacing: 8) {
+                HStack(spacing: Spacing.sm) {
                     Button("Copy Prompt") {
                         HapticFeedback.success.trigger()
                         UIPasteboard.general.string = prompt
@@ -46,12 +46,12 @@ struct MetadataSheet: View {
                     .buttonStyle(.bordered)
                     .controlSize(.small)
                 }
-                .padding(.top, 4)
+                .padding(.top, Spacing.xs)
             }
         }
 
         if let negativePrompt = meta.negativePrompt {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Negative Prompt")
                     .font(.caption)
                     .foregroundColor(.accentColor)
