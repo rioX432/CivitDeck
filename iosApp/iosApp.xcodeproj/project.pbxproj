@@ -120,7 +120,6 @@
 		CDHI03012F280003000CD001 /* ComfyUIOutputDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDHI03002F280003000CD001 /* ComfyUIOutputDetailView.swift */; };
 		CD00SS012E208001000CD001 /* AppearanceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS002E208001000CD001 /* AppearanceSettingsView.swift */; };
 		CD00SS032E208001000CD001 /* ContentFilterSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS022E208001000CD001 /* ContentFilterSettingsView.swift */; };
-		CD00SS052E208001000CD001 /* NotificationsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS042E208001000CD001 /* NotificationsSettingsView.swift */; };
 		CD00SS072E208001000CD001 /* StorageSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS062E208001000CD001 /* StorageSettingsView.swift */; };
 		CD00SS092E208001000CD001 /* AdvancedSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS082E208001000CD001 /* AdvancedSettingsView.swift */; };
 		CDSP01012E900001000CD001 /* SpotlightIndexManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSP01002E900001000CD001 /* SpotlightIndexManager.swift */; };
@@ -229,7 +228,6 @@
 		CDNAV0002D00001A000CD001 /* NavShortcutsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavShortcutsSettingsView.swift; sourceTree = "<group>"; };
 		CD00SS002E208001000CD001 /* AppearanceSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettingsView.swift; sourceTree = "<group>"; };
 		CD00SS022E208001000CD001 /* ContentFilterSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentFilterSettingsView.swift; sourceTree = "<group>"; };
-		CD00SS042E208001000CD001 /* NotificationsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsSettingsView.swift; sourceTree = "<group>"; };
 		CD00SS062E208001000CD001 /* StorageSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageSettingsView.swift; sourceTree = "<group>"; };
 		CD00SS082E208001000CD001 /* AdvancedSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSettingsView.swift; sourceTree = "<group>"; };
 		CD000B002D00000B000CD001 /* HiddenModelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenModelsView.swift; sourceTree = "<group>"; };
@@ -623,7 +621,6 @@
 				CD000B042D00000B000CD001 /* LicensesView.swift */,
 				CD00SS002E208001000CD001 /* AppearanceSettingsView.swift */,
 				CD00SS022E208001000CD001 /* ContentFilterSettingsView.swift */,
-				CD00SS042E208001000CD001 /* NotificationsSettingsView.swift */,
 				CD00SS062E208001000CD001 /* StorageSettingsView.swift */,
 				CD00SS082E208001000CD001 /* AdvancedSettingsView.swift */,
 			);
@@ -947,7 +944,6 @@
 				CDHI03012F280003000CD001 /* ComfyUIOutputDetailView.swift in Sources */,
 				CD00SS012E208001000CD001 /* AppearanceSettingsView.swift in Sources */,
 				CD00SS032E208001000CD001 /* ContentFilterSettingsView.swift in Sources */,
-				CD00SS052E208001000CD001 /* NotificationsSettingsView.swift in Sources */,
 				CD00SS072E208001000CD001 /* StorageSettingsView.swift in Sources */,
 				CD00SS092E208001000CD001 /* AdvancedSettingsView.swift in Sources */,
 				CDSP01012E900001000CD001 /* SpotlightIndexManager.swift in Sources */,
