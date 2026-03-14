@@ -195,7 +195,7 @@ private fun DatasetCardContent(
         ) {
             Icon(
                 imageVector = Icons.Default.Dataset,
-                contentDescription = null,
+                contentDescription = "Dataset",
                 tint = MaterialTheme.colorScheme.primary,
             )
         }

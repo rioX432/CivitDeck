@@ -124,7 +124,7 @@ private fun ComparisonImage(imageUrl: String, modifier: Modifier = Modifier) {
     SubcomposeAsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
             .data(imageUrl).crossfade(Duration.normal).build(),
-        contentDescription = null,
+        contentDescription = "Comparison image",
         contentScale = ContentScale.Fit,
         modifier = modifier,
         loading = {

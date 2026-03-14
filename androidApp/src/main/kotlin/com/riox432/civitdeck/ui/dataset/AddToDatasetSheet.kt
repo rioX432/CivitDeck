@@ -96,7 +96,7 @@ private fun DatasetPickerRow(
     ) {
         Icon(
             imageVector = Icons.Default.Dataset,
-            contentDescription = null,
+            contentDescription = "Dataset",
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(end = Spacing.md),
         )

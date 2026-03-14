@@ -341,7 +341,7 @@ internal fun ComparisonBottomBar(
             ) {
                 Icon(
                     Icons.AutoMirrored.Filled.CompareArrows,
-                    contentDescription = null,
+                    contentDescription = "Compare models",
                     modifier = Modifier.padding(end = Spacing.sm),
                     tint = MaterialTheme.colorScheme.primary,
                 )

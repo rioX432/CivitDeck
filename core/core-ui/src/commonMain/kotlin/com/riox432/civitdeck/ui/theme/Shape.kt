@@ -20,6 +20,7 @@ object Spacing {
 }
 
 object CornerRadius {
+    val xs = 4.dp
     val card = 12.dp
     const val chip = 50
     val image = 8.dp

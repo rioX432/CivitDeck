@@ -165,7 +165,7 @@ private fun ZoomableImage(
     SubcomposeAsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
             .data(imageUrl).crossfade(Duration.normal).build(),
-        contentDescription = null,
+        contentDescription = "Full-size image",
         contentScale = ContentScale.Fit,
         modifier = Modifier
             .fillMaxSize()

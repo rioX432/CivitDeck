@@ -229,7 +229,7 @@ private fun ReviewCardRecommendation(recommended: Boolean) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = if (recommended) Icons.Outlined.ThumbUp else Icons.Outlined.ThumbDown,
-            contentDescription = null,
+            contentDescription = if (recommended) "Recommended" else "Not recommended",
             modifier = Modifier.size(12.dp),
             tint = if (recommended) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
         )

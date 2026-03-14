@@ -310,7 +310,7 @@ private fun CollectionThumbnail(thumbnailUrl: String?) {
     if (thumbnailUrl != null) {
         CivitAsyncImage(
             imageUrl = thumbnailUrl,
-            contentDescription = null,
+            contentDescription = "Collection thumbnail",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(thumbnailSize)
@@ -328,7 +328,7 @@ private fun CollectionThumbnail(thumbnailUrl: String?) {
         ) {
             Icon(
                 imageVector = Icons.Default.Folder,
-                contentDescription = null,
+                contentDescription = "Collection folder",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }

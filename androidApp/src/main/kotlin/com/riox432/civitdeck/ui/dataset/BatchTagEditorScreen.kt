@@ -117,7 +117,13 @@ private fun BatchTagEditorTopBar(
                     onClick = onToggleMode,
                     label = { Text(if (isAddMode) "Add Tags" else "Remove Tags") },
                     leadingIcon = if (isAddMode) {
-                        { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
+                        {
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = "Add mode active",
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     } else {
                         null
                     },
@@ -288,7 +294,7 @@ private fun BatchImageItem(
     ) {
         CivitAsyncImage(
             imageUrl = image.imageUrl,
-            contentDescription = null,
+            contentDescription = "Dataset image",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
