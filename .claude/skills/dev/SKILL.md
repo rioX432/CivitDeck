@@ -295,11 +295,14 @@ Launch these agents in parallel (all in a single message):
 ### 7a. Architecture Review
 Prompt: Review the changes for MVVM compliance, layer boundaries (data/domain/UI), dependency direction, Koin DI usage. Reference AGENTS.md conventions.
 
-### 7b. Android Review (only if Kotlin UI files changed)
+### 7b. Android Review (only if Kotlin UI files in androidApp/ changed)
 Prompt: Review Compose changes for recomposition safety, state hoisting, side effect key correctness, modifier ordering. Check Coil usage patterns and Navigation 3 correctness.
 
 ### 7c. iOS Review (only if Swift files changed)
 Prompt: Review SwiftUI changes for proper use of `CachedAsyncImage` (not third-party libs), design token usage from `DesignSystem/`, feature-based structure compliance. Check for iOS 16+ compatibility (no iOS 18+ APIs).
+
+### 7e. Desktop Review (only if Kotlin files in desktopApp/ changed)
+Prompt: Review Compose Desktop changes for Android API leaks (`LocalContext.current`, `collectAsStateWithLifecycle`, `androidx.lifecycle.ViewModel`, Navigation 3). Check state-based routing correctness, Coil usage without Context, and keyboard shortcut handling.
 
 ### 7d. Test Coverage Check
 Prompt: Check if new/modified logic has corresponding tests. Flag untested paths.

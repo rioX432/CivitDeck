@@ -16,8 +16,9 @@ Review the specified pull request (number or URL as argument).
 2. **Checkout the branch**: Run `git fetch origin <headRefName> && git checkout <headRefName>` to get the actual code.
 3. **Read changed files**: Read each changed file in full to understand context — don't rely on diff alone.
 4. **Launch platform-specific reviewers**: Based on changed file paths, use the Task tool to launch the appropriate reviewer subagents **in parallel**:
-   - `.kt` files under `shared/` → `kmp-reviewer` agent
+   - `.kt` files under `shared/` or `core/` or `feature/` → `kmp-reviewer` agent
    - `.kt` files under `androidApp/` → `android-reviewer` agent
+   - `.kt` files under `desktopApp/` → `desktop-reviewer` agent
    - `.swift` files → `ios-reviewer` agent
    - Only launch reviewers for platforms that have changes. Pass the list of changed files to each reviewer.
 5. **Run lint checks**:
