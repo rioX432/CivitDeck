@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +43,7 @@ fun DesktopSearchScreen(
     onModelClick: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
     onUrlImportClick: () -> Unit = {},
+    onQRCodeClick: () -> Unit = {},
     searchFocusRequester: FocusRequester = FocusRequester(),
     modifier: Modifier = Modifier,
 ) {
@@ -76,6 +78,12 @@ fun DesktopSearchScreen(
                 focusRequester = searchFocusRequester,
                 modifier = Modifier.weight(1f),
             )
+            IconButton(onClick = onQRCodeClick) {
+                Icon(
+                    Icons.Default.QrCode,
+                    contentDescription = "QR Code",
+                )
+            }
             IconButton(onClick = onUrlImportClick) {
                 Icon(
                     Icons.Default.Link,

@@ -24,6 +24,7 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.okhttp)
             implementation(libs.kotlinx.coroutines.swing)
+            implementation(libs.zxing.core)
         }
     }
 }

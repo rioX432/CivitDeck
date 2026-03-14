@@ -16,6 +16,7 @@ import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.compare.DesktopCompareScreen
 import com.riox432.civitdeck.ui.creator.DesktopCreatorScreen
 import com.riox432.civitdeck.ui.detail.DesktopDetailScreen
+import com.riox432.civitdeck.ui.qrcode.DesktopQRCodeScreen
 import com.riox432.civitdeck.ui.search.DesktopSearchScreen
 import com.riox432.civitdeck.ui.search.DesktopSearchViewModel
 import com.riox432.civitdeck.ui.search.DesktopUrlImportDialog
@@ -45,6 +46,7 @@ fun SearchTabContent(
                 backstack.add(DesktopRoute.CreatorProfile(username))
             },
             onUrlImportClick = { showUrlImport = true },
+            onQRCodeClick = { backstack.add(DesktopRoute.QRCode) },
             searchFocusRequester = searchFocusRequester,
         )
 
@@ -80,6 +82,15 @@ fun SearchTabContent(
                     viewModel = creatorVm,
                     onBack = { backstack.removeLastOrNull() },
                     onModelClick = { modelId ->
+                        backstack.add(DesktopRoute.ModelDetail(modelId))
+                    },
+                )
+            }
+            is DesktopRoute.QRCode -> {
+                DesktopQRCodeScreen(
+                    onBack = { backstack.removeLastOrNull() },
+                    onModelIdFound = { modelId ->
+                        backstack.removeLastOrNull()
                         backstack.add(DesktopRoute.ModelDetail(modelId))
                     },
                 )
