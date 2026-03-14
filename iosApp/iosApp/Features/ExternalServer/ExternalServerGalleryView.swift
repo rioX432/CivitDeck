@@ -5,6 +5,7 @@ struct ExternalServerGalleryView: View {
     let serverName: String
     @StateObject private var viewModel = ExternalServerGalleryViewModel()
     @State private var selectedImage: ServerImage?
+    @State private var showJobAlert = false
 
     private let columns = [
         GridItem(.flexible(), spacing: Spacing.xxs),
@@ -92,7 +93,8 @@ struct ExternalServerGalleryView: View {
                 ExternalServerImageDetailView(image: image)
             }
         }
-        .alert("Generation Status", isPresented: .constant(viewModel.activeJob != nil)) {
+        .onChange(of: viewModel.activeJob != nil) { showJobAlert = $0 }
+        .alert("Generation Status", isPresented: $showJobAlert) {
             Button("Dismiss") { viewModel.dismissJobStatus() }
         } message: {
             if let job = viewModel.activeJob {
