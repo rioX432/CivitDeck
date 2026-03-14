@@ -56,7 +56,6 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerat
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.plugin.ComfyUIWorkflowPlugin
-import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
@@ -96,9 +95,6 @@ val comfyuiModule = module {
     factory { ExportWorkflowTemplateUseCase() }
     factory { ImportWorkflowTemplateUseCase(get()) }
     factory { ApplyWorkflowTemplateUseCase() }
-    factory {
-        WorkflowTemplateViewModel(get(), get(), get(), get(), get())
-    }
 
     // SD WebUI
     singleOf(::SDWebUIRepositoryImpl) {
