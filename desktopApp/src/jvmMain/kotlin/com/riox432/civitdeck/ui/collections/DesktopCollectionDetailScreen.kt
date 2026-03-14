@@ -29,7 +29,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.PlatformContext
 import coil3.compose.SubcomposeAsyncImage
+import coil3.request.ImageRequest
+import coil3.size.Size
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
@@ -136,7 +139,10 @@ private fun CollectionModelCard(
         Column {
             if (model.thumbnailUrl != null) {
                 SubcomposeAsyncImage(
-                    model = model.thumbnailUrl,
+                    model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                        .data(model.thumbnailUrl)
+                        .size(Size(COLLECTION_CARD_IMAGE_SIZE, COLLECTION_CARD_IMAGE_SIZE))
+                        .build(),
                     contentDescription = model.name,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -165,3 +171,4 @@ private fun CollectionModelCard(
 }
 
 private val CARD_MIN_WIDTH = 200.dp
+private const val COLLECTION_CARD_IMAGE_SIZE = 400

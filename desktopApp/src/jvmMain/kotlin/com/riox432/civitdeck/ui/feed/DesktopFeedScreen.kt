@@ -39,7 +39,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.PlatformContext
 import coil3.compose.SubcomposeAsyncImage
+import coil3.request.ImageRequest
+import coil3.size.Size
 import com.riox432.civitdeck.domain.model.FeedItem
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
@@ -198,7 +201,10 @@ private fun FeedGridCard(
         Column {
             if (item.thumbnailUrl != null) {
                 SubcomposeAsyncImage(
-                    model = item.thumbnailUrl,
+                    model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                        .data(item.thumbnailUrl)
+                        .size(Size(FEED_THUMBNAIL_SIZE, FEED_THUMBNAIL_SIZE))
+                        .build(),
                     contentDescription = item.title,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -262,3 +268,4 @@ private val REFRESH_INDICATOR_SIZE = 24.dp
 private val UNREAD_DOT_SIZE = 6.dp
 private val CARD_MIN_WIDTH = 200.dp
 private const val THUMBNAIL_RATIO = 3f / 4f
+private const val FEED_THUMBNAIL_SIZE = 400

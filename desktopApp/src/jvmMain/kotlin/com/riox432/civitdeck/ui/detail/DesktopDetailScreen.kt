@@ -47,7 +47,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
+import coil3.PlatformContext
 import coil3.compose.SubcomposeAsyncImage
+import coil3.request.ImageRequest
+import coil3.size.Size
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelImage
@@ -175,7 +178,10 @@ private fun ImageGridPanel(
     ) {
         itemsIndexed(images, key = { _, img -> img.url }) { index, image ->
             SubcomposeAsyncImage(
-                model = image.thumbnailUrl(),
+                model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                    .data(image.thumbnailUrl())
+                    .size(Size(DETAIL_GRID_IMAGE_SIZE, DETAIL_GRID_IMAGE_SIZE))
+                    .build(),
                 contentDescription = "Image ${index + 1}",
                 modifier = Modifier
                     .aspectRatio(1f)
@@ -265,7 +271,10 @@ private fun ModelInfoHeader(
                 ) {
                     creator.image?.let { avatarUrl ->
                         SubcomposeAsyncImage(
-                            model = avatarUrl,
+                            model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                                .data(avatarUrl)
+                                .size(Size(AVATAR_IMAGE_SIZE, AVATAR_IMAGE_SIZE))
+                                .build(),
                             contentDescription = creator.username,
                             modifier = Modifier
                                 .size(AVATAR_SIZE)
@@ -410,3 +419,5 @@ private val INFO_PANEL_MIN_WIDTH = 280.dp
 private val INFO_PANEL_MAX_WIDTH = 400.dp
 private val IMAGE_GRID_MIN_SIZE = 180.dp
 private val AVATAR_SIZE = 24.dp
+private const val DETAIL_GRID_IMAGE_SIZE = 360
+private const val AVATAR_IMAGE_SIZE = 48

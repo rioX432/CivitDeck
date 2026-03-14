@@ -54,7 +54,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.PlatformContext
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.size.Size
 import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.domain.model.ImageSource
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
@@ -64,6 +67,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 private const val DEFAULT_GRID_COLUMNS = 4
 private const val IMAGE_ASPECT_RATIO = 1f
+private const val DATASET_IMAGE_SIZE = 300
 
 @Composable
 fun DesktopDatasetDetailScreen(
@@ -299,7 +303,10 @@ private fun DesktopDatasetImageItem(
             ),
     ) {
         AsyncImage(
-            model = image.imageUrl,
+            model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                .data(image.imageUrl)
+                .size(Size(DATASET_IMAGE_SIZE, DATASET_IMAGE_SIZE))
+                .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
