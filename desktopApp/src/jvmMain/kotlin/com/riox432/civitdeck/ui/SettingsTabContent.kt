@@ -37,6 +37,7 @@ import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewMo
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.util.removeLastOrNull
+import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsScreen
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupScreen
 import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
@@ -78,6 +79,7 @@ fun SettingsTabContent(
             onNavigateToDatasets = { backstack.add(DesktopRoute.DatasetList) },
             onNavigateToBackup = { backstack.add(DesktopRoute.Backup) },
             onNavigateToPlugins = { backstack.add(DesktopRoute.PluginList) },
+            onNavigateToAnalytics = { backstack.add(DesktopRoute.Analytics) },
         )
 
         when (currentRoute) {
@@ -126,6 +128,13 @@ fun SettingsTabContent(
                     onBack = { backstack.removeLastOrNull() },
                 )
             }
+            is DesktopRoute.Analytics -> {
+                val vm: DesktopAnalyticsViewModel = koinViewModel()
+                DesktopAnalyticsScreen(
+                    viewModel = vm,
+                    onBack = { backstack.removeLastOrNull() },
+                )
+            }
             else -> { /* Settings main screen is always shown underneath */ }
         }
     }
@@ -136,6 +145,7 @@ private fun SettingsMainContent(
     onNavigateToDatasets: () -> Unit,
     onNavigateToBackup: () -> Unit,
     onNavigateToPlugins: () -> Unit,
+    onNavigateToAnalytics: () -> Unit,
 ) {
     // AppBehaviorVM is always needed (controls power user mode / section visibility)
     val appBehaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
@@ -167,17 +177,16 @@ private fun SettingsMainContent(
                     val displayVm: DisplaySettingsViewModel = koinViewModel()
                     val contentFilterVm: ContentFilterSettingsViewModel = koinViewModel()
                     val storageVm: StorageSettingsViewModel = koinViewModel()
-                    val analyticsVm: DesktopAnalyticsViewModel = koinViewModel()
                     DesktopSettingsScreen(
                         authSettingsViewModel = authVm,
                         displaySettingsViewModel = displayVm,
                         contentFilterSettingsViewModel = contentFilterVm,
                         appBehaviorSettingsViewModel = appBehaviorVm,
                         storageSettingsViewModel = storageVm,
-                        analyticsViewModel = analyticsVm,
                         onNavigateToDatasets = onNavigateToDatasets,
                         onNavigateToBackup = onNavigateToBackup,
                         onNavigateToPlugins = onNavigateToPlugins,
+                        onNavigateToAnalytics = onNavigateToAnalytics,
                     )
                 }
                 SettingsSection.ComfyUI -> {

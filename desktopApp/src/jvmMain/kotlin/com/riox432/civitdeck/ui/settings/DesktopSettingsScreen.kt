@@ -36,7 +36,6 @@ import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
-import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -46,10 +45,10 @@ fun DesktopSettingsScreen(
     contentFilterSettingsViewModel: ContentFilterSettingsViewModel,
     appBehaviorSettingsViewModel: AppBehaviorSettingsViewModel,
     storageSettingsViewModel: StorageSettingsViewModel,
-    analyticsViewModel: DesktopAnalyticsViewModel,
     onNavigateToDatasets: () -> Unit = {},
     onNavigateToBackup: () -> Unit = {},
     onNavigateToPlugins: () -> Unit = {},
+    onNavigateToAnalytics: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -61,12 +60,12 @@ fun DesktopSettingsScreen(
             onNavigateToDatasets = onNavigateToDatasets,
             onNavigateToBackup = onNavigateToBackup,
             onNavigateToPlugins = onNavigateToPlugins,
+            onNavigateToAnalytics = onNavigateToAnalytics,
         )
         DisplaySettingsSection(displaySettingsViewModel)
         ContentFilterSection(contentFilterSettingsViewModel)
         AppBehaviorSection(appBehaviorSettingsViewModel)
         StorageSection(storageSettingsViewModel)
-        AnalyticsSection(analyticsViewModel)
     }
 }
 
@@ -75,12 +74,14 @@ private fun ToolsSection(
     onNavigateToDatasets: () -> Unit,
     onNavigateToBackup: () -> Unit,
     onNavigateToPlugins: () -> Unit,
+    onNavigateToAnalytics: () -> Unit,
 ) {
     SettingsCard(title = "Tools") {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             OutlinedButton(onClick = onNavigateToDatasets) { Text("Datasets") }
             OutlinedButton(onClick = onNavigateToBackup) { Text("Backup & Restore") }
             OutlinedButton(onClick = onNavigateToPlugins) { Text("Plugins") }
+            OutlinedButton(onClick = onNavigateToAnalytics) { Text("Analytics") }
         }
     }
 }
@@ -329,69 +330,6 @@ private fun StorageSection(viewModel: StorageSettingsViewModel) {
 
 // endregion
 
-// region Analytics
-
-@Composable
-private fun AnalyticsSection(viewModel: DesktopAnalyticsViewModel) {
-    val state by viewModel.uiState.collectAsState()
-
-    SettingsCard(title = "Analytics") {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text("Usage Statistics", style = MaterialTheme.typography.labelMedium)
-            TextButton(onClick = viewModel::refresh, enabled = !state.isLoading) {
-                Text("Refresh")
-            }
-        }
-        Spacer(modifier = Modifier.height(Spacing.sm))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-        ) {
-            StatItem(label = "Views", value = state.totalViews)
-            StatItem(label = "Favorites", value = state.totalFavorites)
-            StatItem(label = "Searches", value = state.totalSearches)
-        }
-        if (state.topModelTypes.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            Text("Top Model Types", style = MaterialTheme.typography.labelMedium)
-            state.topModelTypes.take(MAX_STATS_ITEMS).forEachIndexed { index, item ->
-                Text(
-                    text = "${index + 1}. ${item.name}: ${item.count}",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-        }
-        if (state.topCreators.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            Text("Top Creators", style = MaterialTheme.typography.labelMedium)
-            state.topCreators.take(MAX_STATS_ITEMS).forEachIndexed { index, item ->
-                Text(
-                    text = "${index + 1}. ${item.name}: ${item.count}",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun StatItem(label: String, value: Int) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = value.toString(), style = MaterialTheme.typography.headlineMedium)
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-// endregion
-
 // region Shared Components
 
 @Composable
@@ -489,4 +427,3 @@ internal fun SliderSetting(
 
 // endregion
 
-private const val MAX_STATS_ITEMS = 10
