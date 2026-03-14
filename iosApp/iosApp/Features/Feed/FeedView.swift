@@ -17,7 +17,7 @@ struct FeedView: View {
                 } else if viewModel.feedItems.isEmpty {
                     emptyState
                 } else {
-                    feedList
+                    feedGrid
                 }
             }
             .navigationTitle("Feed")
@@ -39,14 +39,18 @@ struct FeedView: View {
         )
     }
 
-    private var feedList: some View {
+    private var feedGrid: some View {
         ScrollView {
-            LazyVStack(spacing: Spacing.sm) {
+            LazyVGrid(
+                columns: AdaptiveGrid.columns(sizeClass: sizeClass),
+                spacing: Spacing.sm
+            ) {
                 ForEach(viewModel.feedItems, id: \.modelId) { item in
-                    FeedItemCard(item: item)
+                    FeedGridCard(item: item)
                 }
             }
-            .padding(.horizontal, Spacing.md)
+            .padding(.horizontal, Spacing.sm)
+            .padding(.top, Spacing.sm)
         }
         .refreshable {
             await viewModel.loadFeed(forceRefresh: true)
@@ -54,7 +58,7 @@ struct FeedView: View {
     }
 }
 
-private struct FeedItemCard: View {
+private struct FeedGridCard: View {
     let item: FeedItem
 
     var body: some View {
@@ -66,30 +70,30 @@ private struct FeedItemCard: View {
                         case .success(let image):
                             image
                                 .resizable()
-                                .aspectRatio(16 / 9, contentMode: .fill)
+                                .aspectRatio(3 / 4, contentMode: .fill)
                         case .failure:
                             Rectangle()
                                 .fill(Color.civitSurfaceVariant.opacity(0.2))
-                                .aspectRatio(16 / 9, contentMode: .fill)
+                                .aspectRatio(3 / 4, contentMode: .fill)
                         default:
                             Rectangle()
                                 .fill(Color.civitSurfaceVariant.opacity(0.2))
-                                .aspectRatio(16 / 9, contentMode: .fill)
+                                .aspectRatio(3 / 4, contentMode: .fill)
                                 .modifier(ShimmerModifier())
                         }
                     }
                     .clipped()
                 }
 
-                VStack(alignment: .leading, spacing: Spacing.xs) {
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
                     Text(item.title)
-                        .font(.civitTitleMedium)
+                        .font(.civitBodySmall)
                         .foregroundColor(.civitOnSurface)
                         .lineLimit(2)
 
-                    HStack(spacing: Spacing.sm) {
+                    HStack(spacing: Spacing.xs) {
                         Text(item.creatorUsername)
-                            .font(.civitBodySmall)
+                            .font(.civitLabelSmall)
                             .foregroundColor(.civitPrimary)
 
                         Text(item.type.name)
@@ -99,15 +103,15 @@ private struct FeedItemCard: View {
                         if item.isUnread {
                             Circle()
                                 .fill(Color.civitPrimary)
-                                .frame(width: 8, height: 8)
+                                .frame(width: 6, height: 6)
                         }
                     }
                 }
-                .padding(Spacing.md)
+                .padding(Spacing.sm)
             }
             .background(Color.civitSurfaceContainer)
             .cornerRadius(CornerRadius.card)
-            .shadow(color: .black.opacity(0.1), radius: 2, y: 1)
+            .shadow(color: .civitScrim.opacity(0.1), radius: 2, y: 1)
         }
         .buttonStyle(.plain)
     }

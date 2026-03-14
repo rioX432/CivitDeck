@@ -15,18 +15,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.RssFeed
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -46,7 +45,9 @@ import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
+import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,8 +65,11 @@ fun FeedScreen(
                 title = { Text("Feed") },
                 navigationIcon = {
                     if (onBack != null) {
-                        IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        androidx.compose.material3.IconButton(onClick = onBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                            )
                         }
                     }
                 },
@@ -122,7 +126,7 @@ private fun FeedContent(
                     .fillMaxSize()
                     .padding(top = contentPadding.calculateTopPadding()),
             ) {
-                FeedList(
+                FeedGrid(
                     items = uiState.feedItems,
                     onModelClick = onModelClick,
                     onCreatorClick = onCreatorClick,
@@ -134,23 +138,25 @@ private fun FeedContent(
 }
 
 @Composable
-private fun FeedList(
+private fun FeedGrid(
     items: List<FeedItem>,
     onModelClick: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
     bottomPadding: androidx.compose.ui.unit.Dp,
 ) {
-    LazyColumn(
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = CARD_MIN_WIDTH),
         contentPadding = PaddingValues(
-            start = Spacing.md,
-            end = Spacing.md,
+            start = Spacing.sm,
+            end = Spacing.sm,
             top = Spacing.sm,
             bottom = Spacing.lg + bottomPadding,
         ),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
         items(items = items, key = { it.modelId }) { item ->
-            FeedItemCard(
+            FeedGridCard(
                 item = item,
                 onModelClick = { onModelClick(item.modelId) },
                 onCreatorClick = { onCreatorClick(item.creatorUsername) },
@@ -160,7 +166,7 @@ private fun FeedList(
 }
 
 @Composable
-private fun FeedItemCard(
+private fun FeedGridCard(
     item: FeedItem,
     onModelClick: () -> Unit,
     onCreatorClick: () -> Unit,
@@ -169,8 +175,8 @@ private fun FeedItemCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onModelClick, onClickLabel = "View model details"),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(CornerRadius.card),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Column {
             if (item.thumbnailUrl != null) {
@@ -179,15 +185,15 @@ private fun FeedItemCard(
                     contentDescription = item.title,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
+                        .aspectRatio(THUMBNAIL_RATIO)
+                        .clip(RoundedCornerShape(topStart = CornerRadius.card, topEnd = CornerRadius.card)),
                     contentScale = ContentScale.Crop,
                 )
             }
-            Column(modifier = Modifier.padding(Spacing.md)) {
+            Column(modifier = Modifier.padding(Spacing.sm)) {
                 Text(
                     text = item.title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.bodyMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -206,11 +212,11 @@ private fun FeedItemMeta(
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = item.creatorUsername,
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.clickable(onClick = onCreatorClick, onClickLabel = "View creator profile"),
         )
-        Spacer(modifier = Modifier.width(Spacing.sm))
+        Spacer(modifier = Modifier.width(Spacing.xs))
         Text(
             text = item.type.name,
             style = MaterialTheme.typography.labelSmall,
@@ -219,22 +225,13 @@ private fun FeedItemMeta(
         if (item.isUnread) {
             Spacer(modifier = Modifier.width(Spacing.xs))
             val unreadColor = MaterialTheme.colorScheme.primary
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .clip(CircleShape),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape),
-                ) {
-                    // Unread dot
-                    Canvas(modifier = Modifier.fillMaxSize()) {
-                        drawCircle(color = unreadColor)
-                    }
-                }
+            Canvas(modifier = Modifier.size(UNREAD_DOT_SIZE)) {
+                drawCircle(color = unreadColor)
             }
         }
     }
 }
+
+private val CARD_MIN_WIDTH = 160.dp
+private val UNREAD_DOT_SIZE = 6.dp
+private const val THUMBNAIL_RATIO = 3f / 4f
