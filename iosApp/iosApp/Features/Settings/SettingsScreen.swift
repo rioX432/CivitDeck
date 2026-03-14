@@ -19,9 +19,18 @@ struct SettingsScreen: View {
                 contentBehaviorSection
                 dataStorageSection
                 advancedIntegrationsSection
-                analyticsSection
-                datasetsSection
+                if appBehaviorViewModel.powerUserMode {
+                    analyticsSection
+                    datasetsSection
+                }
                 aboutSection
+                if !appBehaviorViewModel.powerUserMode {
+                    Section {
+                        Text("Enable Power User Mode in Advanced & Integrations for more features")
+                            .font(.civitBodySmall)
+                            .foregroundColor(.civitOnSurfaceVariant)
+                    }
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)

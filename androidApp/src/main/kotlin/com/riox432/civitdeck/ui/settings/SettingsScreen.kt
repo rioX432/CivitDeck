@@ -68,6 +68,7 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsUiState
 import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
@@ -79,6 +80,7 @@ import com.riox432.civitdeck.ui.theme.Spacing
 fun SettingsScreen(
     authViewModel: AuthSettingsViewModel,
     storageViewModel: StorageSettingsViewModel,
+    appBehaviorViewModel: AppBehaviorSettingsViewModel,
     onNavigateToAppearance: () -> Unit = {},
     onNavigateToContentFilter: () -> Unit = {},
     onNavigateToStorage: () -> Unit = {},
@@ -89,6 +91,7 @@ fun SettingsScreen(
 ) {
     val authState by authViewModel.uiState.collectAsStateWithLifecycle()
     val storageState by storageViewModel.uiState.collectAsStateWithLifecycle()
+    val appBehaviorState by appBehaviorViewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     var lastHandledTrigger by rememberSaveable { mutableIntStateOf(scrollToTopTrigger) }
     LaunchedEffect(scrollToTopTrigger) {
@@ -113,11 +116,23 @@ fun SettingsScreen(
             item { SubScreenRow("Data & Storage", onNavigateToStorage) }
             item { SectionHeader("Advanced & Integrations") }
             item { SubScreenRow("Advanced & Integrations", onNavigateToAdvanced) }
-            item { SectionHeader("Analytics") }
-            item { SubScreenRow("Usage Stats", onNavigateToAnalytics) }
+            if (appBehaviorState.powerUserMode) {
+                item { SectionHeader("Analytics") }
+                item { SubScreenRow("Usage Stats", onNavigateToAnalytics) }
+            }
             item { SectionHeader("About") }
             item { InfoRow("App Version", BuildConfig.VERSION_NAME) }
             item { NavigationRow("Open Source Licenses", onNavigateToLicenses) }
+            if (!appBehaviorState.powerUserMode) {
+                item {
+                    Text(
+                        "Enable Power User Mode in Advanced & Integrations for more features",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.md),
+                    )
+                }
+            }
         }
         if (isEmpty) {
             EmptyStateMessage(

@@ -473,9 +473,11 @@ private fun CivitDeckNavDisplay(
             entry<SettingsRoute> {
                 val authVm: AuthSettingsViewModel = koinViewModel()
                 val storageVm: StorageSettingsViewModel = koinViewModel()
+                val behaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
                 SettingsScreen(
                     authViewModel = authVm,
                     storageViewModel = storageVm,
+                    appBehaviorViewModel = behaviorVm,
                     onNavigateToAppearance = { backStack.add(AppearanceSettingsRoute) },
                     onNavigateToContentFilter = { backStack.add(ContentFilterSettingsRoute) },
                     onNavigateToStorage = { backStack.add(StorageSettingsRoute) },
