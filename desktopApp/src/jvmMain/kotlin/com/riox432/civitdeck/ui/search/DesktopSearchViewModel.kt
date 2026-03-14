@@ -7,12 +7,15 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -33,6 +36,8 @@ data class DesktopSearchUiState(
 
 class DesktopSearchViewModel(
     private val getModelsUseCase: GetModelsUseCase,
+    private val observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase,
+    private val observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DesktopSearchUiState())
@@ -41,7 +46,12 @@ class DesktopSearchViewModel(
     private var searchJob: Job? = null
 
     init {
-        search()
+        viewModelScope.launch {
+            val sort = observeDefaultSortOrderUseCase().first()
+            val period = observeDefaultTimePeriodUseCase().first()
+            _uiState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
+            search()
+        }
     }
 
     fun onQueryChange(query: String) {

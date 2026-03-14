@@ -26,7 +26,7 @@ import org.koin.dsl.module
 
 val desktopModule = module {
     viewModel {
-        DesktopSearchViewModel(get())
+        DesktopSearchViewModel(get(), get(), get())
     }
     viewModel { params ->
         ModelDetailViewModel(

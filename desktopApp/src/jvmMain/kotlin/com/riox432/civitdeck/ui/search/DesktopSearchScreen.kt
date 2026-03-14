@@ -30,6 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
@@ -46,6 +48,8 @@ fun DesktopSearchScreen(
     val uiState by viewModel.uiState.collectAsState()
     val displayViewModel: DisplaySettingsViewModel = koinViewModel()
     val displayState by displayViewModel.uiState.collectAsState()
+    val contentFilterVm: ContentFilterSettingsViewModel = koinViewModel()
+    val contentFilterState by contentFilterVm.uiState.collectAsState()
     val gridState = rememberLazyGridState()
 
     // Trigger load more near the end
@@ -109,8 +113,25 @@ fun DesktopSearchScreen(
                     }
                 }
             }
+            !uiState.isLoading && uiState.error == null && uiState.models.isEmpty() -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "No models found",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             else -> {
                 val columns = displayState.gridColumns
+                val nsfwFilterLevel = contentFilterState.nsfwFilterLevel
+                val filteredModels = if (nsfwFilterLevel == NsfwFilterLevel.All) {
+                    uiState.models.filter { !it.nsfw }
+                } else {
+                    uiState.models
+                }
+                val nsfwBlurSettings = contentFilterState.nsfwBlurSettings
+
                 LazyVerticalGrid(
                     columns = if (columns > 0) GridCells.Fixed(columns) else GridCells.Adaptive(minSize = CARD_MIN_WIDTH),
                     state = gridState,
@@ -120,12 +141,13 @@ fun DesktopSearchScreen(
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     itemsIndexed(
-                        items = uiState.models,
+                        items = filteredModels,
                         key = { _, model -> model.id },
                     ) { _, model ->
                         DesktopModelCard(
                             model = model,
                             onClick = { onModelClick(model.id) },
+                            nsfwBlurSettings = nsfwBlurSettings,
                         )
                     }
                     if (uiState.isLoadingMore) {

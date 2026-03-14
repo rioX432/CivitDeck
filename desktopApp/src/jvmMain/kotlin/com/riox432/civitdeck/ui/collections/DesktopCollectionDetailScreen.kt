@@ -32,9 +32,11 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.foundation.clickable
 
 @Composable
@@ -101,8 +103,12 @@ private fun ModelGrid(
     models: List<FavoriteModelSummary>,
     onModelClick: (Long) -> Unit,
 ) {
+    val displayViewModel: DisplaySettingsViewModel = koinViewModel()
+    val displayState by displayViewModel.uiState.collectAsState()
+    val columns = displayState.gridColumns
+
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = CARD_MIN_WIDTH),
+        columns = if (columns > 0) GridCells.Fixed(columns) else GridCells.Adaptive(minSize = CARD_MIN_WIDTH),
         contentPadding = PaddingValues(Spacing.md),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),

@@ -33,10 +33,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.search.DesktopModelCard
 import com.riox432.civitdeck.ui.theme.Spacing
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun DesktopCreatorScreen(
@@ -78,6 +80,18 @@ fun DesktopCreatorScreen(
                 message = uiState.error ?: "Unknown error",
                 onRetry = viewModel::refresh,
             )
+            !uiState.isLoading && uiState.models.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "No models found",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             else -> CreatorModelGrid(
                 viewModel = viewModel,
                 onModelClick = onModelClick,
@@ -92,6 +106,9 @@ private fun CreatorModelGrid(
     onModelClick: (Long) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val displayViewModel: DisplaySettingsViewModel = koinViewModel()
+    val displayState by displayViewModel.uiState.collectAsState()
+    val gridColumns = displayState.gridColumns
     val gridState = rememberLazyGridState()
 
     // Trigger load more near the end
@@ -107,7 +124,7 @@ private fun CreatorModelGrid(
     }
 
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = CARD_MIN_WIDTH),
+        columns = if (gridColumns > 0) GridCells.Fixed(gridColumns) else GridCells.Adaptive(minSize = CARD_MIN_WIDTH),
         state = gridState,
         contentPadding = PaddingValues(Spacing.md),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),

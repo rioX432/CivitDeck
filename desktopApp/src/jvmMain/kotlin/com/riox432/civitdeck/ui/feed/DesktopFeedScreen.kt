@@ -41,9 +41,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import com.riox432.civitdeck.domain.model.FeedItem
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun DesktopFeedScreen(
@@ -160,8 +162,12 @@ private fun FeedGrid(
     onModelClick: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
 ) {
+    val displayViewModel: DisplaySettingsViewModel = koinViewModel()
+    val displayState by displayViewModel.uiState.collectAsState()
+    val columns = displayState.gridColumns
+
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = CARD_MIN_WIDTH),
+        columns = if (columns > 0) GridCells.Fixed(columns) else GridCells.Adaptive(minSize = CARD_MIN_WIDTH),
         contentPadding = PaddingValues(Spacing.md),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),

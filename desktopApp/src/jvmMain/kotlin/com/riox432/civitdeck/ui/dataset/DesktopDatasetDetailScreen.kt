@@ -2,8 +2,9 @@
 
 package com.riox432.civitdeck.ui.dataset
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -56,10 +57,12 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.domain.model.ImageSource
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
+import org.koin.compose.viewmodel.koinViewModel
 
-private const val GRID_COLUMNS = 4
+private const val DEFAULT_GRID_COLUMNS = 4
 private const val IMAGE_ASPECT_RATIO = 1f
 
 @Composable
@@ -239,6 +242,10 @@ private fun DatasetImageGridContent(
     onImageLongClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val displayViewModel: DisplaySettingsViewModel = koinViewModel()
+    val displayState by displayViewModel.uiState.collectAsState()
+    val gridColumns = if (displayState.gridColumns > 0) displayState.gridColumns else DEFAULT_GRID_COLUMNS
+
     if (images.isEmpty()) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -256,7 +263,7 @@ private fun DatasetImageGridContent(
         }
     } else {
         LazyVerticalGrid(
-            columns = GridCells.Fixed(GRID_COLUMNS),
+            columns = GridCells.Fixed(gridColumns),
             contentPadding = PaddingValues(Spacing.md),
             horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
             verticalArrangement = Arrangement.spacedBy(Spacing.sm),
@@ -275,6 +282,7 @@ private fun DatasetImageGridContent(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DesktopDatasetImageItem(
     image: DatasetImage,
@@ -285,7 +293,10 @@ private fun DesktopDatasetImageItem(
 ) {
     Box(
         modifier = Modifier
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            ),
     ) {
         AsyncImage(
             model = image.imageUrl,

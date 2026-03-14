@@ -34,8 +34,9 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.layout.ContentScale
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -98,7 +99,7 @@ fun DesktopImageViewer(
             },
         contentAlignment = Alignment.Center,
     ) {
-        AsyncImage(
+        SubcomposeAsyncImage(
             model = imageUrls[currentIndex],
             contentDescription = "Image ${currentIndex + 1} of ${imageUrls.size}",
             modifier = Modifier
@@ -110,6 +111,14 @@ fun DesktopImageViewer(
                     translationY = offsetY
                 },
             contentScale = ContentScale.Fit,
+            loading = {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator(color = Color.White)
+                }
+            },
         )
 
         IconButton(

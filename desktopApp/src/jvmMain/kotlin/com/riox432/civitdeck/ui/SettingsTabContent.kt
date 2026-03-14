@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -149,12 +150,20 @@ private fun SettingsMainContent(
     val extServerSettingsVm: ExternalServerSettingsViewModel = koinViewModel()
     val extServerGalleryVm: ExternalServerGalleryViewModel = koinViewModel()
 
+    val appBehaviorState by appBehaviorVm.uiState.collectAsState()
+    val isPowerUser = appBehaviorState.powerUserMode
+
     var selectedSection by remember { mutableStateOf(SettingsSection.General) }
+    // Reset to General if current section is hidden by power user mode
+    if (!isPowerUser && selectedSection != SettingsSection.General) {
+        selectedSection = SettingsSection.General
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         SettingsSectionTabs(
             selected = selectedSection,
             onSelected = { selectedSection = it },
+            isPowerUser = isPowerUser,
         )
         Column(
             modifier = Modifier
@@ -197,7 +206,14 @@ private fun SettingsMainContent(
 private fun SettingsSectionTabs(
     selected: SettingsSection,
     onSelected: (SettingsSection) -> Unit,
+    isPowerUser: Boolean,
 ) {
+    val visibleSections = if (isPowerUser) {
+        SettingsSection.entries
+    } else {
+        listOf(SettingsSection.General)
+    }
+
     Surface(tonalElevation = 1.dp) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.lg, vertical = Spacing.sm),
@@ -209,7 +225,7 @@ private fun SettingsSectionTabs(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(end = Spacing.md),
             )
-            SettingsSection.entries.forEach { section ->
+            visibleSections.forEach { section ->
                 FilterChip(
                     selected = selected == section,
                     onClick = { onSelected(section) },
