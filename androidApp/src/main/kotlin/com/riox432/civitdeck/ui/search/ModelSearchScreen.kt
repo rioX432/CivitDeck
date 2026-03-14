@@ -228,6 +228,7 @@ private fun SearchScreenBody(
             onSortSelected = viewModel::onSortSelected,
             onPeriodSelected = viewModel::onPeriodSelected,
             onFreshFindToggled = viewModel::onFreshFindToggled,
+            onQualityFilterToggled = viewModel::onQualityFilterToggled,
             onAddIncludedTag = viewModel::onAddIncludedTag,
             onRemoveIncludedTag = viewModel::onRemoveIncludedTag,
             onAddExcludedTag = viewModel::onAddExcludedTag,

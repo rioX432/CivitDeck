@@ -12,13 +12,19 @@ final class FeedViewModel: ObservableObject {
     private let getCreatorFeedUseCase: GetCreatorFeedUseCase
     private let getUnreadFeedCountUseCase: GetUnreadFeedCountUseCase
     private let markFeedReadUseCase: MarkFeedReadUseCase
+    private let observeQualityThresholdUseCase: ObserveQualityThresholdUseCase
     private var unreadObserveTask: Task<Void, Never>?
+    private var thresholdObserveTask: Task<Void, Never>?
+    private var allItems: [FeedItem] = []
+    private var qualityThreshold: Int32 = 0
 
     init() {
         self.getCreatorFeedUseCase = KoinHelper.shared.getCreatorFeedUseCase()
         self.getUnreadFeedCountUseCase = KoinHelper.shared.getUnreadFeedCountUseCase()
         self.markFeedReadUseCase = KoinHelper.shared.getMarkFeedReadUseCase()
+        self.observeQualityThresholdUseCase = KoinHelper.shared.getObserveQualityThresholdUseCase()
         observeUnreadCount()
+        observeQualityThreshold()
     }
 
     func loadFeed(forceRefresh: Bool = false) async {
@@ -33,16 +39,44 @@ final class FeedViewModel: ObservableObject {
             let items = try await getCreatorFeedUseCase.invoke(
                 forceRefresh: forceRefresh
             )
-            feedItems = items.compactMap { $0 as? FeedItem }
+            allItems = items.compactMap { $0 as? FeedItem }
+            feedItems = filterByQuality(allItems)
             isLoading = false
             isRefreshing = false
-            if !feedItems.isEmpty {
+            if !allItems.isEmpty {
                 try? await markFeedReadUseCase.invoke()
             }
         } catch {
             errorMessage = error.localizedDescription
             isLoading = false
             isRefreshing = false
+        }
+    }
+
+    private func observeQualityThreshold() {
+        thresholdObserveTask = Task {
+            for await threshold in observeQualityThresholdUseCase.invoke() {
+                guard !Task.isCancelled else { return }
+                if let intThreshold = threshold as? Int32 {
+                    self.qualityThreshold = intThreshold
+                    if !self.allItems.isEmpty {
+                        self.feedItems = self.filterByQuality(self.allItems)
+                    }
+                }
+            }
+        }
+    }
+
+    private func filterByQuality(_ items: [FeedItem]) -> [FeedItem] {
+        guard qualityThreshold > 0 else { return items }
+        return items.filter { item in
+            let stats = item.stats
+            // Skip filtering for items with unknown stats (e.g., migrated cache entries)
+            if stats.downloadCount <= 0 && stats.favoriteCount <= 0 && stats.ratingCount <= 0 {
+                return true
+            }
+            let score = FeedQualityScoreHelper.calculate(stats: stats)
+            return score >= qualityThreshold
         }
     }
 

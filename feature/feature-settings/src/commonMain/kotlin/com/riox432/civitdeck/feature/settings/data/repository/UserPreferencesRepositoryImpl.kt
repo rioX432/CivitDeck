@@ -206,4 +206,14 @@ class UserPreferencesRepositoryImpl(
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(customNavShortcuts = items.joinToString(",") { it.name }))
     }
+
+    override fun observeFeedQualityThreshold(): Flow<Int> =
+        dao.observePreferences().map {
+            it?.feedQualityThreshold ?: UserPreferencesEntity.DEFAULT_FEED_QUALITY_THRESHOLD
+        }
+
+    override suspend fun setFeedQualityThreshold(threshold: Int) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(feedQualityThreshold = threshold.coerceIn(0, 100)))
+    }
 }

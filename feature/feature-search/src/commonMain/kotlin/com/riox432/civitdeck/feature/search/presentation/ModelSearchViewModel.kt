@@ -21,6 +21,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveFavoritesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
@@ -59,6 +60,7 @@ data class ModelSearchUiState(
     val selectedBaseModels: Set<BaseModel> = emptySet(),
     val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
     val isFreshFindEnabled: Boolean = false,
+    val isQualityFilterEnabled: Boolean = false,
     val recommendations: List<RecommendationSection> = emptyList(),
     val isLoadingRecommendations: Boolean = false,
     val excludedTags: List<String> = emptyList(),
@@ -73,6 +75,8 @@ data class FilterState(
     val selectedBaseModels: Set<BaseModel> = emptySet(),
     val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
     val isFreshFindEnabled: Boolean = false,
+    val isQualityFilterEnabled: Boolean = false,
+    val qualityThreshold: Int = 0,
     val excludedTags: List<String> = emptyList(),
     val includedTags: List<String> = emptyList(),
 )
@@ -101,6 +105,7 @@ class ModelSearchViewModel(
     observeSavedSearchFiltersUseCase: ObserveSavedSearchFiltersUseCase,
     private val saveSearchFilterUseCase: SaveSearchFilterUseCase,
     private val deleteSavedSearchFilterUseCase: DeleteSavedSearchFilterUseCase,
+    private val observeQualityThresholdUseCase: ObserveQualityThresholdUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelSearchUiState())
@@ -158,6 +163,7 @@ class ModelSearchViewModel(
 
     init {
         observeNsfwFilter()
+        observeQualityThreshold()
         loadExcludedTags()
         loadDefaults(observeDefaultSortOrderUseCase, observeDefaultTimePeriodUseCase)
         loadRecommendations()
@@ -184,6 +190,14 @@ class ModelSearchViewModel(
                     _filterState.update { it.copy(nsfwFilterLevel = level) }
                     loadRecommendations()
                 }
+            }
+        }
+    }
+
+    private fun observeQualityThreshold() {
+        viewModelScope.launch {
+            observeQualityThresholdUseCase().collect { threshold ->
+                _filterState.update { it.copy(qualityThreshold = threshold) }
             }
         }
     }
@@ -235,6 +249,7 @@ class ModelSearchViewModel(
                 selectedPeriod = TimePeriod.AllTime,
                 selectedBaseModels = emptySet(),
                 isFreshFindEnabled = false,
+                isQualityFilterEnabled = false,
                 includedTags = emptyList(),
             )
         }
@@ -245,6 +260,7 @@ class ModelSearchViewModel(
                 selectedPeriod = TimePeriod.AllTime,
                 selectedBaseModels = emptySet(),
                 isFreshFindEnabled = false,
+                isQualityFilterEnabled = false,
                 includedTags = emptyList(),
             )
         }
@@ -278,6 +294,11 @@ class ModelSearchViewModel(
     fun onFreshFindToggled() {
         _uiState.update { it.copy(isFreshFindEnabled = !it.isFreshFindEnabled) }
         _filterState.update { it.copy(isFreshFindEnabled = !it.isFreshFindEnabled) }
+    }
+
+    fun onQualityFilterToggled() {
+        _uiState.update { it.copy(isQualityFilterEnabled = !it.isQualityFilterEnabled) }
+        _filterState.update { it.copy(isQualityFilterEnabled = !it.isQualityFilterEnabled) }
     }
 
     fun onAddIncludedTag(tag: String) {

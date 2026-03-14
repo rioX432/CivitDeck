@@ -35,4 +35,8 @@ data class ModelStatsDto(
     val commentCount: Int = 0,
     val ratingCount: Int = 0,
     val rating: Double = 0.0,
+    // CivitAI API v1 replaced favoriteCount/rating with thumbs
+    val thumbsUpCount: Int = 0,
+    val thumbsDownCount: Int = 0,
+    val tippedAmountCount: Int = 0,
 )

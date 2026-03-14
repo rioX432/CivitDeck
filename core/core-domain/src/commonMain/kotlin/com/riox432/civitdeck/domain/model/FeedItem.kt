@@ -8,4 +8,5 @@ data class FeedItem(
     val type: ModelType,
     val publishedAt: String,
     val isUnread: Boolean,
+    val stats: ModelStats = ModelStats(0, 0, 0, 0, 0.0),
 )

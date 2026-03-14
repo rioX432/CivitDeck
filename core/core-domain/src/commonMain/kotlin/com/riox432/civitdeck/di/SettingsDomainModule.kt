@@ -5,11 +5,13 @@ import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
 import com.riox432.civitdeck.domain.usecase.SetCustomNavShortcutsUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.SetQualityThresholdUseCase
 import org.koin.dsl.module
 
 val settingsDomainModule = module {
@@ -23,4 +25,6 @@ val settingsDomainModule = module {
     factory { SetPowerUserModeUseCase(get()) }
     factory { ObserveCustomNavShortcutsUseCase(get()) }
     factory { SetCustomNavShortcutsUseCase(get()) }
+    factory { ObserveQualityThresholdUseCase(get()) }
+    factory { SetQualityThresholdUseCase(get()) }
 }

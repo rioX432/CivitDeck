@@ -25,6 +25,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.SetAmoledDarkModeUseCase
@@ -40,6 +41,7 @@ import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SetOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.SetQualityThresholdUseCase
 import com.riox432.civitdeck.domain.usecase.SetThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddExcludedTagUseCase
@@ -106,6 +108,8 @@ val settingsModule = module {
             setNotificationsEnabledUseCase = get<SetNotificationsEnabledUseCase>(),
             observePollingIntervalUseCase = get<ObservePollingIntervalUseCase>(),
             setPollingIntervalUseCase = get<SetPollingIntervalUseCase>(),
+            observeQualityThresholdUseCase = get<ObserveQualityThresholdUseCase>(),
+            setQualityThresholdUseCase = get<SetQualityThresholdUseCase>(),
         )
     }
     viewModel {

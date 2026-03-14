@@ -6,9 +6,11 @@ import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
 import com.riox432.civitdeck.domain.usecase.SetNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
+import com.riox432.civitdeck.domain.usecase.SetQualityThresholdUseCase
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -19,8 +21,10 @@ data class AppBehaviorSettingsUiState(
     val powerUserMode: Boolean = false,
     val notificationsEnabled: Boolean = false,
     val pollingInterval: PollingInterval = PollingInterval.Off,
+    val feedQualityThreshold: Int = 30,
 )
 
+@Suppress("LongParameterList")
 class AppBehaviorSettingsViewModel(
     observePowerUserModeUseCase: ObservePowerUserModeUseCase,
     private val setPowerUserModeUseCase: SetPowerUserModeUseCase,
@@ -28,17 +32,21 @@ class AppBehaviorSettingsViewModel(
     private val setNotificationsEnabledUseCase: SetNotificationsEnabledUseCase,
     observePollingIntervalUseCase: ObservePollingIntervalUseCase,
     private val setPollingIntervalUseCase: SetPollingIntervalUseCase,
+    observeQualityThresholdUseCase: ObserveQualityThresholdUseCase,
+    private val setQualityThresholdUseCase: SetQualityThresholdUseCase,
 ) : ViewModel() {
 
     val uiState: StateFlow<AppBehaviorSettingsUiState> = combine(
         observePowerUserModeUseCase(),
         observeNotificationsEnabledUseCase(),
         observePollingIntervalUseCase(),
-    ) { powerUser, notifications, polling ->
+        observeQualityThresholdUseCase(),
+    ) { powerUser, notifications, polling, qualityThreshold ->
         AppBehaviorSettingsUiState(
             powerUserMode = powerUser,
             notificationsEnabled = notifications,
             pollingInterval = polling,
+            feedQualityThreshold = qualityThreshold,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppBehaviorSettingsUiState())
 
@@ -57,5 +65,9 @@ class AppBehaviorSettingsViewModel(
 
     fun onPollingIntervalChanged(interval: PollingInterval) {
         viewModelScope.launch { setPollingIntervalUseCase(interval) }
+    }
+
+    fun onFeedQualityThresholdChanged(threshold: Int) {
+        viewModelScope.launch { setQualityThresholdUseCase(threshold) }
     }
 }

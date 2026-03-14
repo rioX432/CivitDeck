@@ -21,6 +21,7 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var searchHistory: [String] = []
     @Published var recommendations: [RecommendationSection] = []
     @Published var isFreshFindEnabled: Bool = false
+    @Published var isQualityFilterEnabled: Bool = false
     @Published var includedTags: [String] = []
     @Published var excludedTags: [String] = []
     @Published var gridColumns: Int32 = 2
@@ -50,6 +51,9 @@ final class ModelSearchViewModel: ObservableObject {
     private let observeSavedSearchFiltersUseCase: ObserveSavedSearchFiltersUseCase
     private let saveSearchFilterUseCase: SaveSearchFilterUseCase
     private let deleteSavedSearchFilterUseCase: DeleteSavedSearchFilterUseCase
+    private let observeQualityThresholdUseCase: ObserveQualityThresholdUseCase
+    private var qualityThreshold: Int32 = 0
+    private var thresholdObserveTask: Task<Void, Never>?
     private var nextCursor: String?
     private var loadTask: Task<Void, Never>?
     private var hiddenModelIds: Set<KotlinLong> = []
@@ -82,8 +86,10 @@ final class ModelSearchViewModel: ObservableObject {
         self.observeSavedSearchFiltersUseCase = KoinHelper.shared.getObserveSavedSearchFiltersUseCase()
         self.saveSearchFilterUseCase = KoinHelper.shared.getSaveSearchFilterUseCase()
         self.deleteSavedSearchFilterUseCase = KoinHelper.shared.getDeleteSavedSearchFilterUseCase()
+        self.observeQualityThresholdUseCase = KoinHelper.shared.getObserveQualityThresholdUseCase()
         loadExcludedTags()
         loadDefaults()
+        observeQualityThreshold()
         loadRecommendations()
         memoryWarningToken = NotificationCenter.default.addObserver(
             forName: UIApplication.didReceiveMemoryWarningNotification,
@@ -212,6 +218,13 @@ final class ModelSearchViewModel: ObservableObject {
         loadModels()
     }
 
+    func onQualityFilterToggled() {
+        loadTask?.cancel()
+        isQualityFilterEnabled.toggle()
+        resetPaginationState()
+        loadModels()
+    }
+
     func resetFilters() {
         loadTask?.cancel()
         selectedType = nil
@@ -219,6 +232,7 @@ final class ModelSearchViewModel: ObservableObject {
         selectedPeriod = .allTime
         selectedBaseModels = []
         isFreshFindEnabled = false
+        isQualityFilterEnabled = false
         includedTags = []
         resetPaginationState()
         loadModels()
@@ -261,6 +275,17 @@ final class ModelSearchViewModel: ObservableObject {
         }
     }
 
+    private func observeQualityThreshold() {
+        thresholdObserveTask = Task {
+            for await threshold in observeQualityThresholdUseCase.invoke() {
+                guard !Task.isCancelled else { return }
+                if let intThreshold = threshold as? Int32 {
+                    self.qualityThreshold = intThreshold
+                }
+            }
+        }
+    }
+
     private func reloadModels() {
         loadTask?.cancel()
         resetPaginationState()
@@ -295,8 +320,12 @@ final class ModelSearchViewModel: ObservableObject {
         hasMore = true
         sortWatermark = nil
     }
+}
 
-    private func sortValueOf(_ model: Model) -> Double {
+// MARK: - Pagination & Filtering
+
+private extension ModelSearchViewModel {
+    func sortValueOf(_ model: Model) -> Double {
         switch selectedSort {
         case .mostDownloaded: return Double(model.stats.downloadCount)
         case .highestRated: return model.stats.rating
@@ -305,19 +334,15 @@ final class ModelSearchViewModel: ObservableObject {
         }
     }
 
-    private func loadModels(isLoadMore: Bool = false, isRefresh: Bool = false) {
-        loadTask = Task {
-            if isLoadMore {
-                isLoadingMore = true
-            } else {
-                isLoading = true
-            }
-            error = nil
+    struct FetchResult { let models: [Model]; let cursor: String? }
 
+    func loadModels(isLoadMore: Bool = false, isRefresh: Bool = false) {
+        loadTask = Task {
+            if isLoadMore { isLoadingMore = true } else { isLoading = true }
+            error = nil
             do {
                 let result = try await fetchAndAccumulate(isLoadMore: isLoadMore)
                 guard !Task.isCancelled else { return }
-
                 if isLoadMore {
                     models.append(contentsOf: result.models)
                 } else {
@@ -339,39 +364,26 @@ final class ModelSearchViewModel: ObservableObject {
         }
     }
 
-    private struct FetchResult {
-        let models: [Model]
-        let cursor: String?
-    }
-
-    private func fetchAndAccumulate(isLoadMore: Bool) async throws -> FetchResult {
+    func fetchAndAccumulate(isLoadMore: Bool) async throws -> FetchResult {
         let baseModelList: [BaseModel]? = selectedBaseModels.isEmpty ? nil : Array(selectedBaseModels)
         let nsfw: KotlinBoolean? = nsfwFilterLevel == .off ? KotlinBoolean(bool: false) : nil
         let viewedIds: Set<KotlinLong> = isFreshFindEnabled
-            ? try await getViewedModelIdsUseCase.invoke()
-            : []
-
+            ? try await getViewedModelIdsUseCase.invoke() : []
         var accumulated: [Model] = []
         var accumulatedIds = Set<Int64>()
         var currentCursor: String? = isLoadMore ? nextCursor : nil
         var fetchedNextCursor: String?
         let pageWatermark = sortWatermark
-
-        if isLoadMore {
-            accumulatedIds = Set(models.map { $0.id })
-        }
-
+        if isLoadMore { accumulatedIds = Set(models.map { $0.id }) }
         for iteration in 0..<maxFetchIterations {
             guard !Task.isCancelled else { break }
             if accumulated.count >= Int(pageSize) { break }
-
             let result = try await getModelsUseCase.invoke(
                 query: query.isEmpty ? nil : query,
                 tag: includedTags.first, type: selectedType, sort: selectedSort,
                 period: selectedPeriod, baseModels: baseModelList,
                 cursor: currentCursor, limit: KotlinInt(int: pageSize), nsfw: nsfw
             )
-
             let allModels = result.items.compactMap { $0 as? Model }
             var filtered = applyClientFilters(allModels, viewedIds: viewedIds)
             if let watermark = pageWatermark {
@@ -386,20 +398,12 @@ final class ModelSearchViewModel: ObservableObject {
             if fetchedNextCursor == nil || fetchedNextCursor == currentCursor { break }
             currentCursor = fetchedNextCursor
         }
-
         accumulated.sort { sortValueOf($0) > sortValueOf($1) }
-
-        if !accumulated.isEmpty {
-            sortWatermark = accumulated.map { sortValueOf($0) }.min()!
-        }
-
+        if !accumulated.isEmpty { sortWatermark = accumulated.map { sortValueOf($0) }.min()! }
         return FetchResult(models: accumulated, cursor: fetchedNextCursor)
     }
 
-    private func applyClientFilters(
-        _ models: [Model],
-        viewedIds: Set<KotlinLong>
-    ) -> [Model] {
+    func applyClientFilters(_ models: [Model], viewedIds: Set<KotlinLong>) -> [Model] {
         var filtered = models.filterNsfwImages(nsfwFilterLevel)
         if isFreshFindEnabled {
             filtered = filtered.filter { !viewedIds.contains(KotlinLong(value: $0.id)) }
@@ -414,13 +418,16 @@ final class ModelSearchViewModel: ObservableObject {
         if !excludedTags.isEmpty {
             let excluded = Set(excludedTags)
             filtered = filtered.filter { model in
-                model.tags.allSatisfy { tag in
-                    !excluded.contains((tag as? String)?.lowercased() ?? "")
-                }
+                model.tags.allSatisfy { !excluded.contains(($0 as? String)?.lowercased() ?? "") }
             }
         }
         if !hiddenModelIds.isEmpty {
             filtered = filtered.filter { !hiddenModelIds.contains(KotlinLong(value: $0.id)) }
+        }
+        if isQualityFilterEnabled && qualityThreshold > 0 {
+            filtered = filtered.filter {
+                FeedQualityScoreHelper.calculate(stats: $0.stats) >= qualityThreshold
+            }
         }
         return filtered
     }

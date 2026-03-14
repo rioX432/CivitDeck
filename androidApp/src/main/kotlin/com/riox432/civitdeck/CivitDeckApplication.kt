@@ -136,7 +136,7 @@ val androidModule = module {
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(),
+            get(), get(), get(), get(), get(),
         )
     }
     viewModel { CollectionsViewModel(get(), get(), get(), get()) }
@@ -167,7 +167,7 @@ val androidModule = module {
     viewModel { params -> BatchTagEditorViewModel(params.get(), get(), get(), get()) }
     viewModel { params -> DuplicateReviewViewModel(params.get(), get(), get()) }
     viewModel { AnalyticsViewModel(get()) }
-    viewModel { FeedViewModel(get(), get(), get()) }
+    viewModel { FeedViewModel(get(), get(), get(), get()) }
     viewModel { BackupViewModel(get(), get(), get()) }
     viewModel { PluginManagementViewModel(get(), get(), get(), get(), get(), get()) }
 }

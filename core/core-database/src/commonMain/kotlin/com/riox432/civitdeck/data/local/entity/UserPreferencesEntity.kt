@@ -25,8 +25,10 @@ data class UserPreferencesEntity(
     val civitaiLinkKey: String? = null,
     val themeMode: String = "SYSTEM",
     val customNavShortcuts: String = "",
+    val feedQualityThreshold: Int = DEFAULT_FEED_QUALITY_THRESHOLD,
 ) {
     companion object {
         const val DEFAULT_CACHE_SIZE_LIMIT_MB = 200
+        const val DEFAULT_FEED_QUALITY_THRESHOLD = 30
     }
 }

@@ -44,19 +44,40 @@ fun ModelVersionDto.toDomain(): ModelVersion = ModelVersion(
     stats = stats?.toDomain(),
 )
 
-fun ModelStatsDto.toDomain(): ModelStats = ModelStats(
-    downloadCount = downloadCount,
-    favoriteCount = favoriteCount,
-    commentCount = commentCount,
-    ratingCount = ratingCount,
-    rating = rating,
-)
+fun ModelStatsDto.toDomain(): ModelStats {
+    // CivitAI API v1 replaced favoriteCount/rating with thumbsUpCount/thumbsDownCount.
+    // Map thumbs to the domain model's favoriteCount/rating for backward compatibility.
+    val effectiveFavoriteCount = if (thumbsUpCount > 0) thumbsUpCount else favoriteCount
+    val totalThumbs = thumbsUpCount + thumbsDownCount
+    val effectiveRatingCount = if (totalThumbs > 0) totalThumbs else ratingCount
+    val effectiveRating = when {
+        totalThumbs > 0 -> thumbsUpCount.toDouble() / totalThumbs * 4.0 + 1.0 // scale to 1-5
+        rating > 0 -> rating
+        else -> 0.0
+    }
+    return ModelStats(
+        downloadCount = downloadCount,
+        favoriteCount = effectiveFavoriteCount,
+        commentCount = commentCount,
+        ratingCount = effectiveRatingCount,
+        rating = effectiveRating,
+    )
+}
 
-fun ModelVersionStatsDto.toDomain(): ModelVersionStats = ModelVersionStats(
-    downloadCount = downloadCount,
-    ratingCount = ratingCount,
-    rating = rating,
-)
+fun ModelVersionStatsDto.toDomain(): ModelVersionStats {
+    val totalThumbs = thumbsUpCount + thumbsDownCount
+    val effectiveRatingCount = if (totalThumbs > 0) totalThumbs else ratingCount
+    val effectiveRating = when {
+        totalThumbs > 0 -> thumbsUpCount.toDouble() / totalThumbs * 4.0 + 1.0
+        rating > 0 -> rating
+        else -> 0.0
+    }
+    return ModelVersionStats(
+        downloadCount = downloadCount,
+        ratingCount = effectiveRatingCount,
+        rating = effectiveRating,
+    )
+}
 
 fun ModelFileDto.toDomain(): ModelFile = ModelFile(
     id = id,

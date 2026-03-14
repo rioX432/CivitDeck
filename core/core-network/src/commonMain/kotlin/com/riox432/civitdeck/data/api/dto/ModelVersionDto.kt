@@ -32,6 +32,8 @@ data class ModelVersionStatsDto(
     val downloadCount: Int = 0,
     val ratingCount: Int = 0,
     val rating: Double = 0.0,
+    val thumbsUpCount: Int = 0,
+    val thumbsDownCount: Int = 0,
 )
 
 @Serializable

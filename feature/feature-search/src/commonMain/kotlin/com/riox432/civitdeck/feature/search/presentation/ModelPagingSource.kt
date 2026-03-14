@@ -7,6 +7,7 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.filterNsfwImages
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
+import com.riox432.civitdeck.domain.usecase.QualityScoreCalculator
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 
 internal class ModelPagingSource(
@@ -104,6 +105,11 @@ internal class ModelPagingSource(
         }
         if (hiddenModelIds.isNotEmpty()) {
             filtered = filtered.filter { it.id !in hiddenModelIds }
+        }
+        if (filterState.isQualityFilterEnabled && filterState.qualityThreshold > 0) {
+            filtered = filtered.filter { model ->
+                QualityScoreCalculator.calculate(model.stats) >= filterState.qualityThreshold
+            }
         }
         return filtered
     }

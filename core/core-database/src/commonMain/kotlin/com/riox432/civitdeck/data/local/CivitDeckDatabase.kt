@@ -88,7 +88,7 @@ import kotlinx.coroutines.IO
         ModelDownloadEntity::class,
         PluginEntity::class,
     ],
-    version = 31,
+    version = 33,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -689,6 +689,24 @@ val MIGRATION_30_31 = object : Migration(30, 31) {
     }
 }
 
+val MIGRATION_31_32 = object : Migration(31, 32) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN feedQualityThreshold INTEGER NOT NULL DEFAULT 30",
+        )
+    }
+}
+
+val MIGRATION_32_33 = object : Migration(32, 33) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("ALTER TABLE feed_cache ADD COLUMN downloadCount INTEGER NOT NULL DEFAULT 0")
+        connection.execSQL("ALTER TABLE feed_cache ADD COLUMN favoriteCount INTEGER NOT NULL DEFAULT 0")
+        connection.execSQL("ALTER TABLE feed_cache ADD COLUMN commentCount INTEGER NOT NULL DEFAULT 0")
+        connection.execSQL("ALTER TABLE feed_cache ADD COLUMN ratingCount INTEGER NOT NULL DEFAULT 0")
+        connection.execSQL("ALTER TABLE feed_cache ADD COLUMN rating REAL NOT NULL DEFAULT 0.0")
+    }
+}
+
 // Seed data is inserted via onOpen (not in migrations) because Room migrations only run on
 // upgrades — a fresh install starts directly at the latest schema version, skipping all
 // migration callbacks. Using INSERT OR IGNORE in onOpen ensures required rows are always
@@ -773,6 +791,8 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_28_29,
             MIGRATION_29_30,
             MIGRATION_30_31,
+            MIGRATION_31_32,
+            MIGRATION_32_33,
         )
         .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())
