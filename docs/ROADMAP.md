@@ -134,21 +134,63 @@ Epic: [#276](https://github.com/rioX432/CivitDeck/issues/276) Duplicate & Qualit
 
 ---
 
-## Phase 6 -- Training Pipeline Export (Next)
+## Phase 6 -- Training Pipeline Export (Complete)
 
 Export datasets in formats compatible with kohya-ss / sd-scripts for handoff to a training machine. No on-device training.
 
 Epic: [#273](https://github.com/rioX432/CivitDeck/issues/273) Dataset Export for LoRA Training *(depends on #271, #272)*
 
-- [ ] [#287](https://github.com/rioX432/CivitDeck/issues/287) KMP: `ExportRepository` + `ExportDatasetUseCase` (zip + JSONL manifest)
-- [ ] [#288](https://github.com/rioX432/CivitDeck/issues/288) Android: Export UI + share sheet
-- [ ] [#289](https://github.com/rioX432/CivitDeck/issues/289) iOS: Export UI + share sheet
+- [x] [#287](https://github.com/rioX432/CivitDeck/issues/287) KMP: `ExportRepository` + `ExportDatasetUseCase` (zip + JSONL manifest)
+- [x] [#288](https://github.com/rioX432/CivitDeck/issues/288) Android: Export UI + share sheet
+- [x] [#289](https://github.com/rioX432/CivitDeck/issues/289) iOS: Export UI + share sheet
 
 **DoD**: Select dataset → one-click zip generation → share to training machine; format loadable by kohya-ss with correct `caption.txt` directory structure
 
 ---
 
-## Phase 7 -- AI-Assisted Curation (Future)
+## Phase 6.5 -- Community & Personalization (Complete)
+
+Features shipped between Phase 6 and 7 that were not originally planned in the roadmap.
+
+- [x] Saved search filters (PR [#359](https://github.com/rioX432/CivitDeck/pull/359))
+- [x] External server integration (PR [#360](https://github.com/rioX432/CivitDeck/pull/360))
+- [x] Model notes & personal tags ([#186](https://github.com/rioX432/CivitDeck/issues/186), PR [#362](https://github.com/rioX432/CivitDeck/pull/362))
+- [x] QR code sharing ([#188](https://github.com/rioX432/CivitDeck/issues/188), PR [#362](https://github.com/rioX432/CivitDeck/pull/362))
+- [x] Analytics dashboard ([#191](https://github.com/rioX432/CivitDeck/issues/191), PR [#362](https://github.com/rioX432/CivitDeck/pull/362))
+- [x] Creator follow & feed ([#123](https://github.com/rioX432/CivitDeck/issues/123), PR [#362](https://github.com/rioX432/CivitDeck/pull/362))
+- [x] Video preview support ([#187](https://github.com/rioX432/CivitDeck/issues/187), PR [#381](https://github.com/rioX432/CivitDeck/pull/381))
+- [x] Background downloads (PR [#385](https://github.com/rioX432/CivitDeck/pull/385))
+- [x] Reviews & ratings ([#189](https://github.com/rioX432/CivitDeck/issues/189), PR [#386](https://github.com/rioX432/CivitDeck/pull/386), [#433](https://github.com/rioX432/CivitDeck/pull/433))
+- [x] Backup & restore ([#190](https://github.com/rioX432/CivitDeck/issues/190), PR [#387](https://github.com/rioX432/CivitDeck/pull/387))
+- [x] Plugin system ([#409](https://github.com/rioX432/CivitDeck/issues/409)–[#414](https://github.com/rioX432/CivitDeck/issues/414), PR [#419](https://github.com/rioX432/CivitDeck/pull/419))
+
+---
+
+## Phase 7 -- UX Consolidation (Next)
+
+The app has grown to 44 Android routes / 38 iOS views / 230+ use cases. User feedback indicates feature density is becoming overwhelming. This phase focuses on simplifying navigation and reducing cognitive load.
+
+- [ ] Navigation information architecture redesign — reduce top-level destinations, group related features
+- [ ] Settings consolidation — reduce 11 sub-screens to 4–5 logical groups
+- [ ] Integrations hub — unify ComfyUI, SD WebUI, and External Server into a single management surface
+- [ ] Progressive disclosure — expand Power User Mode gating to hide advanced features by default
+- [ ] Refactor `SettingsViewModel` into domain-scoped ViewModels — split monolithic VM into focused units
+
+---
+
+## Phase 8 -- Discovery Intelligence (Future)
+
+Go beyond CivitAI-only search. Help users find the right model faster with cross-platform search and smart recommendations.
+
+- [ ] Multi-platform model search (HuggingFace + TensorArt)
+- [ ] Image similarity search — find visually similar models
+- [ ] Smart feed with quality filtering (anti-Buzz-farming)
+- [ ] Model update notifications for followed models
+- [ ] ComfyHub workflow integration
+
+---
+
+## Phase 9 -- AI-Assisted Curation (Future)
 
 Advanced curation using Claude API integration.
 
@@ -157,6 +199,15 @@ Advanced curation using Claude API integration.
 - [ ] Style grouping -- auto-classify by visual style
 - [ ] Duplicate semantic detection -- hash + embedding-based deduplication
 - [ ] Auto dataset suggestion -- derive training sets from collections automatically
+
+---
+
+## Phase 10 -- Ecosystem (Future)
+
+Extend CivitDeck beyond mobile.
+
+- [ ] Desktop companion app ([#193](https://github.com/rioX432/CivitDeck/issues/193))
+- [ ] Cloud sync — cross-device favorites, collections, and settings
 
 ---
 
@@ -171,6 +222,11 @@ Phase 5:  #271 ──── #272 ──── #275
                  (also needs #270)
 Phase 6:         #273
                  (needs #271, #272)
+Phase 6.5: (independent — community-driven features)
+Phase 7:   UX Consolidation (independent — no feature deps)
+Phase 8:   Discovery Intelligence (independent)
+Phase 9:   AI-Assisted Curation (can start after Phase 7)
+Phase 10:  Ecosystem (can start after Phase 7)
 ```
 
 ---
@@ -179,6 +235,6 @@ Phase 6:         #273
 
 CivitDeck is and will remain **free and open source**.
 
-- Core browsing and discovery features are **never paywalled**
+- Core browsing, discovery, and curation features are **never paywalled**
 - Future premium features (if any) would be limited to optional extras like cloud sync or advanced workflow management
 - Development is sustained through GitHub Sponsors and community contributions
