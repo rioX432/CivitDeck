@@ -160,16 +160,19 @@ private fun FeedList(
     onModelClick: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
 ) {
-    LazyColumn(
-        contentPadding = PaddingValues(Spacing.md),
-        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-    ) {
-        items(items = items, key = { it.modelId }) { item ->
-            FeedItemCard(
-                item = item,
-                onModelClick = { onModelClick(item.modelId) },
-                onCreatorClick = { onCreatorClick(item.creatorUsername) },
-            )
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        LazyColumn(
+            modifier = Modifier.width(FEED_MAX_WIDTH),
+            contentPadding = PaddingValues(Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            items(items = items, key = { it.modelId }) { item ->
+                FeedItemCard(
+                    item = item,
+                    onModelClick = { onModelClick(item.modelId) },
+                    onCreatorClick = { onCreatorClick(item.creatorUsername) },
+                )
+            }
         }
     }
 }
@@ -258,3 +261,4 @@ private val EMPTY_ICON_SIZE = 48.dp
 private val REFRESH_INDICATOR_SIZE = 24.dp
 private val UNREAD_DOT_SIZE = 8.dp
 private const val THUMBNAIL_RATIO = 16f / 9f
+private val FEED_MAX_WIDTH = 640.dp
