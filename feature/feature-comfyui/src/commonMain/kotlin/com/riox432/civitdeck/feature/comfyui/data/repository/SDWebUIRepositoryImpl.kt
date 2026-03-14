@@ -61,7 +61,7 @@ class SDWebUIRepositoryImpl(
         return try {
             api.getSamplers()
             true
-        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Logger.w(TAG, "Connection test failed: ${e.message}")
             false
         }
@@ -119,7 +119,7 @@ class SDWebUIRepositoryImpl(
                 totalSteps = p.state.samplingSteps,
                 fraction = p.progress,
             )
-        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Logger.w(TAG, "Failed to poll progress: ${e.message}")
             SDWebUIGenerationProgress.Generating(0, 0, 0.0)
         }

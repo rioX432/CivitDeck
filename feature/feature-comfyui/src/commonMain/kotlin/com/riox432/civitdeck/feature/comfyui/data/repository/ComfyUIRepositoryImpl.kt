@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIOutputImage
+import com.riox432.civitdeck.util.Logger
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketMessage
 import com.riox432.civitdeck.data.local.currentTimeMillis
@@ -32,6 +33,8 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+
+private const val TAG = "ComfyUIRepositoryImpl"
 
 class ComfyUIRepositoryImpl(
     private val dao: ComfyUIConnectionDao,
@@ -76,7 +79,8 @@ class ComfyUIRepositoryImpl(
         return try {
             api.getQueue()
             true
-        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.w(TAG, "Connection test failed: ${e.message}")
             false
         }
     }
@@ -164,7 +168,8 @@ class ComfyUIRepositoryImpl(
                     jobs.add(QueueJob(extractPromptId(entry), index, QueueJobStatus.Queued))
                 }
                 emit(jobs)
-            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.w(TAG, "Failed to poll queue: ${e.message}")
                 emit(emptyList())
             }
             delay(intervalMs)
@@ -187,7 +192,8 @@ class ComfyUIRepositoryImpl(
                 is JsonObject -> entry["prompt_id"]?.jsonPrimitive?.content ?: ""
                 else -> entry.jsonPrimitive.content
             }
-        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.w(TAG, "Failed to extract prompt ID: ${e.message}")
             ""
         }
     }

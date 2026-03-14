@@ -1,11 +1,14 @@
 package com.riox432.civitdeck.data.image
 
+import com.riox432.civitdeck.util.Logger
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
+
+private const val TAG = "ImageSaver"
 import platform.Foundation.NSData
 import platform.Foundation.create
 import platform.UIKit.UIImage
@@ -21,7 +24,8 @@ actual class ImageSaver actual constructor() {
                 val image = UIImage(data = nsData) ?: return@withContext false
                 UIImageWriteToSavedPhotosAlbum(image, null, null, null)
                 true
-            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.e(TAG, "Failed to save image to gallery: ${e.message}", e)
                 false
             }
         }

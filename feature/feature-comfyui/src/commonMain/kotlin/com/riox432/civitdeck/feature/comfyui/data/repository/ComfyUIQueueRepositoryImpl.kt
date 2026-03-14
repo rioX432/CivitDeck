@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
+import com.riox432.civitdeck.util.Logger
 import com.riox432.civitdeck.domain.model.QueueJob
 import com.riox432.civitdeck.domain.model.QueueJobStatus
 import com.riox432.civitdeck.domain.repository.ComfyUIQueueRepository
@@ -12,6 +13,8 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
+
+private const val TAG = "ComfyUIQueueRepo"
 
 class ComfyUIQueueRepositoryImpl(
     private val dao: ComfyUIConnectionDao,
@@ -31,7 +34,8 @@ class ComfyUIQueueRepositoryImpl(
                     jobs.add(QueueJob(extractPromptId(entry), index, QueueJobStatus.Queued))
                 }
                 emit(jobs)
-            } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.w(TAG, "Failed to poll queue: ${e.message}")
                 emit(emptyList())
             }
             delay(intervalMs)
@@ -54,7 +58,8 @@ class ComfyUIQueueRepositoryImpl(
                 is JsonObject -> entry["prompt_id"]?.jsonPrimitive?.content ?: ""
                 else -> entry.jsonPrimitive.content
             }
-        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.w(TAG, "Failed to extract prompt ID: ${e.message}")
             ""
         }
     }
