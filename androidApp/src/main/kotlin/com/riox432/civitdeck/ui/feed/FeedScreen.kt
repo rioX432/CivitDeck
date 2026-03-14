@@ -100,11 +100,19 @@ private fun FeedContent(
             )
         }
         uiState.feedItems.isEmpty() && !uiState.isLoading -> {
-            EmptyStateMessage(
-                icon = Icons.Default.RssFeed,
-                title = "No feed items yet",
-                subtitle = "Follow creators to see their latest models here.",
-            )
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = onRefresh,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = contentPadding.calculateTopPadding()),
+            ) {
+                EmptyStateMessage(
+                    icon = Icons.Default.RssFeed,
+                    title = "No feed items yet",
+                    subtitle = "Follow creators to see their latest models here.",
+                )
+            }
         }
         else -> {
             PullToRefreshBox(

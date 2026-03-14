@@ -62,10 +62,13 @@ class CreatorFollowRepositoryImpl(
         if (forceRefresh) {
             refreshFeedCache(creators, now)
         } else {
-            // Only refresh if cache is expired
             val cached = feedCacheDao.getAll()
             val oldestCache = cached.minOfOrNull { it.cachedAt } ?: 0L
-            if (oldestCache < cacheThreshold || cached.isEmpty()) {
+            // Refresh if cache is expired, empty, or has stale stats (pre-thumbs migration)
+            val hasStaleStats = cached.isNotEmpty() && cached.all {
+                it.favoriteCount == 0 && it.ratingCount == 0
+            }
+            if (oldestCache < cacheThreshold || cached.isEmpty() || hasStaleStats) {
                 refreshFeedCache(creators, now)
             }
         }
