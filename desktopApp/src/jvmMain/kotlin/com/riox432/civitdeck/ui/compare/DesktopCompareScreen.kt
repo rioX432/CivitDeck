@@ -166,6 +166,7 @@ private fun CompareModelPanel(
 ) {
     val model = state.model ?: return
     val version = model.modelVersions.getOrNull(state.selectedVersionIndex)
+        ?: model.modelVersions.firstOrNull()
     val images = (version?.images ?: emptyList()).filterByNsfwLevel(state.nsfwFilterLevel)
 
     Column(modifier = modifier.padding(Spacing.xs)) {
