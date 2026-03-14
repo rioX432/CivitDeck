@@ -19,7 +19,13 @@ final class SwipeDiscoveryViewModel: ObservableObject {
     private let getDiscoveryModels: GetDiscoveryModelsUseCase
     private let toggleFavorite: ToggleFavoriteUseCase
     private let prefetchThreshold = 3
-    private var dismissedIds: Set<Int64> = []
+
+    /// Persists dismissed model IDs across ViewModel recreations within the same session.
+    private static var sessionDismissedIds: Set<Int64> = []
+    private var dismissedIds: Set<Int64> {
+        get { Self.sessionDismissedIds }
+        set { Self.sessionDismissedIds = newValue }
+    }
 
     init() {
         self.getDiscoveryModels = KoinHelper.shared.getDiscoveryModelsUseCase()
@@ -43,6 +49,7 @@ final class SwipeDiscoveryViewModel: ObservableObject {
                 let newModels = models.filter { !allSeenIds.contains($0.id) }
                 self.cards.append(contentsOf: newModels)
                 self.isLoading = false
+                self.prefetchUpcomingImages()
             } catch {
                 logger.error("Failed to load discovery models: \(error)")
                 self.error = error.localizedDescription
@@ -91,9 +98,20 @@ final class SwipeDiscoveryViewModel: ObservableObject {
         cards.removeAll { $0.id == model.id }
         dismissedIds.insert(model.id)
         lastDismissed = DismissedCard(model: model, wasFavorited: wasFavorited)
+        prefetchUpcomingImages()
 
         if cards.count <= prefetchThreshold {
             loadModels()
         }
+    }
+
+    func prefetchUpcomingImages() {
+        let upcoming = cards.dropFirst(1).prefix(5)
+        let urls: [URL] = upcoming.compactMap { model in
+            guard let urlString = model.modelVersions.first?.images.first.flatMap({ $0.thumbnailUrl(width: 450) }),
+                  let url = URL(string: urlString) else { return nil }
+            return url
+        }
+        ImagePrefetcher.prefetch(urls: urls)
     }
 }

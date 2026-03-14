@@ -28,10 +28,19 @@ private const val SWIPE_THRESHOLD_FRACTION = 0.3f
 private const val UP_SWIPE_THRESHOLD_FRACTION = 0.25f
 private const val MAX_ROTATION_DEGREES = 15f
 
+/**
+ * Result of a committed swipe, containing the direction and the drag offset
+ * at the moment the user released, so the exit animation can continue from there.
+ */
+data class SwipeResult(
+    val direction: SwipeDirection,
+    val releaseOffset: Offset,
+)
+
 @Composable
 fun SwipeCard(
     modifier: Modifier = Modifier,
-    onSwiped: (SwipeDirection) -> Unit,
+    onSwiped: (SwipeResult) -> Unit,
     content: @Composable () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -48,15 +57,7 @@ fun SwipeCard(
             .graphicsLayer {
                 rotationZ = (offset.value.x / screenWidthPx) * MAX_ROTATION_DEGREES
             }
-            .swipeGesture(
-                scope,
-                offset,
-                swipeThresholdPx,
-                upThresholdPx,
-                screenWidthPx,
-                screenHeightPx,
-                onSwiped
-            ),
+            .swipeGesture(scope, offset, swipeThresholdPx, upThresholdPx, onSwiped),
     ) {
         content()
     }
@@ -68,18 +69,21 @@ private fun Modifier.swipeGesture(
     offset: Animatable<Offset, *>,
     swipeThreshold: Float,
     upThreshold: Float,
-    screenWidth: Float,
-    screenHeight: Float,
-    onSwiped: (SwipeDirection) -> Unit,
+    onSwiped: (SwipeResult) -> Unit,
 ): Modifier = pointerInput(Unit) {
     detectDragGestures(
         onDragEnd = {
-            scope.launch {
-                resolveSwipe(offset, swipeThreshold, upThreshold, screenWidth, screenHeight, onSwiped)
+            val current = offset.value
+            val direction = resolveDirection(current, swipeThreshold, upThreshold)
+            if (direction != null) {
+                // Fire immediately — don't wait for animation
+                onSwiped(SwipeResult(direction, current))
+            } else {
+                scope.launch { offset.animateTo(Offset.Zero, returnSpring()) }
             }
         },
         onDragCancel = {
-            scope.launch { offset.animateTo(Offset.Zero, animationSpec = returnSpring()) }
+            scope.launch { offset.animateTo(Offset.Zero, returnSpring()) }
         },
     ) { change, dragAmount ->
         change.consume()
@@ -89,37 +93,16 @@ private fun Modifier.swipeGesture(
     }
 }
 
-@Suppress("LongParameterList")
-private suspend fun resolveSwipe(
-    offset: Animatable<Offset, *>,
+private fun resolveDirection(
+    offset: Offset,
     swipeThreshold: Float,
     upThreshold: Float,
-    screenWidth: Float,
-    screenHeight: Float,
-    onSwiped: (SwipeDirection) -> Unit,
-) {
-    val current = offset.value
-    when {
-        current.y < -upThreshold -> {
-            offset.animateTo(Offset(current.x, -screenHeight * 2), exitSpring())
-            onSwiped(SwipeDirection.Up)
-        }
-        current.x > swipeThreshold -> {
-            offset.animateTo(Offset(screenWidth * 2, current.y), exitSpring())
-            onSwiped(SwipeDirection.Right)
-        }
-        current.x < -swipeThreshold -> {
-            offset.animateTo(Offset(-screenWidth * 2, current.y), exitSpring())
-            onSwiped(SwipeDirection.Left)
-        }
-        else -> offset.animateTo(Offset.Zero, returnSpring())
-    }
+): SwipeDirection? = when {
+    offset.y < -upThreshold -> SwipeDirection.Up
+    offset.x > swipeThreshold -> SwipeDirection.Right
+    offset.x < -swipeThreshold -> SwipeDirection.Left
+    else -> null
 }
-
-private fun exitSpring() = spring<Offset>(
-    dampingRatio = SpringSpec.DampingRatioNoBouncy,
-    stiffness = SpringSpec.StiffnessLow,
-)
 
 private fun returnSpring() = spring<Offset>(
     dampingRatio = SpringSpec.DampingRatioMediumBouncy,

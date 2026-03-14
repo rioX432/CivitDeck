@@ -94,6 +94,24 @@ enum ImageURLSession {
     }()
 }
 
+// MARK: - Prefetching
+
+enum ImagePrefetcher {
+    /// Prefetch images into the URL cache for instant display later.
+    static func prefetch(urls: [URL]) {
+        for url in urls {
+            let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
+            // Skip if already cached
+            if ImageURLSession.shared.configuration.urlCache?.cachedResponse(for: request) != nil {
+                continue
+            }
+            Task.detached(priority: .utility) {
+                _ = try? await ImageURLSession.shared.data(for: request)
+            }
+        }
+    }
+}
+
 private let defaultMaxPixelSize: CGFloat = 400
 
 private enum ImageLoadingError: Error {

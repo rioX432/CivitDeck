@@ -32,7 +32,13 @@ class SwipeDiscoveryViewModel(
     val state: StateFlow<SwipeDiscoveryState> = _state.asStateFlow()
 
     private val prefetchThreshold = 3
-    private val dismissedIds = mutableSetOf<Long>()
+
+    companion object {
+        /** Persists dismissed model IDs across ViewModel recreations within the same session. */
+        private val sessionDismissedIds = mutableSetOf<Long>()
+    }
+
+    private val dismissedIds = sessionDismissedIds
 
     init {
         loadModels()

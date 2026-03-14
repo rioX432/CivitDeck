@@ -17,7 +17,7 @@ struct DiscoveryCardContent: View {
     }
 
     private var cardImage: some View {
-        let urlString = model.modelVersions.first?.images.first.flatMap { $0.thumbnailUrl(width: 600) }
+        let urlString = model.modelVersions.first?.images.first.flatMap { $0.thumbnailUrl(width: 450) }
         return CivitAsyncImageView(imageUrl: urlString, aspectRatio: imageAspectRatio)
     }
 
