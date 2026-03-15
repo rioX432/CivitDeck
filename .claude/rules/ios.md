@@ -22,13 +22,14 @@ globs: iosApp/**/*.swift
 - `CachedAsyncImage` downsamples to `maxPixelSize` (default 400px) — set `maxPixelSize: 1200` for detail/fullscreen views
 
 ## Fullscreen Image Viewer Pattern
-- **Reference implementation: `ImageViewerScreen.swift`** — always follow this pattern
-- Use `if let index = selectedIndex { ZStack { ... } }` for conditional rendering inside fullScreenCover
+- **Separate presentation state from content state**: `showViewer: Bool` for `fullScreenCover(isPresented:)`, `selectedIndex: Int` (non-optional) for page
+- **Dismiss via `@Environment(\.dismiss)`** — SwiftUI manages the animation, content stays alive throughout
+- **NEVER use `if let` conditional rendering inside fullScreenCover** — content vanishes during dismiss animation → black screen
+- **NEVER use `withAnimation` on state that affects navigation** — animates entire view hierarchy → navigation pop
+- **NEVER use `.overlay` instead of `fullScreenCover`** — breaks navigation stack
 - Pass ALL callbacks to `ZoomableImageView`: `onFocusModeChanged`, `onDismiss`, `onDragYChanged`
 - Track `@State private var controlsVisible = true` and `@State private var dragOffset: CGFloat = 0`
 - Show controls only when `controlsVisible && dragOffset == 0`
-- Dismiss via `selectedIndex = nil` — do NOT use `@Environment(\.dismiss)`
-- Background opacity must fade with drag: `1.0 - abs(dragOffset) / 100 / 4.0`
 - Button foreground: `.white` (NOT `.civitInverseOnSurface` which is dark gray in dark mode)
 
 ## Tap Handling in TabView(.page)
