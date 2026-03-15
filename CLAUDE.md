@@ -44,6 +44,11 @@ This applies to:
 - iOS deployment target is 16.0 — `onScrollGeometryChange` is iOS 18+ only
 - iOS scroll tracking: `GeometryReader + PreferenceKey` doesn't fire during active scrolling — use `simultaneousGesture(DragGesture)` instead
 - iOS gestures in ScrollView: `DragGesture(minimumDistance: 0)` blocks scrolling — use `onLongPressGesture(minimumDuration: .infinity, pressing:)` for press effects
+- iOS fullscreen image viewer: always follow `ImageViewerScreen.swift` pattern — pass all ZoomableImageView callbacks, track `controlsVisible`/`dragOffset`, use `.white` for button color on dark scrim
+- iOS `onTapGesture` inside `TabView(.page)` is unreliable — use `Button` + `.buttonStyle(.plain)` + `.contentShape(Rectangle())` instead
+- iOS Toggle/Picker with KMP: must update `@Published` immediately in Binding setter before calling KMP VM, or the control visually reverts
+- iOS `NavigationLink(value:)` auto-adds chevron — do NOT add manual `chevron.right` icons
+- iOS `CachedAsyncImage` default `maxPixelSize` is 400px — set 1200 for detail/fullscreen views
 - Android `Modifier.offset {}` uses pixels — convert dp via `LocalDensity.current` to avoid cards not fully animating off-screen
 - Room KMP: migrations don't run on fresh installs — use `onOpen` callback with `INSERT OR IGNORE` for seed data (e.g. default collections)
 - pbxproj needs 4 entries for new files: PBXBuildFile, PBXFileReference, group children, PBXSourcesBuildPhase
