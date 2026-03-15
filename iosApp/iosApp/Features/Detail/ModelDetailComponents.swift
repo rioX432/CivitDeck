@@ -1,4 +1,5 @@
 import AVKit
+import Photos
 import SwiftUI
 import Shared
 
@@ -7,26 +8,32 @@ import Shared
 struct CarouselViewer: View {
     let images: [ModelImage]
     @Binding var selectedIndex: Int?
+    @Environment(\.dismiss) private var dismiss
+    @State private var currentPage: Int = 0
+    @State private var toastMessage: String?
+    @State private var showShareSheet = false
 
     var body: some View {
-        if let startIndex = selectedIndex, !images.isEmpty {
-            ZStack {
-                Color.civitScrim.ignoresSafeArea()
+        // Use fallback index during dismiss animation to prevent black screen
+        let displayIndex = selectedIndex ?? currentPage
+        ZStack {
+            Color.civitScrim.ignoresSafeArea()
 
+            if !images.isEmpty {
                 TabView(selection: Binding(
-                    get: { startIndex },
-                    set: { selectedIndex = $0 }
+                    get: { displayIndex },
+                    set: { selectedIndex = $0; currentPage = $0 }
                 )) {
                     ForEach(Array(images.enumerated()), id: \.offset) { i, image in
                         if image.contentType == .video, let videoUrl = URL(string: image.url) {
-                            VideoPlayerView(url: videoUrl, autoPlay: i == startIndex)
+                            VideoPlayerView(url: videoUrl, autoPlay: i == displayIndex)
                                 .ignoresSafeArea()
                                 .tag(i)
                         } else {
                             ZoomableImageView(
                                 url: image.url,
                                 pageIndex: i,
-                                currentPageIndex: startIndex
+                                currentPageIndex: displayIndex
                             )
                             .ignoresSafeArea()
                             .tag(i)
@@ -34,26 +41,93 @@ struct CarouselViewer: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))
+            }
 
-                VStack {
-                    HStack {
-                        Button {
-                            selectedIndex = nil
-                        } label: {
-                            SwiftUI.Image(systemName: "xmark")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.civitInverseOnSurface)
-                                .padding(Spacing.smPlus)
-                                .background(.ultraThinMaterial, in: Circle())
-                        }
-                        Spacer()
-                    }
-                    .padding(Spacing.lg)
-                    Spacer()
-                }
+            viewerControls(currentIndex: displayIndex)
+
+            if let message = toastMessage {
+                toastView(message: message)
             }
         }
+        .onAppear { currentPage = selectedIndex ?? 0 }
+        .sheet(isPresented: $showShareSheet) {
+            if let image = images[safe: displayIndex] {
+                ShareSheet(items: [image.url])
+            }
+        }
+    }
+
+    private func viewerControls(currentIndex: Int) -> some View {
+        VStack {
+            HStack {
+                ViewerCircleButton(systemName: "xmark", label: "Close") {
+                    dismiss()
+                }
+                Spacer()
+            }
+            .padding(Spacing.lg)
+
+            Spacer()
+
+            HStack {
+                Spacer()
+                ViewerCircleButton(systemName: "arrow.down.to.line", label: "Download") {
+                    downloadImage(at: currentIndex)
+                }
+                ViewerCircleButton(systemName: "square.and.arrow.up", label: "Share") {
+                    showShareSheet = true
+                }
+            }
+            .padding(Spacing.lg)
+        }
+    }
+
+    private func downloadImage(at index: Int) {
+        guard let image = images[safe: index],
+              let url = URL(string: image.url) else {
+            showToast("Download failed")
+            return
+        }
+        Task {
+            do {
+                let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
+                let (data, _) = try await ImageURLSession.shared.data(for: request)
+                if image.contentType == .video {
+                    try await saveVideoToLibrary(data: data, url: url)
+                } else {
+                    guard let uiImage = UIImage(data: data) else {
+                        showToast("Download failed")
+                        return
+                    }
+                    try await saveImageToLibrary(image: uiImage)
+                }
+                showToast("Saved to Photos")
+            } catch {
+                showToast("Download failed")
+            }
+        }
+    }
+
+    private func showToast(_ message: String) {
+        withAnimation(MotionAnimation.fast) { toastMessage = message }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation(MotionAnimation.fast) { toastMessage = nil }
+        }
+    }
+
+    private func toastView(message: String) -> some View {
+        VStack {
+            Spacer()
+            Text(message)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.civitInverseOnSurface)
+                .padding(.horizontal, Spacing.lg)
+                .padding(.vertical, Spacing.smPlus)
+                .background(.ultraThinMaterial, in: Capsule())
+                .padding(.bottom, Spacing.floatingOffset)
+        }
+        .transition(.opacity)
     }
 }
 
@@ -135,25 +209,31 @@ struct ImageGridSheet: View {
 struct GridImageViewer: View {
     let images: [ModelImage]
     @Binding var selectedIndex: Int?
+    @Environment(\.dismiss) private var dismiss
+    @State private var currentPage: Int = 0
+    @State private var toastMessage: String?
+    @State private var showShareSheet = false
 
     var body: some View {
-        if let startIndex = selectedIndex, !images.isEmpty {
-            ZStack {
-                Color.civitScrim.ignoresSafeArea()
+        let displayIndex = selectedIndex ?? currentPage
+        ZStack {
+            Color.civitScrim.ignoresSafeArea()
+
+            if !images.isEmpty {
                 TabView(selection: Binding(
-                    get: { startIndex },
-                    set: { selectedIndex = $0 }
+                    get: { displayIndex },
+                    set: { selectedIndex = $0; currentPage = $0 }
                 )) {
                     ForEach(Array(images.enumerated()), id: \.offset) { i, image in
                         if image.contentType == .video, let videoUrl = URL(string: image.url) {
-                            VideoPlayerView(url: videoUrl, autoPlay: i == startIndex)
+                            VideoPlayerView(url: videoUrl, autoPlay: i == displayIndex)
                                 .ignoresSafeArea()
                                 .tag(i)
                         } else {
                             ZoomableImageView(
                                 url: image.url,
                                 pageIndex: i,
-                                currentPageIndex: startIndex
+                                currentPageIndex: displayIndex
                             )
                             .ignoresSafeArea()
                             .tag(i)
@@ -161,24 +241,134 @@ struct GridImageViewer: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))
+            }
 
-                VStack {
-                    HStack {
-                        Button { selectedIndex = nil } label: {
-                            SwiftUI.Image(systemName: "xmark")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.civitInverseOnSurface)
-                                .padding(Spacing.smPlus)
-                                .background(.ultraThinMaterial, in: Circle())
-                        }
-                        Spacer()
+            VStack {
+                HStack {
+                    ViewerCircleButton(systemName: "xmark", label: "Close") {
+                        dismiss()
                     }
-                    .padding(Spacing.lg)
                     Spacer()
                 }
+                .padding(Spacing.lg)
+
+                Spacer()
+
+                HStack {
+                    Spacer()
+                    ViewerCircleButton(systemName: "arrow.down.to.line", label: "Download") {
+                        downloadImage(at: displayIndex)
+                    }
+                    ViewerCircleButton(systemName: "square.and.arrow.up", label: "Share") {
+                        showShareSheet = true
+                    }
+                }
+                .padding(Spacing.lg)
+            }
+
+            if let message = toastMessage {
+                VStack {
+                    Spacer()
+                    Text(message)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.civitInverseOnSurface)
+                        .padding(.horizontal, Spacing.lg)
+                        .padding(.vertical, Spacing.smPlus)
+                        .background(.ultraThinMaterial, in: Capsule())
+                        .padding(.bottom, Spacing.floatingOffset)
+                }
+                .transition(.opacity)
             }
         }
+        .onAppear { currentPage = selectedIndex ?? 0 }
+        .sheet(isPresented: $showShareSheet) {
+            if let image = images[safe: displayIndex] {
+                ShareSheet(items: [image.url])
+            }
+        }
+    }
+
+    private func downloadImage(at index: Int) {
+        guard let image = images[safe: index],
+              let url = URL(string: image.url) else {
+            showToast("Download failed")
+            return
+        }
+        Task {
+            do {
+                let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
+                let (data, _) = try await ImageURLSession.shared.data(for: request)
+                if image.contentType == .video {
+                    try await saveVideoToLibrary(data: data, url: url)
+                } else {
+                    guard let uiImage = UIImage(data: data) else {
+                        showToast("Download failed")
+                        return
+                    }
+                    try await saveImageToLibrary(image: uiImage)
+                }
+                showToast("Saved to Photos")
+            } catch {
+                showToast("Download failed")
+            }
+        }
+    }
+
+    private func showToast(_ message: String) {
+        withAnimation(MotionAnimation.fast) { toastMessage = message }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation(MotionAnimation.fast) { toastMessage = nil }
+        }
+    }
+}
+
+// MARK: - Shared Viewer Helpers
+
+struct ViewerCircleButton: View {
+    let systemName: String
+    var label: String?
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            SwiftUI.Image(systemName: systemName)
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundColor(.civitInverseOnSurface)
+                .padding(Spacing.smPlus)
+                .background(.ultraThinMaterial, in: Circle())
+        }
+        .accessibilityLabel(label ?? systemName)
+    }
+}
+
+private func saveImageToLibrary(image: UIImage) async throws {
+    let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+    guard status == .authorized || status == .limited else { return }
+    try await PHPhotoLibrary.shared().performChanges {
+        PHAssetChangeRequest.creationRequestForAsset(from: image)
+    }
+}
+
+private func saveVideoToLibrary(data: Data, url: URL) async throws {
+    let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+    guard status == .authorized || status == .limited else { return }
+    let ext = url.pathExtension.isEmpty ? "mp4" : url.pathExtension
+    let tempURL = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString)
+        .appendingPathExtension(ext)
+    try data.write(to: tempURL)
+    defer { try? FileManager.default.removeItem(at: tempURL) }
+    try await PHPhotoLibrary.shared().performChanges {
+        let request = PHAssetCreationRequest.forAsset()
+        request.addResource(with: .video, fileURL: tempURL, options: nil)
+    }
+}
+
+private extension Array {
+    subscript(safe index: Int) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }
 
