@@ -14,6 +14,11 @@ struct ContentView: View {
         appBehaviorVm.powerUserMode ? displayVm.customNavShortcuts : []
     }
 
+    /// On iPhone (compact), limit to 1 shortcut to keep total tabs ≤ 5 and avoid iOS "More" tab.
+    private var tabShortcuts: [NavShortcut] {
+        sizeClass == .compact ? Array(activeShortcuts.prefix(1)) : activeShortcuts
+    }
+
     var body: some View {
         Group {
             if tutorialVm.shouldShowTutorial {
@@ -57,7 +62,7 @@ struct ContentView: View {
                 .tabItem { Label("Feed", systemImage: "dot.radiowaves.up.forward") }
                 .tag("feed")
 
-            ForEach(activeShortcuts, id: \.name) { shortcut in
+            ForEach(tabShortcuts, id: \.name) { shortcut in
                 shortcutView(for: shortcut)
                     .tabItem { Label(shortcut.tabLabel, systemImage: shortcut.iconName) }
                     .tag(shortcut.name)

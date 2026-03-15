@@ -48,7 +48,7 @@ struct AdvancedSettingsView: View {
     private var powerUserModeToggle: some View {
         Toggle(isOn: Binding(
             get: { viewModel.powerUserMode },
-            set: { viewModel.onPowerUserModeChanged($0) }
+            set: { viewModel.powerUserMode = $0; viewModel.onPowerUserModeChanged($0) }
         )) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Power User Mode")

@@ -45,7 +45,7 @@ struct StorageSettingsView: View {
     private var offlineCacheToggle: some View {
         Toggle(isOn: Binding(
             get: { viewModel.offlineCacheEnabled },
-            set: { viewModel.onOfflineCacheEnabledChanged($0) }
+            set: { viewModel.offlineCacheEnabled = $0; viewModel.onOfflineCacheEnabledChanged($0) }
         )) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Offline Cache")
@@ -60,7 +60,7 @@ struct StorageSettingsView: View {
     private var cacheSizeLimitPicker: some View {
         Picker("Cache Size Limit", selection: Binding(
             get: { viewModel.cacheSizeLimitMb },
-            set: { viewModel.onCacheSizeLimitChanged($0) }
+            set: { viewModel.cacheSizeLimitMb = $0; viewModel.onCacheSizeLimitChanged($0) }
         )) {
             Text("50 MB").tag(Int32(50))
             Text("100 MB").tag(Int32(100))

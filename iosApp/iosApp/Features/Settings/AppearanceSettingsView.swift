@@ -54,7 +54,7 @@ struct AppearanceSettingsView: View {
     private var themeModePicker: some View {
         Picker("Color Scheme", selection: Binding(
             get: { viewModel.themeMode },
-            set: { viewModel.onThemeModeChanged($0) }
+            set: { viewModel.themeMode = $0; viewModel.onThemeModeChanged($0) }
         )) {
             Text("Light").tag(ThemeMode.light)
             Text("Dark").tag(ThemeMode.dark)
@@ -66,7 +66,7 @@ struct AppearanceSettingsView: View {
     private var accentColorPicker: some View {
         Picker("Accent Color", selection: Binding(
             get: { viewModel.accentColor },
-            set: { viewModel.onAccentColorChanged($0) }
+            set: { viewModel.accentColor = $0; viewModel.onAccentColorChanged($0) }
         )) {
             ForEach(AccentColor.allCases, id: \.self) { color in
                 Text(color.displayName).tag(color)
@@ -77,7 +77,7 @@ struct AppearanceSettingsView: View {
     private var amoledDarkModeToggle: some View {
         Toggle(isOn: Binding(
             get: { viewModel.amoledDarkMode },
-            set: { viewModel.onAmoledDarkModeChanged($0) }
+            set: { viewModel.amoledDarkMode = $0; viewModel.onAmoledDarkModeChanged($0) }
         )) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("AMOLED Dark Mode")
@@ -92,7 +92,7 @@ struct AppearanceSettingsView: View {
     private var gridColumnsPicker: some View {
         Picker("Grid Columns", selection: Binding(
             get: { viewModel.gridColumns },
-            set: { viewModel.onGridColumnsChanged($0) }
+            set: { viewModel.gridColumns = $0; viewModel.onGridColumnsChanged($0) }
         )) {
             Text("2").tag(Int32(2))
             Text("3").tag(Int32(3))

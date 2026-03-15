@@ -6,28 +6,30 @@ struct ComfyUIHistoryView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
-        Group {
-            if viewModel.isLoading && viewModel.images.isEmpty {
-                LoadingStateView()
-            } else if let error = viewModel.errorMessage, viewModel.images.isEmpty {
-                ErrorStateView(message: error) {
-                    viewModel.retry()
-                }
-            } else if viewModel.images.isEmpty {
-                EmptyStateView(
-                    icon: "photo.on.rectangle.angled",
-                    title: "No generated images",
-                    subtitle: "Images from ComfyUI generation history will appear here."
-                )
-            } else {
-                VStack(spacing: 0) {
-                    filterBar
-                    imageGrid
+        NavigationStack {
+            Group {
+                if viewModel.isLoading && viewModel.images.isEmpty {
+                    LoadingStateView()
+                } else if let error = viewModel.errorMessage, viewModel.images.isEmpty {
+                    ErrorStateView(message: error) {
+                        viewModel.retry()
+                    }
+                } else if viewModel.images.isEmpty {
+                    EmptyStateView(
+                        icon: "photo.on.rectangle.angled",
+                        title: "No generated images",
+                        subtitle: "Images from ComfyUI generation history will appear here."
+                    )
+                } else {
+                    VStack(spacing: 0) {
+                        filterBar
+                        imageGrid
+                    }
                 }
             }
+            .navigationTitle("History")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle("History")
-        .navigationBarTitleDisplayMode(.inline)
         .task { viewModel.startObserving() }
         .onDisappear { viewModel.stopObserving() }
         .sheet(isPresented: $viewModel.showDatasetPicker, onDismiss: viewModel.onDismissDatasetPicker) {

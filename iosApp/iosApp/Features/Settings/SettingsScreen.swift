@@ -7,39 +7,50 @@ struct SettingsScreen: View {
     @StateObject private var storageViewModel = StorageSettingsViewModelOwner()
     @StateObject private var displayViewModel = DisplaySettingsViewModelOwner()
     @StateObject private var contentFilterViewModel = ContentFilterSettingsViewModelOwner()
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
-        NavigationStack {
-            List {
-                if !storageViewModel.isOnline {
-                    offlineBanner
-                }
-                accountSection
-                appearanceSection
-                contentBehaviorSection
-                dataStorageSection
-                advancedIntegrationsSection
-                if appBehaviorViewModel.powerUserMode {
-                    analyticsSection
-                    datasetsSection
-                }
-                aboutSection
-                if !appBehaviorViewModel.powerUserMode {
-                    Section {
-                        Text("Enable Power User Mode in Advanced & Integrations for more features")
-                            .font(.civitBodySmall)
-                            .foregroundColor(.civitOnSurfaceVariant)
-                    }
+        // On iPad (regular size class), NavigationSplitView already provides navigation context.
+        // Adding NavigationStack here causes double back buttons in sub-screens.
+        if sizeClass == .regular {
+            settingsContent
+        } else {
+            NavigationStack {
+                settingsContent
+            }
+        }
+    }
+
+    private var settingsContent: some View {
+        List {
+            if !storageViewModel.isOnline {
+                offlineBanner
+            }
+            accountSection
+            appearanceSection
+            contentBehaviorSection
+            dataStorageSection
+            advancedIntegrationsSection
+            if appBehaviorViewModel.powerUserMode {
+                analyticsSection
+                datasetsSection
+            }
+            aboutSection
+            if !appBehaviorViewModel.powerUserMode {
+                Section {
+                    Text("Enable Power User Mode in Advanced & Integrations for more features")
+                        .font(.civitBodySmall)
+                        .foregroundColor(.civitOnSurfaceVariant)
                 }
             }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .task { await authViewModel.observeUiState() }
-            .task { await appBehaviorViewModel.observeUiState() }
-            .task { await storageViewModel.observeUiState() }
-            .task { await displayViewModel.observeUiState() }
-            .task { await contentFilterViewModel.observeUiState() }
         }
+        .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await authViewModel.observeUiState() }
+        .task { await appBehaviorViewModel.observeUiState() }
+        .task { await storageViewModel.observeUiState() }
+        .task { await displayViewModel.observeUiState() }
+        .task { await contentFilterViewModel.observeUiState() }
     }
 
     private var offlineBanner: some View {
