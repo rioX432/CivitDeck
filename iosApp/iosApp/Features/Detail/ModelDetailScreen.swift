@@ -106,7 +106,6 @@ struct ModelDetailScreen: View {
                 selectedIndex: $selectedCarouselIndex
             )
             .ignoresSafeArea()
-            .animation(.easeInOut(duration: 0.25), value: selectedCarouselIndex != nil)
         }
         .sheet(isPresented: $showImageGrid) {
             ImageGridSheet(
@@ -121,7 +120,6 @@ struct ModelDetailScreen: View {
                 selectedIndex: $gridSelectedIndex
             )
             .ignoresSafeArea()
-            .animation(.easeInOut(duration: 0.25), value: gridSelectedIndex != nil)
         }
         .sheet(isPresented: $showComfyUIGeneration) {
             NavigationView {
@@ -204,9 +202,7 @@ struct ModelDetailScreen: View {
                         CivitAsyncImageView(imageUrl: image.url, aspectRatio: 1)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                withAnimation(.easeInOut(duration: 0.25)) {
-                                    selectedCarouselIndex = index
-                                }
+                                selectedCarouselIndex = index
                             }
                             .accessibilityLabel("Image \(index + 1) of \(images.count)")
                             .accessibilityAddTraits(.isButton)
