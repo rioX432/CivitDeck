@@ -89,7 +89,30 @@ final class ZoomableImageViewController: UIViewController, UIScrollViewDelegate,
         _ gestureRecognizer: UIGestureRecognizer,
         shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
     ) -> Bool {
-        true
+        // Only allow pan recognizer to fire simultaneously (needed for dismiss drag).
+        // Tap recognizers must NOT fire simultaneously — they interfere with
+        // SwiftUI overlay buttons (close, download, share).
+        gestureRecognizer == panRecognizer
+    }
+
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldReceive touch: UITouch
+    ) -> Bool {
+        // For tap recognizers, ignore touches near screen edges where
+        // SwiftUI overlay buttons (close, download, share) live.
+        // This prevents the UIKit single-tap from consuming taps meant for buttons.
+        guard gestureRecognizer == singleTapRecognizer
+                || gestureRecognizer == doubleTapRecognizer else {
+            return true
+        }
+        let location = touch.location(in: view)
+        let bounds = view.bounds
+        let edgeInset: CGFloat = 80
+        let topSafe = bounds.minY + edgeInset
+        let bottomSafe = bounds.maxY - edgeInset
+        // Ignore taps in top or bottom edge areas where controls are placed
+        return location.y > topSafe && location.y < bottomSafe
     }
 
     override func viewDidLayoutSubviews() {

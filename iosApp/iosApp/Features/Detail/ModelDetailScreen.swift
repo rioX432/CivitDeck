@@ -203,16 +203,14 @@ struct ModelDetailScreen: View {
             if !images.isEmpty {
                 TabView(selection: $currentCarouselPage) {
                     ForEach(Array(images.enumerated()), id: \.offset) { index, image in
-                        Button {
-                            selectedCarouselIndex = index
-                        } label: {
-                            CivitAsyncImageView(imageUrl: image.url, aspectRatio: 1)
-                        }
-                        .buttonStyle(.plain)
-                        .contentShape(Rectangle())
-                        .accessibilityLabel("Image \(index + 1) of \(images.count)")
-                        .accessibilityAddTraits(.isButton)
-                        .tag(index)
+                        CivitAsyncImageView(imageUrl: image.url, aspectRatio: 1)
+                            .contentShape(Rectangle())
+                            .simultaneousGesture(TapGesture().onEnded {
+                                selectedCarouselIndex = index
+                            })
+                            .accessibilityLabel("Image \(index + 1) of \(images.count)")
+                            .accessibilityAddTraits(.isButton)
+                            .tag(index)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
