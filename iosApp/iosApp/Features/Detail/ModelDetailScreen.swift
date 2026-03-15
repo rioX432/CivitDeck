@@ -197,20 +197,22 @@ struct ModelDetailScreen: View {
         let allImages = viewModel.selectedVersion?.images ?? []
         return allImages.filter { $0.isAllowedByFilter(viewModel.nsfwFilterLevel) }
     }
-
     private func imageCarousel(model: Model) -> some View {
         let images = filteredImages
         return Group {
             if !images.isEmpty {
                 TabView(selection: $currentCarouselPage) {
                     ForEach(Array(images.enumerated()), id: \.offset) { index, image in
-                        CivitAsyncImageView(imageUrl: image.url, aspectRatio: 1)
-                            .onTapGesture {
-                                selectedCarouselIndex = index
-                            }
-                            .accessibilityLabel("Image \(index + 1) of \(images.count)")
-                            .accessibilityAddTraits(.isButton)
-                            .tag(index)
+                        Button {
+                            selectedCarouselIndex = index
+                        } label: {
+                            CivitAsyncImageView(imageUrl: image.url, aspectRatio: 1)
+                        }
+                        .buttonStyle(.plain)
+                        .contentShape(Rectangle())
+                        .accessibilityLabel("Image \(index + 1) of \(images.count)")
+                        .accessibilityAddTraits(.isButton)
+                        .tag(index)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
@@ -340,7 +342,6 @@ struct ModelDetailScreen: View {
     }
 
     // MARK: - Version Selector
-
     @ViewBuilder
     private func versionSelector(model: Model) -> some View {
         let versions = model.modelVersions
