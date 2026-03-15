@@ -23,6 +23,8 @@ globs: androidApp/**/*.kt, androidApp/**/*.kts
 - Don't duplicate `Alignment` import when adding new imports to files that already have it
 - `Modifier.offset { IntOffset(...) }` uses pixels — always convert dp to px via `with(LocalDensity.current) { dp.toPx() }`. Mixing dp and px causes cards to not fully animate off-screen on high-density devices
 - Use `key(id)` in `forEachIndexed` loops to prevent state leaks when items are reordered/removed
+- Use lambda-based modifiers (`offset {}`, `graphicsLayer {}`, `drawBehind {}`) for frequently-changing state — avoids recomposition, only triggers re-draw
+- Use `derivedStateOf` to limit recompositions when deriving values from rapidly-changing state (e.g., scroll position)
 
 ## Adaptive Layout
 - `ui/adaptive/AdaptiveUtils.kt` — responsive grid columns and foldable posture detection using Material 3 Adaptive
