@@ -33,7 +33,13 @@ globs: iosApp/**/*.swift
 
 ## Tap Handling in TabView(.page)
 - NEVER use `onTapGesture` inside `TabView(.page)` — conflicts with swipe gesture
-- Use `Button { } label: { }` + `.buttonStyle(.plain)` + `.contentShape(Rectangle())` instead
+- Use `.simultaneousGesture(TapGesture().onEnded { })` + `.contentShape(Rectangle())` — works alongside TabView's swipe
+- `Button` inside `TabView(.page)` can also be unreliable — prefer `simultaneousGesture`
+
+## ZoomableImageView Gesture Coordination
+- `shouldRecognizeSimultaneouslyWith` must return `true` ONLY for `panRecognizer` (dismiss drag), NOT for tap recognizers
+- `shouldReceive touch:` must ignore taps in edge areas (top/bottom 80pt) where SwiftUI overlay buttons live
+- Without this, UIKit tap recognizers consume taps before SwiftUI buttons can receive them
 
 ## Toggle/Picker Bindings with KMP ViewModels
 - Always update `@Published` property immediately in the Binding setter before calling KMP VM
