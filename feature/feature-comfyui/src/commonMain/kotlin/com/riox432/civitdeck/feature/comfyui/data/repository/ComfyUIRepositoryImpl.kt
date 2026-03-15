@@ -2,7 +2,6 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIOutputImage
-import com.riox432.civitdeck.util.Logger
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketMessage
 import com.riox432.civitdeck.data.local.currentTimeMillis
@@ -19,6 +18,7 @@ import com.riox432.civitdeck.domain.model.QueueJobStatus
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIQueueRepository
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
