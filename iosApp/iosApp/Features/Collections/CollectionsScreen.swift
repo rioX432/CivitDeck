@@ -102,17 +102,12 @@ struct CollectionsScreen: View {
     private var collectionsList: some View {
         List {
             ForEach(viewModel.collections, id: \.id) { collection in
-                Button {
-                    navigationPath.append(
-                        CollectionDestination(
-                            collectionId: collection.id,
-                            collectionName: collection.name
-                        )
-                    )
-                } label: {
+                NavigationLink(value: CollectionDestination(
+                    collectionId: collection.id,
+                    collectionName: collection.name
+                )) {
                     CollectionRow(collection: collection)
                 }
-                .buttonStyle(.plain)
                 .swipeActions(edge: .trailing) {
                     if !collection.isDefault {
                         Button(role: .destructive) {
