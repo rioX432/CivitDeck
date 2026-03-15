@@ -25,7 +25,6 @@ struct CarouselViewer: View {
                 Color.civitScrim
                     .opacity(backgroundOpacity)
                     .ignoresSafeArea()
-                    .onTapGesture { selectedIndex = nil }
 
                 TabView(selection: Binding(
                     get: { index },
@@ -43,9 +42,7 @@ struct CarouselViewer: View {
                                     controlsVisible = !isFocusMode
                                 },
                                 onDismiss: {
-                                    withAnimation(.easeOut(duration: 0.25)) {
-                                        selectedIndex = nil
-                                    }
+                                    selectedIndex = nil
                                 },
                                 onDragYChanged: { dragOffset = $0 },
                                 pageIndex: i,
@@ -67,7 +64,6 @@ struct CarouselViewer: View {
                     toastView(message: message)
                 }
             }
-            .transition(.opacity)
             .animation(MotionAnimation.fast, value: controlsVisible)
             .sheet(isPresented: $showShareSheet) {
                 if let image = images[safe: index] {
@@ -86,9 +82,7 @@ struct CarouselViewer: View {
         VStack {
             HStack {
                 ViewerCircleButton(systemName: "xmark", label: "Close") {
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        selectedIndex = nil
-                    }
+                    selectedIndex = nil
                 }
                 Spacer()
             }
@@ -316,9 +310,7 @@ struct GridImageViewer: View {
         VStack {
             HStack {
                 ViewerCircleButton(systemName: "xmark", label: "Close") {
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        selectedIndex = nil
-                    }
+                    selectedIndex = nil
                 }
                 Spacer()
             }
