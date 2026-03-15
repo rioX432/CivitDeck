@@ -100,14 +100,13 @@ struct ModelDetailScreen: View {
                 onCreateCollection: { viewModel.createCollectionAndAdd(name: $0) }
             )
         }
-        .fullScreenCover(isPresented: Binding(
-            get: { selectedCarouselIndex != nil },
-            set: { if !$0 { selectedCarouselIndex = nil } }
-        )) {
+        .overlay {
             CarouselViewer(
                 images: filteredImages,
                 selectedIndex: $selectedCarouselIndex
             )
+            .ignoresSafeArea()
+            .animation(.easeInOut(duration: 0.25), value: selectedCarouselIndex != nil)
         }
         .sheet(isPresented: $showImageGrid) {
             ImageGridSheet(
@@ -116,14 +115,13 @@ struct ModelDetailScreen: View {
                 onImageSelected: { gridSelectedIndex = $0 }
             )
         }
-        .fullScreenCover(isPresented: Binding(
-            get: { gridSelectedIndex != nil },
-            set: { if !$0 { gridSelectedIndex = nil } }
-        )) {
+        .overlay {
             GridImageViewer(
                 images: filteredImages,
                 selectedIndex: $gridSelectedIndex
             )
+            .ignoresSafeArea()
+            .animation(.easeInOut(duration: 0.25), value: gridSelectedIndex != nil)
         }
         .sheet(isPresented: $showComfyUIGeneration) {
             NavigationView {
@@ -205,9 +203,11 @@ struct ModelDetailScreen: View {
                     ForEach(Array(images.enumerated()), id: \.offset) { index, image in
                         CivitAsyncImageView(imageUrl: image.url, aspectRatio: 1)
                             .contentShape(Rectangle())
-                            .simultaneousGesture(TapGesture().onEnded {
-                                selectedCarouselIndex = index
-                            })
+                            .onTapGesture {
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    selectedCarouselIndex = index
+                                }
+                            }
                             .accessibilityLabel("Image \(index + 1) of \(images.count)")
                             .accessibilityAddTraits(.isButton)
                             .tag(index)
