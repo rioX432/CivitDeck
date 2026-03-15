@@ -8,7 +8,6 @@ import Shared
 struct CarouselViewer: View {
     let images: [ModelImage]
     @Binding var selectedIndex: Int?
-    @Environment(\.dismiss) private var dismiss
     @State private var currentPage: Int = 0
     @State private var toastMessage: String?
     @State private var showShareSheet = false
@@ -61,7 +60,7 @@ struct CarouselViewer: View {
         VStack {
             HStack {
                 ViewerCircleButton(systemName: "xmark", label: "Close") {
-                    dismiss()
+                    selectedIndex = nil
                 }
                 Spacer()
             }
@@ -209,7 +208,6 @@ struct ImageGridSheet: View {
 struct GridImageViewer: View {
     let images: [ModelImage]
     @Binding var selectedIndex: Int?
-    @Environment(\.dismiss) private var dismiss
     @State private var currentPage: Int = 0
     @State private var toastMessage: String?
     @State private var showShareSheet = false
@@ -246,7 +244,7 @@ struct GridImageViewer: View {
             VStack {
                 HStack {
                     ViewerCircleButton(systemName: "xmark", label: "Close") {
-                        dismiss()
+                        selectedIndex = nil
                     }
                     Spacer()
                 }
@@ -335,11 +333,12 @@ struct ViewerCircleButton: View {
             SwiftUI.Image(systemName: systemName)
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundColor(.civitInverseOnSurface)
+                .foregroundColor(.white)
                 .padding(Spacing.smPlus)
                 .background(.ultraThinMaterial, in: Circle())
         }
         .accessibilityLabel(label ?? systemName)
+        .contentShape(Circle())
     }
 }
 

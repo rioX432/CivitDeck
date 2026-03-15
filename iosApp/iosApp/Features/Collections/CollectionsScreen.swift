@@ -157,10 +157,6 @@ private struct CollectionRow: View {
                     .foregroundColor(.civitOnSurfaceVariant)
             }
             Spacer()
-            Image(systemName: "chevron.right")
-                .accessibilityHidden(true)
-                .foregroundColor(.civitOnSurfaceVariant)
-                .font(.caption)
         }
         .padding(.vertical, Spacing.xs)
     }

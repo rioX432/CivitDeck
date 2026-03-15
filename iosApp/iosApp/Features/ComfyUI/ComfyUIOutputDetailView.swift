@@ -103,7 +103,7 @@ private struct ComfyUIOutputDetailPage: View {
     // MARK: - Full Image
 
     private var fullImage: some View {
-        CachedAsyncImage(url: URL(string: image.imageUrl)) { phase in
+        CachedAsyncImage(url: URL(string: image.imageUrl), maxPixelSize: 1200) { phase in
             switch phase {
             case .success(let img):
                 img
