@@ -63,7 +63,7 @@ struct ContentFilterSettingsView: View {
     private var sortOrderPicker: some View {
         Picker("Default Sort", selection: Binding(
             get: { displayViewModel.defaultSortOrder },
-            set: { displayViewModel.onSortOrderChanged($0) }
+            set: { displayViewModel.defaultSortOrder = $0; displayViewModel.onSortOrderChanged($0) }
         )) {
             ForEach(SearchFilter.sortOptions, id: \.self) { sort in
                 Text(SearchFilter.sortLabel(sort)).tag(sort)
@@ -74,7 +74,7 @@ struct ContentFilterSettingsView: View {
     private var timePeriodPicker: some View {
         Picker("Default Period", selection: Binding(
             get: { displayViewModel.defaultTimePeriod },
-            set: { displayViewModel.onTimePeriodChanged($0) }
+            set: { displayViewModel.defaultTimePeriod = $0; displayViewModel.onTimePeriodChanged($0) }
         )) {
             ForEach(SearchFilter.periodOptions, id: \.self) { period in
                 Text(SearchFilter.periodLabel(period)).tag(period)
@@ -99,7 +99,10 @@ struct ContentFilterSettingsView: View {
                 Slider(
                     value: Binding(
                         get: { Double(appBehaviorViewModel.feedQualityThreshold) },
-                        set: { appBehaviorViewModel.onFeedQualityThresholdChanged(Int32($0)) }
+                        set: {
+                            appBehaviorViewModel.feedQualityThreshold = Int32($0)
+                            appBehaviorViewModel.onFeedQualityThresholdChanged(Int32($0))
+                        }
                     ),
                     in: 0...100,
                     step: 1
@@ -120,7 +123,10 @@ struct ContentFilterSettingsView: View {
     private var notificationsToggle: some View {
         Toggle(isOn: Binding(
             get: { appBehaviorViewModel.notificationsEnabled },
-            set: { appBehaviorViewModel.onNotificationsEnabledChanged($0) }
+            set: {
+                appBehaviorViewModel.notificationsEnabled = $0
+                appBehaviorViewModel.onNotificationsEnabledChanged($0)
+            }
         )) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Model Update Alerts")
@@ -135,7 +141,10 @@ struct ContentFilterSettingsView: View {
     private var pollingIntervalPicker: some View {
         Picker("Check Frequency", selection: Binding(
             get: { appBehaviorViewModel.pollingInterval },
-            set: { appBehaviorViewModel.onPollingIntervalChanged($0) }
+            set: {
+                appBehaviorViewModel.pollingInterval = $0
+                appBehaviorViewModel.onPollingIntervalChanged($0)
+            }
         )) {
             ForEach(PollingInterval.allCases.filter { $0 != .off }, id: \.self) { interval in
                 Text(interval.displayName).tag(interval)
