@@ -10,12 +10,14 @@ struct ImageGalleryScreen: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            filterBar
-            contentArea
+        NavigationStack {
+            VStack(spacing: 0) {
+                filterBar
+                contentArea
+            }
+            .navigationTitle("Images")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle("Images")
-        .navigationBarTitleDisplayMode(.inline)
         .task {
             await viewModel.observeNsfwFilter()
         }
