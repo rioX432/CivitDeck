@@ -9,10 +9,12 @@ struct ModelDetailScreen: View {
     }
 
     @State private var isDescriptionExpanded = false
-    @State private var selectedCarouselIndex: Int?
+    @State private var showCarouselViewer = false
+    @State private var selectedCarouselIndex: Int = 0
     @State private var currentCarouselPage: Int = 0
     @State private var showImageGrid = false
-    @State private var gridSelectedIndex: Int?
+    @State private var showGridViewer = false
+    @State private var gridSelectedIndex: Int = 0
     @State private var showCollectionSheet = false
     @State private var showComfyUIGeneration = false
     @State private var showLinkSheet = false
@@ -100,26 +102,27 @@ struct ModelDetailScreen: View {
                 onCreateCollection: { viewModel.createCollectionAndAdd(name: $0) }
             )
         }
-        .overlay {
+        .fullScreenCover(isPresented: $showCarouselViewer) {
             CarouselViewer(
                 images: filteredImages,
                 selectedIndex: $selectedCarouselIndex
             )
-            .ignoresSafeArea()
         }
         .sheet(isPresented: $showImageGrid) {
             ImageGridSheet(
                 images: filteredImages,
                 onDismiss: { showImageGrid = false },
-                onImageSelected: { gridSelectedIndex = $0 }
+                onImageSelected: { idx in
+                    gridSelectedIndex = idx
+                    showGridViewer = true
+                }
             )
         }
-        .overlay {
+        .fullScreenCover(isPresented: $showGridViewer) {
             GridImageViewer(
                 images: filteredImages,
                 selectedIndex: $gridSelectedIndex
             )
-            .ignoresSafeArea()
         }
         .sheet(isPresented: $showComfyUIGeneration) {
             NavigationView {
@@ -203,6 +206,7 @@ struct ModelDetailScreen: View {
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 selectedCarouselIndex = index
+                                showCarouselViewer = true
                             }
                             .accessibilityLabel("Image \(index + 1) of \(images.count)")
                             .accessibilityAddTraits(.isButton)

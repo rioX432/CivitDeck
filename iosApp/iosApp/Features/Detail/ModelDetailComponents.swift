@@ -4,15 +4,13 @@ import SwiftUI
 import Shared
 
 // MARK: - Carousel Viewer
-// Follows the same proven pattern as ImageViewerScreen (Gallery):
-// - Pass all gesture callbacks to ZoomableImageView
-// - Conditional control visibility via controlsVisible + dragOffset
-// - Drag-to-dismiss with background opacity fade
-// - Direct selectedIndex = nil for dismiss (not @Environment(\.dismiss))
+// Uses fullScreenCover(isPresented:) with non-optional selectedIndex.
+// Close uses dismiss() — content stays alive during dismiss animation (no black screen).
 
 struct CarouselViewer: View {
     let images: [ModelImage]
-    @Binding var selectedIndex: Int?
+    @Binding var selectedIndex: Int
+    @Environment(\.dismiss) private var dismiss
 
     @State private var controlsVisible = true
     @State private var dragOffset: CGFloat = 0
@@ -20,19 +18,16 @@ struct CarouselViewer: View {
     @State private var showShareSheet = false
 
     var body: some View {
-        if let index = selectedIndex {
-            ZStack {
-                Color.civitScrim
-                    .opacity(backgroundOpacity)
-                    .ignoresSafeArea()
+        ZStack {
+            Color.civitScrim
+                .opacity(backgroundOpacity)
+                .ignoresSafeArea()
 
-                TabView(selection: Binding(
-                    get: { index },
-                    set: { selectedIndex = $0 }
-                )) {
+            if !images.isEmpty {
+                TabView(selection: $selectedIndex) {
                     ForEach(Array(images.enumerated()), id: \.offset) { i, image in
                         if image.contentType == .video, let videoUrl = URL(string: image.url) {
-                            VideoPlayerView(url: videoUrl, autoPlay: i == index)
+                            VideoPlayerView(url: videoUrl, autoPlay: i == selectedIndex)
                                 .ignoresSafeArea()
                                 .tag(i)
                         } else {
@@ -41,12 +36,10 @@ struct CarouselViewer: View {
                                 onFocusModeChanged: { isFocusMode in
                                     controlsVisible = !isFocusMode
                                 },
-                                onDismiss: {
-                                    selectedIndex = nil
-                                },
+                                onDismiss: { dismiss() },
                                 onDragYChanged: { dragOffset = $0 },
                                 pageIndex: i,
-                                currentPageIndex: index
+                                currentPageIndex: selectedIndex
                             )
                             .ignoresSafeArea()
                             .tag(i)
@@ -54,21 +47,21 @@ struct CarouselViewer: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))
-
-                if controlsVisible && dragOffset == 0 {
-                    viewerControls(currentIndex: index)
-                        .transition(.opacity)
-                }
-
-                if let message = toastMessage {
-                    toastView(message: message)
-                }
             }
-            .animation(MotionAnimation.fast, value: controlsVisible)
-            .sheet(isPresented: $showShareSheet) {
-                if let image = images[safe: index] {
-                    ShareSheet(items: [image.url])
-                }
+
+            if controlsVisible && dragOffset == 0 {
+                viewerControls
+                    .transition(.opacity)
+            }
+
+            if let message = toastMessage {
+                toastView(message: message)
+            }
+        }
+        .animation(MotionAnimation.fast, value: controlsVisible)
+        .sheet(isPresented: $showShareSheet) {
+            if let image = images[safe: selectedIndex] {
+                ShareSheet(items: [image.url])
             }
         }
     }
@@ -78,11 +71,11 @@ struct CarouselViewer: View {
         return Double(max(1.0 - progress / 4.0, 0.0))
     }
 
-    private func viewerControls(currentIndex: Int) -> some View {
+    private var viewerControls: some View {
         VStack {
             HStack {
                 ViewerCircleButton(systemName: "xmark", label: "Close") {
-                    selectedIndex = nil
+                    dismiss()
                 }
                 Spacer()
             }
@@ -93,7 +86,7 @@ struct CarouselViewer: View {
             HStack {
                 Spacer()
                 ViewerCircleButton(systemName: "arrow.down.to.line", label: "Download") {
-                    downloadImage(at: currentIndex)
+                    downloadImage(at: selectedIndex)
                 }
                 ViewerCircleButton(systemName: "square.and.arrow.up", label: "Share") {
                     showShareSheet = true
@@ -225,11 +218,12 @@ struct ImageGridSheet: View {
     }
 }
 
-// MARK: - Grid Image Viewer (same pattern as CarouselViewer)
+// MARK: - Grid Image Viewer
 
 struct GridImageViewer: View {
     let images: [ModelImage]
-    @Binding var selectedIndex: Int?
+    @Binding var selectedIndex: Int
+    @Environment(\.dismiss) private var dismiss
 
     @State private var controlsVisible = true
     @State private var dragOffset: CGFloat = 0
@@ -237,19 +231,16 @@ struct GridImageViewer: View {
     @State private var showShareSheet = false
 
     var body: some View {
-        if let index = selectedIndex {
-            ZStack {
-                Color.civitScrim
-                    .opacity(backgroundOpacity)
-                    .ignoresSafeArea()
+        ZStack {
+            Color.civitScrim
+                .opacity(backgroundOpacity)
+                .ignoresSafeArea()
 
-                TabView(selection: Binding(
-                    get: { index },
-                    set: { selectedIndex = $0 }
-                )) {
+            if !images.isEmpty {
+                TabView(selection: $selectedIndex) {
                     ForEach(Array(images.enumerated()), id: \.offset) { i, image in
                         if image.contentType == .video, let videoUrl = URL(string: image.url) {
-                            VideoPlayerView(url: videoUrl, autoPlay: i == index)
+                            VideoPlayerView(url: videoUrl, autoPlay: i == selectedIndex)
                                 .ignoresSafeArea()
                                 .tag(i)
                         } else {
@@ -258,12 +249,10 @@ struct GridImageViewer: View {
                                 onFocusModeChanged: { isFocusMode in
                                     controlsVisible = !isFocusMode
                                 },
-                                onDismiss: {
-                                    selectedIndex = nil
-                                },
+                                onDismiss: { dismiss() },
                                 onDragYChanged: { dragOffset = $0 },
                                 pageIndex: i,
-                                currentPageIndex: index
+                                currentPageIndex: selectedIndex
                             )
                             .ignoresSafeArea()
                             .tag(i)
@@ -271,32 +260,32 @@ struct GridImageViewer: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))
-
-                if controlsVisible && dragOffset == 0 {
-                    viewerControls(currentIndex: index)
-                        .transition(.opacity)
-                }
-
-                if let message = toastMessage {
-                    VStack {
-                        Spacer()
-                        Text(message)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, Spacing.lg)
-                            .padding(.vertical, Spacing.smPlus)
-                            .background(.ultraThinMaterial, in: Capsule())
-                            .padding(.bottom, Spacing.floatingOffset)
-                    }
-                    .transition(.opacity)
-                }
             }
-            .animation(MotionAnimation.fast, value: controlsVisible)
-            .sheet(isPresented: $showShareSheet) {
-                if let image = images[safe: index] {
-                    ShareSheet(items: [image.url])
+
+            if controlsVisible && dragOffset == 0 {
+                viewerControls
+                    .transition(.opacity)
+            }
+
+            if let message = toastMessage {
+                VStack {
+                    Spacer()
+                    Text(message)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, Spacing.lg)
+                        .padding(.vertical, Spacing.smPlus)
+                        .background(.ultraThinMaterial, in: Capsule())
+                        .padding(.bottom, Spacing.floatingOffset)
                 }
+                .transition(.opacity)
+            }
+        }
+        .animation(MotionAnimation.fast, value: controlsVisible)
+        .sheet(isPresented: $showShareSheet) {
+            if let image = images[safe: selectedIndex] {
+                ShareSheet(items: [image.url])
             }
         }
     }
@@ -306,11 +295,11 @@ struct GridImageViewer: View {
         return Double(max(1.0 - progress / 4.0, 0.0))
     }
 
-    private func viewerControls(currentIndex: Int) -> some View {
+    private var viewerControls: some View {
         VStack {
             HStack {
                 ViewerCircleButton(systemName: "xmark", label: "Close") {
-                    selectedIndex = nil
+                    dismiss()
                 }
                 Spacer()
             }
@@ -321,7 +310,7 @@ struct GridImageViewer: View {
             HStack {
                 Spacer()
                 ViewerCircleButton(systemName: "arrow.down.to.line", label: "Download") {
-                    downloadImage(at: currentIndex)
+                    downloadImage(at: selectedIndex)
                 }
                 ViewerCircleButton(systemName: "square.and.arrow.up", label: "Share") {
                     showShareSheet = true
