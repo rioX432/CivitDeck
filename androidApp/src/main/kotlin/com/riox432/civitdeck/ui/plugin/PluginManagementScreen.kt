@@ -197,7 +197,7 @@ internal fun PluginTypeBadge(type: InstalledPluginType) {
                 MaterialTheme.colorScheme.secondaryContainer,
                 RoundedCornerShape(CornerRadius.xs),
             )
-            .padding(horizontal = Spacing.sm, vertical = 2.dp),
+            .padding(horizontal = Spacing.sm, vertical = Spacing.xxs),
     )
 }
 

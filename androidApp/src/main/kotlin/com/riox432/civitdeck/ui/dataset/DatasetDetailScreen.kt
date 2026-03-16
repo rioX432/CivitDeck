@@ -583,7 +583,7 @@ private fun FlaggedBadge(modifier: Modifier = Modifier) {
         modifier = modifier
             .clip(RoundedCornerShape(CornerRadius.chip))
             .background(MaterialTheme.colorScheme.error.copy(alpha = 0.85f))
-            .padding(horizontal = Spacing.xs, vertical = 2.dp),
+            .padding(horizontal = Spacing.xs, vertical = Spacing.xxs),
     )
 }
 
@@ -601,7 +601,7 @@ private fun SourceBadgeMini(sourceType: ImageSource, modifier: Modifier = Modifi
         modifier = modifier
             .clip(RoundedCornerShape(CornerRadius.chip))
             .background(color.copy(alpha = 0.85f))
-            .padding(horizontal = Spacing.xs, vertical = 2.dp),
+            .padding(horizontal = Spacing.xs, vertical = Spacing.xxs),
     )
 }
 

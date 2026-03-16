@@ -198,7 +198,7 @@ private fun ExcludedBadge(modifier: Modifier = Modifier) {
         modifier = modifier
             .clip(RoundedCornerShape(CornerRadius.chip))
             .background(MaterialTheme.colorScheme.error)
-            .padding(horizontal = Spacing.xs, vertical = 2.dp),
+            .padding(horizontal = Spacing.xs, vertical = Spacing.xxs),
     )
 }
 
