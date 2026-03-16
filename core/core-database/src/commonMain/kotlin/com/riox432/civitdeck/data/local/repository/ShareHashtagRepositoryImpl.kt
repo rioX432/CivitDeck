@@ -1,10 +1,10 @@
 package com.riox432.civitdeck.data.local.repository
 
+import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.ShareHashtagDao
 import com.riox432.civitdeck.data.local.entity.ShareHashtagEntity
 import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.domain.repository.ShareHashtagRepository
-import com.riox432.civitdeck.data.local.currentTimeMillis
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

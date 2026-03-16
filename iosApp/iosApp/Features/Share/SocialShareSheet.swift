@@ -71,8 +71,8 @@ struct SocialShareSheet: View {
     private var charCounter: some View {
         let count = fullText.count
         let color: Color = {
-            if count > charLimit { return .red }
-            if count > Int(Double(charLimit) * 0.9) { return .orange }
+            if count > charLimit { return .civitError }
+            if count > Int(Double(charLimit) * 0.9) { return .civitTertiary }
             return .civitOnSurfaceVariant
         }()
         return Text("\(count) / \(charLimit)")

@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -147,23 +148,29 @@ private fun HashtagSection(
         verticalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
         hashtags.forEach { hashtag ->
-            FilterChip(
-                selected = hashtag.isEnabled,
-                onClick = { onToggle(hashtag.tag, !hashtag.isEnabled) },
-                label = { Text(hashtag.tag, style = MaterialTheme.typography.labelSmall) },
-                trailingIcon = if (hashtag.isCustom) {
-                    {
-                        IconButton(
-                            onClick = { onRemove(hashtag.tag) },
-                            modifier = Modifier.size(16.dp),
-                        ) {
-                            Icon(Icons.Default.Close, contentDescription = "Remove", modifier = Modifier.size(14.dp))
+            key(hashtag.tag) {
+                FilterChip(
+                    selected = hashtag.isEnabled,
+                    onClick = { onToggle(hashtag.tag, !hashtag.isEnabled) },
+                    label = { Text(hashtag.tag, style = MaterialTheme.typography.labelSmall) },
+                    trailingIcon = if (hashtag.isCustom) {
+                        {
+                            IconButton(
+                                onClick = { onRemove(hashtag.tag) },
+                                modifier = Modifier.size(16.dp),
+                            ) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = "Remove",
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
                         }
-                    }
-                } else {
-                    null
-                },
-            )
+                    } else {
+                        null
+                    },
+                )
+            }
         }
     }
 }
