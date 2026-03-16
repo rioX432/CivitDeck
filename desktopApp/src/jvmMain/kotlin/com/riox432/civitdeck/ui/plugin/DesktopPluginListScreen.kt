@@ -96,7 +96,7 @@ fun DesktopPluginListScreen(
 
 @Composable
 private fun PluginToolbar(onBack: () -> Unit) {
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

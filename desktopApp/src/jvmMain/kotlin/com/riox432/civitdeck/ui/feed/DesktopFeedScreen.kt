@@ -89,7 +89,7 @@ fun DesktopFeedScreen(
 
 @Composable
 private fun FeedTopBar(isRefreshing: Boolean, onRefresh: () -> Unit) {
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
@@ -196,7 +196,7 @@ private fun FeedGridCard(
             .fillMaxWidth()
             .clickable(onClick = onModelClick),
         shape = RoundedCornerShape(CornerRadius.card),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.xs),
     ) {
         Column {
             if (item.thumbnailUrl != null) {

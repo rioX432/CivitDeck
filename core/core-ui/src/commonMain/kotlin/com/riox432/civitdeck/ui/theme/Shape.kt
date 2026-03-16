@@ -28,6 +28,13 @@ object CornerRadius {
     val searchBar = 8.dp
 }
 
+object Elevation {
+    val xs = 1.dp
+    val sm = 2.dp
+    val md = 4.dp
+    val lg = 8.dp
+}
+
 object IconSize {
     val statIcon = 10.dp
     val errorPlaceholder = 36.dp

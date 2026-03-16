@@ -68,7 +68,7 @@ fun DesktopCollectionDetailScreen(
 
 @Composable
 private fun DetailTopBar(title: String, onBack: () -> Unit) {
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
@@ -134,7 +134,7 @@ private fun CollectionModelCard(
     Surface(
         modifier = Modifier.clickable(onClick = onClick),
         shape = RoundedCornerShape(CornerRadius.card),
-        tonalElevation = 1.dp,
+        tonalElevation = Elevation.xs,
     ) {
         Column {
             if (model.thumbnailUrl != null) {

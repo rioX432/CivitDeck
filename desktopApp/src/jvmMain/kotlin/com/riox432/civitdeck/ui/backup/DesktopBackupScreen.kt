@@ -34,7 +34,6 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.BackupCategory
 import com.riox432.civitdeck.domain.model.RestoreStrategy
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -98,7 +97,7 @@ fun DesktopBackupScreen(
 
 @Composable
 private fun BackupToolbar(onBack: () -> Unit) {
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

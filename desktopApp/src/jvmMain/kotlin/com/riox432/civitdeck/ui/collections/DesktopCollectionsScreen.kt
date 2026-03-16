@@ -82,7 +82,7 @@ fun DesktopCollectionsScreen(
 
 @Composable
 private fun CollectionsTopBar(onCreateClick: () -> Unit) {
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
@@ -153,7 +153,7 @@ private fun CollectionCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(CornerRadius.card),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.xs),
     ) {
         Row(
             modifier = Modifier.padding(Spacing.md),

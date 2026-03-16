@@ -22,7 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
@@ -226,7 +225,7 @@ private fun SettingsSectionTabs(
         listOf(SettingsSection.General)
     }
 
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.lg, vertical = Spacing.sm),
             horizontalArrangement = Arrangement.spacedBy(Spacing.sm),

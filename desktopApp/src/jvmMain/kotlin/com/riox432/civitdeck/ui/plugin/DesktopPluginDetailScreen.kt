@@ -34,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.InstalledPlugin
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -67,7 +66,7 @@ fun DesktopPluginDetailScreen(
 
 @Composable
 private fun PluginDetailToolbar(pluginName: String, onBack: () -> Unit) {
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

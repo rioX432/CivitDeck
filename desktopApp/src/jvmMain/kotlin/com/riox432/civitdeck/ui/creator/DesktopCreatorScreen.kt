@@ -55,7 +55,7 @@ fun DesktopCreatorScreen(
             .background(MaterialTheme.colorScheme.surface),
     ) {
         // Top bar
-        Surface(tonalElevation = 1.dp) {
+        Surface(tonalElevation = Elevation.xs) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(Spacing.sm),
                 verticalAlignment = Alignment.CenterVertically,

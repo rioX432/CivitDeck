@@ -157,7 +157,7 @@ private fun DatasetDetailToolbar(
     onSelectAll: () -> Unit,
     onExport: () -> Unit,
 ) {
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

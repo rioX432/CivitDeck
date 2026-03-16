@@ -72,7 +72,7 @@ fun DesktopPromptsScreen(
 
 @Composable
 private fun PromptsTopBar() {
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
@@ -175,7 +175,7 @@ private fun PromptCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(CornerRadius.card),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.xs),
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
             if (prompt.templateName != null) {
