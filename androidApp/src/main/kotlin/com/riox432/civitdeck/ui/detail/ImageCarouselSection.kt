@@ -29,10 +29,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
-import com.riox432.civitdeck.R
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.MediaContentType
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder

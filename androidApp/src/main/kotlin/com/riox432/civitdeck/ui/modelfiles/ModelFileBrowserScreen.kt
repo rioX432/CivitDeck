@@ -218,7 +218,11 @@ private fun DirectoryItem(directory: ModelDirectory, onRemove: (Long) -> Unit) {
             )
         }
         IconButton(onClick = { showConfirm = true }) {
-            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.cd_remove), tint = MaterialTheme.colorScheme.error)
+            Icon(
+                Icons.Default.Delete,
+                contentDescription = stringResource(R.string.cd_remove),
+                tint = MaterialTheme.colorScheme.error
+            )
         }
     }
     if (showConfirm) {

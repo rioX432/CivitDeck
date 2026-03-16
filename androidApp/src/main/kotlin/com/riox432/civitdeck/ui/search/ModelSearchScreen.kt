@@ -44,8 +44,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.riox432.civitdeck.R
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.theme.Duration

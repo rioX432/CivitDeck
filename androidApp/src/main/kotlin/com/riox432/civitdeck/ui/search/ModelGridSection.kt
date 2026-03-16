@@ -54,9 +54,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
-import com.riox432.civitdeck.R
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.thumbnailUrl

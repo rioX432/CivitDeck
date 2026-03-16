@@ -360,7 +360,10 @@ private fun DatasetDetailTopBar(
                     Icon(Icons.Default.FindReplace, contentDescription = stringResource(R.string.cd_review_duplicates))
                 }
                 IconButton(onClick = onResolutionFilter) {
-                    Icon(Icons.Default.PhotoSizeSelectLarge, contentDescription = stringResource(R.string.cd_resolution_filter))
+                    Icon(
+                        Icons.Default.PhotoSizeSelectLarge,
+                        contentDescription = stringResource(R.string.cd_resolution_filter)
+                    )
                 }
             }
         },
