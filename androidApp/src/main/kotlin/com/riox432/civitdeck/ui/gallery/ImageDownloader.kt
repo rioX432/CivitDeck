@@ -51,7 +51,7 @@ object ImageDownloader {
         val relativePath = if (isVideo) {
             "${Environment.DIRECTORY_MOVIES}/CivitDeck"
         } else {
-            "Pictures/CivitDeck"
+            "${Environment.DIRECTORY_PICTURES}/CivitDeck"
         }
 
         val values = ContentValues().apply {
@@ -76,6 +76,9 @@ object ImageDownloader {
         }
     }
 
+    // TODO: Remove this fallback when minSdk is raised to 29 (Q).
+    //  MediaStore with RELATIVE_PATH/IS_PENDING requires API 29+,
+    //  so pre-Q devices (API 24-28) still need the legacy file API.
     @Suppress("DEPRECATION")
     private fun saveToExternalStorage(fileName: String, bytes: ByteArray): Boolean {
         return try {
