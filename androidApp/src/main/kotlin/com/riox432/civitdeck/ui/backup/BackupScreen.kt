@@ -316,7 +316,7 @@ private fun ImportDialogContent(
 private fun readFileContent(context: Context, uri: Uri): String? {
     return try {
         context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
-    } catch (_: Exception) {
+    } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
         null
     }
 }

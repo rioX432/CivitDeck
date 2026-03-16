@@ -173,7 +173,7 @@ private fun CameraPreviewWithScanner(
                             preview,
                             imageAnalysis,
                         )
-                    } catch (_: Exception) {
+                    } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
                         // Camera binding failed
                     }
                 }
@@ -188,7 +188,7 @@ private fun CameraPreviewWithScanner(
         onDispose {
             try {
                 cameraProviderFuture.get().unbindAll()
-            } catch (_: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
                 // Cleanup failed
             }
         }

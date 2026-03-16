@@ -167,7 +167,7 @@ private suspend fun AwaitPointerEventScope.waitForSecondTap(
 
             waitForUpOrCancellation()
         }
-    } catch (_: Exception) {
+    } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
         null
     }
 }

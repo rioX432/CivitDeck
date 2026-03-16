@@ -115,7 +115,7 @@ fun DesktopQRCodeScreen(
 
 @Composable
 private fun QRCodeTopBar(onBack: () -> Unit) {
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
@@ -284,7 +284,7 @@ private suspend fun pickAndDecodeQR(): String? = withContext(Dispatchers.IO) {
         )
         val decoded = com.google.zxing.MultiFormatReader().decode(binaryBitmap)
         decoded.text
-    } catch (_: Exception) {
+    } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
         null
     }
 }

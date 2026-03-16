@@ -210,7 +210,7 @@ class ModelSearchViewModel(
                 _uiState.update {
                     it.copy(recommendations = sections, isLoadingRecommendations = false)
                 }
-            } catch (_: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
                 _uiState.update { it.copy(isLoadingRecommendations = false) }
             }
         }
