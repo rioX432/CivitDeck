@@ -6,9 +6,14 @@ import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.domain.model.DatasetCollection
 import com.riox432.civitdeck.domain.model.ImageSource
+import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.domain.usecase.AddImageToDatasetUseCase
+import com.riox432.civitdeck.domain.usecase.AddShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.CreateDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetCollectionsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveShareHashtagsUseCase
+import com.riox432.civitdeck.domain.usecase.RemoveShareHashtagUseCase
+import com.riox432.civitdeck.domain.usecase.ToggleShareHashtagUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,6 +45,10 @@ class ComfyUIHistoryViewModel(
     observeDatasetCollections: ObserveDatasetCollectionsUseCase,
     private val addImageToDataset: AddImageToDatasetUseCase,
     private val createDatasetCollection: CreateDatasetCollectionUseCase,
+    observeShareHashtags: ObserveShareHashtagsUseCase,
+    private val addShareHashtag: AddShareHashtagUseCase,
+    private val removeShareHashtag: RemoveShareHashtagUseCase,
+    private val toggleShareHashtag: ToggleShareHashtagUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ComfyUIHistoryUiState())
@@ -47,6 +56,10 @@ class ComfyUIHistoryViewModel(
 
     val datasets: StateFlow<List<DatasetCollection>> =
         observeDatasetCollections()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
+
+    val shareHashtags: StateFlow<List<ShareHashtag>> =
+        observeShareHashtags()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
     init {
@@ -146,6 +159,18 @@ class ComfyUIHistoryViewModel(
 
     fun onDismissDatasetResult() {
         _uiState.update { it.copy(addToDatasetSuccess = null) }
+    }
+
+    fun onToggleShareHashtag(tag: String, isEnabled: Boolean) {
+        viewModelScope.launch { toggleShareHashtag(tag, isEnabled) }
+    }
+
+    fun onAddShareHashtag(tag: String) {
+        viewModelScope.launch { addShareHashtag(tag) }
+    }
+
+    fun onRemoveShareHashtag(tag: String) {
+        viewModelScope.launch { removeShareHashtag(tag) }
     }
 
     private fun buildDatasetTags(image: ComfyUIGeneratedImage): List<String> {

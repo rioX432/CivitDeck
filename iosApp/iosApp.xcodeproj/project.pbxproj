@@ -152,6 +152,8 @@
 		CDES06012F400006000CD001 /* ExternalServerImageDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES06002F400006000CD001 /* ExternalServerImageDetailView.swift */; };
 		CDES07012F400007000CD001 /* ExternalServerGenerationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES07002F400007000CD001 /* ExternalServerGenerationSheet.swift */; };
 		CDDL01012FBB0001000CD001 /* DownloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDL01002FBB0001000CD001 /* DownloadService.swift */; };
+		CDSH01012FDD0001000CD001 /* SocialShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSH01002FDD0001000CD001 /* SocialShareSheet.swift */; };
+		CDSH02012FDD0002000CD001 /* ShareHashtagViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSH02002FDD0002000CD001 /* ShareHashtagViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -306,6 +308,8 @@
 		CDES06002F400006000CD001 /* ExternalServerImageDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerImageDetailView.swift; sourceTree = "<group>"; };
 		CDES07002F400007000CD001 /* ExternalServerGenerationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerGenerationSheet.swift; sourceTree = "<group>"; };
 		CDDL01002FBB0001000CD001 /* DownloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadService.swift; sourceTree = "<group>"; };
+		CDSH01002FDD0001000CD001 /* SocialShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialShareSheet.swift; sourceTree = "<group>"; };
+		CDSH02002FDD0002000CD001 /* ShareHashtagViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareHashtagViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -464,6 +468,7 @@
 				CD000A042D00000A000CD001 /* Settings */,
 				CDSC0A002EA00001000CD001 /* Shortcuts */,
 				CD00GT082D6CC001000CD001 /* Tutorial */,
+				CDSH0A002FDD0000000CD001 /* Share */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -724,6 +729,15 @@
 			path = ComfyUI;
 			sourceTree = "<group>";
 		};
+		CDSH0A002FDD0000000CD001 /* Share */ = {
+			isa = PBXGroup;
+			children = (
+				CDSH01002FDD0001000CD001 /* SocialShareSheet.swift */,
+				CDSH02002FDD0002000CD001 /* ShareHashtagViewModel.swift */,
+			);
+			path = Share;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -980,6 +994,8 @@
 			CDPL02012FCC0002000CD001 /* PluginListViewModel.swift in Sources */,
 			CDPL03012FCC0003000CD001 /* PluginDetailView.swift in Sources */,
 			CDPL04012FCC0004000CD001 /* PluginDetailViewModel.swift in Sources */,
+			CDSH01012FDD0001000CD001 /* SocialShareSheet.swift in Sources */,
+			CDSH02012FDD0002000CD001 /* ShareHashtagViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

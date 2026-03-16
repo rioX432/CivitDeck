@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -54,6 +55,7 @@ import com.riox432.civitdeck.ui.components.SectionHeader
 import com.riox432.civitdeck.ui.dataset.AddToDatasetSheet
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
+import com.riox432.civitdeck.ui.share.SocialShareSheet
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,7 +68,9 @@ fun ComfyUIOutputDetailScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val datasets by viewModel.datasets.collectAsStateWithLifecycle()
+    val hashtags by viewModel.shareHashtags.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showShareSheet by rememberSaveable { mutableStateOf(false) }
     val pagerState = rememberPagerState(initialPage = initialIndex) { images.size }
     val currentImage = images[pagerState.currentPage]
     DetailSnackbarEffects(state = state, snackbarHostState = snackbarHostState, viewModel = viewModel)
@@ -80,6 +84,9 @@ fun ComfyUIOutputDetailScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showShareSheet = true }) {
+                        Icon(Icons.Default.Share, contentDescription = stringResource(R.string.cd_share))
+                    }
                     IconButton(onClick = { viewModel.onAddToDatasetTap(currentImage) }) {
                         Icon(Icons.Default.Dataset, contentDescription = stringResource(R.string.cd_add_to_dataset))
                     }
@@ -103,6 +110,15 @@ fun ComfyUIOutputDetailScreen(
             onSelectDataset = viewModel::onDatasetSelected,
             onCreateAndSelect = viewModel::onCreateDatasetAndSelect,
             onDismiss = viewModel::onDismissDatasetPicker,
+        )
+    }
+    if (showShareSheet) {
+        SocialShareSheet(
+            hashtags = hashtags,
+            onToggleHashtag = viewModel::onToggleShareHashtag,
+            onAddHashtag = viewModel::onAddShareHashtag,
+            onRemoveHashtag = viewModel::onRemoveShareHashtag,
+            onDismiss = { showShareSheet = false },
         )
     }
 }

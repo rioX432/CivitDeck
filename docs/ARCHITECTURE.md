@@ -26,7 +26,7 @@ CivitDeck/
 │   │       └── di/                   # NetworkModule (Koin)
 │   ├── core-database/        # Database layer: Room KMP entities, DAOs, migrations
 │   │   └── src/commonMain/kotlin/.../
-│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v33)
+│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v34)
 │   │       ├── data/local/migration/ # Sequential migrations (1→2 … 32→33)
 │   │       └── di/                   # DatabaseModule (Koin)
 │   ├── core-ui/              # Shared Compose components + design tokens (KMP: Android + Desktop)
@@ -108,7 +108,7 @@ graph TB
 ### Data Layer (`core/core-network/` + `core/core-database/`)
 
 - **API** (`core-network`): Ktor HTTP client targeting `https://civitai.com/api/v1`. Endpoints include `/models`, `/models/:id`, `/model-versions/:id`, `/images`, `/creators`, and `/tags`. Pagination is cursor-based for images and page-based for others. Also includes ComfyUI, SD WebUI (Automatic1111/Forge), and custom External Server API clients.
-- **Local** (`core-database`): Room KMP database (version 33) for offline favorites, user collections, saved prompts, saved search filters, SD WebUI/ComfyUI connections, external server configs, dataset collections, model notes, followed creators, feed cache, model downloads, plugin data, quality scores, and response caching with TTL. Migrations tracked sequentially from version 1.
+- **Local** (`core-database`): Room KMP database (version 34) for offline favorites, user collections, saved prompts, saved search filters, SD WebUI/ComfyUI connections, external server configs, dataset collections, model notes, followed creators, feed cache, model downloads, plugin data, quality scores, and response caching with TTL. Migrations tracked sequentially from version 1.
 - **Repository Implementations**: Combine remote API calls with local cache. Return domain models, not DTOs.
 
 ### Domain Layer (`core/core-domain/`)

@@ -11,6 +11,7 @@ import com.riox432.civitdeck.data.local.repository.ImageTagRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ModelDownloadRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ModelNoteRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.PluginRepositoryImpl
+import com.riox432.civitdeck.data.local.repository.ShareHashtagRepositoryImpl
 import com.riox432.civitdeck.domain.repository.AnalyticsRepository
 import com.riox432.civitdeck.domain.repository.CaptionRepository
 import com.riox432.civitdeck.domain.repository.CreatorFollowRepository
@@ -19,6 +20,7 @@ import com.riox432.civitdeck.domain.repository.ImageTagRepository
 import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
 import com.riox432.civitdeck.domain.repository.ModelNoteRepository
 import com.riox432.civitdeck.domain.repository.PluginRepository
+import com.riox432.civitdeck.domain.repository.ShareHashtagRepository
 import org.koin.dsl.module
 
 val databaseModule = module {
@@ -46,6 +48,7 @@ val databaseModule = module {
     single { get<CivitDeckDatabase>().feedCacheDao() }
     single { get<CivitDeckDatabase>().modelDownloadDao() }
     single { get<CivitDeckDatabase>().pluginDao() }
+    single { get<CivitDeckDatabase>().shareHashtagDao() }
 
     // Data Sources
     single { LocalCacheDataSource(get()) }
@@ -69,4 +72,7 @@ val databaseModule = module {
 
     // Plugins
     single<PluginRepository> { PluginRepositoryImpl(get()) }
+
+    // Share Hashtags
+    single<ShareHashtagRepository> { ShareHashtagRepositoryImpl(get()) }
 }

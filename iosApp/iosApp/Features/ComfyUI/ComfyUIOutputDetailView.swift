@@ -37,7 +37,9 @@ private struct ComfyUIOutputDetailPage: View {
     @State private var showSaveAlert = false
     @State private var showImageViewer = false
     @State private var showDatasetPicker = false
+    @State private var showShareSheet = false
     @State private var datasets: [DatasetCollection] = []
+    @StateObject private var shareHashtagVM = ShareHashtagViewModel()
 
     private let saveImageUseCase = KoinHelper.shared.getSaveGeneratedImageUseCase()
     private let observeDatasetUseCase = KoinHelper.shared.getObserveDatasetCollectionsUseCase()
@@ -56,11 +58,19 @@ private struct ComfyUIOutputDetailPage: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showDatasetPicker = true
-                } label: {
-                    Image(systemName: "folder.badge.plus")
-                        .accessibilityLabel("Add to dataset")
+                HStack(spacing: Spacing.xs) {
+                    Button {
+                        showShareSheet = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                            .accessibilityLabel("Share")
+                    }
+                    Button {
+                        showDatasetPicker = true
+                    } label: {
+                        Image(systemName: "folder.badge.plus")
+                            .accessibilityLabel("Add to dataset")
+                    }
                 }
             }
         }
@@ -76,6 +86,18 @@ private struct ComfyUIOutputDetailPage: View {
                     onCreateDatasetAndSelect(name: name)
                 }
             )
+        }
+        .sheet(isPresented: $showShareSheet) {
+            SocialShareSheet(
+                hashtags: shareHashtagVM.hashtags,
+                onToggle: { tag, enabled in shareHashtagVM.toggle(tag: tag, isEnabled: enabled) },
+                onAdd: { tag in shareHashtagVM.add(tag: tag) },
+                onRemove: { tag in shareHashtagVM.remove(tag: tag) }
+            )
+            .presentationDetents([.medium, .large])
+        }
+        .task {
+            await shareHashtagVM.startObserving()
         }
         .task {
             for await list in observeDatasetUseCase.invoke() {
