@@ -113,6 +113,7 @@ private struct PromptCardView: View {
     let onToggleTemplate: () -> Void
     let onDelete: () -> Void
     var onApply: (() -> Void)?
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
@@ -145,13 +146,13 @@ private struct PromptCardView: View {
                 if let modelName = prompt.modelName {
                     Text(modelName)
                         .font(.caption)
-                        .foregroundColor(.civitPrimary)
+                        .foregroundColor(theme.primary)
                 }
             }
             Spacer()
             Button(action: onToggleTemplate) {
                 SwiftUI.Image(systemName: prompt.isTemplate ? "star.fill" : "star")
-                    .foregroundColor(prompt.isTemplate ? .civitPrimary : .civitOnSurfaceVariant)
+                    .foregroundColor(prompt.isTemplate ? theme.primary : .civitOnSurfaceVariant)
             }
             .buttonStyle(.borderless)
         }

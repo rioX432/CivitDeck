@@ -136,6 +136,7 @@ private struct TemplateRow: View {
     var onSelect: (() -> Void)?
     var onExport: () -> Void
     var onDelete: (() -> Void)?
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         HStack(alignment: .top) {
@@ -156,7 +157,7 @@ private struct TemplateRow: View {
             if isPicker {
                 Button(action: { onSelect?() }) {
                     Image(systemName: "checkmark.circle")
-                        .foregroundColor(.civitPrimary)
+                        .foregroundColor(theme.primary)
                 }
                 .buttonStyle(.plain)
             } else {

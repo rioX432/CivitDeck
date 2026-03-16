@@ -4,13 +4,14 @@ struct QRScannerDestination: Hashable {}
 
 struct QRScannerFab: View {
     var visible: Bool = true
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         NavigationLink(value: QRScannerDestination()) {
             Image(systemName: "qrcode.viewfinder")
                 .accessibilityLabel("QR scanner")
                 .font(.body)
-                .foregroundColor(.civitPrimary)
+                .foregroundColor(theme.primary)
                 .frame(width: 44, height: 44)
                 .background(Color.civitTertiaryContainer)
                 .clipShape(RoundedRectangle(cornerRadius: CornerRadius.card))

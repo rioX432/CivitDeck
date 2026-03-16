@@ -5,6 +5,7 @@ struct ChipButton: View {
     let label: String
     let isSelected: Bool
     let action: () -> Void
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         Button(action: { HapticFeedback.selection.trigger(); action() }) {
@@ -13,8 +14,8 @@ struct ChipButton: View {
                 .fontWeight(isSelected ? .semibold : .regular)
                 .padding(.horizontal, Spacing.md)
                 .padding(.vertical, Spacing.xsPlus)
-                .background(isSelected ? Color.civitPrimary.opacity(0.2) : Color.civitSurfaceVariant)
-                .foregroundColor(isSelected ? .civitPrimary : .civitOnSurface)
+                .background(isSelected ? theme.primary.opacity(0.2) : Color.civitSurfaceVariant)
+                .foregroundColor(isSelected ? theme.primary : .civitOnSurface)
                 .clipShape(Capsule())
                 .animation(MotionAnimation.spring, value: isSelected)
         }

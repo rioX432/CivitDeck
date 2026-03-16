@@ -69,6 +69,20 @@ final class ThemeManager: ObservableObject {
         }
         return colorScheme == .dark ? accentTint.colors.dark : accentTint.colors.light
     }
+
+    /// The full dynamic primary palette resolved for the current accent and color scheme.
+    func theme(for colorScheme: ColorScheme) -> CivitTheme {
+        if let custom = customThemePrimary {
+            return CivitTheme(
+                primary: custom,
+                onPrimary: colorScheme == .dark ? Color.hex(0x002584) : .white,
+                primaryContainer: custom.opacity(0.15),
+                onPrimaryContainer: custom,
+                inversePrimary: custom
+            )
+        }
+        return CivitTheme.from(accent: accentTint, colorScheme: colorScheme)
+    }
 }
 
 // MARK: - ARGB Color Helper

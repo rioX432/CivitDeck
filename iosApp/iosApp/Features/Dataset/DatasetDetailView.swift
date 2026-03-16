@@ -6,6 +6,7 @@ extension DatasetImage: @retroactive Identifiable {}
 struct DatasetDetailView: View {
     @StateObject private var viewModel: DatasetDetailViewModel
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.civitTheme) private var theme
 
     private let datasetName: String
     @State private var editCaptionImage: DatasetImage?
@@ -235,7 +236,7 @@ struct DatasetDetailView: View {
                 if isSelected {
                     Image(systemName: "checkmark")
                         .font(.caption.bold())
-                        .foregroundColor(.civitOnPrimary)
+                        .foregroundColor(theme.onPrimary)
                 }
             }
             .padding(Spacing.sm)
@@ -273,6 +274,7 @@ struct DatasetDetailView: View {
 
 private struct SourceBadgeMiniView: View {
     let source: ImageSource
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         Text(label)
@@ -280,7 +282,7 @@ private struct SourceBadgeMiniView: View {
             .padding(.horizontal, Spacing.xs)
             .padding(.vertical, Spacing.xxs)
             .background(badgeColor.opacity(0.85))
-            .foregroundColor(.civitOnPrimary)
+            .foregroundColor(theme.onPrimary)
             .clipShape(RoundedRectangle(cornerRadius: Spacing.xs))
     }
 
@@ -295,7 +297,7 @@ private struct SourceBadgeMiniView: View {
 
     private var badgeColor: Color {
         switch source {
-        case .civitai: return .civitPrimary
+        case .civitai: return theme.primary
         case .local: return .civitSecondary
         case .generated: return .civitTertiary
         default: return .civitOnSurfaceVariant

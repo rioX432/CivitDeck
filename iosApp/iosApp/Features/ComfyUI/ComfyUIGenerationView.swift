@@ -6,6 +6,7 @@ private let resultImageMinHeight: CGFloat = 150
 
 struct ComfyUIGenerationView: View {
     @StateObject private var viewModel = ComfyUIGenerationViewModel()
+    @Environment(\.civitTheme) private var theme
     @State private var showWorkflowImport = false
     @State private var workflowInputText = ""
     @State private var showSaveAlert = false
@@ -165,7 +166,7 @@ struct ComfyUIGenerationView: View {
                 if let json = viewModel.customWorkflowJson {
                     HStack {
                         Text("Workflow loaded (\(json.count) chars)")
-                            .font(.civitBodySmall).foregroundColor(.civitPrimary)
+                            .font(.civitBodySmall).foregroundColor(theme.primary)
                         Spacer()
                         Button(action: viewModel.onClearCustomWorkflow) {
                             Image(systemName: "xmark.circle.fill")
@@ -226,7 +227,7 @@ struct ComfyUIGenerationView: View {
         return Button(action: viewModel.onGenerate) {
             HStack {
                 if isGenerating {
-                    ProgressView().tint(.civitOnPrimary)
+                    ProgressView().tint(theme.onPrimary)
                 }
                 Text(isGenerating ? "Generating..." : "Generate")
             }
@@ -248,7 +249,7 @@ struct ComfyUIGenerationView: View {
         case .completed:
             Text("Generation complete!")
                 .font(.civitBodyMedium)
-                .foregroundColor(.civitPrimary)
+                .foregroundColor(theme.primary)
         default:
             EmptyView()
         }

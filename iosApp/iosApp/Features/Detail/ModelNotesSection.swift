@@ -100,6 +100,7 @@ struct PersonalTagsSection: View {
     let onRemove: (String) -> Void
     @State private var showAddField = false
     @State private var newTagText = ""
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
@@ -163,8 +164,8 @@ struct PersonalTagsSection: View {
         }
         .padding(.horizontal, Spacing.smPlus)
         .padding(.vertical, Spacing.xs)
-        .background(Color.civitPrimary.opacity(0.15))
-        .foregroundColor(.civitPrimary)
+        .background(theme.primary.opacity(0.15))
+        .foregroundColor(theme.primary)
         .clipShape(Capsule())
     }
 

@@ -60,6 +60,7 @@ struct FeedView: View {
 
 private struct FeedGridCard: View {
     let item: FeedItem
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         NavigationLink(value: item.modelId) {
@@ -94,7 +95,7 @@ private struct FeedGridCard: View {
                     HStack(spacing: Spacing.xs) {
                         Text(item.creatorUsername)
                             .font(.civitLabelSmall)
-                            .foregroundColor(.civitPrimary)
+                            .foregroundColor(theme.primary)
 
                         Text(item.type.name)
                             .font(.civitLabelSmall)
@@ -102,7 +103,7 @@ private struct FeedGridCard: View {
 
                         if item.isUnread {
                             Circle()
-                                .fill(Color.civitPrimary)
+                                .fill(theme.primary)
                                 .frame(width: 6, height: 6)
                         }
                     }

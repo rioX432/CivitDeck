@@ -146,6 +146,7 @@ private struct DirectoryRow: View {
 
 private struct ModelFileRow: View {
     let file: LocalModelFile
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         HStack {
@@ -159,7 +160,7 @@ private struct ModelFileRow: View {
                 if let match = file.matchedModel {
                     Text("\(match.modelName) - \(match.versionName)")
                         .font(.civitBodySmall)
-                        .foregroundColor(.civitPrimary)
+                        .foregroundColor(theme.primary)
                         .lineLimit(1)
                     if match.hasUpdate {
                         Label("Update available", systemImage: "exclamationmark.triangle")
@@ -171,7 +172,7 @@ private struct ModelFileRow: View {
             Spacer()
             if file.matchedModel != nil {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.civitPrimary)
+                    .foregroundColor(theme.primary)
                     .accessibilityLabel("Matched")
             }
         }

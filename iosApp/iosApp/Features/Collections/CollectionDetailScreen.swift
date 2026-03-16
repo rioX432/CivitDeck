@@ -233,6 +233,7 @@ private struct CollectionModelCard: View {
     let model: FavoriteModelSummary
     let isSelected: Bool
     let isSelectionMode: Bool
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -285,7 +286,7 @@ private struct CollectionModelCard: View {
                 if isSelected {
                     Image(systemName: "checkmark")
                         .font(.caption.bold())
-                        .foregroundColor(.civitOnPrimary)
+                        .foregroundColor(theme.onPrimary)
                 }
             }
             .padding(Spacing.sm)

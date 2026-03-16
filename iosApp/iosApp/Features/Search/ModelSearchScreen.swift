@@ -5,12 +5,12 @@ struct CompareDestination: Hashable {
     let leftModelId: Int64
     let rightModelId: Int64
 }
-
 struct ModelSearchScreen: View {
     @ObservedObject var viewModel: ModelSearchViewModel
     @EnvironmentObject private var comparisonState: ComparisonState
     @EnvironmentObject private var router: NavigationRouter
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.civitTheme) private var theme
     @FocusState private var isSearchFocused: Bool
     @State private var showHistory: Bool = false
     @State private var headerVisible: Bool = true
@@ -272,7 +272,7 @@ struct ModelSearchScreen: View {
                 } label: {
                     Text("Clear history")
                         .font(.civitLabelMedium)
-                        .foregroundColor(.civitPrimary)
+                        .foregroundColor(theme.primary)
                         .padding(.horizontal, Spacing.lg)
                         .padding(.vertical, Spacing.sm)
                 }
@@ -450,7 +450,7 @@ extension ModelSearchScreen { // MARK: - Filter FAB
             ZStack(alignment: .topTrailing) {
                 Image(systemName: "line.3.horizontal.decrease")
                     .font(.title2)
-                    .foregroundColor(.civitPrimary)
+                    .foregroundColor(theme.primary)
                     .frame(width: 56, height: 56)
                     .background(Color.civitSurfaceContainerHigh)
                     .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
@@ -478,7 +478,7 @@ extension ModelSearchScreen { // MARK: - Extracted Subviews
             input: $includeTagInput,
             placeholder: "Include tag...",
             tags: viewModel.includedTags,
-            chipColor: .civitPrimary,
+            chipColor: theme.primary,
             onAdd: { viewModel.addIncludedTag($0) },
             onRemove: { viewModel.removeIncludedTag($0) }
         )
