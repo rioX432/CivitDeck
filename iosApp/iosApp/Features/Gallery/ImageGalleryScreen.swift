@@ -207,7 +207,7 @@ struct ImageGalleryScreen: View {
                         SwiftUI.Image(systemName: "play.circle.fill")
                             .font(.civitIconLarge)
                             .foregroundColor(.civitInverseOnSurface)
-                            .accessibilityHidden(true)
+                            .accessibilityLabel("Play video")
                     }
                 }
             }

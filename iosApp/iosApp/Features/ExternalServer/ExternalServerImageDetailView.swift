@@ -54,6 +54,7 @@ private struct PromptSection: View {
                     UIPasteboard.general.string = prompt
                 } label: {
                     Image(systemName: "doc.on.doc")
+                        .accessibilityLabel("Copy")
                         .font(.civitBodySmall)
                 }
             }

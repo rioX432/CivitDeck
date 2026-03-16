@@ -24,6 +24,7 @@ struct DatasetListView: View {
                         showCreateAlert = true
                     } label: {
                         Image(systemName: "plus")
+                            .accessibilityLabel("Create dataset")
                     }
                 }
             }

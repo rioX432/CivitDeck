@@ -169,6 +169,7 @@ struct ComfyUIGenerationView: View {
                         Spacer()
                         Button(action: viewModel.onClearCustomWorkflow) {
                             Image(systemName: "xmark.circle.fill")
+                                .accessibilityLabel("Clear")
                         }
                         .buttonStyle(.plain)
                     }
@@ -314,7 +315,9 @@ private struct LoraRow: View {
                     .font(.civitBodySmall).lineLimit(1)
                 Spacer()
                 Button { viewModel.onLoraRemoved(lora.name) } label: {
-                    Image(systemName: "xmark.circle.fill").foregroundColor(.civitError)
+                    Image(systemName: "xmark.circle.fill")
+                        .accessibilityLabel("Remove")
+                        .foregroundColor(.civitError)
                 }
                 .buttonStyle(.plain)
             }
