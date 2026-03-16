@@ -7,6 +7,15 @@ import WidgetKit
 import SwiftUI
 import ImageIO
 
+// MARK: - Spacing constants
+
+private enum WidgetSpacing {
+    static let sm: CGFloat = 4
+    static let md: CGFloat = 6
+    static let lg: CGFloat = 8
+    static let xl: CGFloat = 12
+}
+
 // MARK: - Data model
 
 struct TrendingModelEntry: TimelineEntry {
@@ -69,8 +78,8 @@ struct TrendingModelWidgetView: View {
                 .font(.caption)
                 .fontWeight(.medium)
                 .lineLimit(2)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 6)
+                .padding(.horizontal, WidgetSpacing.lg)
+                .padding(.vertical, WidgetSpacing.md)
         }
         .widgetURL(deepLinkURL)
     }
@@ -80,7 +89,7 @@ struct TrendingModelWidgetView: View {
             thumbnailView
                 .frame(width: 100)
                 .clipped()
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: WidgetSpacing.sm) {
                 Text("Trending Today")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
@@ -95,7 +104,7 @@ struct TrendingModelWidgetView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .padding(12)
+            .padding(WidgetSpacing.xl)
             Spacer()
         }
         .widgetURL(deepLinkURL)
