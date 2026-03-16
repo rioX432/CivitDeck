@@ -81,7 +81,7 @@ fun ModelFileBrowserScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Add directory")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add_directory))
             }
         },
     ) { padding ->
@@ -119,7 +119,7 @@ private fun ScanButton(status: ScanStatus, onScan: () -> Unit) {
         if (isScanning) {
             CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
         } else {
-            Icon(Icons.Default.Refresh, contentDescription = "Scan all directories")
+            Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.cd_scan_all_directories))
         }
     }
 }
@@ -218,7 +218,7 @@ private fun DirectoryItem(directory: ModelDirectory, onRemove: (Long) -> Unit) {
             )
         }
         IconButton(onClick = { showConfirm = true }) {
-            Icon(Icons.Default.Delete, contentDescription = "Remove", tint = MaterialTheme.colorScheme.error)
+            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.cd_remove), tint = MaterialTheme.colorScheme.error)
         }
     }
     if (showConfirm) {
@@ -272,7 +272,7 @@ private fun ModelFileItem(file: LocalModelFile) {
             file.matchedModel?.let {
                 Icon(
                     Icons.Default.CheckCircle,
-                    contentDescription = "Matched",
+                    contentDescription = stringResource(R.string.cd_matched),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp),
                 )
@@ -294,7 +294,7 @@ private fun MatchedModelInfo(match: com.riox432.civitdeck.domain.model.MatchedMo
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 Icons.Default.Warning,
-                contentDescription = "Update available",
+                contentDescription = stringResource(R.string.cd_update_available),
                 modifier = Modifier.size(14.dp),
                 tint = MaterialTheme.colorScheme.tertiary,
             )

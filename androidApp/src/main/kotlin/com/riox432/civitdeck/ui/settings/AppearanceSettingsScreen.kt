@@ -167,7 +167,7 @@ private fun ImportThemeRow() {
             .fillMaxWidth()
             .padding(horizontal = Spacing.lg, vertical = Spacing.md),
     ) {
-        Icon(Icons.Default.FileOpen, contentDescription = "Import theme")
+        Icon(Icons.Default.FileOpen, contentDescription = stringResource(R.string.cd_import_theme))
         Text("Import Theme from JSON", modifier = Modifier.padding(start = Spacing.sm))
     }
 }

@@ -41,8 +41,10 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
@@ -316,7 +318,7 @@ private fun DiscoverFab(
         ) {
             Icon(
                 Icons.Filled.Style,
-                contentDescription = "Discover",
+                contentDescription = stringResource(R.string.cd_discover),
             )
         }
     }
@@ -346,7 +348,7 @@ private fun QRScannerFab(
         ) {
             Icon(
                 Icons.Filled.QrCodeScanner,
-                contentDescription = "Scan QR code",
+                contentDescription = stringResource(R.string.cd_scan_qr_code),
             )
         }
     }
@@ -383,7 +385,7 @@ private fun FilterFab(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 contentColor = MaterialTheme.colorScheme.primary,
             ) {
-                Icon(Icons.Outlined.FilterList, contentDescription = "Filters")
+                Icon(Icons.Outlined.FilterList, contentDescription = stringResource(R.string.cd_filters))
             }
         }
     }

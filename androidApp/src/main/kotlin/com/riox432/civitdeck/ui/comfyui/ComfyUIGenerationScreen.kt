@@ -47,7 +47,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
@@ -337,7 +339,7 @@ private fun ResultGrid(imageUrls: List<String>, onSaveImage: (String) -> Unit) {
                 Column {
                     CivitAsyncImage(
                         imageUrl = url,
-                        contentDescription = "Generated image",
+                        contentDescription = stringResource(R.string.cd_generated_image),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -347,7 +349,7 @@ private fun ResultGrid(imageUrls: List<String>, onSaveImage: (String) -> Unit) {
                         onClick = { onSaveImage(url) },
                         modifier = Modifier.align(Alignment.End),
                     ) {
-                        Icon(Icons.Default.Download, contentDescription = "Save to gallery")
+                        Icon(Icons.Default.Download, contentDescription = stringResource(R.string.cd_save_to_gallery))
                     }
                 }
             }

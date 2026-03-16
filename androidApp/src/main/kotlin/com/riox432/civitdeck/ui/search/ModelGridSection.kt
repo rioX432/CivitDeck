@@ -50,9 +50,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
+import com.riox432.civitdeck.R
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
 import com.riox432.civitdeck.domain.model.Model
@@ -407,7 +409,7 @@ private fun ModelContextMenu(
                     onDismiss()
                 },
                 leadingIcon = {
-                    Icon(Icons.Default.ContentCopy, contentDescription = "Compare")
+                    Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.cd_compare))
                 },
             )
         }
@@ -418,7 +420,7 @@ private fun ModelContextMenu(
                 onDismiss()
             },
             leadingIcon = {
-                Icon(Icons.Default.VisibilityOff, contentDescription = "Hide model")
+                Icon(Icons.Default.VisibilityOff, contentDescription = stringResource(R.string.cd_hide_model))
             },
         )
     }
@@ -448,7 +450,7 @@ internal fun ComparisonBottomBar(
             ) {
                 Icon(
                     Icons.AutoMirrored.Filled.CompareArrows,
-                    contentDescription = "Compare models",
+                    contentDescription = stringResource(R.string.cd_compare_models),
                     modifier = Modifier.padding(end = Spacing.sm),
                     tint = MaterialTheme.colorScheme.primary,
                 )

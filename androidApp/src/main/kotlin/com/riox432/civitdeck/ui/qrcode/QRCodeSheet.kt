@@ -32,9 +32,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import java.io.File
@@ -117,7 +119,7 @@ private fun QRCardContent(
         Spacer(modifier = Modifier.height(Spacing.md))
         Image(
             bitmap = qrBitmap.asImageBitmap(),
-            contentDescription = "QR code for $modelName",
+            contentDescription = stringResource(R.string.cd_qr_code, modelName),
             modifier = Modifier
                 .size(QR_IMAGE_SIZE)
                 .clip(RoundedCornerShape(Spacing.sm))
@@ -145,7 +147,7 @@ private fun ShareButton(onShare: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {
-            Icon(Icons.Default.Share, contentDescription = "Share")
+            Icon(Icons.Default.Share, contentDescription = stringResource(R.string.cd_share))
             Spacer(modifier = Modifier.width(Spacing.sm))
             Text("Share QR Code")
         }

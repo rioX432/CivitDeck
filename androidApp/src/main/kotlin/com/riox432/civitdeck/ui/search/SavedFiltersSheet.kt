@@ -22,7 +22,9 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.SavedSearchFilter
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -109,7 +111,7 @@ private fun SavedFilterRow(
         IconButton(onClick = onDelete) {
             Icon(
                 Icons.Default.Delete,
-                contentDescription = "Delete filter",
+                contentDescription = stringResource(R.string.cd_delete_filter),
                 tint = MaterialTheme.colorScheme.error,
             )
         }

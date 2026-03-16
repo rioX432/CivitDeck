@@ -38,8 +38,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -149,7 +151,7 @@ internal fun FilterChipItem(
         if (showCheckmark && isSelected) {
             Icon(
                 imageVector = Icons.Default.Check,
-                contentDescription = "Selected",
+                contentDescription = stringResource(R.string.cd_selected),
                 modifier = Modifier.size(16.dp),
                 tint = textColor,
             )
@@ -239,7 +241,7 @@ private fun TagInputRow(placeholder: String, onAddTag: (String) -> Unit) {
             },
             modifier = Modifier.size(36.dp),
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Add tag")
+            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add_tag))
         }
     }
 }
@@ -262,7 +264,7 @@ private fun TagChip(
         Text(text = tag, style = MaterialTheme.typography.labelSmall, color = foreground)
         Icon(
             imageVector = Icons.Default.Close,
-            contentDescription = "Remove $tag",
+            contentDescription = stringResource(R.string.cd_remove_tag, tag),
             modifier = Modifier.size(14.dp).clickable(onClick = onRemove, onClickLabel = "Remove tag"),
             tint = foreground,
         )

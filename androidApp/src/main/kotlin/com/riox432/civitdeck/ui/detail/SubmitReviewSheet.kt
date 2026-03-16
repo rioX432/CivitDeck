@@ -32,7 +32,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,7 +120,7 @@ private fun StarRatingSelector(rating: Int, onRatingChange: (Int) -> Unit) {
             ) {
                 Icon(
                     imageVector = if (i <= rating) Icons.Filled.Star else Icons.Outlined.StarOutline,
-                    contentDescription = "$i stars",
+                    contentDescription = stringResource(R.string.cd_stars, i),
                     tint = if (i <= rating) {
                         MaterialTheme.colorScheme.primary
                     } else {

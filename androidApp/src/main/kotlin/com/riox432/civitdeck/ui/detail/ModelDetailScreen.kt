@@ -275,10 +275,10 @@ private fun ModelDetailTopBar(
         },
         actions = {
             IconButton(onClick = onAddToCollection) {
-                Icon(Icons.Default.CreateNewFolder, contentDescription = "Add to collection")
+                Icon(Icons.Default.CreateNewFolder, contentDescription = stringResource(R.string.cd_add_to_collection))
             }
             IconButton(onClick = onShowQRCode) {
-                Icon(Icons.Default.QrCode2, contentDescription = "Share QR code")
+                Icon(Icons.Default.QrCode2, contentDescription = stringResource(R.string.cd_share_qr_code))
             }
             IconButton(
                 onClick = {
@@ -290,7 +290,7 @@ private fun ModelDetailTopBar(
                     context.startActivity(Intent.createChooser(shareIntent, "Share model"))
                 },
             ) {
-                Icon(Icons.Default.Share, contentDescription = "Share")
+                Icon(Icons.Default.Share, contentDescription = stringResource(R.string.cd_share))
             }
             IconButton(onClick = onFavoriteToggle) {
                 Icon(
@@ -299,7 +299,7 @@ private fun ModelDetailTopBar(
                     } else {
                         Icons.Default.FavoriteBorder
                     },
-                    contentDescription = "Favorite",
+                    contentDescription = stringResource(R.string.cd_favorite),
                     tint = if (uiState.isFavorite) {
                         MaterialTheme.colorScheme.error
                     } else {

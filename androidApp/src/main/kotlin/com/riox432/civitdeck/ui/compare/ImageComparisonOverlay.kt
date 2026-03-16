@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -111,14 +112,14 @@ private fun OverlayControls(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             OverlayIconButton(onClick = onDismiss) {
-                Icon(Icons.Default.Close, contentDescription = "Close")
+                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_close))
             }
             OverlayIconButton(onClick = onToggleOrientation) {
                 val iconRes = when (orientation) {
                     SliderOrientation.Horizontal -> R.drawable.ic_slider_vertical
                     SliderOrientation.Vertical -> R.drawable.ic_slider_horizontal
                 }
-                Icon(painterResource(id = iconRes), contentDescription = "Toggle orientation")
+                Icon(painterResource(id = iconRes), contentDescription = stringResource(R.string.cd_toggle_orientation))
             }
         }
 

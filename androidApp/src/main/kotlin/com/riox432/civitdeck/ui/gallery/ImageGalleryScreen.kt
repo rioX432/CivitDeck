@@ -244,7 +244,7 @@ private fun ImageGrid(
                 image = image,
                 blurSettings = blurSettings,
                 onClick = { onImageClick(index) },
-                contentDescription = "Image ${index + 1}",
+                contentDescription = stringResource(R.string.cd_image_number, index + 1),
                 modifier = Modifier.animateItem(),
             )
         }
@@ -295,7 +295,7 @@ private fun ImageGridItem(
             if (image.contentType == MediaContentType.VIDEO) {
                 Icon(
                     imageVector = Icons.Default.PlayCircle,
-                    contentDescription = "Video",
+                    contentDescription = stringResource(R.string.cd_video),
                     tint = CivitDeckColors.onScrim,
                     modifier = Modifier
                         .size(48.dp)

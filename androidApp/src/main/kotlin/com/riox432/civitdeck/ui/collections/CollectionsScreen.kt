@@ -78,12 +78,12 @@ fun CollectionsScreen(
             when (selectedTab) {
                 CollectionsScreenTab.Collections -> {
                     FloatingActionButton(onClick = { showCreateDialog = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Create collection")
+                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_create_collection))
                     }
                 }
                 CollectionsScreenTab.Datasets -> {
                     FloatingActionButton(onClick = onNavigateToDatasets) {
-                        Icon(Icons.Default.Dataset, contentDescription = "Manage datasets")
+                        Icon(Icons.Default.Dataset, contentDescription = stringResource(R.string.cd_manage_datasets))
                     }
                 }
                 else -> {}
@@ -286,7 +286,7 @@ private fun CollectionOverflowMenu(
         ) {
             DropdownMenuItem(
                 text = { Text("Rename") },
-                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = "Rename") },
+                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.cd_rename)) },
                 onClick = {
                     onToggleMenu(false)
                     onRename()
@@ -294,7 +294,7 @@ private fun CollectionOverflowMenu(
             )
             DropdownMenuItem(
                 text = { Text("Delete") },
-                leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete") },
+                leadingIcon = { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.cd_delete)) },
                 onClick = {
                     onToggleMenu(false)
                     onDelete()
@@ -310,7 +310,7 @@ private fun CollectionThumbnail(thumbnailUrl: String?) {
     if (thumbnailUrl != null) {
         CivitAsyncImage(
             imageUrl = thumbnailUrl,
-            contentDescription = "Collection thumbnail",
+            contentDescription = stringResource(R.string.cd_collection_thumbnail),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(thumbnailSize)
@@ -328,7 +328,7 @@ private fun CollectionThumbnail(thumbnailUrl: String?) {
         ) {
             Icon(
                 imageVector = Icons.Default.Folder,
-                contentDescription = "Collection folder",
+                contentDescription = stringResource(R.string.cd_collection_folder),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }

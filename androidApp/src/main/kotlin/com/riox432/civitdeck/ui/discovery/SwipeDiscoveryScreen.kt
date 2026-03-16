@@ -161,7 +161,7 @@ private fun ActionButtons(
             enabled = canUndo,
             modifier = Modifier.size(48.dp),
         ) {
-            Icon(Icons.Filled.Undo, contentDescription = "Undo")
+            Icon(Icons.Filled.Undo, contentDescription = stringResource(R.string.cd_undo))
         }
 
         FilledTonalIconButton(
@@ -171,7 +171,7 @@ private fun ActionButtons(
         ) {
             Icon(
                 Icons.Filled.Close,
-                contentDescription = "Skip",
+                contentDescription = stringResource(R.string.cd_skip),
                 tint = MaterialTheme.colorScheme.error,
             )
         }
@@ -183,7 +183,7 @@ private fun ActionButtons(
         ) {
             Icon(
                 Icons.Filled.Favorite,
-                contentDescription = "Favorite",
+                contentDescription = stringResource(R.string.cd_favorite),
                 tint = MaterialTheme.colorScheme.primary,
             )
         }
