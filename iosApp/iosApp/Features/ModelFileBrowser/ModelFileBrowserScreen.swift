@@ -77,6 +77,7 @@ struct ModelFileBrowserScreen: View {
                     viewModel.onScanAll()
                 } label: {
                     Image(systemName: "arrow.clockwise")
+                        .accessibilityLabel("Refresh")
                 }
             }
         }
@@ -171,6 +172,7 @@ private struct ModelFileRow: View {
             if file.matchedModel != nil {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.civitPrimary)
+                    .accessibilityLabel("Matched")
             }
         }
     }

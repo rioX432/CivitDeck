@@ -23,6 +23,7 @@ struct SDWebUISettingsView: View {
                     viewModel.showAddSheet = true
                 } label: {
                     Image(systemName: "plus")
+                        .accessibilityLabel("Add server")
                 }
             }
         }
@@ -88,6 +89,8 @@ struct SDWebUISettingsView: View {
             Image(systemName: conn.id == viewModel.activeConnection?.id
                 ? "checkmark.circle.fill" : "circle")
                 .foregroundColor(.civitPrimary)
+                .accessibilityLabel(conn.id == viewModel.activeConnection?.id
+                    ? "Active connection" : "Inactive connection")
                 .onTapGesture { viewModel.onActivate(id: conn.id) }
             VStack(alignment: .leading) {
                 Text(conn.name).font(.civitBodyMedium)
@@ -101,6 +104,7 @@ struct SDWebUISettingsView: View {
                 viewModel.showAddSheet = true
             } label: {
                 Image(systemName: "pencil")
+                    .accessibilityLabel("Edit")
             }
             .buttonStyle(.borderless)
         }
