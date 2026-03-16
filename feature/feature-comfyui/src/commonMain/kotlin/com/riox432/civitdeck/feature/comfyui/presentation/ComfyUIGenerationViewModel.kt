@@ -17,6 +17,9 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationPro
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.util.Logger
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import kotlin.io.IOException
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +27,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.SerializationException
 
 data class GenerationUiState(
     val checkpoints: List<String> = emptyList(),
@@ -100,7 +104,19 @@ class ComfyUIGenerationViewModel(
                         isLoadingCheckpoints = false,
                     )
                 }
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: HttpRequestTimeoutException) {
+                Logger.e(TAG, "Failed to load checkpoints: ${e.message}")
+                _uiState.update {
+                    it.copy(isLoadingCheckpoints = false, error = e.message)
+                }
+            } catch (e: IOException) {
+                Logger.e(TAG, "Failed to load checkpoints: ${e.message}")
+                _uiState.update {
+                    it.copy(isLoadingCheckpoints = false, error = e.message)
+                }
+            } catch (e: SerializationException) {
                 Logger.e(TAG, "Failed to load checkpoints: ${e.message}")
                 _uiState.update {
                     it.copy(isLoadingCheckpoints = false, error = e.message)
@@ -115,7 +131,15 @@ class ComfyUIGenerationViewModel(
             try {
                 val list = fetchLoras()
                 _uiState.update { it.copy(availableLoras = list, isLoadingLoras = false) }
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: HttpRequestTimeoutException) {
+                Logger.w(TAG, "Failed to fetch loras: ${e.message}")
+                _uiState.update { it.copy(isLoadingLoras = false) }
+            } catch (e: IOException) {
+                Logger.w(TAG, "Failed to fetch loras: ${e.message}")
+                _uiState.update { it.copy(isLoadingLoras = false) }
+            } catch (e: SerializationException) {
                 Logger.w(TAG, "Failed to fetch loras: ${e.message}")
                 _uiState.update { it.copy(isLoadingLoras = false) }
             }
@@ -128,7 +152,15 @@ class ComfyUIGenerationViewModel(
             try {
                 val list = fetchControlNets()
                 _uiState.update { it.copy(availableControlNets = list, isLoadingControlNets = false) }
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: HttpRequestTimeoutException) {
+                Logger.w(TAG, "Failed to fetch control nets: ${e.message}")
+                _uiState.update { it.copy(isLoadingControlNets = false) }
+            } catch (e: IOException) {
+                Logger.w(TAG, "Failed to fetch control nets: ${e.message}")
+                _uiState.update { it.copy(isLoadingControlNets = false) }
+            } catch (e: SerializationException) {
                 Logger.w(TAG, "Failed to fetch control nets: ${e.message}")
                 _uiState.update { it.copy(isLoadingControlNets = false) }
             }
@@ -249,7 +281,19 @@ class ComfyUIGenerationViewModel(
                 } else {
                     pollForResult(promptId)
                 }
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: HttpRequestTimeoutException) {
+                Logger.e(TAG, "Generation submission failed: ${e.message}")
+                _uiState.update {
+                    it.copy(generationStatus = GenerationStatus.Error, error = e.message)
+                }
+            } catch (e: IOException) {
+                Logger.e(TAG, "Generation submission failed: ${e.message}")
+                _uiState.update {
+                    it.copy(generationStatus = GenerationStatus.Error, error = e.message)
+                }
+            } catch (e: SerializationException) {
                 Logger.e(TAG, "Generation submission failed: ${e.message}")
                 _uiState.update {
                     it.copy(generationStatus = GenerationStatus.Error, error = e.message)
@@ -311,7 +355,15 @@ class ComfyUIGenerationViewModel(
                     it.copy(generationStatus = GenerationStatus.Error, error = result.error)
                 }
             }
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: HttpRequestTimeoutException) {
+            Logger.e(TAG, "Failed to fetch final result: ${e.message}")
+            _uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
+        } catch (e: IOException) {
+            Logger.e(TAG, "Failed to fetch final result: ${e.message}")
+            _uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
+        } catch (e: SerializationException) {
             Logger.e(TAG, "Failed to fetch final result: ${e.message}")
             _uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
         }
@@ -338,7 +390,21 @@ class ComfyUIGenerationViewModel(
                     }
                     else -> attempts++
                 }
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: HttpRequestTimeoutException) {
+                Logger.e(TAG, "Poll for result failed: ${e.message}")
+                _uiState.update {
+                    it.copy(generationStatus = GenerationStatus.Error, error = e.message)
+                }
+                return
+            } catch (e: IOException) {
+                Logger.e(TAG, "Poll for result failed: ${e.message}")
+                _uiState.update {
+                    it.copy(generationStatus = GenerationStatus.Error, error = e.message)
+                }
+                return
+            } catch (e: SerializationException) {
                 Logger.e(TAG, "Poll for result failed: ${e.message}")
                 _uiState.update {
                     it.copy(generationStatus = GenerationStatus.Error, error = e.message)
