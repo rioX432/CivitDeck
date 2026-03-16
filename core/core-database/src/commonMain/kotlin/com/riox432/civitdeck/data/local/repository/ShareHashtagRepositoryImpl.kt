@@ -30,8 +30,8 @@ class ShareHashtagRepositoryImpl(
         )
     }
 
-    override suspend fun removeCustom(tag: String) {
-        dao.deleteCustom(tag)
+    override suspend fun remove(tag: String) {
+        dao.delete(tag)
     }
 
     override suspend fun setEnabled(tag: String, isEnabled: Boolean) {

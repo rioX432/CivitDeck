@@ -18,6 +18,6 @@ interface ShareHashtagDao {
     @Query("UPDATE share_hashtags SET isEnabled = :isEnabled WHERE tag = :tag")
     suspend fun setEnabled(tag: String, isEnabled: Boolean)
 
-    @Query("DELETE FROM share_hashtags WHERE tag = :tag AND isCustom = 1")
-    suspend fun deleteCustom(tag: String): Int
+    @Query("DELETE FROM share_hashtags WHERE tag = :tag")
+    suspend fun delete(tag: String): Int
 }

@@ -4,12 +4,14 @@ import Shared
 struct AdvancedSettingsView: View {
     @ObservedObject var viewModel: AppBehaviorSettingsViewModelOwner
     @ObservedObject var displayViewModel: DisplaySettingsViewModelOwner
+    @StateObject private var shareHashtagVM = ShareHashtagViewModel()
 
     var body: some View {
         List {
             Section("Power User") {
                 powerUserModeToggle
             }
+            sharingSection
             if viewModel.powerUserMode {
                 Section("Integrations") {
                     NavigationLink(destination: IntegrationsHubView()) {
@@ -43,6 +45,70 @@ struct AdvancedSettingsView: View {
         }
         .navigationTitle("Advanced & Integrations")
         .navigationBarTitleDisplayMode(.inline)
+        .task { await shareHashtagVM.startObserving() }
+    }
+
+    @Environment(\.civitTheme) private var theme
+
+    private var sharingSection: some View {
+        Section {
+            Text("Manage default hashtags for sharing generated images.")
+                .font(.civitBodySmall)
+                .foregroundColor(.civitOnSurfaceVariant)
+            hashtagChips
+            addTagField
+        } header: {
+            Text("Sharing")
+        }
+    }
+
+    private var hashtagChips: some View {
+        FlowLayout(spacing: Spacing.sm) {
+            ForEach(shareHashtagVM.hashtags, id: \.tag) { hashtag in
+                Button {
+                    HapticFeedback.selection.trigger()
+                    shareHashtagVM.toggle(tag: hashtag.tag, isEnabled: !hashtag.isEnabled)
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        Text(hashtag.tag)
+                            .font(.civitLabelMedium)
+                        Button {
+                            shareHashtagVM.remove(tag: hashtag.tag)
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 10, weight: .bold))
+                        }
+                    }
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, Spacing.xsPlus)
+                    .background(hashtag.isEnabled ? theme.primary.opacity(0.2) : Color.civitSurfaceVariant)
+                    .foregroundColor(hashtag.isEnabled ? theme.primary : .civitOnSurface)
+                    .clipShape(Capsule())
+                }
+            }
+        }
+    }
+
+    @State private var newHashtagInput = ""
+
+    private var addTagField: some View {
+        HStack(spacing: Spacing.sm) {
+            TextField("Add hashtag", text: $newHashtagInput)
+                .textFieldStyle(.roundedBorder)
+                .onSubmit { addHashtag() }
+            Button { addHashtag() } label: {
+                Image(systemName: "plus")
+                    .fontWeight(.semibold)
+            }
+            .disabled(newHashtagInput.trimmingCharacters(in: .whitespaces).isEmpty)
+        }
+    }
+
+    private func addHashtag() {
+        let trimmed = newHashtagInput.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        shareHashtagVM.add(tag: trimmed)
+        newHashtagInput = ""
     }
 
     private var powerUserModeToggle: some View {

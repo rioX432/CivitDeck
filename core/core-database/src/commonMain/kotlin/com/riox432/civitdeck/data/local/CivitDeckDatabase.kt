@@ -777,13 +777,15 @@ private fun seedBuiltInTemplates(connection: SQLiteConnection) {
 }
 
 private fun seedDefaultHashtags(connection: SQLiteConnection) {
-    val presets = listOf("#AIart", "#ComfyUI", "#StableDiffusion", "#AIイラスト", "#AI画像生成")
+    val presets = listOf("#AIart", "#ComfyUI", "#StableDiffusion")
     presets.forEach { tag ->
         connection.execSQL(
             "INSERT OR IGNORE INTO share_hashtags (tag, isEnabled, isCustom, addedAt) " +
                 "VALUES ('$tag', 1, 0, 0)",
         )
     }
+    // Remove legacy Japanese presets that were added in earlier builds
+    connection.execSQL("DELETE FROM share_hashtags WHERE tag IN ('#AIイラスト', '#AI画像生成') AND isCustom = 0")
 }
 
 fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeckDatabase {
