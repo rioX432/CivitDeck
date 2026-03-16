@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 data class ExternalServerGalleryUiState(
     val images: List<ServerImage> = emptyList(),
@@ -52,6 +53,7 @@ data class ExternalServerGalleryUiState(
 
 private const val PAGE_SIZE = 96
 private const val POLL_INTERVAL_MS = 2000L
+private const val MAX_POLL_TIMEOUT_MS = 600_000L
 
 class ExternalServerGalleryViewModel(
     private val getImages: GetExternalServerImagesUseCase,
@@ -314,21 +316,31 @@ class ExternalServerGalleryViewModel(
     private fun startPollingJobStatus(jobId: String) {
         pollJob?.cancel()
         pollJob = viewModelScope.launch {
-            while (true) {
-                delay(POLL_INTERVAL_MS)
-                runCatching { getGenerationStatus(jobId) }
-                    .onSuccess { job ->
-                        _uiState.update { it.copy(activeJob = job) }
-                        if (job.status == GenerationJobStatus.COMPLETED ||
-                            job.status == GenerationJobStatus.ERROR
-                        ) {
-                            if (job.status == GenerationJobStatus.COMPLETED) {
-                                onRefresh()
+            val result = withTimeoutOrNull(MAX_POLL_TIMEOUT_MS) {
+                while (true) {
+                    delay(POLL_INTERVAL_MS)
+                    runCatching { getGenerationStatus(jobId) }
+                        .onSuccess { job ->
+                            _uiState.update { it.copy(activeJob = job) }
+                            if (job.status == GenerationJobStatus.COMPLETED ||
+                                job.status == GenerationJobStatus.ERROR
+                            ) {
+                                if (job.status == GenerationJobStatus.COMPLETED) {
+                                    onRefresh()
+                                }
+                                return@withTimeoutOrNull
                             }
-                            return@launch
                         }
-                    }
-                    .onFailure { return@launch }
+                        .onFailure { return@withTimeoutOrNull }
+                }
+            }
+            if (result == null) {
+                _uiState.update {
+                    it.copy(
+                        activeJob = null,
+                        generationError = "Generation timed out after 10 minutes",
+                    )
+                }
             }
         }
     }

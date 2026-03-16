@@ -19,6 +19,7 @@ struct CivitAsyncImageView: View {
                     case .failure:
                         Image(systemName: "photo")
                             .foregroundColor(.civitOnSurfaceVariant)
+                            .accessibilityHidden(true)
                     case .empty:
                         Rectangle()
                             .fill(Color.civitSurfaceVariant)
@@ -26,6 +27,7 @@ struct CivitAsyncImageView: View {
                     @unknown default:
                         Image(systemName: "photo")
                             .foregroundColor(.civitOnSurfaceVariant)
+                            .accessibilityHidden(true)
                     }
                 }
             }
@@ -33,6 +35,7 @@ struct CivitAsyncImageView: View {
             container {
                 Image(systemName: "photo")
                     .foregroundColor(.civitOnSurfaceVariant)
+                    .accessibilityHidden(true)
             }
         }
     }

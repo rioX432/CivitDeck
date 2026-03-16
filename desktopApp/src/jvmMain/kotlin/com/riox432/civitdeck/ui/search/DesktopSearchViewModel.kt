@@ -1,7 +1,5 @@
 package com.riox432.civitdeck.ui.search
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
@@ -11,7 +9,11 @@ import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,7 +40,9 @@ class DesktopSearchViewModel(
     private val getModelsUseCase: GetModelsUseCase,
     private val observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase,
     private val observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase,
-) : ViewModel() {
+) {
+
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private val _uiState = MutableStateFlow(DesktopSearchUiState())
     val uiState: StateFlow<DesktopSearchUiState> = _uiState.asStateFlow()
@@ -46,7 +50,7 @@ class DesktopSearchViewModel(
     private var searchJob: Job? = null
 
     init {
-        viewModelScope.launch {
+        scope.launch {
             val sort = observeDefaultSortOrderUseCase().first()
             val period = observeDefaultTimePeriodUseCase().first()
             _uiState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
@@ -107,7 +111,7 @@ class DesktopSearchViewModel(
 
     private fun search(isLoadMore: Boolean = false) {
         searchJob?.cancel()
-        searchJob = viewModelScope.launch {
+        searchJob = scope.launch {
             _uiState.update {
                 if (isLoadMore) it.copy(isLoadingMore = true)
                 else it.copy(isLoading = true, error = null)
@@ -145,6 +149,10 @@ class DesktopSearchViewModel(
                 }
             }
         }
+    }
+
+    fun onCleared() {
+        scope.cancel()
     }
 
     companion object {

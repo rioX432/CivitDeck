@@ -11,6 +11,7 @@ val CivitDeckShapes = Shapes(
 )
 
 object Spacing {
+    val xxs = 2.dp
     val xs = 4.dp
     val sm = 8.dp
     val md = 12.dp

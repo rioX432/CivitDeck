@@ -1,9 +1,11 @@
 import CoreSpotlight
 import Foundation
+import OSLog
 import Shared
 
 @MainActor
 final class SpotlightIndexManager: ObservableObject {
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "CivitDeck", category: "Spotlight")
     private let observeFavoritesUseCase: Core_domainObserveFavoritesUseCase
     private var observeTask: Task<Void, Never>?
 
@@ -27,7 +29,7 @@ final class SpotlightIndexManager: ObservableObject {
         let items = favorites.map { SpotlightItemBuilder.build(from: $0) }
         CSSearchableIndex.default().indexSearchableItems(items) { error in
             if let error {
-                print("Spotlight indexing error: \(error)")
+                Self.logger.error("Spotlight indexing failed: \(error.localizedDescription)")
             }
         }
         // Remove items no longer favorited by replacing the full domain set

@@ -34,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.DatasetImage
@@ -198,7 +197,7 @@ private fun ExcludedBadge(modifier: Modifier = Modifier) {
         modifier = modifier
             .clip(RoundedCornerShape(CornerRadius.chip))
             .background(MaterialTheme.colorScheme.error)
-            .padding(horizontal = Spacing.xs, vertical = 2.dp),
+            .padding(horizontal = Spacing.xs, vertical = Spacing.xxs),
     )
 }
 

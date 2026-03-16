@@ -1,7 +1,5 @@
 package com.riox432.civitdeck.ui.plugin
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.InstalledPlugin
 import com.riox432.civitdeck.domain.model.InstalledPluginState
 import com.riox432.civitdeck.domain.usecase.ActivatePluginUseCase
@@ -11,6 +9,10 @@ import com.riox432.civitdeck.domain.usecase.ObserveInstalledPluginsUseCase
 import com.riox432.civitdeck.domain.usecase.UninstallPluginUseCase
 import com.riox432.civitdeck.domain.usecase.UpdatePluginConfigUseCase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -29,7 +31,9 @@ class DesktopPluginViewModel(
     private val uninstallPluginUseCase: UninstallPluginUseCase,
     private val getPluginConfigUseCase: GetPluginConfigUseCase,
     private val updatePluginConfigUseCase: UpdatePluginConfigUseCase,
-) : ViewModel() {
+) {
+
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private val _uiState = MutableStateFlow(DesktopPluginUiState())
     val uiState: StateFlow<DesktopPluginUiState> = _uiState
@@ -39,7 +43,7 @@ class DesktopPluginViewModel(
     }
 
     private fun observePlugins() {
-        viewModelScope.launch {
+        scope.launch {
             observeInstalledPluginsUseCase().collect { plugins ->
                 _uiState.value = _uiState.value.copy(plugins = plugins, isLoading = false)
             }
@@ -47,7 +51,7 @@ class DesktopPluginViewModel(
     }
 
     fun togglePlugin(pluginId: String, isActive: Boolean) {
-        viewModelScope.launch {
+        scope.launch {
             try {
                 if (isActive) activatePluginUseCase(pluginId) else deactivatePluginUseCase(pluginId)
             } catch (e: CancellationException) {
@@ -59,7 +63,7 @@ class DesktopPluginViewModel(
     }
 
     fun loadConfig(pluginId: String) {
-        viewModelScope.launch {
+        scope.launch {
             try {
                 val config = getPluginConfigUseCase(pluginId)
                 _uiState.value = _uiState.value.copy(selectedPluginConfig = config)
@@ -72,7 +76,7 @@ class DesktopPluginViewModel(
     }
 
     fun saveConfig(pluginId: String, configJson: String) {
-        viewModelScope.launch {
+        scope.launch {
             try {
                 updatePluginConfigUseCase(pluginId, configJson)
                 _uiState.value = _uiState.value.copy(selectedPluginConfig = configJson)
@@ -85,7 +89,7 @@ class DesktopPluginViewModel(
     }
 
     fun uninstallPlugin(pluginId: String) {
-        viewModelScope.launch {
+        scope.launch {
             try {
                 uninstallPluginUseCase(pluginId)
             } catch (e: CancellationException) {
@@ -98,4 +102,8 @@ class DesktopPluginViewModel(
 
     fun isPluginActive(plugin: InstalledPlugin): Boolean =
         plugin.state == InstalledPluginState.ACTIVE
+
+    fun onCleared() {
+        scope.cancel()
+    }
 }

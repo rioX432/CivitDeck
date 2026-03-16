@@ -59,6 +59,7 @@ private struct ComfyUIOutputDetailPage: View {
                     showDatasetPicker = true
                 } label: {
                     Image(systemName: "folder.badge.plus")
+                        .accessibilityLabel("Add to dataset")
                 }
             }
         }
@@ -118,6 +119,7 @@ private struct ComfyUIOutputDetailPage: View {
                     .overlay {
                         Image(systemName: "photo")
                             .foregroundColor(.civitOnSurfaceVariant)
+                            .accessibilityHidden(true)
                     }
             case .empty:
                 RoundedRectangle(cornerRadius: CornerRadius.card)

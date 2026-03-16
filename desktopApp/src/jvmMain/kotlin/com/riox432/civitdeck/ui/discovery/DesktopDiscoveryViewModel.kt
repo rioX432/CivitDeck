@@ -1,11 +1,13 @@
 package com.riox432.civitdeck.ui.discovery
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -18,7 +20,9 @@ data class DesktopDiscoveryUiState(
 
 class DesktopDiscoveryViewModel(
     private val getRecommendationsUseCase: GetRecommendationsUseCase,
-) : ViewModel() {
+) {
+
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private val _uiState = MutableStateFlow(DesktopDiscoveryUiState())
     val uiState: StateFlow<DesktopDiscoveryUiState> = _uiState
@@ -32,7 +36,7 @@ class DesktopDiscoveryViewModel(
     }
 
     private fun loadRecommendations() {
-        viewModelScope.launch {
+        scope.launch {
             _uiState.value = _uiState.value.copy(
                 isLoading = true,
                 error = null,
@@ -52,5 +56,9 @@ class DesktopDiscoveryViewModel(
                 )
             }
         }
+    }
+
+    fun onCleared() {
+        scope.cancel()
     }
 }
