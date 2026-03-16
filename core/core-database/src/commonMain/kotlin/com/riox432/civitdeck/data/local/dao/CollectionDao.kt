@@ -51,10 +51,10 @@ interface CollectionDao {
     suspend fun insertCollection(collection: CollectionEntity): Long
 
     @Query("UPDATE collections SET name = :name, updatedAt = :updatedAt WHERE id = :id AND isDefault = 0")
-    suspend fun renameCollection(id: Long, name: String, updatedAt: Long)
+    suspend fun renameCollection(id: Long, name: String, updatedAt: Long): Int
 
     @Query("DELETE FROM collections WHERE id = :id AND isDefault = 0")
-    suspend fun deleteCollection(id: Long)
+    suspend fun deleteCollection(id: Long): Int
 
     // --- Collection Model Entries ---
 
@@ -68,10 +68,10 @@ interface CollectionDao {
     suspend fun insertEntries(entries: List<CollectionModelEntity>)
 
     @Query("DELETE FROM collection_model_entries WHERE collectionId = :collectionId AND modelId = :modelId")
-    suspend fun removeEntry(collectionId: Long, modelId: Long)
+    suspend fun removeEntry(collectionId: Long, modelId: Long): Int
 
     @Query("DELETE FROM collection_model_entries WHERE collectionId = :collectionId AND modelId IN (:modelIds)")
-    suspend fun removeEntries(collectionId: Long, modelIds: List<Long>)
+    suspend fun removeEntries(collectionId: Long, modelIds: List<Long>): Int
 
     @Query(
         "SELECT * FROM collection_model_entries WHERE collectionId = :collectionId AND modelId IN (:modelIds)",
@@ -107,10 +107,10 @@ interface CollectionDao {
     suspend fun insertCollections(collections: List<CollectionEntity>)
 
     @Query("DELETE FROM collection_model_entries")
-    suspend fun deleteAllEntries()
+    suspend fun deleteAllEntries(): Int
 
     @Query("DELETE FROM collections WHERE isDefault = 0")
-    suspend fun deleteAllNonDefault()
+    suspend fun deleteAllNonDefault(): Int
 
     // --- Cross-collection queries ---
 

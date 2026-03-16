@@ -15,16 +15,16 @@ interface CachedApiResponseDao {
     suspend fun insert(entity: CachedApiResponseEntity)
 
     @Query("DELETE FROM cached_api_responses WHERE cacheKey = :key")
-    suspend fun deleteByKey(key: String)
+    suspend fun deleteByKey(key: String): Int
 
     @Query("DELETE FROM cached_api_responses WHERE cachedAt < :expiryTime AND isOfflinePinned = 0")
-    suspend fun deleteExpired(expiryTime: Long)
+    suspend fun deleteExpired(expiryTime: Long): Int
 
     @Query("DELETE FROM cached_api_responses")
-    suspend fun deleteAll()
+    suspend fun deleteAll(): Int
 
     @Query("UPDATE cached_api_responses SET isOfflinePinned = :pinned WHERE cacheKey = :key")
-    suspend fun setPinned(key: String, pinned: Boolean)
+    suspend fun setPinned(key: String, pinned: Boolean): Int
 
     @Query("SELECT SUM(LENGTH(responseJson)) FROM cached_api_responses")
     suspend fun getTotalCacheSizeBytes(): Long?
@@ -37,5 +37,5 @@ interface CachedApiResponseDao {
             "(SELECT cacheKey FROM cached_api_responses WHERE isOfflinePinned = 0 " +
             "ORDER BY cachedAt ASC LIMIT :count)",
     )
-    suspend fun deleteOldestUnpinned(count: Int)
+    suspend fun deleteOldestUnpinned(count: Int): Int
 }

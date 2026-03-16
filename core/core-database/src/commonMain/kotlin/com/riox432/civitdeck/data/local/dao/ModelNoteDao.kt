@@ -25,8 +25,8 @@ interface ModelNoteDao {
     suspend fun insertAll(entities: List<ModelNoteEntity>)
 
     @Query("DELETE FROM model_notes")
-    suspend fun deleteAll()
+    suspend fun deleteAll(): Int
 
     @Query("DELETE FROM model_notes WHERE modelId = :modelId")
-    suspend fun deleteByModelId(modelId: Long)
+    suspend fun deleteByModelId(modelId: Long): Int
 }

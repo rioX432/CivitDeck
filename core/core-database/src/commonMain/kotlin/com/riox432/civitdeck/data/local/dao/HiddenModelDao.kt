@@ -21,8 +21,8 @@ interface HiddenModelDao {
     suspend fun insertAll(entities: List<HiddenModelEntity>)
 
     @Query("DELETE FROM hidden_models")
-    suspend fun deleteAll()
+    suspend fun deleteAll(): Int
 
     @Query("DELETE FROM hidden_models WHERE modelId = :modelId")
-    suspend fun delete(modelId: Long)
+    suspend fun delete(modelId: Long): Int
 }

@@ -18,8 +18,8 @@ interface ExcludedTagDao {
     suspend fun insertAll(entities: List<ExcludedTagEntity>)
 
     @Query("DELETE FROM excluded_tags")
-    suspend fun deleteAll()
+    suspend fun deleteAll(): Int
 
     @Query("DELETE FROM excluded_tags WHERE tag = :tag")
-    suspend fun delete(tag: String)
+    suspend fun delete(tag: String): Int
 }

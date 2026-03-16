@@ -22,11 +22,11 @@ interface PluginDao {
     suspend fun getById(pluginId: String): PluginEntity?
 
     @Query("DELETE FROM plugins WHERE id = :pluginId")
-    suspend fun delete(pluginId: String)
+    suspend fun delete(pluginId: String): Int
 
     @Query("UPDATE plugins SET state = :state, updatedAt = :updatedAt WHERE id = :pluginId")
-    suspend fun updateState(pluginId: String, state: String, updatedAt: Long)
+    suspend fun updateState(pluginId: String, state: String, updatedAt: Long): Int
 
     @Query("UPDATE plugins SET configJson = :configJson, updatedAt = :updatedAt WHERE id = :pluginId")
-    suspend fun updateConfig(pluginId: String, configJson: String, updatedAt: Long)
+    suspend fun updateConfig(pluginId: String, configJson: String, updatedAt: Long): Int
 }

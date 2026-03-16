@@ -21,8 +21,8 @@ interface ModelVersionCheckpointDao {
     suspend fun upsertAll(entities: List<ModelVersionCheckpointEntity>)
 
     @Query("DELETE FROM model_version_checkpoints WHERE modelId = :modelId")
-    suspend fun delete(modelId: Long)
+    suspend fun delete(modelId: Long): Int
 
     @Query("DELETE FROM model_version_checkpoints WHERE modelId NOT IN (:activeModelIds)")
-    suspend fun deleteStaleCheckpoints(activeModelIds: List<Long>)
+    suspend fun deleteStaleCheckpoints(activeModelIds: List<Long>): Int
 }

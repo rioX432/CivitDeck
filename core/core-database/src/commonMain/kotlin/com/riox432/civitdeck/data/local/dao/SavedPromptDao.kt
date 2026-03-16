@@ -37,7 +37,7 @@ interface SavedPromptDao {
     suspend fun countByPromptAndModel(prompt: String, modelName: String?): Int
 
     @Query("UPDATE saved_prompts SET isTemplate = :isTemplate, templateName = :templateName WHERE id = :id")
-    suspend fun updateTemplate(id: Long, isTemplate: Boolean, templateName: String?)
+    suspend fun updateTemplate(id: Long, isTemplate: Boolean, templateName: String?): Int
 
     @Query("SELECT * FROM saved_prompts WHERE id > 0 ORDER BY savedAt DESC")
     suspend fun getAllUserCreated(): List<SavedPromptEntity>
@@ -52,8 +52,8 @@ interface SavedPromptDao {
     suspend fun upsert(entity: SavedPromptEntity)
 
     @Query("DELETE FROM saved_prompts WHERE id > 0")
-    suspend fun deleteAllUserCreated()
+    suspend fun deleteAllUserCreated(): Int
 
     @Query("DELETE FROM saved_prompts WHERE id = :id")
-    suspend fun deleteById(id: Long)
+    suspend fun deleteById(id: Long): Int
 }

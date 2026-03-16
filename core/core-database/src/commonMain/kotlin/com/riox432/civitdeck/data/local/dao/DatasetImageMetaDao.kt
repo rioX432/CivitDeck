@@ -17,10 +17,10 @@ interface DatasetImageMetaDao {
     suspend fun insertTags(entities: List<ImageTagEntity>)
 
     @Query("DELETE FROM image_tags WHERE datasetImageId = :datasetImageId")
-    suspend fun deleteTagsForImage(datasetImageId: Long)
+    suspend fun deleteTagsForImage(datasetImageId: Long): Int
 
     @Query("DELETE FROM image_tags WHERE datasetImageId = :imageId AND tag = :tag")
-    suspend fun deleteTagByName(imageId: Long, tag: String)
+    suspend fun deleteTagByName(imageId: Long, tag: String): Int
 
     @Query(
         "SELECT DISTINCT tag FROM image_tags " +

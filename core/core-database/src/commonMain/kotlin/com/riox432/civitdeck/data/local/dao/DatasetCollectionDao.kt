@@ -37,10 +37,10 @@ interface DatasetCollectionDao {
     suspend fun insertCollection(entity: DatasetCollectionEntity): Long
 
     @Query("UPDATE dataset_collections SET name = :name, updatedAt = :updatedAt WHERE id = :id")
-    suspend fun renameCollection(id: Long, name: String, updatedAt: Long)
+    suspend fun renameCollection(id: Long, name: String, updatedAt: Long): Int
 
     @Query("DELETE FROM dataset_collections WHERE id = :id")
-    suspend fun deleteCollection(id: Long)
+    suspend fun deleteCollection(id: Long): Int
 
     @Query("SELECT * FROM dataset_images WHERE datasetId = :datasetId ORDER BY addedAt DESC")
     fun observeImages(datasetId: Long): Flow<List<DatasetImageEntity>>
@@ -49,26 +49,26 @@ interface DatasetCollectionDao {
     suspend fun insertImage(entity: DatasetImageEntity): Long
 
     @Query("DELETE FROM dataset_images WHERE id = :imageId")
-    suspend fun deleteImage(imageId: Long)
+    suspend fun deleteImage(imageId: Long): Int
 
     @Query("DELETE FROM dataset_images WHERE id IN (:imageIds)")
-    suspend fun deleteImages(imageIds: List<Long>)
+    suspend fun deleteImages(imageIds: List<Long>): Int
 
     @Query("UPDATE dataset_images SET trainable = :trainable WHERE id = :imageId")
-    suspend fun updateTrainable(imageId: Long, trainable: Boolean)
+    suspend fun updateTrainable(imageId: Long, trainable: Boolean): Int
 
     @Query("UPDATE dataset_images SET licenseNote = :licenseNote WHERE id = :imageId")
-    suspend fun updateLicenseNote(imageId: Long, licenseNote: String?)
+    suspend fun updateLicenseNote(imageId: Long, licenseNote: String?): Int
 
     @Query("SELECT * FROM dataset_images WHERE datasetId = :datasetId AND trainable = 0 ORDER BY addedAt DESC")
     suspend fun getNonTrainableImages(datasetId: Long): List<DatasetImageEntity>
 
     @Query("UPDATE dataset_images SET pHash = :pHash WHERE id = :imageId")
-    suspend fun updatePHash(imageId: Long, pHash: String?)
+    suspend fun updatePHash(imageId: Long, pHash: String?): Int
 
     @Query("UPDATE dataset_images SET excluded = :excluded WHERE id = :imageId")
-    suspend fun updateExcluded(imageId: Long, excluded: Boolean)
+    suspend fun updateExcluded(imageId: Long, excluded: Boolean): Int
 
     @Query("UPDATE dataset_images SET width = :width, height = :height WHERE id = :imageId")
-    suspend fun updateDimensions(imageId: Long, width: Int, height: Int)
+    suspend fun updateDimensions(imageId: Long, width: Int, height: Int): Int
 }

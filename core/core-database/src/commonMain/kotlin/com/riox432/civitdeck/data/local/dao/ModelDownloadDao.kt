@@ -24,21 +24,21 @@ interface ModelDownloadDao {
     suspend fun getByFileId(fileId: Long): ModelDownloadEntity?
 
     @Query("UPDATE model_downloads SET status = :status, updatedAt = :updatedAt WHERE id = :id")
-    suspend fun updateStatus(id: Long, status: String, updatedAt: Long)
+    suspend fun updateStatus(id: Long, status: String, updatedAt: Long): Int
 
     @Query(
         "UPDATE model_downloads SET downloadedBytes = :bytes, updatedAt = :updatedAt WHERE id = :id",
     )
-    suspend fun updateProgress(id: Long, bytes: Long, updatedAt: Long)
+    suspend fun updateProgress(id: Long, bytes: Long, updatedAt: Long): Int
 
     @Query(
         "UPDATE model_downloads SET destinationPath = :path, updatedAt = :updatedAt WHERE id = :id",
     )
-    suspend fun updateDestinationPath(id: Long, path: String, updatedAt: Long)
+    suspend fun updateDestinationPath(id: Long, path: String, updatedAt: Long): Int
 
     @Query("DELETE FROM model_downloads WHERE id = :id")
-    suspend fun delete(id: Long)
+    suspend fun delete(id: Long): Int
 
     @Query("DELETE FROM model_downloads WHERE status = 'Completed'")
-    suspend fun deleteCompleted()
+    suspend fun deleteCompleted(): Int
 }

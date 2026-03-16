@@ -23,10 +23,10 @@ interface LocalModelFileDao {
     suspend fun insertDirectory(directory: ModelDirectoryEntity): Long
 
     @Query("DELETE FROM model_directories WHERE id = :id")
-    suspend fun deleteDirectory(id: Long)
+    suspend fun deleteDirectory(id: Long): Int
 
     @Query("UPDATE model_directories SET lastScannedAt = :scannedAt WHERE id = :id")
-    suspend fun updateLastScannedAt(id: Long, scannedAt: Long)
+    suspend fun updateLastScannedAt(id: Long, scannedAt: Long): Int
 
     // --- Local Model File CRUD ---
 
@@ -40,7 +40,7 @@ interface LocalModelFileDao {
     suspend fun insertFiles(files: List<LocalModelFileEntity>)
 
     @Query("DELETE FROM local_model_files WHERE directoryId = :directoryId")
-    suspend fun deleteFilesByDirectory(directoryId: Long)
+    suspend fun deleteFilesByDirectory(directoryId: Long): Int
 
     @Query("SELECT sha256Hash FROM local_model_files WHERE matchedModelId IS NOT NULL")
     fun observeOwnedHashes(): Flow<List<String>>
@@ -62,7 +62,7 @@ interface LocalModelFileDao {
         versionName: String,
         latestVersionId: Long?,
         hasUpdate: Boolean,
-    )
+    ): Int
 
     @Query("SELECT COUNT(*) FROM local_model_files")
     fun observeFileCount(): Flow<Int>
