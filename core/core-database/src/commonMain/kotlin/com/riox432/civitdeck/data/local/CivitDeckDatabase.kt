@@ -29,6 +29,7 @@ import com.riox432.civitdeck.data.local.dao.SDWebUIConnectionDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
 import com.riox432.civitdeck.data.local.dao.SavedSearchFilterDao
 import com.riox432.civitdeck.data.local.dao.SearchHistoryDao
+import com.riox432.civitdeck.data.local.dao.ShareHashtagDao
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
 import com.riox432.civitdeck.data.local.entity.CachedApiResponseEntity
@@ -55,6 +56,7 @@ import com.riox432.civitdeck.data.local.entity.SDWebUIConnectionEntity
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import com.riox432.civitdeck.data.local.entity.SavedSearchFilterEntity
 import com.riox432.civitdeck.data.local.entity.SearchHistoryEntity
+import com.riox432.civitdeck.data.local.entity.ShareHashtagEntity
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -87,8 +89,9 @@ import kotlinx.coroutines.IO
         FeedCacheEntity::class,
         ModelDownloadEntity::class,
         PluginEntity::class,
+        ShareHashtagEntity::class,
     ],
-    version = 33,
+    version = 34,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -114,6 +117,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun feedCacheDao(): FeedCacheDao
     abstract fun modelDownloadDao(): ModelDownloadDao
     abstract fun pluginDao(): PluginDao
+    abstract fun shareHashtagDao(): ShareHashtagDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -707,6 +711,19 @@ val MIGRATION_32_33 = object : Migration(32, 33) {
     }
 }
 
+val MIGRATION_33_34 = object : Migration(33, 34) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `share_hashtags` (" +
+                "`tag` TEXT NOT NULL, " +
+                "`isEnabled` INTEGER NOT NULL DEFAULT 1, " +
+                "`isCustom` INTEGER NOT NULL DEFAULT 0, " +
+                "`addedAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`tag`))",
+        )
+    }
+}
+
 // Seed data is inserted via onOpen (not in migrations) because Room migrations only run on
 // upgrades — a fresh install starts directly at the latest schema version, skipping all
 // migration callbacks. Using INSERT OR IGNORE in onOpen ensures required rows are always
@@ -719,6 +736,7 @@ private val defaultCollectionCallback = object : RoomDatabase.Callback() {
                 "VALUES (1, 'Favorites', 1, 0, 0)",
         )
         seedBuiltInTemplates(connection)
+        seedDefaultHashtags(connection)
     }
 }
 
@@ -758,6 +776,18 @@ private fun seedBuiltInTemplates(connection: SQLiteConnection) {
     )
 }
 
+private fun seedDefaultHashtags(connection: SQLiteConnection) {
+    val presets = listOf("#AIart", "#ComfyUI", "#StableDiffusion")
+    presets.forEach { tag ->
+        connection.execSQL(
+            "INSERT OR IGNORE INTO share_hashtags (tag, isEnabled, isCustom, addedAt) " +
+                "VALUES ('$tag', 1, 0, 0)",
+        )
+    }
+    // Remove legacy Japanese presets that were added in earlier builds
+    connection.execSQL("DELETE FROM share_hashtags WHERE tag IN ('#AIイラスト', '#AI画像生成') AND isCustom = 0")
+}
+
 fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeckDatabase {
     return builder
         .addMigrations(
@@ -793,6 +823,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_30_31,
             MIGRATION_31_32,
             MIGRATION_32_33,
+            MIGRATION_33_34,
         )
         .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())

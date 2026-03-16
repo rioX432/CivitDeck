@@ -822,6 +822,8 @@ private fun EntryProviderScope<Any>.settingsBehaviorEntries(backStack: MutableLi
     }
     entry<AdvancedSettingsRoute> {
         val viewModel: AppBehaviorSettingsViewModel = koinViewModel()
+        val historyVm: ComfyUIHistoryViewModel = koinViewModel()
+        val shareHashtags by historyVm.shareHashtags.collectAsStateWithLifecycle()
         AdvancedSettingsScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
@@ -829,6 +831,10 @@ private fun EntryProviderScope<Any>.settingsBehaviorEntries(backStack: MutableLi
             onNavigateToModelFiles = { backStack.add(ModelFileBrowserRoute) },
             onNavigateToPlugins = { backStack.add(PluginManagementRoute) },
             onNavigateToNavShortcuts = { backStack.add(NavShortcutsSettingsRoute) },
+            shareHashtags = shareHashtags,
+            onToggleShareHashtag = historyVm::onToggleShareHashtag,
+            onAddShareHashtag = historyVm::onAddShareHashtag,
+            onRemoveShareHashtag = historyVm::onRemoveShareHashtag,
         )
     }
     entry<IntegrationsHubRoute> {

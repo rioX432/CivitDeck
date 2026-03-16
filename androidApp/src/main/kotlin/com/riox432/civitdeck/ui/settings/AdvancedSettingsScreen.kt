@@ -16,8 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
+import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
+import com.riox432.civitdeck.ui.share.ShareSettingsSection
 
+@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdvancedSettingsScreen(
@@ -27,6 +30,10 @@ fun AdvancedSettingsScreen(
     onNavigateToModelFiles: () -> Unit = {},
     onNavigateToPlugins: () -> Unit = {},
     onNavigateToNavShortcuts: () -> Unit = {},
+    shareHashtags: List<ShareHashtag> = emptyList(),
+    onToggleShareHashtag: (String, Boolean) -> Unit = { _, _ -> },
+    onAddShareHashtag: (String) -> Unit = {},
+    onRemoveShareHashtag: (String) -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
@@ -54,6 +61,15 @@ fun AdvancedSettingsScreen(
                 item { SubScreenRow("Model File Browser", onNavigateToModelFiles) }
                 item { SectionHeader("Navigation") }
                 item { SubScreenRow("Navigation Shortcuts", onNavigateToNavShortcuts) }
+            }
+            item { SectionHeader("Sharing") }
+            item {
+                ShareSettingsSection(
+                    hashtags = shareHashtags,
+                    onToggle = onToggleShareHashtag,
+                    onAdd = onAddShareHashtag,
+                    onRemove = onRemoveShareHashtag,
+                )
             }
             item { SectionHeader("Plugins") }
             item { SubScreenRow("Plugins", onNavigateToPlugins) }

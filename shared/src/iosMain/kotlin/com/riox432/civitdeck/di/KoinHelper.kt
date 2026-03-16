@@ -7,6 +7,7 @@ import com.riox432.civitdeck.domain.usecase.ActivatePluginUseCase
 import com.riox432.civitdeck.domain.usecase.AddImageToDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.AddModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
+import com.riox432.civitdeck.domain.usecase.AddShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
 import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
@@ -75,11 +76,13 @@ import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveShareHashtagsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.ParseBackupUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveImageFromDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelDirectoryUseCase
 import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
+import com.riox432.civitdeck.domain.usecase.RemoveShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.RenameDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.RestoreBackupUseCase
 import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
@@ -107,6 +110,7 @@ import com.riox432.civitdeck.domain.usecase.StoreImageDimensionsUseCase
 import com.riox432.civitdeck.domain.usecase.StorePHashUseCase
 import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
+import com.riox432.civitdeck.domain.usecase.ToggleShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnfollowCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.UninstallPluginUseCase
@@ -482,4 +486,10 @@ object KoinHelper {
     fun getGetActiveThemeUseCase(): GetActiveThemeUseCase = getKoin().get()
     fun getObserveThemePluginsUseCase(): ObserveThemePluginsUseCase = getKoin().get()
     fun getActivateThemePluginUseCase(): ActivateThemePluginUseCase = getKoin().get()
+
+    // Share hashtag use cases
+    fun getObserveShareHashtagsUseCase(): ObserveShareHashtagsUseCase = getKoin().get()
+    fun getAddShareHashtagUseCase(): AddShareHashtagUseCase = getKoin().get()
+    fun getRemoveShareHashtagUseCase(): RemoveShareHashtagUseCase = getKoin().get()
+    fun getToggleShareHashtagUseCase(): ToggleShareHashtagUseCase = getKoin().get()
 }

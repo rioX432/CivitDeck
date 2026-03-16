@@ -195,6 +195,11 @@ typealias InstallPluginUseCase = Core_domainInstallPluginUseCase
 typealias ObserveInstalledPluginsUseCase = Core_domainObserveInstalledPluginsUseCase
 typealias UninstallPluginUseCase = Core_domainUninstallPluginUseCase
 typealias UpdatePluginConfigUseCase = Core_domainUpdatePluginConfigUseCase
+typealias ShareHashtag = Core_domainShareHashtag
+typealias AddShareHashtagUseCase = Core_domainAddShareHashtagUseCase
+typealias ObserveShareHashtagsUseCase = Core_domainObserveShareHashtagsUseCase
+typealias RemoveShareHashtagUseCase = Core_domainRemoveShareHashtagUseCase
+typealias ToggleShareHashtagUseCase = Core_domainToggleShareHashtagUseCase
 
 // MARK: - Core Plugin Types
 

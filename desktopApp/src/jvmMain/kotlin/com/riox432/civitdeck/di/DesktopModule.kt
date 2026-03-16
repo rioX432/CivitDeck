@@ -73,7 +73,7 @@ val desktopModule = module {
         ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     viewModel {
-        ComfyUIHistoryViewModel(get(), get(), get(), get(), get())
+        ComfyUIHistoryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     // SD WebUI ViewModels
     viewModel {
