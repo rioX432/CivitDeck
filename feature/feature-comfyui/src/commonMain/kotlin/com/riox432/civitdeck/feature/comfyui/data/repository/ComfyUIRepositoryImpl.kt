@@ -67,7 +67,7 @@ class ComfyUIRepositoryImpl(
         }
     }
 
-    override suspend fun deleteConnection(id: Long) = dao.deleteById(id)
+    override suspend fun deleteConnection(id: Long) { dao.deleteById(id) }
 
     override suspend fun activateConnection(id: Long) {
         dao.deactivateAll()

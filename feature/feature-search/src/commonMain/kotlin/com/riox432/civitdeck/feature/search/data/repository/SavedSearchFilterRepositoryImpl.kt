@@ -21,7 +21,7 @@ class SavedSearchFilterRepositoryImpl(
 
     override suspend fun save(filter: SavedSearchFilter): Long = dao.insert(filter.toEntity())
 
-    override suspend fun delete(id: Long) = dao.deleteById(id)
+    override suspend fun delete(id: Long) { dao.deleteById(id) }
 
     private fun SavedSearchFilterEntity.toDomain() = SavedSearchFilter(
         id = id,
