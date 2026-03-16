@@ -18,7 +18,6 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUse
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.util.Logger
 import io.ktor.client.plugins.HttpRequestTimeoutException
-import kotlin.io.IOException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -111,7 +110,7 @@ class ComfyUIGenerationViewModel(
                 _uiState.update {
                     it.copy(isLoadingCheckpoints = false, error = e.message)
                 }
-            } catch (e: IOException) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 Logger.e(TAG, "Failed to load checkpoints: ${e.message}")
                 _uiState.update {
                     it.copy(isLoadingCheckpoints = false, error = e.message)
@@ -136,7 +135,7 @@ class ComfyUIGenerationViewModel(
             } catch (e: HttpRequestTimeoutException) {
                 Logger.w(TAG, "Failed to fetch loras: ${e.message}")
                 _uiState.update { it.copy(isLoadingLoras = false) }
-            } catch (e: IOException) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 Logger.w(TAG, "Failed to fetch loras: ${e.message}")
                 _uiState.update { it.copy(isLoadingLoras = false) }
             } catch (e: SerializationException) {
@@ -157,7 +156,7 @@ class ComfyUIGenerationViewModel(
             } catch (e: HttpRequestTimeoutException) {
                 Logger.w(TAG, "Failed to fetch control nets: ${e.message}")
                 _uiState.update { it.copy(isLoadingControlNets = false) }
-            } catch (e: IOException) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 Logger.w(TAG, "Failed to fetch control nets: ${e.message}")
                 _uiState.update { it.copy(isLoadingControlNets = false) }
             } catch (e: SerializationException) {
@@ -288,7 +287,7 @@ class ComfyUIGenerationViewModel(
                 _uiState.update {
                     it.copy(generationStatus = GenerationStatus.Error, error = e.message)
                 }
-            } catch (e: IOException) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 Logger.e(TAG, "Generation submission failed: ${e.message}")
                 _uiState.update {
                     it.copy(generationStatus = GenerationStatus.Error, error = e.message)
@@ -360,7 +359,7 @@ class ComfyUIGenerationViewModel(
         } catch (e: HttpRequestTimeoutException) {
             Logger.e(TAG, "Failed to fetch final result: ${e.message}")
             _uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
-        } catch (e: IOException) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Logger.e(TAG, "Failed to fetch final result: ${e.message}")
             _uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
         } catch (e: SerializationException) {
@@ -398,7 +397,7 @@ class ComfyUIGenerationViewModel(
                     it.copy(generationStatus = GenerationStatus.Error, error = e.message)
                 }
                 return
-            } catch (e: IOException) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 Logger.e(TAG, "Poll for result failed: ${e.message}")
                 _uiState.update {
                     it.copy(generationStatus = GenerationStatus.Error, error = e.message)
