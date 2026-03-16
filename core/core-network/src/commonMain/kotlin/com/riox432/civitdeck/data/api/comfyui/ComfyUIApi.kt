@@ -16,7 +16,9 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.concurrent.Volatile
+import kotlin.coroutines.cancellation.CancellationException
 
+@Suppress("TooManyFunctions")
 class ComfyUIApi(
     private val client: HttpClient,
     private val json: Json,
@@ -30,53 +32,100 @@ class ComfyUIApi(
 
     /**
      * Health check / queue status: GET /queue
+     * @throws CancellationException if coroutine is cancelled
+     * @throws Exception on network or deserialization failure
      */
     suspend fun getQueue(): QueueResponse {
         val url = baseUrl
-        return client.get("$url/queue").body()
+        return try {
+            client.get("$url/queue").body()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.e(TAG, "getQueue failed: ${e.message}", e)
+            throw e
+        }
     }
 
     /**
      * Fetch available checkpoints: GET /object_info/CheckpointLoaderSimple
+     * @throws CancellationException if coroutine is cancelled
+     * @throws Exception on network or deserialization failure
      */
     suspend fun getCheckpoints(): List<String> {
         val url = baseUrl
-        val text = client.get("$url/object_info/CheckpointLoaderSimple").bodyAsText()
-        return parseCheckpointNames(text)
+        return try {
+            val text = client.get("$url/object_info/CheckpointLoaderSimple").bodyAsText()
+            parseCheckpointNames(text)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.e(TAG, "getCheckpoints failed: ${e.message}", e)
+            throw e
+        }
     }
 
     /**
      * Fetch available LoRA models: GET /object_info/LoraLoader
+     * @throws CancellationException if coroutine is cancelled
+     * @throws Exception on network or deserialization failure
      */
     suspend fun getLoras(): List<String> {
         val url = baseUrl
-        val text = client.get("$url/object_info/LoraLoader").bodyAsText()
-        return parseNodeInputList(text, "LoraLoader", "lora_name")
+        return try {
+            val text = client.get("$url/object_info/LoraLoader").bodyAsText()
+            parseNodeInputList(text, "LoraLoader", "lora_name")
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.e(TAG, "getLoras failed: ${e.message}", e)
+            throw e
+        }
     }
 
     /**
      * Fetch available ControlNet models: GET /object_info/ControlNetLoader
+     * @throws CancellationException if coroutine is cancelled
+     * @throws Exception on network or deserialization failure
      */
     suspend fun getControlNets(): List<String> {
         val url = baseUrl
-        val text = client.get("$url/object_info/ControlNetLoader").bodyAsText()
-        return parseNodeInputList(text, "ControlNetLoader", "control_net_name")
+        return try {
+            val text = client.get("$url/object_info/ControlNetLoader").bodyAsText()
+            parseNodeInputList(text, "ControlNetLoader", "control_net_name")
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.e(TAG, "getControlNets failed: ${e.message}", e)
+            throw e
+        }
     }
 
     /**
      * Submit workflow: POST /prompt
+     * @throws CancellationException if coroutine is cancelled
+     * @throws Exception on network or deserialization failure
      */
     suspend fun submitPrompt(workflow: JsonObject): PromptResponse {
         val url = baseUrl
         val body = buildJsonObject { put("prompt", workflow) }
-        return client.post("$url/prompt") {
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }.body()
+        return try {
+            client.post("$url/prompt") {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }.body()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.e(TAG, "submitPrompt failed: ${e.message}", e)
+            throw e
+        }
     }
 
     /**
      * Delete (cancel) queued prompts: POST /queue with {"delete": [...promptIds]}
+     * @throws CancellationException if coroutine is cancelled
+     * @throws Exception on network failure
      */
     suspend fun deleteQueue(promptIds: List<String>) {
         val url = baseUrl
@@ -88,30 +137,55 @@ class ComfyUIApi(
                 }
             )
         }
-        client.post("$url/queue") {
-            contentType(ContentType.Application.Json)
-            setBody(body)
+        try {
+            client.post("$url/queue") {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.e(TAG, "deleteQueue failed: ${e.message}", e)
+            throw e
         }
     }
 
     /**
      * Get all generation history: GET /history
      * Returns a map of prompt_id -> HistoryEntry for all completed prompts.
+     * @throws CancellationException if coroutine is cancelled
+     * @throws Exception on network or deserialization failure
      */
     suspend fun getAllHistory(): Map<String, HistoryEntry> {
         val url = baseUrl
-        val text = client.get("$url/history").bodyAsText()
-        return json.decodeFromString(text)
+        return try {
+            val text = client.get("$url/history").bodyAsText()
+            json.decodeFromString(text)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.e(TAG, "getAllHistory failed: ${e.message}", e)
+            throw e
+        }
     }
 
     /**
      * Get generation history: GET /history/{promptId}
+     * @throws CancellationException if coroutine is cancelled
+     * @throws Exception on network or deserialization failure
      */
     suspend fun getHistory(promptId: String): HistoryEntry? {
         val url = baseUrl
-        val text = client.get("$url/history/$promptId").bodyAsText()
-        val root = json.decodeFromString<Map<String, HistoryEntry>>(text)
-        return root[promptId]
+        return try {
+            val text = client.get("$url/history/$promptId").bodyAsText()
+            val root = json.decodeFromString<Map<String, HistoryEntry>>(text)
+            root[promptId]
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.e(TAG, "getHistory failed (promptId=$promptId): ${e.message}", e)
+            throw e
+        }
     }
 
     /**
