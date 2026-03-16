@@ -25,7 +25,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.MediaContentType
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
@@ -120,7 +122,7 @@ private fun ImageGridItem(
     Box(contentAlignment = Alignment.Center) {
         CivitAsyncImage(
             imageUrl = image.url,
-            contentDescription = "Version image",
+            contentDescription = stringResource(R.string.cd_version_image),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
@@ -131,7 +133,7 @@ private fun ImageGridItem(
         if (image.contentType == MediaContentType.VIDEO) {
             Icon(
                 imageVector = Icons.Default.PlayCircle,
-                contentDescription = "Video",
+                contentDescription = stringResource(R.string.cd_video),
                 tint = CivitDeckColors.onScrim,
                 modifier = Modifier.size(48.dp),
             )

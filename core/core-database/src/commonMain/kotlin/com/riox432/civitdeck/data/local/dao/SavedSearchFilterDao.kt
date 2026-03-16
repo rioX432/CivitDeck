@@ -22,8 +22,8 @@ interface SavedSearchFilterDao {
     suspend fun insertAll(entities: List<SavedSearchFilterEntity>)
 
     @Query("DELETE FROM saved_search_filters")
-    suspend fun deleteAll()
+    suspend fun deleteAll(): Int
 
     @Query("DELETE FROM saved_search_filters WHERE id = :id")
-    suspend fun deleteById(id: Long)
+    suspend fun deleteById(id: Long): Int
 }

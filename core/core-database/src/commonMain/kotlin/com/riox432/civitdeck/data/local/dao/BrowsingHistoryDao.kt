@@ -28,7 +28,7 @@ interface BrowsingHistoryDao {
     suspend fun count(): Int
 
     @Query("DELETE FROM browsing_history")
-    suspend fun deleteAll()
+    suspend fun deleteAll(): Int
 
     @Query(
         "SELECT (viewedAt / 86400000) * 86400000 AS day, COUNT(*) AS cnt " +

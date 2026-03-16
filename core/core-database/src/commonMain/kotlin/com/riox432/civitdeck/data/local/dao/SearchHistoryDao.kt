@@ -13,16 +13,16 @@ interface SearchHistoryDao {
     fun observeRecent(limit: Int = 20): Flow<List<SearchHistoryEntity>>
 
     @Query("DELETE FROM search_history WHERE query = :query")
-    suspend fun deleteByQuery(query: String)
+    suspend fun deleteByQuery(query: String): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: SearchHistoryEntity)
 
     @Query("DELETE FROM search_history")
-    suspend fun clearAll()
+    suspend fun clearAll(): Int
 
     @Query("DELETE FROM search_history WHERE id = :id")
-    suspend fun deleteById(id: Long)
+    suspend fun deleteById(id: Long): Int
 
     @Query("SELECT COUNT(*) FROM search_history")
     suspend fun count(): Int

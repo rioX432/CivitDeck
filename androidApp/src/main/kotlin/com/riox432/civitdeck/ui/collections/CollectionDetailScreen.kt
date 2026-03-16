@@ -47,8 +47,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.CollectionSortOrder
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
 import com.riox432.civitdeck.domain.model.ModelCollection
@@ -161,7 +163,7 @@ private fun DetailTopBar(
         actions = {
             if (isSelectionMode) {
                 IconButton(onClick = onSelectAll) {
-                    Icon(Icons.Default.SelectAll, contentDescription = "Select all")
+                    Icon(Icons.Default.SelectAll, contentDescription = stringResource(R.string.cd_select_all))
                 }
             }
         },
@@ -264,7 +266,7 @@ private fun SelectionBottomBar(
         ) {
             Box {
                 IconButton(onClick = { showMoveMenu = true }) {
-                    Icon(Icons.AutoMirrored.Filled.DriveFileMove, contentDescription = "Move")
+                    Icon(Icons.AutoMirrored.Filled.DriveFileMove, contentDescription = stringResource(R.string.cd_move))
                 }
                 DropdownMenu(
                     expanded = showMoveMenu,
@@ -284,7 +286,7 @@ private fun SelectionBottomBar(
                 }
             }
             IconButton(onClick = onRemove) {
-                Icon(Icons.Default.Delete, contentDescription = "Remove")
+                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.cd_remove))
             }
         }
     }
@@ -369,7 +371,7 @@ private fun SelectionOverlay(isSelected: Boolean) {
         if (isSelected) {
             Icon(
                 imageVector = Icons.Default.CheckCircle,
-                contentDescription = "Selected",
+                contentDescription = stringResource(R.string.cd_selected),
                 tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(20.dp),
             )

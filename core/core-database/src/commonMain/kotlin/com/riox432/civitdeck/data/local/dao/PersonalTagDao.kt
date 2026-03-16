@@ -22,10 +22,10 @@ interface PersonalTagDao {
     suspend fun insertAll(entities: List<PersonalTagEntity>)
 
     @Query("DELETE FROM personal_tags WHERE modelId = :modelId AND tag = :tag")
-    suspend fun delete(modelId: Long, tag: String)
+    suspend fun delete(modelId: Long, tag: String): Int
 
     @Query("DELETE FROM personal_tags")
-    suspend fun deleteAll()
+    suspend fun deleteAll(): Int
 
     @Query("SELECT DISTINCT tag FROM personal_tags ORDER BY tag ASC")
     suspend fun getAllDistinctTags(): List<String>

@@ -19,8 +19,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.ModelDownload
 import com.riox432.civitdeck.domain.model.ModelFile
@@ -93,7 +95,7 @@ private fun DownloadAction(
             IconButton(onClick = { onDownload(file) }) {
                 Icon(
                     Icons.Default.Download,
-                    contentDescription = "Download",
+                    contentDescription = stringResource(R.string.cd_download),
                     tint = MaterialTheme.colorScheme.primary,
                 )
             }
@@ -114,7 +116,7 @@ private fun DownloadAction(
                 IconButton(onClick = { onCancel(downloadState.id) }) {
                     Icon(
                         Icons.Default.Cancel,
-                        contentDescription = "Cancel download",
+                        contentDescription = stringResource(R.string.cd_cancel_download),
                         tint = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -123,7 +125,7 @@ private fun DownloadAction(
         DownloadStatus.Completed -> {
             Icon(
                 Icons.Default.CheckCircle,
-                contentDescription = "Downloaded",
+                contentDescription = stringResource(R.string.cd_downloaded),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(Spacing.sm),
             )
@@ -132,7 +134,7 @@ private fun DownloadAction(
             IconButton(onClick = { onDownload(file) }) {
                 Icon(
                     Icons.Default.Refresh,
-                    contentDescription = "Retry download",
+                    contentDescription = stringResource(R.string.cd_retry_download),
                     tint = MaterialTheme.colorScheme.error,
                 )
             }

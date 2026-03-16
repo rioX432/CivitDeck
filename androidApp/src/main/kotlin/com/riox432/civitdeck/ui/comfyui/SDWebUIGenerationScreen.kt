@@ -45,7 +45,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationUiState
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -357,7 +359,7 @@ private fun SDWebUIBase64Image(base64: String) {
     if (bitmap != null) {
         Image(
             bitmap = bitmap,
-            contentDescription = "Generated image",
+            contentDescription = stringResource(R.string.cd_generated_image),
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxWidth().aspectRatio(1f),
         )

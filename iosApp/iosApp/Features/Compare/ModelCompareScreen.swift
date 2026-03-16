@@ -308,6 +308,7 @@ struct ComparisonBottomBar: View {
         HStack(spacing: Spacing.sm) {
             Image(systemName: "rectangle.split.2x1")
                 .foregroundColor(.civitPrimary)
+                .accessibilityLabel("Toggle layout")
 
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text("Comparing: \(modelName)")

@@ -82,7 +82,7 @@ private fun SavedPrompt.toWorkflowTemplate(): WorkflowTemplate? {
                 required = it.required,
             )
         }
-    } catch (_: Exception) {
+    } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
         emptyList()
     }
     return WorkflowTemplate(

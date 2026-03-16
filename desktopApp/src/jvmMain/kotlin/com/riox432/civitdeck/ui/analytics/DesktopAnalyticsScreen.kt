@@ -28,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -79,7 +78,7 @@ fun DesktopAnalyticsScreen(
 
 @Composable
 private fun AnalyticsTopBar(onBack: () -> Unit, onRefresh: () -> Unit) {
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
@@ -105,7 +104,7 @@ private fun AnalyticsTopBar(onBack: () -> Unit, onRefresh: () -> Unit) {
 private fun SummaryCard(state: DesktopAnalyticsUiState) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.xs),
     ) {
         Column(modifier = Modifier.padding(Spacing.lg)) {
             Text("Usage Summary", style = MaterialTheme.typography.titleSmall)
@@ -141,7 +140,7 @@ private fun RankingCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.xs),
     ) {
         Column(modifier = Modifier.padding(Spacing.lg)) {
             Text(title, style = MaterialTheme.typography.titleSmall)

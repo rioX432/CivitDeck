@@ -100,12 +100,14 @@ struct DatasetDetailView: View {
             } else {
                 Button { viewModel.showExportSheet = true } label: {
                     Image(systemName: "square.and.arrow.up")
+                        .accessibilityLabel("Export")
                 }
                 Menu {
                     Button("Review Duplicates") { viewModel.showDuplicateReview = true }
                     Button("Resolution Filter") { viewModel.showResolutionFilter = true }
                 } label: {
                     Image(systemName: "slider.horizontal.3")
+                        .accessibilityLabel("Filter")
                 }
             }
         }
@@ -198,6 +200,7 @@ struct DatasetDetailView: View {
                 Color.civitSurfaceVariant
                     .overlay {
                         Image(systemName: "photo")
+                            .accessibilityHidden(true)
                             .foregroundColor(.civitOnSurfaceVariant)
                     }
             case .empty:

@@ -16,10 +16,10 @@ interface FeedCacheDao {
     suspend fun getAll(): List<FeedCacheEntity>
 
     @Query("DELETE FROM feed_cache WHERE creatorUsername = :username")
-    suspend fun deleteByCreator(username: String)
+    suspend fun deleteByCreator(username: String): Int
 
     @Query("DELETE FROM feed_cache WHERE cachedAt < :threshold")
-    suspend fun deleteExpired(threshold: Long)
+    suspend fun deleteExpired(threshold: Long): Int
 
     @Query("SELECT COUNT(*) FROM feed_cache WHERE cachedAt > :since")
     fun countNewSince(since: Long): Flow<Int>

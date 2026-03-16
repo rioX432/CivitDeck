@@ -3,6 +3,7 @@ package com.riox432.civitdeck
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
@@ -40,6 +41,9 @@ fun CollectionsTabContent(
                 val detailVm: CollectionDetailViewModel = koinViewModel(
                     key = "collection_${currentRoute.collectionId}",
                 ) { parametersOf(currentRoute.collectionId) }
+                DisposableEffect(detailVm) {
+                    onDispose { detailVm.onCleared() }
+                }
                 DesktopCollectionDetailScreen(
                     viewModel = detailVm,
                     collectionName = currentRoute.collectionName,
@@ -53,6 +57,9 @@ fun CollectionsTabContent(
                 val modelVm: ModelDetailViewModel = koinViewModel(
                     key = "detail_${currentRoute.modelId}",
                 ) { parametersOf(currentRoute.modelId) }
+                DisposableEffect(modelVm) {
+                    onDispose { modelVm.onCleared() }
+                }
                 DesktopDetailScreen(
                     viewModel = modelVm,
                     onBack = { backstack.removeLastOrNull() },
@@ -68,6 +75,9 @@ fun CollectionsTabContent(
                 val creatorVm: CreatorProfileViewModel = koinViewModel(
                     key = "creator_${currentRoute.username}",
                 ) { parametersOf(currentRoute.username) }
+                DisposableEffect(creatorVm) {
+                    onDispose { creatorVm.onCleared() }
+                }
                 DesktopCreatorScreen(
                     viewModel = creatorVm,
                     onBack = { backstack.removeLastOrNull() },

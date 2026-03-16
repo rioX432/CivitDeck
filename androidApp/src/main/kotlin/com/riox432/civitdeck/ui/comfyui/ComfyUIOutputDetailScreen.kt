@@ -41,7 +41,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationMeta
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryUiState
@@ -79,12 +81,12 @@ fun ComfyUIOutputDetailScreen(
                 },
                 actions = {
                     IconButton(onClick = { viewModel.onAddToDatasetTap(currentImage) }) {
-                        Icon(Icons.Default.Dataset, contentDescription = "Add to Dataset")
+                        Icon(Icons.Default.Dataset, contentDescription = stringResource(R.string.cd_add_to_dataset))
                     }
                     IconButton(
                         onClick = { viewModel.onSaveImage(currentImage.imageUrl, currentImage.filename) },
                     ) {
-                        Icon(Icons.Default.Download, contentDescription = "Save to gallery")
+                        Icon(Icons.Default.Download, contentDescription = stringResource(R.string.cd_save_to_gallery))
                     }
                 },
             )

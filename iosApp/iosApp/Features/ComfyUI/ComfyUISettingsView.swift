@@ -111,6 +111,7 @@ struct ComfyUISettingsView: View {
                 viewModel.showAddSheet = true
             } label: {
                 Image(systemName: "pencil")
+                    .accessibilityLabel("Edit")
             }
             .buttonStyle(.borderless)
         }

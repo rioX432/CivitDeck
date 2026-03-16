@@ -33,7 +33,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.RatingTotals
 import com.riox432.civitdeck.domain.model.ResourceReview
 import com.riox432.civitdeck.domain.model.ReviewSortOrder
@@ -153,7 +155,7 @@ private fun ThumbsSummary(up: Int, down: Int) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 Icons.Outlined.ThumbUp,
-                contentDescription = "Recommended",
+                contentDescription = stringResource(R.string.cd_recommended),
                 modifier = Modifier.size(14.dp),
                 tint = MaterialTheme.colorScheme.primary,
             )
@@ -163,7 +165,7 @@ private fun ThumbsSummary(up: Int, down: Int) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 Icons.Outlined.ThumbDown,
-                contentDescription = "Not recommended",
+                contentDescription = stringResource(R.string.cd_not_recommended),
                 modifier = Modifier.size(14.dp),
                 tint = MaterialTheme.colorScheme.error,
             )

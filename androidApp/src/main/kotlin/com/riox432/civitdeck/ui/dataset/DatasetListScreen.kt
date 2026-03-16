@@ -80,7 +80,7 @@ fun DatasetListScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { showCreateDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Create dataset")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_create_dataset))
             }
         },
     ) { padding ->
@@ -200,7 +200,7 @@ private fun DatasetCardContent(
         ) {
             Icon(
                 imageVector = Icons.Default.Dataset,
-                contentDescription = "Dataset",
+                contentDescription = stringResource(R.string.cd_dataset),
                 tint = MaterialTheme.colorScheme.primary,
             )
         }
@@ -246,7 +246,7 @@ private fun DatasetOverflowMenu(
         ) {
             DropdownMenuItem(
                 text = { Text("Rename") },
-                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = "Rename") },
+                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.cd_rename)) },
                 onClick = {
                     onToggleMenu(false)
                     onRename()
@@ -254,7 +254,7 @@ private fun DatasetOverflowMenu(
             )
             DropdownMenuItem(
                 text = { Text("Delete") },
-                leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete") },
+                leadingIcon = { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.cd_delete)) },
                 onClick = {
                     onToggleMenu(false)
                     onDelete()

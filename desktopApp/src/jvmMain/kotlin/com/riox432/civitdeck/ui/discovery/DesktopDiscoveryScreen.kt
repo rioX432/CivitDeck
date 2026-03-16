@@ -128,7 +128,7 @@ fun DesktopDiscoveryScreen(
 
 @Composable
 private fun DiscoveryTopBar(onRefresh: () -> Unit) {
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Box(
             modifier = Modifier.fillMaxWidth().padding(Spacing.sm),
         ) {

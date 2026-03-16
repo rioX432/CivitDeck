@@ -90,7 +90,7 @@ private fun DatasetListToolbar(
     onBack: () -> Unit,
     onCreate: () -> Unit,
 ) {
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

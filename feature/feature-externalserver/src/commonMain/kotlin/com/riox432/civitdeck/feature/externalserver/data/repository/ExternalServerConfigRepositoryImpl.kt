@@ -28,7 +28,7 @@ class ExternalServerConfigRepositoryImpl(
         }
     }
 
-    override suspend fun deleteConfig(id: Long) = dao.deleteById(id)
+    override suspend fun deleteConfig(id: Long) { dao.deleteById(id) }
 
     override suspend fun activateConfig(id: Long) {
         dao.deactivateAll()

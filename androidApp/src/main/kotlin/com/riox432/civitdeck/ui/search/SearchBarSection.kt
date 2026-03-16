@@ -37,8 +37,10 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.zIndex
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -200,7 +202,7 @@ private fun SearchTextField(
         trailingIcon = {
             if (query.isNotEmpty()) {
                 IconButton(onClick = onClear) {
-                    Icon(Icons.Default.Clear, contentDescription = "Clear")
+                    Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.cd_clear))
                 }
             }
         },
@@ -240,7 +242,7 @@ private fun SearchHistoryDropdown(
                 IconButton(onClick = { onDeleteItem(item) }) {
                     Icon(
                         Icons.Default.Clear,
-                        contentDescription = "Delete",
+                        contentDescription = stringResource(R.string.cd_delete),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }

@@ -18,7 +18,7 @@ object ImageDownloader {
                 val bytes = URL(imageUrl).readBytes()
                 val fileName = extractFileName(imageUrl)
                 saveToGallery(context, fileName, bytes)
-            } catch (_: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
                 false
             }
         }
@@ -70,7 +70,7 @@ object ImageDownloader {
             values.put(MediaStore.MediaColumns.IS_PENDING, 0)
             resolver.update(uri, values, null, null)
             true
-        } catch (_: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
             resolver.delete(uri, null, null)
             false
         }
@@ -89,7 +89,7 @@ object ImageDownloader {
             dir.mkdirs()
             File(dir, fileName).writeBytes(bytes)
             true
-        } catch (_: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
             false
         }
     }

@@ -33,22 +33,22 @@ interface ComfyUIConnectionDao {
     suspend fun insertAll(entities: List<ComfyUIConnectionEntity>)
 
     @Update
-    suspend fun update(entity: ComfyUIConnectionEntity)
+    suspend fun update(entity: ComfyUIConnectionEntity): Int
 
     @Query("UPDATE comfyui_connections SET isActive = 0")
-    suspend fun deactivateAll()
+    suspend fun deactivateAll(): Int
 
     @Query("UPDATE comfyui_connections SET isActive = 1 WHERE id = :id")
-    suspend fun activate(id: Long)
+    suspend fun activate(id: Long): Int
 
     @Query(
         "UPDATE comfyui_connections SET lastTestedAt = :testedAt, lastTestSuccess = :success WHERE id = :id",
     )
-    suspend fun updateTestResult(id: Long, testedAt: Long, success: Boolean)
+    suspend fun updateTestResult(id: Long, testedAt: Long, success: Boolean): Int
 
     @Query("DELETE FROM comfyui_connections WHERE id = :id")
-    suspend fun deleteById(id: Long)
+    suspend fun deleteById(id: Long): Int
 
     @Query("DELETE FROM comfyui_connections")
-    suspend fun deleteAll()
+    suspend fun deleteAll(): Int
 }

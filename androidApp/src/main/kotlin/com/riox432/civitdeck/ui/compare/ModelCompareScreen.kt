@@ -293,7 +293,7 @@ private fun CompareCarouselPage(image: ModelImage) {
             .data(image.url)
             .crossfade(Duration.normal)
             .build(),
-        contentDescription = "Model comparison image",
+        contentDescription = stringResource(R.string.cd_model_comparison_image),
         contentScale = ContentScale.Fit,
         modifier = Modifier
             .fillMaxWidth()

@@ -29,6 +29,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -124,7 +125,7 @@ private fun ComparisonImage(imageUrl: String, modifier: Modifier = Modifier) {
     SubcomposeAsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
             .data(imageUrl).crossfade(Duration.normal).build(),
-        contentDescription = "Comparison image",
+        contentDescription = stringResource(R.string.cd_comparison_image),
         contentScale = ContentScale.Fit,
         modifier = modifier,
         loading = {
@@ -188,7 +189,7 @@ private fun SliderHandle(
         }
         Icon(
             painter = painterResource(id = iconRes),
-            contentDescription = "Slider handle",
+            contentDescription = stringResource(R.string.cd_slider_handle),
             tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(ICON_DP.dp),
         )

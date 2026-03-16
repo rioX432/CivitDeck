@@ -122,7 +122,7 @@ private fun BatchTagEditorTopBar(
                         {
                             Icon(
                                 Icons.Default.Check,
-                                contentDescription = "Add mode active",
+                                contentDescription = stringResource(R.string.cd_add_mode_active),
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -142,7 +142,7 @@ private fun BatchTagEditorTopBar(
         },
         actions = {
             IconButton(onClick = onSelectAll) {
-                Icon(Icons.Default.SelectAll, contentDescription = "Select all")
+                Icon(Icons.Default.SelectAll, contentDescription = stringResource(R.string.cd_select_all))
             }
         },
     )
@@ -299,7 +299,7 @@ private fun BatchImageItem(
     ) {
         CivitAsyncImage(
             imageUrl = image.imageUrl,
-            contentDescription = "Dataset image",
+            contentDescription = stringResource(R.string.cd_dataset_image),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
@@ -329,7 +329,7 @@ private fun BatchSelectionOverlay(isSelected: Boolean) {
         if (isSelected) {
             Icon(
                 imageVector = Icons.Default.CheckCircle,
-                contentDescription = "Selected",
+                contentDescription = stringResource(R.string.cd_selected),
                 tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(18.dp),
             )

@@ -32,8 +32,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ModelNote
 import com.riox432.civitdeck.domain.model.PersonalTag
 import com.riox432.civitdeck.ui.components.SectionHeader
@@ -186,7 +188,7 @@ private fun TagsHeader(onAdd: () -> Unit) {
         IconButton(onClick = onAdd, modifier = Modifier.size(32.dp)) {
             Icon(
                 imageVector = Icons.Default.Add,
-                contentDescription = "Add tag",
+                contentDescription = stringResource(R.string.cd_add_tag),
                 modifier = Modifier.size(18.dp),
             )
         }
@@ -209,7 +211,7 @@ private fun TagChips(tags: List<PersonalTag>, onRemoveTag: (String) -> Unit) {
                 trailingIcon = {
                     Icon(
                         Icons.Default.Close,
-                        contentDescription = "Remove tag",
+                        contentDescription = stringResource(R.string.cd_remove),
                         modifier = Modifier.size(14.dp),
                     )
                 },

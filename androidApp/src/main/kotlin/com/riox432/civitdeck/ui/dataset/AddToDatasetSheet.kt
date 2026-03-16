@@ -25,6 +25,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.DatasetCollection
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -62,7 +64,7 @@ fun AddToDatasetSheet(
                 onClick = { showCreateDialog = true },
                 modifier = Modifier.padding(horizontal = Spacing.md),
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Create new dataset")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_create_new_dataset))
                 Text("Create New Dataset", modifier = Modifier.padding(start = Spacing.sm))
             }
         }
@@ -96,7 +98,7 @@ private fun DatasetPickerRow(
     ) {
         Icon(
             imageVector = Icons.Default.Dataset,
-            contentDescription = "Dataset",
+            contentDescription = stringResource(R.string.cd_dataset),
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(end = Spacing.md),
         )

@@ -25,6 +25,8 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -244,10 +246,10 @@ private fun FilterSheetHeader(
         Text(text = "Filters", style = MaterialTheme.typography.titleMedium)
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onShowSavedFilters) {
-                Icon(Icons.Default.Bookmarks, contentDescription = "Saved filters")
+                Icon(Icons.Default.Bookmarks, contentDescription = stringResource(R.string.cd_saved_filters))
             }
             IconButton(onClick = onSaveFilter) {
-                Icon(Icons.Default.BookmarkAdd, contentDescription = "Save current filter")
+                Icon(Icons.Default.BookmarkAdd, contentDescription = stringResource(R.string.cd_save_current_filter))
             }
             TextButton(onClick = onReset) {
                 Text("Reset")

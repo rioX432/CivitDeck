@@ -26,7 +26,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.QueueJob
 import com.riox432.civitdeck.domain.model.QueueJobStatus
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
@@ -139,7 +141,7 @@ private fun QueueJobItem(
                 IconButton(onClick = onCancel) {
                     Icon(
                         imageVector = Icons.Default.Cancel,
-                        contentDescription = "Cancel job",
+                        contentDescription = stringResource(R.string.cd_cancel_job),
                         tint = MaterialTheme.colorScheme.error,
                     )
                 }

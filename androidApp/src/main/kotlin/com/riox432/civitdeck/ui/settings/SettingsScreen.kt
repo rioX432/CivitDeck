@@ -243,7 +243,7 @@ internal fun AccentColorSwatch(
         if (isSelected) {
             Icon(
                 imageVector = Icons.Default.Check,
-                contentDescription = "Selected",
+                contentDescription = stringResource(R.string.cd_selected),
                 tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(20.dp),
             )

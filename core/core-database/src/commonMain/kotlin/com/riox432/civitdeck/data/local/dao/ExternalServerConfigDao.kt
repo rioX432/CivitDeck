@@ -33,22 +33,22 @@ interface ExternalServerConfigDao {
     suspend fun insertAll(entities: List<ExternalServerConfigEntity>)
 
     @Update
-    suspend fun update(entity: ExternalServerConfigEntity)
+    suspend fun update(entity: ExternalServerConfigEntity): Int
 
     @Query("UPDATE external_server_configs SET isActive = 0")
-    suspend fun deactivateAll()
+    suspend fun deactivateAll(): Int
 
     @Query("UPDATE external_server_configs SET isActive = 1 WHERE id = :id")
-    suspend fun activate(id: Long)
+    suspend fun activate(id: Long): Int
 
     @Query(
         "UPDATE external_server_configs SET lastTestedAt = :testedAt, lastTestSuccess = :success WHERE id = :id",
     )
-    suspend fun updateTestResult(id: Long, testedAt: Long, success: Boolean)
+    suspend fun updateTestResult(id: Long, testedAt: Long, success: Boolean): Int
 
     @Query("DELETE FROM external_server_configs WHERE id = :id")
-    suspend fun deleteById(id: Long)
+    suspend fun deleteById(id: Long): Int
 
     @Query("DELETE FROM external_server_configs")
-    suspend fun deleteAll()
+    suspend fun deleteAll(): Int
 }

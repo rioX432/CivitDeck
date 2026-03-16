@@ -40,6 +40,7 @@ struct TagFilterSection: View {
                 )
             Button(action: submitTag) {
                 Image(systemName: "plus")
+                    .accessibilityLabel("Add tag")
                     .font(.civitBodyMedium)
             }
         }
@@ -57,6 +58,7 @@ struct TagFilterSection: View {
                             onRemove(tag)
                         } label: {
                             Image(systemName: "xmark")
+                                .accessibilityLabel("Remove tag")
                                 .font(.civitLabelXSmall)
                         }
                     }

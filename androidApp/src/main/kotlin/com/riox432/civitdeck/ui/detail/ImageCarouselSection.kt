@@ -26,11 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.MediaContentType
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
@@ -77,7 +79,7 @@ internal fun CarouselWithGridButton(
             ) {
                 Icon(
                     imageVector = Icons.Default.GridView,
-                    contentDescription = "View all images",
+                    contentDescription = stringResource(R.string.cd_view_all_images),
                     tint = CivitDeckColors.onScrim,
                     modifier = Modifier.size(16.dp),
                 )
@@ -124,7 +126,7 @@ internal fun SharedThumbnailPlaceholder(
             .data(thumbnailUrl)
             .crossfade(Duration.normal)
             .build(),
-        contentDescription = "Model thumbnail",
+        contentDescription = stringResource(R.string.cd_model_thumbnail),
         contentScale = ContentScale.Fit,
         modifier = imageModifier
             .background(MaterialTheme.colorScheme.surfaceContainerLow),
@@ -222,7 +224,7 @@ private fun CarouselImage(
                 .data(image.url)
                 .crossfade(Duration.normal)
                 .build(),
-            contentDescription = "Model image",
+            contentDescription = stringResource(R.string.cd_model_image),
             contentScale = ContentScale.Fit,
             modifier = modifier
                 .background(MaterialTheme.colorScheme.surfaceContainerLow)
@@ -247,7 +249,7 @@ private fun CarouselImage(
         if (image.contentType == MediaContentType.VIDEO) {
             Icon(
                 imageVector = Icons.Default.PlayCircle,
-                contentDescription = "Video",
+                contentDescription = stringResource(R.string.cd_video),
                 tint = CivitDeckColors.onScrim,
                 modifier = Modifier.size(48.dp),
             )

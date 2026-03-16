@@ -26,6 +26,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -66,7 +68,7 @@ fun AddToCollectionSheet(
                 onClick = { showCreateDialog = true },
                 modifier = Modifier.padding(horizontal = Spacing.md),
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Create new collection")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_create_new_collection))
                 Text("Create New Collection", modifier = Modifier.padding(start = Spacing.sm))
             }
         }
@@ -104,7 +106,7 @@ private fun CollectionRow(
         if (isChecked) {
             Icon(
                 imageVector = Icons.Default.Check,
-                contentDescription = "In collection",
+                contentDescription = stringResource(R.string.cd_in_collection),
                 tint = MaterialTheme.colorScheme.primary,
             )
         }

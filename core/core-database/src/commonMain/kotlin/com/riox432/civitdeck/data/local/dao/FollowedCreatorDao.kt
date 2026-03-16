@@ -16,10 +16,10 @@ interface FollowedCreatorDao {
     suspend fun insertAll(entities: List<FollowedCreatorEntity>)
 
     @Query("DELETE FROM followed_creators")
-    suspend fun deleteAll()
+    suspend fun deleteAll(): Int
 
     @Query("DELETE FROM followed_creators WHERE username = :username")
-    suspend fun delete(username: String)
+    suspend fun delete(username: String): Int
 
     @Query("SELECT EXISTS(SELECT 1 FROM followed_creators WHERE username = :username)")
     fun isFollowing(username: String): Flow<Boolean>
@@ -31,5 +31,5 @@ interface FollowedCreatorDao {
     suspend fun getAll(): List<FollowedCreatorEntity>
 
     @Query("UPDATE followed_creators SET lastCheckedAt = :timestamp WHERE username = :username")
-    suspend fun updateLastCheckedAt(username: String, timestamp: Long)
+    suspend fun updateLastCheckedAt(username: String, timestamp: Long): Int
 }

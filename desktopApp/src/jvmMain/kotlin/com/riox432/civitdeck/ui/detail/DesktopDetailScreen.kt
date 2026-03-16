@@ -113,7 +113,7 @@ private fun DetailTopBar(
     onBack: () -> Unit,
     title: String,
 ) {
-    Surface(tonalElevation = 1.dp) {
+    Surface(tonalElevation = Elevation.xs) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,

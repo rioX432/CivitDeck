@@ -53,9 +53,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.domain.model.ExportProgress
 import com.riox432.civitdeck.domain.model.ImageSource
@@ -337,24 +339,31 @@ private fun DatasetDetailTopBar(
             ) {
                 Icon(
                     imageVector = if (isSelectionMode) Icons.Default.Close else Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = if (isSelectionMode) "Cancel selection" else "Back",
+                    contentDescription = if (isSelectionMode) {
+                        stringResource(R.string.cd_cancel_selection)
+                    } else {
+                        stringResource(R.string.cd_navigate_back)
+                    },
                 )
             }
         },
         actions = {
             if (isSelectionMode) {
                 IconButton(onClick = onSelectAll) {
-                    Icon(Icons.Default.SelectAll, contentDescription = "Select all")
+                    Icon(Icons.Default.SelectAll, contentDescription = stringResource(R.string.cd_select_all))
                 }
             } else {
                 IconButton(onClick = onExport) {
-                    Icon(Icons.Default.FileDownload, contentDescription = "Export dataset")
+                    Icon(Icons.Default.FileDownload, contentDescription = stringResource(R.string.cd_export_dataset))
                 }
                 IconButton(onClick = onReviewDuplicates) {
-                    Icon(Icons.Default.FindReplace, contentDescription = "Review duplicates")
+                    Icon(Icons.Default.FindReplace, contentDescription = stringResource(R.string.cd_review_duplicates))
                 }
                 IconButton(onClick = onResolutionFilter) {
-                    Icon(Icons.Default.PhotoSizeSelectLarge, contentDescription = "Resolution filter")
+                    Icon(
+                        Icons.Default.PhotoSizeSelectLarge,
+                        contentDescription = stringResource(R.string.cd_resolution_filter)
+                    )
                 }
             }
         },
@@ -377,7 +386,7 @@ private fun DatasetSelectionBottomBar(
             Button(onClick = onEditTags) {
                 Icon(
                     imageVector = Icons.Default.Style,
-                    contentDescription = "Edit tags",
+                    contentDescription = stringResource(R.string.cd_edit_tags),
                     modifier = Modifier.size(18.dp),
                 )
                 Text(
@@ -388,7 +397,7 @@ private fun DatasetSelectionBottomBar(
             Button(onClick = onRemove) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Remove",
+                    contentDescription = stringResource(R.string.cd_remove),
                     modifier = Modifier.size(18.dp),
                 )
                 Text(
@@ -531,7 +540,7 @@ private fun DatasetImageItem(
     ) {
         CivitAsyncImage(
             imageUrl = image.imageUrl,
-            contentDescription = "Dataset image",
+            contentDescription = stringResource(R.string.cd_dataset_image),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
@@ -651,7 +660,7 @@ private fun DatasetImageSelectionOverlay(isSelected: Boolean) {
         if (isSelected) {
             Icon(
                 imageVector = Icons.Default.CheckCircle,
-                contentDescription = "Selected",
+                contentDescription = stringResource(R.string.cd_selected),
                 tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(20.dp),
             )
