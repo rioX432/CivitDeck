@@ -1,13 +1,15 @@
 package com.riox432.civitdeck.ui.dataset
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.DatasetCollection
 import com.riox432.civitdeck.domain.usecase.CreateDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.RenameDatasetCollectionUseCase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -18,14 +20,16 @@ class DesktopDatasetListViewModel(
     private val createDatasetCollectionUseCase: CreateDatasetCollectionUseCase,
     private val renameDatasetCollectionUseCase: RenameDatasetCollectionUseCase,
     private val deleteDatasetCollectionUseCase: DeleteDatasetCollectionUseCase,
-) : ViewModel() {
+) {
+
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     val datasets: StateFlow<List<DatasetCollection>> =
         observeDatasetCollectionsUseCase()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
+            .stateIn(scope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
     fun createDataset(name: String) {
-        viewModelScope.launch {
+        scope.launch {
             try {
                 createDatasetCollectionUseCase(name)
             } catch (e: CancellationException) {
@@ -37,7 +41,7 @@ class DesktopDatasetListViewModel(
     }
 
     fun renameDataset(id: Long, name: String) {
-        viewModelScope.launch {
+        scope.launch {
             try {
                 renameDatasetCollectionUseCase(id, name)
             } catch (e: CancellationException) {
@@ -49,7 +53,7 @@ class DesktopDatasetListViewModel(
     }
 
     fun deleteDataset(id: Long) {
-        viewModelScope.launch {
+        scope.launch {
             try {
                 deleteDatasetCollectionUseCase(id)
             } catch (e: CancellationException) {
@@ -58,6 +62,10 @@ class DesktopDatasetListViewModel(
                 // Delete failure is non-critical
             }
         }
+    }
+
+    fun onCleared() {
+        scope.cancel()
     }
 }
 

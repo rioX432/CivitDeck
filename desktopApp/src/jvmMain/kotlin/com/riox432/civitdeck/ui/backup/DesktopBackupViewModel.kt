@@ -1,12 +1,14 @@
 package com.riox432.civitdeck.ui.backup
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.BackupCategory
 import com.riox432.civitdeck.domain.model.RestoreStrategy
 import com.riox432.civitdeck.domain.usecase.CreateBackupUseCase
 import com.riox432.civitdeck.domain.usecase.ParseBackupUseCase
 import com.riox432.civitdeck.domain.usecase.RestoreBackupUseCase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,7 +32,9 @@ class DesktopBackupViewModel(
     private val createBackupUseCase: CreateBackupUseCase,
     private val restoreBackupUseCase: RestoreBackupUseCase,
     private val parseBackupUseCase: ParseBackupUseCase,
-) : ViewModel() {
+) {
+
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private val _uiState = MutableStateFlow(BackupUiState())
     val uiState: StateFlow<BackupUiState> = _uiState.asStateFlow()
@@ -55,7 +59,7 @@ class DesktopBackupViewModel(
         val categories = _uiState.value.selectedCategories
         if (categories.isEmpty()) return
         _uiState.update { it.copy(isExporting = true, error = null) }
-        viewModelScope.launch {
+        scope.launch {
             try {
                 val json = createBackupUseCase(categories)
                 _uiState.update { it.copy(isExporting = false, exportedJson = json) }
@@ -72,7 +76,7 @@ class DesktopBackupViewModel(
     }
 
     fun onImportFileLoaded(json: String) {
-        viewModelScope.launch {
+        scope.launch {
             try {
                 val categories = parseBackupUseCase(json)
                 _uiState.update {
@@ -102,7 +106,7 @@ class DesktopBackupViewModel(
         val categories = state.selectedCategories
         if (categories.isEmpty()) return
         _uiState.update { it.copy(isImporting = true, showImportConfirmation = false, error = null) }
-        viewModelScope.launch {
+        scope.launch {
             try {
                 restoreBackupUseCase(json, state.restoreStrategy, categories)
                 _uiState.update {
@@ -133,5 +137,9 @@ class DesktopBackupViewModel(
 
     fun onErrorDismissed() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun onCleared() {
+        scope.cancel()
     }
 }

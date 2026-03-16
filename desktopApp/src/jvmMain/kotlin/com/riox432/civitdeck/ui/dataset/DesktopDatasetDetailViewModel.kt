@@ -1,7 +1,5 @@
 package com.riox432.civitdeck.ui.dataset
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.domain.model.ImageSource
 import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
@@ -12,6 +10,10 @@ import com.riox432.civitdeck.plugin.PluginExportFormat
 import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
 import com.riox432.civitdeck.usecase.GetAvailableExportFormatsUseCase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,11 +29,13 @@ class DesktopDatasetDetailViewModel(
     private val updateTrainableUseCase: UpdateTrainableUseCase,
     private val exportWithPluginUseCase: ExportWithPluginUseCase,
     getAvailableExportFormatsUseCase: GetAvailableExportFormatsUseCase,
-) : ViewModel() {
+) {
+
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     val images: StateFlow<List<DatasetImage>> =
         observeDatasetImagesUseCase(datasetId)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
+            .stateIn(scope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
     val selectedSource = MutableStateFlow<ImageSource?>(null)
     val selectedImageIds = MutableStateFlow<Set<Long>>(emptySet())
@@ -39,11 +43,11 @@ class DesktopDatasetDetailViewModel(
 
     val filteredImages: StateFlow<List<DatasetImage>> = combine(images, selectedSource) { imgs, src ->
         if (src == null) imgs else imgs.filter { it.sourceType == src }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
+    }.stateIn(scope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
     val availableExportFormats: StateFlow<List<PluginExportFormat>> =
         getAvailableExportFormatsUseCase()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
+            .stateIn(scope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
     fun setSourceFilter(source: ImageSource?) { selectedSource.value = source }
 
@@ -71,7 +75,7 @@ class DesktopDatasetDetailViewModel(
     fun removeSelected() {
         val ids = selectedImageIds.value.toList()
         if (ids.isEmpty()) return
-        viewModelScope.launch {
+        scope.launch {
             try {
                 removeImageFromDatasetUseCase(ids)
                 clearSelection()
@@ -84,7 +88,7 @@ class DesktopDatasetDetailViewModel(
     }
 
     fun editCaption(imageId: Long, text: String) {
-        viewModelScope.launch {
+        scope.launch {
             try {
                 editCaptionUseCase(imageId, text)
             } catch (e: CancellationException) {
@@ -96,7 +100,7 @@ class DesktopDatasetDetailViewModel(
     }
 
     fun updateTrainable(imageId: Long, trainable: Boolean) {
-        viewModelScope.launch {
+        scope.launch {
             try {
                 updateTrainableUseCase(imageId, trainable)
             } catch (e: CancellationException) {
@@ -108,11 +112,15 @@ class DesktopDatasetDetailViewModel(
     }
 
     fun startExport(formatId: String) {
-        viewModelScope.launch {
+        scope.launch {
             exportWithPluginUseCase(datasetId, formatId).collect { _ ->
                 // Progress handled by export use case
             }
         }
+    }
+
+    fun onCleared() {
+        scope.cancel()
     }
 }
 
