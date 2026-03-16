@@ -5,7 +5,6 @@ struct CompareDestination: Hashable {
     let leftModelId: Int64
     let rightModelId: Int64
 }
-
 struct ModelSearchScreen: View {
     @ObservedObject var viewModel: ModelSearchViewModel
     @EnvironmentObject private var comparisonState: ComparisonState

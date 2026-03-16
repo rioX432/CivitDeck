@@ -94,7 +94,6 @@ enum AccentTint: String, CaseIterable {
         }
     }
 
-    // swiftlint:disable function_body_length
     var primaryPalette: PrimaryPalette {
         switch self {
         case .blue:
@@ -179,7 +178,6 @@ enum AccentTint: String, CaseIterable {
             )
         }
     }
-    // swiftlint:enable function_body_length
 }
 
 // MARK: - Dynamic Theme
