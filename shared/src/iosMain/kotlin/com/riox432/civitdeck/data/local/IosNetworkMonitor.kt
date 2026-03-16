@@ -3,6 +3,7 @@ package com.riox432.civitdeck.data.local
 import com.riox432.civitdeck.domain.repository.NetworkRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import platform.Network.nw_path_get_status
 import platform.Network.nw_path_monitor_cancel
 import platform.Network.nw_path_monitor_create
@@ -22,7 +23,7 @@ class IosNetworkMonitor : NetworkRepository {
     init {
         nw_path_monitor_set_queue(monitor, dispatch_get_main_queue())
         nw_path_monitor_set_update_handler(monitor) { path ->
-            _isOnline.value = nw_path_get_status(path) == nw_path_status_satisfied
+            _isOnline.update { nw_path_get_status(path) == nw_path_status_satisfied }
         }
         nw_path_monitor_start(monitor)
     }
