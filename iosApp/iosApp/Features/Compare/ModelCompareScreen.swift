@@ -4,6 +4,7 @@ import Shared
 struct ModelCompareScreen: View {
     @StateObject private var viewModel: ModelCompareViewModel
     @State private var showImageComparison = false
+    @Environment(\.civitTheme) private var theme
 
     init(leftModelId: Int64, rightModelId: Int64) {
         _viewModel = StateObject(wrappedValue: ModelCompareViewModel(
@@ -198,11 +199,11 @@ struct ModelCompareScreen: View {
                                     .padding(.vertical, Spacing.xs)
                                     .background(
                                         index == selectedIndex
-                                            ? Color.civitPrimary.opacity(0.2)
+                                            ? theme.primary.opacity(0.2)
                                             : Color.civitSurfaceVariant
                                     )
                                     .foregroundColor(
-                                        index == selectedIndex ? .civitPrimary : .civitOnSurface
+                                        index == selectedIndex ? theme.primary : .civitOnSurface
                                     )
                                     .clipShape(Capsule())
                             }
@@ -303,11 +304,12 @@ struct ModelCompareScreen: View {
 struct ComparisonBottomBar: View {
     let modelName: String
     let onCancel: () -> Void
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         HStack(spacing: Spacing.sm) {
             Image(systemName: "rectangle.split.2x1")
-                .foregroundColor(.civitPrimary)
+                .foregroundColor(theme.primary)
                 .accessibilityLabel("Toggle layout")
 
             VStack(alignment: .leading, spacing: Spacing.xxs) {
@@ -324,7 +326,7 @@ struct ComparisonBottomBar: View {
 
             Button("Cancel") { onCancel() }
                 .font(.civitLabelMedium)
-                .foregroundColor(.civitPrimary)
+                .foregroundColor(theme.primary)
         }
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.sm)

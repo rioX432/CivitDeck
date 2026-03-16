@@ -6,6 +6,7 @@ private let barRowHeight: CGFloat = 36
 
 struct AnalyticsView: View {
     @StateObject private var viewModel = AnalyticsViewModel()
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         Group {
@@ -57,12 +58,12 @@ struct AnalyticsView: View {
                     x: .value("Day", item.day),
                     y: .value("Views", item.count)
                 )
-                .foregroundStyle(Color.civitPrimary)
+                .foregroundStyle(theme.primary)
                 PointMark(
                     x: .value("Day", item.day),
                     y: .value("Views", item.count)
                 )
-                .foregroundStyle(Color.civitPrimary)
+                .foregroundStyle(theme.primary)
             }
             .frame(height: chartHeight)
             .chartXAxis {
@@ -81,7 +82,7 @@ struct AnalyticsView: View {
                     x: .value("Count", item.count),
                     y: .value("Type", item.name)
                 )
-                .foregroundStyle(Color.civitPrimary)
+                .foregroundStyle(theme.primary)
             }
             .frame(height: CGFloat(min(viewModel.topModelTypes.count, 5)) * barRowHeight)
         }

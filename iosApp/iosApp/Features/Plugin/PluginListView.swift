@@ -50,6 +50,7 @@ private let pluginIconSize: CGFloat = 40
 private struct PluginRow: View {
     let plugin: InstalledPlugin
     let viewModel: PluginListViewModel
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         HStack(spacing: Spacing.md) {
@@ -69,10 +70,10 @@ private struct PluginRow: View {
     private var pluginIcon: some View {
         ZStack {
             RoundedRectangle(cornerRadius: CornerRadius.image)
-                .fill(Color.civitPrimaryContainer)
+                .fill(theme.primaryContainer)
                 .frame(width: pluginIconSize, height: pluginIconSize)
             Image(systemName: "puzzlepiece.extension")
-                .foregroundColor(.civitOnPrimaryContainer)
+                .foregroundColor(theme.onPrimaryContainer)
         }
     }
 
@@ -99,7 +100,7 @@ private struct PluginRow: View {
     private var statusColor: Color {
         switch plugin.state {
         case .active:
-            return .civitPrimary
+            return theme.primary
         case .error:
             return .civitError
         default:

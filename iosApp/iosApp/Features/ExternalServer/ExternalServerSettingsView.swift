@@ -3,6 +3,7 @@ import Shared
 
 struct ExternalServerSettingsView: View {
     @StateObject private var viewModel = ExternalServerSettingsViewModel()
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         List {
@@ -73,7 +74,7 @@ struct ExternalServerSettingsView: View {
             ForEach(viewModel.configs, id: \.id) { config in
                 HStack {
                     Image(systemName: config.id == viewModel.activeConfig?.id ? "checkmark.circle.fill" : "circle")
-                        .foregroundColor(config.id == viewModel.activeConfig?.id ? .civitPrimary : .civitOnSurfaceVariant)
+                        .foregroundColor(config.id == viewModel.activeConfig?.id ? theme.primary : .civitOnSurfaceVariant)
                         .accessibilityLabel("Activate configuration")
                         .onTapGesture { viewModel.onActivate(id: config.id) }
                     VStack(alignment: .leading, spacing: Spacing.xs) {

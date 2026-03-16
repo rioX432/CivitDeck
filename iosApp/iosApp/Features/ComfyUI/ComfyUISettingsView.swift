@@ -3,6 +3,7 @@ import Shared
 
 struct ComfyUISettingsView: View {
     @StateObject private var viewModel = ComfyUISettingsViewModel()
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         List {
@@ -93,7 +94,7 @@ struct ComfyUISettingsView: View {
         HStack {
             Image(systemName: conn.id == viewModel.activeConnection?.id
                 ? "checkmark.circle.fill" : "circle")
-                .foregroundColor(.civitPrimary)
+                .foregroundColor(theme.primary)
                 .onTapGesture { viewModel.onActivate(id: conn.id) }
                 .accessibilityLabel(conn.id == viewModel.activeConnection?.id
                     ? "Active connection: \(conn.name)"

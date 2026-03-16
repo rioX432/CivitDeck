@@ -54,5 +54,6 @@ private struct ThemedContentView: View {
     var body: some View {
         ContentView()
             .tint(themeManager.tintColor(for: colorScheme))
+            .environment(\.civitTheme, themeManager.theme(for: colorScheme))
     }
 }

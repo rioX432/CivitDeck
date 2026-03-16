@@ -8,6 +8,7 @@ private let actionButtonSize: CGFloat = 56
 struct SwipeDiscoveryView: View {
     @StateObject private var viewModel = SwipeDiscoveryViewModel()
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.civitTheme) private var theme
 
     var onModelDetail: ((Int64) -> Void)?
 
@@ -110,7 +111,7 @@ struct SwipeDiscoveryView: View {
                 Image(systemName: "heart.fill")
                     .font(.title2)
                     .frame(width: actionButtonSize, height: actionButtonSize)
-                    .foregroundColor(.civitPrimary)
+                    .foregroundColor(theme.primary)
                     .background(Color.civitSurfaceContainerHigh)
                     .clipShape(Circle())
             }

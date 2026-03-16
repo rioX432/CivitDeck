@@ -4,6 +4,7 @@ import Shared
 struct HiddenModelsView: View {
     let models: [Core_domainHiddenModel]
     let onUnhide: (Int64) -> Void
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         List {
@@ -19,7 +20,7 @@ struct HiddenModelsView: View {
                         Button("Unhide") {
                             onUnhide(model.modelId)
                         }
-                        .foregroundColor(.civitPrimary)
+                        .foregroundColor(theme.primary)
                     }
                 }
             }

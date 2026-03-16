@@ -5,6 +5,7 @@ struct ModelCardView: View {
     let model: Model
     var isOwned: Bool = false
     var parallaxOffset: CGFloat = 0
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -18,7 +19,7 @@ struct ModelCardView: View {
                     if isOwned {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.civitLabelXSmall)
-                            .foregroundColor(.civitPrimary)
+                            .foregroundColor(theme.primary)
                             .accessibilityLabel("Owned")
                     }
                 }

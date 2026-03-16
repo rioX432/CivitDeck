@@ -3,6 +3,7 @@ import SwiftUI
 struct GestureTutorialView: View {
     let onDismiss: () -> Void
     @State private var currentPage = 0
+    @Environment(\.civitTheme) private var theme
 
     private enum Layout {
         static let tabViewHeight: CGFloat = 340
@@ -32,7 +33,7 @@ struct GestureTutorialView: View {
             Button("Skip") {
                 onDismiss()
             }
-            .foregroundColor(.civitPrimary)
+            .foregroundColor(theme.primary)
         }
     }
 
@@ -51,7 +52,7 @@ struct GestureTutorialView: View {
         HStack(spacing: Spacing.sm) {
             ForEach(tutorialSteps) { step in
                 Circle()
-                    .fill(step.id == currentPage ? Color.civitPrimary : Color.civitOutlineVariant)
+                    .fill(step.id == currentPage ? theme.primary : Color.civitOutlineVariant)
                     .frame(width: Layout.indicatorSize, height: Layout.indicatorSize)
             }
         }
@@ -69,10 +70,10 @@ struct GestureTutorialView: View {
         }) {
             Text(currentPage == tutorialSteps.count - 1 ? "Get Started" : "Next")
                 .font(.civitTitleMedium)
-                .foregroundColor(.civitOnPrimary)
+                .foregroundColor(theme.onPrimary)
                 .frame(maxWidth: Layout.buttonMaxWidth)
                 .padding(.vertical, Spacing.md)
-                .background(Color.civitPrimary)
+                .background(theme.primary)
                 .cornerRadius(CornerRadius.card)
         }
     }

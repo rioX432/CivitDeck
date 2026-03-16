@@ -30,6 +30,7 @@ struct ComfyUIOutputDetailView: View {
 
 private struct ComfyUIOutputDetailPage: View {
     let image: ComfyUIGeneratedImage
+    @Environment(\.civitTheme) private var theme
 
     @State private var showAddCollectionAlert = false
     @State private var imageSaveSuccess: Bool?
@@ -209,8 +210,8 @@ private struct ComfyUIOutputDetailPage: View {
                                 .font(.civitBodySmall)
                                 .padding(.horizontal, Spacing.sm)
                                 .padding(.vertical, Spacing.xs)
-                                .background(Color.civitPrimary.opacity(0.15))
-                                .foregroundColor(.civitPrimary)
+                                .background(theme.primary.opacity(0.15))
+                                .foregroundColor(theme.primary)
                                 .clipShape(Capsule())
                         }
                     }

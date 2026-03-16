@@ -76,6 +76,7 @@ private struct DuplicateImageCell: View {
     let image: DatasetImage
     let onKeep: () -> Void
     let onRemove: () -> Void
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         VStack(spacing: Spacing.xs) {
@@ -105,7 +106,7 @@ private struct DuplicateImageCell: View {
             HStack(spacing: Spacing.xs) {
                 Button("Keep") { onKeep() }
                     .buttonStyle(.borderedProminent)
-                    .tint(image.excluded ? .civitOutline : .civitPrimary)
+                    .tint(image.excluded ? .civitOutline : theme.primary)
                     .font(.caption)
                 Button("Remove") { onRemove() }
                     .buttonStyle(.bordered)

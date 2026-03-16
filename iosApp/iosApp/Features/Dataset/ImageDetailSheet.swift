@@ -5,6 +5,7 @@ struct ImageDetailSheet: View {
     let image: DatasetImage
     let onTrainableToggle: (Bool) -> Void
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         NavigationStack {
@@ -69,7 +70,7 @@ struct ImageDetailSheet: View {
 
     private var sourceColor: Color {
         switch image.sourceType {
-        case .civitai: return .civitPrimary
+        case .civitai: return theme.primary
         case .local: return .civitSecondary
         case .generated: return .civitTertiary
         default: return .civitOnSurfaceVariant

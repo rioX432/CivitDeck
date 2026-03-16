@@ -5,6 +5,7 @@ struct BatchTagEditorView: View {
     @StateObject private var viewModel: BatchTagEditorViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.civitTheme) private var theme
 
     init(datasetId: Int64) {
         _viewModel = StateObject(wrappedValue: BatchTagEditorViewModel(datasetId: datasetId))
@@ -40,7 +41,7 @@ struct BatchTagEditorView: View {
                 Button(viewModel.isAddMode ? "Add" : "Remove") {
                     viewModel.toggleMode()
                 }
-                .foregroundColor(viewModel.isAddMode ? .civitPrimary : .civitError)
+                .foregroundColor(viewModel.isAddMode ? theme.primary : .civitError)
             }
         }
     }
@@ -140,7 +141,7 @@ struct BatchTagEditorView: View {
                 if isSelected {
                     Image(systemName: "checkmark")
                         .font(.caption.bold())
-                        .foregroundColor(.civitOnPrimary)
+                        .foregroundColor(theme.onPrimary)
                 }
             }
             .padding(Spacing.sm)

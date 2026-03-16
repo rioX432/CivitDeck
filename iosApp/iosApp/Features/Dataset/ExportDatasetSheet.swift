@@ -109,6 +109,7 @@ struct ExportDatasetSheet: View {
 struct ExportProgressOverlay: View {
     let progress: ExportProgress
     let onDismiss: () -> Void
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         Group {
@@ -161,7 +162,7 @@ struct ExportProgressOverlay: View {
             VStack(spacing: Spacing.md) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.civitIconExtraLarge)
-                    .foregroundColor(.civitPrimary)
+                    .foregroundColor(theme.primary)
                 Text("Export Complete").font(.civitTitleMedium)
                 Text(fileName).font(.civitBodySmall).foregroundColor(.civitOnSurfaceVariant)
                 if warnings > 0 {

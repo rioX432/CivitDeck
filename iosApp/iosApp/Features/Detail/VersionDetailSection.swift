@@ -7,6 +7,7 @@ struct VersionDetailSection: View {
     var downloads: [Int64: ModelDownload] = [:]
     var onDownload: ((ModelFile) -> Void)?
     var onCancelDownload: ((Int64) -> Void)?
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
@@ -94,7 +95,7 @@ struct VersionDetailSection: View {
                             : 0
                         Text("\(pct)%")
                             .font(.civitLabelSmall)
-                            .foregroundColor(.civitPrimary)
+                            .foregroundColor(theme.primary)
                     }
                 }
             }
@@ -111,7 +112,7 @@ struct VersionDetailSection: View {
         case nil, .cancelled:
             Button { onDownload?(file) } label: {
                 Image(systemName: "arrow.down.circle")
-                    .foregroundColor(.civitPrimary)
+                    .foregroundColor(theme.primary)
                     .accessibilityLabel("Download")
             }
         case .pending:
@@ -129,7 +130,7 @@ struct VersionDetailSection: View {
             }
         case .completed:
             Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(.civitPrimary)
+                .foregroundColor(theme.primary)
                 .accessibilityLabel("Downloaded")
         case .failed:
             Button { onDownload?(file) } label: {
@@ -140,7 +141,7 @@ struct VersionDetailSection: View {
         case .paused:
             Button { onDownload?(file) } label: {
                 Image(systemName: "arrow.down.circle")
-                    .foregroundColor(.civitPrimary)
+                    .foregroundColor(theme.primary)
                     .accessibilityLabel("Resume download")
             }
         default:
@@ -190,7 +191,7 @@ struct VersionDetailSection: View {
                     Spacer()
                     Text(isAdvancedExpanded ? "Hide" : "Show")
                         .font(.civitLabelMedium)
-                        .foregroundColor(.civitPrimary)
+                        .foregroundColor(theme.primary)
                 }
             }
 
@@ -213,7 +214,7 @@ struct VersionDetailSection: View {
                     if let desc = version.description_, !desc.isEmpty {
                         Text("Version Notes")
                             .font(.civitLabelMedium)
-                            .foregroundColor(.civitPrimary)
+                            .foregroundColor(theme.primary)
                             .padding(.top, Spacing.xs)
                         Text(htmlToPlainText(desc))
                             .font(.civitBodySmall)

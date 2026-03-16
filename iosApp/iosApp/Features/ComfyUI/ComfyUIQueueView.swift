@@ -49,6 +49,7 @@ private struct QueueJobRow: View {
     let job: QueueJob
     let isCancelling: Bool
     let onCancel: () -> Void
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         HStack(spacing: Spacing.sm) {
@@ -87,7 +88,7 @@ private struct QueueJobRow: View {
 
     private var statusColor: Color {
         switch job.status {
-        case .running: return .civitPrimary
+        case .running: return theme.primary
         case .error: return .civitError
         case .completed: return .green
         default: return .civitOnSurfaceVariant

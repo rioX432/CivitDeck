@@ -3,6 +3,7 @@ import Shared
 
 struct ModelDetailScreen: View {
     @StateObject private var viewModel: ModelDetailViewModel
+    @Environment(\.civitTheme) private var theme
 
     init(modelId: Int64) {
         _viewModel = StateObject(wrappedValue: ModelDetailViewModel(modelId: modelId))
@@ -239,7 +240,7 @@ struct ModelDetailScreen: View {
                     NavigationLink(value: creator.username) {
                         Text("by \(creator.username)")
                             .font(.civitBodyMedium)
-                            .foregroundColor(.civitPrimary)
+                            .foregroundColor(theme.primary)
                     }
                 }
             }
@@ -331,7 +332,7 @@ struct ModelDetailScreen: View {
                 } label: {
                     Text(isDescriptionExpanded ? "Show less" : "Show more")
                         .font(.civitLabelMedium)
-                        .foregroundColor(.civitPrimary)
+                        .foregroundColor(theme.primary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -367,11 +368,11 @@ struct ModelDetailScreen: View {
                                     .padding(.vertical, Spacing.xsPlus)
                                     .background(
                                         selected
-                                            ? Color.civitPrimary.opacity(0.2)
+                                            ? theme.primary.opacity(0.2)
                                             : Color.civitSurfaceVariant
                                     )
                                     .foregroundColor(
-                                        selected ? .civitPrimary : .civitOnSurface
+                                        selected ? theme.primary : .civitOnSurface
                                     )
                                     .clipShape(Capsule())
                                     .animation(MotionAnimation.spring, value: selected)

@@ -11,13 +11,14 @@ struct ReviewsSection: View {
     let isLoading: Bool
     let onSortChanged: (ReviewSortOrder) -> Void
     let onWriteReview: () -> Void
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             Divider()
             reviewsHeader
             if let totals = ratingTotals, totals.total > 0 {
-                thumbsSummary(up: Int(totals.thumbsUp), down: Int(totals.thumbsDown))
+                thumbsSummary(up: Int(totals.thumbsUp), down: Int(totals.thumbsDown), primaryColor: theme.primary)
             }
             reviewsList
         }
@@ -70,12 +71,12 @@ struct ReviewsSection: View {
 
 // MARK: - Thumbs Summary
 
-private func thumbsSummary(up: Int, down: Int) -> some View {
+private func thumbsSummary(up: Int, down: Int, primaryColor: Color) -> some View {
     HStack(spacing: Spacing.lg) {
         HStack(spacing: Spacing.xs) {
             SwiftUI.Image(systemName: "hand.thumbsup")
                 .font(.caption2)
-                .foregroundColor(.civitPrimary)
+                .foregroundColor(primaryColor)
                 .accessibilityHidden(true)
             Text("\(up)")
                 .font(.civitLabelSmall)
@@ -95,35 +96,36 @@ private func thumbsSummary(up: Int, down: Int) -> some View {
 
 struct ReviewCardView: View {
     let review: ResourceReview
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack {
                 Circle()
-                    .fill(Color.civitPrimary.opacity(0.2))
+                    .fill(theme.primary.opacity(0.2))
                     .frame(width: avatarSize, height: avatarSize)
                     .overlay(
                         Text(String((review.username?.first ?? Character("?")).uppercased()))
                             .font(.civitLabelSmall)
-                            .foregroundColor(.civitPrimary)
+                            .foregroundColor(theme.primary)
                     )
                 Text(review.username ?? "Anonymous")
                     .font(.civitLabelMedium)
                 Spacer()
                 SwiftUI.Image(systemName: review.recommended ? "hand.thumbsup" : "hand.thumbsdown")
                     .font(.civitLabelSmall)
-                    .foregroundColor(review.recommended ? .civitPrimary : .civitError)
+                    .foregroundColor(review.recommended ? theme.primary : .civitError)
                     .accessibilityLabel(review.recommended ? "Recommended" : "Not recommended")
             }
 
             HStack(spacing: Spacing.xs) {
                 SwiftUI.Image(systemName: review.recommended ? "hand.thumbsup" : "hand.thumbsdown")
                     .font(.civitLabelXSmall)
-                    .foregroundColor(review.recommended ? .civitPrimary : .civitError)
+                    .foregroundColor(review.recommended ? theme.primary : .civitError)
                     .accessibilityHidden(true)
                 Text(review.recommended ? "Recommended" : "Not Recommended")
                     .font(.civitLabelSmall)
-                    .foregroundColor(review.recommended ? .civitPrimary : .civitError)
+                    .foregroundColor(review.recommended ? theme.primary : .civitError)
             }
 
             if let details = review.details, !details.isEmpty {
@@ -152,6 +154,7 @@ struct SubmitReviewSheet: View {
     let isSubmitting: Bool
     let onSubmit: (_ rating: Int32, _ recommended: Bool, _ details: String?) -> Void
     let onDismiss: () -> Void
+    @Environment(\.civitTheme) private var theme
 
     @State private var rating: Int = 0
     @State private var recommended: Bool = true
@@ -168,7 +171,7 @@ struct SubmitReviewSheet: View {
                             } label: {
                                 SwiftUI.Image(systemName: i <= rating ? "star.fill" : "star")
                                     .font(.title2)
-                                    .foregroundColor(i <= rating ? .civitPrimary : .civitOnSurfaceVariant.opacity(0.3))
+                                    .foregroundColor(i <= rating ? theme.primary : .civitOnSurfaceVariant.opacity(0.3))
                             }
                             .buttonStyle(.plain)
                         }

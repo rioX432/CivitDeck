@@ -3,6 +3,7 @@ import Shared
 
 struct SDWebUISettingsView: View {
     @StateObject private var viewModel = SDWebUISettingsViewModel()
+    @Environment(\.civitTheme) private var theme
 
     var body: some View {
         List {
@@ -88,7 +89,7 @@ struct SDWebUISettingsView: View {
         HStack {
             Image(systemName: conn.id == viewModel.activeConnection?.id
                 ? "checkmark.circle.fill" : "circle")
-                .foregroundColor(.civitPrimary)
+                .foregroundColor(theme.primary)
                 .accessibilityLabel(conn.id == viewModel.activeConnection?.id
                     ? "Active connection" : "Inactive connection")
                 .onTapGesture { viewModel.onActivate(id: conn.id) }
