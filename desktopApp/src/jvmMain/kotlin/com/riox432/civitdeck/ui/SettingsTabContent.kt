@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +36,6 @@ import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettings
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.DesktopRoute
-import com.riox432.civitdeck.util.removeLastOrNull
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsScreen
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupScreen
@@ -55,7 +55,9 @@ import com.riox432.civitdeck.ui.settings.ExternalServerGallerySection
 import com.riox432.civitdeck.ui.settings.ExternalServerSettingsSection
 import com.riox432.civitdeck.ui.settings.SDWebUIGenerationSection
 import com.riox432.civitdeck.ui.settings.SDWebUISettingsSection
+import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.util.removeLastOrNull
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -84,6 +86,9 @@ fun SettingsTabContent(
         when (currentRoute) {
             is DesktopRoute.DatasetList -> {
                 val vm: DesktopDatasetListViewModel = koinViewModel()
+                DisposableEffect(vm) {
+                    onDispose { vm.onCleared() }
+                }
                 DesktopDatasetListScreen(
                     viewModel = vm,
                     onDatasetClick = { id, name ->
@@ -96,6 +101,9 @@ fun SettingsTabContent(
                 val vm: DesktopDatasetDetailViewModel = koinViewModel(
                     key = "dataset_detail_${currentRoute.datasetId}",
                 ) { parametersOf(currentRoute.datasetId) }
+                DisposableEffect(vm) {
+                    onDispose { vm.onCleared() }
+                }
                 DesktopDatasetDetailScreen(
                     datasetName = currentRoute.datasetName,
                     viewModel = vm,
@@ -104,6 +112,9 @@ fun SettingsTabContent(
             }
             is DesktopRoute.Backup -> {
                 val vm: DesktopBackupViewModel = koinViewModel()
+                DisposableEffect(vm) {
+                    onDispose { vm.onCleared() }
+                }
                 DesktopBackupScreen(
                     viewModel = vm,
                     onBack = { backstack.removeLastOrNull() },
@@ -111,6 +122,9 @@ fun SettingsTabContent(
             }
             is DesktopRoute.PluginList -> {
                 val vm: DesktopPluginViewModel = koinViewModel()
+                DisposableEffect(vm) {
+                    onDispose { vm.onCleared() }
+                }
                 DesktopPluginListScreen(
                     viewModel = vm,
                     onPluginClick = { pluginId ->
@@ -121,6 +135,9 @@ fun SettingsTabContent(
             }
             is DesktopRoute.PluginDetail -> {
                 val vm: DesktopPluginViewModel = koinViewModel()
+                DisposableEffect(vm) {
+                    onDispose { vm.onCleared() }
+                }
                 DesktopPluginDetailScreen(
                     pluginId = currentRoute.pluginId,
                     viewModel = vm,
@@ -129,6 +146,9 @@ fun SettingsTabContent(
             }
             is DesktopRoute.Analytics -> {
                 val vm: DesktopAnalyticsViewModel = koinViewModel()
+                DisposableEffect(vm) {
+                    onDispose { vm.onCleared() }
+                }
                 DesktopAnalyticsScreen(
                     viewModel = vm,
                     onBack = { backstack.removeLastOrNull() },
