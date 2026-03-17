@@ -33,7 +33,11 @@ class BrowsingHistoryRepositoryImplTest {
 
         override suspend fun count(): Int = entities.size
 
-        override suspend fun deleteAll() { entities.clear() }
+        override suspend fun deleteAll(): Int {
+            val count = entities.size
+            entities.clear()
+            return count
+        }
 
         override suspend fun getDailyViewCounts(sinceMillis: Long): List<DayCount> =
             entities.filter { it.viewedAt >= sinceMillis }

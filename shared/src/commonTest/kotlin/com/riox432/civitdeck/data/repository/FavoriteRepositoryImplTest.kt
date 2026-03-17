@@ -33,8 +33,8 @@ class FavoriteRepositoryImplTest {
             return collection.id
         }
 
-        override suspend fun renameCollection(id: Long, name: String, updatedAt: Long) {}
-        override suspend fun deleteCollection(id: Long) {}
+        override suspend fun renameCollection(id: Long, name: String, updatedAt: Long): Int = 1
+        override suspend fun deleteCollection(id: Long): Int = 1
 
         override fun observeEntriesByCollection(collectionId: Long): Flow<List<CollectionModelEntity>> =
             flow.map { entries.filter { it.collectionId == collectionId }.sortedByDescending { it.addedAt } }
@@ -49,14 +49,18 @@ class FavoriteRepositoryImplTest {
             ents.forEach { insertEntry(it) }
         }
 
-        override suspend fun removeEntry(collectionId: Long, modelId: Long) {
+        override suspend fun removeEntry(collectionId: Long, modelId: Long): Int {
+            val removed = entries.count { it.collectionId == collectionId && it.modelId == modelId }
             entries.removeAll { it.collectionId == collectionId && it.modelId == modelId }
             flow.value++
+            return removed
         }
 
-        override suspend fun removeEntries(collectionId: Long, modelIds: List<Long>) {
+        override suspend fun removeEntries(collectionId: Long, modelIds: List<Long>): Int {
+            val removed = entries.count { it.collectionId == collectionId && it.modelId in modelIds }
             entries.removeAll { it.collectionId == collectionId && it.modelId in modelIds }
             flow.value++
+            return removed
         }
 
         override suspend fun getEntries(
@@ -94,13 +98,17 @@ class FavoriteRepositoryImplTest {
             this.collections.addAll(collections)
             flow.value++
         }
-        override suspend fun deleteAllEntries() {
+        override suspend fun deleteAllEntries(): Int {
+            val count = entries.size
             entries.clear()
             flow.value++
+            return count
         }
-        override suspend fun deleteAllNonDefault() {
+        override suspend fun deleteAllNonDefault(): Int {
+            val count = collections.count { !it.isDefault }
             collections.removeAll { !it.isDefault }
             flow.value++
+            return count
         }
 
         override fun observeAllCollectionsWithCount(): Flow<List<CollectionWithCount>> =

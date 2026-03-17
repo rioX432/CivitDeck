@@ -37,10 +37,11 @@ class SimpleRepositoriesImplTest {
         override suspend fun countByPromptAndModel(prompt: String, modelName: String?): Int =
             entities.count { it.prompt == prompt && it.modelName == modelName }
 
-        override suspend fun updateTemplate(id: Long, isTemplate: Boolean, templateName: String?) {
+        override suspend fun updateTemplate(id: Long, isTemplate: Boolean, templateName: String?): Int {
             val idx = entities.indexOfFirst { it.id == id }
             if (idx >= 0) entities[idx] = entities[idx].copy(isTemplate = isTemplate, templateName = templateName)
             updates.value++
+            return if (idx >= 0) 1 else 0
         }
 
 
@@ -63,14 +64,18 @@ class SimpleRepositoriesImplTest {
             updates.value++
         }
 
-        override suspend fun deleteAllUserCreated() {
+        override suspend fun deleteAllUserCreated(): Int {
+            val count = entities.count { it.id > 0 }
             entities.removeAll { it.id > 0 }
             updates.value++
+            return count
         }
 
-        override suspend fun deleteById(id: Long) {
+        override suspend fun deleteById(id: Long): Int {
+            val count = entities.count { it.id == id }
             entities.removeAll { it.id == id }
             updates.value++
+            return count
         }
     }
 
