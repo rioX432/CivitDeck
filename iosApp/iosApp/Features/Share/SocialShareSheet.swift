@@ -108,7 +108,7 @@ struct SocialShareSheet: View {
                         onRemove(hashtag.tag)
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.civitLabelXSmall)
                     }
                 }
             }

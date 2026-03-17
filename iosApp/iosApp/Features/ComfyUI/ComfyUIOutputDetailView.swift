@@ -154,6 +154,7 @@ private struct ComfyUIOutputDetailPage: View {
             }
         }
         .frame(maxWidth: .infinity)
+        .accessibilityLabel("Generated image")
         .onTapGesture { showImageViewer = true }
     }
 

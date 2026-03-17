@@ -202,6 +202,7 @@ struct ImageGalleryScreen: View {
                     }
                     .aspectRatio(aspectRatio, contentMode: .fill)
                     .clipped()
+                    .accessibilityLabel("Gallery image")
 
                     if image.contentType == .video {
                         SwiftUI.Image(systemName: "play.circle.fill")
