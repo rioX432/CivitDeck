@@ -4,6 +4,8 @@ import Shared
 struct ExternalServerImageDetailView: View {
     let image: ServerImage
     @Environment(\.dismiss) private var dismiss
+    @State private var showShareSheet = false
+    @StateObject private var shareHashtagVM = ShareHashtagViewModel()
 
     var body: some View {
         ScrollView {
@@ -37,7 +39,25 @@ struct ExternalServerImageDetailView: View {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Close") { dismiss() }
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showShareSheet = true
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .accessibilityLabel("Share")
+                }
+            }
         }
+        .sheet(isPresented: $showShareSheet) {
+            SocialShareSheet(
+                hashtags: shareHashtagVM.hashtags,
+                onToggle: { tag, enabled in shareHashtagVM.toggle(tag: tag, isEnabled: enabled) },
+                onAdd: { tag in shareHashtagVM.add(tag: tag) },
+                onRemove: { tag in shareHashtagVM.remove(tag: tag) }
+            )
+            .presentationDetents([.medium, .large])
+        }
+        .task { await shareHashtagVM.startObserving() }
     }
 }
 

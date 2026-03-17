@@ -1,6 +1,5 @@
 package com.riox432.civitdeck.ui.gallery
 
-import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -77,23 +76,41 @@ fun ImageViewerOverlay(
     initialIndex: Int,
     onDismiss: () -> Unit,
     onSavePrompt: (ImageGenerationMeta, String?) -> Unit = { _, _ -> },
+    shareHashtags: List<com.riox432.civitdeck.domain.model.ShareHashtag> = emptyList(),
+    onToggleShareHashtag: (String, Boolean) -> Unit = { _, _ -> },
+    onAddShareHashtag: (String) -> Unit = {},
+    onRemoveShareHashtag: (String) -> Unit = {},
 ) {
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
         BackHandler(onBack = onDismiss)
-        ImageViewerContent(images, initialIndex, onDismiss, onSavePrompt)
+        ImageViewerContent(
+            images,
+            initialIndex,
+            onDismiss,
+            onSavePrompt,
+            shareHashtags,
+            onToggleShareHashtag,
+            onAddShareHashtag,
+            onRemoveShareHashtag,
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Suppress("LongParameterList")
 private fun ImageViewerContent(
     images: List<ViewerImage>,
     initialIndex: Int,
     onDismiss: () -> Unit,
     onSavePrompt: (ImageGenerationMeta, String?) -> Unit,
+    shareHashtags: List<com.riox432.civitdeck.domain.model.ShareHashtag>,
+    onToggleShareHashtag: (String, Boolean) -> Unit,
+    onAddShareHashtag: (String) -> Unit,
+    onRemoveShareHashtag: (String) -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -102,6 +119,7 @@ private fun ImageViewerContent(
     var controlsVisible by remember { mutableStateOf(true) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var currentDragY by remember { mutableFloatStateOf(0f) }
+    var showShareSheet by remember { mutableStateOf(false) }
 
     Box(Modifier.fillMaxSize()) {
         // Layer 1: Background (stays in place, fades with drag)
@@ -133,7 +151,7 @@ private fun ImageViewerContent(
             controlsVisible && currentDragY == 0f,
             onDismiss,
             onInfoClick = { showMetadata = true },
-            onShareClick = { shareImage(context, it.url, it.meta) },
+            onShareClick = { showShareSheet = true },
             onDownloadClick = { image ->
                 scope.launch {
                     val success = ImageDownloader.download(context, image.url)
@@ -145,6 +163,16 @@ private fun ImageViewerContent(
     }
 
     ViewerMetadataSheet(images, pagerState, sheetState, showMetadata, { showMetadata = false }, onSavePrompt)
+
+    if (showShareSheet) {
+        com.riox432.civitdeck.ui.share.SocialShareSheet(
+            hashtags = shareHashtags,
+            onToggleHashtag = onToggleShareHashtag,
+            onAddHashtag = onAddShareHashtag,
+            onRemoveHashtag = onRemoveShareHashtag,
+            onDismiss = { showShareSheet = false },
+        )
+    }
 }
 
 private fun backgroundAlpha(dragY: Float): Float {
@@ -344,41 +372,6 @@ private fun ControlButton(onClick: () -> Unit, icon: ImageVector, label: String)
         ),
     ) {
         Icon(icon, contentDescription = label)
-    }
-}
-
-private fun shareImage(
-    context: android.content.Context,
-    imageUrl: String,
-    meta: ImageGenerationMeta?,
-) {
-    val text = formatShareText(imageUrl, meta)
-    val intent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_TEXT, text)
-    }
-    context.startActivity(Intent.createChooser(intent, "Share image"))
-}
-
-private fun formatShareText(imageUrl: String, meta: ImageGenerationMeta?): String {
-    return buildString {
-        appendLine(imageUrl)
-        if (meta != null) {
-            appendLine()
-            meta.prompt?.let { appendLine("Prompt: $it") }
-            meta.negativePrompt?.let { appendLine("Negative: $it") }
-            val params = listOfNotNull(
-                meta.model?.let { "Model: $it" },
-                meta.steps?.let { "Steps: $it" },
-                meta.cfgScale?.let { "CFG: $it" },
-                meta.sampler?.let { "Sampler: $it" },
-            )
-            if (params.isNotEmpty()) {
-                appendLine(params.joinToString(" | "))
-            }
-        }
-        appendLine()
-        append("Shared via CivitDeck")
     }
 }
 

@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -26,6 +27,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -33,7 +38,9 @@ import androidx.compose.ui.platform.LocalContext
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerImage
+import com.riox432.civitdeck.ui.share.SocialShareSheet
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,8 +48,13 @@ import com.riox432.civitdeck.ui.theme.Spacing
 fun ExternalServerImageDetailScreen(
     image: ServerImage,
     onBack: () -> Unit,
+    shareHashtags: List<ShareHashtag> = emptyList(),
+    onToggleShareHashtag: (String, Boolean) -> Unit = { _, _ -> },
+    onAddShareHashtag: (String) -> Unit = {},
+    onRemoveShareHashtag: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
+    var showShareSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -51,6 +63,11 @@ fun ExternalServerImageDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showShareSheet = true }) {
+                        Icon(Icons.Default.Share, contentDescription = "Share")
                     }
                 },
             )
@@ -91,6 +108,15 @@ fun ExternalServerImageDetailScreen(
                 MetadataGrid(image = image)
             }
         }
+    }
+    if (showShareSheet) {
+        SocialShareSheet(
+            hashtags = shareHashtags,
+            onToggleHashtag = onToggleShareHashtag,
+            onAddHashtag = onAddShareHashtag,
+            onRemoveHashtag = onRemoveShareHashtag,
+            onDismiss = { showShareSheet = false },
+        )
     }
 }
 

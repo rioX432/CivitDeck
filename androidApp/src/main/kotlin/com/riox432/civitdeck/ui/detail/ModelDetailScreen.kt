@@ -1,6 +1,5 @@
 package com.riox432.civitdeck.ui.detail
 
-import android.content.Intent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -37,6 +36,7 @@ import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
+import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
 import com.riox432.civitdeck.domain.model.stripCdnWidth
 import com.riox432.civitdeck.download.DownloadScheduler
@@ -45,9 +45,10 @@ import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.qrcode.QRCodeSheet
+import com.riox432.civitdeck.ui.share.SocialShareSheet
 
 @Composable
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "LongMethod")
 fun ModelDetailScreen(
     viewModel: ModelDetailViewModel,
     modelId: Long,
@@ -64,6 +65,10 @@ fun ModelDetailScreen(
         ) -> Unit
     )? = null,
     sharedElementSuffix: String = "",
+    shareHashtags: List<ShareHashtag> = emptyList(),
+    onToggleShareHashtag: (String, Boolean) -> Unit = { _, _ -> },
+    onAddShareHashtag: (String) -> Unit = {},
+    onRemoveShareHashtag: (String) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val collections by viewModel.collections.collectAsStateWithLifecycle()
@@ -72,6 +77,7 @@ fun ModelDetailScreen(
     var showSendToPCSheet by remember { mutableStateOf(false) }
     var showQRCodeSheet by remember { mutableStateOf(false) }
     var showSubmitReviewSheet by remember { mutableStateOf(false) }
+    var showShareSheet by remember { mutableStateOf(false) }
     val haptic = rememberHapticFeedback()
     val context = LocalContext.current
 
@@ -96,6 +102,7 @@ fun ModelDetailScreen(
         onShowSendToPCSheet = { showSendToPCSheet = true },
         onShowQRCodeSheet = { showQRCodeSheet = true },
         onShowSubmitReviewSheet = { showSubmitReviewSheet = true },
+        onShowShareSheet = { showShareSheet = true },
     )
 
     ReviewSubmitHandler(
@@ -118,6 +125,16 @@ fun ModelDetailScreen(
         onDismissQRCode = { showQRCodeSheet = false },
         modelId = modelId,
     )
+
+    if (showShareSheet) {
+        SocialShareSheet(
+            hashtags = shareHashtags,
+            onToggleHashtag = onToggleShareHashtag,
+            onAddHashtag = onAddShareHashtag,
+            onRemoveHashtag = onRemoveShareHashtag,
+            onDismiss = { showShareSheet = false },
+        )
+    }
 }
 
 @Suppress("LongParameterList")
@@ -138,6 +155,7 @@ private fun ModelDetailScaffold(
     onShowSendToPCSheet: () -> Unit,
     onShowQRCodeSheet: () -> Unit,
     onShowSubmitReviewSheet: () -> Unit,
+    onShowShareSheet: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -150,6 +168,7 @@ private fun ModelDetailScaffold(
                 },
                 onAddToCollection = onShowCollectionSheet,
                 onShowQRCode = onShowQRCodeSheet,
+                onShareClick = onShowShareSheet,
             )
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -254,8 +273,8 @@ private fun ModelDetailTopBar(
     onFavoriteToggle: () -> Unit,
     onAddToCollection: () -> Unit,
     onShowQRCode: () -> Unit,
+    onShareClick: () -> Unit,
 ) {
-    val context = LocalContext.current
     TopAppBar(
         windowInsets = WindowInsets(0, 0, 0, 0),
         title = {
@@ -280,16 +299,7 @@ private fun ModelDetailTopBar(
             IconButton(onClick = onShowQRCode) {
                 Icon(Icons.Default.QrCode2, contentDescription = stringResource(R.string.cd_share_qr_code))
             }
-            IconButton(
-                onClick = {
-                    val model = uiState.model ?: return@IconButton
-                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, "https://civitai.com/models/${model.id}")
-                    }
-                    context.startActivity(Intent.createChooser(shareIntent, "Share model"))
-                },
-            ) {
+            IconButton(onClick = onShareClick) {
                 Icon(Icons.Default.Share, contentDescription = stringResource(R.string.cd_share))
             }
             IconButton(onClick = onFavoriteToggle) {

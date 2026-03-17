@@ -21,6 +21,8 @@ struct ModelDetailScreen: View {
     @State private var showLinkSheet = false
     @State private var showQRCodeSheet = false
     @State private var showSubmitReviewSheet = false
+    @State private var showShareSheet = false
+    @StateObject private var shareHashtagVM = ShareHashtagViewModel()
 
     var body: some View {
         Group {
@@ -70,12 +72,11 @@ struct ModelDetailScreen: View {
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
-                if let model = viewModel.model,
-                   let url = URL(string: "https://civitai.com/models/\(model.id)") {
-                    ShareLink(item: url) {
-                        Image(systemName: "square.and.arrow.up")
-                            .accessibilityLabel("Share")
-                    }
+                Button {
+                    showShareSheet = true
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .accessibilityLabel("Share")
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -95,6 +96,14 @@ struct ModelDetailScreen: View {
                 group.addTask { await viewModel.observeModelCollections() }
             }
         }
+        .sheet(isPresented: $showShareSheet) {
+            SocialShareSheet(hashtags: shareHashtagVM.hashtags,
+                             onToggle: { tag, e in shareHashtagVM.toggle(tag: tag, isEnabled: e) },
+                             onAdd: { shareHashtagVM.add(tag: $0) },
+                             onRemove: { shareHashtagVM.remove(tag: $0) })
+            .presentationDetents([.medium, .large])
+        }
+        .task { await shareHashtagVM.startObserving() }
         .sheet(isPresented: $showCollectionSheet) {
             AddToCollectionSheet(
                 collections: viewModel.collections,
@@ -150,7 +159,6 @@ struct ModelDetailScreen: View {
     }
 
     // MARK: - Content
-
     private func modelContent(model: Model) -> some View {
         ScrollView {
             VStack(spacing: Spacing.lg) {
@@ -192,7 +200,6 @@ struct ModelDetailScreen: View {
     }
 
     // MARK: - Image Carousel
-
     private var filteredImages: [ModelImage] {
         let allImages = viewModel.selectedVersion?.images ?? []
         return allImages.filter { $0.isAllowedByFilter(viewModel.nsfwFilterLevel) }
@@ -221,7 +228,6 @@ struct ModelDetailScreen: View {
     }
 
     // MARK: - Model Header
-
     private func modelHeader(model: Model) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             Text(model.name)
@@ -250,7 +256,6 @@ struct ModelDetailScreen: View {
     }
 
     // MARK: - Image Actions Row
-
     private func imageActionsRow(modelVersionId: Int64) -> some View {
         VStack(spacing: Spacing.sm) {
             HStack(spacing: Spacing.sm) {
@@ -298,7 +303,6 @@ struct ModelDetailScreen: View {
     }
 
     // MARK: - Tags Section
-
     @ViewBuilder
     private func tagsSection(tags: [String]) -> some View {
         if !tags.isEmpty {
@@ -314,7 +318,6 @@ struct ModelDetailScreen: View {
     }
 
     // MARK: - Description Section
-
     @ViewBuilder
     private func descriptionSection(description: String?) -> some View {
         if let description, !description.isEmpty {
@@ -386,7 +389,6 @@ struct ModelDetailScreen: View {
     }
 
     // MARK: - Version Detail
-
     @ViewBuilder
     private var versionDetail: some View {
         if let version = viewModel.selectedVersion {
@@ -418,7 +420,6 @@ struct ModelDetailScreen: View {
 }
 
 // MARK: - Civitai Link Send
-
 @MainActor
 private class CivitaiLinkSendViewModel: ObservableObject {
     @Published var status: CivitaiLinkStatus = .disconnected
