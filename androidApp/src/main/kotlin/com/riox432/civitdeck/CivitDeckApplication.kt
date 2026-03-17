@@ -51,6 +51,7 @@ import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
 import com.riox432.civitdeck.widget.WidgetRefreshWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -63,6 +64,7 @@ import java.util.concurrent.TimeUnit
 
 class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinComponent {
 
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val observeNotificationsEnabled: ObserveNotificationsEnabledUseCase by inject()
     private val observePollingInterval: ObservePollingIntervalUseCase by inject()
 
@@ -72,12 +74,12 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
             androidContext(this@CivitDeckApplication)
             modules(androidModule)
         }
-        CoroutineScope(Dispatchers.IO).launch {
+        applicationScope.launch {
             registerWorkflowPlugins()
             registerExportPlugins()
             registerThemePlugins()
         }
-        CoroutineScope(Dispatchers.IO).launch { initializeAuth() }
+        applicationScope.launch { initializeAuth() }
         observeAndScheduleNotifications()
         scheduleWidgetRefresh()
     }
@@ -97,7 +99,7 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
     }
 
     private fun observeAndScheduleNotifications() {
-        CoroutineScope(Dispatchers.IO).launch {
+        applicationScope.launch {
             combine(
                 observeNotificationsEnabled(),
                 observePollingInterval(),

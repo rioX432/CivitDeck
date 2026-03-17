@@ -26,6 +26,7 @@ import com.riox432.civitdeck.di.registerThemePlugins
 import com.riox432.civitdeck.di.registerWorkflowPlugins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import okio.Path.Companion.toPath
 import java.util.prefs.Preferences
@@ -35,7 +36,8 @@ fun main() {
         modules(desktopModule)
     }
     setupCoilImageLoader()
-    CoroutineScope(Dispatchers.IO).launch {
+    val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    applicationScope.launch {
         registerWorkflowPlugins()
         registerExportPlugins()
         registerThemePlugins()
