@@ -2,11 +2,9 @@ package com.riox432.civitdeck.ui.analytics
 
 import com.riox432.civitdeck.domain.model.CategoryStat
 import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -23,9 +21,9 @@ data class DesktopAnalyticsUiState(
 
 class DesktopAnalyticsViewModel(
     private val getBrowsingStatsUseCase: GetBrowsingStatsUseCase,
-) {
+) : ViewModel() {
 
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val scope = viewModelScope
 
     private val _uiState = MutableStateFlow(DesktopAnalyticsUiState())
     val uiState: StateFlow<DesktopAnalyticsUiState> = _uiState
@@ -62,7 +60,7 @@ class DesktopAnalyticsViewModel(
         }
     }
 
-    fun onCleared() {
-        scope.cancel()
+    public override fun onCleared() {
+        super.onCleared()
     }
 }

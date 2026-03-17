@@ -34,6 +34,7 @@ import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettings
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.search.DesktopModelCard
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.ui.theme.Elevation
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

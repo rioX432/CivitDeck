@@ -38,6 +38,7 @@ import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.search.DesktopModelCard
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.ui.theme.Elevation
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

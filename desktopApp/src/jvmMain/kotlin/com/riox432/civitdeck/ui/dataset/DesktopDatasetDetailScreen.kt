@@ -63,6 +63,7 @@ import com.riox432.civitdeck.domain.model.ImageSource
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.ui.theme.Elevation
 import org.koin.compose.viewmodel.koinViewModel
 
 private const val DEFAULT_GRID_COLUMNS = 4

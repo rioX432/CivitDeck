@@ -5,10 +5,8 @@ import com.riox432.civitdeck.domain.model.RestoreStrategy
 import com.riox432.civitdeck.domain.usecase.CreateBackupUseCase
 import com.riox432.civitdeck.domain.usecase.ParseBackupUseCase
 import com.riox432.civitdeck.domain.usecase.RestoreBackupUseCase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,9 +30,9 @@ class DesktopBackupViewModel(
     private val createBackupUseCase: CreateBackupUseCase,
     private val restoreBackupUseCase: RestoreBackupUseCase,
     private val parseBackupUseCase: ParseBackupUseCase,
-) {
+) : ViewModel() {
 
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val scope = viewModelScope
 
     private val _uiState = MutableStateFlow(BackupUiState())
     val uiState: StateFlow<BackupUiState> = _uiState.asStateFlow()
@@ -139,7 +137,7 @@ class DesktopBackupViewModel(
         _uiState.update { it.copy(error = null) }
     }
 
-    fun onCleared() {
-        scope.cancel()
+    public override fun onCleared() {
+        super.onCleared()
     }
 }

@@ -3,7 +3,6 @@ package com.riox432.civitdeck
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,9 +56,6 @@ fun SearchTabContent(
                 val detailVm: ModelDetailViewModel = koinViewModel(
                     key = "detail_${currentRoute.modelId}",
                 ) { parametersOf(currentRoute.modelId) }
-                DisposableEffect(detailVm) {
-                    onDispose { detailVm.onCleared() }
-                }
                 DesktopDetailScreen(
                     viewModel = detailVm,
                     onBack = { backstack.removeLastOrNull() },
@@ -82,9 +78,6 @@ fun SearchTabContent(
                 val creatorVm: CreatorProfileViewModel = koinViewModel(
                     key = "creator_${currentRoute.username}",
                 ) { parametersOf(currentRoute.username) }
-                DisposableEffect(creatorVm) {
-                    onDispose { creatorVm.onCleared() }
-                }
                 DesktopCreatorScreen(
                     viewModel = creatorVm,
                     onBack = { backstack.removeLastOrNull() },
@@ -109,12 +102,6 @@ fun SearchTabContent(
                 val rightVm: ModelDetailViewModel = koinViewModel(
                     key = "compare_right_${currentRoute.rightModelId}",
                 ) { parametersOf(currentRoute.rightModelId) }
-                DisposableEffect(leftVm, rightVm) {
-                    onDispose {
-                        leftVm.onCleared()
-                        rightVm.onCleared()
-                    }
-                }
                 DesktopCompareScreen(
                     leftViewModel = leftVm,
                     rightViewModel = rightVm,

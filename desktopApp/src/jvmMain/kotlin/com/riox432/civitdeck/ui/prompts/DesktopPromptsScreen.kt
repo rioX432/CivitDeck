@@ -41,6 +41,7 @@ import com.riox432.civitdeck.feature.prompts.presentation.PromptTab
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.ui.theme.Elevation
 
 @Composable
 fun DesktopPromptsScreen(
