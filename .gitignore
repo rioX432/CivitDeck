@@ -34,6 +34,10 @@ Thumbs.db
 ## AI Tools
 .claude/settings.local.json
 
+## Signing
+*.jks
+*.keystore
+
 ## Misc
 *.log
 *.tmp
