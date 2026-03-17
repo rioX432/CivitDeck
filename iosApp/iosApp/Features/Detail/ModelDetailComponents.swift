@@ -133,8 +133,7 @@ struct CarouselViewer: View {
         VStack {
             Spacer()
             Text(message)
-                .font(.subheadline)
-                .fontWeight(.medium)
+                .font(.civitTitleSmall)
                 .foregroundColor(.white)
                 .padding(.horizontal, Spacing.lg)
                 .padding(.vertical, Spacing.smPlus)
@@ -271,8 +270,7 @@ struct GridImageViewer: View {
                 VStack {
                     Spacer()
                     Text(message)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                        .font(.civitTitleSmall)
                         .foregroundColor(.white)
                         .padding(.horizontal, Spacing.lg)
                         .padding(.vertical, Spacing.smPlus)
