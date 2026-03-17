@@ -2,6 +2,7 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.api.CivitAiApi
+import com.riox432.civitdeck.data.api.GitHubReleaseApi
 import com.riox432.civitdeck.data.api.civitailink.CivitaiLinkApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
@@ -26,6 +27,9 @@ val networkModule = module {
             encodeDefaults = true
         }
     }
+
+    // GitHub Releases
+    single { GitHubReleaseApi(get()) }
 
     // ComfyUI
     single(named("comfyui")) { createComfyUIHttpClient() }

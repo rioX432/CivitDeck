@@ -18,6 +18,7 @@ import com.riox432.civitdeck.di.registerExportPlugins
 import com.riox432.civitdeck.di.registerThemePlugins
 import com.riox432.civitdeck.di.registerWorkflowPlugins
 import com.riox432.civitdeck.domain.model.PollingInterval
+import com.riox432.civitdeck.domain.repository.AppVersionProvider
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
@@ -48,6 +49,7 @@ import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.feed.FeedViewModel
 import com.riox432.civitdeck.ui.plugin.PluginManagementViewModel
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
+import com.riox432.civitdeck.ui.update.UpdateViewModel
 import com.riox432.civitdeck.widget.WidgetRefreshWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -133,6 +135,8 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
 }
 
 val androidModule = module {
+    single<AppVersionProvider> { AndroidAppVersionProvider() }
+    viewModel { UpdateViewModel(get(), get(), get()) }
     viewModel {
         ModelSearchViewModel(
             get(), get(), get(), get(), get(), get(),

@@ -126,6 +126,7 @@ import com.riox432.civitdeck.ui.settings.StorageSettingsScreen
 import com.riox432.civitdeck.ui.share.ShareViewModel
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
+import com.riox432.civitdeck.ui.update.UpdateViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.collections.buildList
@@ -475,16 +476,26 @@ private fun CivitDeckNavDisplay(
                 val authVm: AuthSettingsViewModel = koinViewModel()
                 val storageVm: StorageSettingsViewModel = koinViewModel()
                 val behaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
+                val updateVm: UpdateViewModel = koinViewModel()
+                val context = androidx.compose.ui.platform.LocalContext.current
                 SettingsScreen(
                     authViewModel = authVm,
                     storageViewModel = storageVm,
                     appBehaviorViewModel = behaviorVm,
+                    updateViewModel = updateVm,
                     onNavigateToAppearance = { backStack.add(AppearanceSettingsRoute) },
                     onNavigateToContentFilter = { backStack.add(ContentFilterSettingsRoute) },
                     onNavigateToStorage = { backStack.add(StorageSettingsRoute) },
                     onNavigateToAdvanced = { backStack.add(AdvancedSettingsRoute) },
                     onNavigateToAnalytics = { backStack.add(AnalyticsRoute) },
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
+                    onOpenUrl = { url ->
+                        val intent = android.content.Intent(
+                            android.content.Intent.ACTION_VIEW,
+                            android.net.Uri.parse(url),
+                        )
+                        context.startActivity(intent)
+                    },
                     scrollToTopTrigger = settingsScrollTrigger,
                 )
             }
