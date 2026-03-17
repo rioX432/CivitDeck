@@ -53,6 +53,7 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Model File Browser** — detect local model files with CivitAI hash matching
 - **Creator Follow & Feed** — follow creators and get a personalized feed of their latest models with pull-to-refresh
 - **Analytics** — usage analytics with browsing/search frequency charts and model popularity insights
+- **Social Sharing** — share models with customizable hashtags (#AIart, #ComfyUI, etc.) and copy/share to any app
 - **QR Code Sharing** — share and scan model links via QR code
 - **Model Notes & Tags** — add personal notes and tags to any model for your own organization
 - **Community Reviews** — read and submit reviews on models

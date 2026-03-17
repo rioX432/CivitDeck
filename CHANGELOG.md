@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-03-17
+
 ### Added
+
+#### Social Sharing
+- Add social share sheet with hashtag management for ComfyUI outputs (24335ab)
+- Extend SocialShareSheet to External Server, Gallery, and Model Detail screens (5b414d5)
+- Add hashtag management in Settings, allow custom hashtags and deleting all (05c0120)
 
 #### Desktop Application
 - Create desktopApp module with Compose Desktop shell (#467) (9acb5cb)
@@ -22,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add WorkflowEnginePlugin interface and ExternalServer/ComfyUI adapters (#412) (9221224)
 - Add ExportFormatPlugin interface and kohya-ss adapter (#413) (d9c28fe)
 - Add ThemePlugin interface with JSON import and theme selection (#414) (45339e7)
+
+#### Desktop Enhancements
+- Add desktop QR code generation and scanning (#511) (aad0fd9)
+- Add desktop keyboard Tab navigation and focus rings (#508) (429ddff)
+- Add Discovery/Trending tab to desktop navigation (#512) (1225e41)
 
 #### Quality & Discovery
 - Add quality filter toggle to search screen (#459) (a892527)
@@ -48,6 +60,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add background model file download manager (#382, #383, #384) (502a4be)
 
 #### Accessibility
+- Add contentDescription to Icons in SocialShareSheet (#566) (699d8a2)
+- Add accessibility labels to CachedAsyncImage instances (#569) (78bc262)
+- Add accessibilityLabel to remaining iOS icon views (#549) (92aa1fe)
+- Add accessibilityLabel to icon-only buttons (#541) (7aa1e26)
 - Add onClickLabel to clickable modifiers for accessibility (#451) (d63c4ef)
 - Add empty state to BatchTagEditorScreen (#449) (89ee79c)
 - Add missing accessibility labels across iOS views (#429) (262fc59)
@@ -60,6 +76,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add accessibility traits to tappable elements (#399) (d029563)
 
 #### Code Quality
+- Add DomainException hierarchy for structured error handling (#564) (96471d7)
+- Add error logging to ComfyUI and SDWebUI API calls (#547) (03d2e19)
+- Add @Suppress to generic exception catch blocks (#551) (75aa4a5)
+- Add timeout to ExternalServer polling loop (#536) (1939f9a)
 - Add logging to swallowed exceptions across core modules (#389) (151ea08)
 - Add key parameter to items() in AnalyticsScreen (#374) (95ba429)
 - Add key params to itemsIndexed to prevent state leaks (#388) (d5f7e8a)
@@ -89,6 +109,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use cached image loader in widget instead of AsyncImage (#428) (d06958e)
 
 #### Design Token Migration
+- Replace hardcoded fonts with civitTitleSmall in toast views (#567) (2d40f29)
+- Replace hardcoded font sizes with civitLabelXSmall token (#568) (d9b2d98)
+- Replace hardcoded elevation with design token (#555) (0ed541d)
+- Add Spacing.xxs token and replace hardcoded 2.dp (#543) (af200a4)
+- Replace magic numbers with spacing constants in widget (#542) (ef478dc)
+- Make primary colors dynamic based on accent selection (#520) (c3d5f7e)
 - Replace remaining hardcoded colors with design tokens in iOS views (#454) (39e61cd)
 - Replace .font(.system()) with design tokens in iOS views (#453) (ac9728d, 6a2d70f)
 - Replace hardcoded colors with design tokens in iOS views (#452) (5ab7a5b, b3e7aa6)
@@ -103,6 +129,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace hardcoded colors with theme tokens (#365) (08dd87c)
 
 #### Architecture
+- Use structured applicationScope instead of unmanaged CoroutineScopes (#565) (65ab39e)
+- Split ComfyUIRepositoryImpl into separate repository classes (#498) (cae2b75)
+- Move WorkflowTemplateViewModel registration to platform modules (#497) (3209fdc)
 - Refactor ModelDetailScreen.kt into smaller composables (#421) (1a7b4bf)
 - Refactor ModelSearchScreen.kt into smaller composables (#420) (04e8a7e)
 - Switch review display from 5-star rating to thumbs up/down (cb2306d, e992e75)
@@ -113,6 +142,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix Desktop build: add Elevation imports, extend ViewModel, remove protected onCleared calls (bd9376d)
+- Fix test fake DAO return types to match Int signatures (855e9e4)
+- Fix DAO return type mismatch in repository implementations (#554) (a093d55)
+- Add DisposableEffect cleanup for Desktop ViewModels (#546) (783553d)
+- Fix KMP IOException import: use Exception fallback (#537) (18af729)
+- Update TileService API for Android 14+ (#540) (ec5feca)
+- Fix image viewer: use fullScreenCover with non-optional index and dismiss() (850e915)
+- Fix gesture conflicts: prevent UIKit tap recognizers from blocking SwiftUI buttons (8a7379b)
+- Fix Saved tab navigation by using NavigationLink instead of Button (#523) (9be8018)
+- Fix image viewer black screen on dismiss and add download/share buttons (#521) (5af6b20)
+- Fix double back button in Settings on iPad (#519) (4f6ddeb)
+- Fix Toggle/Picker bindings with optimistic local state update (#517) (654291f)
+- Limit tab shortcuts on iPhone to prevent More tab (#518) (dcf5a8e)
 - Register built-in plugins on desktop startup (acba766)
 - Fix desktop audit issues: settings integration, NSFW, navigation, empty states (63cf05f)
 - Apply theme mode, accent color, and AMOLED settings to desktop (906c6a9)
