@@ -8,12 +8,10 @@ import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,9 +38,9 @@ class DesktopSearchViewModel(
     private val getModelsUseCase: GetModelsUseCase,
     private val observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase,
     private val observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase,
-) {
+) : ViewModel() {
 
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val scope = viewModelScope
 
     private val _uiState = MutableStateFlow(DesktopSearchUiState())
     val uiState: StateFlow<DesktopSearchUiState> = _uiState.asStateFlow()
@@ -151,8 +149,8 @@ class DesktopSearchViewModel(
         }
     }
 
-    fun onCleared() {
-        scope.cancel()
+    public override fun onCleared() {
+        super.onCleared()
     }
 
     companion object {

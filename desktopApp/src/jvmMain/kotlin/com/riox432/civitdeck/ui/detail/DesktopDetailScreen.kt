@@ -72,6 +72,7 @@ import com.riox432.civitdeck.ui.components.ModelStatsRow
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
+import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.util.FormatUtils
 
 @Composable

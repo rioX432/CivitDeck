@@ -36,6 +36,7 @@ import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettings
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.ui.theme.Elevation
 
 @Composable
 fun DesktopSettingsScreen(

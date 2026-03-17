@@ -3,11 +3,9 @@ package com.riox432.civitdeck.ui.feed
 import com.riox432.civitdeck.domain.model.FeedItem
 import com.riox432.civitdeck.domain.usecase.GetCreatorFeedUseCase
 import com.riox432.civitdeck.domain.usecase.MarkFeedReadUseCase
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -22,9 +20,9 @@ data class DesktopFeedUiState(
 class DesktopFeedViewModel(
     private val getCreatorFeedUseCase: GetCreatorFeedUseCase,
     private val markFeedReadUseCase: MarkFeedReadUseCase,
-) {
+) : ViewModel() {
 
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val scope = viewModelScope
 
     private val _uiState = MutableStateFlow(DesktopFeedUiState())
     val uiState: StateFlow<DesktopFeedUiState> = _uiState
@@ -64,7 +62,7 @@ class DesktopFeedViewModel(
         }
     }
 
-    fun onCleared() {
-        scope.cancel()
+    public override fun onCleared() {
+        super.onCleared()
     }
 }

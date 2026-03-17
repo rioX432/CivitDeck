@@ -3,7 +3,6 @@ package com.riox432.civitdeck
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
@@ -42,9 +41,6 @@ fun FeedTabContent(
                 val detailVm: ModelDetailViewModel = koinViewModel(
                     key = "detail_${currentRoute.modelId}",
                 ) { parametersOf(currentRoute.modelId) }
-                DisposableEffect(detailVm) {
-                    onDispose { detailVm.onCleared() }
-                }
                 DesktopDetailScreen(
                     viewModel = detailVm,
                     onBack = { backstack.removeLastOrNull() },
@@ -60,9 +56,6 @@ fun FeedTabContent(
                 val creatorVm: CreatorProfileViewModel = koinViewModel(
                     key = "creator_${currentRoute.username}",
                 ) { parametersOf(currentRoute.username) }
-                DisposableEffect(creatorVm) {
-                    onDispose { creatorVm.onCleared() }
-                }
                 DesktopCreatorScreen(
                     viewModel = creatorVm,
                     onBack = { backstack.removeLastOrNull() },

@@ -8,11 +8,9 @@ import com.riox432.civitdeck.domain.usecase.GetPluginConfigUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveInstalledPluginsUseCase
 import com.riox432.civitdeck.domain.usecase.UninstallPluginUseCase
 import com.riox432.civitdeck.domain.usecase.UpdatePluginConfigUseCase
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -31,9 +29,9 @@ class DesktopPluginViewModel(
     private val uninstallPluginUseCase: UninstallPluginUseCase,
     private val getPluginConfigUseCase: GetPluginConfigUseCase,
     private val updatePluginConfigUseCase: UpdatePluginConfigUseCase,
-) {
+) : ViewModel() {
 
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val scope = viewModelScope
 
     private val _uiState = MutableStateFlow(DesktopPluginUiState())
     val uiState: StateFlow<DesktopPluginUiState> = _uiState
@@ -103,7 +101,7 @@ class DesktopPluginViewModel(
     fun isPluginActive(plugin: InstalledPlugin): Boolean =
         plugin.state == InstalledPluginState.ACTIVE
 
-    fun onCleared() {
-        scope.cancel()
+    public override fun onCleared() {
+        super.onCleared()
     }
 }

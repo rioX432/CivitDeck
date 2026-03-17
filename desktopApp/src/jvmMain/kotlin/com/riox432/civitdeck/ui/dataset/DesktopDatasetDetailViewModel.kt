@@ -9,11 +9,9 @@ import com.riox432.civitdeck.domain.usecase.UpdateTrainableUseCase
 import com.riox432.civitdeck.plugin.PluginExportFormat
 import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
 import com.riox432.civitdeck.usecase.GetAvailableExportFormatsUseCase
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -29,9 +27,9 @@ class DesktopDatasetDetailViewModel(
     private val updateTrainableUseCase: UpdateTrainableUseCase,
     private val exportWithPluginUseCase: ExportWithPluginUseCase,
     getAvailableExportFormatsUseCase: GetAvailableExportFormatsUseCase,
-) {
+) : ViewModel() {
 
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val scope = viewModelScope
 
     val images: StateFlow<List<DatasetImage>> =
         observeDatasetImagesUseCase(datasetId)
@@ -119,8 +117,8 @@ class DesktopDatasetDetailViewModel(
         }
     }
 
-    fun onCleared() {
-        scope.cancel()
+    public override fun onCleared() {
+        super.onCleared()
     }
 }
 

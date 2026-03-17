@@ -5,11 +5,9 @@ import com.riox432.civitdeck.domain.usecase.CreateDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.RenameDatasetCollectionUseCase
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -20,9 +18,9 @@ class DesktopDatasetListViewModel(
     private val createDatasetCollectionUseCase: CreateDatasetCollectionUseCase,
     private val renameDatasetCollectionUseCase: RenameDatasetCollectionUseCase,
     private val deleteDatasetCollectionUseCase: DeleteDatasetCollectionUseCase,
-) {
+) : ViewModel() {
 
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val scope = viewModelScope
 
     val datasets: StateFlow<List<DatasetCollection>> =
         observeDatasetCollectionsUseCase()
@@ -64,8 +62,8 @@ class DesktopDatasetListViewModel(
         }
     }
 
-    fun onCleared() {
-        scope.cancel()
+    public override fun onCleared() {
+        super.onCleared()
     }
 }
 
