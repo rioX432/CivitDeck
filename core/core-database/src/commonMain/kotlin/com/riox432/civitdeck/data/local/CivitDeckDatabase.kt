@@ -91,7 +91,7 @@ import kotlinx.coroutines.IO
         PluginEntity::class,
         ShareHashtagEntity::class,
     ],
-    version = 34,
+    version = 35,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -724,6 +724,17 @@ val MIGRATION_33_34 = object : Migration(33, 34) {
     }
 }
 
+val MIGRATION_34_35 = object : Migration(34, 35) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN autoUpdateCheckEnabled INTEGER NOT NULL DEFAULT 1",
+        )
+        connection.execSQL(
+            "ALTER TABLE user_preferences ADD COLUMN lastUpdateCheckTimestamp INTEGER NOT NULL DEFAULT 0",
+        )
+    }
+}
+
 // Seed data is inserted via onOpen (not in migrations) because Room migrations only run on
 // upgrades — a fresh install starts directly at the latest schema version, skipping all
 // migration callbacks. Using INSERT OR IGNORE in onOpen ensures required rows are always
@@ -824,6 +835,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_31_32,
             MIGRATION_32_33,
             MIGRATION_33_34,
+            MIGRATION_34_35,
         )
         .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())

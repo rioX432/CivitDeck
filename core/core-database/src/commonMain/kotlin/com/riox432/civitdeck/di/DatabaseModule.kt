@@ -12,6 +12,7 @@ import com.riox432.civitdeck.data.local.repository.ModelDownloadRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ModelNoteRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.PluginRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ShareHashtagRepositoryImpl
+import com.riox432.civitdeck.data.local.repository.UpdateRepositoryImpl
 import com.riox432.civitdeck.domain.repository.AnalyticsRepository
 import com.riox432.civitdeck.domain.repository.CaptionRepository
 import com.riox432.civitdeck.domain.repository.CreatorFollowRepository
@@ -21,6 +22,7 @@ import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
 import com.riox432.civitdeck.domain.repository.ModelNoteRepository
 import com.riox432.civitdeck.domain.repository.PluginRepository
 import com.riox432.civitdeck.domain.repository.ShareHashtagRepository
+import com.riox432.civitdeck.domain.repository.UpdateRepository
 import org.koin.dsl.module
 
 val databaseModule = module {
@@ -75,4 +77,7 @@ val databaseModule = module {
 
     // Share Hashtags
     single<ShareHashtagRepository> { ShareHashtagRepositoryImpl(get()) }
+
+    // Update Checker
+    single<UpdateRepository> { UpdateRepositoryImpl(get(), get(), get()) }
 }

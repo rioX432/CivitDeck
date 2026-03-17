@@ -74,6 +74,9 @@ import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.ui.update.UpdateBanner
+import com.riox432.civitdeck.ui.update.UpdateUiState
+import com.riox432.civitdeck.ui.update.UpdateViewModel
 
 @Suppress("LongParameterList")
 @Composable
@@ -81,17 +84,20 @@ fun SettingsScreen(
     authViewModel: AuthSettingsViewModel,
     storageViewModel: StorageSettingsViewModel,
     appBehaviorViewModel: AppBehaviorSettingsViewModel,
+    updateViewModel: UpdateViewModel,
     onNavigateToAppearance: () -> Unit = {},
     onNavigateToContentFilter: () -> Unit = {},
     onNavigateToStorage: () -> Unit = {},
     onNavigateToAdvanced: () -> Unit = {},
     onNavigateToAnalytics: () -> Unit = {},
     onNavigateToLicenses: () -> Unit = {},
+    onOpenUrl: (String) -> Unit = {},
     scrollToTopTrigger: Int = 0,
 ) {
     val authState by authViewModel.uiState.collectAsStateWithLifecycle()
     val storageState by storageViewModel.uiState.collectAsStateWithLifecycle()
     val appBehaviorState by appBehaviorViewModel.uiState.collectAsStateWithLifecycle()
+    val updateState by updateViewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     var lastHandledTrigger by rememberSaveable { mutableIntStateOf(scrollToTopTrigger) }
     LaunchedEffect(scrollToTopTrigger) {
@@ -120,19 +126,13 @@ fun SettingsScreen(
                 item { SectionHeader("Analytics") }
                 item { SubScreenRow("Usage Stats", onNavigateToAnalytics) }
             }
-            item { SectionHeader("About") }
-            item { InfoRow("App Version", BuildConfig.VERSION_NAME) }
-            item { NavigationRow("Open Source Licenses", onNavigateToLicenses) }
-            if (!appBehaviorState.powerUserMode) {
-                item {
-                    Text(
-                        "Enable Power User Mode in Advanced & Integrations for more features",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.md),
-                    )
-                }
-            }
+            settingsUpdateItems(updateState, updateViewModel, onOpenUrl)
+            settingsAboutItems(
+                appBehaviorState.powerUserMode,
+                updateState,
+                updateViewModel,
+                onNavigateToLicenses,
+            )
         }
         if (isEmpty) {
             EmptyStateMessage(
@@ -179,6 +179,52 @@ internal fun LazyListScope.settingsAccountItems(
             onValidateAndSave = viewModel::onValidateAndSaveApiKey,
             onClear = viewModel::onClearApiKey,
         )
+    }
+}
+
+private fun LazyListScope.settingsUpdateItems(
+    updateState: UpdateUiState,
+    updateViewModel: UpdateViewModel,
+    onOpenUrl: (String) -> Unit,
+) {
+    if (updateState.showBanner && updateState.updateResult != null) {
+        item {
+            UpdateBanner(
+                updateResult = updateState.updateResult!!,
+                onDownload = { onOpenUrl(updateState.updateResult!!.htmlUrl) },
+                onDismiss = updateViewModel::dismissBanner,
+            )
+        }
+    }
+}
+
+@Suppress("LongParameterList")
+private fun LazyListScope.settingsAboutItems(
+    powerUserMode: Boolean,
+    updateState: UpdateUiState,
+    updateViewModel: UpdateViewModel,
+    onNavigateToLicenses: () -> Unit,
+) {
+    item { SectionHeader("About") }
+    item { InfoRow("App Version", BuildConfig.VERSION_NAME) }
+    item {
+        UpdateCheckRow(
+            autoCheckEnabled = updateState.autoCheckEnabled,
+            isChecking = updateState.isChecking,
+            onAutoCheckChanged = updateViewModel::setAutoCheckEnabled,
+            onCheckNow = updateViewModel::checkForUpdate,
+        )
+    }
+    item { NavigationRow("Open Source Licenses", onNavigateToLicenses) }
+    if (!powerUserMode) {
+        item {
+            Text(
+                "Enable Power User Mode in Advanced & Integrations for more features",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.md),
+            )
+        }
     }
 }
 
@@ -921,6 +967,48 @@ internal fun FeedQualityThresholdRow(threshold: Int, onChanged: (Int) -> Unit) {
             onValueChange = { onChanged(it.toInt()) },
             valueRange = 0f..100f,
         )
+    }
+}
+
+@Composable
+internal fun UpdateCheckRow(
+    autoCheckEnabled: Boolean,
+    isChecking: Boolean,
+    onAutoCheckChanged: (Boolean) -> Unit,
+    onCheckNow: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Auto-check for updates", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "Check for new versions on launch",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(checked = autoCheckEnabled, onCheckedChange = onAutoCheckChanged)
+        }
+        Spacer(modifier = Modifier.height(Spacing.xs))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            TextButton(onClick = onCheckNow, enabled = !isChecking) {
+                Text(if (isChecking) "Checking..." else "Check now")
+            }
+            if (isChecking) {
+                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+            }
+        }
     }
 }
 

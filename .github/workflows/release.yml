@@ -1,0 +1,181 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  # Build signed Android APK
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Decode keystore
+        run: echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > $RUNNER_TEMP/keystore.jks
+
+      - name: Build signed APK
+        run: ./gradlew :androidApp:assembleRelease
+        env:
+          RELEASE_KEYSTORE: ${{ runner.temp }}/keystore.jks
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+
+      - name: Rename APK
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          cp androidApp/build/outputs/apk/release/androidApp-release.apk \
+            "CivitDeck-${VERSION}-android.apk"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: CivitDeck-*-android.apk
+
+  # Build macOS DMG
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Cache Kotlin/Native
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
+          restore-keys: konan-${{ runner.os }}-
+
+      - name: Build DMG
+        run: ./gradlew :desktopApp:packageDmg
+
+      - name: Rename DMG
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          DMG=$(find desktopApp/build/compose/binaries -name "*.dmg" | head -1)
+          cp "$DMG" "CivitDeck-${VERSION}-macos.dmg"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: CivitDeck-*-macos.dmg
+
+  # Build Windows MSI
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build MSI
+        run: ./gradlew :desktopApp:packageMsi
+
+      - name: Rename MSI
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          MSI=$(find desktopApp/build/compose/binaries -name "*.msi" | head -1)
+          cp "$MSI" "CivitDeck-${VERSION}-windows.msi"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-msi
+          path: CivitDeck-*-windows.msi
+
+  # Build Linux DEB
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build DEB
+        run: ./gradlew :desktopApp:packageDeb
+
+      - name: Rename DEB
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          DEB=$(find desktopApp/build/compose/binaries -name "*.deb" | head -1)
+          cp "$DEB" "CivitDeck-${VERSION}-linux.deb"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-deb
+          path: CivitDeck-*-linux.deb
+
+  # Create GitHub Release with all artifacts
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [build-android, build-macos, build-windows, build-linux]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          # Extract text between this version header and the next version header
+          NOTES=$(sed -n "/^## \[${VERSION}\]/,/^## \[/{ /^## \[${VERSION}\]/d; /^## \[/d; p; }" CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            NOTES="Release ${VERSION}"
+          fi
+          # Write to file to preserve formatting
+          echo "$NOTES" > release_notes.txt
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "CivitDeck ${GITHUB_REF_NAME#v}" \
+            --notes-file release_notes.txt \
+            --latest \
+            artifacts/*

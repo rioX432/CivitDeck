@@ -35,16 +35,21 @@ import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
+import com.riox432.civitdeck.ui.update.DesktopUpdateViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
+import java.awt.Desktop as AwtDesktop
+import java.net.URI
 
 @Composable
+@Suppress("LongParameterList")
 fun DesktopSettingsScreen(
     authSettingsViewModel: AuthSettingsViewModel,
     displaySettingsViewModel: DisplaySettingsViewModel,
     contentFilterSettingsViewModel: ContentFilterSettingsViewModel,
     appBehaviorSettingsViewModel: AppBehaviorSettingsViewModel,
     storageSettingsViewModel: StorageSettingsViewModel,
+    updateViewModel: DesktopUpdateViewModel,
     onNavigateToDatasets: () -> Unit = {},
     onNavigateToBackup: () -> Unit = {},
     onNavigateToPlugins: () -> Unit = {},
@@ -65,6 +70,7 @@ fun DesktopSettingsScreen(
         DisplaySettingsSection(displaySettingsViewModel)
         ContentFilterSection(contentFilterSettingsViewModel)
         AppBehaviorSection(appBehaviorSettingsViewModel)
+        UpdateSection(updateViewModel)
         StorageSection(storageSettingsViewModel)
     }
 }
@@ -277,6 +283,52 @@ private fun AppBehaviorSection(viewModel: AppBehaviorSettingsViewModel) {
             valueLabel = state.feedQualityThreshold.toString(),
             onValueChange = { viewModel.onFeedQualityThresholdChanged(it.toInt()) },
         )
+    }
+}
+
+// endregion
+
+// region Update
+
+@Composable
+private fun UpdateSection(viewModel: DesktopUpdateViewModel) {
+    val state by viewModel.uiState.collectAsState()
+
+    SettingsCard(title = "Updates") {
+        if (state.showBanner && state.updateResult != null) {
+            val result = state.updateResult!!
+            Text(
+                text = "Update available: v${result.currentVersion} \u2192 v${result.latestVersion}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(modifier = Modifier.height(Spacing.sm))
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                Button(onClick = {
+                    if (AwtDesktop.isDesktopSupported()) {
+                        AwtDesktop.getDesktop().browse(URI(result.htmlUrl))
+                    }
+                }) {
+                    Text("Download")
+                }
+                OutlinedButton(onClick = viewModel::dismissBanner) {
+                    Text("Dismiss")
+                }
+            }
+            Spacer(modifier = Modifier.height(Spacing.md))
+        }
+        SwitchSetting(
+            label = "Auto-check for updates",
+            checked = state.autoCheckEnabled,
+            onCheckedChange = viewModel::setAutoCheckEnabled,
+        )
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        OutlinedButton(
+            onClick = viewModel::checkForUpdate,
+            enabled = !state.isChecking,
+        ) {
+            Text(if (state.isChecking) "Checking..." else "Check now")
+        }
     }
 }
 

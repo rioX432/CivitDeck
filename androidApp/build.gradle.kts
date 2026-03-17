@@ -14,6 +14,19 @@ android {
         versionName = "2.0.0"
     }
 
+    // Release signing config from environment variables (CI)
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("RELEASE_KEYSTORE")
+            if (keystorePath != null && file(keystorePath).exists()) {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -28,6 +41,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            val releaseKeystore = System.getenv("RELEASE_KEYSTORE")
+            if (releaseKeystore != null && file(releaseKeystore).exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 }

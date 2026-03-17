@@ -51,6 +51,7 @@ import com.riox432.civitdeck.ui.settings.ComfyUIGenerationSection
 import com.riox432.civitdeck.ui.settings.ComfyUIHistorySection
 import com.riox432.civitdeck.ui.settings.ComfyUISettingsSection
 import com.riox432.civitdeck.ui.settings.DesktopSettingsScreen
+import com.riox432.civitdeck.ui.update.DesktopUpdateViewModel
 import com.riox432.civitdeck.ui.settings.ExternalServerGallerySection
 import com.riox432.civitdeck.ui.settings.ExternalServerSettingsSection
 import com.riox432.civitdeck.ui.settings.SDWebUIGenerationSection
@@ -196,12 +197,14 @@ private fun SettingsMainContent(
                     val displayVm: DisplaySettingsViewModel = koinViewModel()
                     val contentFilterVm: ContentFilterSettingsViewModel = koinViewModel()
                     val storageVm: StorageSettingsViewModel = koinViewModel()
+                    val updateVm: DesktopUpdateViewModel = koinViewModel()
                     DesktopSettingsScreen(
                         authSettingsViewModel = authVm,
                         displaySettingsViewModel = displayVm,
                         contentFilterSettingsViewModel = contentFilterVm,
                         appBehaviorSettingsViewModel = appBehaviorVm,
                         storageSettingsViewModel = storageVm,
+                        updateViewModel = updateVm,
                         onNavigateToDatasets = onNavigateToDatasets,
                         onNavigateToBackup = onNavigateToBackup,
                         onNavigateToPlugins = onNavigateToPlugins,
