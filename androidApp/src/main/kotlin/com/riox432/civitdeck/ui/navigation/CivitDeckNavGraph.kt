@@ -123,6 +123,7 @@ import com.riox432.civitdeck.ui.settings.LicensesScreen
 import com.riox432.civitdeck.ui.settings.NavShortcutsSettingsScreen
 import com.riox432.civitdeck.ui.settings.SettingsScreen
 import com.riox432.civitdeck.ui.settings.StorageSettingsScreen
+import com.riox432.civitdeck.ui.share.ShareViewModel
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import org.koin.compose.viewmodel.koinViewModel
@@ -628,12 +629,18 @@ private fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {
         val viewModel: ModelDetailViewModel = koinViewModel(
             key = key.modelId.toString(),
         ) { parametersOf(key.modelId) }
+        val shareVm: ShareViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+        val shareHashtags by shareVm.hashtags.collectAsStateWithLifecycle()
         ModelDetailScreen(
             viewModel = viewModel,
             modelId = key.modelId,
             initialThumbnailUrl = key.thumbnailUrl,
             sharedElementSuffix = key.sharedElementSuffix,
+            shareHashtags = shareHashtags,
+            onToggleShareHashtag = shareVm::onToggle,
+            onAddShareHashtag = shareVm::onAdd,
+            onRemoveShareHashtag = shareVm::onRemove,
             onBack = { backStack.removeLastOrNull() },
             onViewImages = { modelVersionId ->
                 backStack.add(ImageGalleryRoute(modelVersionId))
@@ -724,9 +731,15 @@ private fun EntryProviderScope<Any>.galleryEntry(backStack: MutableList<Any>) {
         val viewModel: ImageGalleryViewModel = koinViewModel(
             key = "gallery_${key.modelVersionId}",
         ) { parametersOf(key.modelVersionId) }
+        val shareVm: ShareViewModel = koinViewModel()
+        val shareHashtags by shareVm.hashtags.collectAsStateWithLifecycle()
         ImageGalleryScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
+            shareHashtags = shareHashtags,
+            onToggleShareHashtag = shareVm::onToggle,
+            onAddShareHashtag = shareVm::onAdd,
+            onRemoveShareHashtag = shareVm::onRemove,
         )
     }
 }
@@ -734,9 +747,15 @@ private fun EntryProviderScope<Any>.galleryEntry(backStack: MutableList<Any>) {
 private fun EntryProviderScope<Any>.browseImagesEntry(backStack: MutableList<Any>) {
     entry<BrowseImagesRoute> {
         val viewModel: ImageGalleryViewModel = koinViewModel(key = "browse_images") { parametersOf(0L) }
+        val shareVm: ShareViewModel = koinViewModel()
+        val shareHashtags by shareVm.hashtags.collectAsStateWithLifecycle()
         ImageGalleryScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
+            shareHashtags = shareHashtags,
+            onToggleShareHashtag = shareVm::onToggle,
+            onAddShareHashtag = shareVm::onAdd,
+            onRemoveShareHashtag = shareVm::onRemove,
         )
     }
 }
@@ -970,12 +989,18 @@ private fun EntryProviderScope<Any>.externalServerEntries(backStack: MutableList
     }
     entry<ExternalServerImageDetailRoute> { route ->
         val galleryVm: ExternalServerGalleryViewModel = koinViewModel()
+        val shareVm: ShareViewModel = koinViewModel()
         val state by galleryVm.uiState.collectAsStateWithLifecycle()
+        val shareHashtags by shareVm.hashtags.collectAsStateWithLifecycle()
         val image = state.images.find { it.id == route.imageId }
         if (image != null) {
             ExternalServerImageDetailScreen(
                 image = image,
                 onBack = { backStack.removeLastOrNull() },
+                shareHashtags = shareHashtags,
+                onToggleShareHashtag = shareVm::onToggle,
+                onAddShareHashtag = shareVm::onAdd,
+                onRemoveShareHashtag = shareVm::onRemove,
             )
         }
     }

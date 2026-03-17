@@ -10,6 +10,7 @@ struct ImageViewerScreen: View {
     @State private var showMetadata = false
     @State private var controlsVisible = true
     @State private var showShareSheet = false
+    @StateObject private var shareHashtagVM = ShareHashtagViewModel()
 
     // Swipe-to-dismiss state
     @State private var dragOffset: CGFloat = 0
@@ -90,11 +91,15 @@ struct ImageViewerScreen: View {
                 }
             }
             .sheet(isPresented: $showShareSheet) {
-                if let image = images[safe: index] {
-                    let text = Self.formatShareText(imageUrl: image.url, meta: image.meta)
-                    ShareSheet(items: [text])
-                }
+                SocialShareSheet(
+                    hashtags: shareHashtagVM.hashtags,
+                    onToggle: { tag, enabled in shareHashtagVM.toggle(tag: tag, isEnabled: enabled) },
+                    onAdd: { tag in shareHashtagVM.add(tag: tag) },
+                    onRemove: { tag in shareHashtagVM.remove(tag: tag) }
+                )
+                .presentationDetents([.medium, .large])
             }
+            .task { await shareHashtagVM.startObserving() }
         }
     }
 

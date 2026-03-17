@@ -46,6 +46,7 @@ import com.riox432.civitdeck.domain.model.AspectRatioFilter
 import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.MediaContentType
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
+import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryUiState
@@ -66,6 +67,10 @@ import com.riox432.civitdeck.ui.theme.Spacing
 fun ImageGalleryScreen(
     viewModel: ImageGalleryViewModel,
     onBack: () -> Unit,
+    shareHashtags: List<ShareHashtag> = emptyList(),
+    onToggleShareHashtag: (String, Boolean) -> Unit = { _, _ -> },
+    onAddShareHashtag: (String) -> Unit = {},
+    onRemoveShareHashtag: (String) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -94,6 +99,10 @@ fun ImageGalleryScreen(
             initialIndex = uiState.selectedImageIndex!!,
             onDismiss = viewModel::onDismissViewer,
             onSavePrompt = viewModel::savePrompt,
+            shareHashtags = shareHashtags,
+            onToggleShareHashtag = onToggleShareHashtag,
+            onAddShareHashtag = onAddShareHashtag,
+            onRemoveShareHashtag = onRemoveShareHashtag,
         )
     }
 }

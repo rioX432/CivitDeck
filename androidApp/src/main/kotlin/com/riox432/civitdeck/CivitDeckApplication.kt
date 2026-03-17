@@ -170,4 +170,5 @@ val androidModule = module {
     viewModel { FeedViewModel(get(), get(), get()) }
     viewModel { BackupViewModel(get(), get(), get()) }
     viewModel { PluginManagementViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { com.riox432.civitdeck.ui.share.ShareViewModel(get(), get(), get(), get()) }
 }
