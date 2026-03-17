@@ -496,3 +496,9 @@ Initial release of CivitDeck.
 - Room KMP local database for offline favorites and response caching
 - Clean Architecture + MVVM with Koin dependency injection
 - GitHub Actions CI (Android + iOS)
+
+[Unreleased]: https://github.com/rioX432/CivitDeck/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/rioX432/CivitDeck/compare/v1.2.0...v2.0.0
+[1.2.0]: https://github.com/rioX432/CivitDeck/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/rioX432/CivitDeck/compare/v0.1.0...v1.1.0
+[0.1.0]: https://github.com/rioX432/CivitDeck/releases/tag/v0.1.0
