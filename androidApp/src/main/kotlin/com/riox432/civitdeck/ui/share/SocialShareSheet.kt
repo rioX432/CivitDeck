@@ -215,7 +215,7 @@ private fun ActionButtons(
             },
             modifier = Modifier.weight(1f),
         ) {
-            Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(Icons.Default.ContentCopy, contentDescription = "Copy to clipboard", modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(Spacing.xs))
             Text("Copy")
         }
@@ -226,7 +226,7 @@ private fun ActionButtons(
             },
             modifier = Modifier.weight(1f),
         ) {
-            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(Icons.Default.Share, contentDescription = "Share", modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(Spacing.xs))
             Text("Share")
         }
