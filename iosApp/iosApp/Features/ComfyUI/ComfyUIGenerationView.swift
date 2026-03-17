@@ -289,6 +289,7 @@ struct ComfyUIGenerationView: View {
                         }
                         .frame(minHeight: resultImageMinHeight)
                         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
+                        .accessibilityLabel("Generated image")
                         Button {
                             viewModel.onSaveImage(url: url)
                         } label: {

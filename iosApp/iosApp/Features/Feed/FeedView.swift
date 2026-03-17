@@ -84,6 +84,7 @@ private struct FeedGridCard: View {
                         }
                     }
                     .clipped()
+                    .accessibilityLabel("\(item.title) thumbnail")
                 }
 
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
