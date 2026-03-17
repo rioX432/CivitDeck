@@ -1,7 +1,7 @@
 package com.riox432.civitdeck.data.local.repository
 
-import com.riox432.civitdeck.data.api.GitHubReleaseApi
 import com.riox432.civitdeck.data.api.GitHubAsset
+import com.riox432.civitdeck.data.api.GitHubReleaseApi
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
 import com.riox432.civitdeck.domain.model.UpdateResult
