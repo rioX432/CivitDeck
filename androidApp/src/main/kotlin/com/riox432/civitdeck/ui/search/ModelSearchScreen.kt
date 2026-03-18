@@ -159,7 +159,6 @@ private fun SearchScreenBody(
         val topPadding = with(density) { visibleHeaderHeightPx.toDp() }
 
         ModelSearchContent(
-            isLoadingRecommendations = uiState.isLoadingRecommendations,
             recommendations = uiState.recommendations,
             gridState = gridState,
             lazyPagingItems = lazyPagingItems,

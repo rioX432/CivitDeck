@@ -845,6 +845,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_34_35,
             MIGRATION_35_36,
         )
+        .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
         .addCallback(defaultCollectionCallback)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)

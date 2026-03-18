@@ -74,7 +74,6 @@ import com.riox432.civitdeck.ui.theme.Spacing
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ModelSearchContent(
-    isLoadingRecommendations: Boolean,
     recommendations: List<RecommendationSection>,
     gridState: LazyGridState,
     lazyPagingItems: LazyPagingItems<Model>,
@@ -90,8 +89,7 @@ internal fun ModelSearchContent(
     isComparing: Boolean = false,
 ) {
     val refreshState = lazyPagingItems.loadState.refresh
-    val isInitialLoading = refreshState is LoadState.Loading ||
-        (lazyPagingItems.itemCount == 0 && isLoadingRecommendations)
+    val isInitialLoading = refreshState is LoadState.Loading
     val refreshError = (refreshState as? LoadState.Error)?.error
     val stateKey = when {
         isInitialLoading -> "loading"

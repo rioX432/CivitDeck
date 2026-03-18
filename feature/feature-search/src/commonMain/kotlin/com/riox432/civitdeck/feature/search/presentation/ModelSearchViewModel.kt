@@ -39,6 +39,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.RemoveExcludedTagUseC
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -113,6 +114,7 @@ class ModelSearchViewModel(
 
     private val _filterState = MutableStateFlow(FilterState())
     private val _hiddenModelIds = MutableStateFlow<Set<Long>>(emptySet())
+    private var recommendationsJob: Job? = null
 
     val searchHistory: StateFlow<List<String>> =
         observeSearchHistoryUseCase()
@@ -146,8 +148,8 @@ class ModelSearchViewModel(
             Pager(
                 config = PagingConfig(
                     pageSize = PAGE_SIZE,
-                    prefetchDistance = PAGE_SIZE * 2,
-                    initialLoadSize = PAGE_SIZE * 3,
+                    prefetchDistance = PAGE_SIZE,
+                    initialLoadSize = PAGE_SIZE,
                 ),
                 pagingSourceFactory = {
                     ModelPagingSource(
@@ -177,7 +179,11 @@ class ModelSearchViewModel(
             val sort = observeSortUseCase().first()
             val period = observePeriodUseCase().first()
             _uiState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
-            _filterState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
+            // Only update filterState (which triggers paging restart) if different from defaults
+            val current = _filterState.value
+            if (current.selectedSort != sort || current.selectedPeriod != period) {
+                _filterState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
+            }
         }
     }
 
@@ -203,7 +209,8 @@ class ModelSearchViewModel(
     }
 
     private fun loadRecommendations() {
-        viewModelScope.launch {
+        recommendationsJob?.cancel()
+        recommendationsJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoadingRecommendations = true) }
             try {
                 val sections = getRecommendationsUseCase()
