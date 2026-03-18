@@ -10,12 +10,10 @@ import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
-import com.riox432.civitdeck.domain.model.RecentlyViewedModel
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.SavedSearchFilter
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
-import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
@@ -108,7 +106,6 @@ class ModelSearchViewModel(
     private val saveSearchFilterUseCase: SaveSearchFilterUseCase,
     private val deleteSavedSearchFilterUseCase: DeleteSavedSearchFilterUseCase,
     private val observeQualityThresholdUseCase: ObserveQualityThresholdUseCase,
-    browsingHistoryRepository: BrowsingHistoryRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelSearchUiState())
@@ -133,10 +130,6 @@ class ModelSearchViewModel(
         observeFavoritesUseCase()
             .map { favorites -> favorites.map { it.id }.toSet() }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
-
-    val recentlyViewed: StateFlow<List<RecentlyViewedModel>> =
-        browsingHistoryRepository.observeRecentlyViewed(RECENTLY_VIEWED_LIMIT)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val savedFilters: StateFlow<List<SavedSearchFilter>> =
         observeSavedSearchFiltersUseCase()
@@ -422,6 +415,5 @@ class ModelSearchViewModel(
 
     companion object {
         private const val PAGE_SIZE = 20
-        private const val RECENTLY_VIEWED_LIMIT = 10
     }
 }

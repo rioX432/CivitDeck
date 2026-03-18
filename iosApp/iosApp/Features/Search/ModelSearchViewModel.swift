@@ -1,4 +1,3 @@
-// swiftlint:disable file_length
 import Foundation
 import UIKit
 import Shared
@@ -29,7 +28,6 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var ownedHashes: Set<String> = []
     @Published var favoriteIds: Set<Int64> = []
     @Published var savedFilters: [SavedSearchFilter] = []
-    @Published var recentlyViewed: [RecentlyViewedModel] = []
 
     private let getModelsUseCase: GetModelsUseCase
     private let getRecommendationsUseCase: GetRecommendationsUseCase
@@ -54,7 +52,6 @@ final class ModelSearchViewModel: ObservableObject {
     private let saveSearchFilterUseCase: SaveSearchFilterUseCase
     private let deleteSavedSearchFilterUseCase: DeleteSavedSearchFilterUseCase
     private let observeQualityThresholdUseCase: ObserveQualityThresholdUseCase
-    private let observeRecentlyViewedUseCase: ObserveRecentlyViewedUseCase
     private var qualityThreshold: Int32 = 0
     private var thresholdObserveTask: Task<Void, Never>?
     private var nextCursor: String?
@@ -90,12 +87,10 @@ final class ModelSearchViewModel: ObservableObject {
         self.saveSearchFilterUseCase = KoinHelper.shared.getSaveSearchFilterUseCase()
         self.deleteSavedSearchFilterUseCase = KoinHelper.shared.getDeleteSavedSearchFilterUseCase()
         self.observeQualityThresholdUseCase = KoinHelper.shared.getObserveQualityThresholdUseCase()
-        self.observeRecentlyViewedUseCase = KoinHelper.shared.getObserveRecentlyViewedUseCase()
         loadExcludedTags()
         loadDefaults()
         observeQualityThreshold()
         loadRecommendations()
-        observeRecentlyViewed()
         memoryWarningToken = NotificationCenter.default.addObserver(
             forName: UIApplication.didReceiveMemoryWarningNotification,
             object: nil,
@@ -140,14 +135,6 @@ final class ModelSearchViewModel: ObservableObject {
                 WidgetDataWriter.writeTrendingModel(from: sections)
             } catch {
                 // Non-critical, silently fail
-            }
-        }
-    }
-
-    private func observeRecentlyViewed() {
-        Task {
-            for await items in observeRecentlyViewedUseCase.invoke(limit: 10) {
-                recentlyViewed = items
             }
         }
     }

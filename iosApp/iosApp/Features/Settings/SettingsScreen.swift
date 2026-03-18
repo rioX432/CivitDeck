@@ -29,6 +29,7 @@ struct SettingsScreen: View {
             accountSection
             appearanceSection
             contentBehaviorSection
+            historySection
             dataStorageSection
             advancedIntegrationsSection
             if appBehaviorViewModel.powerUserMode {
@@ -94,6 +95,14 @@ struct SettingsScreen: View {
                 appBehaviorViewModel: appBehaviorViewModel
             )) {
                 Text("Content & Behavior")
+            }
+        }
+    }
+
+    private var historySection: some View {
+        Section("History") {
+            NavigationLink(destination: BrowsingHistoryView()) {
+                Label("Browsing History", systemImage: "clock.arrow.circlepath")
             }
         }
     }

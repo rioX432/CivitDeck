@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -59,7 +58,6 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.Model
-import com.riox432.civitdeck.domain.model.RecentlyViewedModel
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.adaptive.isExpandedWidth
@@ -78,7 +76,6 @@ import com.riox432.civitdeck.ui.theme.Spacing
 internal fun ModelSearchContent(
     isLoadingRecommendations: Boolean,
     recommendations: List<RecommendationSection>,
-    recentlyViewed: List<RecentlyViewedModel>,
     gridState: LazyGridState,
     lazyPagingItems: LazyPagingItems<Model>,
     onModelClick: (Long, String?, String) -> Unit,
@@ -109,7 +106,6 @@ internal fun ModelSearchContent(
         stateKey = stateKey,
         refreshError = refreshError,
         recommendations = recommendations,
-        recentlyViewed = recentlyViewed,
         gridState = gridState,
         onModelClick = onModelClick,
         onHideModel = onHideModel,
@@ -133,7 +129,6 @@ private fun SearchContentPullToRefresh(
     stateKey: String,
     refreshError: Throwable?,
     recommendations: List<RecommendationSection>,
-    recentlyViewed: List<RecentlyViewedModel>,
     gridState: LazyGridState,
     onModelClick: (Long, String?, String) -> Unit,
     onHideModel: (Long, String) -> Unit,
@@ -167,7 +162,6 @@ private fun SearchContentPullToRefresh(
             refreshError = refreshError,
             lazyPagingItems = lazyPagingItems,
             recommendations = recommendations,
-            recentlyViewed = recentlyViewed,
             gridState = gridState,
             onModelClick = onModelClick,
             onHideModel = onHideModel,
@@ -190,7 +184,6 @@ private fun SearchContentCrossfade(
     refreshError: Throwable?,
     lazyPagingItems: LazyPagingItems<Model>,
     recommendations: List<RecommendationSection>,
-    recentlyViewed: List<RecentlyViewedModel>,
     gridState: LazyGridState,
     onModelClick: (Long, String?, String) -> Unit,
     onHideModel: (Long, String) -> Unit,
@@ -226,7 +219,6 @@ private fun SearchContentCrossfade(
                 ModelGrid(
                     lazyPagingItems = lazyPagingItems,
                     recommendations = recommendations,
-                    recentlyViewed = recentlyViewed,
                     gridState = gridState,
                     onModelClick = onModelClick,
                     onHideModel = onHideModel,
@@ -249,7 +241,6 @@ private fun SearchContentCrossfade(
 private fun ModelGrid(
     lazyPagingItems: LazyPagingItems<Model>,
     recommendations: List<RecommendationSection>,
-    recentlyViewed: List<RecentlyViewedModel>,
     gridState: LazyGridState,
     onModelClick: (Long, String?, String) -> Unit,
     onHideModel: (Long, String) -> Unit,
@@ -277,7 +268,6 @@ private fun ModelGrid(
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
-        recentlyViewedItems(recentlyViewed, onModelClick)
         recommendationItems(recommendations, onModelClick)
         modelPagingItems(
             lazyPagingItems, gridState, ownedHashes, favoriteIds,
@@ -481,77 +471,6 @@ internal fun ComparisonBottomBar(
                     Text("Cancel")
                 }
             }
-        }
-    }
-}
-
-private fun androidx.compose.foundation.lazy.grid.LazyGridScope.recentlyViewedItems(
-    recentlyViewed: List<RecentlyViewedModel>,
-    onModelClick: (Long, String?, String) -> Unit,
-) {
-    if (recentlyViewed.isEmpty()) return
-    item(
-        key = "recently_viewed",
-        span = { GridItemSpan(maxLineSpan) },
-    ) {
-        RecentlyViewedRow(
-            items = recentlyViewed,
-            onModelClick = onModelClick,
-        )
-    }
-}
-
-@Composable
-private fun RecentlyViewedRow(
-    items: List<RecentlyViewedModel>,
-    onModelClick: (Long, String?, String) -> Unit,
-) {
-    val cardWidth = if (isExpandedWidth()) 200.dp else 160.dp
-    Column(modifier = Modifier.padding(bottom = Spacing.sm)) {
-        Text(
-            text = "Recently Viewed",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = Spacing.xs, vertical = Spacing.xs),
-        )
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-        ) {
-            items(items = items, key = { it.historyId }) { item ->
-                RecentlyViewedCard(
-                    item = item,
-                    onClick = { onModelClick(item.modelId, item.thumbnailUrl, "recent") },
-                    modifier = Modifier.width(cardWidth),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun RecentlyViewedCard(
-    item: RecentlyViewedModel,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        onClick = onClick,
-        modifier = modifier,
-        shape = MaterialTheme.shapes.medium,
-        tonalElevation = 1.dp,
-    ) {
-        Column {
-            com.riox432.civitdeck.ui.components.CivitAsyncImage(
-                imageUrl = item.thumbnailUrl,
-                contentDescription = item.modelName,
-                modifier = Modifier.fillMaxWidth().aspectRatio(0.75f),
-            )
-            Text(
-                text = item.modelName,
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(Spacing.xs),
-            )
         }
     }
 }

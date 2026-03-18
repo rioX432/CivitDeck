@@ -18,6 +18,7 @@ import com.riox432.civitdeck.domain.usecase.ClearCompletedDownloadsUseCase
 import com.riox432.civitdeck.domain.usecase.CreateBackupUseCase
 import com.riox432.civitdeck.domain.usecase.CreateDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeactivatePluginUseCase
+import com.riox432.civitdeck.domain.usecase.DeleteBrowsingHistoryItemUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
@@ -70,13 +71,13 @@ import com.riox432.civitdeck.domain.usecase.ObserveNetworkStatusUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveRecentlyViewedUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePersonalTagsUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveRecentlyViewedUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveShareHashtagsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveThemeModeUseCase
@@ -264,6 +265,7 @@ object KoinHelper {
     fun getSetGridColumnsUseCase(): SetGridColumnsUseCase = getKoin().get()
     fun getHiddenModelsUseCase(): GetHiddenModelsUseCase = getKoin().get()
     fun getClearBrowsingHistoryUseCase(): ClearBrowsingHistoryUseCase = getKoin().get()
+    fun getDeleteBrowsingHistoryItemUseCase(): DeleteBrowsingHistoryItemUseCase = getKoin().get()
     fun getCleanupBrowsingHistoryUseCase(): CleanupBrowsingHistoryUseCase = getKoin().get()
     fun getClearCacheUseCase(): ClearCacheUseCase = getKoin().get()
     fun getObservePowerUserModeUseCase(): ObservePowerUserModeUseCase = getKoin().get()

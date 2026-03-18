@@ -38,6 +38,8 @@ import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewMo
 import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsScreen
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
+import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryScreen
+import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupScreen
 import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailScreen
@@ -82,6 +84,7 @@ fun SettingsTabContent(
             onNavigateToBackup = { backstack.add(DesktopRoute.Backup) },
             onNavigateToPlugins = { backstack.add(DesktopRoute.PluginList) },
             onNavigateToAnalytics = { backstack.add(DesktopRoute.Analytics) },
+            onNavigateToBrowsingHistory = { backstack.add(DesktopRoute.BrowsingHistory) },
         )
 
         when (currentRoute) {
@@ -155,6 +158,19 @@ fun SettingsTabContent(
                     onBack = { backstack.removeLastOrNull() },
                 )
             }
+            is DesktopRoute.BrowsingHistory -> {
+                val vm: DesktopBrowsingHistoryViewModel = koinViewModel()
+                DisposableEffect(vm) {
+                    onDispose { vm.onCleared() }
+                }
+                DesktopBrowsingHistoryScreen(
+                    viewModel = vm,
+                    onBack = { backstack.removeLastOrNull() },
+                    onModelClick = { modelId ->
+                        backstack.add(DesktopRoute.ModelDetail(modelId))
+                    },
+                )
+            }
             else -> { /* Settings main screen is always shown underneath */ }
         }
     }
@@ -166,6 +182,7 @@ private fun SettingsMainContent(
     onNavigateToBackup: () -> Unit,
     onNavigateToPlugins: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
+    onNavigateToBrowsingHistory: () -> Unit = {},
 ) {
     // AppBehaviorVM is always needed (controls power user mode / section visibility)
     val appBehaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
@@ -209,6 +226,7 @@ private fun SettingsMainContent(
                         onNavigateToBackup = onNavigateToBackup,
                         onNavigateToPlugins = onNavigateToPlugins,
                         onNavigateToAnalytics = onNavigateToAnalytics,
+                        onNavigateToBrowsingHistory = onNavigateToBrowsingHistory,
                     )
                 }
                 SettingsSection.ComfyUI -> {

@@ -48,6 +48,7 @@ import com.riox432.civitdeck.ui.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetListViewModel
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.feed.FeedViewModel
+import com.riox432.civitdeck.ui.history.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.plugin.PluginManagementViewModel
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
 import com.riox432.civitdeck.ui.update.UpdateViewModel
@@ -145,7 +146,7 @@ val androidModule = module {
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(),
         )
     }
     viewModel { CollectionsViewModel(get(), get(), get(), get()) }
@@ -176,6 +177,7 @@ val androidModule = module {
     viewModel { params -> BatchTagEditorViewModel(params.get(), get(), get(), get()) }
     viewModel { params -> DuplicateReviewViewModel(params.get(), get(), get()) }
     viewModel { AnalyticsViewModel(get()) }
+    viewModel { BrowsingHistoryViewModel(get(), get(), get()) }
     viewModel { FeedViewModel(get(), get(), get()) }
     viewModel { BackupViewModel(get(), get(), get()) }
     viewModel { PluginManagementViewModel(get(), get(), get(), get(), get(), get()) }
