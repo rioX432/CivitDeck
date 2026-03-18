@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.di
 
+import com.riox432.civitdeck.domain.usecase.CleanupBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
@@ -11,4 +12,5 @@ val historyDomainModule = module {
     factory { GetViewedModelIdsUseCase(get()) }
     factory { GetHiddenModelsUseCase(get()) }
     factory { ClearBrowsingHistoryUseCase(get()) }
+    factory { CleanupBrowsingHistoryUseCase(get()) }
 }

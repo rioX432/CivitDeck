@@ -11,6 +11,7 @@ import com.riox432.civitdeck.domain.usecase.AddShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
 import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
+import com.riox432.civitdeck.domain.usecase.CleanupBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCompletedDownloadsUseCase
@@ -261,6 +262,7 @@ object KoinHelper {
     fun getSetGridColumnsUseCase(): SetGridColumnsUseCase = getKoin().get()
     fun getHiddenModelsUseCase(): GetHiddenModelsUseCase = getKoin().get()
     fun getClearBrowsingHistoryUseCase(): ClearBrowsingHistoryUseCase = getKoin().get()
+    fun getCleanupBrowsingHistoryUseCase(): CleanupBrowsingHistoryUseCase = getKoin().get()
     fun getClearCacheUseCase(): ClearCacheUseCase = getKoin().get()
     fun getObservePowerUserModeUseCase(): ObservePowerUserModeUseCase = getKoin().get()
     fun getSetPowerUserModeUseCase(): SetPowerUserModeUseCase = getKoin().get()

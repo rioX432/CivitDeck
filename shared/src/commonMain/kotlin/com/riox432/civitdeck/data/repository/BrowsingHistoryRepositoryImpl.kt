@@ -57,4 +57,61 @@ class BrowsingHistoryRepositoryImpl(
     override suspend fun clearAll() {
         dao.deleteAll()
     }
+
+    override suspend fun cleanup(cutoffMillis: Long, maxEntries: Int) {
+        dao.deleteOlderThan(cutoffMillis)
+        dao.deleteExcessEntries(maxEntries)
+    }
+
+    override suspend fun getWeightedTypes(limit: Int): Map<String, Double> {
+        return computeWeightedScores(limit) { entry ->
+            listOf(entry.modelType)
+        }
+    }
+
+    override suspend fun getWeightedTags(limit: Int): Map<String, Double> {
+        return computeWeightedScores(limit) { entry ->
+            entry.tags.split(",").map { it.trim() }.filter { it.isNotBlank() }
+        }
+    }
+
+    override suspend fun getWeightedCreators(limit: Int): Map<String, Double> {
+        return computeWeightedScores(limit) { entry ->
+            listOfNotNull(entry.creatorName)
+        }
+    }
+
+    private suspend fun computeWeightedScores(
+        limit: Int,
+        keysSelector: (BrowsingHistoryEntity) -> List<String>,
+    ): Map<String, Double> {
+        val now = currentTimeMillis()
+        val entries = dao.getRecentSince(now - DECAY_WINDOW_MS)
+        val scores = mutableMapOf<String, Double>()
+        for (entry in entries) {
+            val weight = decayWeight(now, entry.viewedAt)
+            for (key in keysSelector(entry)) {
+                scores[key] = (scores[key] ?: 0.0) + weight
+            }
+        }
+        return scores.entries
+            .sortedByDescending { it.value }
+            .take(limit)
+            .associate { it.key to it.value }
+    }
+
+    companion object {
+        private const val DAY_MS = 86_400_000L
+        private const val DECAY_WINDOW_MS = 90 * DAY_MS
+
+        internal fun decayWeight(now: Long, viewedAt: Long): Double {
+            val ageMs = now - viewedAt
+            return when {
+                ageMs < 7 * DAY_MS -> 1.0
+                ageMs < 30 * DAY_MS -> 0.5
+                ageMs < 90 * DAY_MS -> 0.2
+                else -> 0.05
+            }
+        }
+    }
 }

@@ -11,6 +11,7 @@ data class DayCount(val day: Long, val cnt: Int)
 data class NameCount(val name: String, val cnt: Int)
 
 @Dao
+@Suppress("TooManyFunctions")
 interface BrowsingHistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: BrowsingHistoryEntity)
@@ -49,4 +50,34 @@ interface BrowsingHistoryDao {
             "GROUP BY creatorName ORDER BY cnt DESC LIMIT :limit",
     )
     suspend fun getTopCreators(limit: Int = 10): List<NameCount>
+
+    @Query("DELETE FROM browsing_history WHERE viewedAt < :cutoffMillis")
+    suspend fun deleteOlderThan(cutoffMillis: Long): Int
+
+    @Query(
+        "DELETE FROM browsing_history WHERE id NOT IN " +
+            "(SELECT id FROM browsing_history ORDER BY viewedAt DESC LIMIT :maxCount)",
+    )
+    suspend fun deleteExcessEntries(maxCount: Int): Int
+
+    @Query(
+        "SELECT modelType AS name, COUNT(*) AS cnt " +
+            "FROM browsing_history WHERE viewedAt >= :sinceMillis " +
+            "GROUP BY modelType ORDER BY cnt DESC LIMIT :limit",
+    )
+    suspend fun getTypeCountsSince(sinceMillis: Long, limit: Int = 10): List<NameCount>
+
+    @Query(
+        "SELECT * FROM browsing_history WHERE viewedAt >= :sinceMillis " +
+            "ORDER BY viewedAt DESC LIMIT :limit",
+    )
+    suspend fun getRecentSince(sinceMillis: Long, limit: Int = 200): List<BrowsingHistoryEntity>
+
+    @Query(
+        "SELECT creatorName AS name, COUNT(*) AS cnt " +
+            "FROM browsing_history WHERE creatorName IS NOT NULL " +
+            "AND viewedAt >= :sinceMillis " +
+            "GROUP BY creatorName ORDER BY cnt DESC LIMIT :limit",
+    )
+    suspend fun getCreatorCountsSince(sinceMillis: Long, limit: Int = 10): List<NameCount>
 }

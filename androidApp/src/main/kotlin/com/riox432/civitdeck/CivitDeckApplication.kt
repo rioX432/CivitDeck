@@ -19,6 +19,7 @@ import com.riox432.civitdeck.di.registerThemePlugins
 import com.riox432.civitdeck.di.registerWorkflowPlugins
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.repository.AppVersionProvider
+import com.riox432.civitdeck.domain.usecase.CleanupBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
@@ -69,6 +70,7 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val observeNotificationsEnabled: ObserveNotificationsEnabledUseCase by inject()
     private val observePollingInterval: ObservePollingIntervalUseCase by inject()
+    private val cleanupBrowsingHistory: CleanupBrowsingHistoryUseCase by inject()
 
     override fun onCreate() {
         super.onCreate()
@@ -82,6 +84,7 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
             registerThemePlugins()
         }
         applicationScope.launch { initializeAuth() }
+        applicationScope.launch { cleanupBrowsingHistory(System.currentTimeMillis()) }
         observeAndScheduleNotifications()
         scheduleWidgetRefresh()
     }
