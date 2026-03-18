@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.domain.repository
 
+@Suppress("TooManyFunctions")
 interface BrowsingHistoryRepository {
     suspend fun trackView(
         modelId: Long,
@@ -14,4 +15,11 @@ interface BrowsingHistoryRepository {
     suspend fun getRecentModelIds(limit: Int = 50): List<Long>
     suspend fun getAllViewedModelIds(): Set<Long>
     suspend fun clearAll()
+
+    suspend fun deleteOlderThan(cutoffMillis: Long): Int
+    suspend fun deleteExcessEntries(maxCount: Int): Int
+
+    suspend fun getWeightedTypes(limit: Int = 10): Map<String, Double>
+    suspend fun getWeightedTags(limit: Int = 10): Map<String, Double>
+    suspend fun getWeightedCreators(limit: Int = 10): Map<String, Double>
 }

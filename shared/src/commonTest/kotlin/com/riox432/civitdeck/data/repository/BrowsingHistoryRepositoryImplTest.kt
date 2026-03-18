@@ -57,6 +57,40 @@ class BrowsingHistoryRepositoryImplTest {
                 .map { (name, list) -> NameCount(name, list.size) }
                 .sortedByDescending { it.cnt }
                 .take(limit)
+
+        override suspend fun deleteOlderThan(cutoffMillis: Long): Int {
+            val before = entities.size
+            entities.removeAll { it.viewedAt < cutoffMillis }
+            return before - entities.size
+        }
+
+        override suspend fun deleteExcessEntries(maxCount: Int): Int {
+            if (entities.size <= maxCount) return 0
+            val sorted = entities.sortedByDescending { it.viewedAt }
+            val toKeep = sorted.take(maxCount).toSet()
+            val removed = entities.size - toKeep.size
+            entities.retainAll(toKeep)
+            return removed
+        }
+
+        override suspend fun getTypeCountsSince(sinceMillis: Long, limit: Int): List<NameCount> =
+            entities.filter { it.viewedAt >= sinceMillis }
+                .groupBy { it.modelType }
+                .map { (type, list) -> NameCount(type, list.size) }
+                .sortedByDescending { it.cnt }
+                .take(limit)
+
+        override suspend fun getRecentSince(sinceMillis: Long, limit: Int): List<BrowsingHistoryEntity> =
+            entities.filter { it.viewedAt >= sinceMillis }
+                .sortedByDescending { it.viewedAt }
+                .take(limit)
+
+        override suspend fun getCreatorCountsSince(sinceMillis: Long, limit: Int): List<NameCount> =
+            entities.filter { it.creatorName != null && it.viewedAt >= sinceMillis }
+                .groupBy { it.creatorName!! }
+                .map { (name, list) -> NameCount(name, list.size) }
+                .sortedByDescending { it.cnt }
+                .take(limit)
     }
 
     @Test
