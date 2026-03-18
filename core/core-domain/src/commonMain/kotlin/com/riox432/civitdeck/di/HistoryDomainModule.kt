@@ -4,6 +4,7 @@ import com.riox432.civitdeck.domain.usecase.CleanupBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveRecentlyViewedUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import org.koin.dsl.module
 
@@ -13,4 +14,5 @@ val historyDomainModule = module {
     factory { GetHiddenModelsUseCase(get()) }
     factory { ClearBrowsingHistoryUseCase(get()) }
     factory { CleanupBrowsingHistoryUseCase(get()) }
+    factory { ObserveRecentlyViewedUseCase(get()) }
 }

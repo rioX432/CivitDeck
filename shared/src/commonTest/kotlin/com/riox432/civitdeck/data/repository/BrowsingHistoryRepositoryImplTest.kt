@@ -4,23 +4,35 @@ import com.riox432.civitdeck.data.local.dao.BrowsingHistoryDao
 import com.riox432.civitdeck.data.local.dao.DayCount
 import com.riox432.civitdeck.data.local.dao.NameCount
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+@Suppress("TooManyFunctions")
 class BrowsingHistoryRepositoryImplTest {
 
     private class FakeDao : BrowsingHistoryDao {
         val entities = mutableListOf<BrowsingHistoryEntity>()
         private var idCounter = 1L
+        private val flow = MutableStateFlow<List<BrowsingHistoryEntity>>(emptyList())
 
         override suspend fun insert(entity: BrowsingHistoryEntity) {
             entities.add(entity.copy(id = idCounter++))
+            flow.value = entities.toList()
         }
 
         override suspend fun getRecent(limit: Int): List<BrowsingHistoryEntity> =
             entities.sortedByDescending { it.viewedAt }.take(limit)
+
+        override fun observeRecent(limit: Int): Flow<List<BrowsingHistoryEntity>> = flow
+
+        override suspend fun deleteById(id: Long) {
+            entities.removeAll { it.id == id }
+            flow.value = entities.toList()
+        }
 
         override suspend fun getRecentModelIds(limit: Int): List<Long> =
             entities.sortedByDescending { it.viewedAt }
@@ -97,9 +109,10 @@ class BrowsingHistoryRepositoryImplTest {
     fun trackView_inserts_entity() = runTest {
         val dao = FakeDao()
         val repo = BrowsingHistoryRepositoryImpl(dao)
-        repo.trackView(1L, "Checkpoint", "artist", listOf("anime"))
+        repo.trackView(1L, "TestModel", "Checkpoint", "artist", null, listOf("anime"))
         assertEquals(1, dao.entities.size)
         assertEquals(1L, dao.entities[0].modelId)
+        assertEquals("TestModel", dao.entities[0].modelName)
         assertEquals("Checkpoint", dao.entities[0].modelType)
         assertEquals("artist", dao.entities[0].creatorName)
         assertEquals("anime", dao.entities[0].tags)
@@ -109,7 +122,7 @@ class BrowsingHistoryRepositoryImplTest {
     fun trackView_joins_tags_with_comma() = runTest {
         val dao = FakeDao()
         val repo = BrowsingHistoryRepositoryImpl(dao)
-        repo.trackView(1L, "LORA", null, listOf("anime", "portrait", "girl"))
+        repo.trackView(1L, "Test", "LORA", null, null, listOf("anime", "portrait", "girl"))
         assertEquals("anime,portrait,girl", dao.entities[0].tags)
     }
 
@@ -117,9 +130,9 @@ class BrowsingHistoryRepositoryImplTest {
     fun getRecentTypes_counts_by_type() = runTest {
         val dao = FakeDao()
         val repo = BrowsingHistoryRepositoryImpl(dao)
-        repo.trackView(1L, "Checkpoint", null, emptyList())
-        repo.trackView(2L, "Checkpoint", null, emptyList())
-        repo.trackView(3L, "LORA", null, emptyList())
+        repo.trackView(1L, "M1", "Checkpoint", null, null, emptyList())
+        repo.trackView(2L, "M2", "Checkpoint", null, null, emptyList())
+        repo.trackView(3L, "M3", "LORA", null, null, emptyList())
 
         val types = repo.getRecentTypes()
         assertEquals(2, types["Checkpoint"])
@@ -130,23 +143,23 @@ class BrowsingHistoryRepositoryImplTest {
     fun getRecentCreators_counts_by_creator() = runTest {
         val dao = FakeDao()
         val repo = BrowsingHistoryRepositoryImpl(dao)
-        repo.trackView(1L, "Checkpoint", "artist1", emptyList())
-        repo.trackView(2L, "LORA", "artist1", emptyList())
-        repo.trackView(3L, "LORA", "artist2", emptyList())
-        repo.trackView(4L, "LORA", null, emptyList())
+        repo.trackView(1L, "M1", "Checkpoint", "artist1", null, emptyList())
+        repo.trackView(2L, "M2", "LORA", "artist1", null, emptyList())
+        repo.trackView(3L, "M3", "LORA", "artist2", null, emptyList())
+        repo.trackView(4L, "M4", "LORA", null, null, emptyList())
 
         val creators = repo.getRecentCreators()
         assertEquals(2, creators["artist1"])
         assertEquals(1, creators["artist2"])
-        assertEquals(2, creators.size) // null creator excluded
+        assertEquals(2, creators.size)
     }
 
     @Test
     fun getRecentTags_counts_split_tags() = runTest {
         val dao = FakeDao()
         val repo = BrowsingHistoryRepositoryImpl(dao)
-        repo.trackView(1L, "Checkpoint", null, listOf("anime", "girl"))
-        repo.trackView(2L, "LORA", null, listOf("anime", "landscape"))
+        repo.trackView(1L, "M1", "Checkpoint", null, null, listOf("anime", "girl"))
+        repo.trackView(2L, "M2", "LORA", null, null, listOf("anime", "landscape"))
 
         val tags = repo.getRecentTags()
         assertEquals(2, tags["anime"])
@@ -158,7 +171,7 @@ class BrowsingHistoryRepositoryImplTest {
     fun getRecentTags_ignores_blank_tags() = runTest {
         val dao = FakeDao()
         val repo = BrowsingHistoryRepositoryImpl(dao)
-        repo.trackView(1L, "Checkpoint", null, emptyList())
+        repo.trackView(1L, "M1", "Checkpoint", null, null, emptyList())
 
         val tags = repo.getRecentTags()
         assertTrue(tags.isEmpty())
@@ -168,9 +181,9 @@ class BrowsingHistoryRepositoryImplTest {
     fun getAllViewedModelIds_returns_distinct_ids() = runTest {
         val dao = FakeDao()
         val repo = BrowsingHistoryRepositoryImpl(dao)
-        repo.trackView(1L, "Checkpoint", null, emptyList())
-        repo.trackView(1L, "Checkpoint", null, emptyList()) // duplicate
-        repo.trackView(2L, "LORA", null, emptyList())
+        repo.trackView(1L, "M1", "Checkpoint", null, null, emptyList())
+        repo.trackView(1L, "M1", "Checkpoint", null, null, emptyList())
+        repo.trackView(2L, "M2", "LORA", null, null, emptyList())
 
         val ids = repo.getAllViewedModelIds()
         assertEquals(setOf(1L, 2L), ids)
@@ -180,7 +193,7 @@ class BrowsingHistoryRepositoryImplTest {
     fun clearAll_removes_everything() = runTest {
         val dao = FakeDao()
         val repo = BrowsingHistoryRepositoryImpl(dao)
-        repo.trackView(1L, "Checkpoint", null, emptyList())
+        repo.trackView(1L, "M1", "Checkpoint", null, null, emptyList())
         repo.clearAll()
         assertTrue(dao.entities.isEmpty())
     }

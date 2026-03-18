@@ -146,8 +146,10 @@ class ModelDetailViewModelTest {
         var trackCalled = false
         override suspend fun trackView(
             modelId: Long,
+            modelName: String,
             modelType: String,
             creatorName: String?,
+            thumbnailUrl: String?,
             tags: List<String>,
         ) { trackCalled = true }
         override suspend fun getRecentTypes(limit: Int) = error("not used")
@@ -156,6 +158,12 @@ class ModelDetailViewModelTest {
         override suspend fun getRecentModelIds(limit: Int) = error("not used")
         override suspend fun getAllViewedModelIds() = error("not used")
         override suspend fun clearAll() = error("not used")
+        override suspend fun deleteById(historyId: Long) = error("not used")
+        override fun observeRecentlyViewed(limit: Int) = error("not used")
+        override suspend fun cleanup(cutoffMillis: Long, maxEntries: Int) = error("not used")
+        override suspend fun getWeightedTypes(limit: Int) = error("not used")
+        override suspend fun getWeightedTags(limit: Int) = error("not used")
+        override suspend fun getWeightedCreators(limit: Int) = error("not used")
     }
 
     private class FakePrefsRepo : ContentFilterPreferencesRepository {

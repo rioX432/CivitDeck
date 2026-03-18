@@ -77,8 +77,10 @@ class GetRecommendationsUseCaseTest {
     ) : BrowsingHistoryRepository {
         override suspend fun trackView(
             modelId: Long,
+            modelName: String,
             modelType: String,
             creatorName: String?,
+            thumbnailUrl: String?,
             tags: List<String>,
         ) = error("not used")
 
@@ -88,6 +90,8 @@ class GetRecommendationsUseCaseTest {
         override suspend fun getRecentModelIds(limit: Int): List<Long> = recentModelIds
         override suspend fun getAllViewedModelIds(): Set<Long> = error("not used")
         override suspend fun clearAll() = error("not used")
+        override suspend fun deleteById(historyId: Long) = error("not used")
+        override fun observeRecentlyViewed(limit: Int) = error("not used")
         override suspend fun cleanup(cutoffMillis: Long, maxEntries: Int) = error("not used")
         override suspend fun getWeightedTypes(limit: Int): Map<String, Double> =
             recentTypes.mapValues { it.value.toDouble() }

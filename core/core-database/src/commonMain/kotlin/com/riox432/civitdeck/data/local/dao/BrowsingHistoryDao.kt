@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
+import kotlinx.coroutines.flow.Flow
 
 data class DayCount(val day: Long, val cnt: Int)
 
@@ -18,6 +19,12 @@ interface BrowsingHistoryDao {
 
     @Query("SELECT * FROM browsing_history ORDER BY viewedAt DESC LIMIT :limit")
     suspend fun getRecent(limit: Int = 100): List<BrowsingHistoryEntity>
+
+    @Query("SELECT * FROM browsing_history ORDER BY viewedAt DESC LIMIT :limit")
+    fun observeRecent(limit: Int = 100): Flow<List<BrowsingHistoryEntity>>
+
+    @Query("DELETE FROM browsing_history WHERE id = :id")
+    suspend fun deleteById(id: Long)
 
     @Query("SELECT DISTINCT modelId FROM browsing_history ORDER BY viewedAt DESC LIMIT :limit")
     suspend fun getRecentModelIds(limit: Int = 50): List<Long>

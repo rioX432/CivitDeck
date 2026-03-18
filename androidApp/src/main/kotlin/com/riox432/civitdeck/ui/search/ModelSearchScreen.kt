@@ -71,6 +71,7 @@ fun ModelSearchScreen(
     val gridColumns = adaptiveGridColumns(userGridColumns)
     val ownedHashes by viewModel.ownedHashes.collectAsStateWithLifecycle()
     val favoriteIds by viewModel.favoriteIds.collectAsStateWithLifecycle()
+    val recentlyViewed by viewModel.recentlyViewed.collectAsStateWithLifecycle()
     val lazyPagingItems = viewModel.pagingData.collectAsLazyPagingItems()
     val gridState = rememberLazyGridState()
     val headerState = rememberCollapsibleHeaderState()
@@ -90,6 +91,7 @@ fun ModelSearchScreen(
         headerState = headerState,
         uiState = uiState,
         searchHistory = searchHistory,
+        recentlyViewed = recentlyViewed,
         gridState = gridState,
         viewModel = viewModel,
         onModelClick = onModelClick,
@@ -113,6 +115,7 @@ private fun SearchScreenBody(
     headerState: CollapsibleHeaderState,
     uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
     searchHistory: List<String>,
+    recentlyViewed: List<com.riox432.civitdeck.domain.model.RecentlyViewedModel>,
     gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
     viewModel: ModelSearchViewModel,
     onModelClick: (Long, String?, String) -> Unit,
@@ -161,6 +164,7 @@ private fun SearchScreenBody(
         ModelSearchContent(
             isLoadingRecommendations = uiState.isLoadingRecommendations,
             recommendations = uiState.recommendations,
+            recentlyViewed = recentlyViewed,
             gridState = gridState,
             lazyPagingItems = lazyPagingItems,
             onModelClick = onModelClick,

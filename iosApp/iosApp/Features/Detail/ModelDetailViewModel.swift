@@ -352,10 +352,13 @@ final class ModelDetailViewModel: ObservableObject {
                 model = result
                 isLoading = false
                 enrichCurrentVersion()
+                let thumbUrl = result.modelVersions.first?.images.first?.url
                 try? await trackModelViewUseCase.invoke(
                     modelId: result.id,
+                    modelName: result.name,
                     modelType: result.type.name,
                     creatorName: result.creator?.username,
+                    thumbnailUrl: thumbUrl,
                     tags: result.tags
                 )
             } catch is CancellationError {

@@ -70,6 +70,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveNetworkStatusUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveRecentlyViewedUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePersonalTagsUseCase
@@ -243,6 +244,7 @@ object KoinHelper {
     fun getClearSearchHistoryUseCase(): ClearSearchHistoryUseCase = getKoin().get()
     fun getDeleteSearchHistoryItemUseCase(): DeleteSearchHistoryItemUseCase = getKoin().get()
     fun getTrackModelViewUseCase(): TrackModelViewUseCase = getKoin().get()
+    fun getObserveRecentlyViewedUseCase(): ObserveRecentlyViewedUseCase = getKoin().get()
     fun getRecommendationsUseCase(): GetRecommendationsUseCase = getKoin().get()
     fun getViewedModelIdsUseCase(): GetViewedModelIdsUseCase = getKoin().get()
     fun getExcludedTagsUseCase(): GetExcludedTagsUseCase = getKoin().get()

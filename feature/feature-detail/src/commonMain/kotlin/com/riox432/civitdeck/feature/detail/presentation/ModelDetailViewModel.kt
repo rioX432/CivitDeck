@@ -198,8 +198,11 @@ class ModelDetailViewModel(
                 enrichCurrentVersion()
                 trackModelViewUseCase(
                     modelId = model.id,
+                    modelName = model.name,
                     modelType = model.type.name,
                     creatorName = model.creator?.username,
+                    thumbnailUrl = model.modelVersions.firstOrNull()
+                        ?.images?.firstOrNull()?.url,
                     tags = model.tags,
                 )
             } catch (e: CancellationException) {

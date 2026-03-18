@@ -32,7 +32,7 @@ val desktopModule = module {
     single<AppVersionProvider> { DesktopAppVersionProvider() }
     viewModel { DesktopUpdateViewModel(get(), get(), get()) }
     viewModel {
-        DesktopSearchViewModel(get(), get(), get())
+        DesktopSearchViewModel(get(), get(), get(), get())
     }
     viewModel { params ->
         ModelDetailViewModel(

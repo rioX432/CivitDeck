@@ -3,8 +3,10 @@ package com.riox432.civitdeck.ui.search
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
+import com.riox432.civitdeck.domain.model.RecentlyViewedModel
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
@@ -13,8 +15,10 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -38,12 +42,17 @@ class DesktopSearchViewModel(
     private val getModelsUseCase: GetModelsUseCase,
     private val observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase,
     private val observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase,
+    browsingHistoryRepository: BrowsingHistoryRepository,
 ) : ViewModel() {
 
     private val scope = viewModelScope
 
     private val _uiState = MutableStateFlow(DesktopSearchUiState())
     val uiState: StateFlow<DesktopSearchUiState> = _uiState.asStateFlow()
+
+    val recentlyViewed: StateFlow<List<RecentlyViewedModel>> =
+        browsingHistoryRepository.observeRecentlyViewed(RECENTLY_VIEWED_LIMIT)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private var searchJob: Job? = null
 
@@ -155,5 +164,6 @@ class DesktopSearchViewModel(
 
     companion object {
         private const val PAGE_SIZE = 40
+        private const val RECENTLY_VIEWED_LIMIT = 10
     }
 }
