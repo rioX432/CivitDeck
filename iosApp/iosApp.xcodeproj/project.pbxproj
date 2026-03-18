@@ -154,6 +154,8 @@
 		CDDL01012FBB0001000CD001 /* DownloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDL01002FBB0001000CD001 /* DownloadService.swift */; };
 		CDSH01012FDD0001000CD001 /* SocialShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSH01002FDD0001000CD001 /* SocialShareSheet.swift */; };
 		CDSH02012FDD0002000CD001 /* ShareHashtagViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSH02002FDD0002000CD001 /* ShareHashtagViewModel.swift */; };
+		CDHY01012FEE0001000CD001 /* BrowsingHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDHY01002FEE0001000CD001 /* BrowsingHistoryView.swift */; };
+		CDHY02012FEE0002000CD001 /* BrowsingHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDHY02002FEE0002000CD001 /* BrowsingHistoryViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -310,6 +312,8 @@
 		CDDL01002FBB0001000CD001 /* DownloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadService.swift; sourceTree = "<group>"; };
 		CDSH01002FDD0001000CD001 /* SocialShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialShareSheet.swift; sourceTree = "<group>"; };
 		CDSH02002FDD0002000CD001 /* ShareHashtagViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareHashtagViewModel.swift; sourceTree = "<group>"; };
+		CDHY01002FEE0001000CD001 /* BrowsingHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowsingHistoryView.swift; sourceTree = "<group>"; };
+		CDHY02002FEE0002000CD001 /* BrowsingHistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowsingHistoryViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -469,6 +473,7 @@
 				CDSC0A002EA00001000CD001 /* Shortcuts */,
 				CD00GT082D6CC001000CD001 /* Tutorial */,
 				CDSH0A002FDD0000000CD001 /* Share */,
+				CDHY0A002FEE0000000CD001 /* History */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -738,6 +743,15 @@
 			path = Share;
 			sourceTree = "<group>";
 		};
+		CDHY0A002FEE0000000CD001 /* History */ = {
+			isa = PBXGroup;
+			children = (
+				CDHY01002FEE0001000CD001 /* BrowsingHistoryView.swift */,
+				CDHY02002FEE0002000CD001 /* BrowsingHistoryViewModel.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -996,6 +1010,8 @@
 			CDPL04012FCC0004000CD001 /* PluginDetailViewModel.swift in Sources */,
 			CDSH01012FDD0001000CD001 /* SocialShareSheet.swift in Sources */,
 			CDSH02012FDD0002000CD001 /* ShareHashtagViewModel.swift in Sources */,
+			CDHY01012FEE0001000CD001 /* BrowsingHistoryView.swift in Sources */,
+			CDHY02012FEE0002000CD001 /* BrowsingHistoryViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

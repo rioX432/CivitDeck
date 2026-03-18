@@ -3,7 +3,10 @@ package com.riox432.civitdeck.data.repository
 import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.BrowsingHistoryDao
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
+import com.riox432.civitdeck.domain.model.RecentlyViewedModel
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class BrowsingHistoryRepositoryImpl(
     private val dao: BrowsingHistoryDao,
@@ -11,15 +14,19 @@ class BrowsingHistoryRepositoryImpl(
 
     override suspend fun trackView(
         modelId: Long,
+        modelName: String,
         modelType: String,
         creatorName: String?,
+        thumbnailUrl: String?,
         tags: List<String>,
     ) {
         dao.insert(
             BrowsingHistoryEntity(
                 modelId = modelId,
+                modelName = modelName,
                 modelType = modelType,
                 creatorName = creatorName,
+                thumbnailUrl = thumbnailUrl,
                 tags = tags.joinToString(","),
                 viewedAt = currentTimeMillis(),
             ),
@@ -56,6 +63,18 @@ class BrowsingHistoryRepositoryImpl(
 
     override suspend fun clearAll() {
         dao.deleteAll()
+    }
+
+    override suspend fun deleteById(historyId: Long) {
+        dao.deleteById(historyId)
+    }
+
+    override fun observeRecentlyViewed(limit: Int): Flow<List<RecentlyViewedModel>> {
+        return dao.observeRecent(limit).map { entities ->
+            entities
+                .filter { it.modelName.isNotBlank() }
+                .map { it.toRecentlyViewedModel() }
+        }
     }
 
     override suspend fun cleanup(cutoffMillis: Long, maxEntries: Int) {
@@ -115,3 +134,13 @@ class BrowsingHistoryRepositoryImpl(
         }
     }
 }
+
+private fun BrowsingHistoryEntity.toRecentlyViewedModel() = RecentlyViewedModel(
+    historyId = id,
+    modelId = modelId,
+    modelName = modelName,
+    modelType = modelType,
+    creatorName = creatorName,
+    thumbnailUrl = thumbnailUrl,
+    viewedAt = viewedAt,
+)

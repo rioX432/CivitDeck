@@ -109,6 +109,8 @@ import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsScreen
 import com.riox432.civitdeck.ui.feed.FeedScreen
 import com.riox432.civitdeck.ui.feed.FeedViewModel
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
+import com.riox432.civitdeck.ui.history.BrowsingHistoryScreen
+import com.riox432.civitdeck.ui.history.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserScreen
 import com.riox432.civitdeck.ui.plugin.PluginDetailScreen
 import com.riox432.civitdeck.ui.plugin.PluginManagementScreen
@@ -225,6 +227,8 @@ data object BackupRoute
 data object QRScannerRoute
 
 data object AnalyticsRoute
+
+data object BrowsingHistoryRoute
 
 data object IntegrationsHubRoute
 
@@ -466,6 +470,7 @@ private fun CivitDeckNavDisplay(
             detailEntry(backStack)
             qrScannerEntry(backStack)
             analyticsEntry(backStack)
+            browsingHistoryEntry(backStack)
             feedEntry(backStack)
             creatorEntry(backStack)
             galleryEntry(backStack)
@@ -488,6 +493,7 @@ private fun CivitDeckNavDisplay(
                     onNavigateToStorage = { backStack.add(StorageSettingsRoute) },
                     onNavigateToAdvanced = { backStack.add(AdvancedSettingsRoute) },
                     onNavigateToAnalytics = { backStack.add(AnalyticsRoute) },
+                    onNavigateToBrowsingHistory = { backStack.add(BrowsingHistoryRoute) },
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
                     onOpenUrl = { url ->
                         val intent = android.content.Intent(
@@ -702,6 +708,19 @@ private fun EntryProviderScope<Any>.analyticsEntry(backStack: MutableList<Any>) 
         AnalyticsScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.browsingHistoryEntry(backStack: MutableList<Any>) {
+    entry<BrowsingHistoryRoute> {
+        val viewModel: BrowsingHistoryViewModel = koinViewModel()
+        BrowsingHistoryScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onModelClick = { modelId ->
+                backStack.add(DetailRoute(modelId))
+            },
         )
     }
 }

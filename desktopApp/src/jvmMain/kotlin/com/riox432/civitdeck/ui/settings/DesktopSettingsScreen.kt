@@ -54,6 +54,7 @@ fun DesktopSettingsScreen(
     onNavigateToBackup: () -> Unit = {},
     onNavigateToPlugins: () -> Unit = {},
     onNavigateToAnalytics: () -> Unit = {},
+    onNavigateToBrowsingHistory: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -66,6 +67,7 @@ fun DesktopSettingsScreen(
             onNavigateToBackup = onNavigateToBackup,
             onNavigateToPlugins = onNavigateToPlugins,
             onNavigateToAnalytics = onNavigateToAnalytics,
+            onNavigateToBrowsingHistory = onNavigateToBrowsingHistory,
         )
         DisplaySettingsSection(displaySettingsViewModel)
         ContentFilterSection(contentFilterSettingsViewModel)
@@ -81,6 +83,7 @@ private fun ToolsSection(
     onNavigateToBackup: () -> Unit,
     onNavigateToPlugins: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
+    onNavigateToBrowsingHistory: () -> Unit,
 ) {
     SettingsCard(title = "Tools") {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
@@ -88,6 +91,7 @@ private fun ToolsSection(
             OutlinedButton(onClick = onNavigateToBackup) { Text("Backup & Restore") }
             OutlinedButton(onClick = onNavigateToPlugins) { Text("Plugins") }
             OutlinedButton(onClick = onNavigateToAnalytics) { Text("Analytics") }
+            OutlinedButton(onClick = onNavigateToBrowsingHistory) { Text("History") }
         }
     }
 }

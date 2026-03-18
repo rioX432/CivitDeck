@@ -17,6 +17,7 @@ import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettings
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
+import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetListViewModel
@@ -54,6 +55,9 @@ val desktopModule = module {
     }
     viewModel {
         DesktopAnalyticsViewModel(get())
+    }
+    viewModel {
+        DesktopBrowsingHistoryViewModel(get(), get(), get())
     }
     // Settings ViewModels
     viewModel {

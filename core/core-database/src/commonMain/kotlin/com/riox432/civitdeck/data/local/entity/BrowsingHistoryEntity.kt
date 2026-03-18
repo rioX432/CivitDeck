@@ -14,8 +14,10 @@ import androidx.room.PrimaryKey
 data class BrowsingHistoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val modelId: Long,
+    val modelName: String = "",
     val modelType: String,
     val creatorName: String?,
+    val thumbnailUrl: String? = null,
     val tags: String,
     val viewedAt: Long,
 )

@@ -90,6 +90,7 @@ fun SettingsScreen(
     onNavigateToStorage: () -> Unit = {},
     onNavigateToAdvanced: () -> Unit = {},
     onNavigateToAnalytics: () -> Unit = {},
+    onNavigateToBrowsingHistory: () -> Unit = {},
     onNavigateToLicenses: () -> Unit = {},
     onOpenUrl: (String) -> Unit = {},
     scrollToTopTrigger: Int = 0,
@@ -118,6 +119,8 @@ fun SettingsScreen(
             item { SubScreenRow("Appearance", onNavigateToAppearance) }
             item { SectionHeader("Content & Behavior") }
             item { SubScreenRow("Content & Behavior", onNavigateToContentFilter) }
+            item { SectionHeader("History") }
+            item { SubScreenRow("Browsing History", onNavigateToBrowsingHistory) }
             item { SectionHeader("Data & Storage") }
             item { SubScreenRow("Data & Storage", onNavigateToStorage) }
             item { SectionHeader("Advanced & Integrations") }
