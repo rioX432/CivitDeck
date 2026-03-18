@@ -16,8 +16,7 @@ interface BrowsingHistoryRepository {
     suspend fun getAllViewedModelIds(): Set<Long>
     suspend fun clearAll()
 
-    suspend fun deleteOlderThan(cutoffMillis: Long): Int
-    suspend fun deleteExcessEntries(maxCount: Int): Int
+    suspend fun cleanup(cutoffMillis: Long, maxEntries: Int)
 
     suspend fun getWeightedTypes(limit: Int = 10): Map<String, Double>
     suspend fun getWeightedTags(limit: Int = 10): Map<String, Double>

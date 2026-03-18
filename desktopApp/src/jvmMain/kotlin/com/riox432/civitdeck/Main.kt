@@ -26,6 +26,7 @@ import com.riox432.civitdeck.di.registerThemePlugins
 import com.riox432.civitdeck.di.registerWorkflowPlugins
 import com.riox432.civitdeck.domain.usecase.CleanupBrowsingHistoryUseCase
 import kotlinx.coroutines.CoroutineScope
+import org.koin.mp.KoinPlatform
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -44,7 +45,7 @@ fun main() {
         registerThemePlugins()
     }
     applicationScope.launch {
-        val cleanup: CleanupBrowsingHistoryUseCase = org.koin.mp.KoinPlatform.getKoin().get()
+        val cleanup: CleanupBrowsingHistoryUseCase = KoinPlatform.getKoin().get()
         cleanup(System.currentTimeMillis())
     }
 

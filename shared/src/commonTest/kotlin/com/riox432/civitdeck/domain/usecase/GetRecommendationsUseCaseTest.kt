@@ -88,8 +88,7 @@ class GetRecommendationsUseCaseTest {
         override suspend fun getRecentModelIds(limit: Int): List<Long> = recentModelIds
         override suspend fun getAllViewedModelIds(): Set<Long> = error("not used")
         override suspend fun clearAll() = error("not used")
-        override suspend fun deleteOlderThan(cutoffMillis: Long): Int = 0
-        override suspend fun deleteExcessEntries(maxCount: Int): Int = 0
+        override suspend fun cleanup(cutoffMillis: Long, maxEntries: Int) = error("not used")
         override suspend fun getWeightedTypes(limit: Int): Map<String, Double> =
             recentTypes.mapValues { it.value.toDouble() }
         override suspend fun getWeightedTags(limit: Int): Map<String, Double> =

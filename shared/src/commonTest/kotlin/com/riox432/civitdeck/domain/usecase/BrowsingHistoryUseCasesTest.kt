@@ -36,8 +36,7 @@ class BrowsingHistoryUseCasesTest {
         override suspend fun getRecentModelIds(limit: Int): List<Long> = error("not used")
         override suspend fun getAllViewedModelIds(): Set<Long> = viewedIds
         override suspend fun clearAll() { clearCalled = true }
-        override suspend fun deleteOlderThan(cutoffMillis: Long): Int = 0
-        override suspend fun deleteExcessEntries(maxCount: Int): Int = 0
+        override suspend fun cleanup(cutoffMillis: Long, maxEntries: Int) {}
         override suspend fun getWeightedTypes(limit: Int): Map<String, Double> = error("not used")
         override suspend fun getWeightedTags(limit: Int): Map<String, Double> = error("not used")
         override suspend fun getWeightedCreators(limit: Int): Map<String, Double> = error("not used")

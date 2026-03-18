@@ -58,50 +58,41 @@ class BrowsingHistoryRepositoryImpl(
         dao.deleteAll()
     }
 
-    override suspend fun deleteOlderThan(cutoffMillis: Long): Int {
-        return dao.deleteOlderThan(cutoffMillis)
-    }
-
-    override suspend fun deleteExcessEntries(maxCount: Int): Int {
-        return dao.deleteExcessEntries(maxCount)
+    override suspend fun cleanup(cutoffMillis: Long, maxEntries: Int) {
+        dao.deleteOlderThan(cutoffMillis)
+        dao.deleteExcessEntries(maxEntries)
     }
 
     override suspend fun getWeightedTypes(limit: Int): Map<String, Double> {
-        return computeWeightedScores(limit) { it.modelType }
+        return computeWeightedScores(limit) { entry ->
+            listOf(entry.modelType)
+        }
     }
 
     override suspend fun getWeightedTags(limit: Int): Map<String, Double> {
-        val now = currentTimeMillis()
-        val entries = dao.getRecentSince(now - DECAY_WINDOW_MS)
-        val scores = mutableMapOf<String, Double>()
-        for (entry in entries) {
-            val weight = decayWeight(now, entry.viewedAt)
-            val tags = entry.tags.split(",").map { it.trim() }.filter { it.isNotBlank() }
-            for (tag in tags) {
-                scores[tag] = (scores[tag] ?: 0.0) + weight
-            }
+        return computeWeightedScores(limit) { entry ->
+            entry.tags.split(",").map { it.trim() }.filter { it.isNotBlank() }
         }
-        return scores.entries
-            .sortedByDescending { it.value }
-            .take(limit)
-            .associate { it.key to it.value }
     }
 
     override suspend fun getWeightedCreators(limit: Int): Map<String, Double> {
-        return computeWeightedScores(limit) { it.creatorName ?: return@computeWeightedScores null }
+        return computeWeightedScores(limit) { entry ->
+            listOfNotNull(entry.creatorName)
+        }
     }
 
     private suspend fun computeWeightedScores(
         limit: Int,
-        keySelector: (BrowsingHistoryEntity) -> String?,
+        keysSelector: (BrowsingHistoryEntity) -> List<String>,
     ): Map<String, Double> {
         val now = currentTimeMillis()
         val entries = dao.getRecentSince(now - DECAY_WINDOW_MS)
         val scores = mutableMapOf<String, Double>()
         for (entry in entries) {
-            val key = keySelector(entry) ?: continue
             val weight = decayWeight(now, entry.viewedAt)
-            scores[key] = (scores[key] ?: 0.0) + weight
+            for (key in keysSelector(entry)) {
+                scores[key] = (scores[key] ?: 0.0) + weight
+            }
         }
         return scores.entries
             .sortedByDescending { it.value }
