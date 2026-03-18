@@ -71,7 +71,9 @@ class BrowsingHistoryRepositoryImpl(
 
     override fun observeRecentlyViewed(limit: Int): Flow<List<RecentlyViewedModel>> {
         return dao.observeRecent(limit).map { entities ->
-            entities.map { it.toRecentlyViewedModel() }
+            entities
+                .filter { it.modelName.isNotBlank() }
+                .map { it.toRecentlyViewedModel() }
         }
     }
 
