@@ -43,6 +43,7 @@ import com.riox432.civitdeck.domain.usecase.GetModelUpdateNotificationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetNonTrainableImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetPluginConfigUseCase
 import com.riox432.civitdeck.domain.usecase.GetRatingTotalsUseCase
+import com.riox432.civitdeck.domain.usecase.GetSimilarModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadFeedCountUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadNotificationCountUseCase
@@ -487,6 +488,9 @@ object KoinHelper {
     fun getObserveInstalledPluginsUseCase(): ObserveInstalledPluginsUseCase = getKoin().get()
     fun getGetPluginConfigUseCase(): GetPluginConfigUseCase = getKoin().get()
     fun getUpdatePluginConfigUseCase(): UpdatePluginConfigUseCase = getKoin().get()
+
+    // Similarity use cases
+    fun getSimilarModelsUseCase(): GetSimilarModelsUseCase = getKoin().get()
 
     // Quality threshold use cases
     fun getObserveQualityThresholdUseCase(): ObserveQualityThresholdUseCase = getKoin().get()

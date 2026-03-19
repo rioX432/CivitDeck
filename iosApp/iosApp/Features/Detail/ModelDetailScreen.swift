@@ -281,13 +281,23 @@ struct ModelDetailScreen: View {
                     .buttonStyle(.bordered)
                 }
             }
-            Button {
-                showLinkSheet = true
-            } label: {
-                Text("Send to PC")
-                    .frame(maxWidth: .infinity)
+            HStack(spacing: Spacing.sm) {
+                Button {
+                    showLinkSheet = true
+                } label: {
+                    Text("Send to PC")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+
+                NavigationLink {
+                    SimilarModelsView(modelId: viewModel.modelId)
+                } label: {
+                    Text("Find Similar")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
             }
-            .buttonStyle(.bordered)
             if viewModel.powerUserMode {
                 Button {
                     showComfyUIGeneration = true

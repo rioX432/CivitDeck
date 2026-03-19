@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.riox432.civitdeck.ui.navigation
 
 import androidx.compose.animation.ContentTransform
@@ -128,6 +130,8 @@ import com.riox432.civitdeck.ui.settings.NavShortcutsSettingsScreen
 import com.riox432.civitdeck.ui.settings.SettingsScreen
 import com.riox432.civitdeck.ui.settings.StorageSettingsScreen
 import com.riox432.civitdeck.ui.share.ShareViewModel
+import com.riox432.civitdeck.ui.similar.SimilarModelsScreen
+import com.riox432.civitdeck.ui.similar.SimilarModelsViewModel
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.update.UpdateViewModel
@@ -237,6 +241,8 @@ data object IntegrationsHubRoute
 data object PluginManagementRoute
 
 data class PluginDetailRoute(val pluginId: String)
+
+data class SimilarModelsRoute(val modelId: Long)
 
 data object NotificationCenterRoute
 
@@ -472,6 +478,7 @@ private fun CivitDeckNavDisplay(
             batchTagEditorEntry(backStack)
             duplicateReviewEntry(backStack)
             detailEntry(backStack)
+            similarModelsEntry(backStack)
             qrScannerEntry(backStack)
             analyticsEntry(backStack)
             notificationCenterEntry(backStack)
@@ -692,6 +699,20 @@ private fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {
             } else {
                 null
             },
+            onFindSimilar = { modelId -> backStack.add(SimilarModelsRoute(modelId)) },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.similarModelsEntry(backStack: MutableList<Any>) {
+    entry<SimilarModelsRoute> { key ->
+        val viewModel: SimilarModelsViewModel = koinViewModel(
+            key = "similar_${key.modelId}",
+        ) { parametersOf(key.modelId) }
+        SimilarModelsScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onModelClick = { modelId -> backStack.add(DetailRoute(modelId)) },
         )
     }
 }

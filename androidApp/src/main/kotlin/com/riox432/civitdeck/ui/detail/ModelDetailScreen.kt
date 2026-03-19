@@ -11,6 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -69,6 +70,7 @@ fun ModelDetailScreen(
     onToggleShareHashtag: (String, Boolean) -> Unit = { _, _ -> },
     onAddShareHashtag: (String) -> Unit = {},
     onRemoveShareHashtag: (String) -> Unit = {},
+    onFindSimilar: ((Long) -> Unit)? = null,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val collections by viewModel.collections.collectAsStateWithLifecycle()
@@ -103,6 +105,7 @@ fun ModelDetailScreen(
         onShowQRCodeSheet = { showQRCodeSheet = true },
         onShowSubmitReviewSheet = { showSubmitReviewSheet = true },
         onShowShareSheet = { showShareSheet = true },
+        onFindSimilar = onFindSimilar,
     )
 
     ReviewSubmitHandler(
@@ -156,6 +159,7 @@ private fun ModelDetailScaffold(
     onShowQRCodeSheet: () -> Unit,
     onShowSubmitReviewSheet: () -> Unit,
     onShowShareSheet: () -> Unit = {},
+    onFindSimilar: ((Long) -> Unit)? = null,
 ) {
     Scaffold(
         topBar = {
@@ -169,6 +173,11 @@ private fun ModelDetailScaffold(
                 onAddToCollection = onShowCollectionSheet,
                 onShowQRCode = onShowQRCodeSheet,
                 onShareClick = onShowShareSheet,
+                onFindSimilar = if (onFindSimilar != null) {
+                    { onFindSimilar(modelId) }
+                } else {
+                    null
+                },
             )
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -274,6 +283,7 @@ private fun ModelDetailTopBar(
     onAddToCollection: () -> Unit,
     onShowQRCode: () -> Unit,
     onShareClick: () -> Unit,
+    onFindSimilar: (() -> Unit)? = null,
 ) {
     TopAppBar(
         windowInsets = WindowInsets(0, 0, 0, 0),
@@ -293,6 +303,11 @@ private fun ModelDetailTopBar(
             }
         },
         actions = {
+            if (onFindSimilar != null) {
+                IconButton(onClick = onFindSimilar) {
+                    Icon(Icons.Default.ImageSearch, contentDescription = "Find similar models")
+                }
+            }
             IconButton(onClick = onAddToCollection) {
                 Icon(Icons.Default.CreateNewFolder, contentDescription = stringResource(R.string.cd_add_to_collection))
             }

@@ -26,5 +26,6 @@ val domainModule = module {
         pluginDomainModule,
         shareDomainModule,
         updateDomainModule,
+        similarityDomainModule,
     )
 }
