@@ -40,6 +40,8 @@ class AnalyticsRepositoryImpl(
             CategoryStat(name = it.name, count = it.cnt)
         }
 
+        val averageViewDurationMs = browsingHistoryDao.getAverageViewDuration()
+
         return BrowsingStats(
             totalViews = totalViews,
             totalFavorites = totalFavorites,
@@ -48,6 +50,7 @@ class AnalyticsRepositoryImpl(
             topModelTypes = topModelTypes,
             topCreators = topCreators,
             topSearchQueries = topSearchQueries,
+            averageViewDurationMs = averageViewDurationMs,
         )
     }
 }

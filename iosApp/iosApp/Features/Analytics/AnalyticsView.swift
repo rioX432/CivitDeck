@@ -24,6 +24,9 @@ struct AnalyticsView: View {
     private var analyticsContent: some View {
         List {
             summarySection
+            if let avgMs = viewModel.averageViewDurationMs {
+                avgDurationSection(avgMs)
+            }
             if !viewModel.dailyViewCounts.isEmpty {
                 viewTrendSection
             }
@@ -48,6 +51,21 @@ struct AnalyticsView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, Spacing.sm)
+        }
+    }
+
+    private func avgDurationSection(_ avgMs: Int64) -> some View {
+        let seconds = avgMs / 1000
+        let label = seconds >= 60
+            ? "\(seconds / 60)m \(seconds % 60)s"
+            : "\(seconds)s"
+        return Section("Avg. View Duration") {
+            Text(label)
+                .font(.civitHeadlineSmall)
+                .fontWeight(.bold)
+                .foregroundColor(.civitOnSurface)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.vertical, Spacing.sm)
         }
     }
 

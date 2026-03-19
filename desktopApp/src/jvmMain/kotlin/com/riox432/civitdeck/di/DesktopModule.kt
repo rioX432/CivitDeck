@@ -17,6 +17,7 @@ import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettings
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
+import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterViewModel
 import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailViewModel
@@ -112,5 +113,9 @@ val desktopModule = module {
     // Plugin ViewModel
     viewModel {
         DesktopPluginViewModel(get(), get(), get(), get(), get(), get())
+    }
+    // Notification Center ViewModel
+    viewModel {
+        DesktopNotificationCenterViewModel(get(), get(), get())
     }
 }

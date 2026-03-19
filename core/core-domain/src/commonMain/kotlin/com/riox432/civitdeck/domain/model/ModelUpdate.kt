@@ -5,4 +5,5 @@ data class ModelUpdate(
     val modelName: String,
     val newVersionName: String,
     val newVersionId: Long,
+    val source: UpdateSource = UpdateSource.FAVORITE,
 )

@@ -14,6 +14,7 @@ data class DesktopAnalyticsUiState(
     val totalViews: Int = 0,
     val totalFavorites: Int = 0,
     val totalSearches: Int = 0,
+    val averageViewDurationMs: Long? = null,
     val topModelTypes: List<CategoryStat> = emptyList(),
     val topCreators: List<CategoryStat> = emptyList(),
     val error: String? = null,
@@ -46,6 +47,7 @@ class DesktopAnalyticsViewModel(
                     totalViews = stats.totalViews,
                     totalFavorites = stats.totalFavorites,
                     totalSearches = stats.totalSearches,
+                    averageViewDurationMs = stats.averageViewDurationMs,
                     topModelTypes = stats.topModelTypes,
                     topCreators = stats.topCreators,
                 )

@@ -14,7 +14,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ModelUpdate
-import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
+import com.riox432.civitdeck.domain.usecase.CheckAndStoreModelUpdatesUseCase
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.coroutines.cancellation.CancellationException
@@ -24,11 +24,11 @@ class ModelUpdateWorker(
     params: WorkerParameters,
 ) : CoroutineWorker(appContext, params), KoinComponent {
 
-    private val checkModelUpdatesUseCase: CheckModelUpdatesUseCase by inject()
+    private val checkAndStoreUseCase: CheckAndStoreModelUpdatesUseCase by inject()
 
     override suspend fun doWork(): Result {
         return try {
-            val updates = checkModelUpdatesUseCase()
+            val updates = checkAndStoreUseCase()
             if (updates.isNotEmpty()) {
                 showNotification(updates)
             }

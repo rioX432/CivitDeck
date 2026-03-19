@@ -76,6 +76,9 @@ private fun AnalyticsContent(state: AnalyticsUiState, modifier: Modifier = Modif
     ) {
         item { Spacer(Modifier.height(Spacing.sm)) }
         item { SummaryCards(state.totalViews, state.totalFavorites, state.totalSearches) }
+        state.averageViewDurationMs?.let { avgMs ->
+            item { AverageViewDurationCard(avgMs) }
+        }
         if (state.dailyViewCounts.isNotEmpty()) {
             item { SectionTitle("Views (Last 30 Days)") }
             item { ViewTrendChart(state.dailyViewCounts) }
@@ -109,6 +112,35 @@ private fun SummaryCards(views: Int, favorites: Int, searches: Int) {
         StatCard("Views", views.toString(), Modifier.weight(1f))
         StatCard("Favorites", favorites.toString(), Modifier.weight(1f))
         StatCard("Searches", searches.toString(), Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun AverageViewDurationCard(avgMs: Long) {
+    val seconds = avgMs / MS_PER_SECOND
+    val label = if (seconds >= SECONDS_PER_MINUTE) {
+        "${seconds / SECONDS_PER_MINUTE}m ${seconds % SECONDS_PER_MINUTE}s"
+    } else {
+        "${seconds}s"
+    }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+    ) {
+        Column(modifier = Modifier.padding(Spacing.md)) {
+            Text(
+                "Avg. View Duration",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                label,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
+        }
     }
 }
 
@@ -221,3 +253,5 @@ private val BAR_LABEL_WIDTH = 100.dp
 private const val DOT_RADIUS = 4f
 private const val LINE_WIDTH = 2f
 private const val TOP_N = 5
+private const val MS_PER_SECOND = 1000L
+private const val SECONDS_PER_MINUTE = 60L

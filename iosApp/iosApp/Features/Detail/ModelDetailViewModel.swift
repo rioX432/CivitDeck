@@ -48,6 +48,7 @@ final class ModelDetailViewModel: ObservableObject {
     private let getRatingTotalsUseCase: GetRatingTotalsUseCase
     private let submitReviewUseCase: SubmitReviewUseCase
     private var enrichedVersionIds: Set<Int64> = []
+    private var viewStartDate: Date?
 
     var selectedVersion: ModelVersion? {
         guard let model else { return nil }
@@ -82,6 +83,7 @@ final class ModelDetailViewModel: ObservableObject {
         self.getModelReviewsUseCase = KoinHelper.shared.getModelReviewsUseCase()
         self.getRatingTotalsUseCase = KoinHelper.shared.getRatingTotalsUseCase()
         self.submitReviewUseCase = KoinHelper.shared.getSubmitReviewUseCase()
+        self.viewStartDate = nil
         loadModel()
     }
 
@@ -121,6 +123,7 @@ final class ModelDetailViewModel: ObservableObject {
         guard let model else { return }
         Task {
             try? await toggleFavoriteUseCase.invoke(model: model)
+            trackInteraction(.favorite)
         }
     }
 
@@ -262,6 +265,7 @@ final class ModelDetailViewModel: ObservableObject {
                 updatedAt: 0
             )
             let downloadId = try await enqueueDownloadUseCase.invoke(download: download)
+            trackInteraction(.download)
             let existingDownload = downloads.first(where: { $0.fileId == file.id })
             // Only start download if status is pending (new or re-enqueued)
             if existingDownload == nil || existingDownload?.status == .pending {
@@ -332,6 +336,23 @@ final class ModelDetailViewModel: ObservableObject {
         reviewSubmitSuccess = false
     }
 
+    func onDisappear() {
+        guard let startDate = viewStartDate else { return }
+        let durationMs = Int64(Date().timeIntervalSince(startDate) * 1000)
+        viewStartDate = nil
+        Task {
+            try? await trackModelViewUseCase.endView(modelId: modelId, durationMs: durationMs)
+        }
+    }
+
+    func trackInteraction(_ type: InteractionType) {
+        Task {
+            try? await trackModelViewUseCase.trackInteraction(
+                modelId: modelId, interactionType: type
+            )
+        }
+    }
+
     private func sortReviews(_ reviews: [ResourceReview]) -> [ResourceReview] {
         switch reviewSortOrder {
         case .newest:
@@ -361,6 +382,7 @@ final class ModelDetailViewModel: ObservableObject {
                     thumbnailUrl: thumbUrl,
                     tags: result.tags
                 )
+                viewStartDate = Date()
             } catch is CancellationError {
                 return
             } catch {

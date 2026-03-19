@@ -8,7 +8,6 @@ struct ModelDetailScreen: View {
     init(modelId: Int64) {
         _viewModel = StateObject(wrappedValue: ModelDetailViewModel(modelId: modelId))
     }
-
     @State private var isDescriptionExpanded = false
     @State private var showCarouselViewer = false
     @State private var selectedCarouselIndex: Int = 0
@@ -54,6 +53,7 @@ struct ModelDetailScreen: View {
             }
         }
         .task { viewModel.loadReviews() }
+        .onDisappear { viewModel.onDisappear() }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {

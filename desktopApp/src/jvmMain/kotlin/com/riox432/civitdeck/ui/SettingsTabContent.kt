@@ -38,6 +38,8 @@ import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewMo
 import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsScreen
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
+import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterScreen
+import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterViewModel
 import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryScreen
 import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupScreen
@@ -84,6 +86,7 @@ fun SettingsTabContent(
             onNavigateToBackup = { backstack.add(DesktopRoute.Backup) },
             onNavigateToPlugins = { backstack.add(DesktopRoute.PluginList) },
             onNavigateToAnalytics = { backstack.add(DesktopRoute.Analytics) },
+            onNavigateToNotificationCenter = { backstack.add(DesktopRoute.NotificationCenter) },
             onNavigateToBrowsingHistory = { backstack.add(DesktopRoute.BrowsingHistory) },
         )
 
@@ -158,6 +161,19 @@ fun SettingsTabContent(
                     onBack = { backstack.removeLastOrNull() },
                 )
             }
+            is DesktopRoute.NotificationCenter -> {
+                val vm: DesktopNotificationCenterViewModel = koinViewModel()
+                DisposableEffect(vm) {
+                    onDispose { vm.onCleared() }
+                }
+                DesktopNotificationCenterScreen(
+                    viewModel = vm,
+                    onBack = { backstack.removeLastOrNull() },
+                    onModelClick = { modelId ->
+                        backstack.add(DesktopRoute.ModelDetail(modelId))
+                    },
+                )
+            }
             is DesktopRoute.BrowsingHistory -> {
                 val vm: DesktopBrowsingHistoryViewModel = koinViewModel()
                 DisposableEffect(vm) {
@@ -177,11 +193,13 @@ fun SettingsTabContent(
 }
 
 @Composable
+@Suppress("LongParameterList")
 private fun SettingsMainContent(
     onNavigateToDatasets: () -> Unit,
     onNavigateToBackup: () -> Unit,
     onNavigateToPlugins: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
+    onNavigateToNotificationCenter: () -> Unit,
     onNavigateToBrowsingHistory: () -> Unit = {},
 ) {
     // AppBehaviorVM is always needed (controls power user mode / section visibility)
@@ -226,6 +244,7 @@ private fun SettingsMainContent(
                         onNavigateToBackup = onNavigateToBackup,
                         onNavigateToPlugins = onNavigateToPlugins,
                         onNavigateToAnalytics = onNavigateToAnalytics,
+                        onNavigateToNotificationCenter = onNavigateToNotificationCenter,
                         onNavigateToBrowsingHistory = onNavigateToBrowsingHistory,
                     )
                 }

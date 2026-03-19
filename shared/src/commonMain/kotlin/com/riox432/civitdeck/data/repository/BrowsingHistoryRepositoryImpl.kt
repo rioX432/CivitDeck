@@ -3,6 +3,7 @@ package com.riox432.civitdeck.data.repository
 import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.BrowsingHistoryDao
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
+import com.riox432.civitdeck.domain.model.InteractionType
 import com.riox432.civitdeck.domain.model.RecentlyViewedModel
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import kotlinx.coroutines.flow.Flow
@@ -100,6 +101,20 @@ class BrowsingHistoryRepositoryImpl(
         }
     }
 
+    override suspend fun updateViewDuration(modelId: Long, durationMs: Long) {
+        val id = dao.getLatestIdForModel(modelId) ?: return
+        dao.updateDuration(id, durationMs)
+    }
+
+    override suspend fun trackInteraction(modelId: Long, interactionType: InteractionType) {
+        val id = dao.getLatestIdForModel(modelId) ?: return
+        dao.updateInteractionType(id, interactionType.name)
+    }
+
+    override suspend fun getAverageViewDurationMs(): Long? {
+        return dao.getAverageViewDuration()
+    }
+
     private suspend fun computeWeightedScores(
         limit: Int,
         keysSelector: (BrowsingHistoryEntity) -> List<String>,
@@ -108,7 +123,7 @@ class BrowsingHistoryRepositoryImpl(
         val entries = dao.getRecentSince(now - DECAY_WINDOW_MS)
         val scores = mutableMapOf<String, Double>()
         for (entry in entries) {
-            val weight = decayWeight(now, entry.viewedAt)
+            val weight = decayWeight(now, entry.viewedAt) * engagementWeight(entry)
             for (key in keysSelector(entry)) {
                 scores[key] = (scores[key] ?: 0.0) + weight
             }
@@ -122,6 +137,12 @@ class BrowsingHistoryRepositoryImpl(
     companion object {
         private const val DAY_MS = 86_400_000L
         private const val DECAY_WINDOW_MS = 90 * DAY_MS
+        private const val LONG_VIEW_THRESHOLD_MS = 30_000L
+        private const val SHORT_VIEW_THRESHOLD_MS = 5_000L
+        private const val DOWNLOAD_WEIGHT = 5.0
+        private const val FAVORITE_WEIGHT = 3.0
+        private const val LONG_VIEW_WEIGHT = 2.0
+        private const val SHORT_VIEW_WEIGHT = 0.5
 
         internal fun decayWeight(now: Long, viewedAt: Long): Double {
             val ageMs = now - viewedAt
@@ -130,6 +151,27 @@ class BrowsingHistoryRepositoryImpl(
                 ageMs < 30 * DAY_MS -> 0.5
                 ageMs < 90 * DAY_MS -> 0.2
                 else -> 0.05
+            }
+        }
+
+        internal fun engagementWeight(entry: BrowsingHistoryEntity): Double {
+            val interaction = entry.interactionType?.let {
+                runCatching { InteractionType.valueOf(it) }.getOrNull()
+            }
+            return when (interaction) {
+                InteractionType.DOWNLOAD -> DOWNLOAD_WEIGHT
+                InteractionType.FAVORITE -> FAVORITE_WEIGHT
+                InteractionType.SHARE -> FAVORITE_WEIGHT
+                InteractionType.VIEW, null -> durationWeight(entry.durationMs)
+            }
+        }
+
+        private fun durationWeight(durationMs: Long?): Double {
+            if (durationMs == null) return 1.0
+            return when {
+                durationMs >= LONG_VIEW_THRESHOLD_MS -> LONG_VIEW_WEIGHT
+                durationMs < SHORT_VIEW_THRESHOLD_MS -> SHORT_VIEW_WEIGHT
+                else -> 1.0
             }
         }
     }

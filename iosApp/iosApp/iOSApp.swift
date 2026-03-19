@@ -16,6 +16,8 @@ struct iOSApp: App {
             try? await ThemePluginInitializerKt.registerThemePlugins()
         }
         Task { try? await KoinKt.initializeAuth() }
+        ModelUpdateBackgroundTask.register()
+        ModelUpdateBackgroundTask.schedule()
     }
 
     var body: some Scene {
