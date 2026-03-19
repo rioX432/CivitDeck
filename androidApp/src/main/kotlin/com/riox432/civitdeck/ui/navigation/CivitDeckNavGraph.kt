@@ -112,6 +112,8 @@ import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
 import com.riox432.civitdeck.ui.history.BrowsingHistoryScreen
 import com.riox432.civitdeck.ui.history.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserScreen
+import com.riox432.civitdeck.ui.notificationcenter.NotificationCenterScreen
+import com.riox432.civitdeck.ui.notificationcenter.NotificationCenterViewModel
 import com.riox432.civitdeck.ui.plugin.PluginDetailScreen
 import com.riox432.civitdeck.ui.plugin.PluginManagementScreen
 import com.riox432.civitdeck.ui.plugin.PluginManagementViewModel
@@ -235,6 +237,8 @@ data object IntegrationsHubRoute
 data object PluginManagementRoute
 
 data class PluginDetailRoute(val pluginId: String)
+
+data object NotificationCenterRoute
 
 data object FeedRoute
 
@@ -470,6 +474,7 @@ private fun CivitDeckNavDisplay(
             detailEntry(backStack)
             qrScannerEntry(backStack)
             analyticsEntry(backStack)
+            notificationCenterEntry(backStack)
             browsingHistoryEntry(backStack)
             feedEntry(backStack)
             creatorEntry(backStack)
@@ -493,6 +498,7 @@ private fun CivitDeckNavDisplay(
                     onNavigateToStorage = { backStack.add(StorageSettingsRoute) },
                     onNavigateToAdvanced = { backStack.add(AdvancedSettingsRoute) },
                     onNavigateToAnalytics = { backStack.add(AnalyticsRoute) },
+                    onNavigateToNotificationCenter = { backStack.add(NotificationCenterRoute) },
                     onNavigateToBrowsingHistory = { backStack.add(BrowsingHistoryRoute) },
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
                     onOpenUrl = { url ->
@@ -708,6 +714,17 @@ private fun EntryProviderScope<Any>.analyticsEntry(backStack: MutableList<Any>) 
         AnalyticsScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.notificationCenterEntry(backStack: MutableList<Any>) {
+    entry<NotificationCenterRoute> {
+        val viewModel: NotificationCenterViewModel = koinViewModel()
+        NotificationCenterScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onNavigateToModel = { modelId -> backStack.add(DetailRoute(modelId)) },
         )
     }
 }

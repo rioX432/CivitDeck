@@ -22,6 +22,7 @@ import com.riox432.civitdeck.data.local.dao.HiddenModelDao
 import com.riox432.civitdeck.data.local.dao.LocalModelFileDao
 import com.riox432.civitdeck.data.local.dao.ModelDownloadDao
 import com.riox432.civitdeck.data.local.dao.ModelNoteDao
+import com.riox432.civitdeck.data.local.dao.ModelUpdateNotificationDao
 import com.riox432.civitdeck.data.local.dao.ModelVersionCheckpointDao
 import com.riox432.civitdeck.data.local.dao.PersonalTagDao
 import com.riox432.civitdeck.data.local.dao.PluginDao
@@ -49,6 +50,7 @@ import com.riox432.civitdeck.data.local.entity.LocalModelFileEntity
 import com.riox432.civitdeck.data.local.entity.ModelDirectoryEntity
 import com.riox432.civitdeck.data.local.entity.ModelDownloadEntity
 import com.riox432.civitdeck.data.local.entity.ModelNoteEntity
+import com.riox432.civitdeck.data.local.entity.ModelUpdateNotificationEntity
 import com.riox432.civitdeck.data.local.entity.ModelVersionCheckpointEntity
 import com.riox432.civitdeck.data.local.entity.PersonalTagEntity
 import com.riox432.civitdeck.data.local.entity.PluginEntity
@@ -90,8 +92,9 @@ import kotlinx.coroutines.IO
         ModelDownloadEntity::class,
         PluginEntity::class,
         ShareHashtagEntity::class,
+        ModelUpdateNotificationEntity::class,
     ],
-    version = 37,
+    version = 38,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -118,6 +121,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun modelDownloadDao(): ModelDownloadDao
     abstract fun pluginDao(): PluginDao
     abstract fun shareHashtagDao(): ShareHashtagDao
+    abstract fun modelUpdateNotificationDao(): ModelUpdateNotificationDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -749,6 +753,30 @@ val MIGRATION_36_37 = object : Migration(36, 37) {
     }
 }
 
+val MIGRATION_37_38 = object : Migration(37, 38) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `model_update_notifications` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`modelId` INTEGER NOT NULL, " +
+                "`modelName` TEXT NOT NULL, " +
+                "`newVersionName` TEXT NOT NULL, " +
+                "`newVersionId` INTEGER NOT NULL, " +
+                "`source` TEXT NOT NULL, " +
+                "`createdAt` INTEGER NOT NULL, " +
+                "`isRead` INTEGER NOT NULL DEFAULT 0)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_model_update_notifications_createdAt` " +
+                "ON `model_update_notifications` (`createdAt`)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_model_update_notifications_isRead` " +
+                "ON `model_update_notifications` (`isRead`)",
+        )
+    }
+}
+
 // Seed data is inserted via onOpen (not in migrations) because Room migrations only run on
 // upgrades — a fresh install starts directly at the latest schema version, skipping all
 // migration callbacks. Using INSERT OR IGNORE in onOpen ensures required rows are always
@@ -852,6 +880,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_34_35,
             MIGRATION_35_36,
             MIGRATION_36_37,
+            MIGRATION_37_38,
         )
         .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
         .addCallback(defaultCollectionCallback)

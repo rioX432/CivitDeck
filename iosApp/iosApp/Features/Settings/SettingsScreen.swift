@@ -28,6 +28,7 @@ struct SettingsScreen: View {
             }
             accountSection
             appearanceSection
+            notificationsSection
             contentBehaviorSection
             historySection
             dataStorageSection
@@ -83,6 +84,14 @@ struct SettingsScreen: View {
         Section {
             NavigationLink(destination: AppearanceSettingsView(viewModel: displayViewModel)) {
                 Text("Appearance")
+            }
+        }
+    }
+
+    private var notificationsSection: some View {
+        Section("Notifications") {
+            NavigationLink(destination: NotificationCenterView()) {
+                Label("Model Updates", systemImage: "bell")
             }
         }
     }

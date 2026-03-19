@@ -10,6 +10,7 @@ import com.riox432.civitdeck.data.local.repository.DatasetCollectionRepositoryIm
 import com.riox432.civitdeck.data.local.repository.ImageTagRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ModelDownloadRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ModelNoteRepositoryImpl
+import com.riox432.civitdeck.data.local.repository.ModelUpdateNotificationRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.PluginRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ShareHashtagRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.UpdateRepositoryImpl
@@ -20,6 +21,7 @@ import com.riox432.civitdeck.domain.repository.DatasetCollectionRepository
 import com.riox432.civitdeck.domain.repository.ImageTagRepository
 import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
 import com.riox432.civitdeck.domain.repository.ModelNoteRepository
+import com.riox432.civitdeck.domain.repository.ModelUpdateNotificationRepository
 import com.riox432.civitdeck.domain.repository.PluginRepository
 import com.riox432.civitdeck.domain.repository.ShareHashtagRepository
 import com.riox432.civitdeck.domain.repository.UpdateRepository
@@ -51,6 +53,7 @@ val databaseModule = module {
     single { get<CivitDeckDatabase>().modelDownloadDao() }
     single { get<CivitDeckDatabase>().pluginDao() }
     single { get<CivitDeckDatabase>().shareHashtagDao() }
+    single { get<CivitDeckDatabase>().modelUpdateNotificationDao() }
 
     // Data Sources
     single { LocalCacheDataSource(get()) }
@@ -80,4 +83,7 @@ val databaseModule = module {
 
     // Update Checker
     single<UpdateRepository> { UpdateRepositoryImpl(get(), get(), get()) }
+
+    // Model Update Notifications
+    single<ModelUpdateNotificationRepository> { ModelUpdateNotificationRepositoryImpl(get()) }
 }

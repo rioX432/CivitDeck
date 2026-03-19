@@ -10,6 +10,7 @@ import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.AddShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
 import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
+import com.riox432.civitdeck.domain.usecase.CheckAndStoreModelUpdatesUseCase
 import com.riox432.civitdeck.domain.usecase.CheckModelUpdatesUseCase
 import com.riox432.civitdeck.domain.usecase.CleanupBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
@@ -38,16 +39,20 @@ import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelLicenseUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelReviewsUseCase
+import com.riox432.civitdeck.domain.usecase.GetModelUpdateNotificationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetNonTrainableImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetPluginConfigUseCase
 import com.riox432.civitdeck.domain.usecase.GetRatingTotalsUseCase
 import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadFeedCountUseCase
+import com.riox432.civitdeck.domain.usecase.GetUnreadNotificationCountUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.InstallPluginUseCase
 import com.riox432.civitdeck.domain.usecase.IsFollowingCreatorUseCase
+import com.riox432.civitdeck.domain.usecase.MarkAllNotificationsReadUseCase
 import com.riox432.civitdeck.domain.usecase.MarkFeedReadUseCase
 import com.riox432.civitdeck.domain.usecase.MarkImageExcludedUseCase
+import com.riox432.civitdeck.domain.usecase.MarkNotificationReadUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
@@ -492,6 +497,13 @@ object KoinHelper {
     fun getGetActiveThemeUseCase(): GetActiveThemeUseCase = getKoin().get()
     fun getObserveThemePluginsUseCase(): ObserveThemePluginsUseCase = getKoin().get()
     fun getActivateThemePluginUseCase(): ActivateThemePluginUseCase = getKoin().get()
+
+    // Model update notification use cases
+    fun getModelUpdateNotificationsUseCase(): GetModelUpdateNotificationsUseCase = getKoin().get()
+    fun getUnreadNotificationCountUseCase(): GetUnreadNotificationCountUseCase = getKoin().get()
+    fun getMarkNotificationReadUseCase(): MarkNotificationReadUseCase = getKoin().get()
+    fun getMarkAllNotificationsReadUseCase(): MarkAllNotificationsReadUseCase = getKoin().get()
+    fun getCheckAndStoreModelUpdatesUseCase(): CheckAndStoreModelUpdatesUseCase = getKoin().get()
 
     // Share hashtag use cases
     fun getObserveShareHashtagsUseCase(): ObserveShareHashtagsUseCase = getKoin().get()

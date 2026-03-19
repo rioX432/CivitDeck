@@ -54,6 +54,7 @@ fun DesktopSettingsScreen(
     onNavigateToBackup: () -> Unit = {},
     onNavigateToPlugins: () -> Unit = {},
     onNavigateToAnalytics: () -> Unit = {},
+    onNavigateToNotificationCenter: () -> Unit = {},
     onNavigateToBrowsingHistory: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -67,6 +68,7 @@ fun DesktopSettingsScreen(
             onNavigateToBackup = onNavigateToBackup,
             onNavigateToPlugins = onNavigateToPlugins,
             onNavigateToAnalytics = onNavigateToAnalytics,
+            onNavigateToNotificationCenter = onNavigateToNotificationCenter,
             onNavigateToBrowsingHistory = onNavigateToBrowsingHistory,
         )
         DisplaySettingsSection(displaySettingsViewModel)
@@ -78,11 +80,13 @@ fun DesktopSettingsScreen(
 }
 
 @Composable
+@Suppress("LongParameterList")
 private fun ToolsSection(
     onNavigateToDatasets: () -> Unit,
     onNavigateToBackup: () -> Unit,
     onNavigateToPlugins: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
+    onNavigateToNotificationCenter: () -> Unit,
     onNavigateToBrowsingHistory: () -> Unit,
 ) {
     SettingsCard(title = "Tools") {
@@ -91,6 +95,7 @@ private fun ToolsSection(
             OutlinedButton(onClick = onNavigateToBackup) { Text("Backup & Restore") }
             OutlinedButton(onClick = onNavigateToPlugins) { Text("Plugins") }
             OutlinedButton(onClick = onNavigateToAnalytics) { Text("Analytics") }
+            OutlinedButton(onClick = onNavigateToNotificationCenter) { Text("Notifications") }
             OutlinedButton(onClick = onNavigateToBrowsingHistory) { Text("History") }
         }
     }

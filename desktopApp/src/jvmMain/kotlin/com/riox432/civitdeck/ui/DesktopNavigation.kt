@@ -20,6 +20,7 @@ sealed class DesktopRoute {
     data class PluginDetail(val pluginId: String) : DesktopRoute()
     data class ModelCompare(val leftModelId: Long, val rightModelId: Long) : DesktopRoute()
     data object Analytics : DesktopRoute()
+    data object NotificationCenter : DesktopRoute()
     data object BrowsingHistory : DesktopRoute()
     data object QRCode : DesktopRoute()
 }
