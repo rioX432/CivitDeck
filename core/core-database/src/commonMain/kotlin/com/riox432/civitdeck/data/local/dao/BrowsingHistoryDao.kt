@@ -87,4 +87,23 @@ interface BrowsingHistoryDao {
             "GROUP BY creatorName ORDER BY cnt DESC LIMIT :limit",
     )
     suspend fun getCreatorCountsSince(sinceMillis: Long, limit: Int = 10): List<NameCount>
+
+    @Query("UPDATE browsing_history SET durationMs = :durationMs WHERE id = :id")
+    suspend fun updateDuration(id: Long, durationMs: Long)
+
+    @Query(
+        "UPDATE browsing_history SET interactionType = :interactionType WHERE id = :id",
+    )
+    suspend fun updateInteractionType(id: Long, interactionType: String)
+
+    @Query(
+        "SELECT id FROM browsing_history WHERE modelId = :modelId " +
+            "ORDER BY viewedAt DESC LIMIT 1",
+    )
+    suspend fun getLatestIdForModel(modelId: Long): Long?
+
+    @Query(
+        "SELECT AVG(durationMs) FROM browsing_history WHERE durationMs IS NOT NULL",
+    )
+    suspend fun getAverageViewDuration(): Long?
 }

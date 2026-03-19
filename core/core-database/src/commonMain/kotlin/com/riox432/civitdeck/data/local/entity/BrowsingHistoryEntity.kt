@@ -20,4 +20,6 @@ data class BrowsingHistoryEntity(
     val thumbnailUrl: String? = null,
     val tags: String,
     val viewedAt: Long,
+    val durationMs: Long? = null,
+    val interactionType: String? = null,
 )

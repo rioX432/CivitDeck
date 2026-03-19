@@ -20,6 +20,7 @@ typealias GenerationStatus = Core_domainGenerationStatus
 typealias HiddenModel = Core_domainHiddenModel
 typealias ImageGenerationMeta = Core_domainImageGenerationMeta
 typealias ImageSource = Core_domainImageSource
+typealias InteractionType = Core_domainInteractionType
 typealias ImageStats = Core_domainImageStats
 typealias ImageTag = Core_domainImageTag
 typealias LocalModelFile = Core_domainLocalModelFile

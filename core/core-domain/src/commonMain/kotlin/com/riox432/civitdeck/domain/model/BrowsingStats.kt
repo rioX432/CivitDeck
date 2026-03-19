@@ -8,6 +8,7 @@ data class BrowsingStats(
     val topModelTypes: List<CategoryStat>,
     val topCreators: List<CategoryStat>,
     val topSearchQueries: List<CategoryStat>,
+    val averageViewDurationMs: Long? = null,
 )
 
 data class DailyViewCount(

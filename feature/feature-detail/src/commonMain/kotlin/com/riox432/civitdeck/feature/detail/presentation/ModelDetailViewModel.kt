@@ -3,6 +3,7 @@ package com.riox432.civitdeck.feature.detail.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.DownloadStatus
+import com.riox432.civitdeck.domain.model.InteractionType
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.domain.model.ModelDownload
@@ -31,6 +32,7 @@ import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.domain.util.currentTimeMillis
 import com.riox432.civitdeck.feature.collections.domain.usecase.AddModelToCollectionUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.CreateCollectionUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveCollectionsUseCase
@@ -100,6 +102,7 @@ class ModelDetailViewModel(
     private val _uiState = MutableStateFlow(ModelDetailUiState())
     val uiState: StateFlow<ModelDetailUiState> = _uiState.asStateFlow()
     private val enrichedVersionIds = mutableSetOf<Long>()
+    private var viewStartTimeMs: Long = 0L
 
     private val _downloadEnqueuedEvent = MutableSharedFlow<Long>(extraBufferCapacity = 1)
     val downloadEnqueuedEvent: SharedFlow<Long> = _downloadEnqueuedEvent
@@ -128,11 +131,27 @@ class ModelDetailViewModel(
         enrichCurrentVersion()
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        if (viewStartTimeMs > 0L) {
+            val durationMs = currentTimeMillis() - viewStartTimeMs
+            viewStartTimeMs = 0L
+            kotlinx.coroutines.MainScope().launch {
+                try {
+                    trackModelViewUseCase.endView(modelId, durationMs)
+                } catch (_: Exception) {
+                    // Duration update failure is non-critical
+                }
+            }
+        }
+    }
+
     fun onFavoriteToggle() {
         val model = _uiState.value.model ?: return
         viewModelScope.launch {
             try {
                 toggleFavoriteUseCase(model)
+                trackModelViewUseCase.trackInteraction(modelId, InteractionType.FAVORITE)
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
@@ -205,6 +224,7 @@ class ModelDetailViewModel(
                         ?.images?.firstOrNull()?.url,
                     tags = model.tags,
                 )
+                viewStartTimeMs = currentTimeMillis()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -336,6 +356,7 @@ class ModelDetailViewModel(
                 )
                 val id = enqueueDownloadUseCase(download)
                 _downloadEnqueuedEvent.tryEmit(id)
+                trackModelViewUseCase.trackInteraction(modelId, InteractionType.DOWNLOAD)
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {

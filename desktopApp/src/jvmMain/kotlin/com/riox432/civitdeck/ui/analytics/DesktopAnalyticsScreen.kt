@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
 
@@ -67,6 +68,9 @@ fun DesktopAnalyticsScreen(
             verticalArrangement = Arrangement.spacedBy(Spacing.md),
         ) {
             SummaryCard(state)
+            state.averageViewDurationMs?.let { avgMs ->
+                AvgDurationCard(avgMs)
+            }
             if (state.topModelTypes.isNotEmpty()) {
                 RankingCard(title = "Top Model Types", items = state.topModelTypes)
             }
@@ -123,6 +127,26 @@ private fun SummaryCard(state: DesktopAnalyticsUiState) {
 }
 
 @Composable
+private fun AvgDurationCard(avgMs: Long) {
+    val seconds = avgMs / MS_PER_SECOND
+    val label = if (seconds >= SECONDS_PER_MINUTE) {
+        "${seconds / SECONDS_PER_MINUTE}m ${seconds % SECONDS_PER_MINUTE}s"
+    } else {
+        "${seconds}s"
+    }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.xs),
+    ) {
+        Column(modifier = Modifier.padding(Spacing.lg)) {
+            Text("Avg. View Duration", style = MaterialTheme.typography.titleSmall)
+            Spacer(modifier = Modifier.height(Spacing.sm))
+            Text(label, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
 private fun StatItem(label: String, value: Int) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = value.toString(), style = MaterialTheme.typography.headlineMedium)
@@ -168,3 +192,5 @@ private fun RankingCard(
 }
 
 private const val MAX_RANKING_ITEMS = 10
+private const val MS_PER_SECOND = 1000L
+private const val SECONDS_PER_MINUTE = 60L
