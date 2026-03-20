@@ -1,344 +1,158 @@
 ---
 name: dev-all
-description: "Process multiple GitHub Issues on a single branch. Investigates in parallel, implements sequentially, creates one PR."
+description: "Process issues sequentially: /dev per issue in isolated sub-agent → CI wait → merge → next"
 argument-hint: "[issue numbers, e.g. #42 #43 #44, or empty for all open issues]"
 user-invocable: true
 disable-model-invocation: true
 allowed-tools:
   - Bash(git checkout:*)
-  - Bash(git add:*)
-  - Bash(git commit:*)
-  - Bash(git push:*)
-  - Bash(git diff:*)
+  - Bash(git pull:*)
   - Bash(git log:*)
   - Bash(git status)
   - Bash(git branch:*)
-  - Bash(git pull:*)
-  - Bash(./gradlew *)
-  - Bash(cd iosApp && swiftlint *)
   - Bash(gh pr create:*)
   - Bash(gh pr merge:*)
+  - Bash(gh pr view:*)
+  - Bash(gh pr checks:*)
   - Bash(gh issue view:*)
   - Bash(gh issue list:*)
   - Glob
   - Grep
   - Read
-  - Edit
-  - Write
-  - Task
+  - Agent
+  - Skill
   - TaskCreate
   - TaskUpdate
   - TaskList
   - TaskGet
-  - ToolSearch
   - AskUserQuestion
-  - mcp__codex__codex
-  - mcp__codex__codex-reply
-  - mcp__figma-remote__get_design_context
-  - mcp__figma-remote__get_screenshot
 ---
 
-# /dev-all — Batch Development on Single Branch
+# /dev-all — Sequential Issue Processing
 
-Process multiple GitHub Issues on **one branch** with **one PR**. Avoids merge conflicts from parallel branches.
+Process multiple GitHub Issues sequentially. Each issue runs `/dev` in an isolated sub-agent, then waits for CI and merges before proceeding to the next.
 
-**Arguments:** "$ARGUMENTS"
+**Arguments:** $ARGUMENTS
 
-## Why Single Branch?
+## Why Per-Issue (not Single Branch)?
 
-Parallel branches cause massive conflicts in shared files:
-- **pbxproj**: every new iOS file modifies the same Xcode project sections
-- **DB migrations**: sequential version numbering conflicts
-- **Test fakes**: every interface change requires updating all fakes
-- **DI registrations**: same Koin module files modified by multiple issues
-
-Single branch with sequential implementation eliminates all of these.
+Each issue gets its own branch, PR, and merge cycle:
+- **Clean git history**: each PR is atomic and reviewable
+- **CI validates each change independently**
+- **Merge conflicts are impossible**: each issue starts from latest main
+- **Rollback is easy**: revert a single PR, not a batch
 
 ---
 
 ## Step 1: Resolve Target Issues
 
-**If `$ARGUMENTS` is provided:** Extract issue numbers (e.g. `#42 #43 #44` or `42 43 44`).
-
-**If `$ARGUMENTS` is empty:** Fetch all open issues:
+**If `$ARGUMENTS` is provided:** Extract issue numbers.
+**If empty:** Fetch all open issues:
 ```bash
 gh issue list --state open --json number,title,labels,body --limit 100
 ```
 
 ---
 
-## Step 2: Context Gathering (Parallel)
+## Step 2: Parallel Investigation (Read-Only)
 
-### 2a. Read Project Context
+Launch **parallel Explore agents** (one per issue) to quickly understand scope:
 
-Read directly (not via subagent):
-- `AGENTS.md`
-- `docs/ARCHITECTURE.md`
-
-### 2b. Parallel Issue Investigation
-
-Launch **parallel Task subagents** (`subagent_type: "Explore"`, `model: "haiku"`) — one per issue.
-
-Each subagent:
+Each agent:
 1. `gh issue view {NUMBER} --json title,body,labels,comments`
-2. Use Grep/Glob to find related code
-3. Identify files that will need changes
-4. Check for Figma links in the issue body
-5. Return: issue summary, affected files, estimated scope, dependencies mentioned
-
-### 2c. Create Task Tracker
-
-Use `TaskCreate` for each issue:
-- Subject: `#{number}: {title}`
-- Description: scope, affected files, dependencies
+2. Grep/Glob to find related code
+3. Return: summary, affected files, estimated scope, dependencies
 
 ---
 
-## Step 3: Dependency Analysis & Execution Order
+## Step 3: Dependency Analysis & Order
 
 ### 3a. Detect Dependencies
+Check issue bodies for: `blocked by #N`, `depends on #N`, `after #N`
 
-From issue bodies, detect blockers:
-
-**Body text patterns (case-insensitive):**
-- `blocked by #NNN`, `depends on #NNN`, `after #NNN`, `waiting for #NNN`
-
-**Labels:** `blocked`, `blocked-by`, `on-hold`
-
-For each blocker `#NNN`, check if open:
-```bash
-gh issue view NNN --json state
-```
-
-### 3b. Determine Execution Order
-
+### 3b. Execution Order
 Topological sort:
 1. Independent issues first (ascending by number)
 2. Dependent issues after their dependencies
-3. Circular dependencies → skip, report to user
-
-### 3c. File Conflict Detection
-
-From investigation results, identify issues that touch the **same files**. Order these sequentially to avoid edit conflicts, with the simpler change first.
-
-Key conflict-prone files in CivitDeck:
-- `iosApp/iosApp.xcodeproj/project.pbxproj` — any iOS file addition
-- `shared/.../CivitDeckDatabase.kt` — migration version numbers
-- `shared/.../UserPreferencesEntity.kt` — new preference fields
-- `shared/.../UserPreferencesRepository.kt` — new preference methods
-- `shared/.../DomainModule.kt` — new use case DI bindings
-- `shared/.../KoinHelper.kt` — iOS use case accessors
-- `androidApp/.../CivitDeckApplication.kt` — Android ViewModel DI
-- `shared/src/commonTest/...` — test fakes implementing repository interfaces
+3. Circular dependencies → skip, report
 
 ---
 
 ## ── AskUserQuestion: Execution Plan ──
 
 Present:
-1. Ordered list of issues to implement
+1. Ordered list of issues
 2. Dependencies detected
-3. Any skipped issues (circular deps, external blockers)
+3. Skipped issues (with reasons)
 4. Estimated scope per issue
 
 Ask user to confirm before proceeding.
 
 ---
 
-## Step 4: Branch & Implement
+## Step 4: Sequential Issue Loop
 
-### 4a. Create Branch
+Create a master task tracker:
+```
+TaskCreate for each issue: "#{number}: {title}"
+```
 
+### For each issue (in order):
+
+#### 4a. Pull latest main
 ```bash
-git checkout master && git pull
-git checkout -b feature/batch-{first-issue}-{last-issue}
+git checkout main && git pull origin main
 ```
 
-### 4b. Sequential Implementation
-
-For each issue in execution order:
-
-1. **Mark task `in_progress`** via `TaskUpdate`
-
-2. **Launch Task subagent** (`subagent_type: "general-purpose"`):
-
+#### 4b. Run /dev in isolated sub-agent
 ```
-Implement GitHub Issue #{NUMBER}: "{TITLE}" on the CURRENT branch.
-Do NOT create a new branch — you are already on the correct feature branch.
-
-## Issue Details
-{issue body}
-
-## Files Likely Affected
-{from investigation}
-
-## Figma Design Context
-{if Figma link was found, include design context here}
-
-## Previously Implemented Issues in This Batch
-{list of completed issues with: commit message, files changed}
-→ If a file was already modified, BUILD ON those changes.
-
-## Project Conventions
-- Read CLAUDE.md and AGENTS.md for architecture rules
-- Clean Architecture + MVVM, Koin DI, UDF
-- Android: design tokens in `ui/theme/`, Coil 3.x
-- iOS: `DesignSystem/` tokens, `CachedAsyncImage`, feature-based structure
-- iOS deployment target 16.0 — no iOS 18+ APIs
-- Detekt LongMethod limit: 60 lines
-
-## Your Workflow
-
-### Investigate
-- Read ALL affected files before making changes
-- Check if previous batch issues already modified these files
-- Trace: UI → ViewModel → UseCase → Repository
-
-### Implement
-- Follow existing patterns exactly
-- Keep changes minimal and focused
-- When adding new iOS files: update pbxproj with 4 entries (PBXBuildFile, PBXFileReference, group children, PBXSourcesBuildPhase)
-- When adding DB columns: create migration with next version number, update entity, update DB version
-
-### Commit
-- `git add {specific files}` (NO `git add .`)
-- `git commit -m "{concise message} (#{NUMBER})"`
-- No Co-Authored-By, no AI stamps
-
-Report back: files changed, commit hash, any issues encountered.
+Agent(
+  prompt: "/dev #{issue_number}",
+  model: "opus",
+  isolation: "worktree"
+)
 ```
 
-3. **After subagent completes:**
-   - Verify commit: `git log --oneline -1`
-   - Mark task `completed`
-   - Record changes for next subagent's context
+The sub-agent:
+- Gets a fresh context (no pollution from previous issues)
+- Works in an isolated git worktree (no file conflicts)
+- Runs the full /dev workflow autonomously
+- Returns: PR URL (or error report)
 
-4. **If subagent fails:**
-   - Note the failure
-   - Ask user: skip and continue, or stop?
+#### 4c. Enable auto-merge
+```bash
+gh pr merge {PR_URL} --auto --squash --delete-branch
+```
+
+#### 4d. Wait for merge
+Poll until merged (check every 30 seconds, timeout 15 minutes):
+```bash
+STATE=$(gh pr view {PR_URL} --json state -q '.state')
+```
+
+If CI fails:
+1. Report the failure to user
+2. Ask: skip this issue and continue, or stop?
+
+#### 4e. Mark task completed and proceed
 
 ---
 
-## Step 5: Quality Gate
-
-After ALL issues are implemented, run ALL checks on the **feature branch** (not master):
-
-### 5a. Android Build (always run)
-```bash
-./gradlew :androidApp:assembleDebug
-```
-
-### 5b. Tests
-```bash
-./gradlew :shared:testDebugUnitTest
-```
-
-### 5c. Detekt (if Kotlin changed)
-```bash
-./gradlew detekt
-```
-Run twice if first run reports import reordering issues.
-
-### 5d. SwiftLint (if Swift changed)
-```bash
-# Run from project root with explicit config — NOT `cd iosApp && swiftlint`
-swiftlint --strict --config iosApp/.swiftlint.yml
-```
-
-### 5e. iOS Build (if Swift changed)
-```bash
-xcodebuild build \
-  -project iosApp/iosApp.xcodeproj \
-  -scheme iosApp \
-  -destination 'generic/platform=iOS Simulator' \
-  CODE_SIGNING_REQUIRED=NO \
-  CODE_SIGNING_ALLOWED=YES \
-  EXPANDED_CODE_SIGN_IDENTITY=""
-```
-Check for `BUILD SUCCEEDED` — `No such module 'Shared'` errors in SourceKit are false positives (expected until KMP framework is built), but real compile errors must be fixed.
-
-### Failure Handling
-- Fix and retry (max 3 attempts per check)
-- Lint/test fixes go in a separate commit: `Fix lint/test issues`
-- If still failing after 3 attempts → report to user, stop
-
----
-
-## Step 6: PR Creation
-
-### 6a. Push
-```bash
-git push -u origin feature/batch-{first-issue}-{last-issue}
-```
-
-### 6b. Create PR
-```bash
-gh pr create --title "Implement #{first}–#{last}: {brief summary}" --body "$(cat <<'EOF'
-## Description
-
-Batch implementation of the following issues:
-
-{for each issue:}
-- **#{NUMBER}**: {title} — {one-line summary}
-
-## Related Issues
-
-{for each issue:}
-Closes #{NUMBER}
-
-## Screenshots / Video
-
-<!-- If applicable -->
-
-## Test Plan
-
-- [x] Unit tests pass (`./gradlew :shared:testDebugUnitTest`)
-- [x] Android build pass (`./gradlew :androidApp:assembleDebug`)
-- [x] Detekt pass (`./gradlew detekt`)
-- [x] SwiftLint pass (if Swift changed)
-- [x] iOS build pass (`xcodebuild build ... BUILD SUCCEEDED`)
-
-## Review Checklist
-
-- [x] Each issue implemented as a separate commit
-- [x] Code follows Clean Architecture + MVVM
-- [x] Shared logic in `commonMain`, platform-specific only when necessary
-- [x] No unnecessary dependencies added
-- [x] Tests added/updated as needed
-
-## Breaking Changes
-
-None
-EOF
-)"
-```
-
-### 6c. Auto-Merge (if quality gate passed)
-```bash
-gh pr merge {PR_NUMBER} --merge --delete-branch
-```
-
----
-
-## Step 7: Final Report
+## Step 5: Final Report
 
 ```
 ## Batch Development Summary
 
-Branch: feature/batch-{first}-{last}
-PR: {URL}
-Status: {Merged / Open for review}
+| # | Issue | PR | Status |
+|---|-------|----|--------|
+| 1 | #{42} Title | PR_URL | Merged |
+| 2 | #{43} Title | PR_URL | Merged |
+| 3 | #{44} Title | — | Skipped (CI failed) |
 
-| # | Issue | Commit | Status |
-|---|-------|--------|--------|
-| 1 | #{42} Title | abc1234 | Done |
-| 2 | #{43} Title | def5678 | Done |
-| 3 | #{44} Title | — | Skipped (reason) |
-
-Quality Gate: Android Build ✓ | Tests ✓ | Detekt ✓ | SwiftLint ✓
+Completed: N / M issues
 ```
 
-Mark all tasks as `completed`.
+Mark all tasks `completed`.
 
 ---
 
@@ -348,8 +162,8 @@ Mark all tasks as `completed`.
 |-----------|--------|
 | Issue not found | Skip, warn in report |
 | Circular dependency | Skip affected issues, report |
-| Subagent implementation fails | Ask user: skip or stop |
-| Tests fail after 3 attempts | Report to user, stop |
-| Lint fails after 3 attempts | Report to user, stop |
-| Figma link but fetch fails | Warn, continue without design |
-| All issues blocked | Report, stop |
+| Sub-agent /dev fails | Ask user: skip or stop |
+| CI fails | Ask user: skip or stop |
+| Merge conflict | Ask user: skip or stop |
+| 3 consecutive failures | Stop, report to user |
+| Auto-merge timeout (15min) | Report, ask user |

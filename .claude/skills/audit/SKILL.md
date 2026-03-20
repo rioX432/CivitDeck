@@ -1,86 +1,54 @@
 ---
 name: audit
-description: "Audit codebase for tech debt, bugs, and mobile UI/UX issues — then create GitHub Issues"
-argument-hint: "[scope: android|ios|shared|all (default: all)]"
+description: "Audit codebase for tech debt, code quality, and architecture issues — then create GitHub Issues"
+argument-hint: "[scope: all (default), or specific directory/module]"
 user-invocable: true
 disable-model-invocation: true
 allowed-tools:
-  - Bash(./gradlew detekt)
-  - Bash(cd iosApp && swiftlint --strict)
   - Bash(gh issue create:*)
   - Bash(gh issue list:*)
   - Bash(git log:*)
-  - Bash(git diff:*)
-  - Bash(grep -r * *)
   - Glob
   - Grep
   - Read
-  - Task
+  - Agent
   - TaskCreate
   - TaskUpdate
   - TaskList
   - AskUserQuestion
-  - mcp__codex__codex
-  - mcp__codex__codex-reply
 ---
 
-# /audit — Codebase Health Audit & Issue Creation
+# /audit — Codebase Health Audit
 
-Audit CivitDeck for tech debt, bugs, and mobile UI/UX problems. Findings become GitHub Issues.
+Audit the codebase for code quality, tech debt, architecture, and security issues. Findings become GitHub Issues.
 
-**Scope:** "$ARGUMENTS" (android | ios | shared | all — default: all)
+**Scope:** $ARGUMENTS (default: all)
 
 ---
 
 ## Step 1: Setup
 
 Create task tracker:
-
-1. "Run static analysis (detekt + swiftlint)"
-2. "Scan tech debt (TODOs, deprecated APIs, code smells)"
-3. "Scan Android UI/UX issues"
-4. "Scan iOS UI/UX issues"
-5. "Scan Desktop UI issues"
-6. "Scan architecture issues (KMP shared module)"
-7. "Aggregate findings"
-8. "Create GitHub Issues"
-
-Parse `$ARGUMENTS`:
-- `android` → skip iOS, Desktop scans and swiftlint
-- `ios` → skip Android, Desktop scans and detekt
-- `desktop` → skip Android, iOS scans and swiftlint
-- `shared` → skip all platform scans, only architecture + tech debt
-- `all` or empty → run everything
+1. "Run static analysis"
+2. "Scan tech debt"
+3. "Scan code quality"
+4. "Scan architecture"
+5. "Aggregate findings"
+6. "Create GitHub Issues"
 
 ---
 
-## Step 2: Static Analysis (Parallel)
+## Step 2: Static Analysis
 
-Mark task 1 `in_progress`. Run tools **in parallel** (single message, separate Bash calls).
+Mark task 1 `in_progress`.
 
-### 2a. Detekt (skip if scope = ios)
+Run the project's lint/static analysis commands from CLAUDE.md's Commands section.
 
-```bash
-./gradlew detekt 2>&1 | tail -60
-```
-
-Parse output for:
-- `LongMethod` violations (>60 lines)
-- `TooManyFunctions`, `ComplexMethod`
-- `MagicNumber`, `UnusedImports`
-- `ForbiddenComment` (TODO/FIXME in production code)
-
-### 2b. SwiftLint (skip if scope = android or shared)
-
-```bash
-cd iosApp && swiftlint --strict 2>&1 | head -100
-```
-
-Parse output for:
-- `line_length` violations
-- `function_body_length` violations
-- `todo` rule matches
-- `force_cast`, `force_try` violations
+If not specified, auto-detect:
+- `build.gradle.kts` → `./gradlew detekt`, `./gradlew ktlintCheck`
+- `package.json` → `npm run lint`
+- `Cargo.toml` → `cargo clippy`
+- `pyproject.toml` → `ruff check`
 
 Mark task 1 `completed`.
 
@@ -88,451 +56,154 @@ Mark task 1 `completed`.
 
 ## Step 3: Parallel Code Scans
 
-Mark tasks 2–6 `in_progress`. Launch **5 Task subagents in parallel** (`subagent_type: "Explore"`, `model: "haiku"`).
+Mark tasks 2–4 `in_progress`. Launch **3 Explore agents in parallel**.
 
----
-
-### Subagent A: Tech Debt Scanner
+### Agent A: Tech Debt Scanner
 
 ```
-Scan for tech debt in the CivitDeck KMP project.
-
-Root: /Users/rio/workspace/projects/CivitDeck/
+Scan for tech debt in the codebase.
 
 ## What to find:
+1. TODO / FIXME / HACK / WORKAROUND comments
+2. Deprecated API usage
+3. Hardcoded values (magic numbers, config strings)
+4. Dead code (unused functions, unreachable branches)
+5. Commented-out code blocks
 
-### 1. TODO / FIXME / HACK comments
-Use Grep to find: `TODO|FIXME|HACK|XXX|WORKAROUND`
-- In: shared/, androidApp/, iosApp/
-- Exclude: build/, .gradle/, DerivedData/, *.generated.*
-- For each: record file, line, comment text, surrounding context (±3 lines)
-
-### 2. Deprecated / removed API usage
-- Kotlin: `@Deprecated` annotation usage in non-deprecated code
-- Android: any `.apply` on deprecated lifecycle APIs
-- iOS: `UIKit` imports in SwiftUI-only files
-- Ktor: outdated client patterns (HttpClient engine setup)
-
-### 3. Hardcoded values that should be constants/tokens
-- Android Kotlin: hardcoded hex colors (`0xFF`, `Color(0x`, `#[0-9A-Fa-f]{6}`)
-- Android Kotlin: hardcoded dp values as raw Int/Float (e.g. `16.dp` outside theme)
-- iOS Swift: hardcoded hex colors (`Color(red:`, `UIColor(red:`)
-- iOS Swift: hardcoded String font names, hardcoded spacing numbers
-
-### 4. Dead code indicators
-- `@Suppress("UNUSED_PARAMETER")` annotations
-- Functions/classes with `// unused` or `// not used` comments
-- Private functions that are never called (check with Grep for function name)
-
-### 5. Commented-out code blocks
-- Lines/blocks that look like commented code (not doc comments), e.g. `// val foo = ...`, `// someFunction(...)`
-
-Return format (JSON-like list):
-[
-  {
-    "category": "TODO|DEPRECATED|HARDCODED|DEAD_CODE|COMMENTED_CODE",
-    "severity": "high|medium|low",
-    "file": "relative/path/to/file.kt",
-    "line": 42,
-    "description": "What the issue is",
-    "snippet": "the problematic code line(s)"
-  }
-]
+Return findings as structured list:
+- category, severity (high/medium/low), file, line, description, snippet
 ```
 
----
-
-### Subagent B: Android UI/UX Scanner (skip if scope = ios or shared)
+### Agent B: Code Quality Scanner
 
 ```
-Audit Android UI/UX code quality in the CivitDeck Android app.
+Scan for code quality issues.
 
-Root: /Users/rio/workspace/projects/CivitDeck/androidApp/
+## What to find:
+1. Long functions (50+ lines)
+2. Large files (500+ lines)
+3. Deep nesting (4+ levels)
+4. Duplicated code (3+ similar blocks)
+5. Missing error handling (empty catch, swallowed errors)
+6. Public API without tests
+7. Inconsistent patterns across similar features
 
-Architecture context:
-- Jetpack Compose + Navigation 3
-- Design tokens in ui/theme/ (CivitDeckColors, CivitDeckTypography, CivitDeckSpacing)
-- Coil 3.x with SubcomposeAsyncImage for image loading
-- Detekt LongMethod limit: 60 lines
-
-## Checks to perform:
-
-### 1. Accessibility
-- `Image(...)` or `AsyncImage(...)` without `contentDescription` parameter
-- `Icon(...)` without `contentDescription`
-- `Modifier.clickable {}` without `onClickLabel` or `semantics { role = ... }`
-- `Box/Row/Column` acting as button (has `clickable`) but no semantic role
-
-### 2. Compose correctness
-- `LazyColumn/LazyRow` items WITHOUT `key(...)` — search for `items(` not followed by `key =`
-- `rememberCoroutineScope` used for side-effect logic that should be `LaunchedEffect`
-- `remember {}` without keys for values that depend on state/props (missing key param)
-- State reads inside lambdas that should be deferred for perf (snapshot reads)
-- Composables with >1 `@Preview` that have duplicate names (causes preview conflicts)
-
-### 3. Missing UI states
-- Screen Composables (files ending in Screen.kt) that have no empty state / error state handling
-- `LazyColumn` that shows content but no `if (items.isEmpty())` branch
-
-### 4. Design token violations
-- Hardcoded colors: `Color(0x`, `Color.Red`, `Color.Blue`, `Color.Green`, `Color.White`, `Color.Black`, `Color.Gray`
-- Hardcoded text sizes: `fontSize = NN.sp` (not from tokens)
-- Hardcoded padding/spacing: `padding(NN.dp)` where NN is not from token system
-
-### 5. Navigation 3 correctness
-- `LocalNavAnimatedContentScope` imported from `androidx.navigation3.runtime` (should be `androidx.navigation3.ui`)
-- `navigate(...)` called with hardcoded String routes instead of typed routes
-
-### 6. Image loading
-- `AsyncImage` used without `SubcomposeAsyncImage` for loading state
-- `ImageRequest.Builder(applicationContext)` — should use `LocalContext.current`
-- Missing `crossfade` import: coil3.request.crossfade
-
-### 7. Performance
-- Composables with `Modifier.offset(x=..., y=...)` using dp values — should use `Modifier.offset { }` with pixel conversion via `LocalDensity.current`
-- `LazyColumn` with very large item content that could cause janky scroll
-
-Return the same JSON format as Subagent A.
+Return findings as structured list:
+- category, severity, file, line, description, snippet
 ```
 
----
-
-### Subagent C: iOS UI/UX Scanner (skip if scope = android or shared)
+### Agent C: Architecture Scanner
 
 ```
-Audit iOS UI/UX code quality in the CivitDeck iOS app.
+Read CLAUDE.md to understand the project architecture, then scan for:
 
-Root: /Users/rio/workspace/projects/CivitDeck/iosApp/
+## What to find:
+1. Layer violations (check architecture boundaries in CLAUDE.md)
+2. Circular dependencies between modules
+3. Incorrect dependency direction
+4. Missing abstractions (concrete where interface should be)
+5. Resource leak indicators (open without close)
+6. Concurrency issues (shared mutable state without synchronization)
 
-Architecture context:
-- SwiftUI + iOS 16.0 deployment target
-- DesignSystem/: CivitDeckColors, CivitDeckFonts, CivitDeckSpacing, CivitDeckMotion, CivitDeckShapes
-- CachedAsyncImage for image loading (NO third-party image libraries)
-- Feature-based structure under Features/
-
-## Checks to perform:
-
-### 1. Accessibility
-- `Image(...)` without `.accessibilityLabel(...)` or `.accessibilityHidden(true)`
-- `AsyncImage` / `CachedAsyncImage` without accessibility label
-- Tappable views (`.onTapGesture`) without `.accessibilityElement(children:)` or `.accessibilityAction`
-- Text that might be truncated without `.accessibilityLabel` providing full text
-
-### 2. iOS version compatibility (deployment target 16.0)
-Grep for iOS 18+ only APIs in Swift files:
-- `onScrollGeometryChange` — iOS 18+ only
-- `scrollPosition(id:)` — iOS 17+ only
-- `@Observable` macro — iOS 17+ only
-- `.contentMargins` — iOS 17+ only
-- `NavigationStack(path:)` if not guarded by `@available(iOS 17, *)`
-- `safeAreaPadding` — iOS 17+ only
-
-### 3. Gesture conflicts in ScrollView
-- `DragGesture(minimumDistance: 0)` inside `ScrollView` — blocks scrolling
-- `.gesture(DragGesture())` (not `.simultaneousGesture`) for swipe actions in lists
-- Any `UIScrollView` delegate manipulation without `coordinateSpace` checks
-
-### 4. Design token violations
-- Hardcoded colors: `Color(red:`, `Color(.sRGB`, `Color(hue:`, `Color(white:`, `Color(hex:`, `#colorLiteral`
-- Hardcoded font sizes: `.font(.system(size: NN))` instead of `CivitDeckFonts`
-- Hardcoded spacing: `.padding(NN)` or `.frame(width: NN)` where NN is a magic number
-
-### 5. Image loading
-- `AsyncImage` used directly (should be `CachedAsyncImage`)
-- Third-party image libraries: `import Kingfisher`, `import SDWebImage`
-
-### 6. Missing UI states
-- View files (ending in View.swift) that load data but have no empty state or error state
-- `List { ForEach(...) }` without empty state handling
-
-### 7. SwiftUI best practices
-- `@State` variables that should be `@StateObject` (reference types stored as `@State`)
-- `.onAppear` used for async data loading (should be `.task`)
-- Missing `id:` parameter on `ForEach` for identifiable items using raw array indices
-- `NavigationLink` with `isActive` binding (deprecated in iOS 16+, use NavigationStack)
-
-### 8. Memory / performance
-- `Timer` created in `View` body without cancellation on `onDisappear`
-- `NotificationCenter.addObserver` without removal in `onDisappear`
-
-Return the same JSON format as Subagent A.
+Return findings as structured list:
+- category, severity, file, line, description, snippet
 ```
 
----
-
-### Subagent D: Desktop UI Scanner (skip if scope = android, ios, or shared)
-
-```
-Audit Desktop (Compose Desktop / JVM) code quality in the CivitDeck desktop app.
-
-Root: /Users/rio/workspace/projects/CivitDeck/desktopApp/
-
-Architecture context:
-- Compose Desktop (JVM target) — no Android Context, lifecycle, or Navigation 3
-- ViewModels are plain classes with CoroutineScope (NOT androidx.lifecycle.ViewModel)
-- Coil 3.x for image loading without Context
-- State-based routing: sealed class screens + mutableStateOf
-- Design tokens shared with Android via core-ui module
-
-## Checks to perform:
-
-### 1. Android API leaks (Critical)
-- `LocalContext.current` usage — does not exist on JVM
-- `collectAsStateWithLifecycle()` — use `collectAsState()` instead
-- `androidx.lifecycle.ViewModel` — Desktop uses plain classes
-- Navigation 3 imports (`androidx.navigation3.*`) — not available on JVM
-- `WorkManager`, `NotificationManager`, `Glance*` — Android-only APIs
-
-### 2. Compose correctness
-- `LazyColumn/LazyRow` items WITHOUT `key(...)` — search for `items(` not followed by `key =`
-- `remember {}` without keys for values that depend on state/props
-- State reads inside lambdas that should be deferred for perf
-
-### 3. Design token violations
-- Hardcoded colors: `Color(0x`, `Color.Red`, `Color.Blue`, `Color.White`, `Color.Black`, `Color.Gray`
-- Hardcoded text sizes: `fontSize = NN.sp` (not from tokens)
-- Hardcoded padding/spacing: `padding(NN.dp)` where NN is a magic number
-
-### 4. Navigation correctness
-- Verify sealed class screen definitions exist
-- Check for proper back navigation state management
-- Ensure screen transitions use state changes, not imperative navigation
-
-### 5. Keyboard shortcuts
-- `Modifier.onKeyEvent` or `Window` key handlers properly implemented
-- Common shortcuts present: Ctrl+F (search), Escape (back), arrow keys
-
-### 6. Image loading
-- `ImageRequest.Builder` called with Android Context — should be context-free on JVM
-- Verify `SubcomposeAsyncImage` used for loading states
-
-Return the same JSON format as Subagent A.
-```
-
----
-
-### Subagent E: Architecture Scanner (KMP Shared Module)
-
-```
-Audit the KMP shared module architecture in CivitDeck.
-
-Root: /Users/rio/workspace/projects/CivitDeck/shared/
-
-Architecture rules:
-- Clean Architecture: data/ → domain/ → UI (platform)
-- Use cases: single-responsibility, return Flow
-- Repository interfaces in domain/repository/, implementations in data/repository/
-- DTOs in data/api/ are separate from domain entities in domain/model/
-- Room KMP for caching with TTL
-- Koin DI: common modules in commonMain/di/
-
-## Checks to perform:
-
-### 1. Layer boundary violations
-- Use cases importing from `data/` package (bypasses domain layer)
-- Repository implementations directly calling other repositories (should go through use cases)
-- Domain models importing from `data/api/` DTOs (domain should not depend on data layer DTOs)
-
-### 2. Use case design
-- Use cases with more than one public method (should be single-responsibility)
-- Use cases that don't return Flow/StateFlow (should be reactive)
-- Use cases with direct DB access (should go through repository)
-
-### 3. Missing error handling
-- `suspend fun` in repositories that don't wrap exceptions in `Result<T>` or `Flow<Result<T>>`
-- `try/catch` blocks that swallow exceptions with empty catch (just `catch (e: Exception) {}`)
-- API calls without timeout or retry logic in Ktor client
-
-### 4. Room KMP issues
-- `@Entity` classes with foreign key constraints — check if seed data is handled in `onOpen` callback
-- `@Query` returning nullable without null check at call site
-- Migrations: check latest migration number matches DB version in `CivitDeckDatabase.kt`
-
-### 5. DI correctness
-- Classes instantiated with `=` instead of Koin `get()` inside Koin modules
-- `single<>` used where `factory<>` is more appropriate (stateless services)
-- Missing bindings: use cases that exist but are not registered in DomainModule
-
-### 6. Coroutines / Flow misuse
-- `GlobalScope` usage (should use structured concurrency)
-- `flow { }` that collects another flow inside (use `flatMapLatest` etc.)
-- `collect {}` instead of `collectLatest {}` for UI-bound flows
-
-Return the same JSON format as Subagent A.
-```
+Mark tasks 2–4 `completed`.
 
 ---
 
 ## Step 4: Aggregate Findings
 
-Mark tasks 2–6 `completed`. Mark task 7 `in_progress`.
-
-Collect results from:
-- Static analysis (detekt + swiftlint output)
-- All 4 subagents
+Mark task 5 `in_progress`.
 
 ### Deduplication
-
-If the same file+line appears in both static analysis and code scan, merge into one finding.
+Merge findings from static analysis and code scans that reference the same file+line.
 
 ### Severity Classification
 
 | Severity | Criteria |
 |----------|----------|
-| **Critical** | Crash risk, data loss, security issue, accessibility blocker |
-| **High** | iOS version incompatibility (app crashes on 16/17), gesture conflict (scrolling broken), layer boundary violation |
-| **Medium** | Missing error/empty state, design token violation, Compose correctness issue |
-| **Low** | TODO comment, dead code, code style, naming |
+| **Critical** | Crash risk, data race, memory leak, security |
+| **High** | Architecture violation, missing error handling |
+| **Medium** | Code smell, hardcoded value, missing test |
+| **Low** | TODO comment, dead code, style issue |
 
-### Group by Category
-
-1. **Bugs** (Critical + High severity functional issues)
-2. **Tech Debt** (TODO/FIXME, deprecated APIs, dead code)
-3. **UI/UX — Android**
-4. **UI/UX — iOS**
-5. **UI/UX — Desktop**
-6. **Architecture**
-
-Mark task 7 `completed`.
+Mark task 5 `completed`.
 
 ---
 
-## Step 5: Present Findings to User
-
-Output a structured report:
+## Step 5: Present Findings
 
 ```
-## Audit Report — CivitDeck
+## Audit Report
 
-Scope: {android|ios|shared|all}
+Scope: {scope}
 Found: {N} issues across {K} files
 
-### Bugs (N)
-| # | Severity | File | Line | Description |
-|---|----------|------|------|-------------|
-| 1 | Critical | path/to/File.kt | 42 | Description |
+### Critical (N)
+| # | File | Line | Description |
+|---|------|------|-------------|
+
+### High (N)
 ...
 
-### Tech Debt (N)
+### Medium (N)
 ...
 
-### UI/UX — Android (N)
+### Low (N)
 ...
 
-### UI/UX — iOS (N)
-...
-
-### UI/UX — Desktop (N)
-...
-
-### Architecture (N)
-...
+Static Analysis: {pass / N violations}
 ```
 
 ---
 
 ## ── AskUserQuestion: Issue Creation ──
 
-Ask the user:
-
 **Q1: Which findings should become GitHub Issues?**
-- All Critical + High findings (recommended)
+- All Critical + High (recommended)
 - All findings
-- Let me select by category
+- Let me select
 - None (report only)
-
-**Q2: Which GitHub labels to apply?**
-- bug, tech-debt, ui-ux (auto-detect per finding)
-- bug only
-- No labels
-
-If user selects "Let me select by category", ask a follow-up listing the categories found.
 
 ---
 
 ## Step 6: Create GitHub Issues
 
-Mark task 8 `in_progress`.
+Mark task 6 `in_progress`.
 
-For each selected finding, create a GitHub Issue:
+For each selected finding:
 
 ```bash
 gh issue create \
-  --title "{Category}: {concise description} ({filename}:{line})" \
+  --title "{Category}: {description}" \
   --body "$(cat <<'EOF'
 ## Summary
-
-{Description of the issue}
+{Description}
 
 ## Location
-
-`{relative/file/path}:{line}`
+`{file}:{line}`
 
 ## Details
-
-{snippet of problematic code}
-
-## Impact
-
-{Why this matters — UX impact, crash risk, user-facing effect}
+{snippet}
 
 ## Suggested Fix
-
-{Concrete suggestion for how to fix}
+{suggestion}
 EOF
 )" \
   --label "{auto-detected labels}"
 ```
 
 ### Label Mapping
-
 | Category | Labels |
 |----------|--------|
-| Bugs (Critical) | `bug`, `priority: high` |
-| Bugs (High) | `bug` |
-| Tech Debt | `tech-debt` |
-| UI/UX Android | `ui-ux`, `android` |
-| UI/UX iOS | `ui-ux`, `ios` |
-| UI/UX Desktop | `ui-ux`, `desktop` |
-| Architecture | `tech-debt`, `architecture` |
+| Critical | `bug`, `priority: high` |
+| High | `bug` |
+| Code Quality | `tech-debt` |
+| Architecture | `tech-debt` |
 
-If a label doesn't exist in the repo, skip it (do not fail).
-
-### Batch confirmation
-
-If more than 5 issues will be created, show the full list first and ask:
-```
-About to create {N} GitHub Issues. Proceed?
-```
-
-Mark task 8 `completed`.
-
----
-
-## Step 7: Final Report
-
-```
-## Audit Complete
-
-Scope: {scope}
-Issues found: {total}
-GitHub Issues created: {N} / {selected}
-
-| Category | Found | Created |
-|----------|-------|---------|
-| Bugs | N | N |
-| Tech Debt | N | N |
-| UI/UX Android | N | N |
-| UI/UX iOS | N | N |
-| UI/UX Desktop | N | N |
-| Architecture | N | N |
-
-Skipped: {reasons — e.g. "user selected report-only"}
-
-Static Analysis:
-- Detekt: {pass / N violations}
-- SwiftLint: {pass / N violations}
-```
+Mark task 6 `completed`.
 
 ---
 
@@ -540,9 +211,7 @@ Static Analysis:
 
 | Situation | Action |
 |-----------|--------|
-| detekt not available | Skip, note in report |
-| swiftlint not installed | Run `brew install swiftlint`, retry once, else skip |
-| Subagent returns no findings | Note "No issues found in this category" |
-| Label doesn't exist in repo | Skip label silently |
-| `gh issue create` fails | Report error with finding details so user can create manually |
-| 0 findings total | Report "Codebase looks healthy!" and stop |
+| Static analysis tool not available | Skip, note in report |
+| Agent returns no findings | Note "No issues found" |
+| `gh issue create` fails | Report, user can create manually |
+| 0 findings total | Report "Codebase looks healthy!" |
