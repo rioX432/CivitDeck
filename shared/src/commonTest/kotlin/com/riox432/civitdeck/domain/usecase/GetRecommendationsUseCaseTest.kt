@@ -3,6 +3,7 @@ package com.riox432.civitdeck.domain.usecase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
+import com.riox432.civitdeck.domain.model.InteractionType
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.ModelVersion
@@ -99,6 +100,9 @@ class GetRecommendationsUseCaseTest {
             recentTags.mapValues { it.value.toDouble() }
         override suspend fun getWeightedCreators(limit: Int): Map<String, Double> =
             recentCreators.mapValues { it.value.toDouble() }
+        override suspend fun updateViewDuration(modelId: Long, durationMs: Long) = error("not used")
+        override suspend fun trackInteraction(modelId: Long, interactionType: InteractionType) = error("not used")
+        override suspend fun getAverageViewDurationMs(): Long? = null
     }
 
     private class FakeUserPreferencesRepository(

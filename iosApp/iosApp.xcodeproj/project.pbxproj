@@ -23,6 +23,7 @@
 		CD00DC092D0E0002000CD001 /* ModelNsfwFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC082D0E0002000CD001 /* ModelNsfwFilter.swift */; };
 		CD0004012D000004000CD001 /* ModelDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0004002D000004000CD001 /* ModelDetailViewModel.swift */; };
 		CD0004032D000004000CD001 /* ModelDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0004022D000004000CD001 /* ModelDetailScreen.swift */; };
+		CDLNK0012D8CC442000CD001 /* CivitaiLinkSendSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDLNK0002D8CC442000CD001 /* CivitaiLinkSendSheet.swift */; };
 		CDREV0012D8CC001000CD001 /* ReviewsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDREV0002D8CC001000CD001 /* ReviewsSection.swift */; };
 		CD00DC012D0DD001000CD001 /* ModelDetailComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00DC002D0DD001000CD001 /* ModelDetailComponents.swift */; };
 		CD186N012D5CC001000CD001 /* ModelNotesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD186N002D5CC001000CD001 /* ModelNotesSection.swift */; };
@@ -187,6 +188,7 @@
 		CD00DC082D0E0002000CD001 /* ModelNsfwFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelNsfwFilter.swift; sourceTree = "<group>"; };
 		CD0004002D000004000CD001 /* ModelDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailViewModel.swift; sourceTree = "<group>"; };
 		CD0004022D000004000CD001 /* ModelDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailScreen.swift; sourceTree = "<group>"; };
+		CDLNK0002D8CC442000CD001 /* CivitaiLinkSendSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CivitaiLinkSendSheet.swift; sourceTree = "<group>"; };
 		CDREV0002D8CC001000CD001 /* ReviewsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewsSection.swift; sourceTree = "<group>"; };
 		CD00DC002D0DD001000CD001 /* ModelDetailComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailComponents.swift; sourceTree = "<group>"; };
 		CD186N002D5CC001000CD001 /* ModelNotesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelNotesSection.swift; sourceTree = "<group>"; };
@@ -709,6 +711,7 @@
 				CD00VD002D4CC001000CD001 /* VersionDetailSection.swift */,
 				CD186N002D5CC001000CD001 /* ModelNotesSection.swift */,
 				CDREV0002D8CC001000CD001 /* ReviewsSection.swift */,
+				CDLNK0002D8CC442000CD001 /* CivitaiLinkSendSheet.swift */,
 			);
 			path = Detail;
 			sourceTree = "<group>";
@@ -931,6 +934,7 @@
 				CD0004012D000004000CD001 /* ModelDetailViewModel.swift in Sources */,
 				CD0004032D000004000CD001 /* ModelDetailScreen.swift in Sources */,
 				CDREV0012D8CC001000CD001 /* ReviewsSection.swift in Sources */,
+				CDLNK0012D8CC442000CD001 /* CivitaiLinkSendSheet.swift in Sources */,
 				CD00DC012D0DD001000CD001 /* ModelDetailComponents.swift in Sources */,
 				CD0005012D000005000CD001 /* ImageGalleryViewModel.swift in Sources */,
 				CD0005032D000005000CD001 /* ImageGalleryScreen.swift in Sources */,

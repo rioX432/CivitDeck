@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.domain.usecase
 
+import com.riox432.civitdeck.domain.model.InteractionType
 import com.riox432.civitdeck.domain.model.RecentlyViewedModel
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import kotlinx.coroutines.flow.Flow
@@ -47,6 +48,9 @@ class BrowsingHistoryUseCasesTest {
         override suspend fun getWeightedTypes(limit: Int): Map<String, Double> = error("not used")
         override suspend fun getWeightedTags(limit: Int): Map<String, Double> = error("not used")
         override suspend fun getWeightedCreators(limit: Int): Map<String, Double> = error("not used")
+        override suspend fun updateViewDuration(modelId: Long, durationMs: Long) {}
+        override suspend fun trackInteraction(modelId: Long, interactionType: InteractionType) {}
+        override suspend fun getAverageViewDurationMs(): Long? = null
     }
 
     private val repo = FakeBrowsingHistoryRepository()
