@@ -1,7 +1,7 @@
 ---
 name: dev
-description: "End-to-end: investigate → implement → test → review → PR"
-argument-hint: "[GitHub issue #, e.g. #42, or Linear issue ID, e.g. PGR-1234]"
+description: "E2E development: investigate → dig → decompose → implement → test → review → PR"
+argument-hint: "[issue number or ID, e.g. #42 or PGR-1234]"
 user-invocable: true
 disable-model-invocation: true
 allowed-tools:
@@ -13,9 +13,6 @@ allowed-tools:
   - Bash(git log:*)
   - Bash(git status)
   - Bash(git branch:*)
-  - Bash(./gradlew *)
-  - Bash(swiftlint *)
-  - Bash(xcodebuild *)
   - Bash(gh pr create:*)
   - Bash(gh issue view:*)
   - Glob
@@ -23,386 +20,281 @@ allowed-tools:
   - Read
   - Edit
   - Write
-  - Task
+  - Agent
+  - Skill
   - TaskCreate
   - TaskUpdate
   - TaskList
+  - TaskGet
   - ToolSearch
   - AskUserQuestion
-  - mcp__linear__get_issue
-  - mcp__linear__list_comments
-  - mcp__codex__codex
-  - mcp__codex__codex-reply
-  - mcp__figma-remote__get_design_context
-  - mcp__figma-remote__get_screenshot
-  - mcp__figma-remote__get_variable_defs
-  - mcp__figma-remote__get_metadata
 ---
 
-# /dev — End-to-End Development Workflow
+# /dev — E2E Development Workflow
 
-Execute the full development cycle for an issue: investigate → implement → test → review → PR.
+Resolve Issue $ARGUMENTS from investigation to PR creation.
 
-**Target:** "$ARGUMENTS"
+**Target:** $ARGUMENTS
 
 ## Setup: Create Task Tracker
 
-Use `TaskCreate` to create a task for each phase. This provides:
-- Progress visibility in the UI spinner
-- Persistence across `/compact` and context compression
-- Clear phase tracking for the user
+Use `TaskCreate` to create a task for each phase. This provides progress visibility and persistence across `/compact`.
 
-Create these tasks at the start:
-1. "Gather context from issue/Figma/docs"
+1. "Gather context from issue"
 2. "Investigate codebase"
-3. "Cross-check with Codex"
-4. "Implement changes"
-5. "Run quality gate (tests + Android build + detekt + SwiftLint + iOS build)"
-6. "Commit changes"
+3. "Resolve ambiguities (/dig)"
+4. "Decompose into subtasks (/decompose)"
+5. "Implement changes"
+6. "Run quality gate"
 7. "Review changes"
-8. "Create PR"
+8. "Commit & create PR"
 
 Use `TaskUpdate` to mark each task `in_progress` when starting and `completed` when done.
 
+## Workflow
+
+```
+Phase 1: Issue Understanding
+    ↓
+Phase 2: Investigation (← Explore subagent)
+    ↓
+Phase 3: Ambiguity Resolution (/dig)
+    ↓
+Phase 4: Task Decomposition (/decompose)
+    ↓
+── AskUserQuestion: confirm approach + task list ──
+    ↓
+Phase 5: Branch & Implement
+    ↓
+Phase 6: Quality Gate (build + test + lint from CLAUDE.md)
+    ↓
+Phase 7: Review (/review)
+    ↓
+── AskUserQuestion: commit + PR confirmation ──
+    ↓
+Phase 8: Commit & PR Creation
+```
+
 ---
 
-## Phase 1: Context Gathering
+## Phase 1: Issue Understanding
 
-### 1a. Issue Context
+Mark task 1 `in_progress`.
 
 Detect the issue source from "$ARGUMENTS":
 
-**GitHub Issue** (starts with `#`):
-1. Run `gh issue view <number> --json number,title,body,labels`
+**GitHub Issue** (starts with `#` or is a number):
+1. `gh issue view <number> --json number,title,body,labels,assignees,comments`
 2. Extract: title, description, acceptance criteria, labels
 
 **Linear Issue** (matches `XXX-1234` pattern):
 1. Use `ToolSearch` with `+linear` to load the Linear MCP
 2. Call `mcp__linear__get_issue` with the issue ID
-3. Extract: title, description, acceptance criteria, labels, priority
+
+**Figma links** in the issue description (`figma.com/design/...`):
+1. Use `ToolSearch` with `+figma-remote` to load Figma MCP
+2. Fetch design context and screenshot
 
 **Branch naming** (from labels or issue type):
-- Bug → branch prefix `fix/`
-- Feature/Improvement/anything else → branch prefix `feature/`
-- Format: `{prefix}/{issue-ref}-{kebab-case-short-description}`
+- Bug → `fix/{issue-ref}-{kebab-case-short-desc}`
+- Otherwise → `feat/{issue-ref}-{kebab-case-short-desc}`
 
-### 1b. Figma Design (if applicable)
+Read `CLAUDE.md` for project architecture and conventions.
 
-Scan the issue description for Figma links (`figma.com/design/...` or `figma.com/file/...`).
-
-If found:
-1. Use `ToolSearch` with `+figma-remote` to load Figma Remote MCP
-2. Extract `fileKey` and `nodeId` from the URL:
-   - URL format: `https://www.figma.com/design/{fileKey}/...?node-id={nodeId}`
-   - `nodeId` needs URL-decoding (`%3A` → `:` etc.)
-3. Call `mcp__figma-remote__get_design_context` with `fileKey` and `nodeId` to get layout/styling info
-4. Call `mcp__figma-remote__get_screenshot` to get visual reference
-5. Store design context for use during implementation
-
-### 1c. Project Context
-
-Read the following files (use Read tool directly, not a subagent):
-- `AGENTS.md` — architecture, commands, and conventions
-- `docs/ARCHITECTURE.md` — module structure, data flow, design decisions
+Mark task 1 `completed`.
 
 ---
 
-## Phase 2: Investigation
+## Phase 2: Investigation (Subagent)
 
-Use the `Task` tool with `subagent_type: "Explore"` and thoroughness `"very thorough"` to investigate the codebase. The prompt MUST include:
+Mark task 2 `in_progress`.
 
-- The issue title, description, and acceptance criteria
-- Keywords extracted from the issue
-- Instruction: "Perform a very thorough investigation"
+Delegate to Explore agent:
 
-The subagent must:
+```
+Agent(
+  subagent_type: "Explore",
+  prompt: <include issue details, keywords, ask for "very thorough" investigation>
+)
+```
 
-1. **Find relevant code**: Use Grep/Glob to locate files matching the issue context
-2. **Read the code**: Actually read every file involved — no speculation allowed
-3. **Trace the flow**: Follow UI → ViewModel → UseCase → Repository
-4. **Check existing tests**: Find related test files
-5. **Impact analysis**: List files that need changes, callers, downstream dependencies
-6. **Platform scope**: Determine if changes affect Android only, iOS only, or both (shared + platforms)
-
-### No Speculation Principle
-- Every finding must be backed by actual code reading
-- If unsure about behavior, read callers and related files
-- If still unclear, state "unverified" — never guess
+The investigator must:
+1. Find relevant code with Grep/Glob
+2. Actually read every involved file — no speculation
+3. Trace the data flow end-to-end
+4. Check existing tests
+5. List files needing changes, callers, downstream dependencies
 
 ### Think Twice
-After completing analysis, re-evaluate:
-1. Did I actually read the code confirming the root cause?
-2. Are there other possible causes I haven't considered?
-3. Is impact analysis complete?
-4. Does this affect both platforms or just one?
 
-### Unclear Points
-If anything is ambiguous or uncertain after investigation, use `AskUserQuestion` to ask the user. Do NOT proceed with assumptions.
+After receiving the report:
+1. Did the investigator actually read the code?
+2. Are there other possible causes not considered?
+3. Is impact analysis complete?
+
+If anything is ambiguous, use `AskUserQuestion`. **Never assume.**
+
+Mark task 2 `completed`.
 
 ---
 
-## Phase 3: Cross-Check (Codex)
+## Phase 3: Ambiguity Resolution
 
-Use `ToolSearch` with `+codex` to load Codex MCP, then call `mcp__codex__codex` with:
+Mark task 3 `in_progress`.
 
-- `sandbox`: `read-only`
-- `cwd`: project root
-- `prompt`: Include the investigation results (root cause, impact, proposed approach) and ask Codex to verify:
-  1. Is the root cause analysis correct?
-  2. Is the impact analysis complete?
-  3. Any alternative approaches not considered?
+Use the `/dig` skill with investigation results to resolve decision points.
 
-**Handling results:**
-- Codex agrees → Proceed
-- Codex disagrees → Re-investigate the specific disagreement, then present both perspectives
-- Codex suggests alternatives → Evaluate and include if valid
+Mark task 3 `completed`.
 
-**If Codex MCP is unavailable:** Skip this phase and note it was skipped. Proceed with extra scrutiny in self-review.
+---
+
+## Phase 4: Task Decomposition
+
+Mark task 4 `in_progress`.
+
+Use the `/decompose` skill to break the work into ordered subtasks.
+
+Mark task 4 `completed`.
 
 ---
 
 ## ── AskUserQuestion: Approach Confirmation ──
 
 Present to the user:
+1. **Decision Matrix** (from /dig)
+2. **Task List** (from /decompose, with dependencies)
+3. **Investigation summary** (key findings)
 
-1. **Root cause** (with `file:line` references)
-2. **Impact** (files affected, downstream effects)
-3. **Proposed approach** (what changes, where)
-4. **Codex verification** (agreed/disagreed, additional insights — or "skipped")
-
-Ask the user to confirm the approach before proceeding to implementation.
-
-If the user wants changes, adjust the plan accordingly.
+Ask the user to confirm before implementation.
 
 ---
 
-## Phase 4: Branch & Implement
+## Phase 5: Branch & Implement
 
-### 4a. Create Branch
+Mark task 5 `in_progress`.
+
+### 5a. Create Branch
 
 ```bash
 git checkout -b {branch-name}
 ```
 
-Use the branch name determined in Phase 1.
+### 5b. Implement
 
-### 4b. Implement
+```
+LOOP for each subtask (in dependency order):
+  1. TaskUpdate → in_progress
+  2. Read target code (MUST read before editing)
+  3. Implement changes (Edit/Write)
+  4. Self-verify (run Verify step from task description)
+  5. TaskUpdate → completed
 
-Implement the changes using `Edit` and `Write` tools.
+INTERRUPT conditions:
+  - Unexpected problem → AskUserQuestion
+  - 3 consecutive failures → STOP and report
+```
 
-**Guidelines:**
+Guidelines:
 - Follow existing code patterns (read surrounding code first)
-- Follow AGENTS.md conventions (Clean Architecture + MVVM, Koin DI, UDF)
-- If Figma design was fetched, reference the design context for UI implementation
-- Keep changes minimal and focused — no unnecessary refactoring
-- Android: use design tokens from `ui/theme/`, Coil 3.x for images
-- iOS: use `DesignSystem/` tokens, `CachedAsyncImage` for images, feature-based structure
+- Follow CLAUDE.md conventions
+- Keep changes minimal and focused
+
+Mark task 5 `completed`.
 
 ---
 
-## Phase 5: Quality Gate
+## Phase 6: Quality Gate
 
-### 5a. Run Tests
+Mark task 6 `in_progress`.
 
-```bash
-./gradlew :shared:testDebugUnitTest
-```
+Run the project's build, test, and lint commands as defined in CLAUDE.md's Commands section.
 
-### 5b. Android Build (if Kotlin files changed)
-
-```bash
-./gradlew :androidApp:assembleDebug
-```
-
-### 5c. Run Detekt (if Kotlin files changed)
-
-```bash
-./gradlew detekt
-```
-
-If detekt reports issues from import reordering, run it again (auto-correct may cause cascading fixes).
-
-### 5d. Run SwiftLint (if Swift files changed)
-
-```bash
-# Run from project root with explicit config — NOT `cd iosApp && swiftlint`
-swiftlint --strict --config iosApp/.swiftlint.yml
-```
-
-### 5e. iOS Build (if Swift files changed)
-
-```bash
-xcodebuild build \
-  -project iosApp/iosApp.xcodeproj \
-  -scheme iosApp \
-  -destination 'generic/platform=iOS Simulator' \
-  CODE_SIGNING_REQUIRED=NO \
-  CODE_SIGNING_ALLOWED=YES \
-  EXPANDED_CODE_SIGN_IDENTITY=""
-```
-
-Check for `BUILD SUCCEEDED` — `No such module 'Shared'` errors in SourceKit are false positives (expected until KMP framework is built), but real compile errors must be fixed.
+If CLAUDE.md doesn't specify commands, detect from project files:
+- `build.gradle.kts` / `gradlew` → `./gradlew build`, `./gradlew test`, `./gradlew detekt`
+- `package.json` → `npm test`, `npm run lint`
+- `Cargo.toml` → `cargo build`, `cargo test`, `cargo clippy`
+- `pyproject.toml` / `setup.py` → `pytest`, `ruff check`
 
 ### Failure Handling
-
-If tests or linters fail:
 1. Analyze the failure
 2. Fix the issue
 3. Re-run the failing check
-4. **Maximum 3 fix attempts** — if still failing after 3 tries, report to user with:
-   - What failed
-   - What was tried
-   - Remaining error details
-   Then **stop and wait for user guidance**.
+4. **Maximum 3 fix attempts** — if still failing, report to user and stop
 
----
-
-## ── AskUserQuestion: Commit Confirmation ──
-
-Show the user:
-1. Summary of all changes made (files modified/created)
-2. Proposed commit message
-
-Commit message format:
-- One line, concise
-- No `Co-Authored-By`, no AI stamps
-- Example: `Fix recommended outfit not showing on gacha screen re-entry`
-
-Ask the user to confirm before committing.
-
----
-
-## Phase 6: Commit
-
-Only after user confirmation:
-
-```bash
-git add {specific files}
-git commit -m "{message}"
-```
-
-- Add files explicitly (no `git add .` or `git add -A`)
-- No Co-Authored-By, no AI stamps
+Mark task 6 `completed`.
 
 ---
 
 ## Phase 7: Review
 
-Run **parallel** review checks using `Task` tool with `subagent_type: "general-purpose"` and `model: "sonnet"`.
+Mark task 7 `in_progress`.
 
-Launch these agents in parallel (all in a single message):
-
-### 7a. Architecture Review
-Prompt: Review the changes for MVVM compliance, layer boundaries (data/domain/UI), dependency direction, Koin DI usage. Reference AGENTS.md conventions.
-
-### 7b. Android Review (only if Kotlin UI files in androidApp/ changed)
-Prompt: Review Compose changes for recomposition safety, state hoisting, side effect key correctness, modifier ordering. Check Coil usage patterns and Navigation 3 correctness.
-
-### 7c. iOS Review (only if Swift files changed)
-Prompt: Review SwiftUI changes for proper use of `CachedAsyncImage` (not third-party libs), design token usage from `DesignSystem/`, feature-based structure compliance. Check for iOS 16+ compatibility (no iOS 18+ APIs).
-
-### 7e. Desktop Review (only if Kotlin files in desktopApp/ changed)
-Prompt: Review Compose Desktop changes for Android API leaks (`LocalContext.current`, `collectAsStateWithLifecycle`, `androidx.lifecycle.ViewModel`, Navigation 3). Check state-based routing correctness, Coil usage without Context, and keyboard shortcut handling.
-
-### 7d. Test Coverage Check
-Prompt: Check if new/modified logic has corresponding tests. Flag untested paths.
+Use the `/review` skill to run multi-agent parallel review.
 
 ### Review Result Handling
+- **Critical**: STOP. Report to user. Do NOT proceed.
+- **Warning**: Fix, re-run Quality Gate (Phase 6)
+- **Suggestion**: Note but don't block
 
-Collect all review results. Categorize findings:
-
-- **Critical** (crashes, memory leaks, data loss, security): **STOP. Report to user immediately.** Do NOT proceed to PR.
-- **Important** (performance, incorrect behavior, missing error handling): Fix these, then re-run Quality Gate (Phase 5)
-- **Suggestions** (style, naming): Note but do not block
-
-If Critical issues are found:
-1. Present all critical findings to the user
-2. Wait for user guidance
-3. Do NOT proceed to PR creation
-
-If Important issues are found:
-1. Fix them
-2. Re-run Quality Gate
-3. Amend the commit or create a new fix commit (ask user preference)
+Mark task 7 `completed`.
 
 ---
 
-## ── AskUserQuestion: PR Creation Confirmation ──
+## ── AskUserQuestion: Commit + PR Confirmation ──
 
 Show the user:
-1. Review summary (all findings and resolutions)
-2. Branch name
-3. Proposed PR title
-4. Target branch for the PR
-
-Ask the user to confirm before creating the PR.
+1. Summary of all changes
+2. Quality gate results
+3. Review findings and resolutions
+4. Proposed commit message (single line, no AI stamps)
 
 ---
 
-## Phase 8: PR Creation
+## Phase 8: Commit & PR Creation
 
-Only after user confirmation:
+Mark task 8 `in_progress`.
 
-### 8a. Push
+### 8a. Commit
+```bash
+git add {specific files}
+git commit -m "{concise message}"
+```
+- Explicit file staging (no `git add .`)
+- No Co-Authored-By, no AI stamps
 
+### 8b. Push & PR
 ```bash
 git push -u origin {branch-name}
 ```
 
-### 8b. Create PR
-
-Use the project's pull_request_template.md. Only fill in Description and Related Issues.
+Use the project's `pull_request_template.md` if available. Only fill in Description and Related Issues.
 
 ```bash
-gh pr create --title "{PR title}" --body "$(cat <<'EOF'
+gh pr create --title "#{issue} {description}" --body "$(cat <<'EOF'
 ## Description
-
-- {bullet point summary of changes}
+- {bullet point summary}
 
 ## Related Issues
-
-{issue reference, e.g. Closes #42}
-
-## Screenshots / Video
-
-<!-- If applicable, add screenshots or screen recordings -->
-
-## Test Plan
-
-- [x] {how it was tested, e.g. "Ran detekt — zero issues"}
-- [x] {e.g. "Verified on Android emulator"}
-
-## Review Checklist
-
-- [x] Code follows project architecture (Clean Architecture + MVVM)
-- [x] Shared logic is in `commonMain`, platform-specific code only when necessary
-- [x] No unnecessary dependencies added
-- [x] Tests added/updated as needed
-
-## Breaking Changes
-
-None
+Closes #{issue}
 EOF
 )"
 ```
 
-### 8c. Output
+Report PR URL to the user.
 
-Print the PR URL so the user can review it.
+Mark task 8 `completed`.
 
 ---
 
-## Error Handling Summary
+## Error Handling
 
 | Situation | Action |
 |-----------|--------|
 | Issue not found | Report error, stop |
-| Figma link found but fetch fails | Warn, continue without design context |
+| Figma fetch fails | Warn, continue without design |
 | Investigation unclear | AskUserQuestion before proceeding |
-| Codex unavailable | Skip cross-check, note it was skipped |
-| Codex disagrees with analysis | Re-investigate, present both perspectives |
 | Tests fail (≤3 attempts) | Fix and retry |
 | Tests fail (>3 attempts) | Report to user, stop |
 | Critical review finding | Report to user, stop |
-| Important review finding | Fix, re-run quality gate |
+| Warning review finding | Fix, re-run quality gate |
 | Git/PR creation fails | Report error, stop |
