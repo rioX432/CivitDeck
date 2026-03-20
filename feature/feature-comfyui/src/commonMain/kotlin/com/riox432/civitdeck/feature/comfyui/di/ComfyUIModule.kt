@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.comfyui.di
 
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.repository.CivitaiLinkRepository
+import com.riox432.civitdeck.domain.repository.ComfyHubRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIHistoryRepository
@@ -10,6 +11,7 @@ import com.riox432.civitdeck.domain.repository.SDWebUIAssetRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIGenerationRepository
 import com.riox432.civitdeck.feature.comfyui.data.repository.CivitaiLinkRepositoryImpl
+import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyHubRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIConnectionRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIGenerationRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIHistoryRepositoryImpl
@@ -36,7 +38,9 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUISamplers
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIVaesUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FindMatchingLocalModelUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.GenerateSDWebUIImageUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.GetComfyHubWorkflowDetailUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.GetWorkflowTemplatesUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportComfyHubWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptSDWebUIGenerationUseCase
@@ -53,6 +57,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.PopulateGenerationFr
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveWorkflowTemplateUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.SearchComfyHubWorkflowsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SendResourceToPCUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
@@ -88,6 +93,12 @@ val comfyuiModule = module {
     factory { FindMatchingLocalModelUseCase(get()) }
     factory { PopulateGenerationFromModelUseCase() }
     factory { SaveGeneratedImageUseCase(get(named("comfyui")), get()) }
+    // ComfyHub
+    single<ComfyHubRepository> { ComfyHubRepositoryImpl(get(), get(), get()) }
+    factory { SearchComfyHubWorkflowsUseCase(get()) }
+    factory { GetComfyHubWorkflowDetailUseCase(get()) }
+    factory { ImportComfyHubWorkflowUseCase(get()) }
+
     // Workflow template use cases
     factory { GetWorkflowTemplatesUseCase(get()) }
     factory { SaveWorkflowTemplateUseCase(get()) }

@@ -82,6 +82,10 @@ import com.riox432.civitdeck.ui.backup.BackupScreen
 import com.riox432.civitdeck.ui.backup.BackupViewModel
 import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.CollectionsScreen
+import com.riox432.civitdeck.ui.comfyhub.ComfyHubBrowserScreen
+import com.riox432.civitdeck.ui.comfyhub.ComfyHubBrowserViewModel
+import com.riox432.civitdeck.ui.comfyhub.ComfyHubDetailScreen
+import com.riox432.civitdeck.ui.comfyhub.ComfyHubDetailViewModel
 import com.riox432.civitdeck.ui.comfyui.CivitaiLinkSettingsScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIHistoryScreen
@@ -235,6 +239,10 @@ data object QRScannerRoute
 data object AnalyticsRoute
 
 data object BrowsingHistoryRoute
+
+data object ComfyHubBrowserRoute
+
+data class ComfyHubDetailRoute(val workflowId: String)
 
 data object IntegrationsHubRoute
 
@@ -929,6 +937,7 @@ private fun EntryProviderScope<Any>.settingsBehaviorEntries(backStack: MutableLi
             onBack = { backStack.removeLastOrNull() },
             onNavigateToComfyUI = { backStack.add(ComfyUISettingsRoute) },
             onNavigateToTemplates = { backStack.add(WorkflowTemplateLibraryRoute) },
+            onNavigateToComfyHub = { backStack.add(ComfyHubBrowserRoute) },
             onNavigateToSDWebUI = { backStack.add(SDWebUISettingsRoute) },
             onNavigateToCivitaiLink = { backStack.add(CivitaiLinkSettingsRoute) },
             onNavigateToExternalServer = { backStack.add(ExternalServerSettingsRoute) },
@@ -991,6 +1000,7 @@ private fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>, 
         )
     }
     workflowTemplateEntries(backStack)
+    comfyHubEntries(backStack)
     comfyUIHistoryEntries(backStack, outputScrollTrigger)
 }
 
@@ -1024,6 +1034,26 @@ private fun EntryProviderScope<Any>.workflowTemplateEntries(backStack: MutableLi
         }
         WorkflowTemplateEditorScreen(
             initialTemplate = template,
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.comfyHubEntries(backStack: MutableList<Any>) {
+    entry<ComfyHubBrowserRoute> {
+        val viewModel: ComfyHubBrowserViewModel = koinViewModel()
+        ComfyHubBrowserScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onWorkflowClick = { workflowId -> backStack.add(ComfyHubDetailRoute(workflowId)) },
+        )
+    }
+    entry<ComfyHubDetailRoute> { key ->
+        val viewModel: ComfyHubDetailViewModel = koinViewModel(
+            key = "comfyhub_${key.workflowId}",
+        ) { parametersOf(key.workflowId) }
+        ComfyHubDetailScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
         )

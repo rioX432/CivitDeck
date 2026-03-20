@@ -294,6 +294,15 @@ typealias ExportWorkflowTemplateUseCase = Feature_comfyuiExportWorkflowTemplateU
 typealias ImportWorkflowTemplateUseCase = Feature_comfyuiImportWorkflowTemplateUseCase
 typealias ApplyWorkflowTemplateUseCase = Feature_comfyuiApplyWorkflowTemplateUseCase
 
+// MARK: - Feature: ComfyHub
+
+typealias ComfyHubWorkflow = Core_domainComfyHubWorkflow
+typealias ComfyHubCategory = Core_domainComfyHubCategory
+typealias ComfyHubSortOrder = Core_domainComfyHubSortOrder
+typealias SearchComfyHubWorkflowsUseCase = Feature_comfyuiSearchComfyHubWorkflowsUseCase
+typealias GetComfyHubWorkflowDetailUseCase = Feature_comfyuiGetComfyHubWorkflowDetailUseCase
+typealias ImportComfyHubWorkflowUseCase = Feature_comfyuiImportComfyHubWorkflowUseCase
+
 // MARK: - Feature: External Server
 
 typealias ServerImage = Feature_externalserverServerImage

@@ -4,6 +4,7 @@ import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.api.CivitAiApi
 import com.riox432.civitdeck.data.api.GitHubReleaseApi
 import com.riox432.civitdeck.data.api.civitailink.CivitaiLinkApi
+import com.riox432.civitdeck.data.api.comfyhub.ComfyHubApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
 import com.riox432.civitdeck.data.api.comfyui.createComfyUIHttpClient
@@ -42,6 +43,9 @@ val networkModule = module {
 
     // Civitai Link uses the ComfyUI client (already has WebSockets plugin)
     single { CivitaiLinkApi(get(named("comfyui")), get()) }
+
+    // ComfyHub (workflow browser)
+    single { ComfyHubApi() }
 
     // External Server (generic REST API)
     single(named("externalserver")) { createExternalServerHttpClient() }

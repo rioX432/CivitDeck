@@ -36,6 +36,10 @@
 		CDFE02012FAB0002000CD001 /* FeedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFE02002FAB0002000CD001 /* FeedViewModel.swift */; };
 		CDSM01013100001000CD001 /* SimilarModelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSM01003100001000CD001 /* SimilarModelsView.swift */; };
 		CDSM02013100002000CD001 /* SimilarModelsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSM02003100002000CD001 /* SimilarModelsViewModel.swift */; };
+		CDCH01013200001000CD001 /* ComfyHubBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCH01003200001000CD001 /* ComfyHubBrowserView.swift */; };
+		CDCH02013200002000CD001 /* ComfyHubBrowserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCH02003200002000CD001 /* ComfyHubBrowserViewModel.swift */; };
+		CDCH03013200003000CD001 /* ComfyHubDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCH03003200003000CD001 /* ComfyHubDetailView.swift */; };
+		CDCH04013200004000CD001 /* ComfyHubDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCH04003200004000CD001 /* ComfyHubDetailViewModel.swift */; };
 		CDNC01013000001000CD001 /* NotificationCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDNC01003000001000CD001 /* NotificationCenterView.swift */; };
 		CDNC02013000002000CD001 /* NotificationCenterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDNC02003000002000CD001 /* NotificationCenterViewModel.swift */; };
 		CDNC03013000003000CD001 /* ModelUpdateBackgroundTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDNC03003000003000CD001 /* ModelUpdateBackgroundTask.swift */; };
@@ -196,6 +200,10 @@
 		CDFE02002FAB0002000CD001 /* FeedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewModel.swift; sourceTree = "<group>"; };
 		CDSM01003100001000CD001 /* SimilarModelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimilarModelsView.swift; sourceTree = "<group>"; };
 		CDSM02003100002000CD001 /* SimilarModelsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimilarModelsViewModel.swift; sourceTree = "<group>"; };
+		CDCH01003200001000CD001 /* ComfyHubBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyHubBrowserView.swift; sourceTree = "<group>"; };
+		CDCH02003200002000CD001 /* ComfyHubBrowserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyHubBrowserViewModel.swift; sourceTree = "<group>"; };
+		CDCH03003200003000CD001 /* ComfyHubDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyHubDetailView.swift; sourceTree = "<group>"; };
+		CDCH04003200004000CD001 /* ComfyHubDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyHubDetailViewModel.swift; sourceTree = "<group>"; };
 		CDNC01003000001000CD001 /* NotificationCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCenterView.swift; sourceTree = "<group>"; };
 		CDNC02003000002000CD001 /* NotificationCenterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCenterViewModel.swift; sourceTree = "<group>"; };
 		CDNC03003000003000CD001 /* ModelUpdateBackgroundTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelUpdateBackgroundTask.swift; sourceTree = "<group>"; };
@@ -486,6 +494,7 @@
 				CDSH0A002FDD0000000CD001 /* Share */,
 				CDHY0A002FEE0000000CD001 /* History */,
 				CDSM0A003100000000CD001 /* SimilarModels */,
+				CDCH0A003200000000CD001 /* ComfyHub */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -579,6 +588,17 @@
 				CDSM02003100002000CD001 /* SimilarModelsViewModel.swift */,
 			);
 			path = SimilarModels;
+			sourceTree = "<group>";
+		};
+		CDCH0A003200000000CD001 /* ComfyHub */ = {
+			isa = PBXGroup;
+			children = (
+				CDCH01003200001000CD001 /* ComfyHubBrowserView.swift */,
+				CDCH02003200002000CD001 /* ComfyHubBrowserViewModel.swift */,
+				CDCH03003200003000CD001 /* ComfyHubDetailView.swift */,
+				CDCH04003200004000CD001 /* ComfyHubDetailViewModel.swift */,
+			);
+			path = ComfyHub;
 			sourceTree = "<group>";
 		};
 		CDNC0A003000000000CD001 /* NotificationCenter */ = {
@@ -971,6 +991,10 @@
 				CDFE02012FAB0002000CD001 /* FeedViewModel.swift in Sources */,
 				CDSM01013100001000CD001 /* SimilarModelsView.swift in Sources */,
 				CDSM02013100002000CD001 /* SimilarModelsViewModel.swift in Sources */,
+				CDCH01013200001000CD001 /* ComfyHubBrowserView.swift in Sources */,
+				CDCH02013200002000CD001 /* ComfyHubBrowserViewModel.swift in Sources */,
+				CDCH03013200003000CD001 /* ComfyHubDetailView.swift in Sources */,
+				CDCH04013200004000CD001 /* ComfyHubDetailViewModel.swift in Sources */,
 				CDNC01013000001000CD001 /* NotificationCenterView.swift in Sources */,
 				CDNC02013000002000CD001 /* NotificationCenterViewModel.swift in Sources */,
 				CDNC03013000003000CD001 /* ModelUpdateBackgroundTask.swift in Sources */,
