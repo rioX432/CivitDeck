@@ -41,6 +41,7 @@ fun IntegrationsHubScreen(
     onBack: () -> Unit,
     onNavigateToComfyUI: () -> Unit,
     onNavigateToTemplates: () -> Unit,
+    onNavigateToComfyHub: () -> Unit,
     onNavigateToSDWebUI: () -> Unit,
     onNavigateToCivitaiLink: () -> Unit,
     onNavigateToExternalServer: () -> Unit,
@@ -78,6 +79,7 @@ fun IntegrationsHubScreen(
                 extServerName = extServerName,
                 onNavigateToComfyUI = onNavigateToComfyUI,
                 onNavigateToTemplates = onNavigateToTemplates,
+                onNavigateToComfyHub = onNavigateToComfyHub,
                 onNavigateToSDWebUI = onNavigateToSDWebUI,
                 onNavigateToCivitaiLink = onNavigateToCivitaiLink,
                 onNavigateToExternalServer = onNavigateToExternalServer,
@@ -94,6 +96,7 @@ private fun LazyListScope.integrationItems(
     extServerName: String?,
     onNavigateToComfyUI: () -> Unit,
     onNavigateToTemplates: () -> Unit,
+    onNavigateToComfyHub: () -> Unit,
     onNavigateToSDWebUI: () -> Unit,
     onNavigateToCivitaiLink: () -> Unit,
     onNavigateToExternalServer: () -> Unit,
@@ -101,6 +104,7 @@ private fun LazyListScope.integrationItems(
     item { SectionHeader("ComfyUI") }
     item { IntegrationRow("Server Connections", comfyUIName ?: "Not configured", onNavigateToComfyUI) }
     item { IntegrationRow("Workflow Templates", onClick = onNavigateToTemplates) }
+    item { IntegrationRow("ComfyHub Workflows", "Browse & import", onNavigateToComfyHub) }
     item { SectionHeader("SD WebUI") }
     item { IntegrationRow("Connections", sdWebUIName ?: "Not configured", onNavigateToSDWebUI) }
     item { SectionHeader("Civitai Link") }

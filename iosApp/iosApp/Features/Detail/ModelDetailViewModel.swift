@@ -22,7 +22,7 @@ final class ModelDetailViewModel: ObservableObject {
     @Published var isSubmittingReview: Bool = false
     @Published var reviewSubmitSuccess: Bool = false
 
-    private let modelId: Int64
+    let modelId: Int64
     private let getModelDetailUseCase: GetModelDetailUseCase
     private let observeIsFavoriteUseCase: ObserveIsFavoriteUseCase
     private let toggleFavoriteUseCase: ToggleFavoriteUseCase

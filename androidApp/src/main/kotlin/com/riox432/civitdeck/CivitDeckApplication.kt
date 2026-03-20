@@ -43,6 +43,8 @@ import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
 import com.riox432.civitdeck.ui.analytics.AnalyticsViewModel
 import com.riox432.civitdeck.ui.backup.BackupViewModel
+import com.riox432.civitdeck.ui.comfyhub.ComfyHubBrowserViewModel
+import com.riox432.civitdeck.ui.comfyhub.ComfyHubDetailViewModel
 import com.riox432.civitdeck.ui.dataset.BatchTagEditorViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetListViewModel
@@ -51,6 +53,7 @@ import com.riox432.civitdeck.ui.feed.FeedViewModel
 import com.riox432.civitdeck.ui.history.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.notificationcenter.NotificationCenterViewModel
 import com.riox432.civitdeck.ui.plugin.PluginManagementViewModel
+import com.riox432.civitdeck.ui.similar.SimilarModelsViewModel
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
 import com.riox432.civitdeck.ui.update.UpdateViewModel
 import com.riox432.civitdeck.widget.WidgetRefreshWorker
@@ -183,5 +186,8 @@ val androidModule = module {
     viewModel { NotificationCenterViewModel(get(), get(), get()) }
     viewModel { BackupViewModel(get(), get(), get()) }
     viewModel { PluginManagementViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { params -> SimilarModelsViewModel(params.get(), get(), get()) }
+    viewModel { ComfyHubBrowserViewModel(get()) }
+    viewModel { params -> ComfyHubDetailViewModel(params.get(), get(), get()) }
     viewModel { com.riox432.civitdeck.ui.share.ShareViewModel(get(), get(), get(), get()) }
 }

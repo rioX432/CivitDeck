@@ -102,6 +102,7 @@ typealias GetCacheInfoUseCase = Core_domainGetCacheInfoUseCase
 typealias GetAllPersonalTagsUseCase = Core_domainGetAllPersonalTagsUseCase
 typealias GetHiddenModelsUseCase = Core_domainGetHiddenModelsUseCase
 typealias GetModelDetailUseCase = Core_domainGetModelDetailUseCase
+typealias GetSimilarModelsUseCase = Core_domainGetSimilarModelsUseCase
 typealias GetViewedModelIdsUseCase = Core_domainGetViewedModelIdsUseCase
 typealias ObserveAccentColorUseCase = Core_domainObserveAccentColorUseCase
 typealias ObserveDatasetCollectionsUseCase = Core_domainObserveDatasetCollectionsUseCase
@@ -292,6 +293,15 @@ typealias DeleteWorkflowTemplateUseCase = Feature_comfyuiDeleteWorkflowTemplateU
 typealias ExportWorkflowTemplateUseCase = Feature_comfyuiExportWorkflowTemplateUseCase
 typealias ImportWorkflowTemplateUseCase = Feature_comfyuiImportWorkflowTemplateUseCase
 typealias ApplyWorkflowTemplateUseCase = Feature_comfyuiApplyWorkflowTemplateUseCase
+
+// MARK: - Feature: ComfyHub
+
+typealias ComfyHubWorkflow = Core_domainComfyHubWorkflow
+typealias ComfyHubCategory = Core_domainComfyHubCategory
+typealias ComfyHubSortOrder = Core_domainComfyHubSortOrder
+typealias SearchComfyHubWorkflowsUseCase = Feature_comfyuiSearchComfyHubWorkflowsUseCase
+typealias GetComfyHubWorkflowDetailUseCase = Feature_comfyuiGetComfyHubWorkflowDetailUseCase
+typealias ImportComfyHubWorkflowUseCase = Feature_comfyuiImportComfyHubWorkflowUseCase
 
 // MARK: - Feature: External Server
 

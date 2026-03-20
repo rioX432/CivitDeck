@@ -141,6 +141,12 @@ private struct IntegrationsHubView: View {
                         subtitle: viewModel.comfyUIName ?? "Not configured"
                     )
                 }
+                NavigationLink(destination: ComfyHubBrowserView()) {
+                    integrationRow(
+                        title: "ComfyHub Workflows",
+                        subtitle: "Browse & import"
+                    )
+                }
             }
             Section("SD WebUI") {
                 NavigationLink(destination: SDWebUISettingsView()) {

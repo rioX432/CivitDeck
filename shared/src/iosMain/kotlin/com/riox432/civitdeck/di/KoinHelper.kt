@@ -43,6 +43,7 @@ import com.riox432.civitdeck.domain.usecase.GetModelUpdateNotificationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetNonTrainableImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetPluginConfigUseCase
 import com.riox432.civitdeck.domain.usecase.GetRatingTotalsUseCase
+import com.riox432.civitdeck.domain.usecase.GetSimilarModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadFeedCountUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadNotificationCountUseCase
@@ -157,7 +158,9 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUISamplers
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIVaesUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FindMatchingLocalModelUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.GenerateSDWebUIImageUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.GetComfyHubWorkflowDetailUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.GetWorkflowTemplatesUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportComfyHubWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptSDWebUIGenerationUseCase
@@ -174,6 +177,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.PopulateGenerationFr
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveWorkflowTemplateUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.SearchComfyHubWorkflowsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SendResourceToPCUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
@@ -488,6 +492,9 @@ object KoinHelper {
     fun getGetPluginConfigUseCase(): GetPluginConfigUseCase = getKoin().get()
     fun getUpdatePluginConfigUseCase(): UpdatePluginConfigUseCase = getKoin().get()
 
+    // Similarity use cases
+    fun getSimilarModelsUseCase(): GetSimilarModelsUseCase = getKoin().get()
+
     // Quality threshold use cases
     fun getObserveQualityThresholdUseCase(): ObserveQualityThresholdUseCase = getKoin().get()
     fun getSetQualityThresholdUseCase(): SetQualityThresholdUseCase = getKoin().get()
@@ -504,6 +511,11 @@ object KoinHelper {
     fun getMarkNotificationReadUseCase(): MarkNotificationReadUseCase = getKoin().get()
     fun getMarkAllNotificationsReadUseCase(): MarkAllNotificationsReadUseCase = getKoin().get()
     fun getCheckAndStoreModelUpdatesUseCase(): CheckAndStoreModelUpdatesUseCase = getKoin().get()
+
+    // ComfyHub use cases
+    fun getSearchComfyHubWorkflowsUseCase(): SearchComfyHubWorkflowsUseCase = getKoin().get()
+    fun getGetComfyHubWorkflowDetailUseCase(): GetComfyHubWorkflowDetailUseCase = getKoin().get()
+    fun getImportComfyHubWorkflowUseCase(): ImportComfyHubWorkflowUseCase = getKoin().get()
 
     // Share hashtag use cases
     fun getObserveShareHashtagsUseCase(): ObserveShareHashtagsUseCase = getKoin().get()

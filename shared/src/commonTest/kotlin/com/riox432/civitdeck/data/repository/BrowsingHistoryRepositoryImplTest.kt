@@ -103,6 +103,25 @@ class BrowsingHistoryRepositoryImplTest {
                 .map { (name, list) -> NameCount(name, list.size) }
                 .sortedByDescending { it.cnt }
                 .take(limit)
+
+        override suspend fun updateDuration(id: Long, durationMs: Long) {
+            val idx = entities.indexOfFirst { it.id == id }
+            if (idx >= 0) entities[idx] = entities[idx].copy(durationMs = durationMs)
+        }
+
+        override suspend fun updateInteractionType(id: Long, interactionType: String) {
+            val idx = entities.indexOfFirst { it.id == id }
+            if (idx >= 0) entities[idx] = entities[idx].copy(interactionType = interactionType)
+        }
+
+        override suspend fun getLatestIdForModel(modelId: Long): Long? =
+            entities.filter { it.modelId == modelId }
+                .maxByOrNull { it.viewedAt }?.id
+
+        override suspend fun getAverageViewDuration(): Long? {
+            val durations = entities.mapNotNull { it.durationMs }
+            return if (durations.isEmpty()) null else durations.average().toLong()
+        }
     }
 
     @Test
