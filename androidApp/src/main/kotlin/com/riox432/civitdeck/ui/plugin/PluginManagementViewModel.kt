@@ -13,6 +13,7 @@ import com.riox432.civitdeck.domain.usecase.UpdatePluginConfigUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class PluginManagementUiState(
@@ -41,10 +42,7 @@ class PluginManagementViewModel(
     private fun observePlugins() {
         viewModelScope.launch {
             observeInstalledPluginsUseCase().collect { plugins ->
-                _uiState.value = _uiState.value.copy(
-                    plugins = plugins,
-                    isLoading = false,
-                )
+                _uiState.update { it.copy(plugins = plugins, isLoading = false) }
             }
         }
     }
@@ -60,9 +58,7 @@ class PluginManagementViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Failed to toggle plugin",
-                )
+                _uiState.update { it.copy(error = e.message ?: "Failed to toggle plugin") }
             }
         }
     }
@@ -71,13 +67,11 @@ class PluginManagementViewModel(
         viewModelScope.launch {
             try {
                 val config = getPluginConfigUseCase(pluginId)
-                _uiState.value = _uiState.value.copy(selectedPluginConfig = config)
+                _uiState.update { it.copy(selectedPluginConfig = config) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Failed to load config",
-                )
+                _uiState.update { it.copy(error = e.message ?: "Failed to load config") }
             }
         }
     }
@@ -86,13 +80,11 @@ class PluginManagementViewModel(
         viewModelScope.launch {
             try {
                 updatePluginConfigUseCase(pluginId, configJson)
-                _uiState.value = _uiState.value.copy(selectedPluginConfig = configJson)
+                _uiState.update { it.copy(selectedPluginConfig = configJson) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Failed to save config",
-                )
+                _uiState.update { it.copy(error = e.message ?: "Failed to save config") }
             }
         }
     }
@@ -104,9 +96,7 @@ class PluginManagementViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Failed to uninstall plugin",
-                )
+                _uiState.update { it.copy(error = e.message ?: "Failed to uninstall plugin") }
             }
         }
     }
@@ -115,6 +105,6 @@ class PluginManagementViewModel(
         plugin.state == InstalledPluginState.ACTIVE
 
     fun clearError() {
-        _uiState.value = _uiState.value.copy(error = null)
+        _uiState.update { it.copy(error = null) }
     }
 }

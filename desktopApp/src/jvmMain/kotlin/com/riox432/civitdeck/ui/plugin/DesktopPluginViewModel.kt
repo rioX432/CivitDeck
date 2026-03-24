@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class DesktopPluginUiState(
@@ -43,7 +44,7 @@ class DesktopPluginViewModel(
     private fun observePlugins() {
         scope.launch {
             observeInstalledPluginsUseCase().collect { plugins ->
-                _uiState.value = _uiState.value.copy(plugins = plugins, isLoading = false)
+                _uiState.update { it.copy(plugins = plugins, isLoading = false) }
             }
         }
     }
@@ -55,7 +56,7 @@ class DesktopPluginViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message ?: "Failed to toggle plugin")
+                _uiState.update { it.copy(error = e.message ?: "Failed to toggle plugin") }
             }
         }
     }
@@ -64,11 +65,11 @@ class DesktopPluginViewModel(
         scope.launch {
             try {
                 val config = getPluginConfigUseCase(pluginId)
-                _uiState.value = _uiState.value.copy(selectedPluginConfig = config)
+                _uiState.update { it.copy(selectedPluginConfig = config) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message ?: "Failed to load config")
+                _uiState.update { it.copy(error = e.message ?: "Failed to load config") }
             }
         }
     }
@@ -77,11 +78,11 @@ class DesktopPluginViewModel(
         scope.launch {
             try {
                 updatePluginConfigUseCase(pluginId, configJson)
-                _uiState.value = _uiState.value.copy(selectedPluginConfig = configJson)
+                _uiState.update { it.copy(selectedPluginConfig = configJson) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message ?: "Failed to save config")
+                _uiState.update { it.copy(error = e.message ?: "Failed to save config") }
             }
         }
     }
@@ -93,7 +94,7 @@ class DesktopPluginViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message ?: "Failed to uninstall plugin")
+                _uiState.update { it.copy(error = e.message ?: "Failed to uninstall plugin") }
             }
         }
     }

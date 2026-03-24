@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class DesktopDiscoveryUiState(
@@ -35,23 +36,19 @@ class DesktopDiscoveryViewModel(
 
     private fun loadRecommendations() {
         scope.launch {
-            _uiState.value = _uiState.value.copy(
-                isLoading = true,
-                error = null,
-            )
+            _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 val sections = getRecommendationsUseCase()
-                _uiState.value = _uiState.value.copy(
-                    sections = sections,
-                    isLoading = false,
-                )
+                _uiState.update { it.copy(sections = sections, isLoading = false) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to load recommendations",
-                )
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to load recommendations",
+                    )
+                }
             }
         }
     }
