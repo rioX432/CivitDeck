@@ -3,33 +3,14 @@ package com.riox432.civitdeck
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
-import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
-import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
@@ -38,40 +19,20 @@ import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewMo
 import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsScreen
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
-import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterScreen
-import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterViewModel
-import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryScreen
-import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupScreen
 import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
-import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailScreen
-import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailViewModel
-import com.riox432.civitdeck.ui.dataset.DesktopDatasetListScreen
-import com.riox432.civitdeck.ui.dataset.DesktopDatasetListViewModel
+import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryScreen
+import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryViewModel
+import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterScreen
+import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterViewModel
 import com.riox432.civitdeck.ui.plugin.DesktopPluginDetailScreen
 import com.riox432.civitdeck.ui.plugin.DesktopPluginListScreen
 import com.riox432.civitdeck.ui.plugin.DesktopPluginViewModel
-import com.riox432.civitdeck.ui.settings.ComfyUIGenerationSection
-import com.riox432.civitdeck.ui.settings.ComfyUIHistorySection
-import com.riox432.civitdeck.ui.settings.ComfyUISettingsSection
 import com.riox432.civitdeck.ui.settings.DesktopSettingsScreen
-import com.riox432.civitdeck.ui.update.DesktopUpdateViewModel
-import com.riox432.civitdeck.ui.settings.ExternalServerGallerySection
-import com.riox432.civitdeck.ui.settings.ExternalServerSettingsSection
-import com.riox432.civitdeck.ui.settings.SDWebUIGenerationSection
-import com.riox432.civitdeck.ui.settings.SDWebUISettingsSection
-import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.ui.update.DesktopUpdateViewModel
 import com.riox432.civitdeck.util.removeLastOrNull
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
-
-private enum class SettingsSection(val label: String) {
-    General("General"),
-    ComfyUI("ComfyUI"),
-    SDWebUI("SD WebUI"),
-    ExternalServer("External Server"),
-}
 
 @Composable
 fun SettingsTabContent(
@@ -82,7 +43,6 @@ fun SettingsTabContent(
 
     Box(modifier = modifier.fillMaxSize()) {
         SettingsMainContent(
-            onNavigateToDatasets = { backstack.add(DesktopRoute.DatasetList) },
             onNavigateToBackup = { backstack.add(DesktopRoute.Backup) },
             onNavigateToPlugins = { backstack.add(DesktopRoute.PluginList) },
             onNavigateToAnalytics = { backstack.add(DesktopRoute.Analytics) },
@@ -90,219 +50,114 @@ fun SettingsTabContent(
             onNavigateToBrowsingHistory = { backstack.add(DesktopRoute.BrowsingHistory) },
         )
 
-        when (currentRoute) {
-            is DesktopRoute.DatasetList -> {
-                val vm: DesktopDatasetListViewModel = koinViewModel()
-                DisposableEffect(vm) {
-                    onDispose { vm.onCleared() }
-                }
-                DesktopDatasetListScreen(
-                    viewModel = vm,
-                    onDatasetClick = { id, name ->
-                        backstack.add(DesktopRoute.DatasetDetail(id, name))
-                    },
-                    onBack = { backstack.removeLastOrNull() },
-                )
-            }
-            is DesktopRoute.DatasetDetail -> {
-                val vm: DesktopDatasetDetailViewModel = koinViewModel(
-                    key = "dataset_detail_${currentRoute.datasetId}",
-                ) { parametersOf(currentRoute.datasetId) }
-                DisposableEffect(vm) {
-                    onDispose { vm.onCleared() }
-                }
-                DesktopDatasetDetailScreen(
-                    datasetName = currentRoute.datasetName,
-                    viewModel = vm,
-                    onBack = { backstack.removeLastOrNull() },
-                )
-            }
-            is DesktopRoute.Backup -> {
-                val vm: DesktopBackupViewModel = koinViewModel()
-                DisposableEffect(vm) {
-                    onDispose { vm.onCleared() }
-                }
-                DesktopBackupScreen(
-                    viewModel = vm,
-                    onBack = { backstack.removeLastOrNull() },
-                )
-            }
-            is DesktopRoute.PluginList -> {
-                val vm: DesktopPluginViewModel = koinViewModel()
-                DisposableEffect(vm) {
-                    onDispose { vm.onCleared() }
-                }
-                DesktopPluginListScreen(
-                    viewModel = vm,
-                    onPluginClick = { pluginId ->
-                        backstack.add(DesktopRoute.PluginDetail(pluginId))
-                    },
-                    onBack = { backstack.removeLastOrNull() },
-                )
-            }
-            is DesktopRoute.PluginDetail -> {
-                val vm: DesktopPluginViewModel = koinViewModel()
-                DisposableEffect(vm) {
-                    onDispose { vm.onCleared() }
-                }
-                DesktopPluginDetailScreen(
-                    pluginId = currentRoute.pluginId,
-                    viewModel = vm,
-                    onBack = { backstack.removeLastOrNull() },
-                )
-            }
-            is DesktopRoute.Analytics -> {
-                val vm: DesktopAnalyticsViewModel = koinViewModel()
-                DisposableEffect(vm) {
-                    onDispose { vm.onCleared() }
-                }
-                DesktopAnalyticsScreen(
-                    viewModel = vm,
-                    onBack = { backstack.removeLastOrNull() },
-                )
-            }
-            is DesktopRoute.NotificationCenter -> {
-                val vm: DesktopNotificationCenterViewModel = koinViewModel()
-                DisposableEffect(vm) {
-                    onDispose { vm.onCleared() }
-                }
-                DesktopNotificationCenterScreen(
-                    viewModel = vm,
-                    onBack = { backstack.removeLastOrNull() },
-                    onModelClick = { modelId ->
-                        backstack.add(DesktopRoute.ModelDetail(modelId))
-                    },
-                )
-            }
-            is DesktopRoute.BrowsingHistory -> {
-                val vm: DesktopBrowsingHistoryViewModel = koinViewModel()
-                DisposableEffect(vm) {
-                    onDispose { vm.onCleared() }
-                }
-                DesktopBrowsingHistoryScreen(
-                    viewModel = vm,
-                    onBack = { backstack.removeLastOrNull() },
-                    onModelClick = { modelId ->
-                        backstack.add(DesktopRoute.ModelDetail(modelId))
-                    },
-                )
-            }
-            else -> { /* Settings main screen is always shown underneath */ }
-        }
+        SettingsOverlayContent(backstack, currentRoute)
     }
 }
 
 @Composable
 @Suppress("LongParameterList")
 private fun SettingsMainContent(
-    onNavigateToDatasets: () -> Unit,
     onNavigateToBackup: () -> Unit,
     onNavigateToPlugins: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
     onNavigateToNotificationCenter: () -> Unit,
-    onNavigateToBrowsingHistory: () -> Unit = {},
+    onNavigateToBrowsingHistory: () -> Unit,
 ) {
-    // AppBehaviorVM is always needed (controls power user mode / section visibility)
-    val appBehaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
-    val appBehaviorState by appBehaviorVm.uiState.collectAsState()
-    val isPowerUser = appBehaviorState.powerUserMode
-
-    var selectedSection by remember { mutableStateOf(SettingsSection.General) }
-    // Reset to General if current section is hidden by power user mode
-    if (!isPowerUser && selectedSection != SettingsSection.General) {
-        selectedSection = SettingsSection.General
-    }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        SettingsSectionTabs(
-            selected = selectedSection,
-            onSelected = { selectedSection = it },
-            isPowerUser = isPowerUser,
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md),
+    ) {
+        val authVm: AuthSettingsViewModel = koinViewModel()
+        val displayVm: DisplaySettingsViewModel = koinViewModel()
+        val contentFilterVm: ContentFilterSettingsViewModel = koinViewModel()
+        val appBehaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
+        val storageVm: StorageSettingsViewModel = koinViewModel()
+        val updateVm: DesktopUpdateViewModel = koinViewModel()
+        DesktopSettingsScreen(
+            authSettingsViewModel = authVm,
+            displaySettingsViewModel = displayVm,
+            contentFilterSettingsViewModel = contentFilterVm,
+            appBehaviorSettingsViewModel = appBehaviorVm,
+            storageSettingsViewModel = storageVm,
+            updateViewModel = updateVm,
+            onNavigateToDatasets = { /* Datasets moved to Library tab */ },
+            onNavigateToBackup = onNavigateToBackup,
+            onNavigateToPlugins = onNavigateToPlugins,
+            onNavigateToAnalytics = onNavigateToAnalytics,
+            onNavigateToNotificationCenter = onNavigateToNotificationCenter,
+            onNavigateToBrowsingHistory = onNavigateToBrowsingHistory,
         )
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(Spacing.lg),
-            verticalArrangement = Arrangement.spacedBy(Spacing.md),
-        ) {
-            when (selectedSection) {
-                SettingsSection.General -> {
-                    val authVm: AuthSettingsViewModel = koinViewModel()
-                    val displayVm: DisplaySettingsViewModel = koinViewModel()
-                    val contentFilterVm: ContentFilterSettingsViewModel = koinViewModel()
-                    val storageVm: StorageSettingsViewModel = koinViewModel()
-                    val updateVm: DesktopUpdateViewModel = koinViewModel()
-                    DesktopSettingsScreen(
-                        authSettingsViewModel = authVm,
-                        displaySettingsViewModel = displayVm,
-                        contentFilterSettingsViewModel = contentFilterVm,
-                        appBehaviorSettingsViewModel = appBehaviorVm,
-                        storageSettingsViewModel = storageVm,
-                        updateViewModel = updateVm,
-                        onNavigateToDatasets = onNavigateToDatasets,
-                        onNavigateToBackup = onNavigateToBackup,
-                        onNavigateToPlugins = onNavigateToPlugins,
-                        onNavigateToAnalytics = onNavigateToAnalytics,
-                        onNavigateToNotificationCenter = onNavigateToNotificationCenter,
-                        onNavigateToBrowsingHistory = onNavigateToBrowsingHistory,
-                    )
-                }
-                SettingsSection.ComfyUI -> {
-                    val comfySettingsVm: ComfyUISettingsViewModel = koinViewModel()
-                    val comfyGenVm: ComfyUIGenerationViewModel = koinViewModel()
-                    val comfyHistoryVm: ComfyUIHistoryViewModel = koinViewModel()
-                    ComfyUISettingsSection(comfySettingsVm)
-                    ComfyUIGenerationSection(comfyGenVm)
-                    ComfyUIHistorySection(comfyHistoryVm)
-                }
-                SettingsSection.SDWebUI -> {
-                    val sdWebuiSettingsVm: SDWebUISettingsViewModel = koinViewModel()
-                    val sdWebuiGenVm: SDWebUIGenerationViewModel = koinViewModel()
-                    SDWebUISettingsSection(sdWebuiSettingsVm)
-                    SDWebUIGenerationSection(sdWebuiGenVm)
-                }
-                SettingsSection.ExternalServer -> {
-                    val extServerSettingsVm: ExternalServerSettingsViewModel = koinViewModel()
-                    val extServerGalleryVm: ExternalServerGalleryViewModel = koinViewModel()
-                    ExternalServerSettingsSection(extServerSettingsVm)
-                    ExternalServerGallerySection(extServerGalleryVm)
-                }
-            }
-        }
     }
 }
 
 @Composable
-private fun SettingsSectionTabs(
-    selected: SettingsSection,
-    onSelected: (SettingsSection) -> Unit,
-    isPowerUser: Boolean,
+@Suppress("CyclomaticComplexMethod")
+private fun SettingsOverlayContent(
+    backstack: SnapshotStateList<DesktopRoute>,
+    currentRoute: DesktopRoute?,
 ) {
-    val visibleSections = if (isPowerUser) {
-        SettingsSection.entries
-    } else {
-        listOf(SettingsSection.General)
-    }
-
-    Surface(tonalElevation = Elevation.xs) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.lg, vertical = Spacing.sm),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "Settings",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(end = Spacing.md),
+    when (currentRoute) {
+        is DesktopRoute.Backup -> {
+            val vm: DesktopBackupViewModel = koinViewModel()
+            DisposableEffect(vm) { onDispose { vm.onCleared() } }
+            DesktopBackupScreen(
+                viewModel = vm,
+                onBack = { backstack.removeLastOrNull() },
             )
-            visibleSections.forEach { section ->
-                FilterChip(
-                    selected = selected == section,
-                    onClick = { onSelected(section) },
-                    label = { Text(section.label) },
-                )
-            }
         }
+        is DesktopRoute.PluginList -> {
+            val vm: DesktopPluginViewModel = koinViewModel()
+            DisposableEffect(vm) { onDispose { vm.onCleared() } }
+            DesktopPluginListScreen(
+                viewModel = vm,
+                onPluginClick = { pluginId ->
+                    backstack.add(DesktopRoute.PluginDetail(pluginId))
+                },
+                onBack = { backstack.removeLastOrNull() },
+            )
+        }
+        is DesktopRoute.PluginDetail -> {
+            val vm: DesktopPluginViewModel = koinViewModel()
+            DisposableEffect(vm) { onDispose { vm.onCleared() } }
+            DesktopPluginDetailScreen(
+                pluginId = currentRoute.pluginId,
+                viewModel = vm,
+                onBack = { backstack.removeLastOrNull() },
+            )
+        }
+        is DesktopRoute.Analytics -> {
+            val vm: DesktopAnalyticsViewModel = koinViewModel()
+            DisposableEffect(vm) { onDispose { vm.onCleared() } }
+            DesktopAnalyticsScreen(
+                viewModel = vm,
+                onBack = { backstack.removeLastOrNull() },
+            )
+        }
+        is DesktopRoute.NotificationCenter -> {
+            val vm: DesktopNotificationCenterViewModel = koinViewModel()
+            DisposableEffect(vm) { onDispose { vm.onCleared() } }
+            DesktopNotificationCenterScreen(
+                viewModel = vm,
+                onBack = { backstack.removeLastOrNull() },
+                onModelClick = { modelId ->
+                    backstack.add(DesktopRoute.ModelDetail(modelId))
+                },
+            )
+        }
+        is DesktopRoute.BrowsingHistory -> {
+            val vm: DesktopBrowsingHistoryViewModel = koinViewModel()
+            DisposableEffect(vm) { onDispose { vm.onCleared() } }
+            DesktopBrowsingHistoryScreen(
+                viewModel = vm,
+                onBack = { backstack.removeLastOrNull() },
+                onModelClick = { modelId ->
+                    backstack.add(DesktopRoute.ModelDetail(modelId))
+                },
+            )
+        }
+        else -> { /* Settings main screen is shown */ }
     }
 }
