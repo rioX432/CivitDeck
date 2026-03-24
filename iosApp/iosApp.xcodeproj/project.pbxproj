@@ -166,6 +166,8 @@
 		CDSH02012FDD0002000CD001 /* ShareHashtagViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSH02002FDD0002000CD001 /* ShareHashtagViewModel.swift */; };
 		CDHY01012FEE0001000CD001 /* BrowsingHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDHY01002FEE0001000CD001 /* BrowsingHistoryView.swift */; };
 		CDHY02012FEE0002000CD001 /* BrowsingHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDHY02002FEE0002000CD001 /* BrowsingHistoryViewModel.swift */; };
+		CDCR01013300001000CD001 /* CreateHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCR01003300001000CD001 /* CreateHubView.swift */; };
+		CDLB01013300002000CD001 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDLB01003300002000CD001 /* LibraryView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -334,6 +336,8 @@
 		CDSH02002FDD0002000CD001 /* ShareHashtagViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareHashtagViewModel.swift; sourceTree = "<group>"; };
 		CDHY01002FEE0001000CD001 /* BrowsingHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowsingHistoryView.swift; sourceTree = "<group>"; };
 		CDHY02002FEE0002000CD001 /* BrowsingHistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowsingHistoryViewModel.swift; sourceTree = "<group>"; };
+		CDCR01003300001000CD001 /* CreateHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateHubView.swift; sourceTree = "<group>"; };
+		CDLB01003300002000CD001 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -497,6 +501,8 @@
 				CDHY0A002FEE0000000CD001 /* History */,
 				CDSM0A003100000000CD001 /* SimilarModels */,
 				CDCH0A003200000000CD001 /* ComfyHub */,
+				CDCR0A003300000000CD001 /* Create */,
+				CDLB0A003300000000CD001 /* Library */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -601,6 +607,22 @@
 				CDCH04003200004000CD001 /* ComfyHubDetailViewModel.swift */,
 			);
 			path = ComfyHub;
+			sourceTree = "<group>";
+		};
+		CDCR0A003300000000CD001 /* Create */ = {
+			isa = PBXGroup;
+			children = (
+				CDCR01003300001000CD001 /* CreateHubView.swift */,
+			);
+			path = Create;
+			sourceTree = "<group>";
+		};
+		CDLB0A003300000000CD001 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				CDLB01003300002000CD001 /* LibraryView.swift */,
+			);
+			path = Library;
 			sourceTree = "<group>";
 		};
 		CDNC0A003000000000CD001 /* NotificationCenter */ = {
@@ -1076,6 +1098,8 @@
 			CDSH02012FDD0002000CD001 /* ShareHashtagViewModel.swift in Sources */,
 			CDHY01012FEE0001000CD001 /* BrowsingHistoryView.swift in Sources */,
 			CDHY02012FEE0002000CD001 /* BrowsingHistoryViewModel.swift in Sources */,
+			CDCR01013300001000CD001 /* CreateHubView.swift in Sources */,
+			CDLB01013300002000CD001 /* LibraryView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
