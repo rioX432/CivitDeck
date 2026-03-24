@@ -40,6 +40,7 @@ import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveModelColl
 import com.riox432.civitdeck.feature.collections.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.feature.gallery.domain.usecase.EnrichModelImagesUseCase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -49,6 +50,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 data class ModelDetailUiState(
     val model: Model? = null,
@@ -136,11 +139,15 @@ class ModelDetailViewModel(
         if (viewStartTimeMs > 0L) {
             val durationMs = currentTimeMillis() - viewStartTimeMs
             viewStartTimeMs = 0L
-            kotlinx.coroutines.MainScope().launch {
-                try {
-                    trackModelViewUseCase.endView(modelId, durationMs)
-                } catch (_: Exception) {
-                    // Duration update failure is non-critical
+            viewModelScope.launch {
+                withContext(NonCancellable) {
+                    try {
+                        withTimeoutOrNull(END_VIEW_TIMEOUT) {
+                            trackModelViewUseCase.endView(modelId, durationMs)
+                        }
+                    } catch (_: Exception) {
+                        // Duration update failure is non-critical
+                    }
                 }
             }
         }
@@ -453,4 +460,5 @@ class ModelDetailViewModel(
 }
 
 private const val STOP_TIMEOUT = 5_000L
+private const val END_VIEW_TIMEOUT = 5_000L
 private const val KB_TO_BYTES = 1024.0
