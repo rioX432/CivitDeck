@@ -9,7 +9,6 @@ kotlin {
         commonMain.dependencies {
             api(project(":core:core-domain"))
             implementation(project(":core:core-plugin"))
-            implementation(project(":shared"))
             implementation(libs.koin.core)
             implementation(compose.material3)
             implementation(compose.materialIconsExtended)
