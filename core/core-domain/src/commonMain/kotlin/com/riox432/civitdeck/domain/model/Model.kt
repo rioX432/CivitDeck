@@ -11,6 +11,7 @@ data class Model(
     val creator: Creator?,
     val stats: ModelStats,
     val modelVersions: List<ModelVersion>,
+    val source: ModelSource = ModelSource.CIVITAI,
 )
 
 data class ModelStats(
