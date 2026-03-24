@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.util
+package com.riox432.civitdeck.domain.util
 
 import kotlin.math.round
 

@@ -17,9 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.domain.util.FormatUtils
 import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
-import com.riox432.civitdeck.util.FormatUtils
 
 /**
  * Displays model statistics (downloads, favorites, rating, optional comments).

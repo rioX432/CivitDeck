@@ -42,7 +42,7 @@ import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
 import com.riox432.civitdeck.ui.theme.Elevation
-import com.riox432.civitdeck.util.FormatUtils
+import com.riox432.civitdeck.domain.util.FormatUtils
 
 @Composable
 fun DesktopCompareScreen(
