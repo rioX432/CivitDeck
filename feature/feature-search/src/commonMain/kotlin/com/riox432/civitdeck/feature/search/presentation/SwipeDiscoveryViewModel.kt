@@ -35,10 +35,8 @@ class SwipeDiscoveryViewModel(
 
     companion object {
         /** Persists dismissed model IDs across ViewModel recreations within the same session. */
-        private val sessionDismissedIds = mutableSetOf<Long>()
+        private val sessionDismissedIds = MutableStateFlow<Set<Long>>(emptySet())
     }
-
-    private val dismissedIds = sessionDismissedIds
 
     init {
         loadModels()
@@ -52,7 +50,7 @@ class SwipeDiscoveryViewModel(
                 val models = getDiscoveryModels()
                 _state.update { current ->
                     val existingIds = current.cards.map { it.id }.toSet()
-                    val allSeenIds = existingIds + dismissedIds
+                    val allSeenIds = existingIds + sessionDismissedIds.value
                     val newModels = models.filterNot { it.id in allSeenIds }
                     current.copy(cards = current.cards + newModels, isLoading = false)
                 }
@@ -90,7 +88,7 @@ class SwipeDiscoveryViewModel(
     }
 
     private fun removeTopCard(model: Model, wasFavorited: Boolean) {
-        dismissedIds.add(model.id)
+        sessionDismissedIds.update { it + model.id }
         _state.update {
             it.copy(
                 cards = it.cards.filterNot { card -> card.id == model.id },

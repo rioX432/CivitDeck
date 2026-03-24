@@ -101,7 +101,7 @@ class ModelDetailViewModel(
 
     private val _uiState = MutableStateFlow(ModelDetailUiState())
     val uiState: StateFlow<ModelDetailUiState> = _uiState.asStateFlow()
-    private val enrichedVersionIds = mutableSetOf<Long>()
+    private val enrichedVersionIds = MutableStateFlow<Set<Long>>(emptySet())
     private var viewStartTimeMs: Long = 0L
 
     private val _downloadEnqueuedEvent = MutableSharedFlow<Long>(extraBufferCapacity = 1)
@@ -239,7 +239,16 @@ class ModelDetailViewModel(
         val state = _uiState.value
         val model = state.model ?: return
         val version = model.modelVersions.getOrNull(state.selectedVersionIndex) ?: return
-        if (!enrichedVersionIds.add(version.id)) return
+        var alreadyEnriched = false
+        enrichedVersionIds.update { ids ->
+            if (version.id in ids) {
+                alreadyEnriched = true
+                ids
+            } else {
+                ids + version.id
+            }
+        }
+        if (alreadyEnriched) return
         viewModelScope.launch {
             try {
                 val enriched = enrichModelImagesUseCase(version.id, version.images)
@@ -253,7 +262,7 @@ class ModelDetailViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                enrichedVersionIds.remove(version.id)
+                enrichedVersionIds.update { it - version.id }
             }
         }
     }
