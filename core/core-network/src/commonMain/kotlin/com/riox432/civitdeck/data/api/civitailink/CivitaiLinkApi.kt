@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.data.api.civitailink
 
+import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.wss
 import io.ktor.websocket.Frame
@@ -17,6 +18,7 @@ class CivitaiLinkApi(
     private val json: Json,
 ) {
     companion object {
+        private const val TAG = "CivitaiLinkApi"
         private const val HOST = "civitai.com"
         private const val PATH_PREFIX = "/api/link/ws?key="
     }
@@ -28,6 +30,8 @@ class CivitaiLinkApi(
                     runCatching {
                         val msg = json.decodeFromString<CivitaiLinkIncomingMessage>(frame.readText())
                         trySend(msg)
+                    }.onFailure { e ->
+                        Logger.w(TAG, "Failed to deserialize message: ${e.message}")
                     }
                 }
             }
