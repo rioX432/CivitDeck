@@ -4,11 +4,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -108,28 +105,4 @@ fun Modifier.springScale(
         scaleX = scale.value
         scaleY = scale.value
     }
-}
-
-/**
- * Calculates the approximate scroll offset for a grid item at the given
- * [itemIndex] relative to the visible viewport center.
- */
-@Composable
-fun rememberGridItemScrollOffset(
-    gridState: LazyGridState,
-    itemIndex: Int,
-): Float {
-    val offset by remember(gridState) {
-        derivedStateOf {
-            val visibleItems = gridState.layoutInfo.visibleItemsInfo
-            val item = visibleItems.firstOrNull { it.index == itemIndex }
-                ?: return@derivedStateOf 0f
-            val viewportHeight = gridState.layoutInfo.viewportEndOffset -
-                gridState.layoutInfo.viewportStartOffset
-            val itemCenter = item.offset.y + item.size.height / 2f
-            val viewportCenter = viewportHeight / 2f
-            itemCenter - viewportCenter
-        }
-    }
-    return offset
 }

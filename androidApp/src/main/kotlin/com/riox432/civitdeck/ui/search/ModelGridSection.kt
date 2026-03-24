@@ -65,7 +65,6 @@ import com.riox432.civitdeck.ui.components.LaunchStaggerAnimation
 import com.riox432.civitdeck.ui.components.ModelCard
 import com.riox432.civitdeck.ui.components.SwipeableModelCard
 import com.riox432.civitdeck.ui.components.isReducedMotionEnabled
-import com.riox432.civitdeck.ui.components.rememberGridItemScrollOffset
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -268,7 +267,7 @@ private fun ModelGrid(
     ) {
         recommendationItems(recommendations, onModelClick)
         modelPagingItems(
-            lazyPagingItems, gridState, ownedHashes, favoriteIds,
+            lazyPagingItems, ownedHashes, favoriteIds,
             isComparing, reducedMotion, onModelClick, onHideModel,
             onToggleFavorite, onCompareModel,
         )
@@ -297,7 +296,6 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.recommendationIt
 @Suppress("LongParameterList")
 private fun androidx.compose.foundation.lazy.grid.LazyGridScope.modelPagingItems(
     lazyPagingItems: LazyPagingItems<Model>,
-    gridState: LazyGridState,
     ownedHashes: Set<String>,
     favoriteIds: Set<Long>,
     isComparing: Boolean,
@@ -317,8 +315,6 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.modelPagingItems
             .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
         val isOwned = ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
 
-        @Suppress("UnusedPrivateProperty")
-        val parallaxOffset = rememberGridItemScrollOffset(gridState, index)
         val staggerAnimatable = remember { Animatable(0f) }
         LaunchStaggerAnimation(index = index, animatable = staggerAnimatable, reducedMotion = reducedMotion)
         ModelGridItem(
