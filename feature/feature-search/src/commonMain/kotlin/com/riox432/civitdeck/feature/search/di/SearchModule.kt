@@ -19,6 +19,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseC
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.RemoveExcludedTagUseCase
@@ -35,6 +36,7 @@ val searchModule = module {
 
     // Use cases
     factory { GetModelsUseCase(get()) }
+    factory { MultiSourceSearchUseCase(get(), get(), get()) }
     factory { GetDiscoveryModelsUseCase(get()) }
     factory { GetRecommendationsUseCase(get(), get(), get(), get()) }
     factory { ObserveSearchHistoryUseCase(get()) }
