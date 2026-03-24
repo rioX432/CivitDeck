@@ -107,7 +107,8 @@ final class ModelCompareViewModel: ObservableObject {
                     id: model.id, name: model.name, description: model.description_,
                     type: model.type, nsfw: model.nsfw, tags: model.tags,
                     mode: model.mode, creator: model.creator,
-                    stats: model.stats, modelVersions: updatedVersions
+                    stats: model.stats, modelVersions: updatedVersions,
+                    source: model.source
                 )
                 switch side {
                 case .left: leftModel = updatedModel

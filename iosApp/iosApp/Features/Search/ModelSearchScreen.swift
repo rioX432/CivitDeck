@@ -121,6 +121,7 @@ struct ModelSearchScreen: View {
         if viewModel.isQualityFilterEnabled { count += 1 }
         if !viewModel.includedTags.isEmpty { count += 1 }
         if !viewModel.excludedTags.isEmpty { count += 1 }
+        if viewModel.selectedSources != Set([Core_domainModelSource.civitai]) { count += 1 }
         return count
     }
 
@@ -172,6 +173,7 @@ struct ModelSearchScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: Spacing.sm) {
+                    sourceFilterChips
                     typeFilterChips
                     baseModelFilterChips
                     sortAndPeriodChips
@@ -384,61 +386,56 @@ struct ModelSearchScreen: View {
     }
 }
 extension ModelSearchScreen { // MARK: - Filter Chips
-    var typeFilterChips: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Spacing.sm) {
-                ChipButton(label: "All", isSelected: viewModel.selectedType == nil) {
-                    viewModel.onTypeSelected(nil)
-                }
-                ForEach(SearchFilter.modelTypeOptions, id: \.self) { type in
-                    ChipButton(label: type.name, isSelected: viewModel.selectedType == type) {
-                        viewModel.onTypeSelected(type)
-                    }
+    var sourceFilterChips: some View {
+        filterChipRow {
+            ForEach(Core_domainModelSource.allCases, id: \.self) { source in
+                ChipButton(label: source.displayLabel, isSelected: viewModel.selectedSources.contains(source)) {
+                    viewModel.toggleSource(source)
                 }
             }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.sm)
+        }
+    }
+    var typeFilterChips: some View {
+        filterChipRow {
+            ChipButton(label: "All", isSelected: viewModel.selectedType == nil) { viewModel.onTypeSelected(nil) }
+            ForEach(SearchFilter.modelTypeOptions, id: \.self) { type in
+                ChipButton(label: type.name, isSelected: viewModel.selectedType == type) {
+                    viewModel.onTypeSelected(type)
+                }
+            }
         }
     }
     var baseModelFilterChips: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Spacing.sm) {
-                ForEach(SearchFilter.baseModelOptions, id: \.self) { baseModel in
-                    ChipButton(
-                        label: baseModel.displayName,
-                        isSelected: viewModel.selectedBaseModels.contains(baseModel)
-                    ) {
-                        viewModel.onBaseModelToggled(baseModel)
-                    }
+        filterChipRow {
+            ForEach(SearchFilter.baseModelOptions, id: \.self) { baseModel in
+                ChipButton(label: baseModel.displayName, isSelected: viewModel.selectedBaseModels.contains(baseModel)) {
+                    viewModel.onBaseModelToggled(baseModel)
                 }
             }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.bottom, Spacing.sm)
+        }
+    }
+    private func filterChipRow<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.sm, content: content)
+                .padding(.horizontal, Spacing.lg).padding(.vertical, Spacing.sm)
         }
     }
     var sortAndPeriodChips: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Spacing.sm) {
-                ChipButton(label: "Fresh Only", isSelected: viewModel.isFreshFindEnabled) {
-                    viewModel.onFreshFindToggled()
-                }
-                ChipButton(label: "Quality", isSelected: viewModel.isQualityFilterEnabled) {
-                    viewModel.onQualityFilterToggled()
-                }
-                ForEach(SearchFilter.sortOptions, id: \.self) { sort in
-                    ChipButton(label: SearchFilter.sortLabel(sort), isSelected: viewModel.selectedSort == sort) {
-                        viewModel.onSortSelected(sort)
-                    }
-                }
-                ForEach(SearchFilter.periodOptions, id: \.self) { period in
-                    let selected = viewModel.selectedPeriod == period
-                    ChipButton(label: SearchFilter.periodLabel(period), isSelected: selected) {
-                        viewModel.onPeriodSelected(period)
-                    }
+        filterChipRow {
+            ChipButton(label: "Fresh Only", isSelected: viewModel.isFreshFindEnabled) { viewModel.onFreshFindToggled() }
+            ChipButton(label: "Quality", isSelected: viewModel.isQualityFilterEnabled) {
+                viewModel.onQualityFilterToggled()
+            }
+            ForEach(SearchFilter.sortOptions, id: \.self) { sort in
+                ChipButton(label: SearchFilter.sortLabel(sort), isSelected: viewModel.selectedSort == sort) {
+                    viewModel.onSortSelected(sort)
                 }
             }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.bottom, Spacing.sm)
+            ForEach(SearchFilter.periodOptions, id: \.self) { period in
+                ChipButton(label: SearchFilter.periodLabel(period), isSelected: viewModel.selectedPeriod == period) {
+                    viewModel.onPeriodSelected(period)
+                }
+            }
         }
     }
 }

@@ -11,8 +11,16 @@ import com.riox432.civitdeck.data.api.comfyui.createComfyUIHttpClient
 import com.riox432.civitdeck.data.api.createHttpClient
 import com.riox432.civitdeck.data.api.externalserver.ExternalServerApi
 import com.riox432.civitdeck.data.api.externalserver.createExternalServerHttpClient
+import com.riox432.civitdeck.data.api.huggingface.HuggingFaceApi
+import com.riox432.civitdeck.data.api.huggingface.HuggingFaceRepositoryImpl
+import com.riox432.civitdeck.data.api.huggingface.createHuggingFaceHttpClient
+import com.riox432.civitdeck.data.api.tensorart.TensorArtApi
+import com.riox432.civitdeck.data.api.tensorart.TensorArtRepositoryImpl
+import com.riox432.civitdeck.data.api.tensorart.createTensorArtHttpClient
 import com.riox432.civitdeck.data.api.webui.SDWebUIApi
 import com.riox432.civitdeck.data.api.webui.createSDWebUIHttpClient
+import com.riox432.civitdeck.domain.repository.HuggingFaceRepository
+import com.riox432.civitdeck.domain.repository.TensorArtRepository
 import kotlinx.serialization.json.Json
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -50,4 +58,14 @@ val networkModule = module {
     // External Server (generic REST API)
     single(named("externalserver")) { createExternalServerHttpClient() }
     single { ExternalServerApi(get(named("externalserver"))) }
+
+    // HuggingFace
+    single(named("huggingface")) { createHuggingFaceHttpClient() }
+    single { HuggingFaceApi(get(named("huggingface"))) }
+    single<HuggingFaceRepository> { HuggingFaceRepositoryImpl(get()) }
+
+    // TensorArt
+    single(named("tensorart")) { createTensorArtHttpClient() }
+    single { TensorArtApi(get(named("tensorart"))) }
+    single<TensorArtRepository> { TensorArtRepositoryImpl(get()) }
 }

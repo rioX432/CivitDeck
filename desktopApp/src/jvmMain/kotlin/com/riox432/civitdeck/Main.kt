@@ -64,7 +64,7 @@ fun main() {
             )
         }
 
-        var currentScreen by remember { mutableStateOf("Search") }
+        var currentScreen by remember { mutableStateOf("Discover") }
         val windowTitle = "CivitDeck — $currentScreen"
 
         Window(

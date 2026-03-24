@@ -4,11 +4,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.TextSnippet
-import androidx.compose.material.icons.filled.DynamicFeed
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.FolderCopy
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -50,11 +48,9 @@ enum class DesktopTab(
     val label: String,
     val icon: ImageVector,
 ) {
-    Search("Search", Icons.Default.Search),
     Discover("Discover", Icons.Default.Explore),
-    Collections("Collections", Icons.Default.FolderCopy),
-    Prompts("Prompts", Icons.AutoMirrored.Filled.TextSnippet),
-    Feed("Feed", Icons.Default.DynamicFeed),
+    Create("Create", Icons.Default.AutoAwesome),
+    Library("Library", Icons.Default.FolderCopy),
     Settings("Settings", Icons.Default.Settings),
 }
 
@@ -76,7 +72,7 @@ fun DesktopApp(
         accentColor = displayState.accentColor,
         amoledDarkMode = displayState.amoledDarkMode,
     ) {
-        var selectedTab by remember { mutableStateOf(DesktopTab.Search) }
+        var selectedTab by remember { mutableStateOf(DesktopTab.Discover) }
         val backstack = remember {
             androidx.compose.runtime.mutableStateListOf<DesktopRoute>()
         }
@@ -95,7 +91,7 @@ fun DesktopApp(
             modifier = Modifier.onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
 
-                // Tab / Shift+Tab → move focus between interactive elements
+                // Tab / Shift+Tab -> move focus between interactive elements
                 if (event.key == Key.Tab) {
                     if (event.isShiftPressed) {
                         focusManager.moveFocus(FocusDirection.Previous)
@@ -109,11 +105,10 @@ fun DesktopApp(
                 handleKeyboardShortcut(
                     key = event.key,
                     hasModifier = hasModifier,
-                    selectedTab = selectedTab,
                     onTabSelected = { selectedTab = it; backstack.clear() },
                     onBack = { backstack.removeLastOrNull() },
                     onFocusSearch = {
-                        selectedTab = DesktopTab.Search
+                        selectedTab = DesktopTab.Discover
                         backstack.clear()
                         searchFocusRequester.requestFocus()
                     },
@@ -139,22 +134,20 @@ fun DesktopApp(
     }
 }
 
-@Suppress("CyclomaticComplexMethod")
 private fun handleKeyboardShortcut(
     key: Key,
     hasModifier: Boolean,
-    selectedTab: DesktopTab,
     onTabSelected: (DesktopTab) -> Unit,
     onBack: () -> Unit,
     onFocusSearch: () -> Unit,
 ): Boolean {
-    // Escape → go back / close overlay
+    // Escape -> go back / close overlay
     if (key == Key.Escape) {
         onBack()
         return true
     }
 
-    // F5 → refresh (switch to search tab and re-focus)
+    // F5 -> refresh
     if (key == Key.F5) {
         onFocusSearch()
         return true
@@ -163,19 +156,13 @@ private fun handleKeyboardShortcut(
     if (!hasModifier) return false
 
     return when (key) {
-        // Cmd/Ctrl+F → focus search bar
         Key.F -> { onFocusSearch(); true }
-        // Cmd/Ctrl+R → refresh (same as F5)
         Key.R -> { onFocusSearch(); true }
-        // Cmd/Ctrl+, → open settings
         Key.Comma -> { onTabSelected(DesktopTab.Settings); true }
-        // Cmd/Ctrl+1-6 → switch tabs
-        Key.One -> { onTabSelected(DesktopTab.Search); true }
-        Key.Two -> { onTabSelected(DesktopTab.Discover); true }
-        Key.Three -> { onTabSelected(DesktopTab.Collections); true }
-        Key.Four -> { onTabSelected(DesktopTab.Prompts); true }
-        Key.Five -> { onTabSelected(DesktopTab.Feed); true }
-        Key.Six -> { onTabSelected(DesktopTab.Settings); true }
+        Key.One -> { onTabSelected(DesktopTab.Discover); true }
+        Key.Two -> { onTabSelected(DesktopTab.Create); true }
+        Key.Three -> { onTabSelected(DesktopTab.Library); true }
+        Key.Four -> { onTabSelected(DesktopTab.Settings); true }
         else -> false
     }
 }
@@ -206,21 +193,13 @@ private fun DesktopContent(
     modifier: Modifier = Modifier,
 ) {
     when (selectedTab) {
-        DesktopTab.Search -> SearchTabContent(
+        DesktopTab.Discover -> DiscoverTabContent(
             backstack = backstack,
             searchFocusRequester = searchFocusRequester,
             modifier = modifier,
         )
-        DesktopTab.Discover -> DiscoveryTabContent(
-            backstack = backstack,
-            modifier = modifier,
-        )
-        DesktopTab.Collections -> CollectionsTabContent(
-            backstack = backstack,
-            modifier = modifier,
-        )
-        DesktopTab.Prompts -> PromptsTabContent(modifier = modifier)
-        DesktopTab.Feed -> FeedTabContent(
+        DesktopTab.Create -> CreateTabContent(modifier = modifier)
+        DesktopTab.Library -> LibraryTabContent(
             backstack = backstack,
             modifier = modifier,
         )

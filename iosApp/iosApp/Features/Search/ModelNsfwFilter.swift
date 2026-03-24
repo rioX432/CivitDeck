@@ -44,7 +44,8 @@ extension Array where Element == Model {
                 mode: model.mode,
                 creator: model.creator,
                 stats: model.stats,
-                modelVersions: filteredVersions
+                modelVersions: filteredVersions,
+                source: model.source
             )
         }
     }

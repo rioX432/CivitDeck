@@ -8,6 +8,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.RecommendationSection
@@ -66,6 +67,7 @@ data class ModelSearchUiState(
     val isLoadingRecommendations: Boolean = false,
     val excludedTags: List<String> = emptyList(),
     val includedTags: List<String> = emptyList(),
+    val selectedSources: Set<ModelSource> = setOf(ModelSource.CIVITAI),
 )
 
 data class FilterState(
@@ -80,6 +82,7 @@ data class FilterState(
     val qualityThreshold: Int = 0,
     val excludedTags: List<String> = emptyList(),
     val includedTags: List<String> = emptyList(),
+    val selectedSources: Set<ModelSource> = setOf(ModelSource.CIVITAI),
 )
 
 @Suppress("LongParameterList")
@@ -258,6 +261,7 @@ class ModelSearchViewModel(
                 isFreshFindEnabled = false,
                 isQualityFilterEnabled = false,
                 includedTags = emptyList(),
+                selectedSources = setOf(ModelSource.CIVITAI),
             )
         }
         _filterState.update {
@@ -269,6 +273,7 @@ class ModelSearchViewModel(
                 isFreshFindEnabled = false,
                 isQualityFilterEnabled = false,
                 includedTags = emptyList(),
+                selectedSources = setOf(ModelSource.CIVITAI),
             )
         }
     }
@@ -320,6 +325,21 @@ class ModelSearchViewModel(
     fun onRemoveIncludedTag(tag: String) {
         _uiState.update { it.copy(includedTags = it.includedTags - tag) }
         _filterState.update { it.copy(includedTags = it.includedTags - tag) }
+    }
+
+    fun toggleSource(source: ModelSource) {
+        val updater = { current: Set<ModelSource> ->
+            val updated = current.toMutableSet()
+            if (source in updated) {
+                // Don't allow deselecting all sources
+                if (updated.size > 1) updated.remove(source)
+            } else {
+                updated.add(source)
+            }
+            updated.toSet()
+        }
+        _uiState.update { it.copy(selectedSources = updater(it.selectedSources)) }
+        _filterState.update { it.copy(selectedSources = updater(it.selectedSources)) }
     }
 
     fun onAddExcludedTag(tag: String) {

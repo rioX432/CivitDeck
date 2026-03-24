@@ -9,6 +9,7 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelMode
+import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelStats
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.ModelVersion
@@ -28,6 +29,7 @@ fun ModelResponse.toDomain(): Model = Model(
     creator = creator?.toDomain(),
     stats = stats?.toDomain() ?: ModelStats(0, 0, 0, 0, 0.0),
     modelVersions = modelVersions.map { it.toDomain() },
+    source = ModelSource.CIVITAI,
 )
 
 fun ModelVersionDto.toDomain(): ModelVersion = ModelVersion(

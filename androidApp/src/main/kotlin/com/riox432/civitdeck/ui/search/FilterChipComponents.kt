@@ -43,6 +43,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.HapticFeedbackType
+import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
@@ -85,6 +86,12 @@ internal fun SortOrder.displayLabel(): String = when (this) {
 internal fun TimePeriod.displayLabel(): String = when (this) {
     TimePeriod.AllTime -> "All Time"
     else -> name
+}
+
+internal fun ModelSource.displayLabel(): String = when (this) {
+    ModelSource.CIVITAI -> "CivitAI"
+    ModelSource.HUGGING_FACE -> "HuggingFace"
+    ModelSource.TENSOR_ART -> "TensorArt"
 }
 
 @Composable

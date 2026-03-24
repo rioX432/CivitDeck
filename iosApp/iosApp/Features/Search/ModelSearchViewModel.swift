@@ -28,6 +28,7 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var ownedHashes: Set<String> = []
     @Published var favoriteIds: Set<Int64> = []
     @Published var savedFilters: [SavedSearchFilter] = []
+    @Published var selectedSources: Set<Core_domainModelSource> = [.civitai]
 
     private let getModelsUseCase: GetModelsUseCase
     private let getRecommendationsUseCase: GetRecommendationsUseCase
@@ -190,39 +191,28 @@ final class ModelSearchViewModel: ObservableObject {
         loadTask?.cancel()
         if selectedBaseModels.contains(baseModel) {
             selectedBaseModels.remove(baseModel)
-        } else {
-            selectedBaseModels.insert(baseModel)
-        }
+        } else { selectedBaseModels.insert(baseModel) }
         resetPaginationState()
         loadModels()
     }
-
     func onSortSelected(_ sort: CivitSortOrder) {
-        loadTask?.cancel()
-        selectedSort = sort
-        resetPaginationState()
-        loadModels()
+        loadTask?.cancel(); selectedSort = sort; resetPaginationState(); loadModels()
     }
-
     func onPeriodSelected(_ period: TimePeriod) {
-        loadTask?.cancel()
-        selectedPeriod = period
-        resetPaginationState()
-        loadModels()
+        loadTask?.cancel(); selectedPeriod = period; resetPaginationState(); loadModels()
     }
-
     func onFreshFindToggled() {
-        loadTask?.cancel()
-        isFreshFindEnabled.toggle()
-        resetPaginationState()
-        loadModels()
+        loadTask?.cancel(); isFreshFindEnabled.toggle(); resetPaginationState(); loadModels()
     }
-
     func onQualityFilterToggled() {
-        loadTask?.cancel()
-        isQualityFilterEnabled.toggle()
-        resetPaginationState()
-        loadModels()
+        loadTask?.cancel(); isQualityFilterEnabled.toggle(); resetPaginationState(); loadModels()
+    }
+    func toggleSource(_ source: Core_domainModelSource) {
+        if selectedSources.contains(source) {
+            guard selectedSources.count > 1 else { return }
+            selectedSources.remove(source)
+        } else { selectedSources.insert(source) }
+        reloadModels()
     }
 
     func resetFilters() {
@@ -234,6 +224,7 @@ final class ModelSearchViewModel: ObservableObject {
         isFreshFindEnabled = false
         isQualityFilterEnabled = false
         includedTags = []
+        selectedSources = [.civitai]
         resetPaginationState()
         loadModels()
     }

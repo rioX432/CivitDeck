@@ -225,7 +225,8 @@ final class ModelDetailViewModel: ObservableObject {
                     description: currentModel.description_,
                     type: currentModel.type, nsfw: currentModel.nsfw, tags: currentModel.tags,
                     mode: currentModel.mode, creator: currentModel.creator,
-                    stats: currentModel.stats, modelVersions: updatedVersions
+                    stats: currentModel.stats, modelVersions: updatedVersions,
+                    source: currentModel.source
                 )
             } catch is CancellationError {
                 return
