@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity(), KoinComponent {
                         intent.getStringExtra(EXTRA_INITIAL_ROUTE)
                     ) {
                         ROUTE_SETTINGS -> Tab.Settings
-                        else -> Tab.Search
+                        else -> Tab.Discover
                     }
                     CivitDeckNavGraph(initialTab = initialTab)
                 }

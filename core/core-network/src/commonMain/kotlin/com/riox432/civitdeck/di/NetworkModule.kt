@@ -14,11 +14,11 @@ import com.riox432.civitdeck.data.api.externalserver.createExternalServerHttpCli
 import com.riox432.civitdeck.data.api.huggingface.HuggingFaceApi
 import com.riox432.civitdeck.data.api.huggingface.HuggingFaceRepositoryImpl
 import com.riox432.civitdeck.data.api.huggingface.createHuggingFaceHttpClient
-import com.riox432.civitdeck.data.api.webui.SDWebUIApi
-import com.riox432.civitdeck.data.api.webui.createSDWebUIHttpClient
 import com.riox432.civitdeck.data.api.tensorart.TensorArtApi
 import com.riox432.civitdeck.data.api.tensorart.TensorArtRepositoryImpl
 import com.riox432.civitdeck.data.api.tensorart.createTensorArtHttpClient
+import com.riox432.civitdeck.data.api.webui.SDWebUIApi
+import com.riox432.civitdeck.data.api.webui.createSDWebUIHttpClient
 import com.riox432.civitdeck.domain.repository.HuggingFaceRepository
 import com.riox432.civitdeck.domain.repository.TensorArtRepository
 import kotlinx.serialization.json.Json
