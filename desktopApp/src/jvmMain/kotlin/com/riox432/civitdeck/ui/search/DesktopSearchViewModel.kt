@@ -1,5 +1,7 @@
 package com.riox432.civitdeck.ui.search
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelSource
@@ -8,11 +10,9 @@ import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
+import com.riox432.civitdeck.domain.util.LoadResult
+import com.riox432.civitdeck.domain.util.PaginatedLoader
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,19 +42,33 @@ class DesktopSearchViewModel(
     private val observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase,
 ) : ViewModel() {
 
-    private val scope = viewModelScope
-
     private val _uiState = MutableStateFlow(DesktopSearchUiState())
     val uiState: StateFlow<DesktopSearchUiState> = _uiState.asStateFlow()
 
-    private var searchJob: Job? = null
+    private val paginatedLoader = PaginatedLoader<Model>(
+        scope = viewModelScope,
+        pageSize = PAGE_SIZE,
+        load = { cursor, limit -> loadPage(cursor, limit) },
+        onStateChanged = { loadState ->
+            _uiState.update {
+                it.copy(
+                    models = loadState.items,
+                    isLoading = loadState.isLoading,
+                    isLoadingMore = loadState.isLoadingMore,
+                    error = loadState.error,
+                    nextCursor = loadState.nextCursor,
+                    hasMore = loadState.hasMore,
+                )
+            }
+        },
+    )
 
     init {
-        scope.launch {
+        viewModelScope.launch {
             val sort = observeDefaultSortOrderUseCase().first()
             val period = observeDefaultTimePeriodUseCase().first()
             _uiState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
-            search()
+            paginatedLoader.loadFirst()
         }
     }
 
@@ -63,23 +77,22 @@ class DesktopSearchViewModel(
     }
 
     fun onSearch() {
-        _uiState.update { it.copy(nextCursor = null, hasMore = true, models = emptyList()) }
-        search()
+        paginatedLoader.loadFirst()
     }
 
     fun onTypeSelected(type: ModelType?) {
-        _uiState.update { it.copy(selectedType = type, nextCursor = null, hasMore = true, models = emptyList()) }
-        search()
+        _uiState.update { it.copy(selectedType = type) }
+        paginatedLoader.loadFirst()
     }
 
     fun onSortSelected(sort: SortOrder) {
-        _uiState.update { it.copy(selectedSort = sort, nextCursor = null, hasMore = true, models = emptyList()) }
-        search()
+        _uiState.update { it.copy(selectedSort = sort) }
+        paginatedLoader.loadFirst()
     }
 
     fun onPeriodSelected(period: TimePeriod) {
-        _uiState.update { it.copy(selectedPeriod = period, nextCursor = null, hasMore = true, models = emptyList()) }
-        search()
+        _uiState.update { it.copy(selectedPeriod = period) }
+        paginatedLoader.loadFirst()
     }
 
     fun onBaseModelToggled(baseModel: BaseModel) {
@@ -87,9 +100,9 @@ class DesktopSearchViewModel(
             val updated = state.selectedBaseModels.toMutableSet().apply {
                 if (baseModel in this) remove(baseModel) else add(baseModel)
             }.toSet()
-            state.copy(selectedBaseModels = updated, nextCursor = null, hasMore = true, models = emptyList())
+            state.copy(selectedBaseModels = updated)
         }
-        search()
+        paginatedLoader.loadFirst()
     }
 
     fun onQualityFilterToggled() {
@@ -104,73 +117,35 @@ class DesktopSearchViewModel(
             } else {
                 updated.add(source)
             }
-            state.copy(
-                selectedSources = updated.toSet(),
-                nextCursor = null,
-                hasMore = true,
-                models = emptyList(),
-            )
+            state.copy(selectedSources = updated.toSet())
         }
-        search()
+        paginatedLoader.loadFirst()
     }
 
     fun resetFilters() {
-        _uiState.update {
-            DesktopSearchUiState()
-        }
-        search()
+        _uiState.update { DesktopSearchUiState() }
+        paginatedLoader.loadFirst()
     }
 
     fun loadMore() {
+        paginatedLoader.loadMore()
+    }
+
+    private suspend fun loadPage(cursor: String?, limit: Int): LoadResult<Model> {
         val state = _uiState.value
-        if (state.isLoading || state.isLoadingMore || !state.hasMore) return
-        search(isLoadMore = true)
-    }
-
-    private fun search(isLoadMore: Boolean = false) {
-        searchJob?.cancel()
-        searchJob = scope.launch {
-            _uiState.update {
-                if (isLoadMore) it.copy(isLoadingMore = true)
-                else it.copy(isLoading = true, error = null)
-            }
-            try {
-                val state = _uiState.value
-                val result = getModelsUseCase(
-                    query = state.query.ifBlank { null },
-                    type = state.selectedType,
-                    sort = state.selectedSort,
-                    period = state.selectedPeriod,
-                    baseModels = state.selectedBaseModels.toList().ifEmpty { null },
-                    cursor = if (isLoadMore) state.nextCursor else null,
-                    limit = PAGE_SIZE,
-                )
-                _uiState.update {
-                    it.copy(
-                        models = if (isLoadMore) it.models + result.items else result.items,
-                        isLoading = false,
-                        isLoadingMore = false,
-                        error = null,
-                        nextCursor = result.metadata.nextCursor,
-                        hasMore = result.metadata.nextCursor != null,
-                    )
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        isLoadingMore = false,
-                        error = e.message ?: "Unknown error",
-                    )
-                }
-            }
-        }
-    }
-
-    public override fun onCleared() {
-        super.onCleared()
+        val result = getModelsUseCase(
+            query = state.query.ifBlank { null },
+            type = state.selectedType,
+            sort = state.selectedSort,
+            period = state.selectedPeriod,
+            baseModels = state.selectedBaseModels.toList().ifEmpty { null },
+            cursor = cursor,
+            limit = limit,
+        )
+        return LoadResult(
+            items = result.items,
+            nextCursor = result.metadata.nextCursor,
+        )
     }
 
     companion object {

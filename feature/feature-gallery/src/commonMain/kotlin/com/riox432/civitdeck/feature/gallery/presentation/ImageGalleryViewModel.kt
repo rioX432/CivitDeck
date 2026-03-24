@@ -14,9 +14,9 @@ import com.riox432.civitdeck.domain.usecase.AutoSavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
+import com.riox432.civitdeck.domain.util.LoadResult
+import com.riox432.civitdeck.domain.util.PaginatedLoader
 import com.riox432.civitdeck.feature.gallery.domain.usecase.GetImagesUseCase
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,12 +53,28 @@ class ImageGalleryViewModel(
     private val _uiState = MutableStateFlow(ImageGalleryUiState())
     val uiState: StateFlow<ImageGalleryUiState> = _uiState.asStateFlow()
 
-    private var loadJob: Job? = null
+    private val paginatedLoader = PaginatedLoader<Image>(
+        scope = viewModelScope,
+        pageSize = PAGE_SIZE,
+        load = { cursor, limit -> loadPage(cursor, limit) },
+        onStateChanged = { loadState ->
+            _uiState.update {
+                it.copy(
+                    allImages = loadState.items,
+                    isLoading = loadState.isLoading,
+                    isLoadingMore = loadState.isLoadingMore,
+                    error = loadState.error,
+                    nextCursor = loadState.nextCursor,
+                    hasMore = loadState.hasMore,
+                )
+            }
+        },
+    )
 
     init {
         observeNsfwFilter()
         observeBlurSettings()
-        loadImages()
+        paginatedLoader.loadFirst()
     }
 
     private fun observeBlurSettings() {
@@ -75,40 +91,20 @@ class ImageGalleryViewModel(
                 val prev = _uiState.value.nsfwFilterLevel
                 _uiState.update { it.copy(nsfwFilterLevel = level) }
                 if (prev != level) {
-                    loadJob?.cancel()
-                    _uiState.update {
-                        it.copy(nextCursor = null, allImages = emptyList(), hasMore = true)
-                    }
-                    loadImages()
+                    paginatedLoader.loadFirst()
                 }
             }
         }
     }
 
     fun onSortSelected(sort: SortOrder) {
-        loadJob?.cancel()
-        _uiState.update {
-            it.copy(
-                selectedSort = sort,
-                nextCursor = null,
-                allImages = emptyList(),
-                hasMore = true,
-            )
-        }
-        loadImages()
+        _uiState.update { it.copy(selectedSort = sort) }
+        paginatedLoader.loadFirst()
     }
 
     fun onPeriodSelected(period: TimePeriod) {
-        loadJob?.cancel()
-        _uiState.update {
-            it.copy(
-                selectedPeriod = period,
-                nextCursor = null,
-                allImages = emptyList(),
-                hasMore = true,
-            )
-        }
-        loadImages()
+        _uiState.update { it.copy(selectedPeriod = period) }
+        paginatedLoader.loadFirst()
     }
 
     fun onAspectRatioSelected(filter: AspectRatioFilter?) {
@@ -116,9 +112,7 @@ class ImageGalleryViewModel(
     }
 
     fun loadMore() {
-        val state = _uiState.value
-        if (state.isLoading || state.isLoadingMore || !state.hasMore) return
-        loadImages(isLoadMore = true)
+        paginatedLoader.loadMore()
     }
 
     fun onImageSelected(index: Int) {
@@ -140,7 +134,7 @@ class ImageGalleryViewModel(
     }
 
     fun retry() {
-        loadImages()
+        paginatedLoader.loadFirst()
     }
 
     fun savePrompt(meta: ImageGenerationMeta, sourceImageUrl: String?) {
@@ -149,52 +143,25 @@ class ImageGalleryViewModel(
         }
     }
 
-    private fun loadImages(isLoadMore: Boolean = false) {
-        loadJob = viewModelScope.launch {
-            _uiState.update {
-                if (isLoadMore) {
-                    it.copy(isLoadingMore = true)
-                } else {
-                    it.copy(isLoading = true)
-                }
-            }
-            try {
-                val state = _uiState.value
-                val nsfwLevel = when (state.nsfwFilterLevel) {
-                    NsfwFilterLevel.Off -> NsfwLevel.None
-                    NsfwFilterLevel.Soft -> NsfwLevel.Soft
-                    NsfwFilterLevel.All -> null
-                }
-                val result = getImagesUseCase(
-                    modelVersionId = modelVersionId,
-                    sort = state.selectedSort,
-                    period = state.selectedPeriod,
-                    nsfwLevel = nsfwLevel,
-                    cursor = if (isLoadMore) state.nextCursor else null,
-                    limit = PAGE_SIZE,
-                )
-                _uiState.update {
-                    it.copy(
-                        allImages = if (isLoadMore) it.allImages + result.items else result.items,
-                        isLoading = false,
-                        isLoadingMore = false,
-                        error = null,
-                        nextCursor = result.metadata.nextCursor,
-                        hasMore = result.metadata.nextCursor != null,
-                    )
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        isLoadingMore = false,
-                        error = e.message ?: "Unknown error",
-                    )
-                }
-            }
+    private suspend fun loadPage(cursor: String?, limit: Int): LoadResult<Image> {
+        val state = _uiState.value
+        val nsfwLevel = when (state.nsfwFilterLevel) {
+            NsfwFilterLevel.Off -> NsfwLevel.None
+            NsfwFilterLevel.Soft -> NsfwLevel.Soft
+            NsfwFilterLevel.All -> null
         }
+        val result = getImagesUseCase(
+            modelVersionId = modelVersionId,
+            sort = state.selectedSort,
+            period = state.selectedPeriod,
+            nsfwLevel = nsfwLevel,
+            cursor = cursor,
+            limit = limit,
+        )
+        return LoadResult(
+            items = result.items,
+            nextCursor = result.metadata.nextCursor,
+        )
     }
 
     companion object {

@@ -6,9 +6,9 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.usecase.FollowCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.IsFollowingCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.UnfollowCreatorUseCase
+import com.riox432.civitdeck.domain.util.LoadResult
+import com.riox432.civitdeck.domain.util.PaginatedLoader
 import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,23 +38,36 @@ class CreatorProfileViewModel(
     private val _uiState = MutableStateFlow(CreatorProfileUiState(username = username))
     val uiState: StateFlow<CreatorProfileUiState> = _uiState.asStateFlow()
 
-    private var loadJob: Job? = null
+    private val paginatedLoader = PaginatedLoader<Model>(
+        scope = viewModelScope,
+        pageSize = PAGE_SIZE,
+        load = { cursor, limit -> loadPage(cursor, limit) },
+        onStateChanged = { loadState ->
+            _uiState.update {
+                it.copy(
+                    models = loadState.items,
+                    isLoading = loadState.isLoading,
+                    isLoadingMore = loadState.isLoadingMore,
+                    error = loadState.error,
+                    nextCursor = loadState.nextCursor,
+                    hasMore = loadState.hasMore,
+                )
+            }
+        },
+    )
 
     init {
-        loadModels()
+        paginatedLoader.loadFirst()
         observeFollowState()
     }
 
     fun loadMore() {
-        val state = _uiState.value
-        if (state.isLoading || state.isLoadingMore || !state.hasMore) return
-        loadModels(isLoadMore = true)
+        paginatedLoader.loadMore()
     }
 
     fun refresh() {
-        loadJob?.cancel()
-        _uiState.update { it.copy(nextCursor = null, hasMore = true) }
-        loadModels(isRefresh = true)
+        _uiState.update { it.copy(isRefreshing = true) }
+        paginatedLoader.loadFirst()
     }
 
     fun toggleFollow() {
@@ -81,46 +94,18 @@ class CreatorProfileViewModel(
         }
     }
 
-    private fun loadModels(isLoadMore: Boolean = false, isRefresh: Boolean = false) {
-        loadJob = viewModelScope.launch {
-            _uiState.update {
-                when {
-                    isLoadMore -> it.copy(isLoadingMore = true)
-                    isRefresh -> it.copy(isRefreshing = true)
-                    else -> it.copy(isLoading = true)
-                }
-            }
-            try {
-                val state = _uiState.value
-                val result = getCreatorModelsUseCase(
-                    username = username,
-                    cursor = if (isLoadMore) state.nextCursor else null,
-                    limit = PAGE_SIZE,
-                )
-                _uiState.update {
-                    it.copy(
-                        models = if (isLoadMore) it.models + result.items else result.items,
-                        isLoading = false,
-                        isLoadingMore = false,
-                        isRefreshing = false,
-                        error = null,
-                        nextCursor = result.metadata.nextCursor,
-                        hasMore = result.metadata.nextCursor != null,
-                    )
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        isLoadingMore = false,
-                        isRefreshing = false,
-                        error = e.message ?: "Unknown error",
-                    )
-                }
-            }
-        }
+    private suspend fun loadPage(cursor: String?, limit: Int): LoadResult<Model> {
+        val result = getCreatorModelsUseCase(
+            username = username,
+            cursor = cursor,
+            limit = limit,
+        )
+        // Clear refreshing flag when load completes
+        _uiState.update { it.copy(isRefreshing = false) }
+        return LoadResult(
+            items = result.items,
+            nextCursor = result.metadata.nextCursor,
+        )
     }
 
     companion object {
