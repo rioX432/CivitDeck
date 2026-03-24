@@ -51,25 +51,7 @@ class DatasetCollectionRepositoryImpl(
 
     override fun observeImages(datasetId: Long): Flow<List<DatasetImage>> =
         dao.observeImages(datasetId).map { entities ->
-            entities.map { entity ->
-                val tags = metaDao.getTagsForImage(entity.id).map { ImageTag(it.id, it.datasetImageId, it.tag) }
-                val caption = metaDao.getCaption(entity.id)?.let { Caption(it.datasetImageId, it.text) }
-                DatasetImage(
-                    id = entity.id,
-                    datasetId = entity.datasetId,
-                    imageUrl = entity.imageUrl,
-                    sourceType = ImageSource.valueOf(entity.sourceType),
-                    trainable = entity.trainable,
-                    addedAt = entity.addedAt,
-                    tags = tags,
-                    caption = caption,
-                    licenseNote = entity.licenseNote,
-                    pHash = entity.pHash,
-                    excluded = entity.excluded,
-                    width = entity.width,
-                    height = entity.height,
-                )
-            }
+            entities.map { it.toDomain() }
         }
 
     override suspend fun addImage(
@@ -111,26 +93,7 @@ class DatasetCollectionRepositoryImpl(
     }
 
     override suspend fun getNonTrainableImages(datasetId: Long): List<DatasetImage> {
-        val entities = dao.getNonTrainableImages(datasetId)
-        return entities.map { entity ->
-            val tags = metaDao.getTagsForImage(entity.id).map { ImageTag(it.id, it.datasetImageId, it.tag) }
-            val caption = metaDao.getCaption(entity.id)?.let { Caption(it.datasetImageId, it.text) }
-            DatasetImage(
-                id = entity.id,
-                datasetId = entity.datasetId,
-                imageUrl = entity.imageUrl,
-                sourceType = ImageSource.valueOf(entity.sourceType),
-                trainable = entity.trainable,
-                addedAt = entity.addedAt,
-                tags = tags,
-                caption = caption,
-                licenseNote = entity.licenseNote,
-                pHash = entity.pHash,
-                excluded = entity.excluded,
-                width = entity.width,
-                height = entity.height,
-            )
-        }
+        return dao.getNonTrainableImages(datasetId).map { it.toDomain() }
     }
 
     override suspend fun updatePHash(imageId: Long, pHash: String?) {
@@ -143,5 +106,25 @@ class DatasetCollectionRepositoryImpl(
 
     override suspend fun updateDimensions(imageId: Long, width: Int, height: Int) {
         dao.updateDimensions(imageId, width, height)
+    }
+
+    private suspend fun DatasetImageEntity.toDomain(): DatasetImage {
+        val tags = metaDao.getTagsForImage(id).map { ImageTag(it.id, it.datasetImageId, it.tag) }
+        val caption = metaDao.getCaption(id)?.let { Caption(it.datasetImageId, it.text) }
+        return DatasetImage(
+            id = id,
+            datasetId = datasetId,
+            imageUrl = imageUrl,
+            sourceType = ImageSource.valueOf(sourceType),
+            trainable = trainable,
+            addedAt = addedAt,
+            tags = tags,
+            caption = caption,
+            licenseNote = licenseNote,
+            pHash = pHash,
+            excluded = excluded,
+            width = width,
+            height = height,
+        )
     }
 }
