@@ -366,7 +366,7 @@ private fun UserPreferencesEntity.toDto() = UserPreferencesDto(
 private fun SavedSearchFilterEntity.toDto() = SavedSearchFilterDto(
     name, query, selectedType, selectedSort, selectedPeriod,
     selectedBaseModels, nsfwFilterLevel, isFreshFindEnabled,
-    excludedTags, includedTags, savedAt,
+    excludedTags, includedTags, selectedSources, savedAt,
 )
 
 private fun FollowedCreatorEntity.toDto() = FollowedCreatorDto(
@@ -451,7 +451,7 @@ private fun SavedSearchFilterDto.toEntity() = SavedSearchFilterEntity(
     selectedSort = selectedSort, selectedPeriod = selectedPeriod,
     selectedBaseModels = selectedBaseModels, nsfwFilterLevel = nsfwFilterLevel,
     isFreshFindEnabled = isFreshFindEnabled, excludedTags = excludedTags,
-    includedTags = includedTags, savedAt = savedAt,
+    includedTags = includedTags, selectedSources = selectedSources, savedAt = savedAt,
 )
 
 private fun FollowedCreatorDto.toEntity() = FollowedCreatorEntity(
