@@ -7,21 +7,30 @@ import android.os.Environment
 import android.provider.MediaStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.File
-import java.net.URL
 
 object ImageDownloader {
+
+    private val httpClient = OkHttpClient()
 
     suspend fun download(context: Context, imageUrl: String): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                val bytes = URL(imageUrl).readBytes()
+                val bytes = downloadBytes(imageUrl) ?: return@withContext false
                 val fileName = extractFileName(imageUrl)
                 saveToGallery(context, fileName, bytes)
             } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
                 false
             }
         }
+
+    private fun downloadBytes(url: String): ByteArray? {
+        val request = Request.Builder().url(url).build()
+        val response = httpClient.newCall(request).execute()
+        return response.body?.bytes()
+    }
 
     private fun extractFileName(url: String): String {
         val path = url.substringBefore("?").substringAfterLast("/")
@@ -76,9 +85,9 @@ object ImageDownloader {
         }
     }
 
-    // TODO: Remove this fallback when minSdk is raised to 29 (Q).
-    //  MediaStore with RELATIVE_PATH/IS_PENDING requires API 29+,
-    //  so pre-Q devices (API 24-28) still need the legacy file API.
+    // Legacy fallback for API 24–28 (pre-Q). Uses the deprecated
+    // getExternalStoragePublicDirectory because MediaStore RELATIVE_PATH/IS_PENDING
+    // requires API 29+. Safe to remove once minSdk is raised to 29.
     @Suppress("DEPRECATION")
     private fun saveToExternalStorage(fileName: String, bytes: ByteArray): Boolean {
         return try {
