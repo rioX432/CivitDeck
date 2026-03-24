@@ -11,10 +11,6 @@ class AddSearchHistoryUseCase(private val repository: SearchHistoryRepository) {
     suspend operator fun invoke(query: String) = repository.addSearch(query)
 }
 
-class ClearSearchHistoryUseCase(private val repository: SearchHistoryRepository) {
-    suspend operator fun invoke() = repository.clearAll()
-}
-
 class DeleteSearchHistoryItemUseCase(private val repository: SearchHistoryRepository) {
     suspend operator fun invoke(query: String) = repository.deleteSearch(query)
 }

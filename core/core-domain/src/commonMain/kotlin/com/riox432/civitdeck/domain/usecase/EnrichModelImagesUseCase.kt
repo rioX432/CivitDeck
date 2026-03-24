@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.feature.gallery.domain.usecase
+package com.riox432.civitdeck.domain.usecase
 
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.repository.ModelRepository

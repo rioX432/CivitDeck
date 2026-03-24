@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.search.domain.usecase
 
 import com.riox432.civitdeck.domain.repository.SearchHistoryRepository
+import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first

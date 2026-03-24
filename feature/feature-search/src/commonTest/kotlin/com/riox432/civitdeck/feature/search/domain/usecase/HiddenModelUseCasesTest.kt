@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.search.domain.usecase
 
 import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.repository.HiddenModelRepository
+import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

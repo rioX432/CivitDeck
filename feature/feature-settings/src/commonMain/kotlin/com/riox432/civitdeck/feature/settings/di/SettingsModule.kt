@@ -5,10 +5,13 @@ import com.riox432.civitdeck.domain.repository.AuthPreferencesRepository
 import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
 import com.riox432.civitdeck.domain.repository.DisplayPreferencesRepository
 import com.riox432.civitdeck.domain.repository.StoragePreferencesRepository
+import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
+import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
 import com.riox432.civitdeck.domain.usecase.GetCacheInfoUseCase
+import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
@@ -27,6 +30,7 @@ import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveThemeModeUseCase
+import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.SetAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.SetAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
@@ -43,12 +47,8 @@ import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetQualityThresholdUseCase
 import com.riox432.civitdeck.domain.usecase.SetThemeModeUseCase
+import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.AddExcludedTagUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.ClearSearchHistoryUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.GetExcludedTagsUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.RemoveExcludedTagUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.feature.settings.data.repository.UserPreferencesRepositoryImpl
 import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
