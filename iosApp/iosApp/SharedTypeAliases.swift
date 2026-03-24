@@ -228,27 +228,27 @@ enum ReviewSortOrder: CaseIterable {
     case newest, highestRated, lowestRated
 }
 
-// MARK: - Feature: Collections
+// MARK: - Feature: Collections (shared use cases in core-domain)
 
-typealias AddModelToCollectionUseCase = Feature_collectionsAddModelToCollectionUseCase
+typealias AddModelToCollectionUseCase = Core_domainAddModelToCollectionUseCase
 typealias BulkMoveModelsUseCase = Feature_collectionsBulkMoveModelsUseCase
 typealias BulkRemoveModelsUseCase = Feature_collectionsBulkRemoveModelsUseCase
-typealias CreateCollectionUseCase = Feature_collectionsCreateCollectionUseCase
+typealias CreateCollectionUseCase = Core_domainCreateCollectionUseCase
 typealias DeleteCollectionUseCase = Feature_collectionsDeleteCollectionUseCase
 typealias ObserveCollectionModelsUseCase = Feature_collectionsObserveCollectionModelsUseCase
-typealias ObserveCollectionsUseCase = Feature_collectionsObserveCollectionsUseCase
-typealias ObserveModelCollectionsUseCase = Feature_collectionsObserveModelCollectionsUseCase
-typealias RemoveModelFromCollectionUseCase = Feature_collectionsRemoveModelFromCollectionUseCase
+typealias ObserveCollectionsUseCase = Core_domainObserveCollectionsUseCase
+typealias ObserveModelCollectionsUseCase = Core_domainObserveModelCollectionsUseCase
+typealias RemoveModelFromCollectionUseCase = Core_domainRemoveModelFromCollectionUseCase
 typealias RenameCollectionUseCase = Feature_collectionsRenameCollectionUseCase
 
-// MARK: - Feature: Search
+// MARK: - Feature: Search (shared use cases in core-domain)
 
-typealias AddExcludedTagUseCase = Feature_searchAddExcludedTagUseCase
+typealias AddExcludedTagUseCase = Core_domainAddExcludedTagUseCase
 typealias AddSearchHistoryUseCase = Feature_searchAddSearchHistoryUseCase
-typealias ClearSearchHistoryUseCase = Feature_searchClearSearchHistoryUseCase
+typealias ClearSearchHistoryUseCase = Core_domainClearSearchHistoryUseCase
 typealias DeleteSearchHistoryItemUseCase = Feature_searchDeleteSearchHistoryItemUseCase
 typealias GetDiscoveryModelsUseCase = Feature_searchGetDiscoveryModelsUseCase
-typealias GetExcludedTagsUseCase = Feature_searchGetExcludedTagsUseCase
+typealias GetExcludedTagsUseCase = Core_domainGetExcludedTagsUseCase
 typealias GetHiddenModelIdsUseCase = Feature_searchGetHiddenModelIdsUseCase
 typealias GetModelsUseCase = Feature_searchGetModelsUseCase
 typealias GetRecommendationsUseCase = Feature_searchGetRecommendationsUseCase
@@ -256,22 +256,22 @@ typealias DeleteSavedSearchFilterUseCase = Feature_searchDeleteSavedSearchFilter
 typealias HideModelUseCase = Feature_searchHideModelUseCase
 typealias ObserveSavedSearchFiltersUseCase = Feature_searchObserveSavedSearchFiltersUseCase
 typealias ObserveSearchHistoryUseCase = Feature_searchObserveSearchHistoryUseCase
-typealias RemoveExcludedTagUseCase = Feature_searchRemoveExcludedTagUseCase
+typealias RemoveExcludedTagUseCase = Core_domainRemoveExcludedTagUseCase
 typealias SaveSearchFilterUseCase = Feature_searchSaveSearchFilterUseCase
-typealias UnhideModelUseCase = Feature_searchUnhideModelUseCase
+typealias UnhideModelUseCase = Core_domainUnhideModelUseCase
 
-// MARK: - Feature: Gallery
+// MARK: - Feature: Gallery (shared use cases in core-domain)
 
-typealias EnrichModelImagesUseCase = Feature_galleryEnrichModelImagesUseCase
+typealias EnrichModelImagesUseCase = Core_domainEnrichModelImagesUseCase
 typealias GetImagesUseCase = Feature_galleryGetImagesUseCase
 
-// MARK: - Feature: Prompts
+// MARK: - Feature: Prompts (shared use cases in core-domain)
 
-typealias AutoSavePromptUseCase = Feature_promptsAutoSavePromptUseCase
+typealias AutoSavePromptUseCase = Core_domainAutoSavePromptUseCase
 typealias DeleteSavedPromptUseCase = Feature_promptsDeleteSavedPromptUseCase
 typealias ObserveSavedPromptsUseCase = Feature_promptsObserveSavedPromptsUseCase
 typealias ObserveTemplatesUseCase = Feature_promptsObserveTemplatesUseCase
-typealias SavePromptUseCase = Feature_promptsSavePromptUseCase
+typealias SavePromptUseCase = Core_domainSavePromptUseCase
 typealias SearchSavedPromptsUseCase = Feature_promptsSearchSavedPromptsUseCase
 typealias ToggleTemplateUseCase = Feature_promptsToggleTemplateUseCase
 

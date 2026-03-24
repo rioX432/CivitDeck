@@ -5,7 +5,6 @@ import com.riox432.civitdeck.domain.model.SavedPrompt
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
 import com.riox432.civitdeck.feature.prompts.domain.usecase.DeleteSavedPromptUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveSavedPromptsUseCase
-import com.riox432.civitdeck.feature.prompts.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.testSavedPrompt
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

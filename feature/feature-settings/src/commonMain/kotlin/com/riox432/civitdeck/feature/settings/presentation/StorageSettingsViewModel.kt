@@ -6,6 +6,7 @@ import com.riox432.civitdeck.domain.model.CacheInfo
 import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ClearCacheUseCase
+import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
 import com.riox432.civitdeck.domain.usecase.GetCacheInfoUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
@@ -14,8 +15,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveNetworkStatusUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOfflineCacheEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.SetOfflineCacheEnabledUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.ClearSearchHistoryUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.UnhideModelUseCase
+import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

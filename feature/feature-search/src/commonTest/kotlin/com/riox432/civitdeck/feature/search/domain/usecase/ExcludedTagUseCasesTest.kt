@@ -1,6 +1,9 @@
 package com.riox432.civitdeck.feature.search.domain.usecase
 
 import com.riox432.civitdeck.domain.repository.ExcludedTagRepository
+import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
+import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
+import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -10,7 +10,3 @@ class HideModelUseCase(private val repository: HiddenModelRepository) {
     suspend operator fun invoke(modelId: Long, modelName: String) =
         repository.hideModel(modelId, modelName)
 }
-
-class UnhideModelUseCase(private val repository: HiddenModelRepository) {
-    suspend operator fun invoke(modelId: Long) = repository.unhideModel(modelId)
-}

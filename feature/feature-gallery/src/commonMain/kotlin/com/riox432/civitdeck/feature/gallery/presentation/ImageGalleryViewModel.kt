@@ -10,11 +10,11 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.domain.usecase.AutoSavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.feature.gallery.domain.usecase.GetImagesUseCase
-import com.riox432.civitdeck.feature.prompts.domain.usecase.AutoSavePromptUseCase
-import com.riox432.civitdeck.feature.prompts.domain.usecase.SavePromptUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow

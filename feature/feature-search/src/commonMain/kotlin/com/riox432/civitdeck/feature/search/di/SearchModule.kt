@@ -8,13 +8,10 @@ import com.riox432.civitdeck.feature.search.data.repository.ExcludedTagRepositor
 import com.riox432.civitdeck.feature.search.data.repository.HiddenModelRepositoryImpl
 import com.riox432.civitdeck.feature.search.data.repository.SavedSearchFilterRepositoryImpl
 import com.riox432.civitdeck.feature.search.data.repository.SearchHistoryRepositoryImpl
-import com.riox432.civitdeck.feature.search.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSavedSearchFilterUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSearchHistoryItemUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetDiscoveryModelsUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
@@ -22,9 +19,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.UnhideModelUseCase
 import org.koin.dsl.module
 
 val searchModule = module {
@@ -41,14 +36,9 @@ val searchModule = module {
     factory { GetRecommendationsUseCase(get(), get(), get(), get()) }
     factory { ObserveSearchHistoryUseCase(get()) }
     factory { AddSearchHistoryUseCase(get()) }
-    factory { ClearSearchHistoryUseCase(get()) }
     factory { DeleteSearchHistoryItemUseCase(get()) }
-    factory { GetExcludedTagsUseCase(get()) }
-    factory { AddExcludedTagUseCase(get()) }
-    factory { RemoveExcludedTagUseCase(get()) }
     factory { GetHiddenModelIdsUseCase(get()) }
     factory { HideModelUseCase(get()) }
-    factory { UnhideModelUseCase(get()) }
     factory { ObserveSavedSearchFiltersUseCase(get()) }
     factory { SaveSearchFilterUseCase(get()) }
     factory { DeleteSavedSearchFilterUseCase(get()) }
