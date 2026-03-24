@@ -41,14 +41,11 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
-import com.riox432.civitdeck.feature.comfyui.presentation.ModelFileBrowserViewModel
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
-import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserScreen
 import com.riox432.civitdeck.ui.search.ModelSearchScreen
-import com.riox432.civitdeck.ui.settings.LicensesScreen
 import com.riox432.civitdeck.ui.settings.SettingsScreen
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -266,16 +263,6 @@ private fun CivitDeckNavDisplay(
                 )
             }
             settingsSubScreenEntries(backStack)
-            entry<LicensesRoute> {
-                LicensesScreen(onBack = { backStack.removeLastOrNull() })
-            }
-            entry<ModelFileBrowserRoute> {
-                val viewModel: ModelFileBrowserViewModel = koinViewModel()
-                ModelFileBrowserScreen(
-                    viewModel = viewModel,
-                    onBack = { backStack.removeLastOrNull() },
-                )
-            }
             comfyUIEntries(backStack)
             externalServerEntries(backStack)
         },
