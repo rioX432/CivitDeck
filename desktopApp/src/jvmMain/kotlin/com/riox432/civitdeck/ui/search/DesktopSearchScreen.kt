@@ -99,6 +99,7 @@ fun DesktopSearchScreen(
             onPeriodSelected = viewModel::onPeriodSelected,
             onBaseModelToggled = viewModel::onBaseModelToggled,
             onQualityFilterToggled = viewModel::onQualityFilterToggled,
+            onSourceToggled = viewModel::toggleSource,
             onResetFilters = viewModel::resetFilters,
         )
 

@@ -32,6 +32,17 @@ enum SearchFilter {
     }
 }
 
+extension Core_domainModelSource {
+    var displayLabel: String {
+        switch self {
+        case .civitai: return "CivitAI"
+        case .huggingFace: return "HuggingFace"
+        case .tensorArt: return "TensorArt"
+        default: return name
+        }
+    }
+}
+
 struct HeaderHeightPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {

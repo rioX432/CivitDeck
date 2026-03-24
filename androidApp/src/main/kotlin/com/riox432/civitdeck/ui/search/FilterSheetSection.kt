@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.BaseModel
+import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
@@ -44,6 +45,7 @@ internal fun countActiveFilters(uiState: ModelSearchUiState): Int {
     if (uiState.isQualityFilterEnabled) count++
     if (uiState.includedTags.isNotEmpty()) count++
     if (uiState.excludedTags.isNotEmpty()) count++
+    if (uiState.selectedSources != setOf(ModelSource.CIVITAI)) count++
     return count
 }
 
@@ -66,6 +68,7 @@ internal fun FilterBottomSheet(
     onRemoveIncludedTag: (String) -> Unit,
     onAddExcludedTag: (String) -> Unit,
     onRemoveExcludedTag: (String) -> Unit,
+    onSourceToggled: (ModelSource) -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -89,6 +92,7 @@ internal fun FilterBottomSheet(
             onRemoveIncludedTag = onRemoveIncludedTag,
             onAddExcludedTag = onAddExcludedTag,
             onRemoveExcludedTag = onRemoveExcludedTag,
+            onSourceToggled = onSourceToggled,
         )
     }
 }
@@ -111,6 +115,7 @@ private fun FilterSheetContent(
     onRemoveIncludedTag: (String) -> Unit,
     onAddExcludedTag: (String) -> Unit,
     onRemoveExcludedTag: (String) -> Unit,
+    onSourceToggled: (ModelSource) -> Unit,
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
@@ -126,6 +131,7 @@ private fun FilterSheetContent(
                 },
             )
         }
+        filterSourceSection(uiState, onSourceToggled)
         filterModelSections(uiState, onTypeSelected, onBaseModelToggled)
         filterSortSections(uiState, onSortSelected, onPeriodSelected)
         filterToggleSections(uiState, onFreshFindToggled, onQualityFilterToggled)
@@ -136,6 +142,44 @@ private fun FilterSheetContent(
             onAddExcludedTag,
             onRemoveExcludedTag,
         )
+    }
+}
+
+private fun androidx.compose.foundation.lazy.LazyListScope.filterSourceSection(
+    uiState: ModelSearchUiState,
+    onSourceToggled: (ModelSource) -> Unit,
+) {
+    item {
+        SourceFilterSection(
+            selectedSources = uiState.selectedSources,
+            onSourceToggled = onSourceToggled,
+        )
+    }
+    item { HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg)) }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SourceFilterSection(
+    selectedSources: Set<ModelSource>,
+    onSourceToggled: (ModelSource) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        FilterSectionHeader("Source", "(multiple)")
+        FlowRow(
+            modifier = Modifier.padding(horizontal = Spacing.lg),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            ModelSource.entries.forEach { source ->
+                FilterChipItem(
+                    label = source.displayLabel(),
+                    isSelected = source in selectedSources,
+                    onClick = { onSourceToggled(source) },
+                    showCheckmark = true,
+                )
+            }
+        }
     }
 }
 

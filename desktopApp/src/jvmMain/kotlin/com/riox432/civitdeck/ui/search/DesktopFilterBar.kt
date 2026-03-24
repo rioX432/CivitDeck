@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.BaseModel
+import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
@@ -27,6 +28,7 @@ fun DesktopFilterBar(
     onPeriodSelected: (TimePeriod) -> Unit,
     onBaseModelToggled: (BaseModel) -> Unit,
     onQualityFilterToggled: () -> Unit,
+    onSourceToggled: (ModelSource) -> Unit,
     onResetFilters: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -35,6 +37,14 @@ fun DesktopFilterBar(
         horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
         verticalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
+        // Source filter chips
+        ModelSource.entries.forEach { source ->
+            TypeChip(
+                label = source.displayLabel(),
+                selected = source in uiState.selectedSources,
+            ) { onSourceToggled(source) }
+        }
+
         // Type filter chips
         TypeChip(label = "All", selected = uiState.selectedType == null) {
             onTypeSelected(null)
@@ -129,4 +139,10 @@ private fun SortOrder.displayLabel(): String = when (this) {
 private fun TimePeriod.displayLabel(): String = when (this) {
     TimePeriod.AllTime -> "All Time"
     else -> name
+}
+
+private fun ModelSource.displayLabel(): String = when (this) {
+    ModelSource.CIVITAI -> "CivitAI"
+    ModelSource.HUGGING_FACE -> "HuggingFace"
+    ModelSource.TENSOR_ART -> "TensorArt"
 }

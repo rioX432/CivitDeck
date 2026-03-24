@@ -234,6 +234,7 @@ private fun SearchScreenBody(
             onRemoveIncludedTag = viewModel::onRemoveIncludedTag,
             onAddExcludedTag = viewModel::onAddExcludedTag,
             onRemoveExcludedTag = viewModel::onRemoveExcludedTag,
+            onSourceToggled = viewModel::toggleSource,
         )
     }
     if (showSavedFiltersSheet) {

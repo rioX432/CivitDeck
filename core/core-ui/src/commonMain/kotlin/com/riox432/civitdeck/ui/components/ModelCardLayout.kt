@@ -26,10 +26,12 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.IconSize
@@ -161,16 +163,22 @@ private fun ModelCardInfoSection(model: Model, isOwned: Boolean = false) {
             }
         }
 
-        Text(
-            text = model.type.name,
-            style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier
-                .background(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(CornerRadius.chip),
-                )
-                .padding(horizontal = 6.dp, vertical = 2.dp),
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = model.type.name,
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(CornerRadius.chip),
+                    )
+                    .padding(horizontal = 6.dp, vertical = 2.dp),
+            )
+            SourceBadge(source = model.source)
+        }
 
         ModelStatsRow(
             downloadCount = model.stats.downloadCount,
@@ -178,4 +186,25 @@ private fun ModelCardInfoSection(model: Model, isOwned: Boolean = false) {
             rating = model.stats.rating,
         )
     }
+}
+
+@Composable
+private fun SourceBadge(source: ModelSource) {
+    if (source == ModelSource.CIVITAI) return
+    val (label, color) = when (source) {
+        ModelSource.HUGGING_FACE -> "HF" to Color(0xFFFF9D00)
+        ModelSource.TENSOR_ART -> "TA" to Color(0xFF9C27B0)
+        ModelSource.CIVITAI -> return
+    }
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall,
+        color = Color.White,
+        modifier = Modifier
+            .background(
+                color = color,
+                shape = RoundedCornerShape(CornerRadius.chip),
+            )
+            .padding(horizontal = 6.dp, vertical = 2.dp),
+    )
 }

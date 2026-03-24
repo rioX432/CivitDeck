@@ -24,12 +24,15 @@ struct ModelCardView: View {
                     }
                 }
 
-                Text(model.type.name)
-                    .font(.civitLabelSmall)
-                    .padding(.horizontal, Spacing.xsPlus)
-                    .padding(.vertical, Spacing.xxs)
-                    .background(Color.civitSurfaceVariant)
-                    .clipShape(Capsule())
+                HStack(spacing: Spacing.xs) {
+                    Text(model.type.name)
+                        .font(.civitLabelSmall)
+                        .padding(.horizontal, Spacing.xsPlus)
+                        .padding(.vertical, Spacing.xxs)
+                        .background(Color.civitSurfaceVariant)
+                        .clipShape(Capsule())
+                    SourceBadgeView(source: model.source)
+                }
 
                 statsRow
             }
@@ -53,5 +56,37 @@ struct ModelCardView: View {
             favoriteCount: model.stats.favoriteCount,
             rating: model.stats.rating
         )
+    }
+}
+
+struct SourceBadgeView: View {
+    let source: Core_domainModelSource
+
+    var body: some View {
+        if source != .civitai {
+            Text(badgeLabel)
+                .font(.civitLabelXSmall)
+                .foregroundColor(.white)
+                .padding(.horizontal, Spacing.xsPlus)
+                .padding(.vertical, Spacing.xxs)
+                .background(badgeColor)
+                .clipShape(Capsule())
+        }
+    }
+
+    private var badgeLabel: String {
+        switch source {
+        case .huggingFace: return "HF"
+        case .tensorArt: return "TA"
+        default: return ""
+        }
+    }
+
+    private var badgeColor: Color {
+        switch source {
+        case .huggingFace: return Color(red: 1.0, green: 0.616, blue: 0.0)
+        case .tensorArt: return Color(red: 0.612, green: 0.153, blue: 0.69)
+        default: return .clear
+        }
     }
 }

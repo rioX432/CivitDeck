@@ -2,6 +2,7 @@ package com.riox432.civitdeck.ui.search
 
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
@@ -26,6 +27,7 @@ data class DesktopSearchUiState(
     val selectedPeriod: TimePeriod = TimePeriod.AllTime,
     val selectedBaseModels: Set<BaseModel> = emptySet(),
     val isQualityFilterEnabled: Boolean = false,
+    val selectedSources: Set<ModelSource> = setOf(ModelSource.CIVITAI),
     val models: List<Model> = emptyList(),
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
@@ -92,6 +94,24 @@ class DesktopSearchViewModel(
 
     fun onQualityFilterToggled() {
         _uiState.update { it.copy(isQualityFilterEnabled = !it.isQualityFilterEnabled) }
+    }
+
+    fun toggleSource(source: ModelSource) {
+        _uiState.update { state ->
+            val updated = state.selectedSources.toMutableSet()
+            if (source in updated) {
+                if (updated.size > 1) updated.remove(source)
+            } else {
+                updated.add(source)
+            }
+            state.copy(
+                selectedSources = updated.toSet(),
+                nextCursor = null,
+                hasMore = true,
+                models = emptyList(),
+            )
+        }
+        search()
     }
 
     fun resetFilters() {
