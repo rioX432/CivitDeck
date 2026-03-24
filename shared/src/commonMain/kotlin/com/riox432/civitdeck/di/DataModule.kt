@@ -11,17 +11,20 @@ import com.riox432.civitdeck.data.image.ImageSaver
 import com.riox432.civitdeck.data.repository.AuthRepositoryImpl
 import com.riox432.civitdeck.data.repository.BrowsingHistoryRepositoryImpl
 import com.riox432.civitdeck.data.repository.CacheRepositoryImpl
+import com.riox432.civitdeck.data.repository.CreatorFollowRepositoryImpl
 import com.riox432.civitdeck.data.repository.FavoriteRepositoryImpl
 import com.riox432.civitdeck.data.repository.LocalModelFileRepositoryImpl
 import com.riox432.civitdeck.data.repository.ModelRepositoryImpl
 import com.riox432.civitdeck.data.repository.ModelVersionCheckpointRepositoryImpl
 import com.riox432.civitdeck.data.repository.ReviewRepositoryImpl
 import com.riox432.civitdeck.data.repository.TagRepositoryImpl
+import com.riox432.civitdeck.data.repository.UpdateRepositoryImpl
 import com.riox432.civitdeck.data.scanner.FileScanner
 import com.riox432.civitdeck.domain.repository.AuthRepository
 import com.riox432.civitdeck.domain.repository.BackupRepository
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.CacheRepository
+import com.riox432.civitdeck.domain.repository.CreatorFollowRepository
 import com.riox432.civitdeck.domain.repository.ExportRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.ModelDirectoryRepository
@@ -31,6 +34,7 @@ import com.riox432.civitdeck.domain.repository.ModelScanRepository
 import com.riox432.civitdeck.domain.repository.ModelVersionCheckpointRepository
 import com.riox432.civitdeck.domain.repository.ReviewRepository
 import com.riox432.civitdeck.domain.repository.TagRepository
+import com.riox432.civitdeck.domain.repository.UpdateRepository
 import com.riox432.civitdeck.usecase.ActivateThemePluginUseCase
 import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
 import com.riox432.civitdeck.usecase.GetActiveThemeUseCase
@@ -62,6 +66,8 @@ val dataModule = module {
     }
     single<ModelVersionCheckpointRepository> { ModelVersionCheckpointRepositoryImpl(get()) }
     single<ReviewRepository> { ReviewRepositoryImpl(get(), get()) }
+    single<CreatorFollowRepository> { CreatorFollowRepositoryImpl(get(), get(), get()) }
+    single<UpdateRepository> { UpdateRepositoryImpl(get(), get(), get()) }
 
     // Export
     single<ExportRepository> { ExportRepositoryImpl(get(), get()) }
