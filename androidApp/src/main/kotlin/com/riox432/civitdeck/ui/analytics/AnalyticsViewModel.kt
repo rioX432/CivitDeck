@@ -9,6 +9,7 @@ import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class AnalyticsUiState(
@@ -41,7 +42,7 @@ class AnalyticsViewModel(
 
     private fun loadStats() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 val stats: BrowsingStats = getBrowsingStatsUseCase()
                 _uiState.value = AnalyticsUiState(
@@ -58,10 +59,12 @@ class AnalyticsViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to load stats",
-                )
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to load stats",
+                    )
+                }
             }
         }
     }
