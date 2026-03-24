@@ -217,6 +217,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseC
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
@@ -236,6 +237,7 @@ import org.koin.mp.KoinPlatform.getKoin
 @Suppress("TooManyFunctions")
 object KoinHelper {
     fun getModelsUseCase(): GetModelsUseCase = getKoin().get()
+    fun getMultiSourceSearchUseCase(): MultiSourceSearchUseCase = getKoin().get()
     fun getCreatorModelsUseCase(): GetCreatorModelsUseCase = getKoin().get()
     fun getModelDetailUseCase(): GetModelDetailUseCase = getKoin().get()
     fun getImagesUseCase(): GetImagesUseCase = getKoin().get()

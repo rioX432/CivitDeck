@@ -35,6 +35,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseC
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
@@ -88,6 +89,7 @@ data class FilterState(
 @Suppress("LongParameterList")
 class ModelSearchViewModel(
     private val getModelsUseCase: GetModelsUseCase,
+    private val multiSourceSearchUseCase: MultiSourceSearchUseCase,
     private val getRecommendationsUseCase: GetRecommendationsUseCase,
     private val observeNsfwFilterUseCase: ObserveNsfwFilterUseCase,
     observeSearchHistoryUseCase: ObserveSearchHistoryUseCase,
@@ -157,6 +159,7 @@ class ModelSearchViewModel(
                 pagingSourceFactory = {
                     ModelPagingSource(
                         getModelsUseCase = getModelsUseCase,
+                        multiSourceSearchUseCase = multiSourceSearchUseCase,
                         getViewedModelIdsUseCase = getViewedModelIdsUseCase,
                         filterState = filters,
                         hiddenModelIds = hiddenIds,
@@ -380,6 +383,7 @@ class ModelSearchViewModel(
             isFreshFindEnabled = filter.isFreshFindEnabled,
             excludedTags = filter.excludedTags,
             includedTags = filter.includedTags,
+            selectedSources = filter.selectedSources,
             savedAt = 0,
         )
         viewModelScope.launch { saveSearchFilterUseCase(name, toSave) }
@@ -397,6 +401,7 @@ class ModelSearchViewModel(
                 isFreshFindEnabled = filter.isFreshFindEnabled,
                 includedTags = filter.includedTags,
                 excludedTags = filter.excludedTags,
+                selectedSources = filter.selectedSources,
             )
         }
         _filterState.update {
@@ -410,6 +415,7 @@ class ModelSearchViewModel(
                 isFreshFindEnabled = filter.isFreshFindEnabled,
                 includedTags = filter.includedTags,
                 excludedTags = filter.excludedTags,
+                selectedSources = filter.selectedSources,
             )
         }
     }

@@ -118,6 +118,7 @@ data class SavedSearchFilterDto(
     val isFreshFindEnabled: Int = 0,
     val excludedTags: String = "",
     val includedTags: String = "",
+    val selectedSources: String = "CIVITAI",
     val savedAt: Long,
 )
 

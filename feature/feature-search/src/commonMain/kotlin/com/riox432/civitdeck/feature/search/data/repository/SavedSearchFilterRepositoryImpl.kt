@@ -3,6 +3,7 @@ package com.riox432.civitdeck.feature.search.data.repository
 import com.riox432.civitdeck.data.local.dao.SavedSearchFilterDao
 import com.riox432.civitdeck.data.local.entity.SavedSearchFilterEntity
 import com.riox432.civitdeck.domain.model.BaseModel
+import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.SavedSearchFilter
@@ -46,6 +47,13 @@ class SavedSearchFilterRepositoryImpl(
         isFreshFindEnabled = isFreshFindEnabled != 0,
         excludedTags = if (excludedTags.isBlank()) emptyList() else excludedTags.split("\n"),
         includedTags = if (includedTags.isBlank()) emptyList() else includedTags.split("\n"),
+        selectedSources = if (selectedSources.isBlank()) {
+            setOf(ModelSource.CIVITAI)
+        } else {
+            selectedSources.split(",").mapNotNull { name ->
+                runCatching { ModelSource.valueOf(name) }.getOrNull()
+            }.toSet().ifEmpty { setOf(ModelSource.CIVITAI) }
+        },
         savedAt = savedAt,
     )
 
@@ -61,6 +69,7 @@ class SavedSearchFilterRepositoryImpl(
         isFreshFindEnabled = if (isFreshFindEnabled) 1 else 0,
         excludedTags = excludedTags.joinToString("\n"),
         includedTags = includedTags.joinToString("\n"),
+        selectedSources = selectedSources.joinToString(",") { it.name },
         savedAt = savedAt,
     )
 }

@@ -23,5 +23,7 @@ data class SavedSearchFilterEntity(
     // newline-separated (tags may contain commas)
     val excludedTags: String = "",
     val includedTags: String = "",
+    // ModelSource.name comma-separated, e.g. "CIVITAI,HUGGING_FACE"
+    val selectedSources: String = "CIVITAI",
     val savedAt: Long,
 )

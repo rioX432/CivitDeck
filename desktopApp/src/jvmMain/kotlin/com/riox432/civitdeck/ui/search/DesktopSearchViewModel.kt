@@ -13,6 +13,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.util.LoadResult
 import com.riox432.civitdeck.domain.util.PaginatedLoader
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,9 +39,12 @@ data class DesktopSearchUiState(
 
 class DesktopSearchViewModel(
     private val getModelsUseCase: GetModelsUseCase,
+    private val multiSourceSearchUseCase: MultiSourceSearchUseCase,
     private val observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase,
     private val observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase,
 ) : ViewModel() {
+
+    private var multiSourcePage: Int = 1
 
     private val _uiState = MutableStateFlow(DesktopSearchUiState())
     val uiState: StateFlow<DesktopSearchUiState> = _uiState.asStateFlow()
@@ -133,6 +137,19 @@ class DesktopSearchViewModel(
 
     private suspend fun loadPage(cursor: String?, limit: Int): LoadResult<Model> {
         val state = _uiState.value
+        val isCivitaiOnly = state.selectedSources == setOf(ModelSource.CIVITAI)
+        return if (isCivitaiOnly) {
+            loadCivitaiPage(state, cursor, limit)
+        } else {
+            loadMultiSourcePage(state, cursor, limit)
+        }
+    }
+
+    private suspend fun loadCivitaiPage(
+        state: DesktopSearchUiState,
+        cursor: String?,
+        limit: Int,
+    ): LoadResult<Model> {
         val result = getModelsUseCase(
             query = state.query.ifBlank { null },
             type = state.selectedType,
@@ -145,6 +162,26 @@ class DesktopSearchViewModel(
         return LoadResult(
             items = result.items,
             nextCursor = result.metadata.nextCursor,
+        )
+    }
+
+    private suspend fun loadMultiSourcePage(
+        state: DesktopSearchUiState,
+        cursor: String?,
+        limit: Int,
+    ): LoadResult<Model> {
+        if (cursor == null) multiSourcePage = 1
+        val result = multiSourceSearchUseCase(
+            query = state.query.ifBlank { null },
+            selectedSources = state.selectedSources,
+            cursor = cursor,
+            page = multiSourcePage,
+            limit = limit,
+        )
+        multiSourcePage++
+        return LoadResult(
+            items = result.models,
+            nextCursor = result.nextCursor,
         )
     }
 

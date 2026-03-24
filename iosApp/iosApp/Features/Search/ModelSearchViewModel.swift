@@ -31,6 +31,7 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var selectedSources: Set<Core_domainModelSource> = [.civitai]
 
     private let getModelsUseCase: GetModelsUseCase
+    private let multiSourceSearchUseCase: MultiSourceSearchUseCase
     private let getRecommendationsUseCase: GetRecommendationsUseCase
     private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
     private let observeSearchHistoryUseCase: ObserveSearchHistoryUseCase
@@ -59,6 +60,7 @@ final class ModelSearchViewModel: ObservableObject {
     private var loadTask: Task<Void, Never>?
     private var hiddenModelIds: Set<KotlinLong> = []
     private var sortWatermark: Double?
+    private var multiSourcePage: Int32 = 1
 
     private let pageSize: Int32 = 20
     private let maxFetchIterations = 5
@@ -66,6 +68,7 @@ final class ModelSearchViewModel: ObservableObject {
 
     init() {
         self.getModelsUseCase = KoinHelper.shared.getModelsUseCase()
+        self.multiSourceSearchUseCase = KoinHelper.shared.getMultiSourceSearchUseCase()
         self.getRecommendationsUseCase = KoinHelper.shared.getRecommendationsUseCase()
         self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
         self.observeSearchHistoryUseCase = KoinHelper.shared.getObserveSearchHistoryUseCase()
@@ -310,6 +313,7 @@ final class ModelSearchViewModel: ObservableObject {
         nextCursor = nil
         hasMore = true
         sortWatermark = nil
+        multiSourcePage = 1
     }
 }
 
@@ -355,7 +359,19 @@ private extension ModelSearchViewModel {
         }
     }
 
+    private var isCivitaiOnly: Bool {
+        selectedSources == [.civitai]
+    }
+
     func fetchAndAccumulate(isLoadMore: Bool) async throws -> FetchResult {
+        if isCivitaiOnly {
+            return try await fetchCivitaiOnly(isLoadMore: isLoadMore)
+        } else {
+            return try await fetchMultiSource(isLoadMore: isLoadMore)
+        }
+    }
+
+    private func fetchCivitaiOnly(isLoadMore: Bool) async throws -> FetchResult {
         let baseModelList: [BaseModel]? = selectedBaseModels.isEmpty ? nil : Array(selectedBaseModels)
         let nsfw: KotlinBoolean? = nsfwFilterLevel == .off ? KotlinBoolean(bool: false) : nil
         let viewedIds: Set<KotlinLong> = isFreshFindEnabled
@@ -392,6 +408,26 @@ private extension ModelSearchViewModel {
         accumulated.sort { sortValueOf($0) > sortValueOf($1) }
         if !accumulated.isEmpty { sortWatermark = accumulated.map { sortValueOf($0) }.min()! }
         return FetchResult(models: accumulated, cursor: fetchedNextCursor)
+    }
+
+    /// Multi-source: queries CivitAI, HuggingFace, and/or TensorArt in parallel.
+    /// Limitation: HuggingFace/TensorArt use page-based pagination while CivitAI uses cursor.
+    private func fetchMultiSource(isLoadMore: Bool) async throws -> FetchResult {
+        let viewedIds: Set<KotlinLong> = isFreshFindEnabled
+            ? try await getViewedModelIdsUseCase.invoke() : []
+        let currentCursor: String? = isLoadMore ? nextCursor : nil
+        if !isLoadMore { multiSourcePage = 1 }
+        let result = try await multiSourceSearchUseCase.invoke(
+            query: query.isEmpty ? nil : query,
+            selectedSources: selectedSources,
+            cursor: currentCursor,
+            page: multiSourcePage,
+            limit: pageSize
+        )
+        let allModels = result.models.compactMap { $0 as? Model }
+        let filtered = applyClientFilters(allModels, viewedIds: viewedIds)
+        multiSourcePage += 1
+        return FetchResult(models: filtered, cursor: result.nextCursor)
     }
 
     func applyClientFilters(_ models: [Model], viewedIds: Set<KotlinLong>) -> [Model] {
@@ -465,7 +501,7 @@ extension ModelSearchViewModel {
             selectedSort: selectedSort, selectedPeriod: selectedPeriod,
             selectedBaseModels: selectedBaseModels, nsfwFilterLevel: nsfwFilterLevel,
             isFreshFindEnabled: isFreshFindEnabled, excludedTags: excludedTags,
-            includedTags: includedTags, savedAt: 0
+            includedTags: includedTags, selectedSources: selectedSources, savedAt: 0
         )
         Task { try? await saveSearchFilterUseCase.invoke(name: name, filter: filter) }
     }
@@ -480,6 +516,7 @@ extension ModelSearchViewModel {
         isFreshFindEnabled = filter.isFreshFindEnabled
         includedTags = filter.includedTags.compactMap { $0 as? String }
         excludedTags = filter.excludedTags.compactMap { $0 as? String }
+        selectedSources = Set(filter.selectedSources.compactMap { $0 as? Core_domainModelSource })
         reloadModels()
     }
     func deleteSavedFilter(id: Int64) {
