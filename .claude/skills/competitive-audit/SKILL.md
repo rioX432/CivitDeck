@@ -20,6 +20,13 @@ allowed-tools:
   - AskUserQuestion
   - WebSearch
   - WebFetch
+  - mcp__playwright__browser_navigate
+  - mcp__playwright__browser_snapshot
+  - mcp__playwright__browser_take_screenshot
+  - mcp__playwright__browser_close
+  - mcp__gemini-deepsearch__deep_search
+  - mcp__perplexity__perplexity_research
+  - mcp__perplexity__perplexity_search
 ---
 
 # /competitive-audit — Competitive Analysis & Improvement Filing
@@ -112,6 +119,37 @@ Use Agent (subagent_type: general-purpose) to WebSearch **in parallel**:
 - Privacy and regulatory trends
 - Technology trends (on-device AI, edge computing, etc.)
 
+### 2d. UX Quality Comparison
+
+Compare UI/UX quality between this project and competitors:
+
+**If Playwright MCP is available and competitors are web apps:**
+- Navigate to competitor apps, capture screenshots of key flows
+- Compare information architecture, navigation, onboarding, error handling
+
+**Otherwise:**
+- WebSearch for competitor UI screenshots, design reviews, and UX teardowns
+- Collect app store screenshots for visual comparison
+
+For each competitor, evaluate:
+- First-time user experience (onboarding flow)
+- Core task completion flow (how many steps?)
+- Error handling and edge cases (what happens when things go wrong?)
+- Visual design quality and consistency
+- Accessibility posture (public a11y statements, known issues)
+
+### 2e. Store Review Analysis
+
+Analyze app store reviews for UI/UX insights (skip if not a mobile/desktop app):
+
+1. WebSearch: `"{app name}" app store review`, `"{app name}" user feedback`
+2. For each app (self + competitors), extract:
+   - UI/UX bug reports (crashes, display issues)
+   - Usability complaints (confusing, hard to use)
+   - Feature requests related to UX
+   - Positive feedback (what users love about the UX)
+3. Compare: what do users praise/criticize about each app's UX?
+
 ### Research Rules
 
 - Use WebSearch extensively, prioritize recent information
@@ -139,6 +177,8 @@ List areas where competitors are stronger:
 - Platform limitations
 - Distribution / awareness gaps
 - Quality / maturity gaps
+- **UX quality gaps** (from Phase 2d comparison)
+- **User sentiment gaps** (from Phase 2e store reviews)
 
 ### 3c. Positioning Map
 
@@ -184,13 +224,24 @@ Cover all of the following thoroughly:
    - Caching strategies
    - Streaming processing
 
-4. **Latest research**
-   - Relevant academic papers
+4. **Latest research & academic papers**
+   - Relevant papers from arXiv, CHI, ICSE, UIST
    - Practically implementable ideas
+   - Use `mcp__gemini-deepsearch__deep_search` for thorough literature search
 
 5. **Prior implementations**
    - OSS projects implementing similar approaches
    - Benchmark results
+
+6. **Emerging technologies (no existing examples required)**
+   - Technologies that don't have production examples yet but show promise
+   - Use `mcp__gemini-deepsearch__deep_search` and/or `mcp__perplexity__perplexity_research` to find:
+     - New frameworks, libraries, or APIs announced in the last 6 months
+     - Research prototypes that could become practical soon
+     - Platform capabilities (Android/iOS) not yet widely adopted
+     - AI/ML techniques applicable to this domain
+   - For each: assess feasibility, potential impact, and first-mover advantage
+   - **This is where we find ideas to get AHEAD of competitors, not just catch up**
 
 ### 4b. Output
 
@@ -199,6 +250,7 @@ For each improvement idea:
 - Implementation difficulty (effort estimate)
 - Reference links (GitHub, papers, docs)
 - Recommended priority
+- **Origin**: catch-up (competitors already have it) / frontier (no one has it yet)
 
 ---
 
