@@ -16,6 +16,10 @@ allowed-tools:
   - TaskUpdate
   - TaskList
   - AskUserQuestion
+  - mcp__playwright__browser_navigate
+  - mcp__playwright__browser_snapshot
+  - mcp__playwright__browser_take_screenshot
+  - mcp__playwright__browser_close
 ---
 
 # /audit — Codebase Health Audit
@@ -33,8 +37,9 @@ Create task tracker:
 2. "Scan tech debt"
 3. "Scan code quality"
 4. "Scan architecture"
-5. "Aggregate findings"
-6. "Create GitHub Issues"
+5. "Scan visual bugs"
+6. "Aggregate findings"
+7. "Create GitHub Issues"
 
 ---
 
@@ -111,6 +116,37 @@ Return findings as structured list:
 
 Mark tasks 2–4 `completed`.
 
+### Agent D: Visual Bug Scanner
+
+```
+Scan for visual UI issues. Adapt method based on available tools.
+
+## If Playwright MCP is available AND a web app (dev server URL in CLAUDE.md):
+1. Start dev server (or use provided URL)
+2. Navigate to key pages with Playwright
+3. Take screenshots at default viewport
+4. Analyze each screenshot for:
+   - Layout overflow or element overlap
+   - Text truncation or unreadable content
+   - Missing images or broken assets
+   - Blank/empty screens that should have content
+5. Check responsive: resize to mobile (375px) and check again
+
+## If Playwright is NOT available OR mobile native app:
+1. Glob for UI files (*.kt Compose, *.swift SwiftUI, *.tsx, *.jsx, *.vue)
+2. Scan for common visual bug patterns:
+   - Hardcoded sizes (px instead of dp/sp/rem)
+   - Missing error/loading/empty states
+   - Missing contentDescription / accessibilityLabel
+   - Clickable areas < 48dp (Android) / 44pt (iOS)
+   - Unbounded text without maxLines or ellipsis
+
+Return findings as structured list:
+- category: visual, severity (high/medium/low), screen/file, description
+```
+
+Mark task for Agent D `completed`.
+
 ---
 
 ## Step 4: Aggregate Findings
@@ -124,10 +160,10 @@ Merge findings from static analysis and code scans that reference the same file+
 
 | Severity | Criteria |
 |----------|----------|
-| **Critical** | Crash risk, data race, memory leak, security |
-| **High** | Architecture violation, missing error handling |
-| **Medium** | Code smell, hardcoded value, missing test |
-| **Low** | TODO comment, dead code, style issue |
+| **Critical** | Crash risk, data race, memory leak, security, **screen unusable** |
+| **High** | Architecture violation, missing error handling, **layout broken/unreadable** |
+| **Medium** | Code smell, hardcoded value, missing test, **minor visual issue** |
+| **Low** | TODO comment, dead code, style issue, **pixel-level misalignment** |
 
 Mark task 5 `completed`.
 
@@ -202,6 +238,7 @@ EOF
 | High | `bug` |
 | Code Quality | `tech-debt` |
 | Architecture | `tech-debt` |
+| Visual | `ux` |
 
 Mark task 6 `completed`.
 
