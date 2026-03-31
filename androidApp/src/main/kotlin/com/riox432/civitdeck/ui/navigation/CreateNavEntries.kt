@@ -32,7 +32,6 @@ import com.riox432.civitdeck.ui.create.CreateHubScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerImageDetailScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsScreen
-import com.riox432.civitdeck.ui.share.ShareViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -211,25 +210,18 @@ internal fun EntryProviderScope<Any>.externalServerEntries(backStack: MutableLis
             serverName = settingsState.activeConfig?.name ?: "Gallery",
             onBack = { backStack.removeLastOrNull() },
             onNavigateToImageDetail = { image ->
-                backStack.add(ExternalServerImageDetailRoute(image.id))
+                val index = galleryVm.uiState.value.images.indexOf(image)
+                backStack.add(ExternalServerImageDetailRoute(index.coerceAtLeast(0)))
             },
         )
     }
     entry<ExternalServerImageDetailRoute> { route ->
         val galleryVm: ExternalServerGalleryViewModel = koinViewModel()
-        val shareVm: ShareViewModel = koinViewModel()
         val state by galleryVm.uiState.collectAsStateWithLifecycle()
-        val shareHashtags by shareVm.hashtags.collectAsStateWithLifecycle()
-        val image = state.images.find { it.id == route.imageId }
-        if (image != null) {
-            ExternalServerImageDetailScreen(
-                image = image,
-                onBack = { backStack.removeLastOrNull() },
-                shareHashtags = shareHashtags,
-                onToggleShareHashtag = shareVm::onToggle,
-                onAddShareHashtag = shareVm::onAdd,
-                onRemoveShareHashtag = shareVm::onRemove,
-            )
-        }
+        ExternalServerImageDetailScreen(
+            images = state.images,
+            initialIndex = route.initialIndex,
+            onBack = { backStack.removeLastOrNull() },
+        )
     }
 }

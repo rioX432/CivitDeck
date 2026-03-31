@@ -143,7 +143,7 @@ private struct AddServerSheet: View {
                         .autocapitalization(.none)
                 }
                 Section {
-                    Text("Enter the base URL of your server (e.g. http://192.168.1.100:7860)")
+                    Text("Enter the base URL including API prefix (e.g. http://192.168.1.100:8000/civitdeck)")
                         .font(.civitBodySmall)
                         .foregroundColor(.civitOnSurfaceVariant)
                 }

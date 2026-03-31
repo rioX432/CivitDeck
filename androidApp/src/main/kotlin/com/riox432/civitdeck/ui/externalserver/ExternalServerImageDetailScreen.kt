@@ -4,19 +4,20 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -29,99 +30,91 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import coil3.compose.SubcomposeAsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
-import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerImage
-import com.riox432.civitdeck.ui.share.SocialShareSheet
+import com.riox432.civitdeck.ui.components.CivitAsyncImage
+import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
+import com.riox432.civitdeck.ui.gallery.ViewerImage
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExternalServerImageDetailScreen(
-    image: ServerImage,
+    images: List<ServerImage>,
+    initialIndex: Int,
     onBack: () -> Unit,
-    shareHashtags: List<ShareHashtag> = emptyList(),
-    onToggleShareHashtag: (String, Boolean) -> Unit = { _, _ -> },
-    onAddShareHashtag: (String) -> Unit = {},
-    onRemoveShareHashtag: (String) -> Unit = {},
 ) {
-    val context = LocalContext.current
-    var showShareSheet by remember { mutableStateOf(false) }
-
+    if (images.isEmpty()) return
+    val pagerState = rememberPagerState(initialPage = initialIndex) { images.size }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(image.character ?: "Image Detail") },
+                title = { Text("${pagerState.currentPage + 1} / ${images.size}") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 },
-                actions = {
-                    IconButton(onClick = { showShareSheet = true }) {
-                        Icon(Icons.Default.Share, contentDescription = "Share")
-                    }
-                },
             )
         },
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-        ) {
-            // Full image
-            SubcomposeAsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(image.file)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = image.character,
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f),
-            )
-
-            // Metadata
-            Column(
-                modifier = Modifier.padding(Spacing.lg),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md),
-            ) {
-                // Prompt
-                image.prompt?.let { prompt ->
-                    PromptSection(prompt = prompt, context = context)
-                }
-
-                HorizontalDivider()
-
-                // Metadata grid
-                MetadataGrid(image = image)
-            }
+        HorizontalPager(state = pagerState, modifier = Modifier.padding(padding)) { page ->
+            DetailPage(image = images[page])
         }
     }
-    if (showShareSheet) {
-        SocialShareSheet(
-            hashtags = shareHashtags,
-            onToggleHashtag = onToggleShareHashtag,
-            onAddHashtag = onAddShareHashtag,
-            onRemoveHashtag = onRemoveShareHashtag,
-            onDismiss = { showShareSheet = false },
+}
+
+@Composable
+private fun DetailPage(image: ServerImage) {
+    var showImageViewer by rememberSaveable { mutableStateOf(false) }
+    DetailBody(image = image, onImageClick = { showImageViewer = true })
+    if (showImageViewer) {
+        ImageViewerOverlay(
+            images = listOf(ViewerImage(url = image.file)),
+            initialIndex = 0,
+            onDismiss = { showImageViewer = false },
         )
     }
 }
 
 @Composable
-private fun PromptSection(prompt: String, context: Context) {
+private fun DetailBody(
+    image: ServerImage,
+    onImageClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+    ) {
+        CivitAsyncImage(
+            imageUrl = image.file,
+            contentDescription = image.character,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onImageClick),
+        )
+        Column(
+            modifier = Modifier.padding(Spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(Spacing.md),
+        ) {
+            image.prompt?.let { prompt -> PromptSection(prompt = prompt) }
+            HorizontalDivider()
+            MetadataGrid(image = image)
+        }
+    }
+}
+
+@Composable
+private fun PromptSection(prompt: String) {
+    val context = LocalContext.current
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         Row(
             modifier = Modifier.fillMaxWidth(),

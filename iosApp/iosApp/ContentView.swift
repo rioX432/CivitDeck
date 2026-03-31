@@ -1,4 +1,5 @@
 import SwiftUI
+import Shared
 
 struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
@@ -6,6 +7,7 @@ struct ContentView: View {
     @StateObject private var comparisonState = ComparisonState()
     @StateObject private var tutorialVm = GestureTutorialViewModel()
     @StateObject private var searchViewModel = ModelSearchViewModel()
+    @StateObject private var displaySettings = DisplaySettingsViewModelOwner()
     @EnvironmentObject private var router: NavigationRouter
 
     var body: some View {
@@ -18,6 +20,7 @@ struct ContentView: View {
                 tabLayout
             }
         }
+        .task { await displaySettings.observeUiState() }
         .environmentObject(comparisonState)
         .onChange(of: router.pendingDeepLink) { link in
             guard let link else { return }
@@ -49,9 +52,29 @@ struct ContentView: View {
                 .tabItem { Label("Library", systemImage: "folder") }
                 .tag("library")
 
+            ForEach(displaySettings.customNavShortcuts, id: \.name) { shortcut in
+                shortcutView(for: shortcut)
+                    .tabItem { Label(shortcut.navTabLabel, systemImage: shortcut.navTabIcon) }
+                    .tag(shortcut.name)
+            }
+
             SettingsScreen()
                 .tabItem { Label("Settings", systemImage: "gearshape") }
                 .tag("settings")
+        }
+    }
+
+    @ViewBuilder
+    private func shortcutView(for shortcut: NavShortcut) -> some View {
+        switch shortcut {
+        case .outputGallery:
+            NavigationStack { ComfyUIHistoryView() }
+        case .generate:
+            NavigationStack { ComfyUIGenerationView() }
+        case .externalServerGallery:
+            NavigationStack { ExternalServerGalleryView(serverName: "Server") }
+        default:
+            EmptyView()
         }
     }
 
@@ -76,6 +99,30 @@ struct ContentView: View {
                 SettingsScreen().tag("settings")
             }
             .toolbar(.hidden, for: .tabBar)
+        }
+    }
+}
+
+// MARK: - NavShortcut Tab Helpers
+
+extension NavShortcut {
+    var navTabLabel: String {
+        switch self {
+        case .outputGallery: return "Output"
+        case .generate: return "Generate"
+        case .imageGallery: return "Images"
+        case .externalServerGallery: return "Server"
+        default: return label
+        }
+    }
+
+    var navTabIcon: String {
+        switch self {
+        case .outputGallery: return "photo.on.rectangle.angled"
+        case .generate: return "sparkles"
+        case .imageGallery: return "photo"
+        case .externalServerGallery: return "server.rack"
+        default: return "square.grid.2x2"
         }
     }
 }

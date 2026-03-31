@@ -4,14 +4,9 @@ import Shared
 struct ExternalServerGalleryView: View {
     let serverName: String
     @StateObject private var viewModel = ExternalServerGalleryViewModel()
-    @State private var selectedImage: ServerImage?
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    @State private var selectedIndex: Int?
     @State private var showJobAlert = false
-
-    private let columns = [
-        GridItem(.flexible(), spacing: Spacing.xxs),
-        GridItem(.flexible(), spacing: Spacing.xxs),
-        GridItem(.flexible(), spacing: Spacing.xxs),
-    ]
 
     var body: some View {
         Group {
@@ -33,11 +28,11 @@ struct ExternalServerGalleryView: View {
                 .padding(Spacing.lg)
             } else {
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: Spacing.xxs) {
-                        ForEach(viewModel.images, id: \.id) { image in
+                    LazyVGrid(columns: AdaptiveGrid.columns(sizeClass: sizeClass), spacing: Spacing.sm) {
+                        ForEach(Array(viewModel.images.enumerated()), id: \.element.id) { idx, image in
                             ServerImageCell(image: image)
                                 .accessibilityLabel("Select image")
-                                .onTapGesture { selectedImage = image }
+                                .onTapGesture { selectedIndex = idx }
                                 .onAppear {
                                     if image.id == viewModel.images.last?.id {
                                         Task { await viewModel.loadMore() }
@@ -88,9 +83,17 @@ struct ExternalServerGalleryView: View {
         .sheet(isPresented: $viewModel.showGenerationSheet) {
             ExternalServerGenerationSheet(viewModel: viewModel)
         }
-        .sheet(item: $selectedImage) { image in
-            NavigationStack {
-                ExternalServerImageDetailView(image: image)
+        .fullScreenCover(isPresented: Binding(
+            get: { selectedIndex != nil },
+            set: { if !$0 { selectedIndex = nil } }
+        )) {
+            if let idx = selectedIndex {
+                NavigationStack {
+                    ExternalServerImageDetailView(
+                        images: viewModel.images,
+                        initialIndex: idx
+                    )
+                }
             }
         }
         .onChange(of: viewModel.activeJob != nil) { showJobAlert = $0 }
@@ -133,21 +136,29 @@ private struct ServerImageCell: View {
     let image: ServerImage
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            CivitAsyncImageView(
-                imageUrl: image.thumbUrl ?? image.file,
-                contentMode: .fill,
-                aspectRatio: 1.0
-            )
-            if let score = image.aestheticScore {
-                Text(String(format: "%.1f", Double(score)))
-                    .font(.civitLabelSmall)
-                    .foregroundColor(.civitOnSurface)
-                    .padding(Spacing.xs)
-                    .background(Color.civitScrim.opacity(0.5))
-                    .cornerRadius(Spacing.xs)
-                    .padding(Spacing.xs)
+        CachedAsyncImage(url: URL(string: image.thumbUrl ?? image.file)) { phase in
+            switch phase {
+            case .success(let img):
+                img
+                    .resizable()
+                    .scaledToFill()
+                    .transition(.opacity)
+            case .failure:
+                Color.civitSurfaceVariant
+                    .overlay {
+                        Image(systemName: "photo")
+                            .foregroundColor(.civitOnSurfaceVariant)
+                    }
+            case .empty:
+                Color.civitSurfaceVariant
+                    .shimmer()
+            @unknown default:
+                Color.clear
             }
         }
+        .frame(maxWidth: .infinity)
+        .aspectRatio(1, contentMode: .fit)
+        .clipped()
+        .cornerRadius(Spacing.sm)
     }
 }

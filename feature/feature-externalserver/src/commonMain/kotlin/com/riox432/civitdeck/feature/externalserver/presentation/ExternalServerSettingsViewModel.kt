@@ -94,7 +94,7 @@ class ExternalServerSettingsViewModel(
     }
 
     fun onTestConnection() {
-        val active = _mutableState.value.activeConfig ?: return
+        val active = uiState.value.activeConfig ?: return
         viewModelScope.launch {
             _mutableState.update { it.copy(isTesting = true, testError = null) }
             val success = testConnection(active)

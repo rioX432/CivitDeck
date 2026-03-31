@@ -13,17 +13,16 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Rocket
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -35,17 +34,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.SubcomposeAsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerImage
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryUiState
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
+import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
+import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -184,11 +181,11 @@ private fun ImageGrid(
     onImageClick: (ServerImage) -> Unit,
 ) {
     LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
+        columns = GridCells.Fixed(2),
         state = gridState,
-        contentPadding = PaddingValues(Spacing.xs),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
-        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+        contentPadding = PaddingValues(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
         modifier = Modifier.fillMaxSize(),
     ) {
         items(state.images, key = { it.id }) { image ->
@@ -207,32 +204,13 @@ private fun ImageGrid(
 
 @Composable
 private fun ServerImageCard(image: ServerImage, onClick: () -> Unit) {
-    val context = LocalContext.current
-    Card(modifier = Modifier.clickable(onClickLabel = "View image", onClick = onClick)) {
-        Box {
-            SubcomposeAsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(image.thumbUrl ?: image.file)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = image.character,
-                contentScale = ContentScale.Crop,
-                loading = {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) { CircularProgressIndicator() }
-                },
-                modifier = Modifier.fillMaxWidth().aspectRatio(1f),
-            )
-            if (image.aestheticScore != null) {
-                Text(
-                    text = "%.1f".format(image.aestheticScore),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.xs),
-                )
-            }
-        }
-    }
+    CivitAsyncImage(
+        imageUrl = image.thumbUrl ?: image.file,
+        contentDescription = image.character,
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(CornerRadius.image))
+            .clickable(onClick = onClick),
+    )
 }

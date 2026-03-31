@@ -235,7 +235,7 @@ private fun AddServerDialog(
                     value = baseUrl,
                     onValueChange = { baseUrl = it },
                     label = { Text("Server URL") },
-                    placeholder = { Text("http://192.168.1.100:7860") },
+                    placeholder = { Text("http://192.168.1.100:8000/civitdeck") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
