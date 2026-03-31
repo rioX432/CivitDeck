@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.ui.navigation
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
@@ -11,6 +12,7 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewMod
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
+import com.riox432.civitdeck.feature.externalserver.domain.model.ServerImage
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
 import com.riox432.civitdeck.ui.comfyhub.ComfyHubBrowserScreen
@@ -34,6 +36,9 @@ import com.riox432.civitdeck.ui.externalserver.ExternalServerImageDetailScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsScreen
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+
+/** Shared images list between gallery and detail entries to avoid ViewModel re-creation. */
+private var serverGalleryImagesHolder: List<ServerImage> = emptyList()
 
 internal fun EntryProviderScope<Any>.createHubEntry(backStack: MutableList<Any>) {
     entry<CreateHubRoute> {
@@ -205,21 +210,22 @@ internal fun EntryProviderScope<Any>.externalServerEntries(backStack: MutableLis
         val settingsVm: ExternalServerSettingsViewModel = koinViewModel()
         val settingsState by settingsVm.uiState.collectAsStateWithLifecycle()
         val galleryVm: ExternalServerGalleryViewModel = koinViewModel()
+        val state by galleryVm.uiState.collectAsStateWithLifecycle()
+        // Share images with the detail entry via file-level holder
+        LaunchedEffect(state.images) { serverGalleryImagesHolder = state.images }
         ExternalServerGalleryScreen(
             viewModel = galleryVm,
             serverName = settingsState.activeConfig?.name ?: "Gallery",
             onBack = { backStack.removeLastOrNull() },
             onNavigateToImageDetail = { image ->
-                val index = galleryVm.uiState.value.images.indexOf(image)
+                val index = state.images.indexOf(image)
                 backStack.add(ExternalServerImageDetailRoute(index.coerceAtLeast(0)))
             },
         )
     }
     entry<ExternalServerImageDetailRoute> { route ->
-        val galleryVm: ExternalServerGalleryViewModel = koinViewModel()
-        val state by galleryVm.uiState.collectAsStateWithLifecycle()
         ExternalServerImageDetailScreen(
-            images = state.images,
+            images = serverGalleryImagesHolder,
             initialIndex = route.initialIndex,
             onBack = { backStack.removeLastOrNull() },
         )
