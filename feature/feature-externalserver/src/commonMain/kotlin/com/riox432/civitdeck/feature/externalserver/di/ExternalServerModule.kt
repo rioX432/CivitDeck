@@ -11,6 +11,7 @@ import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetDependentC
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerCapabilitiesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerImagesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationOptionsUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.DeleteServerImagesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationStatusUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveActiveExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveExternalServerConfigsUseCase
@@ -37,6 +38,7 @@ val externalServerModule = module {
     factory { GetDependentChoicesUseCase(get()) }
     factory { ExecuteGenerationUseCase(get()) }
     factory { GetGenerationStatusUseCase(get()) }
+    factory { DeleteServerImagesUseCase(get()) }
 
     // Plugin adapter
     single { ExternalServerWorkflowPlugin(get(), get()) }

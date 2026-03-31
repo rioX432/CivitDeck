@@ -94,6 +94,24 @@ class ExternalServerApi(
         }.body()
     }
 
+    suspend fun deleteImage(cloudKey: String): DeleteResponseDto {
+        val cfg = config
+        return client.post("${cfg.baseUrl}/images/delete") {
+            if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
+            contentType(ContentType.Application.Json)
+            setBody(DeleteImageRequestDto(cloudKey))
+        }.body()
+    }
+
+    suspend fun deleteImages(cloudKeys: List<String>): DeleteResponseDto {
+        val cfg = config
+        return client.post("${cfg.baseUrl}/images/delete-bulk") {
+            if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
+            contentType(ContentType.Application.Json)
+            setBody(BulkDeleteRequestDto(cloudKeys))
+        }.body()
+    }
+
     /**
      * Health check: tries GET /capabilities and returns true if reachable.
      */

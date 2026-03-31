@@ -10,6 +10,7 @@ data class ServerCapabilities(
 
 data class ServerImage(
     val id: Int,
+    val cloudKey: String = "",
     val file: String,
     val thumbUrl: String?,
     val character: String?,

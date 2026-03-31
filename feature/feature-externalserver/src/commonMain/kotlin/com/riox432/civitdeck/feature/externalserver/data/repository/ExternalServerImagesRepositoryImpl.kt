@@ -89,6 +89,16 @@ class ExternalServerImagesRepositoryImpl(
             message = dto.message,
         )
     }
+
+    override suspend fun deleteImage(cloudKey: String) {
+        ensureApiConfigured()
+        api.deleteImage(cloudKey)
+    }
+
+    override suspend fun deleteImages(cloudKeys: List<String>) {
+        ensureApiConfigured()
+        api.deleteImages(cloudKeys)
+    }
 }
 
 private fun GenerationOptionDto.toDomain() = GenerationOption(
@@ -112,6 +122,7 @@ private fun GenerationChoiceDto.toDomain() = GenerationChoice(
 
 private fun ServerImageDto.toDomain() = ServerImage(
     id = id,
+    cloudKey = cloudKey,
     file = file,
     thumbUrl = thumbUrl,
     character = character,

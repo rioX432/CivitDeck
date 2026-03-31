@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.ui.externalserver
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,13 +17,19 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Rocket
+import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -94,21 +101,47 @@ private fun GalleryTopBar(
     viewModel: ExternalServerGalleryViewModel,
     onBack: () -> Unit,
 ) {
-    TopAppBar(
-        title = { Text(serverName) },
-        navigationIcon = {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
-            }
-        },
-        actions = {
-            if (state.supportsFilters) {
-                IconButton(onClick = viewModel::onShowFilterSheet) {
-                    Icon(Icons.Default.FilterList, "Filters")
+    if (state.isSelectionMode) {
+        TopAppBar(
+            title = { Text("${state.selectedCloudKeys.size} selected") },
+            navigationIcon = {
+                IconButton(onClick = viewModel::onExitSelectionMode) {
+                    Icon(Icons.Default.Close, "Cancel")
                 }
-            }
-        },
-    )
+            },
+            actions = {
+                IconButton(onClick = viewModel::onSelectAll) {
+                    Icon(Icons.Default.SelectAll, "Select all")
+                }
+                IconButton(
+                    onClick = viewModel::onDeleteSelected,
+                    enabled = !state.isDeleting,
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        "Delete",
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+        )
+    } else {
+        TopAppBar(
+            title = { Text(serverName) },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                }
+            },
+            actions = {
+                if (state.supportsFilters) {
+                    IconButton(onClick = viewModel::onShowFilterSheet) {
+                        Icon(Icons.Default.FilterList, "Filters")
+                    }
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -143,7 +176,12 @@ private fun GalleryContent(
                 isRefreshing = state.isRefreshing,
                 onRefresh = viewModel::onRefresh,
             ) {
-                ImageGrid(state = state, gridState = gridState, onImageClick = onNavigateToImageDetail)
+                ImageGrid(
+                    state = state,
+                    gridState = gridState,
+                    viewModel = viewModel,
+                    onImageClick = onNavigateToImageDetail,
+                )
             }
         }
     }
@@ -178,6 +216,7 @@ private fun GalleryDialogs(
 private fun ImageGrid(
     state: ExternalServerGalleryUiState,
     gridState: LazyGridState,
+    viewModel: ExternalServerGalleryViewModel,
     onImageClick: (ServerImage) -> Unit,
 ) {
     LazyVerticalGrid(
@@ -189,7 +228,23 @@ private fun ImageGrid(
         modifier = Modifier.fillMaxSize(),
     ) {
         items(state.images, key = { it.id }) { image ->
-            ServerImageCard(image = image, onClick = { onImageClick(image) })
+            ServerImageCard(
+                image = image,
+                isSelectionMode = state.isSelectionMode,
+                isSelected = image.cloudKey in state.selectedCloudKeys,
+                onClick = {
+                    if (state.isSelectionMode) {
+                        viewModel.onToggleSelection(image.cloudKey)
+                    } else {
+                        onImageClick(image)
+                    }
+                },
+                onLongClick = {
+                    if (!state.isSelectionMode) {
+                        viewModel.onEnterSelectionMode(image.cloudKey)
+                    }
+                },
+            )
         }
         if (state.isLoadingMore) {
             item {
@@ -202,15 +257,36 @@ private fun ImageGrid(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ServerImageCard(image: ServerImage, onClick: () -> Unit) {
-    CivitAsyncImage(
-        imageUrl = image.thumbUrl ?: image.file,
-        contentDescription = image.character,
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(CornerRadius.image))
-            .clickable(onClick = onClick),
-    )
+private fun ServerImageCard(
+    image: ServerImage,
+    isSelectionMode: Boolean,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
+    Box {
+        CivitAsyncImage(
+            imageUrl = image.thumbUrl ?: image.file,
+            contentDescription = image.character,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(CornerRadius.image))
+                .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        )
+        if (isSelectionMode) {
+            Icon(
+                imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
+                contentDescription = if (isSelected) "Selected" else "Not selected",
+                tint = if (isSelected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                },
+                modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.xs),
+            )
+        }
+    }
 }

@@ -13,6 +13,7 @@ data class CapabilitiesResponseDto(
 @Serializable
 data class ServerImageDto(
     val id: Int,
+    @SerialName("cloud_key") val cloudKey: String = "",
     val file: String,
     @SerialName("thumb_url") val thumbUrl: String? = null,
     val character: String? = null,
@@ -73,6 +74,21 @@ data class GenerationExecuteResponseDto(
     @SerialName("job_id") val jobId: String,
     val status: String,
     val message: String = "",
+)
+
+@Serializable
+data class DeleteImageRequestDto(
+    @SerialName("cloud_key") val cloudKey: String,
+)
+
+@Serializable
+data class BulkDeleteRequestDto(
+    @SerialName("cloud_keys") val cloudKeys: List<String>,
+)
+
+@Serializable
+data class DeleteResponseDto(
+    val ok: Boolean = false,
 )
 
 @Serializable

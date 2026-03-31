@@ -31,6 +31,12 @@ final class ExternalServerGalleryViewModel: ObservableObject {
     @Published var generationError: String?
     @Published var showGenerationSheet = false
 
+    // Selection mode
+    @Published var isSelectionMode = false
+    @Published var selectedCloudKeys: Set<String> = []
+    @Published var isDeleting = false
+    @Published var deleteError: String?
+
     private var currentPage = 1
     private var totalPages = 1
     private let perPage: Int32 = 96
@@ -42,6 +48,7 @@ final class ExternalServerGalleryViewModel: ObservableObject {
     private let getDependentChoicesUC: GetDependentChoicesUseCase
     private let executeGenerationUC: ExecuteGenerationUseCase
     private let getGenerationStatusUC: GetGenerationStatusUseCase
+    private let deleteServerImagesUC: DeleteServerImagesUseCase
 
     init() {
         self.getImages = KoinHelper.shared.getGetExternalServerImagesUseCase()
@@ -50,6 +57,7 @@ final class ExternalServerGalleryViewModel: ObservableObject {
         self.getDependentChoicesUC = KoinHelper.shared.getGetDependentChoicesUseCase()
         self.executeGenerationUC = KoinHelper.shared.getExecuteGenerationUseCase()
         self.getGenerationStatusUC = KoinHelper.shared.getGetGenerationStatusUseCase()
+        self.deleteServerImagesUC = KoinHelper.shared.getDeleteServerImagesUseCase()
     }
 
     // MARK: - Capabilities
@@ -186,6 +194,49 @@ final class ExternalServerGalleryViewModel: ObservableObject {
         } catch {
             // Silently fail for dependent choices
         }
+    }
+
+    // MARK: - Selection & Delete
+
+    func enterSelectionMode(cloudKey: String) {
+        isSelectionMode = true
+        selectedCloudKeys = [cloudKey]
+    }
+
+    func toggleSelection(cloudKey: String) {
+        if selectedCloudKeys.contains(cloudKey) {
+            selectedCloudKeys.remove(cloudKey)
+        } else {
+            selectedCloudKeys.insert(cloudKey)
+        }
+        if selectedCloudKeys.isEmpty {
+            isSelectionMode = false
+        }
+    }
+
+    func selectAll() {
+        selectedCloudKeys = Set(images.map { $0.cloudKey })
+    }
+
+    func exitSelectionMode() {
+        isSelectionMode = false
+        selectedCloudKeys = []
+    }
+
+    func deleteSelected() async {
+        let keys = Array(selectedCloudKeys)
+        guard !keys.isEmpty else { return }
+        isDeleting = true
+        deleteError = nil
+        do {
+            try await deleteServerImagesUC.invoke(cloudKeys: keys)
+            images.removeAll { keys.contains($0.cloudKey) }
+            isSelectionMode = false
+            selectedCloudKeys = []
+        } catch {
+            deleteError = error.localizedDescription
+        }
+        isDeleting = false
     }
 
     private func startPolling(jobId: String) {
