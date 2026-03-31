@@ -4,4 +4,5 @@ enum class NavShortcut(val label: String) {
     OutputGallery("Output Gallery"),
     Generate("Generate"),
     ImageGallery("Image Gallery"),
+    ExternalServerGallery("Server Gallery"),
 }

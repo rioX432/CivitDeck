@@ -16,12 +16,14 @@ import androidx.compose.material.icons.filled.FolderCopy
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.FolderCopy
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -75,6 +77,7 @@ private val NavShortcut.activeIcon: ImageVector
         NavShortcut.OutputGallery -> Icons.Filled.PhotoLibrary
         NavShortcut.Generate -> Icons.Filled.AutoAwesome
         NavShortcut.ImageGallery -> Icons.Filled.Image
+        NavShortcut.ExternalServerGallery -> Icons.Filled.Share
     }
 
 private val NavShortcut.inactiveIcon: ImageVector
@@ -82,6 +85,7 @@ private val NavShortcut.inactiveIcon: ImageVector
         NavShortcut.OutputGallery -> Icons.Outlined.PhotoLibrary
         NavShortcut.Generate -> Icons.Outlined.AutoAwesome
         NavShortcut.ImageGallery -> Icons.Outlined.Image
+        NavShortcut.ExternalServerGallery -> Icons.Outlined.Share
     }
 
 private val NavShortcut.navLabel: String
@@ -89,6 +93,7 @@ private val NavShortcut.navLabel: String
         NavShortcut.OutputGallery -> "Output"
         NavShortcut.Generate -> "Generate"
         NavShortcut.ImageGallery -> "Images"
+        NavShortcut.ExternalServerGallery -> "Server"
     }
 
 private data class NavItemInfo(
@@ -145,6 +150,7 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Discover) {
             NavShortcut.OutputGallery.name to TabState(mutableStateListOf<Any>(ComfyUIHistoryRoute)),
             NavShortcut.Generate.name to TabState(mutableStateListOf<Any>(ComfyUIGenerationRoute)),
             NavShortcut.ImageGallery.name to TabState(mutableStateListOf<Any>(BrowseImagesRoute)),
+            NavShortcut.ExternalServerGallery.name to TabState(mutableStateListOf<Any>(ExternalServerGalleryRoute)),
         )
     }
 

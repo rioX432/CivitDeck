@@ -1,21 +1,25 @@
 import SwiftUI
 import Shared
+import Photos
 
 struct ExternalServerImageDetailView: View {
     let image: ServerImage
     @Environment(\.dismiss) private var dismiss
     @State private var showShareSheet = false
+    @State private var showImageViewer = false
     @StateObject private var shareHashtagVM = ShareHashtagViewModel()
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.md) {
-                // Full image
+                // Full image (tap to zoom)
                 CivitAsyncImageView(
                     imageUrl: image.file,
                     contentMode: .fit,
                     aspectRatio: nil
                 )
+                .simultaneousGesture(TapGesture().onEnded { showImageViewer = true })
+                .contentShape(Rectangle())
 
                 // Metadata
                 VStack(alignment: .leading, spacing: Spacing.md) {
@@ -58,6 +62,137 @@ struct ExternalServerImageDetailView: View {
             .presentationDetents([.medium, .large])
         }
         .task { await shareHashtagVM.startObserving() }
+        .fullScreenCover(isPresented: $showImageViewer) {
+            ServerImageViewer(url: image.file, isPresented: $showImageViewer)
+        }
+    }
+}
+
+// MARK: - Fullscreen Image Viewer
+
+private struct ServerImageViewer: View {
+    let url: String
+    @Binding var isPresented: Bool
+
+    @State private var controlsVisible = true
+    @State private var dragOffset: CGFloat = 0
+    @State private var toastMessage: String?
+
+    private var backgroundOpacity: Double {
+        let progress = abs(dragOffset) / 100
+        return Double(max(1.0 - progress / 4.0, 0.0))
+    }
+
+    var body: some View {
+        ZStack {
+            Color.civitScrim
+                .opacity(backgroundOpacity)
+                .ignoresSafeArea()
+
+            ZoomableImageView(
+                url: url,
+                onFocusModeChanged: { isFocusMode in controlsVisible = !isFocusMode },
+                onDismiss: { isPresented = false },
+                onDragYChanged: { dragOffset = $0 }
+            )
+            .ignoresSafeArea()
+
+            if controlsVisible && dragOffset == 0 {
+                viewerControls
+                    .transition(.opacity)
+            }
+
+            if let message = toastMessage {
+                toastView(message: message)
+            }
+        }
+        .animation(MotionAnimation.fast, value: controlsVisible)
+    }
+
+    private var viewerControls: some View {
+        VStack {
+            HStack {
+                circleButton(systemName: "xmark", label: "Close") {
+                    isPresented = false
+                }
+                Spacer()
+            }
+            .padding(Spacing.lg)
+            Spacer()
+            HStack {
+                Spacer()
+                circleButton(systemName: "arrow.down.to.line", label: "Save") {
+                    saveImage()
+                }
+            }
+            .padding(Spacing.lg)
+        }
+    }
+
+    private func circleButton(
+        systemName: String,
+        label: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundColor(.white)
+                .padding(Spacing.smPlus)
+                .background(.ultraThinMaterial, in: Circle())
+        }
+        .accessibilityLabel(label)
+    }
+
+    private func saveImage() {
+        guard let imageUrl = URL(string: url) else {
+            showToast("Download failed")
+            return
+        }
+        Task {
+            do {
+                let request = URLRequest(url: imageUrl, cachePolicy: .returnCacheDataElseLoad)
+                let (data, _) = try await ImageURLSession.shared.data(for: request)
+                guard let uiImage = UIImage(data: data) else {
+                    showToast("Download failed")
+                    return
+                }
+                let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+                guard status == .authorized || status == .limited else {
+                    showToast("Permission denied")
+                    return
+                }
+                try await PHPhotoLibrary.shared().performChanges {
+                    PHAssetChangeRequest.creationRequestForAsset(from: uiImage)
+                }
+                showToast("Saved to Photos")
+            } catch {
+                showToast("Download failed")
+            }
+        }
+    }
+
+    private func showToast(_ message: String) {
+        withAnimation(MotionAnimation.fast) { toastMessage = message }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation(MotionAnimation.fast) { toastMessage = nil }
+        }
+    }
+
+    private func toastView(message: String) -> some View {
+        VStack {
+            Spacer()
+            Text(message)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.white)
+                .padding(.horizontal, Spacing.lg)
+                .padding(.vertical, Spacing.smPlus)
+                .background(.ultraThinMaterial, in: Capsule())
+                .padding(.bottom, Spacing.floatingOffset)
+        }
+        .transition(.opacity)
     }
 }
 

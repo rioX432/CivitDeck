@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +42,8 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerImage
+import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
+import com.riox432.civitdeck.ui.gallery.ViewerImage
 import com.riox432.civitdeck.ui.share.SocialShareSheet
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -53,8 +57,8 @@ fun ExternalServerImageDetailScreen(
     onAddShareHashtag: (String) -> Unit = {},
     onRemoveShareHashtag: (String) -> Unit = {},
 ) {
-    val context = LocalContext.current
     var showShareSheet by remember { mutableStateOf(false) }
+    var showImageViewer by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -73,41 +77,18 @@ fun ExternalServerImageDetailScreen(
             )
         },
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-        ) {
-            // Full image
-            SubcomposeAsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(image.file)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = image.character,
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f),
-            )
-
-            // Metadata
-            Column(
-                modifier = Modifier.padding(Spacing.lg),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md),
-            ) {
-                // Prompt
-                image.prompt?.let { prompt ->
-                    PromptSection(prompt = prompt, context = context)
-                }
-
-                HorizontalDivider()
-
-                // Metadata grid
-                MetadataGrid(image = image)
-            }
-        }
+        DetailBody(
+            image = image,
+            onImageClick = { showImageViewer = true },
+            modifier = Modifier.padding(padding),
+        )
+    }
+    if (showImageViewer) {
+        ImageViewerOverlay(
+            images = listOf(ViewerImage(url = image.file)),
+            initialIndex = 0,
+            onDismiss = { showImageViewer = false },
+        )
     }
     if (showShareSheet) {
         SocialShareSheet(
@@ -117,6 +98,41 @@ fun ExternalServerImageDetailScreen(
             onRemoveHashtag = onRemoveShareHashtag,
             onDismiss = { showShareSheet = false },
         )
+    }
+}
+
+@Composable
+private fun DetailBody(
+    image: ServerImage,
+    onImageClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+    ) {
+        SubcomposeAsyncImage(
+            model = ImageRequest.Builder(context)
+                .data(image.file)
+                .crossfade(true)
+                .build(),
+            contentDescription = image.character,
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .clickable(onClick = onImageClick),
+        )
+        Column(
+            modifier = Modifier.padding(Spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(Spacing.md),
+        ) {
+            image.prompt?.let { prompt -> PromptSection(prompt = prompt, context = context) }
+            HorizontalDivider()
+            MetadataGrid(image = image)
+        }
     }
 }
 
