@@ -12,12 +12,13 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -30,7 +31,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,63 +40,47 @@ import androidx.compose.ui.platform.LocalContext
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerImage
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
-import com.riox432.civitdeck.ui.share.SocialShareSheet
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExternalServerImageDetailScreen(
-    image: ServerImage,
+    images: List<ServerImage>,
+    initialIndex: Int,
     onBack: () -> Unit,
-    shareHashtags: List<ShareHashtag> = emptyList(),
-    onToggleShareHashtag: (String, Boolean) -> Unit = { _, _ -> },
-    onAddShareHashtag: (String) -> Unit = {},
-    onRemoveShareHashtag: (String) -> Unit = {},
 ) {
-    var showShareSheet by remember { mutableStateOf(false) }
-    var showImageViewer by rememberSaveable { mutableStateOf(false) }
-
+    if (images.isEmpty()) return
+    val pagerState = rememberPagerState(initialPage = initialIndex) { images.size }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(image.character ?: "Image Detail") },
+                title = { Text("${pagerState.currentPage + 1} / ${images.size}") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 },
-                actions = {
-                    IconButton(onClick = { showShareSheet = true }) {
-                        Icon(Icons.Default.Share, contentDescription = "Share")
-                    }
-                },
             )
         },
     ) { padding ->
-        DetailBody(
-            image = image,
-            onImageClick = { showImageViewer = true },
-            modifier = Modifier.padding(padding),
-        )
+        HorizontalPager(state = pagerState, modifier = Modifier.padding(padding)) { page ->
+            DetailPage(image = images[page])
+        }
     }
+}
+
+@Composable
+private fun DetailPage(image: ServerImage) {
+    var showImageViewer by rememberSaveable { mutableStateOf(false) }
+    DetailBody(image = image, onImageClick = { showImageViewer = true })
     if (showImageViewer) {
         ImageViewerOverlay(
             images = listOf(ViewerImage(url = image.file)),
             initialIndex = 0,
             onDismiss = { showImageViewer = false },
-        )
-    }
-    if (showShareSheet) {
-        SocialShareSheet(
-            hashtags = shareHashtags,
-            onToggleHashtag = onToggleShareHashtag,
-            onAddHashtag = onAddShareHashtag,
-            onRemoveHashtag = onRemoveShareHashtag,
-            onDismiss = { showShareSheet = false },
         )
     }
 }

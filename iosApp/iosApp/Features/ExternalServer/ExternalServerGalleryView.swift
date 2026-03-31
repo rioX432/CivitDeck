@@ -4,7 +4,7 @@ import Shared
 struct ExternalServerGalleryView: View {
     let serverName: String
     @StateObject private var viewModel = ExternalServerGalleryViewModel()
-    @State private var selectedImage: ServerImage?
+    @State private var selectedIndex: Int?
     @State private var showJobAlert = false
 
     private let columns = [
@@ -34,10 +34,10 @@ struct ExternalServerGalleryView: View {
             } else {
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: Spacing.xxs) {
-                        ForEach(viewModel.images, id: \.id) { image in
+                        ForEach(Array(viewModel.images.enumerated()), id: \.element.id) { idx, image in
                             ServerImageCell(image: image)
                                 .accessibilityLabel("Select image")
-                                .onTapGesture { selectedImage = image }
+                                .onTapGesture { selectedIndex = idx }
                                 .onAppear {
                                     if image.id == viewModel.images.last?.id {
                                         Task { await viewModel.loadMore() }
@@ -88,9 +88,17 @@ struct ExternalServerGalleryView: View {
         .sheet(isPresented: $viewModel.showGenerationSheet) {
             ExternalServerGenerationSheet(viewModel: viewModel)
         }
-        .sheet(item: $selectedImage) { image in
-            NavigationStack {
-                ExternalServerImageDetailView(image: image)
+        .fullScreenCover(isPresented: Binding(
+            get: { selectedIndex != nil },
+            set: { if !$0 { selectedIndex = nil } }
+        )) {
+            if let idx = selectedIndex {
+                NavigationStack {
+                    ExternalServerImageDetailView(
+                        images: viewModel.images,
+                        initialIndex: idx
+                    )
+                }
             }
         }
         .onChange(of: viewModel.activeJob != nil) { showJobAlert = $0 }

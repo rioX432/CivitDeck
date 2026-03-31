@@ -79,7 +79,7 @@ data object ExternalServerSettingsRoute
 
 data object ExternalServerGalleryRoute
 
-data class ExternalServerImageDetailRoute(val imageId: Int)
+data class ExternalServerImageDetailRoute(val initialIndex: Int)
 
 data object DatasetListRoute
 
