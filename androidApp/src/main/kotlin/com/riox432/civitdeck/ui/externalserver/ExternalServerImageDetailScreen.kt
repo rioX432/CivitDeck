@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,10 +36,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import coil3.compose.SubcomposeAsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerImage
+import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -91,29 +88,24 @@ private fun DetailBody(
     onImageClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
-        SubcomposeAsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(image.file)
-                .crossfade(true)
-                .build(),
+        CivitAsyncImage(
+            imageUrl = image.file,
             contentDescription = image.character,
-            contentScale = ContentScale.FillWidth,
+            contentScale = ContentScale.Fit,
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(1f)
                 .clickable(onClick = onImageClick),
         )
         Column(
             modifier = Modifier.padding(Spacing.lg),
             verticalArrangement = Arrangement.spacedBy(Spacing.md),
         ) {
-            image.prompt?.let { prompt -> PromptSection(prompt = prompt, context = context) }
+            image.prompt?.let { prompt -> PromptSection(prompt = prompt) }
             HorizontalDivider()
             MetadataGrid(image = image)
         }
@@ -121,7 +113,8 @@ private fun DetailBody(
 }
 
 @Composable
-private fun PromptSection(prompt: String, context: Context) {
+private fun PromptSection(prompt: String) {
+    val context = LocalContext.current
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         Row(
             modifier = Modifier.fillMaxWidth(),

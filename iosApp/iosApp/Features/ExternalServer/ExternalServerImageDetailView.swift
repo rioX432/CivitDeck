@@ -43,11 +43,28 @@ private struct ServerImageDetailPage: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.md) {
-                CivitAsyncImageView(
-                    imageUrl: image.file,
-                    contentMode: .fit,
-                    aspectRatio: nil
-                )
+                CachedAsyncImage(url: URL(string: image.file), maxPixelSize: 1200) { phase in
+                    switch phase {
+                    case .success(let img):
+                        img
+                            .resizable()
+                            .scaledToFit()
+                    case .failure:
+                        Color.civitSurfaceVariant
+                            .frame(height: 300)
+                            .overlay {
+                                Image(systemName: "photo")
+                                    .foregroundColor(.civitOnSurfaceVariant)
+                            }
+                    case .empty:
+                        Color.civitSurfaceVariant
+                            .frame(height: 300)
+                            .shimmer()
+                    @unknown default:
+                        Color.clear
+                    }
+                }
+                .frame(maxWidth: .infinity)
                 .simultaneousGesture(TapGesture().onEnded { showImageViewer = true })
                 .contentShape(Rectangle())
 
