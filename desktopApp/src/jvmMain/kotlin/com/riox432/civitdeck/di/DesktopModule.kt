@@ -97,7 +97,7 @@ val desktopModule = module {
         ExternalServerSettingsViewModel(get(), get(), get(), get(), get(), get())
     }
     viewModel {
-        ExternalServerGalleryViewModel(get(), get(), get(), get(), get(), get())
+        ExternalServerGalleryViewModel(get(), get(), get(), get(), get(), get(), get())
     }
     // Dataset ViewModels
     viewModel {

@@ -42,23 +42,23 @@ final class ModelSearchViewModel: ObservableObject {
     private let getExcludedTagsUseCase: GetExcludedTagsUseCase
     private let addExcludedTagUseCase: AddExcludedTagUseCase
     private let removeExcludedTagUseCase: RemoveExcludedTagUseCase
-    private let getHiddenModelIdsUseCase: GetHiddenModelIdsUseCase
-    private let hideModelUseCase: HideModelUseCase
+    let getHiddenModelIdsUseCase: GetHiddenModelIdsUseCase
+    let hideModelUseCase: HideModelUseCase
     private let observeGridColumnsUseCase: ObserveGridColumnsUseCase
     private let observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase
     private let observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase
     private let observeOwnedModelHashesUseCase: ObserveOwnedModelHashesUseCase
-    private let toggleFavoriteUseCase: ToggleFavoriteUseCase
-    private let observeFavoritesUseCase: ObserveFavoritesUseCase
-    private let observeSavedSearchFiltersUseCase: ObserveSavedSearchFiltersUseCase
-    private let saveSearchFilterUseCase: SaveSearchFilterUseCase
-    private let deleteSavedSearchFilterUseCase: DeleteSavedSearchFilterUseCase
+    let toggleFavoriteUseCase: ToggleFavoriteUseCase
+    let observeFavoritesUseCase: ObserveFavoritesUseCase
+    let observeSavedSearchFiltersUseCase: ObserveSavedSearchFiltersUseCase
+    let saveSearchFilterUseCase: SaveSearchFilterUseCase
+    let deleteSavedSearchFilterUseCase: DeleteSavedSearchFilterUseCase
     private let observeQualityThresholdUseCase: ObserveQualityThresholdUseCase
     private var qualityThreshold: Int32 = 0
     private var thresholdObserveTask: Task<Void, Never>?
     private var nextCursor: String?
-    private var loadTask: Task<Void, Never>?
-    private var hiddenModelIds: Set<KotlinLong> = []
+    var loadTask: Task<Void, Never>?
+    var hiddenModelIds: Set<KotlinLong> = []
     private var sortWatermark: Double?
     private var multiSourcePage: Int32 = 1
 
@@ -280,7 +280,7 @@ final class ModelSearchViewModel: ObservableObject {
         }
     }
 
-    private func reloadModels() {
+    func reloadModels() {
         loadTask?.cancel()
         resetPaginationState()
         loadModels()
@@ -460,66 +460,3 @@ private extension ModelSearchViewModel {
     }
 }
 
-// MARK: - Favorites, Hidden Models & Saved Filters
-
-extension ModelSearchViewModel {
-    func toggleFavorite(_ model: Model) {
-        Task { try? await toggleFavoriteUseCase.invoke(model: model) }
-    }
-    func observeFavorites() async {
-        for await list in observeFavoritesUseCase.invoke() {
-            let summaries = list.compactMap { $0 as? FavoriteModelSummary }
-            favoriteIds = Set(summaries.map { $0.id })
-        }
-    }
-    func hideModel(_ modelId: Int64, name: String) {
-        Task {
-            try? await hideModelUseCase.invoke(modelId: modelId, modelName: name)
-            hiddenModelIds = try await getHiddenModelIdsUseCase.invoke()
-            models.removeAll { $0.id == modelId }
-        }
-    }
-    func isModelOwned(_ model: Model) -> Bool {
-        guard !ownedHashes.isEmpty else { return false }
-        return model.modelVersions.contains { version in
-            version.files.contains { file in
-                if let sha256 = file.hashes["SHA256"] as? String {
-                    return ownedHashes.contains(sha256.lowercased())
-                }
-                return false
-            }
-        }
-    }
-    func observeSavedFilters() async {
-        for await list in observeSavedSearchFiltersUseCase.invoke() {
-            savedFilters = list.compactMap { $0 as? SavedSearchFilter }
-        }
-    }
-    func saveCurrentFilter(name: String) {
-        let filter = SavedSearchFilter(
-            id: 0, name: name, query: query, selectedType: selectedType,
-            selectedSort: selectedSort, selectedPeriod: selectedPeriod,
-            selectedBaseModels: selectedBaseModels, nsfwFilterLevel: nsfwFilterLevel,
-            isFreshFindEnabled: isFreshFindEnabled, excludedTags: excludedTags,
-            includedTags: includedTags, selectedSources: selectedSources, savedAt: 0
-        )
-        Task { try? await saveSearchFilterUseCase.invoke(name: name, filter: filter) }
-    }
-    func applyFilter(_ filter: SavedSearchFilter) {
-        loadTask?.cancel()
-        query = filter.query
-        selectedType = filter.selectedType
-        selectedSort = filter.selectedSort
-        selectedPeriod = filter.selectedPeriod
-        selectedBaseModels = Set(filter.selectedBaseModels.compactMap { $0 as? BaseModel })
-        nsfwFilterLevel = filter.nsfwFilterLevel
-        isFreshFindEnabled = filter.isFreshFindEnabled
-        includedTags = filter.includedTags.compactMap { $0 as? String }
-        excludedTags = filter.excludedTags.compactMap { $0 as? String }
-        selectedSources = Set(filter.selectedSources.compactMap { $0 as? Core_domainModelSource })
-        reloadModels()
-    }
-    func deleteSavedFilter(id: Int64) {
-        Task { try? await deleteSavedSearchFilterUseCase.invoke(id: id) }
-    }
-}
