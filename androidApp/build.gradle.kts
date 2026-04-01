@@ -10,8 +10,8 @@ android {
 
     defaultConfig {
         applicationId = "com.riox432.civitdeck"
-        versionCode = 5
-        versionName = "2.0.1"
+        versionCode = 6
+        versionName = "2.1.0"
     }
 
     // Release signing config from environment variables (CI)
