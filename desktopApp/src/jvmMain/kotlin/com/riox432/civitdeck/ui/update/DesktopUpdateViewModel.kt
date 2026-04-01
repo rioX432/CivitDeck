@@ -6,6 +6,8 @@ import com.riox432.civitdeck.domain.model.UpdateResult
 import com.riox432.civitdeck.domain.usecase.CheckForUpdateUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAutoUpdateCheckUseCase
 import com.riox432.civitdeck.domain.usecase.SetAutoUpdateCheckUseCase
+import com.riox432.civitdeck.util.Logger
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -48,7 +50,10 @@ class DesktopUpdateViewModel(
                         showBanner = result.isUpdateAvailable,
                     )
                 }
-            } catch (_: Exception) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Logger.w(TAG, "Update check failed: ${e.message}")
                 _uiState.update { it.copy(isChecking = false) }
             }
         }
@@ -62,3 +67,5 @@ class DesktopUpdateViewModel(
         viewModelScope.launch { setAutoUpdateCheckUseCase(enabled) }
     }
 }
+
+private const val TAG = "DesktopUpdateViewModel"

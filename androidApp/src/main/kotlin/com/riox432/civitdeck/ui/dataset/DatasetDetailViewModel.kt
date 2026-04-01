@@ -10,10 +10,11 @@ import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveImageFromDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.UpdateTrainableUseCase
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.plugin.PluginExportFormat
 import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
 import com.riox432.civitdeck.usecase.GetAvailableExportFormatsUseCase
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -117,26 +118,16 @@ class DatasetDetailViewModel(
         val ids = selectedImageIds.value.toList()
         if (ids.isEmpty()) return
         viewModelScope.launch {
-            try {
-                removeImageFromDatasetUseCase(ids)
-                clearSelection()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Removal failure is non-critical
-            }
+            suspendRunCatching { removeImageFromDatasetUseCase(ids) }
+                .onSuccess { clearSelection() }
+                .onFailure { e -> Logger.w(TAG, "Remove images failed: ${e.message}") }
         }
     }
 
     fun editCaption(imageId: Long, text: String) {
         viewModelScope.launch {
-            try {
-                editCaptionUseCase(imageId, text)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Caption edit failure is non-critical
-            }
+            suspendRunCatching { editCaptionUseCase(imageId, text) }
+                .onFailure { e -> Logger.w(TAG, "Edit caption failed: ${e.message}") }
         }
     }
 
@@ -157,15 +148,11 @@ class DatasetDetailViewModel(
 
     fun updateTrainable(imageId: Long, trainable: Boolean) {
         viewModelScope.launch {
-            try {
-                updateTrainableUseCase(imageId, trainable)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Trainable update failure is non-critical
-            }
+            suspendRunCatching { updateTrainableUseCase(imageId, trainable) }
+                .onFailure { e -> Logger.w(TAG, "Update trainable failed: ${e.message}") }
         }
     }
 }
 
+private const val TAG = "DatasetDetailViewModel"
 private const val STOP_TIMEOUT = 5_000L

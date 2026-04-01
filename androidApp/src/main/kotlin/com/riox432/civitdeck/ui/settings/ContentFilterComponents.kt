@@ -19,6 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
@@ -34,9 +36,9 @@ internal fun NsfwToggleRow(level: NsfwFilterLevel, onToggle: (NsfwFilterLevel) -
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text("NSFW Content", style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.settings_nsfw_content), style = MaterialTheme.typography.bodyLarge)
             Text(
-                "Show NSFW content in search results",
+                stringResource(R.string.settings_nsfw_content_description),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -60,23 +62,22 @@ internal fun NsfwBlurSection(
         verticalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
         Text(
-            "Blur Intensity",
+            stringResource(R.string.settings_blur_intensity),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            "Controls blur strength for NSFW images in the Image Gallery. " +
-                "Tap any blurred image to reveal it temporarily.",
+            stringResource(R.string.settings_blur_description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        BlurSliderRow("Soft", settings.softIntensity) {
+        BlurSliderRow(stringResource(R.string.settings_blur_soft), settings.softIntensity) {
             onSettingsChanged(settings.copy(softIntensity = it))
         }
-        BlurSliderRow("Mature", settings.matureIntensity) {
+        BlurSliderRow(stringResource(R.string.settings_blur_mature), settings.matureIntensity) {
             onSettingsChanged(settings.copy(matureIntensity = it))
         }
-        BlurSliderRow("Explicit", settings.explicitIntensity) {
+        BlurSliderRow(stringResource(R.string.settings_blur_explicit), settings.explicitIntensity) {
             onSettingsChanged(settings.copy(explicitIntensity = it))
         }
     }
@@ -95,7 +96,7 @@ internal fun BlurSliderRow(
         ) {
             Text(label, style = MaterialTheme.typography.bodyMedium)
             Text(
-                text = if (intensity == 0) "Hidden" else "$intensity%",
+                text = if (intensity == 0) stringResource(R.string.settings_blur_hidden) else "$intensity%",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -116,7 +117,12 @@ internal fun HiddenModelsRow(
     onUnhide: (Long) -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(false) }
-    SettingsClickRow(label = "Hidden Models", detail = "$count models") { showDialog = true }
+    SettingsClickRow(
+        label = stringResource(R.string.settings_hidden_models),
+        detail = stringResource(R.string.settings_hidden_models_count, count)
+    ) {
+        showDialog = true
+    }
     if (showDialog) {
         HiddenModelsDialog(models = models, onUnhide = onUnhide, onDismiss = { showDialog = false })
     }
@@ -130,10 +136,10 @@ internal fun HiddenModelsDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Hidden Models") },
+        title = { Text(stringResource(R.string.settings_hidden_models)) },
         text = {
             if (models.isEmpty()) {
-                Text("No hidden models.\nLong-press a model card on the Search screen to hide it.")
+                Text(stringResource(R.string.settings_no_hidden_models))
             } else {
                 Column {
                     models.forEach { model ->
@@ -142,7 +148,7 @@ internal fun HiddenModelsDialog(
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_close)) } },
     )
 }
 
@@ -154,7 +160,7 @@ internal fun HiddenModelItem(name: String, onUnhide: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-        TextButton(onClick = onUnhide) { Text("Unhide") }
+        TextButton(onClick = onUnhide) { Text(stringResource(R.string.settings_unhide)) }
     }
 }
 
@@ -165,7 +171,12 @@ internal fun ExcludedTagsRow(
     onRemove: (String) -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(false) }
-    SettingsClickRow(label = "Excluded Tags", detail = "${tags.size} tags") { showDialog = true }
+    SettingsClickRow(
+        label = stringResource(R.string.settings_excluded_tags),
+        detail = stringResource(R.string.settings_excluded_tags_count, tags.size)
+    ) {
+        showDialog = true
+    }
     if (showDialog) {
         ExcludedTagsDialog(tags = tags, onAdd = onAdd, onRemove = onRemove, onDismiss = { showDialog = false })
     }
@@ -181,7 +192,7 @@ internal fun ExcludedTagsDialog(
     var newTag by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Excluded Tags") },
+        title = { Text(stringResource(R.string.settings_excluded_tags)) },
         text = {
             Column {
                 ExcludedTagInput(newTag, onValueChange = { newTag = it }) {
@@ -190,7 +201,7 @@ internal fun ExcludedTagsDialog(
                 }
                 if (tags.isEmpty()) {
                     Text(
-                        "No excluded tags",
+                        stringResource(R.string.settings_no_excluded_tags),
                         modifier = Modifier.padding(top = Spacing.sm),
                     )
                 } else {
@@ -200,7 +211,7 @@ internal fun ExcludedTagsDialog(
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_close)) } },
     )
 }
 
@@ -214,11 +225,11 @@ internal fun ExcludedTagInput(value: String, onValueChange: (String) -> Unit, on
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = { Text("Add tag") },
+            placeholder = { Text(stringResource(R.string.settings_add_tag)) },
             singleLine = true,
             modifier = Modifier.weight(1f),
         )
-        TextButton(onClick = onAdd, enabled = value.isNotBlank()) { Text("Add") }
+        TextButton(onClick = onAdd, enabled = value.isNotBlank()) { Text(stringResource(R.string.settings_add)) }
     }
 }
 
@@ -230,6 +241,6 @@ internal fun ExcludedTagItem(tag: String, onRemove: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(tag, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-        TextButton(onClick = onRemove) { Text("Remove") }
+        TextButton(onClick = onRemove) { Text(stringResource(R.string.settings_remove)) }
     }
 }

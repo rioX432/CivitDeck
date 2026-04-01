@@ -1,6 +1,5 @@
 package com.riox432.civitdeck.domain.util
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,32 +55,31 @@ class PaginatedLoader<T>(
 
     private fun doLoad(isLoadMore: Boolean) {
         job = scope.launch {
-            try {
-                val cursor = if (isLoadMore) _state.value.nextCursor else null
-                val result = load(cursor, pageSize)
-                _state.update {
-                    it.copy(
-                        items = if (isLoadMore) it.items + result.items else result.items,
-                        isLoading = false,
-                        isLoadingMore = false,
-                        error = null,
-                        nextCursor = result.nextCursor,
-                        hasMore = result.nextCursor != null,
-                    )
+            val cursor = if (isLoadMore) _state.value.nextCursor else null
+            suspendRunCatching { load(cursor, pageSize) }
+                .onSuccess { result ->
+                    _state.update {
+                        it.copy(
+                            items = if (isLoadMore) it.items + result.items else result.items,
+                            isLoading = false,
+                            isLoadingMore = false,
+                            error = null,
+                            nextCursor = result.nextCursor,
+                            hasMore = result.nextCursor != null,
+                        )
+                    }
+                    notifyState()
                 }
-                notifyState()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        isLoadingMore = false,
-                        error = e.message ?: "Unknown error",
-                    )
+                .onFailure { e ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            isLoadingMore = false,
+                            error = e.message ?: "Unknown error",
+                        )
+                    }
+                    notifyState()
                 }
-                notifyState()
-            }
         }
     }
 

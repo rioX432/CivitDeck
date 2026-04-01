@@ -2,6 +2,8 @@ import SwiftUI
 import Shared
 import Photos
 
+private let imagePlaceholderHeight: CGFloat = 300
+
 struct ExternalServerImageDetailView: View {
     let images: [ServerImage]
     let initialIndex: Int
@@ -51,14 +53,14 @@ private struct ServerImageDetailPage: View {
                             .scaledToFit()
                     case .failure:
                         Color.civitSurfaceVariant
-                            .frame(height: 300)
+                            .frame(height: imagePlaceholderHeight)
                             .overlay {
                                 Image(systemName: "photo")
                                     .foregroundColor(.civitOnSurfaceVariant)
                             }
                     case .empty:
                         Color.civitSurfaceVariant
-                            .frame(height: 300)
+                            .frame(height: imagePlaceholderHeight)
                             .shimmer()
                     @unknown default:
                         Color.clear

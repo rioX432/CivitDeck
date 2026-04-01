@@ -69,8 +69,8 @@ internal fun VersionDetail(
     onCancelDownload: (Long) -> Unit = {},
 ) {
     Column(modifier = Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.sm)) {
-        if (version.baseModel != null) {
-            DetailRow(label = "Base Model", value = version.baseModel!!)
+        version.baseModel?.let { baseModel ->
+            DetailRow(label = "Base Model", value = baseModel)
         }
 
         if (version.trainedWords.isNotEmpty()) {

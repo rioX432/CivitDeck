@@ -9,6 +9,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUISamplers
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIVaesUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.GenerateSDWebUIImageUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptSDWebUIGenerationUseCase
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,9 +60,9 @@ class SDWebUIGenerationViewModel(
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                val models = runCatching { fetchModels() }.getOrDefault(emptyList())
-                val samplers = runCatching { fetchSamplers() }.getOrDefault(emptyList())
-                val vaes = runCatching { fetchVaes() }.getOrDefault(emptyList())
+                val models = suspendRunCatching { fetchModels() }.getOrDefault(emptyList())
+                val samplers = suspendRunCatching { fetchSamplers() }.getOrDefault(emptyList())
+                val vaes = suspendRunCatching { fetchVaes() }.getOrDefault(emptyList())
                 _uiState.update {
                     it.copy(
                         isLoading = false,
@@ -138,7 +139,8 @@ class SDWebUIGenerationViewModel(
     fun onInterrupt() {
         generationJob?.cancel()
         viewModelScope.launch {
-            runCatching { interruptGeneration() }
+            suspendRunCatching { interruptGeneration() }
+                .onFailure { e -> Logger.w(TAG, "Interrupt failed: ${e.message}") }
             _uiState.update { it.copy(isGenerating = false) }
         }
     }

@@ -9,6 +9,7 @@ import com.riox432.civitdeck.domain.model.InstalledPluginType
 import com.riox432.civitdeck.domain.repository.PluginRepository
 import com.riox432.civitdeck.plugin.PluginRegistry
 import com.riox432.civitdeck.plugin.capability.ThemeCapability
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.serialization.json.Json
 
 /**
@@ -20,7 +21,7 @@ class ImportThemeUseCase(
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
-    suspend operator fun invoke(jsonString: String): Result<String> = runCatching {
+    suspend operator fun invoke(jsonString: String): Result<String> = suspendRunCatching {
         val definition = json.decodeFromString<ThemeDefinition>(jsonString)
         val plugin = JsonThemePlugin(definition)
         val pluginId = plugin.manifest.id

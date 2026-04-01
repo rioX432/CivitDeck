@@ -37,6 +37,10 @@ object Elevation {
 
 object IconSize {
     val statIcon = 10.dp
+    val small = 16.dp
+    val medium = 24.dp
     val errorPlaceholder = 36.dp
+    val large = 48.dp
+    val xlarge = 56.dp
     val navBar = 24.dp
 }

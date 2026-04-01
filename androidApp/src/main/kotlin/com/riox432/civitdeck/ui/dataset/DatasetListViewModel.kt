@@ -7,7 +7,8 @@ import com.riox432.civitdeck.domain.usecase.CreateDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.RenameDatasetCollectionUseCase
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -30,39 +31,25 @@ class DatasetListViewModel(
 
     fun createDataset(name: String) {
         viewModelScope.launch {
-            try {
-                createDatasetCollectionUseCase(name)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Dataset creation failure is non-critical
-            }
+            suspendRunCatching { createDatasetCollectionUseCase(name) }
+                .onFailure { e -> Logger.w(TAG, "Create dataset failed: ${e.message}") }
         }
     }
 
     fun renameDataset(id: Long, name: String) {
         viewModelScope.launch {
-            try {
-                renameDatasetCollectionUseCase(id, name)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Rename failure is non-critical
-            }
+            suspendRunCatching { renameDatasetCollectionUseCase(id, name) }
+                .onFailure { e -> Logger.w(TAG, "Rename dataset failed: ${e.message}") }
         }
     }
 
     fun deleteDataset(id: Long) {
         viewModelScope.launch {
-            try {
-                deleteDatasetCollectionUseCase(id)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Delete failure is non-critical
-            }
+            suspendRunCatching { deleteDatasetCollectionUseCase(id) }
+                .onFailure { e -> Logger.w(TAG, "Delete dataset failed: ${e.message}") }
         }
     }
 }
 
+private const val TAG = "DatasetListViewModel"
 private const val STOP_TIMEOUT = 5_000L

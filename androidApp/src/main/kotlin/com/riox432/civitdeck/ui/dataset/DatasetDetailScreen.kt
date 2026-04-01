@@ -1,77 +1,40 @@
-@file:Suppress("TooManyFunctions")
-
 package com.riox432.civitdeck.ui.dataset
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Dataset
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.FileDownload
-import androidx.compose.material.icons.filled.FindReplace
-import androidx.compose.material.icons.filled.PhotoSizeSelectLarge
-import androidx.compose.material.icons.filled.SelectAll
-import androidx.compose.material.icons.filled.Style
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.domain.model.ExportProgress
 import com.riox432.civitdeck.domain.model.ImageSource
 import com.riox432.civitdeck.plugin.PluginExportFormat
-import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.FilterChipRow
-import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
 private const val GRID_COLUMNS = 2
-private const val IMAGE_ASPECT_RATIO = 1f
 
-private data class DatasetGridCallbacks(
+internal data class DatasetGridCallbacks(
     val onToggleSelection: (Long) -> Unit,
     val onEnterSelectionMode: (Long) -> Unit,
     val onShowDetail: (DatasetImage) -> Unit,
@@ -312,103 +275,6 @@ private fun DatasetDetailSheets(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DatasetDetailTopBar(
-    datasetName: String,
-    isSelectionMode: Boolean,
-    selectedCount: Int,
-    onBack: () -> Unit,
-    onClearSelection: () -> Unit,
-    onSelectAll: () -> Unit,
-    onReviewDuplicates: () -> Unit,
-    onResolutionFilter: () -> Unit,
-    onExport: () -> Unit = {},
-) {
-    TopAppBar(
-        title = {
-            Text(
-                text = if (isSelectionMode) "$selectedCount selected" else datasetName,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        },
-        navigationIcon = {
-            IconButton(
-                onClick = if (isSelectionMode) onClearSelection else onBack,
-            ) {
-                Icon(
-                    imageVector = if (isSelectionMode) Icons.Default.Close else Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = if (isSelectionMode) {
-                        stringResource(R.string.cd_cancel_selection)
-                    } else {
-                        stringResource(R.string.cd_navigate_back)
-                    },
-                )
-            }
-        },
-        actions = {
-            if (isSelectionMode) {
-                IconButton(onClick = onSelectAll) {
-                    Icon(Icons.Default.SelectAll, contentDescription = stringResource(R.string.cd_select_all))
-                }
-            } else {
-                IconButton(onClick = onExport) {
-                    Icon(Icons.Default.FileDownload, contentDescription = stringResource(R.string.cd_export_dataset))
-                }
-                IconButton(onClick = onReviewDuplicates) {
-                    Icon(Icons.Default.FindReplace, contentDescription = stringResource(R.string.cd_review_duplicates))
-                }
-                IconButton(onClick = onResolutionFilter) {
-                    Icon(
-                        Icons.Default.PhotoSizeSelectLarge,
-                        contentDescription = stringResource(R.string.cd_resolution_filter)
-                    )
-                }
-            }
-        },
-    )
-}
-
-@Composable
-private fun DatasetSelectionBottomBar(
-    selectedCount: Int,
-    onRemove: () -> Unit,
-    onEditTags: () -> Unit,
-) {
-    BottomAppBar {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Spacing.md),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm, Alignment.CenterHorizontally),
-        ) {
-            Button(onClick = onEditTags) {
-                Icon(
-                    imageVector = Icons.Default.Style,
-                    contentDescription = stringResource(R.string.cd_edit_tags),
-                    modifier = Modifier.size(18.dp),
-                )
-                Text(
-                    text = "Edit Tags",
-                    modifier = Modifier.padding(start = Spacing.sm),
-                )
-            }
-            Button(onClick = onRemove) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.cd_remove),
-                    modifier = Modifier.size(18.dp),
-                )
-                Text(
-                    text = "Remove $selectedCount ${if (selectedCount == 1) "image" else "images"}",
-                    modifier = Modifier.padding(start = Spacing.sm),
-                )
-            }
-        }
-    }
-}
-
 @Composable
 private fun DatasetDetailContent(
     images: List<DatasetImage>,
@@ -423,8 +289,8 @@ private fun DatasetDetailContent(
     if (images.isEmpty() && selectedSource == null) {
         EmptyStateMessage(
             icon = Icons.Default.Dataset,
-            title = "No images yet",
-            subtitle = "Add images to this dataset from the ComfyUI output gallery",
+            title = stringResource(R.string.dataset_no_images_title),
+            subtitle = stringResource(R.string.dataset_no_images_subtitle),
             modifier = modifier.fillMaxSize(),
         )
     } else {
@@ -465,14 +331,19 @@ private fun DatasetImageGrid(
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
         modifier = modifier.fillMaxSize(),
     ) {
-        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             if (!isSelectionMode) {
-                androidx.compose.foundation.layout.Column {
+                Column {
+                    val allLabel = stringResource(R.string.dataset_source_all)
                     FilterChipRow(
                         options = sourceOptions,
                         selected = selectedSource,
                         onSelect = callbacks.onSourceFilterChange,
-                        label = { it?.name?.lowercase()?.replaceFirstChar { c -> c.uppercase() } ?: "All" },
+                        label = {
+                            it?.name?.lowercase()
+                                ?.replaceFirstChar { c -> c.uppercase() }
+                                ?: allLabel
+                        },
                         modifier = Modifier
                             .horizontalScroll(rememberScrollState())
                             .padding(horizontal = Spacing.sm),
@@ -495,174 +366,6 @@ private fun DatasetImageGrid(
                 isSelectionMode = isSelectionMode,
                 callbacks = callbacks,
                 modifier = Modifier.animateItem(),
-            )
-        }
-    }
-}
-
-@Composable
-private fun QualitySummaryChip(
-    imageCount: Int,
-    duplicateCount: Int,
-    lowResCount: Int,
-    modifier: Modifier = Modifier,
-) {
-    val label = buildString {
-        append("$imageCount images")
-        if (duplicateCount > 0) append(" • $duplicateCount duplicates")
-        if (lowResCount > 0) append(" • $lowResCount below threshold")
-    }
-    SuggestionChip(
-        onClick = {},
-        label = { Text(text = label, style = MaterialTheme.typography.labelSmall) },
-        modifier = modifier,
-    )
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun DatasetImageItem(
-    image: DatasetImage,
-    isSelected: Boolean,
-    isSelectionMode: Boolean,
-    callbacks: DatasetGridCallbacks,
-    modifier: Modifier = Modifier,
-) {
-    var showContextMenu by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = modifier.combinedClickable(
-            onClick = {
-                if (isSelectionMode) callbacks.onToggleSelection(image.id) else callbacks.onShowDetail(image)
-            },
-            onLongClick = { if (!isSelectionMode) showContextMenu = true },
-        ),
-    ) {
-        CivitAsyncImage(
-            imageUrl = image.imageUrl,
-            contentDescription = stringResource(R.string.cd_dataset_image),
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(IMAGE_ASPECT_RATIO)
-                .clip(RoundedCornerShape(CornerRadius.image)),
-        )
-        if (isSelectionMode) {
-            DatasetImageSelectionOverlay(isSelected = isSelected)
-        } else {
-            SourceBadgeMini(
-                sourceType = image.sourceType,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(Spacing.xs),
-            )
-            if (image.excluded) {
-                FlaggedBadge(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(Spacing.xs),
-                )
-            }
-        }
-        ImageContextMenu(
-            expanded = showContextMenu,
-            onDismiss = { showContextMenu = false },
-            onEditCaption = {
-                showContextMenu = false
-                callbacks.onEditCaption(image)
-            },
-            onBatchEditTags = {
-                showContextMenu = false
-                callbacks.onNavigateToBatchTagEditor()
-            },
-            onSelect = {
-                showContextMenu = false
-                callbacks.onEnterSelectionMode(image.id)
-            },
-        )
-    }
-}
-
-@Composable
-private fun FlaggedBadge(modifier: Modifier = Modifier) {
-    Text(
-        text = "Flagged",
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onError,
-        modifier = modifier
-            .clip(RoundedCornerShape(CornerRadius.chip))
-            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.85f))
-            .padding(horizontal = Spacing.xs, vertical = Spacing.xxs),
-    )
-}
-
-@Composable
-private fun SourceBadgeMini(sourceType: ImageSource, modifier: Modifier = Modifier) {
-    val (label, color) = when (sourceType) {
-        ImageSource.CIVITAI -> "CI" to MaterialTheme.colorScheme.primaryContainer
-        ImageSource.LOCAL -> "LO" to MaterialTheme.colorScheme.secondaryContainer
-        ImageSource.GENERATED -> "GN" to MaterialTheme.colorScheme.tertiaryContainer
-    }
-    Text(
-        text = label,
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = modifier
-            .clip(RoundedCornerShape(CornerRadius.chip))
-            .background(color.copy(alpha = 0.85f))
-            .padding(horizontal = Spacing.xs, vertical = Spacing.xxs),
-    )
-}
-
-@Composable
-private fun ImageContextMenu(
-    expanded: Boolean,
-    onDismiss: () -> Unit,
-    onEditCaption: () -> Unit,
-    onBatchEditTags: () -> Unit,
-    onSelect: () -> Unit,
-) {
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismiss,
-    ) {
-        DropdownMenuItem(
-            text = { Text("Edit caption") },
-            onClick = onEditCaption,
-        )
-        DropdownMenuItem(
-            text = { Text("Batch edit tags") },
-            onClick = onBatchEditTags,
-        )
-        DropdownMenuItem(
-            text = { Text("Select") },
-            onClick = onSelect,
-        )
-    }
-}
-
-@Composable
-private fun DatasetImageSelectionOverlay(isSelected: Boolean) {
-    Box(
-        modifier = Modifier
-            .padding(Spacing.sm)
-            .size(24.dp)
-            .clip(CircleShape)
-            .background(
-                if (isSelected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
-                },
-            ),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (isSelected) {
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = stringResource(R.string.cd_selected),
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(20.dp),
             )
         }
     }

@@ -6,7 +6,8 @@ import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetImagesUseCase
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -54,13 +55,12 @@ class BatchTagEditorViewModel(
 
     private fun loadSuggestions(prefix: String) {
         viewModelScope.launch {
-            try {
-                tagSuggestions.value = getTagSuggestionsUseCase(datasetId, prefix)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                tagSuggestions.value = emptyList()
-            }
+            suspendRunCatching { getTagSuggestionsUseCase(datasetId, prefix) }
+                .onSuccess { tagSuggestions.value = it }
+                .onFailure { e ->
+                    Logger.w(TAG, "Load tag suggestions failed: ${e.message}")
+                    tagSuggestions.value = emptyList()
+                }
         }
     }
 
@@ -68,19 +68,16 @@ class BatchTagEditorViewModel(
         val ids = selectedImageIds.value.toList()
         if (ids.isEmpty() || tags.isEmpty()) return
         viewModelScope.launch {
-            try {
+            suspendRunCatching {
                 if (isAddMode.value) {
                     batchEditTagsUseCase(ids, addTags = tags, removeTags = emptyList())
                 } else {
                     batchEditTagsUseCase(ids, addTags = emptyList(), removeTags = tags)
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Tag edit failure is non-critical
-            }
+            }.onFailure { e -> Logger.w(TAG, "Apply tags failed: ${e.message}") }
         }
     }
 }
 
+private const val TAG = "BatchTagEditorViewModel"
 private const val STOP_TIMEOUT = 5_000L

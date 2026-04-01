@@ -16,6 +16,8 @@ import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalSe
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerImagesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationOptionsUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationStatusUseCase
+import com.riox432.civitdeck.domain.util.suspendRunCatching
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,6 +59,7 @@ data class ExternalServerGalleryUiState(
     val deleteError: String? = null,
 )
 
+private const val TAG = "ExternalServerGalleryViewModel"
 private const val PAGE_SIZE = 96
 private const val POLL_INTERVAL_MS = 2000L
 private const val MAX_POLL_TIMEOUT_MS = 600_000L
@@ -85,7 +88,7 @@ class ExternalServerGalleryViewModel(
 
     private fun loadCapabilities() {
         viewModelScope.launch {
-            runCatching { getCapabilities() }
+            suspendRunCatching { getCapabilities() }
                 .onSuccess { caps ->
                     _uiState.update {
                         it.copy(
@@ -96,6 +99,7 @@ class ExternalServerGalleryViewModel(
                         )
                     }
                 }
+                .onFailure { e -> Logger.w(TAG, "Load capabilities failed: ${e.message}") }
         }
     }
 
@@ -119,7 +123,7 @@ class ExternalServerGalleryViewModel(
     fun onRefresh() {
         viewModelScope.launch {
             _uiState.update { it.copy(isRefreshing = true, error = null) }
-            runCatching {
+            suspendRunCatching {
                 getImages(1, PAGE_SIZE, _uiState.value.filters)
             }.onSuccess { response ->
                 _uiState.update {
@@ -179,7 +183,7 @@ class ExternalServerGalleryViewModel(
     private fun loadFirstPage() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            runCatching {
+            suspendRunCatching {
                 getImages(1, PAGE_SIZE, _uiState.value.filters)
             }.onSuccess { response ->
                 _uiState.update {
@@ -201,7 +205,7 @@ class ExternalServerGalleryViewModel(
     private fun loadPage(page: Int) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingMore = true) }
-            runCatching {
+            suspendRunCatching {
                 getImages(page, PAGE_SIZE, _uiState.value.filters)
             }.onSuccess { response ->
                 _uiState.update {
@@ -252,7 +256,7 @@ class ExternalServerGalleryViewModel(
     fun onSubmitGeneration() {
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingGeneration = true, generationError = null) }
-            runCatching {
+            suspendRunCatching {
                 executeGeneration(_uiState.value.generationParams)
             }.onSuccess { job ->
                 _uiState.update {
@@ -282,7 +286,7 @@ class ExternalServerGalleryViewModel(
     private fun loadGenerationOptions() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingOptions = true) }
-            runCatching { getGenerationOptions() }
+            suspendRunCatching { getGenerationOptions() }
                 .onSuccess { options ->
                     // Set default values
                     val defaults = options.mapNotNull { option ->
@@ -308,13 +312,16 @@ class ExternalServerGalleryViewModel(
 
     private fun loadDependentChoices(key: String, endpoint: String) {
         viewModelScope.launch {
-            runCatching { getDependentChoices(endpoint) }
+            suspendRunCatching { getDependentChoices(endpoint) }
                 .onSuccess { choices ->
                     _uiState.update {
                         it.copy(
                             dependentChoices = it.dependentChoices + (key to choices),
                         )
                     }
+                }
+                .onFailure { e ->
+                    Logger.w(TAG, "Load dependent choices failed for '$key': ${e.message}")
                 }
         }
     }
@@ -326,7 +333,7 @@ class ExternalServerGalleryViewModel(
             val result = withTimeoutOrNull(MAX_POLL_TIMEOUT_MS) {
                 while (true) {
                     delay(POLL_INTERVAL_MS)
-                    runCatching { getGenerationStatus(jobId) }
+                    suspendRunCatching { getGenerationStatus(jobId) }
                         .onSuccess { job ->
                             _uiState.update { it.copy(activeJob = job) }
                             if (job.status == GenerationJobStatus.COMPLETED ||
@@ -387,7 +394,7 @@ class ExternalServerGalleryViewModel(
         if (keys.isEmpty()) return
         viewModelScope.launch {
             _uiState.update { it.copy(isDeleting = true, deleteError = null) }
-            runCatching { deleteServerImages(keys) }
+            suspendRunCatching { deleteServerImages(keys) }
                 .onSuccess {
                     _uiState.update { state ->
                         state.copy(

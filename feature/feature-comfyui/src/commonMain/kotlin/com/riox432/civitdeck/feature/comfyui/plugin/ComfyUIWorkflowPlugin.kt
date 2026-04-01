@@ -8,6 +8,7 @@ import com.riox432.civitdeck.plugin.capability.WorkflowCapability
 import com.riox432.civitdeck.plugin.model.PluginManifest
 import com.riox432.civitdeck.plugin.model.PluginState
 import com.riox432.civitdeck.plugin.model.PluginType
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.coroutines.flow.first
 
 /**
@@ -58,7 +59,7 @@ class ComfyUIWorkflowPlugin(
         cachedConnection = null
     }
 
-    override suspend fun connect(): Result<Unit> = runCatching {
+    override suspend fun connect(): Result<Unit> = suspendRunCatching {
         refreshActiveConnection()
         val connection = cachedConnection ?: error("No active ComfyUI connection")
         val success = connectionRepository.testConnection(connection)

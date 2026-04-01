@@ -39,7 +39,8 @@ import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.util.currentTimeMillis
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -145,8 +146,8 @@ class ModelDetailViewModel(
                         withTimeoutOrNull(END_VIEW_TIMEOUT) {
                             trackModelViewUseCase.endView(modelId, durationMs)
                         }
-                    } catch (_: Exception) {
-                        // Duration update failure is non-critical
+                    } catch (e: Exception) {
+                        Logger.w(TAG, "End view tracking failed: ${e.message}")
                     }
                 }
             }
@@ -156,13 +157,11 @@ class ModelDetailViewModel(
     fun onFavoriteToggle() {
         val model = _uiState.value.model ?: return
         viewModelScope.launch {
-            try {
+            suspendRunCatching {
                 toggleFavoriteUseCase(model)
                 trackModelViewUseCase.trackInteraction(modelId, InteractionType.FAVORITE)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Favorite toggle failure is non-critical
+            }.onFailure { e ->
+                Logger.w(TAG, "Favorite toggle failed: ${e.message}")
             }
         }
     }
@@ -173,16 +172,14 @@ class ModelDetailViewModel(
 
     fun saveNote(text: String) {
         viewModelScope.launch {
-            try {
+            suspendRunCatching {
                 if (text.isBlank()) {
                     deleteModelNoteUseCase(modelId)
                 } else {
                     saveModelNoteUseCase(modelId, text)
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Note save failure is non-critical
+            }.onFailure { e ->
+                Logger.w(TAG, "Note save failed: ${e.message}")
             }
         }
     }
@@ -191,54 +188,43 @@ class ModelDetailViewModel(
         val trimmed = tag.trim().lowercase()
         if (trimmed.isBlank()) return
         viewModelScope.launch {
-            try {
-                addPersonalTagUseCase(modelId, trimmed)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Tag add failure is non-critical
-            }
+            suspendRunCatching { addPersonalTagUseCase(modelId, trimmed) }
+                .onFailure { e -> Logger.w(TAG, "Add tag failed: ${e.message}") }
         }
     }
 
     fun removeTag(tag: String) {
         viewModelScope.launch {
-            try {
-                removePersonalTagUseCase(modelId, tag)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Tag remove failure is non-critical
-            }
+            suspendRunCatching { removePersonalTagUseCase(modelId, tag) }
+                .onFailure { e -> Logger.w(TAG, "Remove tag failed: ${e.message}") }
         }
     }
 
     private fun loadModel() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            try {
-                val model = getModelDetailUseCase(modelId)
-                _uiState.update {
-                    it.copy(model = model, isLoading = false)
+            suspendRunCatching { getModelDetailUseCase(modelId) }
+                .onSuccess { model ->
+                    _uiState.update {
+                        it.copy(model = model, isLoading = false)
+                    }
+                    enrichCurrentVersion()
+                    trackModelViewUseCase(
+                        modelId = model.id,
+                        modelName = model.name,
+                        modelType = model.type.name,
+                        creatorName = model.creator?.username,
+                        thumbnailUrl = model.modelVersions.firstOrNull()
+                            ?.images?.firstOrNull()?.url,
+                        tags = model.tags,
+                    )
+                    viewStartTimeMs = currentTimeMillis()
                 }
-                enrichCurrentVersion()
-                trackModelViewUseCase(
-                    modelId = model.id,
-                    modelName = model.name,
-                    modelType = model.type.name,
-                    creatorName = model.creator?.username,
-                    thumbnailUrl = model.modelVersions.firstOrNull()
-                        ?.images?.firstOrNull()?.url,
-                    tags = model.tags,
-                )
-                viewStartTimeMs = currentTimeMillis()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(isLoading = false, error = e.message ?: "Unknown error")
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = e.message ?: "Unknown error")
+                    }
                 }
-            }
         }
     }
 
@@ -257,20 +243,20 @@ class ModelDetailViewModel(
         }
         if (alreadyEnriched) return
         viewModelScope.launch {
-            try {
-                val enriched = enrichModelImagesUseCase(version.id, version.images)
-                _uiState.update { current ->
-                    val currentModel = current.model ?: return@update current
-                    val updatedVersions = currentModel.modelVersions.map { v ->
-                        if (v.id == version.id) v.copy(images = enriched) else v
+            suspendRunCatching { enrichModelImagesUseCase(version.id, version.images) }
+                .onSuccess { enriched ->
+                    _uiState.update { current ->
+                        val currentModel = current.model ?: return@update current
+                        val updatedVersions = currentModel.modelVersions.map { v ->
+                            if (v.id == version.id) v.copy(images = enriched) else v
+                        }
+                        current.copy(model = currentModel.copy(modelVersions = updatedVersions))
                     }
-                    current.copy(model = currentModel.copy(modelVersions = updatedVersions))
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                enrichedVersionIds.update { it - version.id }
-            }
+                .onFailure { e ->
+                    Logger.w(TAG, "Enrich version images failed: ${e.message}")
+                    enrichedVersionIds.update { it - version.id }
+                }
         }
     }
 
@@ -285,16 +271,14 @@ class ModelDetailViewModel(
     fun toggleCollection(collectionId: Long) {
         val model = _uiState.value.model ?: return
         viewModelScope.launch {
-            try {
+            suspendRunCatching {
                 if (collectionId in modelCollectionIds.value) {
                     removeModelFromCollectionUseCase(collectionId, model.id)
                 } else {
                     addModelToCollectionUseCase(collectionId, model)
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Collection toggle failure is non-critical
+            }.onFailure { e ->
+                Logger.w(TAG, "Collection toggle failed: ${e.message}")
             }
         }
     }
@@ -302,13 +286,11 @@ class ModelDetailViewModel(
     fun createCollectionAndAdd(name: String) {
         val model = _uiState.value.model ?: return
         viewModelScope.launch {
-            try {
+            suspendRunCatching {
                 val newId = createCollectionUseCase(name)
                 addModelToCollectionUseCase(newId, model)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Create + add failure is non-critical
+            }.onFailure { e ->
+                Logger.w(TAG, "Create collection and add failed: ${e.message}")
             }
         }
     }
@@ -357,7 +339,7 @@ class ModelDetailViewModel(
         val model = _uiState.value.model ?: return
         val version = model.modelVersions.getOrNull(_uiState.value.selectedVersionIndex) ?: return
         viewModelScope.launch {
-            try {
+            suspendRunCatching {
                 val download = ModelDownload(
                     modelId = model.id,
                     modelName = model.name,
@@ -373,23 +355,16 @@ class ModelDetailViewModel(
                 val id = enqueueDownloadUseCase(download)
                 _downloadEnqueuedEvent.tryEmit(id)
                 trackModelViewUseCase.trackInteraction(modelId, InteractionType.DOWNLOAD)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Download enqueue failure is non-critical
+            }.onFailure { e ->
+                Logger.w(TAG, "Download enqueue failed: ${e.message}")
             }
         }
     }
 
     fun cancelDownload(downloadId: Long) {
         viewModelScope.launch {
-            try {
-                cancelDownloadUseCase(downloadId)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Cancel failure is non-critical
-            }
+            suspendRunCatching { cancelDownloadUseCase(downloadId) }
+                .onFailure { e -> Logger.w(TAG, "Cancel download failed: ${e.message}") }
         }
     }
 
@@ -407,17 +382,19 @@ class ModelDetailViewModel(
     ) {
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmittingReview = true) }
-            try {
+            suspendRunCatching {
                 submitReviewUseCase(modelId, modelVersionId, rating, recommended, details)
-                _uiState.update {
-                    it.copy(isSubmittingReview = false, reviewSubmitSuccess = true)
-                }
-                loadReviews()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                _uiState.update { it.copy(isSubmittingReview = false) }
             }
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(isSubmittingReview = false, reviewSubmitSuccess = true)
+                    }
+                    loadReviews()
+                }
+                .onFailure { e ->
+                    Logger.w(TAG, "Submit review failed: ${e.message}")
+                    _uiState.update { it.copy(isSubmittingReview = false) }
+                }
         }
     }
 
@@ -428,24 +405,25 @@ class ModelDetailViewModel(
     private fun loadReviews() {
         viewModelScope.launch {
             _uiState.update { it.copy(isReviewsLoading = true, reviewsError = null) }
-            try {
+            suspendRunCatching {
                 val totals = getRatingTotalsUseCase(modelId)
                 val page = getModelReviewsUseCase(modelId)
-                val sorted = sortReviews(page.items, _uiState.value.reviewSortOrder)
-                _uiState.update {
-                    it.copy(
-                        reviews = sorted,
-                        ratingTotals = totals,
-                        isReviewsLoading = false,
-                    )
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(isReviewsLoading = false, reviewsError = e.message)
-                }
+                totals to sortReviews(page.items, _uiState.value.reviewSortOrder)
             }
+                .onSuccess { (totals, sorted) ->
+                    _uiState.update {
+                        it.copy(
+                            reviews = sorted,
+                            ratingTotals = totals,
+                            isReviewsLoading = false,
+                        )
+                    }
+                }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(isReviewsLoading = false, reviewsError = e.message)
+                    }
+                }
         }
     }
 
@@ -459,6 +437,7 @@ class ModelDetailViewModel(
     }
 }
 
+private const val TAG = "ModelDetailViewModel"
 private const val STOP_TIMEOUT = 5_000L
 private const val END_VIEW_TIMEOUT = 5_000L
 private const val KB_TO_BYTES = 1024.0

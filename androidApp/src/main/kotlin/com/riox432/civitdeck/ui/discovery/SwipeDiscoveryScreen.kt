@@ -28,12 +28,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryState
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -159,7 +159,7 @@ private fun ActionButtons(
         FilledTonalIconButton(
             onClick = onUndo,
             enabled = canUndo,
-            modifier = Modifier.size(48.dp),
+            modifier = Modifier.size(IconSize.large),
         ) {
             Icon(Icons.Filled.Undo, contentDescription = stringResource(R.string.cd_undo))
         }
@@ -167,7 +167,7 @@ private fun ActionButtons(
         FilledTonalIconButton(
             onClick = onSkip,
             enabled = hasCards,
-            modifier = Modifier.size(56.dp),
+            modifier = Modifier.size(IconSize.xlarge),
         ) {
             Icon(
                 Icons.Filled.Close,
@@ -179,7 +179,7 @@ private fun ActionButtons(
         FilledTonalIconButton(
             onClick = onFavorite,
             enabled = hasCards,
-            modifier = Modifier.size(56.dp),
+            modifier = Modifier.size(IconSize.xlarge),
         ) {
             Icon(
                 Icons.Filled.Favorite,

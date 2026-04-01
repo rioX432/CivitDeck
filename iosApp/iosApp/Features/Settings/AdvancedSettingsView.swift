@@ -77,6 +77,7 @@ struct AdvancedSettingsView: View {
                         } label: {
                             Image(systemName: "xmark")
                                 .font(.civitLabelXSmall)
+                                .accessibilityLabel("Remove hashtag")
                         }
                     }
                     .padding(.horizontal, Spacing.md)
@@ -99,6 +100,7 @@ struct AdvancedSettingsView: View {
             Button { addHashtag() } label: {
                 Image(systemName: "plus")
                     .fontWeight(.semibold)
+                    .accessibilityLabel("Add hashtag")
             }
             .disabled(newHashtagInput.trimmingCharacters(in: .whitespaces).isEmpty)
         }

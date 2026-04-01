@@ -169,27 +169,25 @@ fun PaginationMetadataDto.toDomain(): PageMetadata = PageMetadata(
     nextPage = nextPage,
 )
 
-private fun String.toModelType(): ModelType = try {
-    ModelType.valueOf(this)
+private inline fun <reified T : Enum<T>> String.toEnum(default: T): T = try {
+    enumValueOf(this)
 } catch (_: IllegalArgumentException) {
-    ModelType.Other
+    default
 }
 
-private fun String?.toModelMode(): ModelMode? = this?.let {
+private inline fun <reified T : Enum<T>> String?.toEnumOrNull(): T? = this?.let {
     try {
-        ModelMode.valueOf(it)
+        enumValueOf<T>(it)
     } catch (_: IllegalArgumentException) {
         null
     }
 }
 
-private fun String?.toNsfwLevel(): NsfwLevel = this?.let {
-    try {
-        NsfwLevel.valueOf(it)
-    } catch (_: IllegalArgumentException) {
-        NsfwLevel.None
-    }
-} ?: NsfwLevel.None
+private fun String.toModelType(): ModelType = toEnum(ModelType.Other)
+
+private fun String?.toModelMode(): ModelMode? = toEnumOrNull<ModelMode>()
+
+private fun String?.toNsfwLevel(): NsfwLevel = this?.toEnum(NsfwLevel.None) ?: NsfwLevel.None
 
 private fun Int?.toNsfwLevel(): NsfwLevel = when (this) {
     1 -> NsfwLevel.None

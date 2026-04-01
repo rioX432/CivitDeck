@@ -2,6 +2,8 @@ import SwiftUI
 import Shared
 import Photos
 
+private let imagePlaceholderHeight: CGFloat = 200
+
 struct ComfyUIOutputDetailView: View {
     let images: [ComfyUIGeneratedImage]
     let initialIndex: Int
@@ -138,7 +140,7 @@ private struct ComfyUIOutputDetailPage: View {
             case .failure:
                 RoundedRectangle(cornerRadius: CornerRadius.card)
                     .fill(Color.civitSurfaceVariant)
-                    .frame(height: 200)
+                    .frame(height: imagePlaceholderHeight)
                     .overlay {
                         Image(systemName: "photo")
                             .foregroundColor(.civitOnSurfaceVariant)
@@ -147,7 +149,7 @@ private struct ComfyUIOutputDetailPage: View {
             case .empty:
                 RoundedRectangle(cornerRadius: CornerRadius.card)
                     .fill(Color.civitSurfaceVariant)
-                    .frame(height: 200)
+                    .frame(height: imagePlaceholderHeight)
                     .shimmer()
             @unknown default:
                 EmptyView()

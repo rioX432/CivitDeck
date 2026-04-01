@@ -15,7 +15,8 @@ import com.riox432.civitdeck.domain.usecase.ObserveShareHashtagsUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleShareHashtagUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+private const val TAG = "ComfyUIHistoryViewModel"
 private const val STOP_TIMEOUT = 5_000L
 
 enum class HistorySortOrder { Newest, Oldest }
@@ -112,7 +114,7 @@ class ComfyUIHistoryViewModel(
         val image = _uiState.value.pendingImageForDataset ?: return
         _uiState.update { it.copy(showDatasetPicker = false, pendingImageForDataset = null) }
         viewModelScope.launch {
-            try {
+            suspendRunCatching {
                 val tags = buildDatasetTags(image)
                 addImageToDataset(
                     datasetId = datasetId,
@@ -121,12 +123,12 @@ class ComfyUIHistoryViewModel(
                     trainable = true,
                     tags = tags,
                 )
-                _uiState.update { it.copy(addToDatasetSuccess = true) }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                _uiState.update { it.copy(addToDatasetSuccess = false) }
             }
+                .onSuccess { _uiState.update { it.copy(addToDatasetSuccess = true) } }
+                .onFailure { e ->
+                    Logger.w(TAG, "Add to dataset failed: ${e.message}")
+                    _uiState.update { it.copy(addToDatasetSuccess = false) }
+                }
         }
     }
 
@@ -134,7 +136,7 @@ class ComfyUIHistoryViewModel(
         val image = _uiState.value.pendingImageForDataset ?: return
         _uiState.update { it.copy(showDatasetPicker = false, pendingImageForDataset = null) }
         viewModelScope.launch {
-            try {
+            suspendRunCatching {
                 val datasetId = createDatasetCollection(name)
                 val tags = buildDatasetTags(image)
                 addImageToDataset(
@@ -144,12 +146,12 @@ class ComfyUIHistoryViewModel(
                     trainable = true,
                     tags = tags,
                 )
-                _uiState.update { it.copy(addToDatasetSuccess = true) }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                _uiState.update { it.copy(addToDatasetSuccess = false) }
             }
+                .onSuccess { _uiState.update { it.copy(addToDatasetSuccess = true) } }
+                .onFailure { e ->
+                    Logger.w(TAG, "Create dataset and add failed: ${e.message}")
+                    _uiState.update { it.copy(addToDatasetSuccess = false) }
+                }
         }
     }
 

@@ -9,6 +9,7 @@ import com.riox432.civitdeck.plugin.capability.WorkflowCapability
 import com.riox432.civitdeck.plugin.model.PluginManifest
 import com.riox432.civitdeck.plugin.model.PluginState
 import com.riox432.civitdeck.plugin.model.PluginType
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.coroutines.flow.first
 
 /**
@@ -59,7 +60,7 @@ class ExternalServerWorkflowPlugin(
         cachedConfig = null
     }
 
-    override suspend fun connect(): Result<Unit> = runCatching {
+    override suspend fun connect(): Result<Unit> = suspendRunCatching {
         refreshActiveConfig()
         val config = cachedConfig ?: error("No active external server configuration")
         val success = imagesRepository.testConnection()

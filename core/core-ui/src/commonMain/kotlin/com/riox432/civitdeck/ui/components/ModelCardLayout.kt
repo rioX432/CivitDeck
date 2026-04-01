@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.thumbnailUrl
+import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -192,8 +193,8 @@ private fun ModelCardInfoSection(model: Model, isOwned: Boolean = false) {
 private fun SourceBadge(source: ModelSource) {
     if (source == ModelSource.CIVITAI) return
     val (label, color) = when (source) {
-        ModelSource.HUGGING_FACE -> "HF" to Color(0xFFFF9D00)
-        ModelSource.TENSOR_ART -> "TA" to Color(0xFF9C27B0)
+        ModelSource.HUGGING_FACE -> "HF" to CivitDeckColors.huggingFaceBadge
+        ModelSource.TENSOR_ART -> "TA" to CivitDeckColors.tensorArtBadge
         ModelSource.CIVITAI -> return
     }
     Text(

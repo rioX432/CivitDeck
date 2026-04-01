@@ -26,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.MediaContentType
 import com.riox432.civitdeck.domain.model.ModelImage
@@ -36,6 +35,7 @@ import com.riox432.civitdeck.ui.gallery.ImageViewerOverlay
 import com.riox432.civitdeck.ui.gallery.ViewerImage
 import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -135,7 +135,7 @@ private fun ImageGridItem(
                 imageVector = Icons.Default.PlayCircle,
                 contentDescription = stringResource(R.string.cd_video),
                 tint = CivitDeckColors.onScrim,
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(IconSize.large),
             )
         }
     }

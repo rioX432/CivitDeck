@@ -49,13 +49,13 @@ internal fun ModelHeader(model: Model, onCreatorClick: (String) -> Unit) {
                     )
                 },
             )
-            if (model.creator != null) {
+            model.creator?.let { creator ->
                 Text(
-                    text = "by ${model.creator!!.username}",
+                    text = "by ${creator.username}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable(onClickLabel = "View creator profile") {
-                        onCreatorClick(model.creator!!.username)
+                        onCreatorClick(creator.username)
                     },
                 )
             }

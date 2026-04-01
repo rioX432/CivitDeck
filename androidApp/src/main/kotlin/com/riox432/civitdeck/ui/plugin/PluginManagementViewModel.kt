@@ -10,7 +10,7 @@ import com.riox432.civitdeck.domain.usecase.GetPluginConfigUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveInstalledPluginsUseCase
 import com.riox432.civitdeck.domain.usecase.UninstallPluginUseCase
 import com.riox432.civitdeck.domain.usecase.UpdatePluginConfigUseCase
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -49,15 +49,13 @@ class PluginManagementViewModel(
 
     fun togglePlugin(pluginId: String, isActive: Boolean) {
         viewModelScope.launch {
-            try {
+            suspendRunCatching {
                 if (isActive) {
                     activatePluginUseCase(pluginId)
                 } else {
                     deactivatePluginUseCase(pluginId)
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
+            }.onFailure { e ->
                 _uiState.update { it.copy(error = e.message ?: "Failed to toggle plugin") }
             }
         }
@@ -65,39 +63,34 @@ class PluginManagementViewModel(
 
     fun loadConfig(pluginId: String) {
         viewModelScope.launch {
-            try {
-                val config = getPluginConfigUseCase(pluginId)
-                _uiState.update { it.copy(selectedPluginConfig = config) }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message ?: "Failed to load config") }
-            }
+            suspendRunCatching { getPluginConfigUseCase(pluginId) }
+                .onSuccess { config ->
+                    _uiState.update { it.copy(selectedPluginConfig = config) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(error = e.message ?: "Failed to load config") }
+                }
         }
     }
 
     fun saveConfig(pluginId: String, configJson: String) {
         viewModelScope.launch {
-            try {
-                updatePluginConfigUseCase(pluginId, configJson)
-                _uiState.update { it.copy(selectedPluginConfig = configJson) }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message ?: "Failed to save config") }
-            }
+            suspendRunCatching { updatePluginConfigUseCase(pluginId, configJson) }
+                .onSuccess {
+                    _uiState.update { it.copy(selectedPluginConfig = configJson) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(error = e.message ?: "Failed to save config") }
+                }
         }
     }
 
     fun uninstallPlugin(pluginId: String) {
         viewModelScope.launch {
-            try {
-                uninstallPluginUseCase(pluginId)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message ?: "Failed to uninstall plugin") }
-            }
+            suspendRunCatching { uninstallPluginUseCase(pluginId) }
+                .onFailure { e ->
+                    _uiState.update { it.copy(error = e.message ?: "Failed to uninstall plugin") }
+                }
         }
     }
 

@@ -59,7 +59,7 @@ fun IntegrationsHubScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Server Integrations") },
+                title = { Text(stringResource(R.string.settings_server_integrations)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -101,22 +101,51 @@ private fun LazyListScope.integrationItems(
     onNavigateToCivitaiLink: () -> Unit,
     onNavigateToExternalServer: () -> Unit,
 ) {
-    item { SectionHeader("ComfyUI") }
-    item { IntegrationRow("Server Connections", comfyUIName ?: "Not configured", onNavigateToComfyUI) }
-    item { IntegrationRow("Workflow Templates", onClick = onNavigateToTemplates) }
-    item { IntegrationRow("ComfyHub Workflows", "Browse & import", onNavigateToComfyHub) }
-    item { SectionHeader("SD WebUI") }
-    item { IntegrationRow("Connections", sdWebUIName ?: "Not configured", onNavigateToSDWebUI) }
-    item { SectionHeader("Civitai Link") }
+    item { SectionHeader(stringResource(R.string.settings_section_comfyui)) }
     item {
         IntegrationRow(
-            "Setup",
-            if (civitaiLinkConnected) "Connected" else "Not configured",
+            stringResource(R.string.settings_server_connections),
+            comfyUIName ?: stringResource(R.string.settings_not_configured),
+            onNavigateToComfyUI
+        )
+    }
+    item { IntegrationRow(stringResource(R.string.settings_workflow_templates), onClick = onNavigateToTemplates) }
+    item {
+        IntegrationRow(
+            stringResource(R.string.settings_comfyhub_workflows),
+            stringResource(R.string.settings_comfyhub_browse_import),
+            onNavigateToComfyHub
+        )
+    }
+    item { SectionHeader(stringResource(R.string.settings_section_sd_webui)) }
+    item {
+        IntegrationRow(
+            stringResource(R.string.settings_connections),
+            sdWebUIName ?: stringResource(R.string.settings_not_configured),
+            onNavigateToSDWebUI
+        )
+    }
+    item { SectionHeader(stringResource(R.string.settings_section_civitai_link)) }
+    item {
+        val civitaiStatus = if (civitaiLinkConnected) {
+            stringResource(R.string.settings_connected)
+        } else {
+            stringResource(R.string.settings_not_configured)
+        }
+        IntegrationRow(
+            stringResource(R.string.settings_setup),
+            civitaiStatus,
             onNavigateToCivitaiLink,
         )
     }
-    item { SectionHeader("Custom Server") }
-    item { IntegrationRow("Server Configuration", extServerName ?: "Not configured", onNavigateToExternalServer) }
+    item { SectionHeader(stringResource(R.string.settings_section_custom_server)) }
+    item {
+        IntegrationRow(
+            stringResource(R.string.settings_server_configuration),
+            extServerName ?: stringResource(R.string.settings_not_configured),
+            onNavigateToExternalServer
+        )
+    }
 }
 
 @Composable

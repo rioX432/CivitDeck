@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -39,7 +39,7 @@ fun EmptyStateMessage(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(IconSize.large),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(

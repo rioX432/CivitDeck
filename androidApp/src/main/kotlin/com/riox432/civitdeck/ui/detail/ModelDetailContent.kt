@@ -30,25 +30,31 @@ import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
 
-@Suppress("LongParameterList")
+/**
+ * Groups callback parameters for model detail composables to reduce parameter count.
+ */
+data class ModelDetailCallbacks(
+    val onRetry: () -> Unit,
+    val onVersionSelected: (Int) -> Unit,
+    val onViewImages: (Long) -> Unit,
+    val onCreatorClick: (String) -> Unit,
+    val onTryInComfyUI:
+    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
+    val onSendToPC: () -> Unit = {},
+    val onSaveNote: (String) -> Unit = {},
+    val onAddTag: (String) -> Unit = {},
+    val onRemoveTag: (String) -> Unit = {},
+    val onDownloadFile: (ModelFile) -> Unit = {},
+    val onCancelDownload: (Long) -> Unit = {},
+    val onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit = {},
+    val onWriteReview: () -> Unit = {},
+)
+
 @Composable
 internal fun DetailStateContent(
     uiState: ModelDetailUiState,
     model: Model?,
-    onRetry: () -> Unit,
-    onVersionSelected: (Int) -> Unit,
-    onViewImages: (Long) -> Unit,
-    onCreatorClick: (String) -> Unit,
-    onTryInComfyUI:
-    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
-    onSendToPC: () -> Unit = {},
-    onSaveNote: (String) -> Unit = {},
-    onAddTag: (String) -> Unit = {},
-    onRemoveTag: (String) -> Unit = {},
-    onDownloadFile: (ModelFile) -> Unit = {},
-    onCancelDownload: (Long) -> Unit = {},
-    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit = {},
-    onWriteReview: () -> Unit = {},
+    callbacks: ModelDetailCallbacks,
     bottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
     carouselContent: @Composable () -> Unit = {},
@@ -74,7 +80,7 @@ internal fun DetailStateContent(
             "error" -> {
                 ErrorStateView(
                     message = uiState.error ?: "Unknown error",
-                    onRetry = onRetry,
+                    onRetry = callbacks.onRetry,
                 )
             }
             else -> {
@@ -82,18 +88,7 @@ internal fun DetailStateContent(
                     ModelDetailContentBody(
                         model = model,
                         uiState = uiState,
-                        onVersionSelected = onVersionSelected,
-                        onViewImages = onViewImages,
-                        onCreatorClick = onCreatorClick,
-                        onTryInComfyUI = onTryInComfyUI,
-                        onSendToPC = onSendToPC,
-                        onSaveNote = onSaveNote,
-                        onAddTag = onAddTag,
-                        onRemoveTag = onRemoveTag,
-                        onDownloadFile = onDownloadFile,
-                        onCancelDownload = onCancelDownload,
-                        onReviewSortChanged = onReviewSortChanged,
-                        onWriteReview = onWriteReview,
+                        callbacks = callbacks,
                         bottomPadding = bottomPadding,
                         carouselContent = carouselContent,
                     )
@@ -103,24 +98,11 @@ internal fun DetailStateContent(
     }
 }
 
-@Suppress("LongParameterList")
 @Composable
 private fun ModelDetailContentBody(
     model: Model,
     uiState: ModelDetailUiState,
-    onVersionSelected: (Int) -> Unit,
-    onViewImages: (Long) -> Unit,
-    onCreatorClick: (String) -> Unit,
-    onTryInComfyUI:
-    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
-    onSendToPC: () -> Unit = {},
-    onSaveNote: (String) -> Unit = {},
-    onAddTag: (String) -> Unit = {},
-    onRemoveTag: (String) -> Unit = {},
-    onDownloadFile: (ModelFile) -> Unit = {},
-    onCancelDownload: (Long) -> Unit = {},
-    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit = {},
-    onWriteReview: () -> Unit = {},
+    callbacks: ModelDetailCallbacks,
     bottomPadding: androidx.compose.ui.unit.Dp,
     carouselContent: @Composable () -> Unit = {},
 ) {
@@ -148,46 +130,22 @@ private fun ModelDetailContentBody(
             uiState = uiState,
             selectedVersion = selectedVersion,
             images = images,
-            onVersionSelected = onVersionSelected,
-            onViewImages = onViewImages,
-            onCreatorClick = onCreatorClick,
-            onTryInComfyUI = onTryInComfyUI,
-            onSendToPC = onSendToPC,
-            onSaveNote = onSaveNote,
-            onAddTag = onAddTag,
-            onRemoveTag = onRemoveTag,
-            onDownloadFile = onDownloadFile,
-            onCancelDownload = onCancelDownload,
-            onReviewSortChanged = onReviewSortChanged,
-            onWriteReview = onWriteReview,
+            callbacks = callbacks,
             carouselContent = carouselContent,
         )
     }
 }
 
-@Suppress("LongParameterList")
 private fun LazyListScope.modelDetailItems(
     model: Model,
     uiState: ModelDetailUiState,
     selectedVersion: ModelVersion,
     images: List<ModelImage>,
-    onVersionSelected: (Int) -> Unit,
-    onViewImages: (Long) -> Unit,
-    onCreatorClick: (String) -> Unit,
-    onTryInComfyUI:
-    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
-    onSendToPC: () -> Unit = {},
-    onSaveNote: (String) -> Unit = {},
-    onAddTag: (String) -> Unit = {},
-    onRemoveTag: (String) -> Unit = {},
-    onDownloadFile: (ModelFile) -> Unit = {},
-    onCancelDownload: (Long) -> Unit = {},
-    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit = {},
-    onWriteReview: () -> Unit = {},
+    callbacks: ModelDetailCallbacks,
     carouselContent: @Composable () -> Unit,
 ) {
     item { carouselContent() }
-    item { ModelHeader(model = model, onCreatorClick = onCreatorClick) }
+    item { ModelHeader(model = model, onCreatorClick = callbacks.onCreatorClick) }
     item {
         ModelStatsRow(
             downloadCount = model.stats.downloadCount,
@@ -202,38 +160,16 @@ private fun LazyListScope.modelDetailItems(
         uiState = uiState,
         selectedVersion = selectedVersion,
         images = images,
-        onViewImages = onViewImages,
-        onTryInComfyUI = onTryInComfyUI,
-        onSendToPC = onSendToPC,
-        onSaveNote = onSaveNote,
-        onAddTag = onAddTag,
-        onRemoveTag = onRemoveTag,
-        onReviewSortChanged = onReviewSortChanged,
-        onWriteReview = onWriteReview,
-        onVersionSelected = onVersionSelected,
-        onDownloadFile = onDownloadFile,
-        onCancelDownload = onCancelDownload,
+        callbacks = callbacks,
     )
 }
 
-@Suppress("LongParameterList")
 private fun LazyListScope.modelDetailActionItems(
     model: Model,
     uiState: ModelDetailUiState,
     selectedVersion: ModelVersion,
     images: List<ModelImage>,
-    onViewImages: (Long) -> Unit,
-    onTryInComfyUI:
-    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
-    onSendToPC: () -> Unit,
-    onSaveNote: (String) -> Unit,
-    onAddTag: (String) -> Unit,
-    onRemoveTag: (String) -> Unit,
-    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit,
-    onWriteReview: () -> Unit,
-    onVersionSelected: (Int) -> Unit,
-    onDownloadFile: (ModelFile) -> Unit,
-    onCancelDownload: (Long) -> Unit,
+    callbacks: ModelDetailCallbacks,
 ) {
     item {
         val primaryFile = selectedVersion.files.firstOrNull { it.primary }
@@ -241,23 +177,23 @@ private fun LazyListScope.modelDetailActionItems(
         val sha256 = primaryFile?.hashes?.get("SHA256") ?: primaryFile?.hashes?.get("sha256")
         val sampleMeta = images.firstOrNull()?.meta
         ImageActionsRow(
-            onViewImages = { onViewImages(selectedVersion.id) },
-            showTryInComfyUI = onTryInComfyUI != null,
+            onViewImages = { callbacks.onViewImages(selectedVersion.id) },
+            showTryInComfyUI = callbacks.onTryInComfyUI != null,
             onTryInComfyUI = {
-                if (onTryInComfyUI != null && sha256 != null) {
-                    onTryInComfyUI(sha256, model.name, sampleMeta)
+                if (callbacks.onTryInComfyUI != null && sha256 != null) {
+                    callbacks.onTryInComfyUI.invoke(sha256, model.name, sampleMeta)
                 }
             },
-            onSendToPC = onSendToPC,
+            onSendToPC = callbacks.onSendToPC,
         )
     }
     if (model.tags.isNotEmpty()) { item { TagsSection(tags = model.tags) } }
-    item { ModelNotesSection(note = uiState.note, onSaveNote = onSaveNote) }
+    item { ModelNotesSection(note = uiState.note, onSaveNote = callbacks.onSaveNote) }
     item {
         PersonalTagsSection(
             tags = uiState.personalTags,
-            onAddTag = onAddTag,
-            onRemoveTag = onRemoveTag,
+            onAddTag = callbacks.onAddTag,
+            onRemoveTag = callbacks.onRemoveTag,
         )
     }
     item {
@@ -266,19 +202,19 @@ private fun LazyListScope.modelDetailActionItems(
             ratingTotals = uiState.ratingTotals,
             sortOrder = uiState.reviewSortOrder,
             isLoading = uiState.isReviewsLoading,
-            onSortChanged = onReviewSortChanged,
-            onWriteReview = onWriteReview,
+            onSortChanged = callbacks.onReviewSortChanged,
+            onWriteReview = callbacks.onWriteReview,
         )
     }
-    if (!model.description.isNullOrBlank()) {
-        item { DescriptionSection(description = model.description!!) }
+    model.description?.takeIf { it.isNotBlank() }?.let { description ->
+        item { DescriptionSection(description = description) }
     }
     if (model.modelVersions.size > 1) {
         item {
             VersionSelector(
                 versions = model.modelVersions,
                 selectedIndex = uiState.selectedVersionIndex,
-                onVersionSelected = onVersionSelected,
+                onVersionSelected = callbacks.onVersionSelected,
             )
         }
     }
@@ -287,8 +223,8 @@ private fun LazyListScope.modelDetailActionItems(
             version = selectedVersion,
             powerUserMode = uiState.powerUserMode,
             downloads = uiState.downloads.associateBy { it.fileId },
-            onDownloadFile = onDownloadFile,
-            onCancelDownload = onCancelDownload,
+            onDownloadFile = callbacks.onDownloadFile,
+            onCancelDownload = callbacks.onCancelDownload,
         )
     }
 }

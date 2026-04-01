@@ -16,7 +16,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -37,9 +39,9 @@ internal fun UpdateCheckRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("Auto-check for updates", style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(R.string.settings_auto_check_updates), style = MaterialTheme.typography.bodyLarge)
                 Text(
-                    "Check for new versions on launch",
+                    stringResource(R.string.settings_auto_check_updates_description),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -52,7 +54,15 @@ internal fun UpdateCheckRow(
             horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         ) {
             TextButton(onClick = onCheckNow, enabled = !isChecking) {
-                Text(if (isChecking) "Checking..." else "Check now")
+                Text(
+                    if (isChecking) {
+                        stringResource(
+                            R.string.settings_checking
+                        )
+                    } else {
+                        stringResource(R.string.settings_check_now)
+                    }
+                )
             }
             if (isChecking) {
                 CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)

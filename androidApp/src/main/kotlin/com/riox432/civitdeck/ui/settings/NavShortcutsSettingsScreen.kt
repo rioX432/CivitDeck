@@ -42,7 +42,7 @@ fun NavShortcutsSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Navigation Shortcuts") },
+                title = { Text(stringResource(R.string.settings_navigation_shortcuts)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -56,7 +56,7 @@ fun NavShortcutsSettingsScreen(
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             Text(
-                text = "Choose up to 2 shortcuts to pin to the bottom navigation bar.",
+                text = stringResource(R.string.settings_nav_shortcuts_description),
                 modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

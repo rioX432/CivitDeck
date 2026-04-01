@@ -4,7 +4,7 @@ import com.riox432.civitdeck.domain.model.CategoryStat
 import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -41,27 +41,26 @@ class DesktopAnalyticsViewModel(
     private fun loadStats() {
         scope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            try {
-                val stats = getBrowsingStatsUseCase()
-                _uiState.value = DesktopAnalyticsUiState(
-                    isLoading = false,
-                    totalViews = stats.totalViews,
-                    totalFavorites = stats.totalFavorites,
-                    totalSearches = stats.totalSearches,
-                    averageViewDurationMs = stats.averageViewDurationMs,
-                    topModelTypes = stats.topModelTypes,
-                    topCreators = stats.topCreators,
-                )
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
+            suspendRunCatching { getBrowsingStatsUseCase() }
+                .onSuccess { stats ->
+                    _uiState.value = DesktopAnalyticsUiState(
                         isLoading = false,
-                        error = e.message ?: "Failed to load stats",
+                        totalViews = stats.totalViews,
+                        totalFavorites = stats.totalFavorites,
+                        totalSearches = stats.totalSearches,
+                        averageViewDurationMs = stats.averageViewDurationMs,
+                        topModelTypes = stats.topModelTypes,
+                        topCreators = stats.topCreators,
                     )
                 }
-            }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = e.message ?: "Failed to load stats",
+                        )
+                    }
+                }
         }
     }
 

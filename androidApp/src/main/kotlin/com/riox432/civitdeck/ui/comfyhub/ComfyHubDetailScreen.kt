@@ -79,11 +79,11 @@ fun ComfyHubDetailScreen(
         when {
             state.isLoading -> LoadingStateOverlay()
             state.error != null -> ErrorStateView(
-                message = state.error!!,
+                message = requireNotNull(state.error) { "error must not be null" },
                 onRetry = viewModel::retry,
             )
             state.workflow != null -> DetailContent(
-                workflow = state.workflow!!,
+                workflow = requireNotNull(state.workflow) { "workflow must not be null" },
                 nodeNames = state.nodeNames,
                 isImporting = state.isImporting,
                 onImport = viewModel::onImport,
@@ -223,7 +223,7 @@ private fun ImportButton(isImporting: Boolean, onImport: () -> Unit) {
             )
             Text("Importing...", modifier = Modifier.padding(start = Spacing.sm))
         } else {
-            Icon(Icons.Outlined.Download, contentDescription = null)
+            Icon(Icons.Outlined.Download, contentDescription = "Import workflow")
             Text("Import to ComfyUI", modifier = Modifier.padding(start = Spacing.sm))
         }
     }

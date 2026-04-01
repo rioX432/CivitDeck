@@ -10,64 +10,49 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.CompareArrows
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
-import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.thumbnailUrl
-import com.riox432.civitdeck.ui.adaptive.isExpandedWidth
 import com.riox432.civitdeck.ui.components.LaunchStaggerAnimation
-import com.riox432.civitdeck.ui.components.ModelCard
-import com.riox432.civitdeck.ui.components.SwipeableModelCard
 import com.riox432.civitdeck.ui.components.isReducedMotionEnabled
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
+
+/**
+ * Groups callback parameters for model grid composables to reduce parameter count.
+ */
+data class ModelGridCallbacks(
+    val onModelClick: (Long, String?, String) -> Unit,
+    val onHideModel: (Long, String) -> Unit,
+    val onToggleFavorite: (Model) -> Unit,
+    val onCompareModel: (Long, String) -> Unit,
+)
 
 @Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,15 +61,12 @@ internal fun ModelSearchContent(
     recommendations: List<RecommendationSection>,
     gridState: LazyGridState,
     lazyPagingItems: LazyPagingItems<Model>,
-    onModelClick: (Long, String?, String) -> Unit,
-    onHideModel: (Long, String) -> Unit,
+    callbacks: ModelGridCallbacks,
     topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     gridColumns: Int = 2,
     ownedHashes: Set<String> = emptySet(),
     favoriteIds: Set<Long> = emptySet(),
-    onToggleFavorite: (Model) -> Unit = {},
-    onCompareModel: (Long, String) -> Unit = { _, _ -> },
     isComparing: Boolean = false,
 ) {
     val refreshState = lazyPagingItems.loadState.refresh
@@ -104,14 +86,11 @@ internal fun ModelSearchContent(
         refreshError = refreshError,
         recommendations = recommendations,
         gridState = gridState,
-        onModelClick = onModelClick,
-        onHideModel = onHideModel,
+        callbacks = callbacks,
         bottomPadding = bottomPadding,
         gridColumns = gridColumns,
         ownedHashes = ownedHashes,
         favoriteIds = favoriteIds,
-        onToggleFavorite = onToggleFavorite,
-        onCompareModel = onCompareModel,
         isComparing = isComparing,
     )
 }
@@ -127,14 +106,11 @@ private fun SearchContentPullToRefresh(
     refreshError: Throwable?,
     recommendations: List<RecommendationSection>,
     gridState: LazyGridState,
-    onModelClick: (Long, String?, String) -> Unit,
-    onHideModel: (Long, String) -> Unit,
+    callbacks: ModelGridCallbacks,
     bottomPadding: androidx.compose.ui.unit.Dp,
     gridColumns: Int,
     ownedHashes: Set<String>,
     favoriteIds: Set<Long>,
-    onToggleFavorite: (Model) -> Unit,
-    onCompareModel: (Long, String) -> Unit,
     isComparing: Boolean,
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
@@ -160,15 +136,12 @@ private fun SearchContentPullToRefresh(
             lazyPagingItems = lazyPagingItems,
             recommendations = recommendations,
             gridState = gridState,
-            onModelClick = onModelClick,
-            onHideModel = onHideModel,
+            callbacks = callbacks,
             topPadding = topPadding,
             bottomPadding = bottomPadding,
             gridColumns = gridColumns,
             ownedHashes = ownedHashes,
             favoriteIds = favoriteIds,
-            onToggleFavorite = onToggleFavorite,
-            onCompareModel = onCompareModel,
             isComparing = isComparing,
         )
     }
@@ -182,15 +155,12 @@ private fun SearchContentCrossfade(
     lazyPagingItems: LazyPagingItems<Model>,
     recommendations: List<RecommendationSection>,
     gridState: LazyGridState,
-    onModelClick: (Long, String?, String) -> Unit,
-    onHideModel: (Long, String) -> Unit,
+    callbacks: ModelGridCallbacks,
     topPadding: androidx.compose.ui.unit.Dp,
     bottomPadding: androidx.compose.ui.unit.Dp,
     gridColumns: Int,
     ownedHashes: Set<String>,
     favoriteIds: Set<Long>,
-    onToggleFavorite: (Model) -> Unit,
-    onCompareModel: (Long, String) -> Unit,
     isComparing: Boolean,
 ) {
     Crossfade(
@@ -217,15 +187,12 @@ private fun SearchContentCrossfade(
                     lazyPagingItems = lazyPagingItems,
                     recommendations = recommendations,
                     gridState = gridState,
-                    onModelClick = onModelClick,
-                    onHideModel = onHideModel,
+                    callbacks = callbacks,
                     topPadding = topPadding,
                     bottomPadding = bottomPadding,
                     gridColumns = gridColumns,
                     ownedHashes = ownedHashes,
                     favoriteIds = favoriteIds,
-                    onToggleFavorite = onToggleFavorite,
-                    onCompareModel = onCompareModel,
                     isComparing = isComparing,
                 )
             }
@@ -239,15 +206,12 @@ private fun ModelGrid(
     lazyPagingItems: LazyPagingItems<Model>,
     recommendations: List<RecommendationSection>,
     gridState: LazyGridState,
-    onModelClick: (Long, String?, String) -> Unit,
-    onHideModel: (Long, String) -> Unit,
+    callbacks: ModelGridCallbacks,
     topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     gridColumns: Int = 2,
     ownedHashes: Set<String> = emptySet(),
     favoriteIds: Set<Long> = emptySet(),
-    onToggleFavorite: (Model) -> Unit = {},
-    onCompareModel: (Long, String) -> Unit = { _, _ -> },
     isComparing: Boolean = false,
 ) {
     val isAppendLoading = lazyPagingItems.loadState.append is LoadState.Loading
@@ -265,11 +229,14 @@ private fun ModelGrid(
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
-        recommendationItems(recommendations, onModelClick)
+        recommendationItems(recommendations, callbacks.onModelClick)
         modelPagingItems(
-            lazyPagingItems, ownedHashes, favoriteIds,
-            isComparing, reducedMotion, onModelClick, onHideModel,
-            onToggleFavorite, onCompareModel,
+            lazyPagingItems,
+            ownedHashes,
+            favoriteIds,
+            isComparing,
+            reducedMotion,
+            callbacks,
         )
         appendLoadingItem(isAppendLoading)
     }
@@ -293,17 +260,13 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.recommendationIt
     }
 }
 
-@Suppress("LongParameterList")
 private fun androidx.compose.foundation.lazy.grid.LazyGridScope.modelPagingItems(
     lazyPagingItems: LazyPagingItems<Model>,
     ownedHashes: Set<String>,
     favoriteIds: Set<Long>,
     isComparing: Boolean,
     reducedMotion: Boolean,
-    onModelClick: (Long, String?, String) -> Unit,
-    onHideModel: (Long, String) -> Unit,
-    onToggleFavorite: (Model) -> Unit,
-    onCompareModel: (Long, String) -> Unit,
+    callbacks: ModelGridCallbacks,
 ) {
     items(
         count = lazyPagingItems.itemCount,
@@ -323,10 +286,7 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.modelPagingItems
             thumbnailUrl = thumbnailUrl,
             isOwned = isOwned,
             isComparing = isComparing,
-            onModelClick = onModelClick,
-            onHideModel = onHideModel,
-            onToggleFavorite = onToggleFavorite,
-            onCompareModel = onCompareModel,
+            callbacks = callbacks,
             modifier = Modifier.animateItem(),
         )
     }
@@ -346,161 +306,6 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.appendLoadingIte
                 contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
-            }
-        }
-    }
-}
-
-@Suppress("LongParameterList")
-@Composable
-private fun ModelGridItem(
-    model: Model,
-    isFavorite: Boolean,
-    thumbnailUrl: String?,
-    isOwned: Boolean,
-    isComparing: Boolean,
-    onModelClick: (Long, String?, String) -> Unit,
-    onHideModel: (Long, String) -> Unit,
-    onToggleFavorite: (Model) -> Unit,
-    onCompareModel: (Long, String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    var showMenu by remember { mutableStateOf(false) }
-    Box(modifier = modifier) {
-        SwipeableModelCard(
-            model = model,
-            isFavorite = isFavorite,
-            onFavoriteToggle = { onToggleFavorite(model) },
-            onHide = { onHideModel(model.id, model.name) },
-            onClick = { onModelClick(model.id, thumbnailUrl, "") },
-            onLongPress = { showMenu = true },
-            isOwned = isOwned,
-        )
-        ModelContextMenu(
-            expanded = showMenu,
-            onDismiss = { showMenu = false },
-            showCompare = !isComparing,
-            onCompare = { onCompareModel(model.id, model.name) },
-            onHide = { onHideModel(model.id, model.name) },
-        )
-    }
-}
-
-@Composable
-private fun ModelContextMenu(
-    expanded: Boolean,
-    onDismiss: () -> Unit,
-    showCompare: Boolean,
-    onCompare: () -> Unit,
-    onHide: () -> Unit,
-) {
-    DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
-        if (showCompare) {
-            DropdownMenuItem(
-                text = { Text("Compare") },
-                onClick = {
-                    onCompare()
-                    onDismiss()
-                },
-                leadingIcon = {
-                    Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.cd_compare))
-                },
-            )
-        }
-        DropdownMenuItem(
-            text = { Text("Hide model") },
-            onClick = {
-                onHide()
-                onDismiss()
-            },
-            leadingIcon = {
-                Icon(Icons.Default.VisibilityOff, contentDescription = stringResource(R.string.cd_hide_model))
-            },
-        )
-    }
-}
-
-@Composable
-internal fun ComparisonBottomBar(
-    compareModelName: String?,
-    onCancel: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    AnimatedVisibility(
-        visible = compareModelName != null,
-        modifier = modifier,
-        enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-        exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
-    ) {
-        Surface(
-            tonalElevation = 3.dp,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.CompareArrows,
-                    contentDescription = stringResource(R.string.cd_compare_models),
-                    modifier = Modifier.padding(end = Spacing.sm),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Comparing: ${compareModelName ?: ""}",
-                        style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
-                        text = "Tap another model to compare",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                TextButton(onClick = onCancel) {
-                    Text("Cancel")
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun RecommendationRow(
-    section: RecommendationSection,
-    sharedElementSuffix: String,
-    onModelClick: (Long, String?, String) -> Unit,
-) {
-    val cardWidth = if (isExpandedWidth()) 200.dp else 160.dp
-    Column(modifier = Modifier.padding(bottom = Spacing.sm)) {
-        Text(
-            text = section.title,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = Spacing.xs, vertical = Spacing.xs),
-        )
-        Text(
-            text = section.reason,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = Spacing.xs, end = Spacing.xs, bottom = Spacing.sm),
-        )
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-        ) {
-            items(items = section.models, key = { it.id }) { model ->
-                val thumbnailUrl = model.modelVersions
-                    .firstOrNull()?.images?.firstOrNull()?.url
-                ModelCard(
-                    model = model,
-                    onClick = { onModelClick(model.id, thumbnailUrl, sharedElementSuffix) },
-                    modifier = Modifier
-                        .width(cardWidth),
-                    sharedElementSuffix = sharedElementSuffix,
-                )
             }
         }
     }

@@ -19,8 +19,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.BuildConfig
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsUiState
 import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
@@ -69,21 +71,21 @@ fun SettingsScreen(
                 item { OfflineBanner() }
             }
             settingsAccountItems(authState, authViewModel)
-            item { SectionHeader("Appearance") }
-            item { SubScreenRow("Appearance", onNavigateToAppearance) }
-            item { SectionHeader("Content & Behavior") }
-            item { SubScreenRow("Content & Behavior", onNavigateToContentFilter) }
-            item { SectionHeader("Notifications") }
-            item { SubScreenRow("Model Updates", onNavigateToNotificationCenter) }
-            item { SectionHeader("History") }
-            item { SubScreenRow("Browsing History", onNavigateToBrowsingHistory) }
-            item { SectionHeader("Data & Storage") }
-            item { SubScreenRow("Data & Storage", onNavigateToStorage) }
-            item { SectionHeader("Advanced & Integrations") }
-            item { SubScreenRow("Advanced & Integrations", onNavigateToAdvanced) }
+            item { SectionHeader(stringResource(R.string.settings_section_appearance)) }
+            item { SubScreenRow(stringResource(R.string.settings_section_appearance), onNavigateToAppearance) }
+            item { SectionHeader(stringResource(R.string.settings_section_content_behavior)) }
+            item { SubScreenRow(stringResource(R.string.settings_section_content_behavior), onNavigateToContentFilter) }
+            item { SectionHeader(stringResource(R.string.settings_section_notifications)) }
+            item { SubScreenRow(stringResource(R.string.settings_model_updates), onNavigateToNotificationCenter) }
+            item { SectionHeader(stringResource(R.string.settings_section_history)) }
+            item { SubScreenRow(stringResource(R.string.settings_browsing_history), onNavigateToBrowsingHistory) }
+            item { SectionHeader(stringResource(R.string.settings_section_data_storage)) }
+            item { SubScreenRow(stringResource(R.string.settings_section_data_storage), onNavigateToStorage) }
+            item { SectionHeader(stringResource(R.string.settings_section_advanced_integrations)) }
+            item { SubScreenRow(stringResource(R.string.settings_section_advanced_integrations), onNavigateToAdvanced) }
             if (appBehaviorState.powerUserMode) {
-                item { SectionHeader("Analytics") }
-                item { SubScreenRow("Usage Stats", onNavigateToAnalytics) }
+                item { SectionHeader(stringResource(R.string.settings_section_analytics)) }
+                item { SubScreenRow(stringResource(R.string.settings_usage_stats), onNavigateToAnalytics) }
             }
             settingsUpdateItems(updateState, updateViewModel, onOpenUrl)
             settingsAboutItems(
@@ -96,7 +98,7 @@ fun SettingsScreen(
         if (isEmpty) {
             EmptyStateMessage(
                 icon = Icons.Default.Settings,
-                title = "No settings available",
+                title = stringResource(R.string.settings_no_settings_available),
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -107,7 +109,7 @@ internal fun LazyListScope.settingsAccountItems(
     state: AuthSettingsUiState,
     viewModel: AuthSettingsViewModel,
 ) {
-    item { SectionHeader("Account") }
+    item { SectionHeader(stringResource(R.string.settings_section_account)) }
     item {
         AccountSection(
             apiKey = state.apiKey,
@@ -125,11 +127,12 @@ private fun LazyListScope.settingsUpdateItems(
     updateViewModel: UpdateViewModel,
     onOpenUrl: (String) -> Unit,
 ) {
-    if (updateState.showBanner && updateState.updateResult != null) {
+    val updateResult = updateState.updateResult
+    if (updateState.showBanner && updateResult != null) {
         item {
             UpdateBanner(
-                updateResult = updateState.updateResult!!,
-                onDownload = { onOpenUrl(updateState.updateResult!!.htmlUrl) },
+                updateResult = updateResult,
+                onDownload = { onOpenUrl(updateResult.htmlUrl) },
                 onDismiss = updateViewModel::dismissBanner,
             )
         }
@@ -143,8 +146,8 @@ private fun LazyListScope.settingsAboutItems(
     updateViewModel: UpdateViewModel,
     onNavigateToLicenses: () -> Unit,
 ) {
-    item { SectionHeader("About") }
-    item { InfoRow("App Version", BuildConfig.VERSION_NAME) }
+    item { SectionHeader(stringResource(R.string.settings_section_about)) }
+    item { InfoRow(stringResource(R.string.settings_app_version), BuildConfig.VERSION_NAME) }
     item {
         UpdateCheckRow(
             autoCheckEnabled = updateState.autoCheckEnabled,
@@ -153,11 +156,11 @@ private fun LazyListScope.settingsAboutItems(
             onCheckNow = updateViewModel::checkForUpdate,
         )
     }
-    item { NavigationRow("Open Source Licenses", onNavigateToLicenses) }
+    item { NavigationRow(stringResource(R.string.settings_open_source_licenses), onNavigateToLicenses) }
     if (!powerUserMode) {
         item {
             Text(
-                "Enable Power User Mode in Advanced & Integrations for more features",
+                stringResource(R.string.settings_power_user_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.md),

@@ -39,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.AspectRatioFilter
@@ -61,6 +60,7 @@ import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -91,12 +91,13 @@ fun ImageGalleryScreen(
         )
     }
 
-    if (uiState.selectedImageIndex != null) {
+    val selectedIndex = uiState.selectedImageIndex
+    if (selectedIndex != null) {
         ImageViewerOverlay(
             images = uiState.images.map {
                 ViewerImage(url = it.url, meta = it.meta, contentType = it.contentType)
             },
-            initialIndex = uiState.selectedImageIndex!!,
+            initialIndex = selectedIndex,
             onDismiss = viewModel::onDismissViewer,
             onSavePrompt = viewModel::savePrompt,
             shareHashtags = shareHashtags,
@@ -307,7 +308,7 @@ private fun ImageGridItem(
                     contentDescription = stringResource(R.string.cd_video),
                     tint = CivitDeckColors.onScrim,
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(IconSize.large)
                         .align(Alignment.Center),
                 )
             }

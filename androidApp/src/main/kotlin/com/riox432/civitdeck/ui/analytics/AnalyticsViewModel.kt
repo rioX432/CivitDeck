@@ -2,11 +2,10 @@ package com.riox432.civitdeck.ui.analytics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.riox432.civitdeck.domain.model.BrowsingStats
 import com.riox432.civitdeck.domain.model.CategoryStat
 import com.riox432.civitdeck.domain.model.DailyViewCount
 import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -43,29 +42,28 @@ class AnalyticsViewModel(
     private fun loadStats() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            try {
-                val stats: BrowsingStats = getBrowsingStatsUseCase()
-                _uiState.value = AnalyticsUiState(
-                    isLoading = false,
-                    totalViews = stats.totalViews,
-                    totalFavorites = stats.totalFavorites,
-                    totalSearches = stats.totalSearches,
-                    averageViewDurationMs = stats.averageViewDurationMs,
-                    dailyViewCounts = stats.dailyViewCounts,
-                    topModelTypes = stats.topModelTypes,
-                    topCreators = stats.topCreators,
-                    topSearchQueries = stats.topSearchQueries,
-                )
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
+            suspendRunCatching { getBrowsingStatsUseCase() }
+                .onSuccess { stats ->
+                    _uiState.value = AnalyticsUiState(
                         isLoading = false,
-                        error = e.message ?: "Failed to load stats",
+                        totalViews = stats.totalViews,
+                        totalFavorites = stats.totalFavorites,
+                        totalSearches = stats.totalSearches,
+                        averageViewDurationMs = stats.averageViewDurationMs,
+                        dailyViewCounts = stats.dailyViewCounts,
+                        topModelTypes = stats.topModelTypes,
+                        topCreators = stats.topCreators,
+                        topSearchQueries = stats.topSearchQueries,
                     )
                 }
-            }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = e.message ?: "Failed to load stats",
+                        )
+                    }
+                }
         }
     }
 }

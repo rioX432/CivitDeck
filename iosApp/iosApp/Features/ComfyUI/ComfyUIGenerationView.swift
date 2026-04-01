@@ -3,6 +3,8 @@ import Shared
 
 private let workflowTextEditorMinHeight: CGFloat = 200
 private let resultImageMinHeight: CGFloat = 150
+private let sliderLabelWidth: CGFloat = 120
+private let loraLabelWidth: CGFloat = 110
 
 struct ComfyUIGenerationView: View {
     @StateObject private var viewModel = ComfyUIGenerationViewModel()
@@ -114,7 +116,7 @@ struct ComfyUIGenerationView: View {
         HStack {
             Text("\(label): \(String(format: format, value.wrappedValue))")
                 .font(.civitBodySmall)
-                .frame(width: 120, alignment: .leading)
+                .frame(width: sliderLabelWidth, alignment: .leading)
             Slider(value: value, in: range)
         }
     }
@@ -326,7 +328,7 @@ private struct LoraRow: View {
             HStack {
                 Text("Strength: \(String(format: "%.2f", lora.strengthModel))")
                     .font(.civitBodySmall)
-                    .frame(width: 110, alignment: .leading)
+                    .frame(width: loraLabelWidth, alignment: .leading)
                 Slider(
                     value: Binding(
                         get: { Double(lora.strengthModel) },
