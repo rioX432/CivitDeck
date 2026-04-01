@@ -39,7 +39,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseC
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -426,13 +426,7 @@ class ModelSearchViewModel(
 
     fun toggleFavorite(model: Model) {
         viewModelScope.launch {
-            try {
-                toggleFavoriteUseCase(model)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Favorite toggle failure is non-critical
-            }
+            suspendRunCatching { toggleFavoriteUseCase(model) }
         }
     }
 

@@ -11,7 +11,8 @@ import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
 import com.riox432.civitdeck.usecase.GetAvailableExportFormatsUseCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -74,38 +75,23 @@ class DesktopDatasetDetailViewModel(
         val ids = selectedImageIds.value.toList()
         if (ids.isEmpty()) return
         scope.launch {
-            try {
-                removeImageFromDatasetUseCase(ids)
-                clearSelection()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Removal failure is non-critical
-            }
+            suspendRunCatching { removeImageFromDatasetUseCase(ids) }
+                .onSuccess { clearSelection() }
+                .onFailure { e -> Logger.w(TAG, "Remove images failed: ${e.message}") }
         }
     }
 
     fun editCaption(imageId: Long, text: String) {
         scope.launch {
-            try {
-                editCaptionUseCase(imageId, text)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Caption edit failure is non-critical
-            }
+            suspendRunCatching { editCaptionUseCase(imageId, text) }
+                .onFailure { e -> Logger.w(TAG, "Edit caption failed: ${e.message}") }
         }
     }
 
     fun updateTrainable(imageId: Long, trainable: Boolean) {
         scope.launch {
-            try {
-                updateTrainableUseCase(imageId, trainable)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Update failure is non-critical
-            }
+            suspendRunCatching { updateTrainableUseCase(imageId, trainable) }
+                .onFailure { e -> Logger.w(TAG, "Update trainable failed: ${e.message}") }
         }
     }
 
@@ -122,4 +108,5 @@ class DesktopDatasetDetailViewModel(
     }
 }
 
+private const val TAG = "DesktopDatasetDetailViewModel"
 private const val STOP_TIMEOUT = 5_000L

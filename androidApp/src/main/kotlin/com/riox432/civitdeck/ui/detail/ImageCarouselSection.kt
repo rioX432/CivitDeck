@@ -27,7 +27,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
@@ -41,6 +40,7 @@ import com.riox432.civitdeck.ui.navigation.SharedElementKeys
 import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
 
@@ -81,7 +81,7 @@ internal fun CarouselWithGridButton(
                     imageVector = Icons.Default.GridView,
                     contentDescription = stringResource(R.string.cd_view_all_images),
                     tint = CivitDeckColors.onScrim,
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(IconSize.small),
                 )
                 Text(
                     text = "${pagerState.currentPage + 1}/${images.size}",
@@ -251,7 +251,7 @@ private fun CarouselImage(
                 imageVector = Icons.Default.PlayCircle,
                 contentDescription = stringResource(R.string.cd_video),
                 tint = CivitDeckColors.onScrim,
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(IconSize.large),
             )
         }
     }

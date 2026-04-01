@@ -6,7 +6,7 @@ import com.riox432.civitdeck.domain.model.FeedItem
 import com.riox432.civitdeck.domain.usecase.GetCreatorFeedUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadFeedCountUseCase
 import com.riox432.civitdeck.domain.usecase.MarkFeedReadUseCase
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -53,27 +53,26 @@ class FeedViewModel(
                     error = null,
                 )
             }
-            try {
-                val items = getCreatorFeedUseCase(forceRefresh)
-                _uiState.update {
-                    it.copy(
-                        feedItems = items,
-                        isLoading = false,
-                        isRefreshing = false,
-                    )
+            suspendRunCatching { getCreatorFeedUseCase(forceRefresh) }
+                .onSuccess { items ->
+                    _uiState.update {
+                        it.copy(
+                            feedItems = items,
+                            isLoading = false,
+                            isRefreshing = false,
+                        )
+                    }
+                    if (items.isNotEmpty()) markFeedReadUseCase()
                 }
-                if (items.isNotEmpty()) markFeedReadUseCase()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        isRefreshing = false,
-                        error = e.message ?: "Failed to load feed",
-                    )
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isRefreshing = false,
+                            error = e.message ?: "Failed to load feed",
+                        )
+                    }
                 }
-            }
         }
     }
 

@@ -43,7 +43,7 @@ internal fun AccentColorRow(
             .fillMaxWidth()
             .padding(horizontal = Spacing.lg, vertical = Spacing.md),
     ) {
-        Text("Accent Color", style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.settings_accent_color), style = MaterialTheme.typography.bodyLarge)
         Spacer(modifier = Modifier.height(Spacing.sm))
         LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             items(AccentColor.entries.toList(), key = { it.name }) { color ->
@@ -102,9 +102,9 @@ internal fun AmoledDarkModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text("AMOLED Dark Mode", style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.settings_amoled_dark_mode), style = MaterialTheme.typography.bodyLarge)
             Text(
-                "Use pure black background in dark mode",
+                stringResource(R.string.settings_amoled_dark_mode_description),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -122,7 +122,7 @@ internal fun GridColumnsRow(columns: Int, onChanged: (Int) -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("Grid Columns", style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.settings_grid_columns), style = MaterialTheme.typography.bodyLarge)
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             listOf(2, 3).forEach { count ->
                 TextButton(onClick = { onChanged(count) }) {

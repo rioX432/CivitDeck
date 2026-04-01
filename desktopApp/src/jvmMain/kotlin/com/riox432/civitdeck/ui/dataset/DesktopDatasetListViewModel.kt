@@ -7,7 +7,8 @@ import com.riox432.civitdeck.domain.usecase.ObserveDatasetCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.RenameDatasetCollectionUseCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -28,37 +29,22 @@ class DesktopDatasetListViewModel(
 
     fun createDataset(name: String) {
         scope.launch {
-            try {
-                createDatasetCollectionUseCase(name)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Dataset creation failure is non-critical
-            }
+            suspendRunCatching { createDatasetCollectionUseCase(name) }
+                .onFailure { e -> Logger.w(TAG, "Create dataset failed: ${e.message}") }
         }
     }
 
     fun renameDataset(id: Long, name: String) {
         scope.launch {
-            try {
-                renameDatasetCollectionUseCase(id, name)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Rename failure is non-critical
-            }
+            suspendRunCatching { renameDatasetCollectionUseCase(id, name) }
+                .onFailure { e -> Logger.w(TAG, "Rename dataset failed: ${e.message}") }
         }
     }
 
     fun deleteDataset(id: Long) {
         scope.launch {
-            try {
-                deleteDatasetCollectionUseCase(id)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Delete failure is non-critical
-            }
+            suspendRunCatching { deleteDatasetCollectionUseCase(id) }
+                .onFailure { e -> Logger.w(TAG, "Delete dataset failed: ${e.message}") }
         }
     }
 
@@ -67,4 +53,5 @@ class DesktopDatasetListViewModel(
     }
 }
 
+private const val TAG = "DesktopDatasetListViewModel"
 private const val STOP_TIMEOUT = 5_000L

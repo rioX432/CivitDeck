@@ -55,6 +55,7 @@ import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchScreen
+import com.riox432.civitdeck.ui.search.SearchScreenCallbacks
 import com.riox432.civitdeck.ui.settings.SettingsScreen
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -267,21 +268,23 @@ private fun CivitDeckNavDisplay(
             entry<SearchRoute> {
                 ModelSearchScreen(
                     viewModel = searchViewModel,
-                    onModelClick = { modelId, thumbnailUrl, suffix ->
-                        val cmpId = compareModelId
-                        if (cmpId != null) {
-                            backStack.add(CompareRoute(cmpId, modelId))
-                            onCancelCompare()
-                        } else {
-                            backStack.add(DetailRoute(modelId, thumbnailUrl, suffix))
-                        }
-                    },
+                    callbacks = SearchScreenCallbacks(
+                        onModelClick = { modelId, thumbnailUrl, suffix ->
+                            val cmpId = compareModelId
+                            if (cmpId != null) {
+                                backStack.add(CompareRoute(cmpId, modelId))
+                                onCancelCompare()
+                            } else {
+                                backStack.add(DetailRoute(modelId, thumbnailUrl, suffix))
+                            }
+                        },
+                        onCancelCompare = onCancelCompare,
+                        onDiscoverClick = { backStack.add(DiscoveryRoute) },
+                        onCompareModel = onCompareModel,
+                        onScanQRCode = { backStack.add(QRScannerRoute) },
+                    ),
                     scrollToTopTrigger = searchScrollTrigger,
                     compareModelName = compareModelName,
-                    onCancelCompare = onCancelCompare,
-                    onDiscoverClick = { backStack.add(DiscoveryRoute) },
-                    onCompareModel = onCompareModel,
-                    onScanQRCode = { backStack.add(QRScannerRoute) },
                 )
             }
             createHubEntry(backStack)

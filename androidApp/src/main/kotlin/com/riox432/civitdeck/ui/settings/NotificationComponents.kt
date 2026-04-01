@@ -15,6 +15,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -32,9 +34,9 @@ internal fun NotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Uni
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text("Model Update Alerts", style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.settings_model_update_alerts), style = MaterialTheme.typography.bodyLarge)
             Text(
-                "Notify when favorited models get new versions",
+                stringResource(R.string.settings_model_update_alerts_description),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -56,7 +58,7 @@ internal fun NotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Uni
 internal fun PollingIntervalRow(selected: PollingInterval, onChanged: (PollingInterval) -> Unit) {
     val options = PollingInterval.entries.filter { it != PollingInterval.Off }
     DropdownSettingRow(
-        label = "Check Frequency",
+        label = stringResource(R.string.settings_check_frequency),
         value = selected.displayName,
         options = options.map { it.displayName },
         onSelected = { name -> options.find { it.displayName == name }?.let(onChanged) },

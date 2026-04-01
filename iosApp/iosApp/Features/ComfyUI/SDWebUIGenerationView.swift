@@ -2,6 +2,7 @@ import SwiftUI
 
 private let promptEditorMinHeight: CGFloat = 80
 private let negativePromptEditorMinHeight: CGFloat = 60
+private let seedFieldWidth: CGFloat = 100
 
 struct SDWebUIGenerationView: View {
     @StateObject private var viewModel = SDWebUIGenerationViewModel()
@@ -120,7 +121,7 @@ struct SDWebUIGenerationView: View {
             TextField("-1", text: $viewModel.seedText)
                 .keyboardType(.numbersAndPunctuation)
                 .multilineTextAlignment(.trailing)
-                .frame(width: 100)
+                .frame(width: seedFieldWidth)
         }
     }
 

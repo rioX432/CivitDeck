@@ -7,7 +7,8 @@ import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.DeleteCollectionUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.RenameCollectionUseCase
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -26,39 +27,25 @@ class CollectionsViewModel(
 
     fun createCollection(name: String) {
         viewModelScope.launch {
-            try {
-                createCollectionUseCase(name)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Collection creation failure is non-critical
-            }
+            suspendRunCatching { createCollectionUseCase(name) }
+                .onFailure { e -> Logger.w(TAG, "Create collection failed: ${e.message}") }
         }
     }
 
     fun renameCollection(id: Long, name: String) {
         viewModelScope.launch {
-            try {
-                renameCollectionUseCase(id, name)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Rename failure is non-critical
-            }
+            suspendRunCatching { renameCollectionUseCase(id, name) }
+                .onFailure { e -> Logger.w(TAG, "Rename collection failed: ${e.message}") }
         }
     }
 
     fun deleteCollection(id: Long) {
         viewModelScope.launch {
-            try {
-                deleteCollectionUseCase(id)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Delete failure is non-critical
-            }
+            suspendRunCatching { deleteCollectionUseCase(id) }
+                .onFailure { e -> Logger.w(TAG, "Delete collection failed: ${e.message}") }
         }
     }
 }
 
+private const val TAG = "CollectionsViewModel"
 private const val STOP_TIMEOUT = 5_000L

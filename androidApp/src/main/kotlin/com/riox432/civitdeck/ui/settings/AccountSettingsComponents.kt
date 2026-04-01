@@ -20,8 +20,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -52,29 +54,29 @@ internal fun ConnectedAccountRow(username: String, onClear: () -> Unit) {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                "Connected as",
+                stringResource(R.string.settings_connected_as),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(username, style = MaterialTheme.typography.bodyLarge)
         }
         TextButton(onClick = { showConfirmation = true }) {
-            Text("Disconnect", color = MaterialTheme.colorScheme.error)
+            Text(stringResource(R.string.settings_disconnect), color = MaterialTheme.colorScheme.error)
         }
     }
     if (showConfirmation) {
         AlertDialog(
             onDismissRequest = { showConfirmation = false },
-            title = { Text("Disconnect") },
-            text = { Text("Remove your CivitAI API key?") },
+            title = { Text(stringResource(R.string.settings_disconnect)) },
+            text = { Text(stringResource(R.string.settings_remove_api_key)) },
             confirmButton = {
                 TextButton(onClick = {
                     onClear()
                     showConfirmation = false
-                }) { Text("Remove") }
+                }) { Text(stringResource(R.string.settings_remove)) }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirmation = false }) { Text("Cancel") }
+                TextButton(onClick = { showConfirmation = false }) { Text(stringResource(R.string.settings_cancel)) }
             },
         )
     }
@@ -95,7 +97,7 @@ internal fun ApiKeyInputRow(
             OutlinedTextField(
                 value = keyInput,
                 onValueChange = { keyInput = it },
-                placeholder = { Text("Paste API key") },
+                placeholder = { Text(stringResource(R.string.settings_paste_api_key)) },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 isError = error != null,
@@ -110,14 +112,14 @@ internal fun ApiKeyInputRow(
                         keyInput = ""
                     },
                     enabled = keyInput.isNotBlank(),
-                ) { Text("Verify") }
+                ) { Text(stringResource(R.string.settings_verify)) }
             }
         }
         if (error != null) {
             Text(error, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
         }
         Text(
-            "Get your key at civitai.com/user/account",
+            stringResource(R.string.settings_api_key_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = Spacing.xs),

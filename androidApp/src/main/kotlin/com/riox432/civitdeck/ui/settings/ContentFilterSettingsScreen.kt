@@ -40,7 +40,7 @@ fun ContentFilterSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Content & Behavior") },
+                title = { Text(stringResource(R.string.settings_section_content_behavior)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -66,7 +66,7 @@ internal fun LazyListScope.contentFilterItems(
     displayState: DisplaySettingsUiState,
     displayViewModel: DisplaySettingsViewModel,
 ) {
-    item { SectionHeader("NSFW") }
+    item { SectionHeader(stringResource(R.string.settings_section_nsfw)) }
     item { NsfwToggleRow(state.nsfwFilterLevel, viewModel::onNsfwFilterChanged) }
     if (state.nsfwFilterLevel != NsfwFilterLevel.Off) {
         item {
@@ -76,10 +76,10 @@ internal fun LazyListScope.contentFilterItems(
             )
         }
     }
-    item { SectionHeader("Defaults") }
+    item { SectionHeader(stringResource(R.string.settings_section_defaults)) }
     item { SortOrderRow(displayState.defaultSortOrder, displayViewModel::onSortOrderChanged) }
     item { TimePeriodRow(displayState.defaultTimePeriod, displayViewModel::onTimePeriodChanged) }
-    item { SectionHeader("Tags") }
+    item { SectionHeader(stringResource(R.string.settings_section_tags)) }
     item {
         ExcludedTagsRow(
             tags = state.excludedTags,
@@ -93,7 +93,7 @@ internal fun LazyListScope.notificationItems(
     state: AppBehaviorSettingsUiState,
     viewModel: AppBehaviorSettingsViewModel,
 ) {
-    item { SectionHeader("Notifications") }
+    item { SectionHeader(stringResource(R.string.settings_section_notifications)) }
     item { NotificationsToggleRow(state.notificationsEnabled, viewModel::onNotificationsEnabledChanged) }
     if (state.notificationsEnabled) {
         item { PollingIntervalRow(state.pollingInterval, viewModel::onPollingIntervalChanged) }
@@ -104,7 +104,7 @@ internal fun LazyListScope.feedQualityItems(
     state: AppBehaviorSettingsUiState,
     viewModel: AppBehaviorSettingsViewModel,
 ) {
-    item { SectionHeader("Search Quality Filter") }
+    item { SectionHeader(stringResource(R.string.settings_section_search_quality_filter)) }
     item {
         FeedQualityThresholdRow(
             threshold = state.feedQualityThreshold,

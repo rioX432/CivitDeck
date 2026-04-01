@@ -5,7 +5,7 @@ import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -37,19 +37,18 @@ class DesktopDiscoveryViewModel(
     private fun loadRecommendations() {
         scope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            try {
-                val sections = getRecommendationsUseCase()
-                _uiState.update { it.copy(sections = sections, isLoading = false) }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = e.message ?: "Failed to load recommendations",
-                    )
+            suspendRunCatching { getRecommendationsUseCase() }
+                .onSuccess { sections ->
+                    _uiState.update { it.copy(sections = sections, isLoading = false) }
                 }
-            }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = e.message ?: "Failed to load recommendations",
+                        )
+                    }
+                }
         }
     }
 

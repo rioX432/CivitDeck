@@ -58,7 +58,7 @@ fun AppearanceSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Appearance") },
+                title = { Text(stringResource(R.string.settings_section_appearance)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -71,19 +71,19 @@ fun AppearanceSettingsScreen(
         },
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
-            item { SectionHeader("Theme") }
+            item { SectionHeader(stringResource(R.string.settings_section_theme)) }
             item { ThemeModeRow(state.themeMode, viewModel::onThemeModeChanged) }
             item { AccentColorRow(state.accentColor, viewModel::onAccentColorChanged) }
             item { AmoledDarkModeRow(state.amoledDarkMode, viewModel::onAmoledDarkModeChanged) }
             if (themePlugins.isNotEmpty()) {
-                item { SectionHeader("Custom Themes") }
+                item { SectionHeader(stringResource(R.string.settings_section_custom_themes)) }
                 item { BuiltInThemeRadio(themePlugins) }
                 items(themePlugins, key = { it.manifest.id }) { plugin ->
                     CustomThemeRadio(plugin)
                 }
             }
             item { ImportThemeRow() }
-            item { SectionHeader("Display") }
+            item { SectionHeader(stringResource(R.string.settings_section_display)) }
             item { GridColumnsRow(state.gridColumns, viewModel::onGridColumnsChanged) }
         }
     }
@@ -104,7 +104,7 @@ private fun BuiltInThemeRadio(themePlugins: List<ThemePlugin>) {
             selected = noneActive,
             onClick = { scope.launch { activate(null) } },
         )
-        Text("Built-in (Accent Color)", style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.settings_built_in_theme), style = MaterialTheme.typography.bodyLarge)
     }
 }
 
@@ -126,7 +126,7 @@ private fun CustomThemeRadio(plugin: ThemePlugin) {
             Text(plugin.manifest.name, style = MaterialTheme.typography.bodyLarge)
             if (plugin.manifest.author.isNotBlank()) {
                 Text(
-                    "by ${plugin.manifest.author}",
+                    stringResource(R.string.settings_theme_by_author, plugin.manifest.author),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -149,12 +149,16 @@ private fun ImportThemeRow() {
                 ?.bufferedReader()?.readText() ?: return@launch
             importTheme(json)
                 .onSuccess {
-                    Toast.makeText(context, "Theme imported", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.settings_theme_imported),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
                 .onFailure { e ->
                     Toast.makeText(
                         context,
-                        "Import failed: ${e.message}",
+                        context.getString(R.string.settings_import_failed, e.message.orEmpty()),
                         Toast.LENGTH_LONG,
                     ).show()
                 }
@@ -168,7 +172,7 @@ private fun ImportThemeRow() {
             .padding(horizontal = Spacing.lg, vertical = Spacing.md),
     ) {
         Icon(Icons.Default.FileOpen, contentDescription = stringResource(R.string.cd_import_theme))
-        Text("Import Theme from JSON", modifier = Modifier.padding(start = Spacing.sm))
+        Text(stringResource(R.string.settings_import_theme_from_json), modifier = Modifier.padding(start = Spacing.sm))
     }
 }
 
@@ -178,10 +182,13 @@ private fun ThemeModeRow(
     current: ThemeMode,
     onChanged: (ThemeMode) -> Unit,
 ) {
+    val lightLabel = stringResource(R.string.settings_theme_light)
+    val darkLabel = stringResource(R.string.settings_theme_dark)
+    val systemLabel = stringResource(R.string.settings_theme_system)
     val options = listOf(
-        ThemeMode.LIGHT to "Light",
-        ThemeMode.DARK to "Dark",
-        ThemeMode.SYSTEM to "System",
+        ThemeMode.LIGHT to lightLabel,
+        ThemeMode.DARK to darkLabel,
+        ThemeMode.SYSTEM to systemLabel,
     )
     Column(
         modifier = Modifier
@@ -189,7 +196,7 @@ private fun ThemeModeRow(
             .padding(horizontal = Spacing.lg, vertical = Spacing.md),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
-        Text("Color Scheme", style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.settings_color_scheme), style = MaterialTheme.typography.bodyLarge)
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             options.forEachIndexed { index, (mode, label) ->
                 SegmentedButton(

@@ -19,6 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -35,7 +37,7 @@ internal fun OfflineBanner() {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "You are offline — showing cached data",
+            text = stringResource(R.string.settings_offline_banner),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onErrorContainer,
         )
@@ -52,9 +54,9 @@ internal fun OfflineCacheToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text("Offline Cache", style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.settings_offline_cache), style = MaterialTheme.typography.bodyLarge)
             Text(
-                "Keep viewed models available offline",
+                stringResource(R.string.settings_offline_cache_description),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -80,9 +82,9 @@ internal fun CacheSizeLimitRow(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Cache Size Limit", style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.settings_cache_size_limit), style = MaterialTheme.typography.bodyLarge)
             Text(
-                "$currentLimitMb MB (used: $currentUsage)",
+                stringResource(R.string.settings_cache_size_usage, currentLimitMb, currentUsage),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -117,9 +119,9 @@ internal fun CacheInfoRow(entryCount: Int, formattedSize: String) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("Cached Entries", style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.settings_cached_entries), style = MaterialTheme.typography.bodyLarge)
         Text(
-            "$entryCount entries ($formattedSize)",
+            stringResource(R.string.settings_cached_entries_detail, entryCount, formattedSize),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -134,15 +136,15 @@ internal fun ClearActionRow(label: String, onConfirm: () -> Unit) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text(label) },
-            text = { Text("Are you sure? This cannot be undone.") },
+            text = { Text(stringResource(R.string.settings_clear_confirm)) },
             confirmButton = {
                 TextButton(onClick = {
                     onConfirm()
                     showDialog = false
-                }) { Text("Clear") }
+                }) { Text(stringResource(R.string.settings_clear)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showDialog = false }) { Text(stringResource(R.string.settings_cancel)) }
             },
         )
     }

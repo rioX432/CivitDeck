@@ -5,7 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.DuplicateGroup
 import com.riox432.civitdeck.domain.usecase.DetectDuplicatesUseCase
 import com.riox432.civitdeck.domain.usecase.MarkImageExcludedUseCase
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -23,25 +24,17 @@ class DuplicateReviewViewModel(
 
     fun keepImage(imageId: Long) {
         viewModelScope.launch {
-            try {
-                markImageExcludedUseCase(imageId, false)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Keep failure is non-critical
-            }
+            suspendRunCatching { markImageExcludedUseCase(imageId, false) }
+                .onFailure { e -> Logger.w(TAG, "Keep image failed: ${e.message}") }
         }
     }
 
     fun removeImage(imageId: Long) {
         viewModelScope.launch {
-            try {
-                markImageExcludedUseCase(imageId, true)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Remove failure is non-critical
-            }
+            suspendRunCatching { markImageExcludedUseCase(imageId, true) }
+                .onFailure { e -> Logger.w(TAG, "Remove image failed: ${e.message}") }
         }
     }
 }
+
+private const val TAG = "DuplicateReviewViewModel"

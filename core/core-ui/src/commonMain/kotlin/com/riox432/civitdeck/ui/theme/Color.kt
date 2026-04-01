@@ -221,6 +221,10 @@ object CivitDeckColors {
     val tutorialAccentPink = Color(0xFF75546F)
     val tutorialAccentGray = Color(0xFF5A5D72)
 
+    // Model source badge colors (fixed brand colors)
+    val huggingFaceBadge = Color(0xFFFF9D00)
+    val tensorArtBadge = Color(0xFF9C27B0)
+
     // Full-screen overlay / cinema-mode colors
     // These are intentionally fixed (not theme-adaptive) for maximum contrast in dark contexts.
     val scrim = Color.Black

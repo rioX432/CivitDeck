@@ -35,6 +35,23 @@ import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState
 import com.riox432.civitdeck.ui.theme.Spacing
 
+/**
+ * Groups callback parameters for filter sheet composables to reduce parameter count.
+ */
+data class FilterCallbacks(
+    val onTypeSelected: (ModelType?) -> Unit,
+    val onBaseModelToggled: (BaseModel) -> Unit,
+    val onSortSelected: (SortOrder) -> Unit,
+    val onPeriodSelected: (TimePeriod) -> Unit,
+    val onFreshFindToggled: () -> Unit,
+    val onQualityFilterToggled: () -> Unit,
+    val onAddIncludedTag: (String) -> Unit,
+    val onRemoveIncludedTag: (String) -> Unit,
+    val onAddExcludedTag: (String) -> Unit,
+    val onRemoveExcludedTag: (String) -> Unit,
+    val onSourceToggled: (ModelSource) -> Unit,
+)
+
 internal fun countActiveFilters(uiState: ModelSearchUiState): Int {
     var count = 0
     if (uiState.selectedType != null) count++
@@ -49,7 +66,6 @@ internal fun countActiveFilters(uiState: ModelSearchUiState): Int {
     return count
 }
 
-@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun FilterBottomSheet(
@@ -58,17 +74,7 @@ internal fun FilterBottomSheet(
     onShowSavedFilters: () -> Unit,
     onSaveFilter: () -> Unit,
     onResetFilters: () -> Unit,
-    onTypeSelected: (ModelType?) -> Unit,
-    onBaseModelToggled: (BaseModel) -> Unit,
-    onSortSelected: (SortOrder) -> Unit,
-    onPeriodSelected: (TimePeriod) -> Unit,
-    onFreshFindToggled: () -> Unit,
-    onQualityFilterToggled: () -> Unit,
-    onAddIncludedTag: (String) -> Unit,
-    onRemoveIncludedTag: (String) -> Unit,
-    onAddExcludedTag: (String) -> Unit,
-    onRemoveExcludedTag: (String) -> Unit,
-    onSourceToggled: (ModelSource) -> Unit,
+    filterCallbacks: FilterCallbacks,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -82,22 +88,11 @@ internal fun FilterBottomSheet(
             onShowSavedFilters = onShowSavedFilters,
             onSaveFilter = onSaveFilter,
             onResetFilters = onResetFilters,
-            onTypeSelected = onTypeSelected,
-            onBaseModelToggled = onBaseModelToggled,
-            onSortSelected = onSortSelected,
-            onPeriodSelected = onPeriodSelected,
-            onFreshFindToggled = onFreshFindToggled,
-            onQualityFilterToggled = onQualityFilterToggled,
-            onAddIncludedTag = onAddIncludedTag,
-            onRemoveIncludedTag = onRemoveIncludedTag,
-            onAddExcludedTag = onAddExcludedTag,
-            onRemoveExcludedTag = onRemoveExcludedTag,
-            onSourceToggled = onSourceToggled,
+            filterCallbacks = filterCallbacks,
         )
     }
 }
 
-@Suppress("LongParameterList")
 @Composable
 private fun FilterSheetContent(
     uiState: ModelSearchUiState,
@@ -105,17 +100,7 @@ private fun FilterSheetContent(
     onShowSavedFilters: () -> Unit,
     onSaveFilter: () -> Unit,
     onResetFilters: () -> Unit,
-    onTypeSelected: (ModelType?) -> Unit,
-    onBaseModelToggled: (BaseModel) -> Unit,
-    onSortSelected: (SortOrder) -> Unit,
-    onPeriodSelected: (TimePeriod) -> Unit,
-    onFreshFindToggled: () -> Unit,
-    onQualityFilterToggled: () -> Unit,
-    onAddIncludedTag: (String) -> Unit,
-    onRemoveIncludedTag: (String) -> Unit,
-    onAddExcludedTag: (String) -> Unit,
-    onRemoveExcludedTag: (String) -> Unit,
-    onSourceToggled: (ModelSource) -> Unit,
+    filterCallbacks: FilterCallbacks,
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
@@ -131,16 +116,16 @@ private fun FilterSheetContent(
                 },
             )
         }
-        filterSourceSection(uiState, onSourceToggled)
-        filterModelSections(uiState, onTypeSelected, onBaseModelToggled)
-        filterSortSections(uiState, onSortSelected, onPeriodSelected)
-        filterToggleSections(uiState, onFreshFindToggled, onQualityFilterToggled)
+        filterSourceSection(uiState, filterCallbacks.onSourceToggled)
+        filterModelSections(uiState, filterCallbacks.onTypeSelected, filterCallbacks.onBaseModelToggled)
+        filterSortSections(uiState, filterCallbacks.onSortSelected, filterCallbacks.onPeriodSelected)
+        filterToggleSections(uiState, filterCallbacks.onFreshFindToggled, filterCallbacks.onQualityFilterToggled)
         filterTagSections(
             uiState,
-            onAddIncludedTag,
-            onRemoveIncludedTag,
-            onAddExcludedTag,
-            onRemoveExcludedTag,
+            filterCallbacks.onAddIncludedTag,
+            filterCallbacks.onRemoveIncludedTag,
+            filterCallbacks.onAddExcludedTag,
+            filterCallbacks.onRemoveExcludedTag,
         )
     }
 }
@@ -242,7 +227,6 @@ private fun androidx.compose.foundation.lazy.LazyListScope.filterToggleSections(
     }
 }
 
-@Suppress("LongParameterList")
 private fun androidx.compose.foundation.lazy.LazyListScope.filterTagSections(
     uiState: ModelSearchUiState,
     onAddIncludedTag: (String) -> Unit,

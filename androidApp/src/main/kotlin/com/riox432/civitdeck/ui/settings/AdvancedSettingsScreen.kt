@@ -39,7 +39,7 @@ fun AdvancedSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Advanced & Integrations") },
+                title = { Text(stringResource(R.string.settings_section_advanced_integrations)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -52,17 +52,17 @@ fun AdvancedSettingsScreen(
         },
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
-            item { SectionHeader("Power User") }
+            item { SectionHeader(stringResource(R.string.settings_section_power_user)) }
             item { PowerUserModeRow(state.powerUserMode, viewModel::onPowerUserModeChanged) }
             if (state.powerUserMode) {
-                item { SectionHeader("Integrations") }
-                item { SubScreenRow("Server Integrations", onNavigateToIntegrations) }
-                item { SectionHeader("Model Files") }
-                item { SubScreenRow("Model File Browser", onNavigateToModelFiles) }
-                item { SectionHeader("Navigation") }
-                item { SubScreenRow("Navigation Shortcuts", onNavigateToNavShortcuts) }
+                item { SectionHeader(stringResource(R.string.settings_section_integrations)) }
+                item { SubScreenRow(stringResource(R.string.settings_server_integrations), onNavigateToIntegrations) }
+                item { SectionHeader(stringResource(R.string.settings_section_model_files)) }
+                item { SubScreenRow(stringResource(R.string.settings_model_file_browser), onNavigateToModelFiles) }
+                item { SectionHeader(stringResource(R.string.settings_section_navigation)) }
+                item { SubScreenRow(stringResource(R.string.settings_navigation_shortcuts), onNavigateToNavShortcuts) }
             }
-            item { SectionHeader("Sharing") }
+            item { SectionHeader(stringResource(R.string.settings_section_sharing)) }
             item {
                 ShareSettingsSection(
                     hashtags = shareHashtags,
@@ -71,8 +71,8 @@ fun AdvancedSettingsScreen(
                     onRemove = onRemoveShareHashtag,
                 )
             }
-            item { SectionHeader("Plugins") }
-            item { SubScreenRow("Plugins", onNavigateToPlugins) }
+            item { SectionHeader(stringResource(R.string.settings_section_plugins)) }
+            item { SubScreenRow(stringResource(R.string.settings_section_plugins), onNavigateToPlugins) }
         }
     }
 }

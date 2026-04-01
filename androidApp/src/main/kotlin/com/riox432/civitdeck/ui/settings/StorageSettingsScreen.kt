@@ -29,7 +29,7 @@ fun StorageSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Data & Storage") },
+                title = { Text(stringResource(R.string.settings_section_data_storage)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -42,7 +42,7 @@ fun StorageSettingsScreen(
         },
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
-            item { SectionHeader("Offline Cache") }
+            item { SectionHeader(stringResource(R.string.settings_section_offline_cache)) }
             item { OfflineCacheToggleRow(state.offlineCacheEnabled, viewModel::onOfflineCacheEnabledChanged) }
             if (state.offlineCacheEnabled) {
                 item {
@@ -54,13 +54,23 @@ fun StorageSettingsScreen(
                 }
             }
             item { CacheInfoRow(state.cacheInfo.entryCount, state.cacheInfo.formattedSize) }
-            item { SectionHeader("Data Management") }
+            item { SectionHeader(stringResource(R.string.settings_section_data_management)) }
             item { HiddenModelsRow(state.hiddenModels.size, state.hiddenModels, viewModel::onUnhideModel) }
-            item { ClearActionRow("Clear Search History", viewModel::onClearSearchHistory) }
-            item { ClearActionRow("Clear Browsing History", viewModel::onClearBrowsingHistory) }
-            item { ClearActionRow("Clear Cache", viewModel::onClearCache) }
-            item { SectionHeader("Backup") }
-            item { SubScreenRow("Backup & Restore", onNavigateToBackup) }
+            item {
+                ClearActionRow(
+                    stringResource(R.string.settings_clear_search_history),
+                    viewModel::onClearSearchHistory
+                )
+            }
+            item {
+                ClearActionRow(
+                    stringResource(R.string.settings_clear_browsing_history),
+                    viewModel::onClearBrowsingHistory
+                )
+            }
+            item { ClearActionRow(stringResource(R.string.settings_clear_cache), viewModel::onClearCache) }
+            item { SectionHeader(stringResource(R.string.settings_section_backup)) }
+            item { SubScreenRow(stringResource(R.string.settings_backup_restore), onNavigateToBackup) }
         }
     }
 }

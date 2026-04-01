@@ -35,7 +35,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.Model
-import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
@@ -89,6 +88,24 @@ fun ModelDetailScreen(
         }
     }
 
+    val detailCallbacks = remember(viewModel, onViewImages, onCreatorClick, onTryInComfyUI) {
+        ModelDetailCallbacks(
+            onRetry = viewModel::retry,
+            onVersionSelected = viewModel::onVersionSelected,
+            onViewImages = onViewImages,
+            onCreatorClick = onCreatorClick,
+            onTryInComfyUI = onTryInComfyUI,
+            onSendToPC = { showSendToPCSheet = true },
+            onSaveNote = viewModel::saveNote,
+            onAddTag = viewModel::addTag,
+            onRemoveTag = viewModel::removeTag,
+            onDownloadFile = viewModel::downloadFile,
+            onCancelDownload = viewModel::cancelDownload,
+            onReviewSortChanged = viewModel::onReviewSortChanged,
+            onWriteReview = { showSubmitReviewSheet = true },
+        )
+    }
+
     ModelDetailScaffold(
         uiState = uiState,
         viewModel = viewModel,
@@ -97,13 +114,9 @@ fun ModelDetailScreen(
         sharedElementSuffix = sharedElementSuffix,
         haptic = haptic,
         onBack = onBack,
-        onViewImages = onViewImages,
-        onCreatorClick = onCreatorClick,
-        onTryInComfyUI = onTryInComfyUI,
+        detailCallbacks = detailCallbacks,
         onShowCollectionSheet = { showCollectionSheet = true },
-        onShowSendToPCSheet = { showSendToPCSheet = true },
         onShowQRCodeSheet = { showQRCodeSheet = true },
-        onShowSubmitReviewSheet = { showSubmitReviewSheet = true },
         onShowShareSheet = { showShareSheet = true },
         onFindSimilar = onFindSimilar,
     )
@@ -150,14 +163,9 @@ private fun ModelDetailScaffold(
     sharedElementSuffix: String,
     haptic: (HapticFeedbackType) -> Unit,
     onBack: () -> Unit,
-    onViewImages: (Long) -> Unit,
-    onCreatorClick: (String) -> Unit,
-    onTryInComfyUI:
-    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
+    detailCallbacks: ModelDetailCallbacks,
     onShowCollectionSheet: () -> Unit,
-    onShowSendToPCSheet: () -> Unit,
     onShowQRCodeSheet: () -> Unit,
-    onShowSubmitReviewSheet: () -> Unit,
     onShowShareSheet: () -> Unit = {},
     onFindSimilar: ((Long) -> Unit)? = null,
 ) {
@@ -187,19 +195,7 @@ private fun ModelDetailScaffold(
             modelId = modelId,
             initialThumbnailUrl = initialThumbnailUrl,
             sharedElementSuffix = sharedElementSuffix,
-            onRetry = viewModel::retry,
-            onVersionSelected = viewModel::onVersionSelected,
-            onViewImages = onViewImages,
-            onCreatorClick = onCreatorClick,
-            onTryInComfyUI = onTryInComfyUI,
-            onSendToPC = onShowSendToPCSheet,
-            onSaveNote = viewModel::saveNote,
-            onAddTag = viewModel::addTag,
-            onRemoveTag = viewModel::removeTag,
-            onDownloadFile = viewModel::downloadFile,
-            onCancelDownload = viewModel::cancelDownload,
-            onReviewSortChanged = viewModel::onReviewSortChanged,
-            onWriteReview = onShowSubmitReviewSheet,
+            detailCallbacks = detailCallbacks,
             contentPadding = padding,
         )
     }
@@ -349,7 +345,6 @@ private fun prepareImages(
     return listOf(filtered[idx]) + filtered.subList(0, idx) + filtered.subList(idx + 1, filtered.size)
 }
 
-@Suppress("LongParameterList")
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ModelDetailBody(
@@ -357,20 +352,7 @@ private fun ModelDetailBody(
     modelId: Long,
     initialThumbnailUrl: String?,
     sharedElementSuffix: String,
-    onRetry: () -> Unit,
-    onVersionSelected: (Int) -> Unit,
-    onViewImages: (Long) -> Unit,
-    onCreatorClick: (String) -> Unit,
-    onTryInComfyUI:
-    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
-    onSendToPC: () -> Unit = {},
-    onSaveNote: (String) -> Unit = {},
-    onAddTag: (String) -> Unit = {},
-    onRemoveTag: (String) -> Unit = {},
-    onDownloadFile: (ModelFile) -> Unit = {},
-    onCancelDownload: (Long) -> Unit = {},
-    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit = {},
-    onWriteReview: () -> Unit = {},
+    detailCallbacks: ModelDetailCallbacks,
     contentPadding: PaddingValues,
 ) {
     val model = uiState.model
@@ -386,12 +368,7 @@ private fun ModelDetailBody(
         uiState = uiState, model = model, modelId = modelId,
         initialThumbnailUrl = initialThumbnailUrl, sharedElementSuffix = sharedElementSuffix,
         images = images, contentPadding = contentPadding,
-        onRetry = onRetry, onVersionSelected = onVersionSelected,
-        onViewImages = onViewImages, onCreatorClick = onCreatorClick,
-        onTryInComfyUI = onTryInComfyUI, onSendToPC = onSendToPC,
-        onSaveNote = onSaveNote, onAddTag = onAddTag, onRemoveTag = onRemoveTag,
-        onDownloadFile = onDownloadFile, onCancelDownload = onCancelDownload,
-        onReviewSortChanged = onReviewSortChanged, onWriteReview = onWriteReview,
+        detailCallbacks = detailCallbacks,
         onImageClick = { selectedCarouselIndex = it },
         onImageError = { url -> failedImageUrls = failedImageUrls + url },
         onShowGrid = { showImageGrid = true },
@@ -419,20 +396,7 @@ private fun ModelDetailBodyLayout(
     sharedElementSuffix: String,
     images: List<ModelImage>,
     contentPadding: PaddingValues,
-    onRetry: () -> Unit,
-    onVersionSelected: (Int) -> Unit,
-    onViewImages: (Long) -> Unit,
-    onCreatorClick: (String) -> Unit,
-    onTryInComfyUI:
-    ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
-    onSendToPC: () -> Unit,
-    onSaveNote: (String) -> Unit,
-    onAddTag: (String) -> Unit,
-    onRemoveTag: (String) -> Unit,
-    onDownloadFile: (ModelFile) -> Unit,
-    onCancelDownload: (Long) -> Unit,
-    onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit,
-    onWriteReview: () -> Unit,
+    detailCallbacks: ModelDetailCallbacks,
     onImageClick: (Int) -> Unit,
     onImageError: (String) -> Unit,
     onShowGrid: () -> Unit,
@@ -452,19 +416,7 @@ private fun ModelDetailBodyLayout(
         DetailStateContent(
             uiState = uiState,
             model = model,
-            onRetry = onRetry,
-            onVersionSelected = onVersionSelected,
-            onViewImages = onViewImages,
-            onCreatorClick = onCreatorClick,
-            onTryInComfyUI = onTryInComfyUI,
-            onSendToPC = onSendToPC,
-            onSaveNote = onSaveNote,
-            onAddTag = onAddTag,
-            onRemoveTag = onRemoveTag,
-            onDownloadFile = onDownloadFile,
-            onCancelDownload = onCancelDownload,
-            onReviewSortChanged = onReviewSortChanged,
-            onWriteReview = onWriteReview,
+            callbacks = detailCallbacks,
             bottomPadding = contentPadding.calculateBottomPadding(),
             modifier = Modifier.weight(1f),
             carouselContent = {

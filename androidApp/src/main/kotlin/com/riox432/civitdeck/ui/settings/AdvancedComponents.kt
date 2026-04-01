@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -23,9 +25,9 @@ internal fun PowerUserModeRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text("Power User Mode", style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.settings_power_user_mode), style = MaterialTheme.typography.bodyLarge)
             Text(
-                "Enables ComfyUI, SD WebUI, Civitai Link, model files, and advanced metadata",
+                stringResource(R.string.settings_power_user_mode_description),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

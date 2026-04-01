@@ -4,6 +4,7 @@ import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.repository.ModelRepository
+import com.riox432.civitdeck.util.Logger
 
 /**
  * Finds visually similar models by searching CivitAI with the source model's
@@ -34,8 +35,8 @@ class GetSimilarModelsUseCase(private val repository: ModelRepository) {
                     limit = PER_TAG_LIMIT,
                 )
                 addCandidates(result.items, source.id, out)
-            } catch (_: Exception) {
-                // Skip failed tag queries
+            } catch (e: Exception) {
+                Logger.w(TAG, "Similar models tag query failed for '$tag': ${e.message}")
             }
         }
     }
@@ -52,8 +53,8 @@ class GetSimilarModelsUseCase(private val repository: ModelRepository) {
                 limit = PER_TAG_LIMIT,
             )
             addCandidates(result.items, source.id, out)
-        } catch (_: Exception) {
-            // Skip failed query
+        } catch (e: Exception) {
+            Logger.w(TAG, "Similar models base model query failed: ${e.message}")
         }
     }
 
@@ -88,6 +89,7 @@ class GetSimilarModelsUseCase(private val repository: ModelRepository) {
     }
 
     companion object {
+        private const val TAG = "GetSimilarModelsUseCase"
         private const val MAX_TAG_QUERIES = 3
         private const val PER_TAG_LIMIT = 20
         private const val RESULT_LIMIT = 20

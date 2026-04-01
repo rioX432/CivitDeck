@@ -10,7 +10,8 @@ import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.BulkMoveModelsUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.BulkRemoveModelsUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveCollectionModelsUseCase
-import kotlinx.coroutines.CancellationException
+import com.riox432.civitdeck.domain.util.suspendRunCatching
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -70,14 +71,9 @@ class CollectionDetailViewModel(
         val ids = selectedModelIds.value.toList()
         if (ids.isEmpty()) return
         viewModelScope.launch {
-            try {
-                bulkRemoveModelsUseCase(collectionId, ids)
-                clearSelection()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Removal failure is non-critical
-            }
+            suspendRunCatching { bulkRemoveModelsUseCase(collectionId, ids) }
+                .onSuccess { clearSelection() }
+                .onFailure { e -> Logger.w(TAG, "Remove models failed: ${e.message}") }
         }
     }
 
@@ -85,14 +81,9 @@ class CollectionDetailViewModel(
         val ids = selectedModelIds.value.toList()
         if (ids.isEmpty()) return
         viewModelScope.launch {
-            try {
-                bulkMoveModelsUseCase(collectionId, targetId, ids)
-                clearSelection()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Move failure is non-critical
-            }
+            suspendRunCatching { bulkMoveModelsUseCase(collectionId, targetId, ids) }
+                .onSuccess { clearSelection() }
+                .onFailure { e -> Logger.w(TAG, "Move models failed: ${e.message}") }
         }
     }
 
@@ -107,4 +98,5 @@ class CollectionDetailViewModel(
     }
 }
 
+private const val TAG = "CollectionDetailViewModel"
 private const val STOP_TIMEOUT = 5_000L

@@ -52,18 +52,24 @@ import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
 
+/**
+ * Groups navigation/action callback parameters for the search screen.
+ */
+data class SearchScreenCallbacks(
+    val onModelClick: (Long, String?, String) -> Unit = { _, _, _ -> },
+    val onCancelCompare: () -> Unit = {},
+    val onDiscoverClick: () -> Unit = {},
+    val onCompareModel: (Long, String) -> Unit = { _, _ -> },
+    val onScanQRCode: () -> Unit = {},
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Suppress("LongParameterList")
 fun ModelSearchScreen(
     viewModel: ModelSearchViewModel,
-    onModelClick: (Long, String?, String) -> Unit = { _, _, _ -> },
+    callbacks: SearchScreenCallbacks = SearchScreenCallbacks(),
     scrollToTopTrigger: Int = 0,
     compareModelName: String? = null,
-    onCancelCompare: () -> Unit = {},
-    onDiscoverClick: () -> Unit = {},
-    onCompareModel: (Long, String) -> Unit = { _, _ -> },
-    onScanQRCode: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
@@ -92,17 +98,13 @@ fun ModelSearchScreen(
         searchHistory = searchHistory,
         gridState = gridState,
         viewModel = viewModel,
-        onModelClick = onModelClick,
         gridColumns = gridColumns,
         lazyPagingItems = lazyPagingItems,
         compareModelName = compareModelName,
-        onCancelCompare = onCancelCompare,
         ownedHashes = ownedHashes,
-        onDiscoverClick = onDiscoverClick,
         favoriteIds = favoriteIds,
+        callbacks = callbacks,
         onToggleFavorite = viewModel::toggleFavorite,
-        onCompareModel = onCompareModel,
-        onScanQRCode = onScanQRCode,
     )
 }
 
@@ -115,17 +117,13 @@ private fun SearchScreenBody(
     searchHistory: List<String>,
     gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
     viewModel: ModelSearchViewModel,
-    onModelClick: (Long, String?, String) -> Unit,
     gridColumns: Int,
     lazyPagingItems: androidx.paging.compose.LazyPagingItems<com.riox432.civitdeck.domain.model.Model>,
     compareModelName: String? = null,
-    onCancelCompare: () -> Unit = {},
     ownedHashes: Set<String> = emptySet(),
-    onDiscoverClick: () -> Unit = {},
     favoriteIds: Set<Long> = emptySet(),
+    callbacks: SearchScreenCallbacks,
     onToggleFavorite: (com.riox432.civitdeck.domain.model.Model) -> Unit = {},
-    onCompareModel: (Long, String) -> Unit = { _, _ -> },
-    onScanQRCode: () -> Unit = {},
 ) {
     val padding = PaddingValues()
     val layoutDirection = LocalLayoutDirection.current
@@ -162,15 +160,17 @@ private fun SearchScreenBody(
             recommendations = uiState.recommendations,
             gridState = gridState,
             lazyPagingItems = lazyPagingItems,
-            onModelClick = onModelClick,
-            onHideModel = viewModel::onHideModel,
+            callbacks = ModelGridCallbacks(
+                onModelClick = callbacks.onModelClick,
+                onHideModel = viewModel::onHideModel,
+                onToggleFavorite = onToggleFavorite,
+                onCompareModel = callbacks.onCompareModel,
+            ),
             topPadding = topPadding,
             bottomPadding = padding.calculateBottomPadding(),
             gridColumns = gridColumns,
             ownedHashes = ownedHashes,
             favoriteIds = favoriteIds,
-            onToggleFavorite = onToggleFavorite,
-            onCompareModel = onCompareModel,
             isComparing = compareModelName != null,
         )
 
@@ -187,7 +187,7 @@ private fun SearchScreenBody(
 
         QRScannerFab(
             visible = isFabVisible,
-            onClick = onScanQRCode,
+            onClick = callbacks.onScanQRCode,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(bottom = QR_FAB_BOTTOM_PADDING, end = Spacing.lg),
@@ -195,7 +195,7 @@ private fun SearchScreenBody(
 
         DiscoverFab(
             visible = isFabVisible,
-            onClick = onDiscoverClick,
+            onClick = callbacks.onDiscoverClick,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(bottom = DISCOVER_FAB_BOTTOM_PADDING, end = Spacing.lg),
@@ -212,7 +212,7 @@ private fun SearchScreenBody(
 
         ComparisonBottomBar(
             compareModelName = compareModelName,
-            onCancel = onCancelCompare,
+            onCancel = callbacks.onCancelCompare,
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
@@ -224,17 +224,19 @@ private fun SearchScreenBody(
             onShowSavedFilters = { showSavedFiltersSheet = true },
             onSaveFilter = { showSaveDialog = true },
             onResetFilters = viewModel::resetFilters,
-            onTypeSelected = viewModel::onTypeSelected,
-            onBaseModelToggled = viewModel::onBaseModelToggled,
-            onSortSelected = viewModel::onSortSelected,
-            onPeriodSelected = viewModel::onPeriodSelected,
-            onFreshFindToggled = viewModel::onFreshFindToggled,
-            onQualityFilterToggled = viewModel::onQualityFilterToggled,
-            onAddIncludedTag = viewModel::onAddIncludedTag,
-            onRemoveIncludedTag = viewModel::onRemoveIncludedTag,
-            onAddExcludedTag = viewModel::onAddExcludedTag,
-            onRemoveExcludedTag = viewModel::onRemoveExcludedTag,
-            onSourceToggled = viewModel::toggleSource,
+            filterCallbacks = FilterCallbacks(
+                onTypeSelected = viewModel::onTypeSelected,
+                onBaseModelToggled = viewModel::onBaseModelToggled,
+                onSortSelected = viewModel::onSortSelected,
+                onPeriodSelected = viewModel::onPeriodSelected,
+                onFreshFindToggled = viewModel::onFreshFindToggled,
+                onQualityFilterToggled = viewModel::onQualityFilterToggled,
+                onAddIncludedTag = viewModel::onAddIncludedTag,
+                onRemoveIncludedTag = viewModel::onRemoveIncludedTag,
+                onAddExcludedTag = viewModel::onAddExcludedTag,
+                onRemoveExcludedTag = viewModel::onRemoveExcludedTag,
+                onSourceToggled = viewModel::toggleSource,
+            ),
         )
     }
     if (showSavedFiltersSheet) {

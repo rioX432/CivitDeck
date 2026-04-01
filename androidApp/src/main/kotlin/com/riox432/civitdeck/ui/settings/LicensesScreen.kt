@@ -21,7 +21,7 @@ fun LicensesScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Open Source Licenses") },
+                title = { Text(stringResource(R.string.settings_open_source_licenses)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
