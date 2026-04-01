@@ -328,6 +328,7 @@ typealias GetGenerationOptionsUseCase = Feature_externalserverGetGenerationOptio
 typealias GetDependentChoicesUseCase = Feature_externalserverGetDependentChoicesUseCase
 typealias ExecuteGenerationUseCase = Feature_externalserverExecuteGenerationUseCase
 typealias GetGenerationStatusUseCase = Feature_externalserverGetGenerationStatusUseCase
+typealias DeleteServerImagesUseCase = Feature_externalserverDeleteServerImagesUseCase
 
 // MARK: - Feature: Settings
 

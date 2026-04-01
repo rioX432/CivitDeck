@@ -9,6 +9,7 @@ import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationJobSt
 import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationOption
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerCapabilities
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerImage
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.DeleteServerImagesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ExecuteGenerationUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetDependentChoicesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerCapabilitiesUseCase
@@ -49,6 +50,11 @@ data class ExternalServerGalleryUiState(
     // Filter UI state
     val showFilterSheet: Boolean = false,
     val showGenerationSheet: Boolean = false,
+    // Selection mode
+    val isSelectionMode: Boolean = false,
+    val selectedCloudKeys: Set<String> = emptySet(),
+    val isDeleting: Boolean = false,
+    val deleteError: String? = null,
 )
 
 private const val PAGE_SIZE = 96
@@ -62,6 +68,7 @@ class ExternalServerGalleryViewModel(
     private val getDependentChoices: GetDependentChoicesUseCase,
     private val executeGeneration: ExecuteGenerationUseCase,
     private val getGenerationStatus: GetGenerationStatusUseCase,
+    private val deleteServerImages: DeleteServerImagesUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ExternalServerGalleryUiState())
@@ -342,6 +349,60 @@ class ExternalServerGalleryViewModel(
                     )
                 }
             }
+        }
+    }
+
+    // endregion
+
+    // region Selection & Delete
+
+    fun onEnterSelectionMode(cloudKey: String) {
+        _uiState.update { it.copy(isSelectionMode = true, selectedCloudKeys = setOf(cloudKey)) }
+    }
+
+    fun onToggleSelection(cloudKey: String) {
+        _uiState.update { state ->
+            val newSet = state.selectedCloudKeys.toMutableSet()
+            if (cloudKey in newSet) newSet.remove(cloudKey) else newSet.add(cloudKey)
+            if (newSet.isEmpty()) {
+                state.copy(isSelectionMode = false, selectedCloudKeys = emptySet())
+            } else {
+                state.copy(selectedCloudKeys = newSet)
+            }
+        }
+    }
+
+    fun onSelectAll() {
+        _uiState.update { state ->
+            state.copy(selectedCloudKeys = state.images.map { it.cloudKey }.toSet())
+        }
+    }
+
+    fun onExitSelectionMode() {
+        _uiState.update { it.copy(isSelectionMode = false, selectedCloudKeys = emptySet()) }
+    }
+
+    fun onDeleteSelected() {
+        val keys = _uiState.value.selectedCloudKeys.toList()
+        if (keys.isEmpty()) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeleting = true, deleteError = null) }
+            runCatching { deleteServerImages(keys) }
+                .onSuccess {
+                    _uiState.update { state ->
+                        state.copy(
+                            images = state.images.filterNot { it.cloudKey in keys },
+                            isSelectionMode = false,
+                            selectedCloudKeys = emptySet(),
+                            isDeleting = false,
+                        )
+                    }
+                }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(isDeleting = false, deleteError = e.message ?: "Delete failed")
+                    }
+                }
         }
     }
 

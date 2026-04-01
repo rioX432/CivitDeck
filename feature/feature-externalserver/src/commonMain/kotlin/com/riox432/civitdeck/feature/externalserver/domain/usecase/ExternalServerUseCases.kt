@@ -96,3 +96,15 @@ class GetGenerationStatusUseCase(
     suspend operator fun invoke(jobId: String): GenerationJob =
         repository.getGenerationStatus(jobId)
 }
+
+class DeleteServerImagesUseCase(
+    private val repository: ExternalServerImagesRepository,
+) {
+    suspend operator fun invoke(cloudKeys: List<String>) {
+        if (cloudKeys.size == 1) {
+            repository.deleteImage(cloudKeys.first())
+        } else {
+            repository.deleteImages(cloudKeys)
+        }
+    }
+}

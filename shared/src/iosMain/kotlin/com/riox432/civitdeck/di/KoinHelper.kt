@@ -198,6 +198,7 @@ import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetDependentC
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerCapabilitiesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerImagesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationOptionsUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.DeleteServerImagesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationStatusUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveActiveExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveExternalServerConfigsUseCase
@@ -443,6 +444,7 @@ object KoinHelper {
     fun getGetDependentChoicesUseCase(): GetDependentChoicesUseCase = getKoin().get()
     fun getExecuteGenerationUseCase(): ExecuteGenerationUseCase = getKoin().get()
     fun getGetGenerationStatusUseCase(): GetGenerationStatusUseCase = getKoin().get()
+    fun getDeleteServerImagesUseCase(): DeleteServerImagesUseCase = getKoin().get()
 
     // Model notes & personal tags use cases
     fun getObserveModelNoteUseCase(): ObserveModelNoteUseCase = getKoin().get()

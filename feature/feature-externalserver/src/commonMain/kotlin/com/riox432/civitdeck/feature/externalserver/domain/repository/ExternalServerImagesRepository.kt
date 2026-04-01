@@ -19,4 +19,6 @@ interface ExternalServerImagesRepository {
     suspend fun getDependentChoices(endpoint: String): List<GenerationChoice>
     suspend fun executeGeneration(params: Map<String, String>): GenerationJob
     suspend fun getGenerationStatus(jobId: String): GenerationJob
+    suspend fun deleteImage(cloudKey: String)
+    suspend fun deleteImages(cloudKeys: List<String>)
 }

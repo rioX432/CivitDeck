@@ -30,14 +30,29 @@ struct ExternalServerGalleryView: View {
                 ScrollView {
                     LazyVGrid(columns: AdaptiveGrid.columns(sizeClass: sizeClass), spacing: Spacing.sm) {
                         ForEach(Array(viewModel.images.enumerated()), id: \.element.id) { idx, image in
-                            ServerImageCell(image: image)
-                                .accessibilityLabel("Select image")
-                                .onTapGesture { selectedIndex = idx }
-                                .onAppear {
-                                    if image.id == viewModel.images.last?.id {
-                                        Task { await viewModel.loadMore() }
-                                    }
+                            ServerImageCell(
+                                image: image,
+                                isSelectionMode: viewModel.isSelectionMode,
+                                isSelected: viewModel.selectedCloudKeys.contains(image.cloudKey)
+                            )
+                            .accessibilityLabel("Select image")
+                            .onTapGesture {
+                                if viewModel.isSelectionMode {
+                                    viewModel.toggleSelection(cloudKey: image.cloudKey)
+                                } else {
+                                    selectedIndex = idx
                                 }
+                            }
+                            .onLongPressGesture {
+                                if !viewModel.isSelectionMode {
+                                    viewModel.enterSelectionMode(cloudKey: image.cloudKey)
+                                }
+                            }
+                            .onAppear {
+                                if image.id == viewModel.images.last?.id {
+                                    Task { await viewModel.loadMore() }
+                                }
+                            }
                         }
                     }
                     if viewModel.isLoadingMore {
@@ -48,27 +63,49 @@ struct ExternalServerGalleryView: View {
                 .refreshable { await viewModel.refresh() }
             }
         }
-        .navigationTitle(serverName)
+        .navigationTitle(viewModel.isSelectionMode
+            ? "\(viewModel.selectedCloudKeys.count) selected"
+            : serverName)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItemGroup(placement: .navigationBarTrailing) {
-                if viewModel.supportsFilters {
-                    Button {
-                        viewModel.showFilterSheet = true
-                    } label: {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
-                            .accessibilityLabel("Filters")
-                    }
+            if viewModel.isSelectionMode {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { viewModel.exitSelectionMode() }
                 }
-                if viewModel.supportsGeneration {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button { viewModel.selectAll() } label: {
+                        Image(systemName: "checkmark.circle")
+                            .accessibilityLabel("Select all")
+                    }
                     Button {
-                        viewModel.showGenerationSheet = true
-                        if viewModel.generationOptions.isEmpty {
-                            Task { await viewModel.loadGenerationOptions() }
-                        }
+                        Task { await viewModel.deleteSelected() }
                     } label: {
-                        Image(systemName: "bolt.fill")
-                            .accessibilityLabel("Generate")
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                            .accessibilityLabel("Delete")
+                    }
+                    .disabled(viewModel.isDeleting)
+                }
+            } else {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    if viewModel.supportsFilters {
+                        Button {
+                            viewModel.showFilterSheet = true
+                        } label: {
+                            Image(systemName: "line.3.horizontal.decrease.circle")
+                                .accessibilityLabel("Filters")
+                        }
+                    }
+                    if viewModel.supportsGeneration {
+                        Button {
+                            viewModel.showGenerationSheet = true
+                            if viewModel.generationOptions.isEmpty {
+                                Task { await viewModel.loadGenerationOptions() }
+                            }
+                        } label: {
+                            Image(systemName: "bolt.fill")
+                                .accessibilityLabel("Generate")
+                        }
                     }
                 }
             }
@@ -134,31 +171,43 @@ extension ServerImage: @retroactive Identifiable {}
 
 private struct ServerImageCell: View {
     let image: ServerImage
+    let isSelectionMode: Bool
+    let isSelected: Bool
 
     var body: some View {
-        CachedAsyncImage(url: URL(string: image.thumbUrl ?? image.file)) { phase in
-            switch phase {
-            case .success(let img):
-                img
-                    .resizable()
-                    .scaledToFill()
-                    .transition(.opacity)
-            case .failure:
-                Color.civitSurfaceVariant
-                    .overlay {
-                        Image(systemName: "photo")
-                            .foregroundColor(.civitOnSurfaceVariant)
-                    }
-            case .empty:
-                Color.civitSurfaceVariant
-                    .shimmer()
-            @unknown default:
-                Color.clear
+        ZStack(alignment: .topTrailing) {
+            CachedAsyncImage(url: URL(string: image.thumbUrl ?? image.file)) { phase in
+                switch phase {
+                case .success(let img):
+                    img
+                        .resizable()
+                        .scaledToFill()
+                        .transition(.opacity)
+                case .failure:
+                    Color.civitSurfaceVariant
+                        .overlay {
+                            Image(systemName: "photo")
+                                .foregroundColor(.civitOnSurfaceVariant)
+                        }
+                case .empty:
+                    Color.civitSurfaceVariant
+                        .shimmer()
+                @unknown default:
+                    Color.clear
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .aspectRatio(1, contentMode: .fit)
+            .clipped()
+            .cornerRadius(Spacing.sm)
+
+            if isSelectionMode {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(isSelected ? .accentColor : .white.opacity(0.7))
+                    .font(.title3)
+                    .padding(Spacing.xs)
+                    .shadow(radius: 2)
             }
         }
-        .frame(maxWidth: .infinity)
-        .aspectRatio(1, contentMode: .fit)
-        .clipped()
-        .cornerRadius(Spacing.sm)
     }
 }
