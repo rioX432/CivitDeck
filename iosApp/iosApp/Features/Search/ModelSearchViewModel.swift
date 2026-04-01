@@ -459,4 +459,3 @@ private extension ModelSearchViewModel {
         return filtered
     }
 }
-
