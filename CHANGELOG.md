@@ -7,6 +7,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-04-01
+
+### Added
+
+#### Navigation Redesign
+- Redesign tab navigation to Discover/Create/Library/Settings (#595, #596) (50744f25, 8e49f571)
+- Add CreateHub and Library screens for nav redesign (#594) (2351e2c9)
+- Add sidebar navigation to Desktop matching new IA (#597) (c49f1ec7)
+- Restore custom navigation shortcuts in bottom nav bar (449595ca)
+
+#### Multi-Source Search
+- Add MultiSourceSearchUseCase for unified search (#592) (553226a5)
+- Add HuggingFace API client for model search (#590) (154afbf2)
+- Add TensorArt API client for model search (#591) (81e464d5)
+- Add TensorArt repository interface and DI registration (#591) (fcb8dfb8)
+- Add ModelSource enum and source field to Model (#589) (7427bff8)
+- Add platform filter and source indicator UI (#593) (5495d216)
+- Integrate MultiSourceSearchUseCase into search pipeline across all platforms (7219871b)
+
+#### External Server Gallery
+- Add nav shortcut for ExternalServer Gallery and image zoom modal (7a4482fe)
+- Add horizontal pager to ExternalServer image detail (e7fd6aa9)
+- Add image selection mode and bulk delete for ExternalServer gallery (f77e9907)
+
+#### Discovery & Recommendations
+- Add history TTL/cleanup, time-decay scoring, and recommendation diversity (c0ae9bfe)
+- Track engagement signals: view duration and interaction type (#580) (954eea15)
+- Add Recently Viewed section to search screen on all platforms (94e4c8b2)
+- Add dedicated Browsing History screen (277f602d)
+
+#### Integrations
+- Add ComfyHub workflow integration (#445) (52407a04)
+- Add image similarity search (#442) (a52e2657)
+- Add model update notifications for followed models (#444) (596f1d93)
+
+### Changed
+
+- Unify ExternalServer gallery/detail UI with Output pattern (86add7c7)
+- Fix ExternalServer test connection and remove hardcoded /api/ prefix (860dd4bf)
+- Reduce initial load latency by lowering prefetch size and eliminating double paging (2682c038)
+- Remove Recently Viewed from search, add dedicated Browsing History screen (277f602d)
+- Consolidate cleanup API, unify weighted score logic (74fe66a5)
+
+### Fixed
+
+- Fix detail screen showing wrong image after 96th item (d2aa52e4)
+- Fix NavDisplay onBack against emptying backstack (139a755a)
+- Fix MainScope leak in ModelDetailViewModel.onCleared() (da2329a8)
+- Replace unsynchronized mutableSetOf with MutableStateFlow for thread safety (f65a3a92)
+- Add error logging to CivitaiLinkApi deserialization (85cace00)
+- Replace non-atomic state updates with MutableStateFlow.update {} (6d6090a7)
+- Filter out legacy history entries without model name from Recently Viewed (cfdf7688)
+
+### Removed
+
+- Remove unused parallaxOffset computation and rememberGridItemScrollOffset (a40ca33c)
+- Remove duplicate LicensesRoute and ModelFileBrowserRoute entries (37d3d9f2)
+
+### Infrastructure
+
+- Extract PaginatedLoader helper for shared pagination pattern (a753c814)
+- Split large files: NavGraph, SettingsScreen, Database (2e3cbbdd)
+- Move cross-feature use cases to core-domain to fix module isolation (d1bf74f5)
+- Move combined repos from core-database to shared, fix layer violation (b877a819)
+- Move FormatUtils to core-domain, remove shared dep from core-ui (137da7fa)
+- Replace java.net.URL with OkHttp in ImageDownloader (97edb209)
+- Extract shared error handler in ComfyUIGenerationViewModel (f80a1d56)
+- Extract dataset image entity-to-domain mapper to reduce duplication (f9f8009f)
+
 ## [2.0.1] - 2026-03-17
 
 ### Added
@@ -510,7 +579,8 @@ Initial release of CivitDeck.
 - Clean Architecture + MVVM with Koin dependency injection
 - GitHub Actions CI (Android + iOS)
 
-[Unreleased]: https://github.com/rioX432/CivitDeck/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/rioX432/CivitDeck/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/rioX432/CivitDeck/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/rioX432/CivitDeck/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/rioX432/CivitDeck/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/rioX432/CivitDeck/compare/v1.1.0...v1.2.0

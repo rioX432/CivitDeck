@@ -48,7 +48,8 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Civitai Link** — sync models directly to your ComfyUI instance via Civitai Link key
 - **AI Training Datasets** — collect ComfyUI generation outputs into labeled datasets with auto-tagging (seed, sampler, prompt hash), caption/tag batch editing, duplicate detection, and source tracking for model training
 - **Saved Search Filters** — save and quickly recall named search presets with filters (type, sort, period, tags, NSFW level)
-- **Custom External Servers** — connect to any REST API image server, browse its gallery with filters, and integrate alongside CivitAI
+- **Multi-Source Search** — unified search across CivitAI, HuggingFace, and TensorArt with platform filter and source indicators
+- **Custom External Servers** — connect to any REST API image server, browse its gallery with filters, multi-select bulk delete, and image zoom modal
 - **Model Comparison** — compare two models side-by-side
 - **Model File Browser** — detect local model files with CivitAI hash matching
 - **Creator Follow & Feed** — follow creators and get a personalized feed of their latest models with pull-to-refresh
@@ -59,6 +60,11 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Community Reviews** — read and submit reviews on models
 - **Backup & Restore** — export/import app data (collections, prompts, filters, notes, datasets) with granular category selection
 - **Background Downloads** — download model files with background progress tracking and notifications
+- **ComfyHub** — browse and import community workflows from ComfyHub directly into your workflow library
+- **Image Similarity Search** — find visually similar models across the platform
+- **Model Update Notifications** — get notified when followed models receive updates
+- **Smart Recommendations** — personalized model suggestions with time-decay scoring and engagement tracking
+- **Browsing History** — dedicated history screen with search frequency charts
 - **Plugin System** — extend CivitDeck with plugins for workflow engines (ComfyUI, External Server), export formats (kohya-ss), and themes
 - **Video Preview** — play video previews directly in gallery and model detail screens
 - **Fresh Find** — discover recently published models before they trend
