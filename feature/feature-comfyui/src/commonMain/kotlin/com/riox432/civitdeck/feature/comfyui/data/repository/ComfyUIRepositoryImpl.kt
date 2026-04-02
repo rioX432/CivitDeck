@@ -226,8 +226,8 @@ class ComfyUIRepositoryImpl(
         val loraChain = buildLoraChain(params.loraSelections)
         val finalModelNodeId = loraChain.lastOrNull()?.nodeId ?: "3"
         val finalClipNodeId = loraChain.lastOrNull()?.nodeId ?: "3"
-        val finalModelOutput = if (loraChain.isEmpty()) 0 else 0
-        val finalClipOutput = if (loraChain.isEmpty()) 1 else 1
+        val finalModelOutput = 0 // MODEL output index (same for CheckpointLoader and LoraLoader)
+        val finalClipOutput = 1 // CLIP output index (same for CheckpointLoader and LoraLoader)
 
         // Positive conditioning source
         val positiveCondId = if (params.controlNetEnabled && params.controlNetModel.isNotBlank()) "21" else "6"

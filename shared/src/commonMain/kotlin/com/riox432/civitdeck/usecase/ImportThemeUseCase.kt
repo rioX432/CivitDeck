@@ -7,9 +7,9 @@ import com.riox432.civitdeck.domain.model.InstalledPlugin
 import com.riox432.civitdeck.domain.model.InstalledPluginState
 import com.riox432.civitdeck.domain.model.InstalledPluginType
 import com.riox432.civitdeck.domain.repository.PluginRepository
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.plugin.PluginRegistry
 import com.riox432.civitdeck.plugin.capability.ThemeCapability
-import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.serialization.json.Json
 
 /**

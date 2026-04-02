@@ -7,10 +7,10 @@ import com.riox432.civitdeck.domain.model.FavoriteModelSummary
 import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.feature.collections.domain.usecase.BulkMoveModelsUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.BulkRemoveModelsUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.ObserveCollectionModelsUseCase
-import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

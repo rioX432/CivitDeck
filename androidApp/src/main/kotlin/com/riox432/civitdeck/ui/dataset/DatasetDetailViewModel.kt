@@ -18,6 +18,7 @@ import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -38,21 +39,36 @@ class DatasetDetailViewModel(
         observeDatasetImagesUseCase(datasetId)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
-    val selectedImageIds = MutableStateFlow<Set<Long>>(emptySet())
-    val isSelectionMode = MutableStateFlow(false)
-    val isLoading = MutableStateFlow(false)
-    val selectedSource = MutableStateFlow<ImageSource?>(null)
-    val detailImage = MutableStateFlow<DatasetImage?>(null)
-    val showResolutionFilter = MutableStateFlow(false)
-    val minWidth = MutableStateFlow(0)
-    val minHeight = MutableStateFlow(0)
+    private val _selectedImageIds = MutableStateFlow<Set<Long>>(emptySet())
+    val selectedImageIds: StateFlow<Set<Long>> = _selectedImageIds.asStateFlow()
 
-    val filteredImages: StateFlow<List<DatasetImage>> = combine(images, selectedSource) { imgs, src ->
+    private val _isSelectionMode = MutableStateFlow(false)
+    val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _selectedSource = MutableStateFlow<ImageSource?>(null)
+    val selectedSource: StateFlow<ImageSource?> = _selectedSource.asStateFlow()
+
+    private val _detailImage = MutableStateFlow<DatasetImage?>(null)
+    val detailImage: StateFlow<DatasetImage?> = _detailImage.asStateFlow()
+
+    private val _showResolutionFilter = MutableStateFlow(false)
+    val showResolutionFilter: StateFlow<Boolean> = _showResolutionFilter.asStateFlow()
+
+    private val _minWidth = MutableStateFlow(0)
+    val minWidth: StateFlow<Int> = _minWidth.asStateFlow()
+
+    private val _minHeight = MutableStateFlow(0)
+    val minHeight: StateFlow<Int> = _minHeight.asStateFlow()
+
+    val filteredImages: StateFlow<List<DatasetImage>> = combine(images, _selectedSource) { imgs, src ->
         if (src == null) imgs else imgs.filter { it.sourceType == src }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
     val lowResImages: StateFlow<List<DatasetImage>> =
-        combine(images, minWidth, minHeight) { imgs, w, h ->
+        combine(images, _minWidth, _minHeight) { imgs, w, h ->
             if (w == 0 && h == 0) {
                 emptyList()
             } else {
@@ -69,53 +85,58 @@ class DatasetDetailViewModel(
             .map { groups -> groups.sumOf { it.images.size } - groups.size }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), 0)
 
-    val showExportSheet = MutableStateFlow(false)
-    val exportProgress = MutableStateFlow<ExportProgress?>(null)
-    val selectedExportFormatId = MutableStateFlow<String?>(null)
+    private val _showExportSheet = MutableStateFlow(false)
+    val showExportSheet: StateFlow<Boolean> = _showExportSheet.asStateFlow()
+
+    private val _exportProgress = MutableStateFlow<ExportProgress?>(null)
+    val exportProgress: StateFlow<ExportProgress?> = _exportProgress.asStateFlow()
+
+    private val _selectedExportFormatId = MutableStateFlow<String?>(null)
+    val selectedExportFormatId: StateFlow<String?> = _selectedExportFormatId.asStateFlow()
 
     val availableExportFormats: StateFlow<List<PluginExportFormat>> =
         getAvailableExportFormatsUseCase()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
-    fun openExportSheet() { showExportSheet.value = true }
-    fun dismissExportSheet() { showExportSheet.value = false }
+    fun openExportSheet() { _showExportSheet.value = true }
+    fun dismissExportSheet() { _showExportSheet.value = false }
 
-    fun selectExportFormat(formatId: String) { selectedExportFormatId.value = formatId }
+    fun selectExportFormat(formatId: String) { _selectedExportFormatId.value = formatId }
 
     fun startExport(formatId: String) {
-        showExportSheet.value = false
+        _showExportSheet.value = false
         viewModelScope.launch {
             exportWithPluginUseCase(datasetId, formatId).collect { progress ->
-                exportProgress.value = progress
+                _exportProgress.value = progress
             }
         }
     }
 
-    fun dismissExportResult() { exportProgress.value = null }
+    fun dismissExportResult() { _exportProgress.value = null }
 
     fun enterSelectionMode(imageId: Long) {
-        isSelectionMode.value = true
-        selectedImageIds.value = setOf(imageId)
+        _isSelectionMode.value = true
+        _selectedImageIds.value = setOf(imageId)
     }
 
     fun toggleSelection(imageId: Long) {
-        selectedImageIds.value = selectedImageIds.value.let { current ->
+        _selectedImageIds.value = _selectedImageIds.value.let { current ->
             if (imageId in current) current - imageId else current + imageId
         }
-        if (selectedImageIds.value.isEmpty()) isSelectionMode.value = false
+        if (_selectedImageIds.value.isEmpty()) _isSelectionMode.value = false
     }
 
     fun selectAll() {
-        selectedImageIds.value = images.value.map { it.id }.toSet()
+        _selectedImageIds.value = images.value.map { it.id }.toSet()
     }
 
     fun clearSelection() {
-        selectedImageIds.value = emptySet()
-        isSelectionMode.value = false
+        _selectedImageIds.value = emptySet()
+        _isSelectionMode.value = false
     }
 
     fun removeSelected() {
-        val ids = selectedImageIds.value.toList()
+        val ids = _selectedImageIds.value.toList()
         if (ids.isEmpty()) return
         viewModelScope.launch {
             suspendRunCatching { removeImageFromDatasetUseCase(ids) }
@@ -131,20 +152,20 @@ class DatasetDetailViewModel(
         }
     }
 
-    fun setSourceFilter(source: ImageSource?) { selectedSource.value = source }
+    fun setSourceFilter(source: ImageSource?) { _selectedSource.value = source }
 
-    fun showDetail(image: DatasetImage) { detailImage.value = image }
+    fun showDetail(image: DatasetImage) { _detailImage.value = image }
 
-    fun dismissDetail() { detailImage.value = null }
+    fun dismissDetail() { _detailImage.value = null }
 
     fun setResolutionFilter(w: Int, h: Int) {
-        minWidth.value = w
-        minHeight.value = h
+        _minWidth.value = w
+        _minHeight.value = h
     }
 
-    fun openResolutionFilter() { showResolutionFilter.value = true }
+    fun openResolutionFilter() { _showResolutionFilter.value = true }
 
-    fun dismissResolutionFilter() { showResolutionFilter.value = false }
+    fun dismissResolutionFilter() { _showResolutionFilter.value = false }
 
     fun updateTrainable(imageId: Long, trainable: Boolean) {
         viewModelScope.launch {

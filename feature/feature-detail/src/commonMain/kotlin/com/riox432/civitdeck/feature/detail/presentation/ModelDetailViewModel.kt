@@ -8,7 +8,9 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.domain.model.ModelDownload
 import com.riox432.civitdeck.domain.model.ModelFile
+import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelNote
+import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PersonalTag
 import com.riox432.civitdeck.domain.model.RatingTotals
@@ -74,7 +76,7 @@ data class ModelDetailUiState(
     val reviewSubmitSuccess: Boolean = false,
 )
 
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 class ModelDetailViewModel(
     private val modelId: Long,
     private val getModelDetailUseCase: GetModelDetailUseCase,
@@ -122,11 +124,7 @@ class ModelDetailViewModel(
     init {
         loadModel()
         observeFavorite()
-        observeNsfwFilter()
-        observePowerUserMode()
-        observeNote()
-        observePersonalTags()
-        observeDownloads()
+        startObservers()
         loadReviews()
     }
 
@@ -137,32 +135,14 @@ class ModelDetailViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        if (viewStartTimeMs > 0L) {
-            val durationMs = currentTimeMillis() - viewStartTimeMs
-            viewStartTimeMs = 0L
-            viewModelScope.launch {
-                withContext(NonCancellable) {
-                    try {
-                        withTimeoutOrNull(END_VIEW_TIMEOUT) {
-                            trackModelViewUseCase.endView(modelId, durationMs)
-                        }
-                    } catch (e: Exception) {
-                        Logger.w(TAG, "End view tracking failed: ${e.message}")
-                    }
-                }
-            }
-        }
+        trackEndView()
     }
 
     fun onFavoriteToggle() {
         val model = _uiState.value.model ?: return
-        viewModelScope.launch {
-            suspendRunCatching {
-                toggleFavoriteUseCase(model)
-                trackModelViewUseCase.trackInteraction(modelId, InteractionType.FAVORITE)
-            }.onFailure { e ->
-                Logger.w(TAG, "Favorite toggle failed: ${e.message}")
-            }
+        launchCatching("Favorite toggle") {
+            toggleFavoriteUseCase(model)
+            trackModelViewUseCase.trackInteraction(modelId, InteractionType.FAVORITE)
         }
     }
 
@@ -170,16 +150,14 @@ class ModelDetailViewModel(
         loadModel()
     }
 
+    // region Notes & Tags
+
     fun saveNote(text: String) {
-        viewModelScope.launch {
-            suspendRunCatching {
-                if (text.isBlank()) {
-                    deleteModelNoteUseCase(modelId)
-                } else {
-                    saveModelNoteUseCase(modelId, text)
-                }
-            }.onFailure { e ->
-                Logger.w(TAG, "Note save failed: ${e.message}")
+        launchCatching("Note save") {
+            if (text.isBlank()) {
+                deleteModelNoteUseCase(modelId)
+            } else {
+                saveModelNoteUseCase(modelId, text)
             }
         }
     }
@@ -187,37 +165,105 @@ class ModelDetailViewModel(
     fun addTag(tag: String) {
         val trimmed = tag.trim().lowercase()
         if (trimmed.isBlank()) return
-        viewModelScope.launch {
-            suspendRunCatching { addPersonalTagUseCase(modelId, trimmed) }
-                .onFailure { e -> Logger.w(TAG, "Add tag failed: ${e.message}") }
-        }
+        launchCatching("Add tag") { addPersonalTagUseCase(modelId, trimmed) }
     }
 
     fun removeTag(tag: String) {
-        viewModelScope.launch {
-            suspendRunCatching { removePersonalTagUseCase(modelId, tag) }
-                .onFailure { e -> Logger.w(TAG, "Remove tag failed: ${e.message}") }
+        launchCatching("Remove tag") { removePersonalTagUseCase(modelId, tag) }
+    }
+
+    // endregion
+
+    // region Collections
+
+    fun toggleCollection(collectionId: Long) {
+        val model = _uiState.value.model ?: return
+        launchCatching("Collection toggle") {
+            if (collectionId in modelCollectionIds.value) {
+                removeModelFromCollectionUseCase(collectionId, model.id)
+            } else {
+                addModelToCollectionUseCase(collectionId, model)
+            }
         }
     }
+
+    fun createCollectionAndAdd(name: String) {
+        val model = _uiState.value.model ?: return
+        launchCatching("Create collection and add") {
+            val newId = createCollectionUseCase(name)
+            addModelToCollectionUseCase(newId, model)
+        }
+    }
+
+    // endregion
+
+    // region Downloads
+
+    fun downloadFile(file: ModelFile) {
+        val model = _uiState.value.model ?: return
+        val version = model.modelVersions.getOrNull(_uiState.value.selectedVersionIndex) ?: return
+        launchCatching("Download enqueue") {
+            val download = buildModelDownload(model, version, file)
+            val id = enqueueDownloadUseCase(download)
+            _downloadEnqueuedEvent.tryEmit(id)
+            trackModelViewUseCase.trackInteraction(modelId, InteractionType.DOWNLOAD)
+        }
+    }
+
+    fun cancelDownload(downloadId: Long) {
+        launchCatching("Cancel download") { cancelDownloadUseCase(downloadId) }
+    }
+
+    // endregion
+
+    // region Reviews
+
+    fun onReviewSortChanged(order: ReviewSortOrder) {
+        _uiState.update { it.copy(reviewSortOrder = order) }
+        loadReviews()
+    }
+
+    @Suppress("LongParameterList")
+    fun submitReview(
+        modelVersionId: Long,
+        rating: Int,
+        recommended: Boolean,
+        details: String?,
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSubmittingReview = true) }
+            suspendRunCatching {
+                submitReviewUseCase(modelId, modelVersionId, rating, recommended, details)
+            }
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(isSubmittingReview = false, reviewSubmitSuccess = true)
+                    }
+                    loadReviews()
+                }
+                .onFailure { e ->
+                    Logger.w(TAG, "Submit review failed: ${e.message}")
+                    _uiState.update { it.copy(isSubmittingReview = false) }
+                }
+        }
+    }
+
+    fun dismissReviewSuccess() {
+        _uiState.update { it.copy(reviewSubmitSuccess = false) }
+    }
+
+    // endregion
+
+    // region Private — Model loading & enrichment
 
     private fun loadModel() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             suspendRunCatching { getModelDetailUseCase(modelId) }
                 .onSuccess { model ->
-                    _uiState.update {
-                        it.copy(model = model, isLoading = false)
-                    }
+                    _uiState.update { it.copy(model = model, isLoading = false) }
                     enrichCurrentVersion()
-                    trackModelViewUseCase(
-                        modelId = model.id,
-                        modelName = model.name,
-                        modelType = model.type.name,
-                        creatorName = model.creator?.username,
-                        thumbnailUrl = model.modelVersions.firstOrNull()
-                            ?.images?.firstOrNull()?.url,
-                        tags = model.tags,
-                    )
+                    trackModelView(model)
                     viewStartTimeMs = currentTimeMillis()
                 }
                 .onFailure { e ->
@@ -232,27 +278,10 @@ class ModelDetailViewModel(
         val state = _uiState.value
         val model = state.model ?: return
         val version = model.modelVersions.getOrNull(state.selectedVersionIndex) ?: return
-        var alreadyEnriched = false
-        enrichedVersionIds.update { ids ->
-            if (version.id in ids) {
-                alreadyEnriched = true
-                ids
-            } else {
-                ids + version.id
-            }
-        }
-        if (alreadyEnriched) return
+        if (!markVersionForEnrichment(version.id)) return
         viewModelScope.launch {
             suspendRunCatching { enrichModelImagesUseCase(version.id, version.images) }
-                .onSuccess { enriched ->
-                    _uiState.update { current ->
-                        val currentModel = current.model ?: return@update current
-                        val updatedVersions = currentModel.modelVersions.map { v ->
-                            if (v.id == version.id) v.copy(images = enriched) else v
-                        }
-                        current.copy(model = currentModel.copy(modelVersions = updatedVersions))
-                    }
-                }
+                .onSuccess { enriched -> applyEnrichedImages(version.id, enriched) }
                 .onFailure { e ->
                     Logger.w(TAG, "Enrich version images failed: ${e.message}")
                     enrichedVersionIds.update { it - version.id }
@@ -260,37 +289,49 @@ class ModelDetailViewModel(
         }
     }
 
+    /**
+     * Marks a version as being enriched. Returns true if enrichment should proceed
+     * (i.e., the version was not already enriched).
+     */
+    private fun markVersionForEnrichment(versionId: Long): Boolean {
+        var shouldEnrich = false
+        enrichedVersionIds.update { ids ->
+            if (versionId in ids) {
+                ids
+            } else {
+                shouldEnrich = true
+                ids + versionId
+            }
+        }
+        return shouldEnrich
+    }
+
+    private fun applyEnrichedImages(versionId: Long, enriched: List<ModelImage>) {
+        _uiState.update { current ->
+            val currentModel = current.model ?: return@update current
+            val updatedVersions = currentModel.modelVersions.map { v ->
+                if (v.id == versionId) v.copy(images = enriched) else v
+            }
+            current.copy(model = currentModel.copy(modelVersions = updatedVersions))
+        }
+    }
+
+    // endregion
+
+    // region Private — Observers
+
+    private fun startObservers() {
+        observeNsfwFilter()
+        observePowerUserMode()
+        observeNote()
+        observePersonalTags()
+        observeDownloads()
+    }
+
     private fun observeFavorite() {
         viewModelScope.launch {
             observeIsFavoriteUseCase(modelId).collect { isFavorite ->
                 _uiState.update { it.copy(isFavorite = isFavorite) }
-            }
-        }
-    }
-
-    fun toggleCollection(collectionId: Long) {
-        val model = _uiState.value.model ?: return
-        viewModelScope.launch {
-            suspendRunCatching {
-                if (collectionId in modelCollectionIds.value) {
-                    removeModelFromCollectionUseCase(collectionId, model.id)
-                } else {
-                    addModelToCollectionUseCase(collectionId, model)
-                }
-            }.onFailure { e ->
-                Logger.w(TAG, "Collection toggle failed: ${e.message}")
-            }
-        }
-    }
-
-    fun createCollectionAndAdd(name: String) {
-        val model = _uiState.value.model ?: return
-        viewModelScope.launch {
-            suspendRunCatching {
-                val newId = createCollectionUseCase(name)
-                addModelToCollectionUseCase(newId, model)
-            }.onFailure { e ->
-                Logger.w(TAG, "Create collection and add failed: ${e.message}")
             }
         }
     }
@@ -335,72 +376,9 @@ class ModelDetailViewModel(
         }
     }
 
-    fun downloadFile(file: ModelFile) {
-        val model = _uiState.value.model ?: return
-        val version = model.modelVersions.getOrNull(_uiState.value.selectedVersionIndex) ?: return
-        viewModelScope.launch {
-            suspendRunCatching {
-                val download = ModelDownload(
-                    modelId = model.id,
-                    modelName = model.name,
-                    versionId = version.id,
-                    versionName = version.name,
-                    fileId = file.id,
-                    fileName = file.name,
-                    fileUrl = file.downloadUrl,
-                    fileSizeBytes = (file.sizeKB * KB_TO_BYTES).toLong(),
-                    status = DownloadStatus.Pending,
-                    modelType = model.type.name,
-                )
-                val id = enqueueDownloadUseCase(download)
-                _downloadEnqueuedEvent.tryEmit(id)
-                trackModelViewUseCase.trackInteraction(modelId, InteractionType.DOWNLOAD)
-            }.onFailure { e ->
-                Logger.w(TAG, "Download enqueue failed: ${e.message}")
-            }
-        }
-    }
+    // endregion
 
-    fun cancelDownload(downloadId: Long) {
-        viewModelScope.launch {
-            suspendRunCatching { cancelDownloadUseCase(downloadId) }
-                .onFailure { e -> Logger.w(TAG, "Cancel download failed: ${e.message}") }
-        }
-    }
-
-    fun onReviewSortChanged(order: ReviewSortOrder) {
-        _uiState.update { it.copy(reviewSortOrder = order) }
-        loadReviews()
-    }
-
-    @Suppress("LongParameterList")
-    fun submitReview(
-        modelVersionId: Long,
-        rating: Int,
-        recommended: Boolean,
-        details: String?,
-    ) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isSubmittingReview = true) }
-            suspendRunCatching {
-                submitReviewUseCase(modelId, modelVersionId, rating, recommended, details)
-            }
-                .onSuccess {
-                    _uiState.update {
-                        it.copy(isSubmittingReview = false, reviewSubmitSuccess = true)
-                    }
-                    loadReviews()
-                }
-                .onFailure { e ->
-                    Logger.w(TAG, "Submit review failed: ${e.message}")
-                    _uiState.update { it.copy(isSubmittingReview = false) }
-                }
-        }
-    }
-
-    fun dismissReviewSuccess() {
-        _uiState.update { it.copy(reviewSubmitSuccess = false) }
-    }
+    // region Private — Reviews
 
     private fun loadReviews() {
         viewModelScope.launch {
@@ -435,6 +413,69 @@ class ModelDetailViewModel(
         ReviewSortOrder.HighestRated -> reviews.sortedByDescending { it.rating }
         ReviewSortOrder.LowestRated -> reviews.sortedBy { it.rating }
     }
+
+    // endregion
+
+    // region Private — Helpers
+
+    /**
+     * Common pattern: launch a coroutine, run [block] inside suspendRunCatching,
+     * and log failures with [operationName].
+     */
+    private fun launchCatching(operationName: String, block: suspend () -> Unit) {
+        viewModelScope.launch {
+            suspendRunCatching { block() }
+                .onFailure { e -> Logger.w(TAG, "$operationName failed: ${e.message}") }
+        }
+    }
+
+    private fun trackEndView() {
+        if (viewStartTimeMs <= 0L) return
+        val durationMs = currentTimeMillis() - viewStartTimeMs
+        viewStartTimeMs = 0L
+        viewModelScope.launch {
+            withContext(NonCancellable) {
+                try {
+                    withTimeoutOrNull(END_VIEW_TIMEOUT) {
+                        trackModelViewUseCase.endView(modelId, durationMs)
+                    }
+                } catch (e: Exception) {
+                    Logger.w(TAG, "End view tracking failed: ${e.message}")
+                }
+            }
+        }
+    }
+
+    private suspend fun trackModelView(model: Model) {
+        trackModelViewUseCase(
+            modelId = model.id,
+            modelName = model.name,
+            modelType = model.type.name,
+            creatorName = model.creator?.username,
+            thumbnailUrl = model.modelVersions.firstOrNull()
+                ?.images?.firstOrNull()?.url,
+            tags = model.tags,
+        )
+    }
+
+    private fun buildModelDownload(
+        model: Model,
+        version: ModelVersion,
+        file: ModelFile,
+    ): ModelDownload = ModelDownload(
+        modelId = model.id,
+        modelName = model.name,
+        versionId = version.id,
+        versionName = version.name,
+        fileId = file.id,
+        fileName = file.name,
+        fileUrl = file.downloadUrl,
+        fileSizeBytes = (file.sizeKB * KB_TO_BYTES).toLong(),
+        status = DownloadStatus.Pending,
+        modelType = model.type.name,
+    )
+
+    // endregion
 }
 
 private const val TAG = "ModelDetailViewModel"

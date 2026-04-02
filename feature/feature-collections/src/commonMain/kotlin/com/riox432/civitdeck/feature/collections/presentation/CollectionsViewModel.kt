@@ -5,9 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.feature.collections.domain.usecase.DeleteCollectionUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.RenameCollectionUseCase
-import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

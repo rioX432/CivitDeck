@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.SDWebUIConnectionStatus
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
+import com.riox432.civitdeck.domain.model.SDWebUIConnection
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -32,7 +33,7 @@ fun SDWebUISettingsSection(viewModel: SDWebUISettingsViewModel) {
     val state by viewModel.uiState.collectAsState()
     var nameInput by remember { mutableStateOf("") }
     var hostInput by remember { mutableStateOf("127.0.0.1") }
-    var portInput by remember { mutableStateOf("7860") }
+    var portInput by remember { mutableStateOf(SDWebUIConnection.DEFAULT_SDWEBUI_PORT.toString()) }
 
     SettingsCard(title = "SD WebUI Server") {
         ConnectionStatusBadge(
@@ -120,7 +121,7 @@ fun SDWebUISettingsSection(viewModel: SDWebUISettingsViewModel) {
                 viewModel.onSaveConnection(nameInput, hostInput, port)
                 nameInput = ""
                 hostInput = "127.0.0.1"
-                portInput = "7860"
+                portInput = SDWebUIConnection.DEFAULT_SDWEBUI_PORT.toString()
             },
             enabled = nameInput.isNotBlank() && hostInput.isNotBlank(),
         ) {

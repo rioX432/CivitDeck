@@ -14,8 +14,8 @@ import com.riox432.civitdeck.domain.usecase.ObserveDatasetCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveShareHashtagsUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleShareHashtagUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
 import com.riox432.civitdeck.domain.util.suspendRunCatching
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

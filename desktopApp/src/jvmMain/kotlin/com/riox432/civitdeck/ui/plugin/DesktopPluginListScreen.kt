@@ -59,7 +59,7 @@ fun DesktopPluginListScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
                                 Icons.Default.Extension,
-                                contentDescription = null,
+                                contentDescription = "No plugins",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Text(
@@ -140,7 +140,7 @@ private fun DesktopPluginRow(
         ) {
             Icon(
                 Icons.Default.Extension,
-                contentDescription = null,
+                contentDescription = "Plugin",
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.size(24.dp),
             )

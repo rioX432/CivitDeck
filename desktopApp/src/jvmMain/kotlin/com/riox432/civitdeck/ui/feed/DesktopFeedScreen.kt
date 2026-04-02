@@ -120,7 +120,7 @@ private fun FeedEmptyView() {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 Icons.Default.RssFeed,
-                contentDescription = null,
+                contentDescription = "Empty feed",
                 modifier = Modifier.size(EMPTY_ICON_SIZE),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )

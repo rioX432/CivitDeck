@@ -12,6 +12,7 @@ import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -26,8 +27,11 @@ class DatasetListViewModel(
         observeDatasetCollectionsUseCase()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
-    val isLoading = MutableStateFlow(false)
-    val error = MutableStateFlow<String?>(null)
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
 
     fun createDataset(name: String) {
         viewModelScope.launch {

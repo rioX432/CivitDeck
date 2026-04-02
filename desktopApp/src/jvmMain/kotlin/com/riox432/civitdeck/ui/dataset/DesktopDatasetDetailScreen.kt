@@ -231,7 +231,7 @@ private fun SelectionActionBar(
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
         Button(onClick = onRemove) {
-            Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(Icons.Default.Delete, contentDescription = "Remove selected", modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(Spacing.xs))
             Text("Remove $selectedCount ${if (selectedCount == 1) "image" else "images"}")
         }
@@ -256,7 +256,7 @@ private fun DatasetImageGridContent(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
                     Icons.Default.Dataset,
-                    contentDescription = null,
+                    contentDescription = "Empty dataset",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
@@ -308,7 +308,7 @@ private fun DesktopDatasetImageItem(
                 .data(image.imageUrl)
                 .size(Size(DATASET_IMAGE_SIZE, DATASET_IMAGE_SIZE))
                 .build(),
-            contentDescription = null,
+            contentDescription = "Dataset image",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
