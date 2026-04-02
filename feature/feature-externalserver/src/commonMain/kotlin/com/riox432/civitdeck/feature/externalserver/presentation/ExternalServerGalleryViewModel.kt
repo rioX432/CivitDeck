@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.externalserver.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.feature.externalserver.domain.model.ExternalServerImageFilters
 import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationChoice
 import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationJob
@@ -16,7 +17,6 @@ import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalSe
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerImagesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationOptionsUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationStatusUseCase
-import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

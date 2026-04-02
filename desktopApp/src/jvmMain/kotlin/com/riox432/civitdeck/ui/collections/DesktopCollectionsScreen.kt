@@ -114,7 +114,7 @@ private fun CollectionsList(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
                     Icons.Default.FolderCopy,
-                    contentDescription = null,
+                    contentDescription = "No collections",
                     modifier = Modifier.size(EMPTY_ICON_SIZE),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

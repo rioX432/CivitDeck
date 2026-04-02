@@ -38,7 +38,7 @@ import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Tween
 import kotlin.math.roundToInt
 
-private val ACTION_BUTTON_SIZE = 40.dp
+private val ACTION_BUTTON_SIZE = 48.dp
 private val ACTION_AREA_WIDTH = 64.dp
 private const val DEFAULT_SWIPE_THRESHOLD = 0.3f
 

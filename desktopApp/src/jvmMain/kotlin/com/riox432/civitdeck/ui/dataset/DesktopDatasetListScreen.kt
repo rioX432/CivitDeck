@@ -129,7 +129,7 @@ private fun DatasetListBody(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
                     Icons.Default.Dataset,
-                    contentDescription = null,
+                    contentDescription = "Empty dataset list",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
@@ -192,7 +192,7 @@ private fun DesktopDatasetCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Dataset,
-                    contentDescription = null,
+                    contentDescription = "Dataset",
                     tint = MaterialTheme.colorScheme.primary,
                 )
             }
@@ -225,7 +225,7 @@ private fun DesktopDatasetCard(
                 ) {
                     DropdownMenuItem(
                         text = { Text("Rename") },
-                        leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Default.Edit, contentDescription = "Rename") },
                         onClick = {
                             showMenu = false
                             showRenameDialog = true
@@ -233,7 +233,7 @@ private fun DesktopDatasetCard(
                     )
                     DropdownMenuItem(
                         text = { Text("Delete") },
-                        leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete") },
                         onClick = {
                             showMenu = false
                             onDelete()

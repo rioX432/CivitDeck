@@ -134,7 +134,7 @@ private fun PromptsList(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
                     Icons.AutoMirrored.Filled.TextSnippet,
-                    contentDescription = null,
+                    contentDescription = "No prompts",
                     modifier = Modifier.size(EMPTY_ICON_SIZE),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

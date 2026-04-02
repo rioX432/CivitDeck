@@ -89,7 +89,7 @@ private fun NoteHeader(
     ) {
         SectionHeader(title = "My Notes", showDivider = true, modifier = Modifier.weight(1f))
         if (!isEditing) {
-            IconButton(onClick = onToggleEdit, modifier = Modifier.size(32.dp)) {
+            IconButton(onClick = onToggleEdit) {
                 Icon(
                     imageVector = if (hasNote) Icons.Default.Edit else Icons.Default.Add,
                     contentDescription = if (hasNote) "Edit note" else "Add note",
@@ -185,7 +185,7 @@ private fun TagsHeader(onAdd: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         SectionHeader(title = "My Tags", showDivider = true, modifier = Modifier.weight(1f))
-        IconButton(onClick = onAdd, modifier = Modifier.size(32.dp)) {
+        IconButton(onClick = onAdd) {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = stringResource(R.string.cd_add_tag),

@@ -72,25 +72,53 @@ class BackupRepositoryImpl(
         encodeDefaults = true
     }
 
+    // region Public API
+
     override suspend fun createBackup(categories: Set<BackupCategory>): String {
         val backup = BackupDto(
             metadata = BackupMetadataDto(
                 createdAt = currentTimeMillis(),
                 categories = categories.map { it.name },
             ),
-            collections = exportCollections(categories),
-            collectionModels = exportCollectionModels(categories),
-            modelNotes = exportNotes(categories),
-            personalTags = exportTags(categories),
-            savedPrompts = exportPrompts(categories),
-            userPreferences = exportSettings(categories),
-            savedSearchFilters = exportSearchFilters(categories),
-            followedCreators = exportFollowedCreators(categories),
-            comfyUIConnections = exportComfyUIConnections(categories),
-            sdWebUIConnections = exportSDWebUIConnections(categories),
-            externalServerConfigs = exportExternalServers(categories),
-            hiddenModels = exportHiddenModels(categories),
-            excludedTags = exportExcludedTags(categories),
+            collections = exportIf(BackupCategory.COLLECTIONS, categories) {
+                collectionDaos.collectionDao.getAll().map { it.toDto() }
+            },
+            collectionModels = exportIf(BackupCategory.COLLECTIONS, categories) {
+                collectionDaos.collectionDao.getAllEntries().map { it.toDto() }
+            },
+            modelNotes = exportIf(BackupCategory.NOTES, categories) {
+                contentDaos.modelNoteDao.getAll().map { it.toDto() }
+            },
+            personalTags = exportIf(BackupCategory.TAGS, categories) {
+                contentDaos.personalTagDao.getAll().map { it.toDto() }
+            },
+            savedPrompts = exportIf(BackupCategory.PROMPTS, categories) {
+                contentDaos.savedPromptDao.getAllUserCreated().map { it.toDto() }
+            },
+            userPreferences = exportIf(BackupCategory.SETTINGS, categories) {
+                preferenceDaos.userPreferencesDao.getPreferences()?.toDto()
+            },
+            savedSearchFilters = exportIf(BackupCategory.SEARCH_FILTERS, categories) {
+                contentDaos.savedSearchFilterDao.getAll().map { it.toDto() }
+            },
+            followedCreators = exportIf(BackupCategory.FOLLOWED_CREATORS, categories) {
+                contentDaos.followedCreatorDao.getAll().map { it.toDto() }
+            },
+            comfyUIConnections = exportIf(BackupCategory.CONNECTIONS, categories) {
+                connectionDaos.comfyUIConnectionDao.getAll().map { it.toDto() }
+            },
+            sdWebUIConnections = exportIf(BackupCategory.CONNECTIONS, categories) {
+                connectionDaos.sdWebUIConnectionDao.getAll().map { it.toDto() }
+            },
+            externalServerConfigs = exportIf(BackupCategory.CONNECTIONS, categories) {
+                connectionDaos.externalServerConfigDao.getAll().map { it.toDto() }
+            },
+            hiddenModels = exportIf(BackupCategory.HIDDEN_MODELS, categories) {
+                preferenceDaos.hiddenModelDao.getAll().map { it.toDto() }
+            },
+            excludedTags = exportIf(BackupCategory.HIDDEN_MODELS, categories) {
+                preferenceDaos.excludedTagDao.getAll().map { it.toDto() }
+            },
         )
         return json.encodeToString(BackupDto.serializer(), backup)
     }
@@ -114,95 +142,37 @@ class BackupRepositoryImpl(
         }.toSet()
     }
 
-    // --- Export helpers ---
+    // endregion
 
-    private suspend fun exportCollections(categories: Set<BackupCategory>): List<CollectionDto>? =
-        exportIf(BackupCategory.COLLECTIONS in categories) {
-            collectionDaos.collectionDao.getAll().map { it.toDto() }
-        }
+    // region Export helper
 
-    private suspend fun exportCollectionModels(
+    private suspend fun <T> exportIf(
+        category: BackupCategory,
         categories: Set<BackupCategory>,
-    ): List<CollectionModelDto>? =
-        exportIf(BackupCategory.COLLECTIONS in categories) {
-            collectionDaos.collectionDao.getAllEntries().map { it.toDto() }
-        }
+        block: suspend () -> T,
+    ): T? = if (category in categories) block() else null
 
-    private suspend fun exportNotes(categories: Set<BackupCategory>): List<ModelNoteDto>? =
-        exportIf(BackupCategory.NOTES in categories) {
-            contentDaos.modelNoteDao.getAll().map { it.toDto() }
-        }
+    // endregion
 
-    private suspend fun exportTags(categories: Set<BackupCategory>): List<PersonalTagDto>? =
-        exportIf(BackupCategory.TAGS in categories) {
-            contentDaos.personalTagDao.getAll().map { it.toDto() }
-        }
+    // region Restore helpers
 
-    private suspend fun exportPrompts(categories: Set<BackupCategory>): List<SavedPromptDto>? =
-        exportIf(BackupCategory.PROMPTS in categories) {
-            contentDaos.savedPromptDao.getAllUserCreated().map { it.toDto() }
-        }
-
-    private suspend fun exportSettings(
+    /**
+     * Generic restore: checks category membership and null data, optionally clears
+     * existing rows on OVERWRITE, then bulk-inserts the mapped entities.
+     */
+    private suspend fun <D, E> restoreList(
+        data: List<D>?,
+        category: BackupCategory,
         categories: Set<BackupCategory>,
-    ): UserPreferencesDto? =
-        exportIf(BackupCategory.SETTINGS in categories) {
-            preferenceDaos.userPreferencesDao.getPreferences()?.toDto()
-        }
-
-    private suspend fun exportSearchFilters(
-        categories: Set<BackupCategory>,
-    ): List<SavedSearchFilterDto>? =
-        exportIf(BackupCategory.SEARCH_FILTERS in categories) {
-            contentDaos.savedSearchFilterDao.getAll().map { it.toDto() }
-        }
-
-    private suspend fun exportFollowedCreators(
-        categories: Set<BackupCategory>,
-    ): List<FollowedCreatorDto>? =
-        exportIf(BackupCategory.FOLLOWED_CREATORS in categories) {
-            contentDaos.followedCreatorDao.getAll().map { it.toDto() }
-        }
-
-    private suspend fun exportComfyUIConnections(
-        categories: Set<BackupCategory>,
-    ): List<ComfyUIConnectionDto>? =
-        exportIf(BackupCategory.CONNECTIONS in categories) {
-            connectionDaos.comfyUIConnectionDao.getAll().map { it.toDto() }
-        }
-
-    private suspend fun exportSDWebUIConnections(
-        categories: Set<BackupCategory>,
-    ): List<SDWebUIConnectionDto>? =
-        exportIf(BackupCategory.CONNECTIONS in categories) {
-            connectionDaos.sdWebUIConnectionDao.getAll().map { it.toDto() }
-        }
-
-    private suspend fun exportExternalServers(
-        categories: Set<BackupCategory>,
-    ): List<ExternalServerConfigDto>? =
-        exportIf(BackupCategory.CONNECTIONS in categories) {
-            connectionDaos.externalServerConfigDao.getAll().map { it.toDto() }
-        }
-
-    private suspend fun exportHiddenModels(
-        categories: Set<BackupCategory>,
-    ): List<HiddenModelDto>? =
-        exportIf(BackupCategory.HIDDEN_MODELS in categories) {
-            preferenceDaos.hiddenModelDao.getAll().map { it.toDto() }
-        }
-
-    private suspend fun exportExcludedTags(
-        categories: Set<BackupCategory>,
-    ): List<ExcludedTagDto>? =
-        exportIf(BackupCategory.HIDDEN_MODELS in categories) {
-            preferenceDaos.excludedTagDao.getAll().map { it.toDto() }
-        }
-
-    private suspend fun <T> exportIf(condition: Boolean, block: suspend () -> T): T? =
-        if (condition) block() else null
-
-    // --- Restore: category-group dispatchers ---
+        strategy: RestoreStrategy,
+        deleteAll: suspend () -> Unit,
+        insertAll: suspend (List<E>) -> Unit,
+        toEntity: (D) -> E,
+    ) {
+        if (category !in categories || data == null) return
+        if (strategy == RestoreStrategy.OVERWRITE) deleteAll()
+        insertAll(data.map(toEntity))
+    }
 
     private suspend fun restoreCollectionData(
         backup: BackupDto,
@@ -227,11 +197,51 @@ class BackupRepositoryImpl(
         strategy: RestoreStrategy,
         categories: Set<BackupCategory>,
     ) {
-        restoreNotes(backup, strategy, categories)
-        restoreTags(backup, strategy, categories)
-        restorePrompts(backup, strategy, categories)
-        restoreSearchFilters(backup, strategy, categories)
-        restoreFollowedCreators(backup, strategy, categories)
+        restoreList(
+            backup.modelNotes,
+            BackupCategory.NOTES,
+            categories,
+            strategy,
+            deleteAll = { contentDaos.modelNoteDao.deleteAll() },
+            insertAll = { contentDaos.modelNoteDao.insertAll(it) },
+            toEntity = { it.toEntity() },
+        )
+        restoreList(
+            backup.personalTags,
+            BackupCategory.TAGS,
+            categories,
+            strategy,
+            deleteAll = { contentDaos.personalTagDao.deleteAll() },
+            insertAll = { contentDaos.personalTagDao.insertAll(it) },
+            toEntity = { it.toEntity() },
+        )
+        restoreList(
+            backup.savedPrompts,
+            BackupCategory.PROMPTS,
+            categories,
+            strategy,
+            deleteAll = { contentDaos.savedPromptDao.deleteAllUserCreated() },
+            insertAll = { contentDaos.savedPromptDao.insertAll(it) },
+            toEntity = { it.toEntity() },
+        )
+        restoreList(
+            backup.savedSearchFilters,
+            BackupCategory.SEARCH_FILTERS,
+            categories,
+            strategy,
+            deleteAll = { contentDaos.savedSearchFilterDao.deleteAll() },
+            insertAll = { contentDaos.savedSearchFilterDao.insertAll(it) },
+            toEntity = { it.toEntity() },
+        )
+        restoreList(
+            backup.followedCreators,
+            BackupCategory.FOLLOWED_CREATORS,
+            categories,
+            strategy,
+            deleteAll = { contentDaos.followedCreatorDao.deleteAll() },
+            insertAll = { contentDaos.followedCreatorDao.insertAll(it) },
+            toEntity = { it.toEntity() },
+        )
     }
 
     private suspend fun restorePreferenceData(
@@ -244,7 +254,24 @@ class BackupRepositoryImpl(
             preferenceDaos.userPreferencesDao.upsert(backup.userPreferences.toEntity())
         }
         if (BackupCategory.HIDDEN_MODELS in categories) {
-            restoreHiddenModels(backup, strategy)
+            restoreList(
+                backup.hiddenModels,
+                BackupCategory.HIDDEN_MODELS,
+                categories,
+                strategy,
+                deleteAll = { preferenceDaos.hiddenModelDao.deleteAll() },
+                insertAll = { preferenceDaos.hiddenModelDao.insertAll(it) },
+                toEntity = { it.toEntity() },
+            )
+            restoreList(
+                backup.excludedTags,
+                BackupCategory.HIDDEN_MODELS,
+                categories,
+                strategy,
+                deleteAll = { preferenceDaos.excludedTagDao.deleteAll() },
+                insertAll = { preferenceDaos.excludedTagDao.insertAll(it) },
+                toEntity = { it.toEntity() },
+            )
         }
     }
 
@@ -272,69 +299,7 @@ class BackupRepositoryImpl(
         }
     }
 
-    // --- Restore: per-category helpers ---
-
-    private suspend fun restoreNotes(
-        backup: BackupDto,
-        strategy: RestoreStrategy,
-        categories: Set<BackupCategory>,
-    ) {
-        if (BackupCategory.NOTES !in categories || backup.modelNotes == null) return
-        if (strategy == RestoreStrategy.OVERWRITE) contentDaos.modelNoteDao.deleteAll()
-        contentDaos.modelNoteDao.insertAll(backup.modelNotes.map { it.toEntity() })
-    }
-
-    private suspend fun restoreTags(
-        backup: BackupDto,
-        strategy: RestoreStrategy,
-        categories: Set<BackupCategory>,
-    ) {
-        if (BackupCategory.TAGS !in categories || backup.personalTags == null) return
-        if (strategy == RestoreStrategy.OVERWRITE) contentDaos.personalTagDao.deleteAll()
-        contentDaos.personalTagDao.insertAll(backup.personalTags.map { it.toEntity() })
-    }
-
-    private suspend fun restorePrompts(
-        backup: BackupDto,
-        strategy: RestoreStrategy,
-        categories: Set<BackupCategory>,
-    ) {
-        if (BackupCategory.PROMPTS !in categories || backup.savedPrompts == null) return
-        if (strategy == RestoreStrategy.OVERWRITE) contentDaos.savedPromptDao.deleteAllUserCreated()
-        contentDaos.savedPromptDao.insertAll(backup.savedPrompts.map { it.toEntity() })
-    }
-
-    private suspend fun restoreSearchFilters(
-        backup: BackupDto,
-        strategy: RestoreStrategy,
-        categories: Set<BackupCategory>,
-    ) {
-        if (BackupCategory.SEARCH_FILTERS !in categories || backup.savedSearchFilters == null) return
-        if (strategy == RestoreStrategy.OVERWRITE) contentDaos.savedSearchFilterDao.deleteAll()
-        contentDaos.savedSearchFilterDao.insertAll(backup.savedSearchFilters.map { it.toEntity() })
-    }
-
-    private suspend fun restoreFollowedCreators(
-        backup: BackupDto,
-        strategy: RestoreStrategy,
-        categories: Set<BackupCategory>,
-    ) {
-        if (BackupCategory.FOLLOWED_CREATORS !in categories) return
-        if (backup.followedCreators == null) return
-        if (strategy == RestoreStrategy.OVERWRITE) contentDaos.followedCreatorDao.deleteAll()
-        contentDaos.followedCreatorDao.insertAll(backup.followedCreators.map { it.toEntity() })
-    }
-
-    private suspend fun restoreHiddenModels(backup: BackupDto, strategy: RestoreStrategy) {
-        backup.hiddenModels?.let { models ->
-            if (strategy == RestoreStrategy.OVERWRITE) preferenceDaos.hiddenModelDao.deleteAll()
-            preferenceDaos.hiddenModelDao.insertAll(models.map { it.toEntity() })
-        }
-        backup.excludedTags?.let { tags ->
-            if (strategy == RestoreStrategy.OVERWRITE) preferenceDaos.excludedTagDao.deleteAll()
-            preferenceDaos.excludedTagDao.insertAll(tags.map { it.toEntity() })
-        }
-    }
+    // endregion
 }
 
 // --- Entity -> DTO mappers ---

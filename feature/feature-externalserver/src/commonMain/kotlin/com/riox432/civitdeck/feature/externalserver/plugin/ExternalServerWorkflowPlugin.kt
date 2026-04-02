@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.externalserver.plugin
 
 import com.riox432.civitdeck.domain.model.ExternalServerConfig
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.feature.externalserver.domain.repository.ExternalServerConfigRepository
 import com.riox432.civitdeck.feature.externalserver.domain.repository.ExternalServerImagesRepository
 import com.riox432.civitdeck.plugin.WorkflowEnginePlugin
@@ -9,7 +10,6 @@ import com.riox432.civitdeck.plugin.capability.WorkflowCapability
 import com.riox432.civitdeck.plugin.model.PluginManifest
 import com.riox432.civitdeck.plugin.model.PluginState
 import com.riox432.civitdeck.plugin.model.PluginType
-import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.coroutines.flow.first
 
 /**

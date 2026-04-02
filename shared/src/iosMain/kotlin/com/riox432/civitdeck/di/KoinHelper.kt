@@ -193,12 +193,12 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectio
 import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ActivateExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.DeleteExternalServerConfigUseCase
+import com.riox432.civitdeck.feature.externalserver.domain.usecase.DeleteServerImagesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ExecuteGenerationUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetDependentChoicesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerCapabilitiesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalServerImagesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationOptionsUseCase
-import com.riox432.civitdeck.feature.externalserver.domain.usecase.DeleteServerImagesUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationStatusUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveActiveExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveExternalServerConfigsUseCase
@@ -237,61 +237,59 @@ import org.koin.mp.KoinPlatform.getKoin
 
 @Suppress("TooManyFunctions")
 object KoinHelper {
+
+    // region Search & Discovery
     fun getModelsUseCase(): GetModelsUseCase = getKoin().get()
     fun getMultiSourceSearchUseCase(): MultiSourceSearchUseCase = getKoin().get()
-    fun getCreatorModelsUseCase(): GetCreatorModelsUseCase = getKoin().get()
-    fun getModelDetailUseCase(): GetModelDetailUseCase = getKoin().get()
-    fun getImagesUseCase(): GetImagesUseCase = getKoin().get()
-    fun getToggleFavoriteUseCase(): ToggleFavoriteUseCase = getKoin().get()
-    fun getObserveFavoritesUseCase(): ObserveFavoritesUseCase = getKoin().get()
-    fun getObserveIsFavoriteUseCase(): ObserveIsFavoriteUseCase = getKoin().get()
-    fun getObserveNsfwFilterUseCase(): ObserveNsfwFilterUseCase = getKoin().get()
-    fun getSetNsfwFilterUseCase(): SetNsfwFilterUseCase = getKoin().get()
-    fun getObserveNsfwBlurSettingsUseCase(): ObserveNsfwBlurSettingsUseCase = getKoin().get()
-    fun getSetNsfwBlurSettingsUseCase(): SetNsfwBlurSettingsUseCase = getKoin().get()
-    fun getSavePromptUseCase(): SavePromptUseCase = getKoin().get()
-    fun getObserveSavedPromptsUseCase(): ObserveSavedPromptsUseCase = getKoin().get()
-    fun getDeleteSavedPromptUseCase(): DeleteSavedPromptUseCase = getKoin().get()
+    fun getDiscoveryModelsUseCase(): GetDiscoveryModelsUseCase = getKoin().get()
+    fun getRecommendationsUseCase(): GetRecommendationsUseCase = getKoin().get()
+    fun getEnrichModelImagesUseCase(): EnrichModelImagesUseCase = getKoin().get()
+    fun getSimilarModelsUseCase(): GetSimilarModelsUseCase = getKoin().get()
+    // endregion
+
+    // region Search History & Filters
     fun getObserveSearchHistoryUseCase(): ObserveSearchHistoryUseCase = getKoin().get()
     fun getAddSearchHistoryUseCase(): AddSearchHistoryUseCase = getKoin().get()
     fun getClearSearchHistoryUseCase(): ClearSearchHistoryUseCase = getKoin().get()
     fun getDeleteSearchHistoryItemUseCase(): DeleteSearchHistoryItemUseCase = getKoin().get()
-    fun getTrackModelViewUseCase(): TrackModelViewUseCase = getKoin().get()
-    fun getObserveRecentlyViewedUseCase(): ObserveRecentlyViewedUseCase = getKoin().get()
-    fun getRecommendationsUseCase(): GetRecommendationsUseCase = getKoin().get()
-    fun getViewedModelIdsUseCase(): GetViewedModelIdsUseCase = getKoin().get()
-    fun getExcludedTagsUseCase(): GetExcludedTagsUseCase = getKoin().get()
-    fun getAddExcludedTagUseCase(): AddExcludedTagUseCase = getKoin().get()
-    fun getRemoveExcludedTagUseCase(): RemoveExcludedTagUseCase = getKoin().get()
-    fun getHiddenModelIdsUseCase(): GetHiddenModelIdsUseCase = getKoin().get()
-    fun getHideModelUseCase(): HideModelUseCase = getKoin().get()
-    fun getUnhideModelUseCase(): UnhideModelUseCase = getKoin().get()
     fun getObserveSavedSearchFiltersUseCase(): ObserveSavedSearchFiltersUseCase = getKoin().get()
     fun getSaveSearchFilterUseCase(): SaveSearchFilterUseCase = getKoin().get()
     fun getDeleteSavedSearchFilterUseCase(): DeleteSavedSearchFilterUseCase = getKoin().get()
-    fun getObserveDefaultSortOrderUseCase(): ObserveDefaultSortOrderUseCase = getKoin().get()
-    fun getSetDefaultSortOrderUseCase(): SetDefaultSortOrderUseCase = getKoin().get()
-    fun getObserveDefaultTimePeriodUseCase(): ObserveDefaultTimePeriodUseCase = getKoin().get()
-    fun getSetDefaultTimePeriodUseCase(): SetDefaultTimePeriodUseCase = getKoin().get()
-    fun getObserveGridColumnsUseCase(): ObserveGridColumnsUseCase = getKoin().get()
-    fun getSetGridColumnsUseCase(): SetGridColumnsUseCase = getKoin().get()
-    fun getHiddenModelsUseCase(): GetHiddenModelsUseCase = getKoin().get()
+    fun getExcludedTagsUseCase(): GetExcludedTagsUseCase = getKoin().get()
+    fun getAddExcludedTagUseCase(): AddExcludedTagUseCase = getKoin().get()
+    fun getRemoveExcludedTagUseCase(): RemoveExcludedTagUseCase = getKoin().get()
+    // endregion
+
+    // region Model Detail & Creator
+    fun getModelDetailUseCase(): GetModelDetailUseCase = getKoin().get()
+    fun getCreatorModelsUseCase(): GetCreatorModelsUseCase = getKoin().get()
+    fun getImagesUseCase(): GetImagesUseCase = getKoin().get()
+    fun getModelLicenseUseCase(): GetModelLicenseUseCase = getKoin().get()
+    // endregion
+
+    // region Favorites
+    fun getToggleFavoriteUseCase(): ToggleFavoriteUseCase = getKoin().get()
+    fun getObserveFavoritesUseCase(): ObserveFavoritesUseCase = getKoin().get()
+    fun getObserveIsFavoriteUseCase(): ObserveIsFavoriteUseCase = getKoin().get()
+    // endregion
+
+    // region Browsing History
+    fun getTrackModelViewUseCase(): TrackModelViewUseCase = getKoin().get()
+    fun getObserveRecentlyViewedUseCase(): ObserveRecentlyViewedUseCase = getKoin().get()
+    fun getViewedModelIdsUseCase(): GetViewedModelIdsUseCase = getKoin().get()
     fun getClearBrowsingHistoryUseCase(): ClearBrowsingHistoryUseCase = getKoin().get()
     fun getDeleteBrowsingHistoryItemUseCase(): DeleteBrowsingHistoryItemUseCase = getKoin().get()
     fun getCleanupBrowsingHistoryUseCase(): CleanupBrowsingHistoryUseCase = getKoin().get()
-    fun getClearCacheUseCase(): ClearCacheUseCase = getKoin().get()
-    fun getObservePowerUserModeUseCase(): ObservePowerUserModeUseCase = getKoin().get()
-    fun getSetPowerUserModeUseCase(): SetPowerUserModeUseCase = getKoin().get()
-    fun getObserveCustomNavShortcutsUseCase(): ObserveCustomNavShortcutsUseCase = getKoin().get()
-    fun getSetCustomNavShortcutsUseCase(): SetCustomNavShortcutsUseCase = getKoin().get()
-    fun getEnrichModelImagesUseCase(): EnrichModelImagesUseCase = getKoin().get()
-    fun getDiscoveryModelsUseCase(): GetDiscoveryModelsUseCase = getKoin().get()
-    fun getObserveApiKeyUseCase(): ObserveApiKeyUseCase = getKoin().get()
-    fun getSetApiKeyUseCase(): SetApiKeyUseCase = getKoin().get()
-    fun getValidateApiKeyUseCase(): ValidateApiKeyUseCase = getKoin().get()
-    fun getApiKeyProvider(): ApiKeyProvider = getKoin().get()
+    // endregion
 
-    // Collection use cases
+    // region Hidden Models
+    fun getHiddenModelIdsUseCase(): GetHiddenModelIdsUseCase = getKoin().get()
+    fun getHideModelUseCase(): HideModelUseCase = getKoin().get()
+    fun getUnhideModelUseCase(): UnhideModelUseCase = getKoin().get()
+    fun getHiddenModelsUseCase(): GetHiddenModelsUseCase = getKoin().get()
+    // endregion
+
+    // region Collections
     fun getObserveCollectionsUseCase(): ObserveCollectionsUseCase = getKoin().get()
     fun getCreateCollectionUseCase(): CreateCollectionUseCase = getKoin().get()
     fun getRenameCollectionUseCase(): RenameCollectionUseCase = getKoin().get()
@@ -302,8 +300,9 @@ object KoinHelper {
     fun getObserveModelCollectionsUseCase(): ObserveModelCollectionsUseCase = getKoin().get()
     fun getBulkMoveModelsUseCase(): BulkMoveModelsUseCase = getKoin().get()
     fun getBulkRemoveModelsUseCase(): BulkRemoveModelsUseCase = getKoin().get()
+    // endregion
 
-    // Local model file use cases
+    // region Local Model Files
     fun getObserveModelDirectoriesUseCase(): ObserveModelDirectoriesUseCase = getKoin().get()
     fun getAddModelDirectoryUseCase(): AddModelDirectoryUseCase = getKoin().get()
     fun getRemoveModelDirectoryUseCase(): RemoveModelDirectoryUseCase = getKoin().get()
@@ -311,46 +310,80 @@ object KoinHelper {
     fun getScanModelDirectoriesUseCase(): ScanModelDirectoriesUseCase = getKoin().get()
     fun getVerifyModelHashUseCase(): VerifyModelHashUseCase = getKoin().get()
     fun getObserveOwnedModelHashesUseCase(): ObserveOwnedModelHashesUseCase = getKoin().get()
+    // endregion
 
-    // Prompt template use cases
+    // region Prompts & Templates
     fun getAutoSavePromptUseCase(): AutoSavePromptUseCase = getKoin().get()
     fun getToggleTemplateUseCase(): ToggleTemplateUseCase = getKoin().get()
     fun getSearchSavedPromptsUseCase(): SearchSavedPromptsUseCase = getKoin().get()
     fun getObserveTemplatesUseCase(): ObserveTemplatesUseCase = getKoin().get()
+    fun getSavePromptUseCase(): SavePromptUseCase = getKoin().get()
+    fun getObserveSavedPromptsUseCase(): ObserveSavedPromptsUseCase = getKoin().get()
+    fun getDeleteSavedPromptUseCase(): DeleteSavedPromptUseCase = getKoin().get()
+    // endregion
 
-    // Theme use cases
+    // region Theme & Display Settings
     fun getObserveAccentColorUseCase(): ObserveAccentColorUseCase = getKoin().get()
     fun getSetAccentColorUseCase(): SetAccentColorUseCase = getKoin().get()
     fun getObserveAmoledDarkModeUseCase(): ObserveAmoledDarkModeUseCase = getKoin().get()
     fun getSetAmoledDarkModeUseCase(): SetAmoledDarkModeUseCase = getKoin().get()
     fun getObserveThemeModeUseCase(): ObserveThemeModeUseCase = getKoin().get()
     fun getSetThemeModeUseCase(): SetThemeModeUseCase = getKoin().get()
+    fun getObserveDefaultSortOrderUseCase(): ObserveDefaultSortOrderUseCase = getKoin().get()
+    fun getSetDefaultSortOrderUseCase(): SetDefaultSortOrderUseCase = getKoin().get()
+    fun getObserveDefaultTimePeriodUseCase(): ObserveDefaultTimePeriodUseCase = getKoin().get()
+    fun getSetDefaultTimePeriodUseCase(): SetDefaultTimePeriodUseCase = getKoin().get()
+    fun getObserveGridColumnsUseCase(): ObserveGridColumnsUseCase = getKoin().get()
+    fun getSetGridColumnsUseCase(): SetGridColumnsUseCase = getKoin().get()
+    fun getObserveQualityThresholdUseCase(): ObserveQualityThresholdUseCase = getKoin().get()
+    fun getSetQualityThresholdUseCase(): SetQualityThresholdUseCase = getKoin().get()
+    fun getObservePowerUserModeUseCase(): ObservePowerUserModeUseCase = getKoin().get()
+    fun getSetPowerUserModeUseCase(): SetPowerUserModeUseCase = getKoin().get()
+    fun getObserveCustomNavShortcutsUseCase(): ObserveCustomNavShortcutsUseCase = getKoin().get()
+    fun getSetCustomNavShortcutsUseCase(): SetCustomNavShortcutsUseCase = getKoin().get()
+    fun getObserveSeenTutorialVersionUseCase(): ObserveSeenTutorialVersionUseCase = getKoin().get()
+    fun getSetSeenTutorialVersionUseCase(): SetSeenTutorialVersionUseCase = getKoin().get()
+    // endregion
 
-    // Notification use cases
+    // region NSFW & Content Filtering
+    fun getObserveNsfwFilterUseCase(): ObserveNsfwFilterUseCase = getKoin().get()
+    fun getSetNsfwFilterUseCase(): SetNsfwFilterUseCase = getKoin().get()
+    fun getObserveNsfwBlurSettingsUseCase(): ObserveNsfwBlurSettingsUseCase = getKoin().get()
+    fun getSetNsfwBlurSettingsUseCase(): SetNsfwBlurSettingsUseCase = getKoin().get()
+    // endregion
+
+    // region Authentication & API Key
+    fun getObserveApiKeyUseCase(): ObserveApiKeyUseCase = getKoin().get()
+    fun getSetApiKeyUseCase(): SetApiKeyUseCase = getKoin().get()
+    fun getValidateApiKeyUseCase(): ValidateApiKeyUseCase = getKoin().get()
+    fun getApiKeyProvider(): ApiKeyProvider = getKoin().get()
+    // endregion
+
+    // region Notifications & Model Updates
     fun getCheckModelUpdatesUseCase(): CheckModelUpdatesUseCase = getKoin().get()
     fun getObserveNotificationsEnabledUseCase(): ObserveNotificationsEnabledUseCase = getKoin().get()
     fun getSetNotificationsEnabledUseCase(): SetNotificationsEnabledUseCase = getKoin().get()
     fun getObservePollingIntervalUseCase(): ObservePollingIntervalUseCase = getKoin().get()
     fun getSetPollingIntervalUseCase(): SetPollingIntervalUseCase = getKoin().get()
+    fun getModelUpdateNotificationsUseCase(): GetModelUpdateNotificationsUseCase = getKoin().get()
+    fun getUnreadNotificationCountUseCase(): GetUnreadNotificationCountUseCase = getKoin().get()
+    fun getMarkNotificationReadUseCase(): MarkNotificationReadUseCase = getKoin().get()
+    fun getMarkAllNotificationsReadUseCase(): MarkAllNotificationsReadUseCase = getKoin().get()
+    fun getCheckAndStoreModelUpdatesUseCase(): CheckAndStoreModelUpdatesUseCase = getKoin().get()
+    // endregion
 
-    // Offline cache use cases
+    // region Offline Cache & Network
     fun getObserveNetworkStatusUseCase(): ObserveNetworkStatusUseCase = getKoin().get()
     fun getCacheInfoUseCase(): GetCacheInfoUseCase = getKoin().get()
     fun getEvictCacheUseCase(): EvictCacheUseCase = getKoin().get()
+    fun getClearCacheUseCase(): ClearCacheUseCase = getKoin().get()
     fun getObserveOfflineCacheEnabledUseCase(): ObserveOfflineCacheEnabledUseCase = getKoin().get()
     fun getSetOfflineCacheEnabledUseCase(): SetOfflineCacheEnabledUseCase = getKoin().get()
     fun getObserveCacheSizeLimitUseCase(): ObserveCacheSizeLimitUseCase = getKoin().get()
     fun getSetCacheSizeLimitUseCase(): SetCacheSizeLimitUseCase = getKoin().get()
+    // endregion
 
-    // Tutorial use cases
-    fun getObserveSeenTutorialVersionUseCase(): ObserveSeenTutorialVersionUseCase = getKoin().get()
-    fun getSetSeenTutorialVersionUseCase(): SetSeenTutorialVersionUseCase = getKoin().get()
-
-    // ComfyUI history use cases
-    fun getFetchComfyUIHistoryUseCase(): FetchComfyUIHistoryUseCase = getKoin().get()
-    fun getFetchComfyUIHistoryItemUseCase(): FetchComfyUIHistoryItemUseCase = getKoin().get()
-
-    // ComfyUI use cases
+    // region ComfyUI
     fun getObserveComfyUIConnectionsUseCase(): ObserveComfyUIConnectionsUseCase = getKoin().get()
     fun getObserveActiveComfyUIConnectionUseCase(): ObserveActiveComfyUIConnectionUseCase = getKoin().get()
     fun getSaveComfyUIConnectionUseCase(): SaveComfyUIConnectionUseCase = getKoin().get()
@@ -369,23 +402,26 @@ object KoinHelper {
     fun getFindMatchingLocalModelUseCase(): FindMatchingLocalModelUseCase = getKoin().get()
     fun getPopulateGenerationFromModelUseCase(): PopulateGenerationFromModelUseCase = getKoin().get()
     fun getSaveGeneratedImageUseCase(): SaveGeneratedImageUseCase = getKoin().get()
+    fun getFetchComfyUIHistoryUseCase(): FetchComfyUIHistoryUseCase = getKoin().get()
+    fun getFetchComfyUIHistoryItemUseCase(): FetchComfyUIHistoryItemUseCase = getKoin().get()
+    // endregion
 
-    // Workflow template use cases
+    // region ComfyUI Workflow Templates
     fun getGetWorkflowTemplatesUseCase(): GetWorkflowTemplatesUseCase = getKoin().get()
     fun getSaveWorkflowTemplateUseCase(): SaveWorkflowTemplateUseCase = getKoin().get()
     fun getDeleteWorkflowTemplateUseCase(): DeleteWorkflowTemplateUseCase = getKoin().get()
     fun getExportWorkflowTemplateUseCase(): ExportWorkflowTemplateUseCase = getKoin().get()
     fun getImportWorkflowTemplateUseCase(): ImportWorkflowTemplateUseCase = getKoin().get()
     fun getApplyWorkflowTemplateUseCase(): ApplyWorkflowTemplateUseCase = getKoin().get()
+    // endregion
 
-    // Settings ViewModels
-    fun createContentFilterSettingsViewModel(): ContentFilterSettingsViewModel = getKoin().get()
-    fun createDisplaySettingsViewModel(): DisplaySettingsViewModel = getKoin().get()
-    fun createAppBehaviorSettingsViewModel(): AppBehaviorSettingsViewModel = getKoin().get()
-    fun createAuthSettingsViewModel(): AuthSettingsViewModel = getKoin().get()
-    fun createStorageSettingsViewModel(): StorageSettingsViewModel = getKoin().get()
+    // region ComfyHub
+    fun getSearchComfyHubWorkflowsUseCase(): SearchComfyHubWorkflowsUseCase = getKoin().get()
+    fun getGetComfyHubWorkflowDetailUseCase(): GetComfyHubWorkflowDetailUseCase = getKoin().get()
+    fun getImportComfyHubWorkflowUseCase(): ImportComfyHubWorkflowUseCase = getKoin().get()
+    // endregion
 
-    // Civitai Link use cases
+    // region Civitai Link
     fun getObserveCivitaiLinkKeyUseCase(): ObserveCivitaiLinkKeyUseCase = getKoin().get()
     fun getSetCivitaiLinkKeyUseCase(): SetCivitaiLinkKeyUseCase = getKoin().get()
     fun getObserveCivitaiLinkStatusUseCase(): ObserveCivitaiLinkStatusUseCase = getKoin().get()
@@ -394,8 +430,9 @@ object KoinHelper {
     fun getDisconnectCivitaiLinkUseCase(): DisconnectCivitaiLinkUseCase = getKoin().get()
     fun getSendResourceToPCUseCase(): SendResourceToPCUseCase = getKoin().get()
     fun getCancelLinkActivityUseCase(): CancelLinkActivityUseCase = getKoin().get()
+    // endregion
 
-    // SD WebUI use cases
+    // region SD WebUI
     fun getObserveSDWebUIConnectionsUseCase(): ObserveSDWebUIConnectionsUseCase = getKoin().get()
     fun getObserveActiveSDWebUIConnectionUseCase(): ObserveActiveSDWebUIConnectionUseCase = getKoin().get()
     fun getSaveSDWebUIConnectionUseCase(): SaveSDWebUIConnectionUseCase = getKoin().get()
@@ -407,31 +444,9 @@ object KoinHelper {
     fun getFetchSDWebUIVaesUseCase(): FetchSDWebUIVaesUseCase = getKoin().get()
     fun getGenerateSDWebUIImageUseCase(): GenerateSDWebUIImageUseCase = getKoin().get()
     fun getInterruptSDWebUIGenerationUseCase(): InterruptSDWebUIGenerationUseCase = getKoin().get()
+    // endregion
 
-    // Dataset use cases
-    fun getObserveDatasetCollectionsUseCase(): ObserveDatasetCollectionsUseCase = getKoin().get()
-    fun getCreateDatasetCollectionUseCase(): CreateDatasetCollectionUseCase = getKoin().get()
-    fun getRenameDatasetCollectionUseCase(): RenameDatasetCollectionUseCase = getKoin().get()
-    fun getDeleteDatasetCollectionUseCase(): DeleteDatasetCollectionUseCase = getKoin().get()
-    fun getObserveDatasetImagesUseCase(): ObserveDatasetImagesUseCase = getKoin().get()
-    fun getAddImageToDatasetUseCase(): AddImageToDatasetUseCase = getKoin().get()
-    fun getRemoveImageFromDatasetUseCase(): RemoveImageFromDatasetUseCase = getKoin().get()
-    fun getBatchEditTagsUseCase(): BatchEditTagsUseCase = getKoin().get()
-    fun getEditCaptionUseCase(): EditCaptionUseCase = getKoin().get()
-    fun getGetTagSuggestionsUseCase(): GetTagSuggestionsUseCase = getKoin().get()
-    fun getUpdateTrainableUseCase(): UpdateTrainableUseCase = getKoin().get()
-    fun getGetNonTrainableImagesUseCase(): GetNonTrainableImagesUseCase = getKoin().get()
-    fun getGetModelLicenseUseCase(): GetModelLicenseUseCase = getKoin().get()
-    fun getDetectDuplicatesUseCase(): DetectDuplicatesUseCase = getKoin().get()
-    fun getFilterByResolutionUseCase(): FilterByResolutionUseCase = getKoin().get()
-    fun getMarkImageExcludedUseCase(): MarkImageExcludedUseCase = getKoin().get()
-    fun getStorePHashUseCase(): StorePHashUseCase = getKoin().get()
-    fun getStoreImageDimensionsUseCase(): StoreImageDimensionsUseCase = getKoin().get()
-    fun getExportDatasetUseCase(): ExportDatasetUseCase = getKoin().get()
-    fun getGetAvailableExportFormatsUseCase(): GetAvailableExportFormatsUseCase = getKoin().get()
-    fun getExportWithPluginUseCase(): ExportWithPluginUseCase = getKoin().get()
-
-    // External Server use cases
+    // region External Server
     fun getObserveExternalServerConfigsUseCase(): ObserveExternalServerConfigsUseCase = getKoin().get()
     fun getObserveActiveExternalServerConfigUseCase(): ObserveActiveExternalServerConfigUseCase = getKoin().get()
     fun getSaveExternalServerConfigUseCase(): SaveExternalServerConfigUseCase = getKoin().get()
@@ -445,8 +460,32 @@ object KoinHelper {
     fun getExecuteGenerationUseCase(): ExecuteGenerationUseCase = getKoin().get()
     fun getGetGenerationStatusUseCase(): GetGenerationStatusUseCase = getKoin().get()
     fun getDeleteServerImagesUseCase(): DeleteServerImagesUseCase = getKoin().get()
+    // endregion
 
-    // Model notes & personal tags use cases
+    // region Dataset
+    fun getObserveDatasetCollectionsUseCase(): ObserveDatasetCollectionsUseCase = getKoin().get()
+    fun getCreateDatasetCollectionUseCase(): CreateDatasetCollectionUseCase = getKoin().get()
+    fun getRenameDatasetCollectionUseCase(): RenameDatasetCollectionUseCase = getKoin().get()
+    fun getDeleteDatasetCollectionUseCase(): DeleteDatasetCollectionUseCase = getKoin().get()
+    fun getObserveDatasetImagesUseCase(): ObserveDatasetImagesUseCase = getKoin().get()
+    fun getAddImageToDatasetUseCase(): AddImageToDatasetUseCase = getKoin().get()
+    fun getRemoveImageFromDatasetUseCase(): RemoveImageFromDatasetUseCase = getKoin().get()
+    fun getBatchEditTagsUseCase(): BatchEditTagsUseCase = getKoin().get()
+    fun getEditCaptionUseCase(): EditCaptionUseCase = getKoin().get()
+    fun getGetTagSuggestionsUseCase(): GetTagSuggestionsUseCase = getKoin().get()
+    fun getUpdateTrainableUseCase(): UpdateTrainableUseCase = getKoin().get()
+    fun getGetNonTrainableImagesUseCase(): GetNonTrainableImagesUseCase = getKoin().get()
+    fun getDetectDuplicatesUseCase(): DetectDuplicatesUseCase = getKoin().get()
+    fun getFilterByResolutionUseCase(): FilterByResolutionUseCase = getKoin().get()
+    fun getMarkImageExcludedUseCase(): MarkImageExcludedUseCase = getKoin().get()
+    fun getStorePHashUseCase(): StorePHashUseCase = getKoin().get()
+    fun getStoreImageDimensionsUseCase(): StoreImageDimensionsUseCase = getKoin().get()
+    fun getExportDatasetUseCase(): ExportDatasetUseCase = getKoin().get()
+    fun getGetAvailableExportFormatsUseCase(): GetAvailableExportFormatsUseCase = getKoin().get()
+    fun getExportWithPluginUseCase(): ExportWithPluginUseCase = getKoin().get()
+    // endregion
+
+    // region Model Notes & Personal Tags
     fun getObserveModelNoteUseCase(): ObserveModelNoteUseCase = getKoin().get()
     fun getSaveModelNoteUseCase(): SaveModelNoteUseCase = getKoin().get()
     fun getDeleteModelNoteUseCase(): DeleteModelNoteUseCase = getKoin().get()
@@ -455,11 +494,13 @@ object KoinHelper {
     fun getRemovePersonalTagUseCase(): RemovePersonalTagUseCase = getKoin().get()
     fun getGetAllPersonalTagsUseCase(): GetAllPersonalTagsUseCase = getKoin().get()
     fun getSearchModelsByTagUseCase(): SearchModelsByTagUseCase = getKoin().get()
+    // endregion
 
-    // Analytics use cases
+    // region Analytics
     fun getBrowsingStatsUseCase(): GetBrowsingStatsUseCase = getKoin().get()
+    // endregion
 
-    // Creator follow use cases
+    // region Creator Follow & Feed
     fun getFollowCreatorUseCase(): FollowCreatorUseCase = getKoin().get()
     fun getUnfollowCreatorUseCase(): UnfollowCreatorUseCase = getKoin().get()
     fun getIsFollowingCreatorUseCase(): IsFollowingCreatorUseCase = getKoin().get()
@@ -467,13 +508,15 @@ object KoinHelper {
     fun getUnreadFeedCountUseCase(): GetUnreadFeedCountUseCase = getKoin().get()
     fun getMarkFeedReadUseCase(): MarkFeedReadUseCase = getKoin().get()
     fun getFollowedCreatorsUseCase(): GetFollowedCreatorsUseCase = getKoin().get()
+    // endregion
 
-    // Review use cases
+    // region Reviews
     fun getModelReviewsUseCase(): GetModelReviewsUseCase = getKoin().get()
     fun getRatingTotalsUseCase(): GetRatingTotalsUseCase = getKoin().get()
     fun getSubmitReviewUseCase(): SubmitReviewUseCase = getKoin().get()
+    // endregion
 
-    // Download
+    // region Downloads
     fun getModelDownloadRepository(): ModelDownloadRepository = getKoin().get()
     fun getEnqueueDownloadUseCase(): EnqueueDownloadUseCase = getKoin().get()
     fun getObserveDownloadsUseCase(): ObserveDownloadsUseCase = getKoin().get()
@@ -481,13 +524,15 @@ object KoinHelper {
     fun getCancelDownloadUseCase(): CancelDownloadUseCase = getKoin().get()
     fun getDeleteDownloadUseCase(): DeleteDownloadUseCase = getKoin().get()
     fun getClearCompletedDownloadsUseCase(): ClearCompletedDownloadsUseCase = getKoin().get()
+    // endregion
 
-    // Backup
+    // region Backup & Restore
     fun getCreateBackupUseCase(): CreateBackupUseCase = getKoin().get()
     fun getRestoreBackupUseCase(): RestoreBackupUseCase = getKoin().get()
     fun getParseBackupUseCase(): ParseBackupUseCase = getKoin().get()
+    // endregion
 
-    // Plugin management
+    // region Plugin Management
     fun getInstallPluginUseCase(): InstallPluginUseCase = getKoin().get()
     fun getUninstallPluginUseCase(): UninstallPluginUseCase = getKoin().get()
     fun getActivatePluginUseCase(): ActivatePluginUseCase = getKoin().get()
@@ -495,35 +540,27 @@ object KoinHelper {
     fun getObserveInstalledPluginsUseCase(): ObserveInstalledPluginsUseCase = getKoin().get()
     fun getGetPluginConfigUseCase(): GetPluginConfigUseCase = getKoin().get()
     fun getUpdatePluginConfigUseCase(): UpdatePluginConfigUseCase = getKoin().get()
+    // endregion
 
-    // Similarity use cases
-    fun getSimilarModelsUseCase(): GetSimilarModelsUseCase = getKoin().get()
-
-    // Quality threshold use cases
-    fun getObserveQualityThresholdUseCase(): ObserveQualityThresholdUseCase = getKoin().get()
-    fun getSetQualityThresholdUseCase(): SetQualityThresholdUseCase = getKoin().get()
-
-    // Theme plugin use cases
+    // region Theme Plugins
     fun getImportThemeUseCase(): ImportThemeUseCase = getKoin().get()
     fun getGetActiveThemeUseCase(): GetActiveThemeUseCase = getKoin().get()
     fun getObserveThemePluginsUseCase(): ObserveThemePluginsUseCase = getKoin().get()
     fun getActivateThemePluginUseCase(): ActivateThemePluginUseCase = getKoin().get()
+    // endregion
 
-    // Model update notification use cases
-    fun getModelUpdateNotificationsUseCase(): GetModelUpdateNotificationsUseCase = getKoin().get()
-    fun getUnreadNotificationCountUseCase(): GetUnreadNotificationCountUseCase = getKoin().get()
-    fun getMarkNotificationReadUseCase(): MarkNotificationReadUseCase = getKoin().get()
-    fun getMarkAllNotificationsReadUseCase(): MarkAllNotificationsReadUseCase = getKoin().get()
-    fun getCheckAndStoreModelUpdatesUseCase(): CheckAndStoreModelUpdatesUseCase = getKoin().get()
-
-    // ComfyHub use cases
-    fun getSearchComfyHubWorkflowsUseCase(): SearchComfyHubWorkflowsUseCase = getKoin().get()
-    fun getGetComfyHubWorkflowDetailUseCase(): GetComfyHubWorkflowDetailUseCase = getKoin().get()
-    fun getImportComfyHubWorkflowUseCase(): ImportComfyHubWorkflowUseCase = getKoin().get()
-
-    // Share hashtag use cases
+    // region Share Hashtags
     fun getObserveShareHashtagsUseCase(): ObserveShareHashtagsUseCase = getKoin().get()
     fun getAddShareHashtagUseCase(): AddShareHashtagUseCase = getKoin().get()
     fun getRemoveShareHashtagUseCase(): RemoveShareHashtagUseCase = getKoin().get()
     fun getToggleShareHashtagUseCase(): ToggleShareHashtagUseCase = getKoin().get()
+    // endregion
+
+    // region Settings ViewModels
+    fun createContentFilterSettingsViewModel(): ContentFilterSettingsViewModel = getKoin().get()
+    fun createDisplaySettingsViewModel(): DisplaySettingsViewModel = getKoin().get()
+    fun createAppBehaviorSettingsViewModel(): AppBehaviorSettingsViewModel = getKoin().get()
+    fun createAuthSettingsViewModel(): AuthSettingsViewModel = getKoin().get()
+    fun createStorageSettingsViewModel(): StorageSettingsViewModel = getKoin().get()
+    // endregion
 }

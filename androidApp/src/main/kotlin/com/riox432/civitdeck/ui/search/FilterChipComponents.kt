@@ -246,7 +246,6 @@ private fun TagInputRow(placeholder: String, onAddTag: (String) -> Unit) {
                     keyboardController?.hide()
                 }
             },
-            modifier = Modifier.size(36.dp),
         ) {
             Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add_tag))
         }
@@ -269,11 +268,16 @@ private fun TagChip(
         horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
         Text(text = tag, style = MaterialTheme.typography.labelSmall, color = foreground)
-        Icon(
-            imageVector = Icons.Default.Close,
-            contentDescription = stringResource(R.string.cd_remove_tag, tag),
-            modifier = Modifier.size(14.dp).clickable(onClick = onRemove, onClickLabel = "Remove tag"),
-            tint = foreground,
-        )
+        IconButton(
+            onClick = onRemove,
+            modifier = Modifier.size(48.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = stringResource(R.string.cd_remove_tag, tag),
+                modifier = Modifier.size(14.dp),
+                tint = foreground,
+            )
+        }
     }
 }

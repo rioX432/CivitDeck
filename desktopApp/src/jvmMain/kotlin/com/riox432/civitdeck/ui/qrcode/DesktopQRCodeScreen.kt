@@ -159,7 +159,7 @@ private fun QRGenerateSection(
                 modifier = Modifier.weight(1f),
             )
             Button(onClick = onGenerate) {
-                Icon(Icons.Default.QrCode, contentDescription = null)
+                Icon(Icons.Default.QrCode, contentDescription = "Generate QR code")
                 Spacer(modifier = Modifier.width(Spacing.xs))
                 Text("Generate")
             }
@@ -209,7 +209,7 @@ private fun QRScanSection(
         Text("Scan QR Code from Image", style = MaterialTheme.typography.titleSmall)
         Spacer(modifier = Modifier.height(Spacing.sm))
         OutlinedButton(onClick = onPickFile) {
-            Icon(Icons.Default.FileOpen, contentDescription = null)
+            Icon(Icons.Default.FileOpen, contentDescription = "Open file")
             Spacer(modifier = Modifier.width(Spacing.xs))
             Text("Open QR Code Image")
         }

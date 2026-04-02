@@ -93,7 +93,7 @@ private fun CreateHubCard(
         ) {
             Icon(
                 imageVector = item.icon,
-                contentDescription = null,
+                contentDescription = item.title,
                 modifier = Modifier.size(32.dp),
                 tint = MaterialTheme.colorScheme.primary,
             )
@@ -110,7 +110,7 @@ private fun CreateHubCard(
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
+                contentDescription = "Navigate",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }

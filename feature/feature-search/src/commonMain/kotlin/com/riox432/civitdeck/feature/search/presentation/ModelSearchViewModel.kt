@@ -28,6 +28,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSavedSearchFilterUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSearchHistoryItemUseCase
@@ -39,7 +40,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseC
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
-import com.riox432.civitdeck.domain.util.suspendRunCatching
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -223,7 +224,8 @@ class ModelSearchViewModel(
                 _uiState.update {
                     it.copy(recommendations = sections, isLoadingRecommendations = false)
                 }
-            } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.w(TAG, "Failed to load recommendations: ${e.message}")
                 _uiState.update { it.copy(isLoadingRecommendations = false) }
             }
         }
@@ -255,19 +257,7 @@ class ModelSearchViewModel(
     }
 
     fun resetFilters() {
-        _uiState.update {
-            it.copy(
-                selectedType = null,
-                selectedSort = SortOrder.MostDownloaded,
-                selectedPeriod = TimePeriod.AllTime,
-                selectedBaseModels = emptySet(),
-                isFreshFindEnabled = false,
-                isQualityFilterEnabled = false,
-                includedTags = emptyList(),
-                selectedSources = setOf(ModelSource.CIVITAI),
-            )
-        }
-        _filterState.update {
+        updateFilter {
             it.copy(
                 selectedType = null,
                 selectedSort = SortOrder.MostDownloaded,
@@ -282,67 +272,57 @@ class ModelSearchViewModel(
     }
 
     fun onTypeSelected(type: ModelType?) {
-        _uiState.update { it.copy(selectedType = type) }
-        _filterState.update { it.copy(selectedType = type) }
+        updateFilter { it.copy(selectedType = type) }
     }
 
     fun onSortSelected(sort: SortOrder) {
-        _uiState.update { it.copy(selectedSort = sort) }
-        _filterState.update { it.copy(selectedSort = sort) }
+        updateFilter { it.copy(selectedSort = sort) }
     }
 
     fun onPeriodSelected(period: TimePeriod) {
-        _uiState.update { it.copy(selectedPeriod = period) }
-        _filterState.update { it.copy(selectedPeriod = period) }
+        updateFilter { it.copy(selectedPeriod = period) }
     }
 
     fun onBaseModelToggled(baseModel: BaseModel) {
-        val updater = { current: Set<BaseModel> ->
-            current.toMutableSet().apply {
+        updateFilter {
+            val updated = it.selectedBaseModels.toMutableSet().apply {
                 if (baseModel in this) remove(baseModel) else add(baseModel)
             }.toSet()
+            it.copy(selectedBaseModels = updated)
         }
-        _uiState.update { it.copy(selectedBaseModels = updater(it.selectedBaseModels)) }
-        _filterState.update { it.copy(selectedBaseModels = updater(it.selectedBaseModels)) }
     }
 
     fun onFreshFindToggled() {
-        _uiState.update { it.copy(isFreshFindEnabled = !it.isFreshFindEnabled) }
-        _filterState.update { it.copy(isFreshFindEnabled = !it.isFreshFindEnabled) }
+        updateFilter { it.copy(isFreshFindEnabled = !it.isFreshFindEnabled) }
     }
 
     fun onQualityFilterToggled() {
-        _uiState.update { it.copy(isQualityFilterEnabled = !it.isQualityFilterEnabled) }
-        _filterState.update { it.copy(isQualityFilterEnabled = !it.isQualityFilterEnabled) }
+        updateFilter { it.copy(isQualityFilterEnabled = !it.isQualityFilterEnabled) }
     }
 
     fun onAddIncludedTag(tag: String) {
         val trimmed = tag.trim().lowercase()
         if (trimmed.isBlank()) return
-        val current = _uiState.value.includedTags
+        val current = _filterState.value.includedTags
         if (trimmed in current) return
-        _uiState.update { it.copy(includedTags = it.includedTags + trimmed) }
-        _filterState.update { it.copy(includedTags = it.includedTags + trimmed) }
+        updateFilter { it.copy(includedTags = it.includedTags + trimmed) }
     }
 
     fun onRemoveIncludedTag(tag: String) {
-        _uiState.update { it.copy(includedTags = it.includedTags - tag) }
-        _filterState.update { it.copy(includedTags = it.includedTags - tag) }
+        updateFilter { it.copy(includedTags = it.includedTags - tag) }
     }
 
     fun toggleSource(source: ModelSource) {
-        val updater = { current: Set<ModelSource> ->
-            val updated = current.toMutableSet()
+        updateFilter {
+            val updated = it.selectedSources.toMutableSet()
             if (source in updated) {
                 // Don't allow deselecting all sources
                 if (updated.size > 1) updated.remove(source)
             } else {
                 updated.add(source)
             }
-            updated.toSet()
+            it.copy(selectedSources = updated.toSet())
         }
-        _uiState.update { it.copy(selectedSources = updater(it.selectedSources)) }
-        _filterState.update { it.copy(selectedSources = updater(it.selectedSources)) }
     }
 
     fun onAddExcludedTag(tag: String) {
@@ -390,21 +370,7 @@ class ModelSearchViewModel(
     }
 
     fun applyFilter(filter: SavedSearchFilter) {
-        _uiState.update {
-            it.copy(
-                query = filter.query,
-                selectedType = filter.selectedType,
-                selectedSort = filter.selectedSort,
-                selectedPeriod = filter.selectedPeriod,
-                selectedBaseModels = filter.selectedBaseModels,
-                nsfwFilterLevel = filter.nsfwFilterLevel,
-                isFreshFindEnabled = filter.isFreshFindEnabled,
-                includedTags = filter.includedTags,
-                excludedTags = filter.excludedTags,
-                selectedSources = filter.selectedSources,
-            )
-        }
-        _filterState.update {
+        updateFilter {
             it.copy(
                 query = filter.query,
                 selectedType = filter.selectedType,
@@ -435,12 +401,36 @@ class ModelSearchViewModel(
             val tags = getExcludedTagsUseCase()
             val hiddenIds = getHiddenModelIdsUseCase()
             _hiddenModelIds.value = hiddenIds
-            _uiState.update { it.copy(excludedTags = tags) }
-            _filterState.update { it.copy(excludedTags = tags) }
+            updateFilter { it.copy(excludedTags = tags) }
+        }
+    }
+
+    /**
+     * Updates both [_filterState] and [_uiState] in sync.
+     * The [transform] lambda is applied to [FilterState]; shared fields are then mirrored to [ModelSearchUiState].
+     */
+    private fun updateFilter(transform: (FilterState) -> FilterState) {
+        _filterState.update(transform)
+        val f = _filterState.value
+        _uiState.update {
+            it.copy(
+                query = f.query,
+                selectedType = f.selectedType,
+                selectedSort = f.selectedSort,
+                selectedPeriod = f.selectedPeriod,
+                selectedBaseModels = f.selectedBaseModels,
+                nsfwFilterLevel = f.nsfwFilterLevel,
+                isFreshFindEnabled = f.isFreshFindEnabled,
+                isQualityFilterEnabled = f.isQualityFilterEnabled,
+                excludedTags = f.excludedTags,
+                includedTags = f.includedTags,
+                selectedSources = f.selectedSources,
+            )
         }
     }
 
     companion object {
+        private const val TAG = "ModelSearchViewModel"
         private const val PAGE_SIZE = 20
     }
 }

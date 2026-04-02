@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileUiState
@@ -98,7 +99,7 @@ private fun CreatorTopBar(
     onToggleFollow: () -> Unit,
 ) {
     TopAppBar(
-        title = { Text(username) },
+        title = { Text(username, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(

@@ -27,6 +27,7 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewM
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.HistorySortOrder
+import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -34,7 +35,7 @@ fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
     val state by viewModel.uiState.collectAsState()
     var nameInput by remember { mutableStateOf("") }
     var hostInput by remember { mutableStateOf("127.0.0.1") }
-    var portInput by remember { mutableStateOf("8188") }
+    var portInput by remember { mutableStateOf(ComfyUIConnection.DEFAULT_COMFYUI_PORT.toString()) }
 
     SettingsCard(title = "ComfyUI Server") {
         ConnectionStatusBadge(
@@ -127,7 +128,7 @@ fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
                 viewModel.onSaveConnection(nameInput, hostInput, port)
                 nameInput = ""
                 hostInput = "127.0.0.1"
-                portInput = "8188"
+                portInput = ComfyUIConnection.DEFAULT_COMFYUI_PORT.toString()
             },
             enabled = nameInput.isNotBlank() && hostInput.isNotBlank(),
         ) {

@@ -11,6 +11,7 @@ import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -25,51 +26,58 @@ class BatchTagEditorViewModel(
         observeDatasetImagesUseCase(datasetId)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
-    val selectedImageIds = MutableStateFlow<Set<Long>>(emptySet())
-    val tagInput = MutableStateFlow("")
-    val tagSuggestions = MutableStateFlow<List<String>>(emptyList())
-    val isAddMode = MutableStateFlow(true)
+    private val _selectedImageIds = MutableStateFlow<Set<Long>>(emptySet())
+    val selectedImageIds: StateFlow<Set<Long>> = _selectedImageIds.asStateFlow()
+
+    private val _tagInput = MutableStateFlow("")
+    val tagInput: StateFlow<String> = _tagInput.asStateFlow()
+
+    private val _tagSuggestions = MutableStateFlow<List<String>>(emptyList())
+    val tagSuggestions: StateFlow<List<String>> = _tagSuggestions.asStateFlow()
+
+    private val _isAddMode = MutableStateFlow(true)
+    val isAddMode: StateFlow<Boolean> = _isAddMode.asStateFlow()
 
     fun toggleSelection(imageId: Long) {
-        selectedImageIds.value = selectedImageIds.value.let { current ->
+        _selectedImageIds.value = _selectedImageIds.value.let { current ->
             if (imageId in current) current - imageId else current + imageId
         }
     }
 
     fun selectAll() {
-        selectedImageIds.value = images.value.map { it.id }.toSet()
+        _selectedImageIds.value = images.value.map { it.id }.toSet()
     }
 
     fun clearSelection() {
-        selectedImageIds.value = emptySet()
+        _selectedImageIds.value = emptySet()
     }
 
     fun setTagInput(text: String) {
-        tagInput.value = text
+        _tagInput.value = text
         loadSuggestions(text)
     }
 
     fun toggleMode() {
-        isAddMode.value = !isAddMode.value
+        _isAddMode.value = !_isAddMode.value
     }
 
     private fun loadSuggestions(prefix: String) {
         viewModelScope.launch {
             suspendRunCatching { getTagSuggestionsUseCase(datasetId, prefix) }
-                .onSuccess { tagSuggestions.value = it }
+                .onSuccess { _tagSuggestions.value = it }
                 .onFailure { e ->
                     Logger.w(TAG, "Load tag suggestions failed: ${e.message}")
-                    tagSuggestions.value = emptyList()
+                    _tagSuggestions.value = emptyList()
                 }
         }
     }
 
     fun applyTags(tags: List<String>) {
-        val ids = selectedImageIds.value.toList()
+        val ids = _selectedImageIds.value.toList()
         if (ids.isEmpty() || tags.isEmpty()) return
         viewModelScope.launch {
             suspendRunCatching {
-                if (isAddMode.value) {
+                if (_isAddMode.value) {
                     batchEditTagsUseCase(ids, addTags = tags, removeTags = emptyList())
                 } else {
                     batchEditTagsUseCase(ids, addTags = emptyList(), removeTags = tags)

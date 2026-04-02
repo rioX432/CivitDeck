@@ -2,13 +2,13 @@ package com.riox432.civitdeck.feature.comfyui.plugin
 
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.plugin.WorkflowEnginePlugin
 import com.riox432.civitdeck.plugin.WorkflowEngineStatus
 import com.riox432.civitdeck.plugin.capability.WorkflowCapability
 import com.riox432.civitdeck.plugin.model.PluginManifest
 import com.riox432.civitdeck.plugin.model.PluginState
 import com.riox432.civitdeck.plugin.model.PluginType
-import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.coroutines.flow.first
 
 /**

@@ -4,12 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.SDWebUIGenerationParams
 import com.riox432.civitdeck.domain.model.SDWebUIGenerationProgress
+import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIModelsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUISamplersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIVaesUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.GenerateSDWebUIImageUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptSDWebUIGenerationUseCase
-import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
