@@ -15,6 +15,8 @@ import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsViewModel
 import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
 import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
+import com.riox432.civitdeck.ui.comfyui.template.DesktopWorkflowTemplateViewModel
+import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueViewModel
 import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterViewModel
 import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
@@ -104,4 +106,12 @@ val desktopModule = module {
     // Creator & Prompts ViewModels (moved from feature modules)
     viewModel { params -> CreatorProfileViewModel(params.get(), get(), get(), get(), get()) }
     viewModel { SavedPromptsViewModel(get(), get(), get(), get(), get()) }
+    // Download Queue ViewModel
+    viewModel {
+        DesktopDownloadQueueViewModel(get(), get(), get(), get(), get(), get())
+    }
+    // Workflow Template ViewModel
+    viewModel {
+        DesktopWorkflowTemplateViewModel(get(), get(), get(), get(), get())
+    }
 }

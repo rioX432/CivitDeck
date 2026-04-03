@@ -23,4 +23,12 @@ sealed class DesktopRoute {
     data object NotificationCenter : DesktopRoute()
     data object BrowsingHistory : DesktopRoute()
     data object QRCode : DesktopRoute()
+    data object DownloadQueue : DesktopRoute()
+    data object WorkflowTemplates : DesktopRoute()
+    data class WorkflowTemplateEditor(
+        val templateId: Long,
+    ) : DesktopRoute()
+    data class TemplateParameter(
+        val templateId: Long,
+    ) : DesktopRoute()
 }

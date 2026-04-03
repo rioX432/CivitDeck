@@ -56,6 +56,7 @@ fun DesktopSettingsScreen(
     onNavigateToAnalytics: () -> Unit = {},
     onNavigateToNotificationCenter: () -> Unit = {},
     onNavigateToBrowsingHistory: () -> Unit = {},
+    onNavigateToDownloadQueue: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -70,6 +71,7 @@ fun DesktopSettingsScreen(
             onNavigateToAnalytics = onNavigateToAnalytics,
             onNavigateToNotificationCenter = onNavigateToNotificationCenter,
             onNavigateToBrowsingHistory = onNavigateToBrowsingHistory,
+            onNavigateToDownloadQueue = onNavigateToDownloadQueue,
         )
         DisplaySettingsSection(displaySettingsViewModel)
         ContentFilterSection(contentFilterSettingsViewModel)
@@ -88,6 +90,7 @@ private fun ToolsSection(
     onNavigateToAnalytics: () -> Unit,
     onNavigateToNotificationCenter: () -> Unit,
     onNavigateToBrowsingHistory: () -> Unit,
+    onNavigateToDownloadQueue: () -> Unit,
 ) {
     SettingsCard(title = "Tools") {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
@@ -97,6 +100,7 @@ private fun ToolsSection(
             OutlinedButton(onClick = onNavigateToAnalytics) { Text("Analytics") }
             OutlinedButton(onClick = onNavigateToNotificationCenter) { Text("Notifications") }
             OutlinedButton(onClick = onNavigateToBrowsingHistory) { Text("History") }
+            OutlinedButton(onClick = onNavigateToDownloadQueue) { Text("Downloads") }
         }
     }
 }

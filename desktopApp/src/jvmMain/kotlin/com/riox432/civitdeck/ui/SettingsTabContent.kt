@@ -21,6 +21,8 @@ import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsScreen
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupScreen
 import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
+import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueScreen
+import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueViewModel
 import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryScreen
 import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterScreen
@@ -48,6 +50,7 @@ fun SettingsTabContent(
             onNavigateToAnalytics = { backstack.add(DesktopRoute.Analytics) },
             onNavigateToNotificationCenter = { backstack.add(DesktopRoute.NotificationCenter) },
             onNavigateToBrowsingHistory = { backstack.add(DesktopRoute.BrowsingHistory) },
+            onNavigateToDownloadQueue = { backstack.add(DesktopRoute.DownloadQueue) },
         )
 
         SettingsOverlayContent(backstack, currentRoute)
@@ -62,6 +65,7 @@ private fun SettingsMainContent(
     onNavigateToAnalytics: () -> Unit,
     onNavigateToNotificationCenter: () -> Unit,
     onNavigateToBrowsingHistory: () -> Unit,
+    onNavigateToDownloadQueue: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -89,6 +93,7 @@ private fun SettingsMainContent(
             onNavigateToAnalytics = onNavigateToAnalytics,
             onNavigateToNotificationCenter = onNavigateToNotificationCenter,
             onNavigateToBrowsingHistory = onNavigateToBrowsingHistory,
+            onNavigateToDownloadQueue = onNavigateToDownloadQueue,
         )
     }
 }
@@ -156,6 +161,13 @@ private fun SettingsOverlayContent(
                 onModelClick = { modelId ->
                     backstack.add(DesktopRoute.ModelDetail(modelId))
                 },
+            )
+        }
+        is DesktopRoute.DownloadQueue -> {
+            val vm: DesktopDownloadQueueViewModel = koinViewModel()
+            DesktopDownloadQueueScreen(
+                viewModel = vm,
+                onBack = { backstack.removeLastOrNull() },
             )
         }
         else -> { /* Settings main screen is shown */ }
