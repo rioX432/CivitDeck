@@ -53,6 +53,8 @@ data class WorkflowTemplateEditorRoute(val templateId: Long)
 
 data object WorkflowTemplatePickerRoute
 
+data class TemplateParameterRoute(val templateId: Long)
+
 data object SDWebUISettingsRoute
 
 data object SDWebUIGenerationRoute

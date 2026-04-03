@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.TemplateVariable
 import com.riox432.civitdeck.domain.model.TemplateVariableType
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
+import com.riox432.civitdeck.domain.model.WorkflowTemplateCategory
 import com.riox432.civitdeck.domain.model.WorkflowTemplateType
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExportWorkflowTemplateUseCase
@@ -20,10 +21,14 @@ import kotlinx.coroutines.launch
 
 data class WorkflowTemplateUiState(
     val templates: List<WorkflowTemplate> = emptyList(),
+    val filteredTemplates: List<WorkflowTemplate> = emptyList(),
     val isLoading: Boolean = true,
     val error: String? = null,
     val exportedJson: String? = null,
     val importError: String? = null,
+    val searchQuery: String = "",
+    val selectedCategory: WorkflowTemplateCategory? = null,
+    val selectedType: WorkflowTemplateType? = null,
 )
 
 @Suppress("TooManyFunctions")
@@ -49,9 +54,26 @@ class WorkflowTemplateViewModel(
                     _uiState.update { it.copy(isLoading = false, error = e.message) }
                 }
                 .collect { templates ->
-                    _uiState.update { it.copy(templates = templates, isLoading = false) }
+                    _uiState.update {
+                        it.copy(
+                            templates = templates,
+                            isLoading = false,
+                        ).applyFilters()
+                    }
                 }
         }
+    }
+
+    fun onSearchQueryChanged(query: String) {
+        _uiState.update { it.copy(searchQuery = query).applyFilters() }
+    }
+
+    fun onCategorySelected(category: WorkflowTemplateCategory?) {
+        _uiState.update { it.copy(selectedCategory = category).applyFilters() }
+    }
+
+    fun onTypeSelected(type: WorkflowTemplateType?) {
+        _uiState.update { it.copy(selectedType = type).applyFilters() }
     }
 
     fun onDeleteTemplate(id: Long) {
@@ -108,7 +130,9 @@ class WorkflowTemplateViewModel(
     companion object {
         private const val TAG = "WorkflowTemplateVM"
 
-        fun emptyTemplate(type: WorkflowTemplateType = WorkflowTemplateType.TXT2IMG): WorkflowTemplate =
+        fun emptyTemplate(
+            type: WorkflowTemplateType = WorkflowTemplateType.TXT2IMG,
+        ): WorkflowTemplate =
             WorkflowTemplate(
                 id = 0L,
                 name = "",
@@ -118,38 +142,158 @@ class WorkflowTemplateViewModel(
                 createdAt = 0L,
             )
 
-        fun defaultVariablesFor(type: WorkflowTemplateType): List<TemplateVariable> = when (type) {
-            WorkflowTemplateType.TXT2IMG -> listOf(
-                TemplateVariable("positive_prompt", TemplateVariableType.TEXT, "", required = true),
-                TemplateVariable("negative_prompt", TemplateVariableType.TEXT, "", required = false),
-                TemplateVariable("checkpoint", TemplateVariableType.TEXT, "", required = true),
-                TemplateVariable("steps", TemplateVariableType.NUMBER, "20", required = false),
-                TemplateVariable("cfg", TemplateVariableType.NUMBER, "7.0", required = false),
-                TemplateVariable("width", TemplateVariableType.NUMBER, "512", required = false),
-                TemplateVariable("height", TemplateVariableType.NUMBER, "512", required = false),
-            )
-            WorkflowTemplateType.IMG2IMG -> listOf(
-                TemplateVariable("positive_prompt", TemplateVariableType.TEXT, "", required = true),
-                TemplateVariable("negative_prompt", TemplateVariableType.TEXT, "", required = false),
-                TemplateVariable("checkpoint", TemplateVariableType.TEXT, "", required = true),
-                TemplateVariable("steps", TemplateVariableType.NUMBER, "20", required = false),
-                TemplateVariable("cfg", TemplateVariableType.NUMBER, "7.0", required = false),
-                TemplateVariable("width", TemplateVariableType.NUMBER, "512", required = false),
-                TemplateVariable("height", TemplateVariableType.NUMBER, "512", required = false),
-                TemplateVariable("denoise_strength", TemplateVariableType.NUMBER, "0.75", required = false),
-            )
-            WorkflowTemplateType.INPAINTING -> listOf(
-                TemplateVariable("positive_prompt", TemplateVariableType.TEXT, "", required = true),
-                TemplateVariable("negative_prompt", TemplateVariableType.TEXT, "", required = false),
-                TemplateVariable("checkpoint", TemplateVariableType.TEXT, "", required = true),
-                TemplateVariable("steps", TemplateVariableType.NUMBER, "20", required = false),
-                TemplateVariable("cfg", TemplateVariableType.NUMBER, "7.0", required = false),
-                TemplateVariable("denoise_strength", TemplateVariableType.NUMBER, "1.0", required = false),
-            )
-            WorkflowTemplateType.UPSCALE -> listOf(
-                TemplateVariable("input_image", TemplateVariableType.TEXT, "", required = true),
-                TemplateVariable("upscale_factor", TemplateVariableType.NUMBER, "2", required = false),
-            )
-        }
+        @Suppress("LongMethod")
+        fun defaultVariablesFor(type: WorkflowTemplateType): List<TemplateVariable> =
+            when (type) {
+                WorkflowTemplateType.TXT2IMG -> txt2imgVariables()
+                WorkflowTemplateType.IMG2IMG -> img2imgVariables()
+                WorkflowTemplateType.INPAINTING -> inpaintingVariables()
+                WorkflowTemplateType.UPSCALE -> upscaleVariables()
+                WorkflowTemplateType.LORA -> loraVariables()
+            }
+
+        private fun txt2imgVariables() = listOf(
+            promptVariable(),
+            negativePromptVariable(),
+            checkpointVariable(),
+            stepsVariable(),
+            cfgVariable(),
+            widthVariable(),
+            heightVariable(),
+        )
+
+        private fun img2imgVariables() = txt2imgVariables() + denoiseVariable()
+
+        private fun inpaintingVariables() = listOf(
+            promptVariable(),
+            negativePromptVariable(),
+            checkpointVariable(),
+            stepsVariable(),
+            cfgVariable(),
+            denoiseVariable(default = "1.0"),
+        )
+
+        private fun upscaleVariables() = listOf(
+            TemplateVariable(
+                name = "input_image",
+                label = "Input Image",
+                type = TemplateVariableType.TEXT,
+                defaultValue = "",
+                required = true,
+            ),
+            TemplateVariable(
+                name = "upscale_factor",
+                label = "Upscale Factor",
+                type = TemplateVariableType.SLIDER,
+                defaultValue = "2",
+                min = 1.0,
+                max = 4.0,
+                step = 0.5,
+            ),
+        )
+
+        private fun loraVariables() = listOf(
+            promptVariable(), negativePromptVariable(), checkpointVariable(),
+            TemplateVariable(
+                name = "lora_name",
+                label = "LoRA Model",
+                type = TemplateVariableType.TEXT,
+                defaultValue = "",
+                required = true,
+            ),
+            TemplateVariable(
+                name = "lora_strength",
+                label = "LoRA Strength",
+                type = TemplateVariableType.SLIDER,
+                defaultValue = "0.8",
+                min = 0.0,
+                max = 2.0,
+                step = 0.05,
+            ),
+            stepsVariable(), cfgVariable(), widthVariable(), heightVariable(),
+        )
+
+        private fun promptVariable() = TemplateVariable(
+            name = "positive_prompt",
+            label = "Prompt",
+            type = TemplateVariableType.TEXT,
+            defaultValue = "",
+            required = true,
+        )
+
+        private fun negativePromptVariable() = TemplateVariable(
+            name = "negative_prompt",
+            label = "Negative Prompt",
+            type = TemplateVariableType.TEXT,
+            defaultValue = "",
+            required = false,
+        )
+
+        private fun checkpointVariable() = TemplateVariable(
+            name = "checkpoint",
+            label = "Checkpoint",
+            type = TemplateVariableType.TEXT,
+            defaultValue = "",
+            required = true,
+        )
+
+        private fun stepsVariable() = TemplateVariable(
+            name = "steps",
+            label = "Steps",
+            type = TemplateVariableType.SLIDER,
+            defaultValue = "20",
+            min = 1.0,
+            max = 150.0,
+            step = 1.0,
+        )
+
+        private fun cfgVariable() = TemplateVariable(
+            name = "cfg",
+            label = "CFG Scale",
+            type = TemplateVariableType.SLIDER,
+            defaultValue = "7.0",
+            min = 1.0,
+            max = 30.0,
+            step = 0.5,
+        )
+
+        private fun widthVariable() = TemplateVariable(
+            name = "width",
+            label = "Width",
+            type = TemplateVariableType.SELECT,
+            defaultValue = "512",
+            options = listOf("256", "384", "512", "640", "768", "832", "896", "1024", "1280"),
+        )
+
+        private fun heightVariable() = TemplateVariable(
+            name = "height",
+            label = "Height",
+            type = TemplateVariableType.SELECT,
+            defaultValue = "512",
+            options = listOf("256", "384", "512", "640", "768", "832", "896", "1024", "1280"),
+        )
+
+        private fun denoiseVariable(default: String = "0.75") = TemplateVariable(
+            name = "denoise_strength",
+            label = "Denoise Strength",
+            type = TemplateVariableType.SLIDER,
+            defaultValue = default,
+            min = 0.0,
+            max = 1.0,
+            step = 0.05,
+        )
     }
+}
+
+private fun WorkflowTemplateUiState.applyFilters(): WorkflowTemplateUiState {
+    val filtered = templates.filter { template ->
+        val matchesSearch = searchQuery.isBlank() ||
+            template.name.contains(searchQuery, ignoreCase = true) ||
+            template.description.contains(searchQuery, ignoreCase = true)
+        val matchesCategory = selectedCategory == null ||
+            template.category == selectedCategory
+        val matchesType = selectedType == null || template.type == selectedType
+        matchesSearch && matchesCategory && matchesType
+    }
+    return copy(filteredTemplates = filtered)
 }

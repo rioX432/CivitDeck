@@ -120,6 +120,7 @@
 		CDWT01012F200001000CD001 /* WorkflowTemplateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDWT01002F200001000CD001 /* WorkflowTemplateView.swift */; };
 		CDWT02012F200002000CD001 /* WorkflowTemplateEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDWT02002F200002000CD001 /* WorkflowTemplateEditorView.swift */; };
 		CDWT03012F200003000CD001 /* WorkflowTemplateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDWT03002F200003000CD001 /* WorkflowTemplateViewModel.swift */; };
+		CDTP04012F200004000CD001 /* TemplateParameterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDTP04002F200004000CD001 /* TemplateParameterView.swift */; };
 		CDSD01012F780001000CD001 /* SDWebUISettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSD01002F780001000CD001 /* SDWebUISettingsView.swift */; };
 		CDSD02012F780002000CD001 /* SDWebUISettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSD02002F780002000CD001 /* SDWebUISettingsViewModel.swift */; };
 		CDSD03012F780003000CD001 /* SDWebUIGenerationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSD03002F780003000CD001 /* SDWebUIGenerationView.swift */; };
@@ -294,6 +295,7 @@
 		CDWT01002F200001000CD001 /* WorkflowTemplateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowTemplateView.swift; sourceTree = "<group>"; };
 		CDWT02002F200002000CD001 /* WorkflowTemplateEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowTemplateEditorView.swift; sourceTree = "<group>"; };
 		CDWT03002F200003000CD001 /* WorkflowTemplateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowTemplateViewModel.swift; sourceTree = "<group>"; };
+		CDTP04002F200004000CD001 /* TemplateParameterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateParameterView.swift; sourceTree = "<group>"; };
 		CDSD01002F780001000CD001 /* SDWebUISettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDWebUISettingsView.swift; sourceTree = "<group>"; };
 		CDSD02002F780002000CD001 /* SDWebUISettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDWebUISettingsViewModel.swift; sourceTree = "<group>"; };
 		CDSD03002F780003000CD001 /* SDWebUIGenerationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDWebUIGenerationView.swift; sourceTree = "<group>"; };
@@ -806,6 +808,7 @@
 				CDWT01002F200001000CD001 /* WorkflowTemplateView.swift */,
 				CDWT02002F200002000CD001 /* WorkflowTemplateEditorView.swift */,
 				CDWT03002F200003000CD001 /* WorkflowTemplateViewModel.swift */,
+				CDTP04002F200004000CD001 /* TemplateParameterView.swift */,
 				CDSD01002F780001000CD001 /* SDWebUISettingsView.swift */,
 				CDSD02002F780002000CD001 /* SDWebUISettingsViewModel.swift */,
 				CDSD03002F780003000CD001 /* SDWebUIGenerationView.swift */,
@@ -1057,6 +1060,7 @@
 				CDWT01012F200001000CD001 /* WorkflowTemplateView.swift in Sources */,
 				CDWT02012F200002000CD001 /* WorkflowTemplateEditorView.swift in Sources */,
 				CDWT03012F200003000CD001 /* WorkflowTemplateViewModel.swift in Sources */,
+				CDTP04012F200004000CD001 /* TemplateParameterView.swift in Sources */,
 				CDSD01012F780001000CD001 /* SDWebUISettingsView.swift in Sources */,
 				CDSD02012F780002000CD001 /* SDWebUISettingsViewModel.swift in Sources */,
 				CDSD03012F780003000CD001 /* SDWebUIGenerationView.swift in Sources */,

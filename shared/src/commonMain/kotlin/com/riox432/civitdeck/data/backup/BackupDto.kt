@@ -84,6 +84,7 @@ data class SavedPromptDto(
     val autoSaved: Boolean = false,
     val templateVariables: String? = null,
     val templateType: String? = null,
+    val templateMetadata: String? = null,
 )
 
 @Serializable

@@ -12,6 +12,7 @@ struct WorkflowTemplateView: View {
     @State private var importText = ""
     @State private var showCreateEditor = false
     @State private var editingTemplate: WorkflowTemplate?
+    @State private var parameterTemplate: WorkflowTemplate?
     @Environment(\.dismiss) private var dismiss
 
     init(isPicker: Bool = false, onSelect: ((WorkflowTemplate) -> Void)? = nil) {
@@ -20,26 +21,10 @@ struct WorkflowTemplateView: View {
     }
 
     var body: some View {
-        List {
-            if viewModel.isLoading {
-                ProgressView()
-            } else if viewModel.templates.isEmpty {
-                Text("No templates yet. Tap + to create one.")
-                    .font(.civitBodyMedium)
-                    .foregroundColor(.civitOnSurfaceVariant)
-            } else {
-                ForEach(viewModel.templates, id: \.id) { template in
-                    TemplateRow(
-                        template: template,
-                        isPicker: isPicker,
-                        onSelect: onSelect != nil ? { onSelect?(template); dismiss() } : nil,
-                        onExport: { viewModel.onExportTemplate(template) },
-                        onDelete: template.isBuiltIn ? nil : {
-                            viewModel.onDeleteTemplate(id: template.id)
-                        }
-                    )
-                }
-            }
+        VStack(spacing: 0) {
+            searchBar
+            filterSection
+            templateList
         }
         .navigationTitle(isPicker ? "Pick Template" : "Workflow Templates")
         .navigationBarTitleDisplayMode(.inline)
@@ -61,9 +46,7 @@ struct WorkflowTemplateView: View {
                 }
             }
         }
-        .sheet(isPresented: $showImportSheet) {
-            importSheet
-        }
+        .sheet(isPresented: $showImportSheet) { importSheet }
         .sheet(isPresented: $showCreateEditor) {
             NavigationStack {
                 WorkflowTemplateEditorView(
@@ -75,6 +58,13 @@ struct WorkflowTemplateView: View {
         .sheet(item: $editingTemplate) { template in
             NavigationStack {
                 WorkflowTemplateEditorView(initialTemplate: template, viewModel: viewModel)
+            }
+        }
+        .sheet(item: $parameterTemplate) { template in
+            NavigationStack {
+                TemplateParameterView(template: template) { _ in
+                    parameterTemplate = nil
+                }
             }
         }
         .alert("Export Template", isPresented: .init(
@@ -95,6 +85,118 @@ struct WorkflowTemplateView: View {
         } message: {
             if let err = viewModel.importError {
                 Text(err)
+            }
+        }
+    }
+
+    private var searchBar: some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.civitOnSurfaceVariant)
+            TextField("Search templates...", text: $viewModel.searchQuery)
+                .font(.civitBodyMedium)
+            if !viewModel.searchQuery.isEmpty {
+                Button {
+                    viewModel.searchQuery = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.civitOnSurfaceVariant)
+                }
+            }
+        }
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.sm)
+    }
+
+    private var filterSection: some View {
+        VStack(spacing: Spacing.xs) {
+            categoryFilterRow
+            typeFilterRow
+        }
+        .padding(.horizontal, Spacing.md)
+        .padding(.bottom, Spacing.sm)
+    }
+
+    private var categoryFilterRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.xs) {
+                chipButton(title: "All", isSelected: viewModel.selectedCategory == nil) {
+                    viewModel.selectedCategory = nil
+                }
+                ForEach(WorkflowTemplateCategory.allCases, id: \.self) { category in
+                    chipButton(
+                        title: categoryLabel(category),
+                        isSelected: viewModel.selectedCategory == category
+                    ) {
+                        viewModel.selectedCategory = viewModel.selectedCategory == category ? nil : category
+                    }
+                }
+            }
+        }
+    }
+
+    private var typeFilterRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.xs) {
+                chipButton(title: "All Types", isSelected: viewModel.selectedType == nil) {
+                    viewModel.selectedType = nil
+                }
+                ForEach(WorkflowTemplateType.allCases, id: \.self) { type in
+                    chipButton(
+                        title: typeLabel(type),
+                        isSelected: viewModel.selectedType == type
+                    ) {
+                        viewModel.selectedType = viewModel.selectedType == type ? nil : type
+                    }
+                }
+            }
+        }
+    }
+
+    private func chipButton(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.civitBodySmall)
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.xs)
+                .background(isSelected ? Color.civitPrimary.opacity(0.15) : Color.clear)
+                .foregroundColor(isSelected ? .civitPrimary : .civitOnSurfaceVariant)
+                .cornerRadius(CornerRadius.image)
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.image)
+                        .stroke(isSelected ? Color.civitPrimary : Color.civitOnSurfaceVariant.opacity(0.3))
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var templateList: some View {
+        List {
+            if viewModel.isLoading {
+                ProgressView()
+            } else if viewModel.filteredTemplates.isEmpty {
+                Text(
+                    viewModel.templates.isEmpty
+                        ? "No templates yet. Tap + to create one."
+                        : "No templates match your filters."
+                )
+                .font(.civitBodyMedium)
+                .foregroundColor(.civitOnSurfaceVariant)
+            } else {
+                ForEach(viewModel.filteredTemplates, id: \.id) { template in
+                    TemplateRow(
+                        template: template,
+                        isPicker: isPicker,
+                        onSelect: isPicker
+                            ? { onSelect?(template); dismiss() }
+                            : { parameterTemplate = template },
+                        onExport: { viewModel.onExportTemplate(template) },
+                        onEdit: template.isBuiltIn ? nil : { editingTemplate = template },
+                        onDelete: template.isBuiltIn ? nil : {
+                            viewModel.onDeleteTemplate(id: template.id)
+                        }
+                    )
+                }
             }
         }
     }
@@ -135,6 +237,7 @@ private struct TemplateRow: View {
     let isPicker: Bool
     var onSelect: (() -> Void)?
     var onExport: () -> Void
+    var onEdit: (() -> Void)?
     var onDelete: (() -> Void)?
     @Environment(\.civitTheme) private var theme
 
@@ -143,14 +246,19 @@ private struct TemplateRow: View {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(template.name)
                     .font(.civitBodyMedium)
-                Text("\(typeLabel(template.type))\(template.isBuiltIn ? " · Built-in" : "")")
-                    .font(.civitBodySmall)
-                    .foregroundColor(.civitOnSurfaceVariant)
-                if !template.variables.isEmpty {
-                    Text("Variables: \(template.variables.map { $0.name }.joined(separator: ", "))")
+                if !template.description_.isEmpty {
+                    Text(template.description_)
                         .font(.civitBodySmall)
                         .foregroundColor(.civitOnSurfaceVariant)
                         .lineLimit(2)
+                }
+                Text(templateMetaText(template))
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+                if !template.variables.isEmpty {
+                    Text("\(template.variables.count) parameters")
+                        .font(.civitBodySmall)
+                        .foregroundColor(.civitOnSurfaceVariant)
                 }
             }
             Spacer()
@@ -162,7 +270,13 @@ private struct TemplateRow: View {
                 .buttonStyle(.plain)
             } else {
                 Menu {
+                    if let select = onSelect {
+                        Button("Use Template", action: select)
+                    }
                     Button("Export JSON", action: onExport)
+                    if let edit = onEdit {
+                        Button("Edit", action: edit)
+                    }
                     if let del = onDelete {
                         Button("Delete", role: .destructive, action: del)
                     }
@@ -174,7 +288,17 @@ private struct TemplateRow: View {
             }
         }
         .contentShape(Rectangle())
-        .onTapGesture { if isPicker { onSelect?() } }
+        .onTapGesture {
+            if isPicker { onSelect?() } else { onSelect?() }
+        }
+    }
+
+    private func templateMetaText(_ template: WorkflowTemplate) -> String {
+        var parts = [typeLabel(template.type)]
+        if template.isBuiltIn { parts.append("Built-in") }
+        parts.append(categoryLabel(template.category))
+        if template.version > 1 { parts.append("v\(template.version)") }
+        return parts.joined(separator: " \u{2022} ")
     }
 }
 
@@ -184,7 +308,19 @@ private func typeLabel(_ type: WorkflowTemplateType) -> String {
     case .img2Img: return "img2img"
     case .inpainting: return "Inpainting"
     case .upscale: return "Upscale"
+    case .lora: return "LoRA"
     default: return type.name
+    }
+}
+
+private func categoryLabel(_ category: WorkflowTemplateCategory) -> String {
+    switch category {
+    case .general: return "General"
+    case .anime: return "Anime"
+    case .photorealistic: return "Photo"
+    case .artistic: return "Artistic"
+    case .utility: return "Utility"
+    default: return category.name
     }
 }
 

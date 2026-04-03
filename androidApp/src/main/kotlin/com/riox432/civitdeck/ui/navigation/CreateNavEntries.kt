@@ -24,6 +24,7 @@ import com.riox432.civitdeck.ui.comfyui.SDWebUIGenerationScreen
 import com.riox432.civitdeck.ui.comfyui.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsScreen
 import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsViewModel
+import com.riox432.civitdeck.ui.comfyui.TemplateParameterScreen
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateEditorScreen
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateScreen
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateViewModel
@@ -118,6 +119,7 @@ private fun EntryProviderScope<Any>.workflowTemplateEntries(backStack: MutableLi
             onBack = { backStack.removeLastOrNull() },
             onCreateTemplate = { backStack.add(WorkflowTemplateEditorRoute(templateId = 0L)) },
             onEditTemplate = { template -> backStack.add(WorkflowTemplateEditorRoute(templateId = template.id)) },
+            onSelectTemplate = { template -> backStack.add(TemplateParameterRoute(templateId = template.id)) },
         )
     }
     entry<WorkflowTemplatePickerRoute> {
@@ -142,6 +144,19 @@ private fun EntryProviderScope<Any>.workflowTemplateEntries(backStack: MutableLi
             initialTemplate = template,
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
+        )
+    }
+    entry<TemplateParameterRoute> { key ->
+        val viewModel: WorkflowTemplateViewModel = koinViewModel()
+        val template = viewModel.uiState.value.templates.find { it.id == key.templateId }
+            ?: WorkflowTemplateViewModel.emptyTemplate()
+        TemplateParameterScreen(
+            template = template,
+            onBack = { backStack.removeLastOrNull() },
+            onApply = {
+                // Applied template values will be forwarded to ComfyUI generation
+                backStack.removeLastOrNull()
+            },
         )
     }
 }

@@ -318,7 +318,7 @@ private fun PersonalTagEntity.toDto() = PersonalTagDto(modelId, tag, addedAt)
 private fun SavedPromptEntity.toDto() = SavedPromptDto(
     prompt, negativePrompt, sampler, steps, cfgScale, seed,
     modelName, size, sourceImageUrl, savedAt, isTemplate,
-    templateName, autoSaved, templateVariables, templateType,
+    templateName, autoSaved, templateVariables, templateType, templateMetadata,
 )
 
 private fun UserPreferencesEntity.toDto() = UserPreferencesDto(
@@ -398,6 +398,7 @@ private fun SavedPromptDto.toEntity() = SavedPromptEntity(
     size = size, sourceImageUrl = sourceImageUrl, savedAt = savedAt,
     isTemplate = isTemplate, templateName = templateName, autoSaved = autoSaved,
     templateVariables = templateVariables, templateType = templateType,
+    templateMetadata = templateMetadata,
 )
 
 private fun UserPreferencesDto.toEntity() = UserPreferencesEntity(
