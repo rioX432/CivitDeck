@@ -21,6 +21,9 @@ import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFil
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.TrackRecommendationClickUseCase
+import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
+import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val searchModule = module {
@@ -44,4 +47,8 @@ val searchModule = module {
     factory { SaveSearchFilterUseCase(get()) }
     factory { DeleteSavedSearchFilterUseCase(get()) }
     factory { TrackRecommendationClickUseCase(get()) }
+
+    // ViewModels
+    viewModel { SwipeDiscoveryViewModel(get(), get()) }
+    viewModel { BrowsingHistoryViewModel(get(), get(), get()) }
 }

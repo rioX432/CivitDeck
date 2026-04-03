@@ -6,7 +6,7 @@ private let undoButtonSize: CGFloat = 48
 private let actionButtonSize: CGFloat = 56
 
 struct SwipeDiscoveryView: View {
-    @StateObject private var viewModel = SwipeDiscoveryViewModel()
+    @StateObject private var viewModel = SwipeDiscoveryViewModelOwner()
     @Environment(\.dismiss) private var dismiss
     @Environment(\.civitTheme) private var theme
 
@@ -20,6 +20,9 @@ struct SwipeDiscoveryView: View {
         }
         .navigationTitle("Discover")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await viewModel.observeState()
+        }
     }
 
     private var contentArea: some View {
@@ -83,8 +86,8 @@ struct SwipeDiscoveryView: View {
                     .clipShape(Circle())
             }
             .accessibilityLabel("Undo last swipe")
-            .disabled(viewModel.lastDismissed == nil)
-            .opacity(viewModel.lastDismissed == nil ? 0.4 : 1.0)
+            .disabled(!viewModel.hasLastDismissed)
+            .opacity(!viewModel.hasLastDismissed ? 0.4 : 1.0)
 
             // Skip button
             Button(action: {

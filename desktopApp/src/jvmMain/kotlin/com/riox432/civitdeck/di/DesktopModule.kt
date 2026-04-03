@@ -14,7 +14,6 @@ import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
 import com.riox432.civitdeck.ui.comfyui.template.DesktopWorkflowTemplateViewModel
 import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueViewModel
 import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterViewModel
-import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetListViewModel
@@ -47,9 +46,7 @@ val desktopModule = module {
     viewModel {
         DesktopAnalyticsViewModel(get())
     }
-    viewModel {
-        DesktopBrowsingHistoryViewModel(get(), get(), get())
-    }
+    // BrowsingHistoryViewModel is now registered in searchModule
     // ComfyUI ViewModels
     viewModel {
         ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get())

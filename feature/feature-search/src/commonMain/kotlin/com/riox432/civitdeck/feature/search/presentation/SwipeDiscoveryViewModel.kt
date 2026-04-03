@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.discovery
+package com.riox432.civitdeck.feature.search.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

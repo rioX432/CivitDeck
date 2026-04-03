@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.history
+package com.riox432.civitdeck.feature.search.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,6 +6,7 @@ import com.riox432.civitdeck.domain.model.RecentlyViewedModel
 import com.riox432.civitdeck.domain.usecase.ClearBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteBrowsingHistoryItemUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveRecentlyViewedUseCase
+import com.riox432.civitdeck.domain.util.currentTimeMillis
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -58,7 +59,7 @@ class BrowsingHistoryViewModel(
 }
 
 private fun groupByDate(items: List<RecentlyViewedModel>): List<DateGroup> {
-    val now = System.currentTimeMillis()
+    val now = currentTimeMillis()
     val todayStart = now - (now % DAY_MILLIS)
     val yesterdayStart = todayStart - DAY_MILLIS
     val weekStart = todayStart - WEEK_MILLIS

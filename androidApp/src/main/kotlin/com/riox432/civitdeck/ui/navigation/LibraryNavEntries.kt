@@ -6,7 +6,9 @@ import androidx.navigation3.runtime.EntryProviderScope
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
+import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
+import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.analytics.AnalyticsScreen
 import com.riox432.civitdeck.ui.analytics.AnalyticsViewModel
 import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
@@ -28,9 +30,7 @@ import com.riox432.civitdeck.ui.downloadqueue.DownloadQueueViewModel
 import com.riox432.civitdeck.ui.feed.FeedScreen
 import com.riox432.civitdeck.ui.feed.FeedViewModel
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
-import com.riox432.civitdeck.ui.gallery.ImageGalleryViewModel
 import com.riox432.civitdeck.ui.history.BrowsingHistoryScreen
-import com.riox432.civitdeck.ui.history.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.notificationcenter.NotificationCenterScreen
 import com.riox432.civitdeck.ui.notificationcenter.NotificationCenterViewModel
 import com.riox432.civitdeck.ui.share.ShareViewModel

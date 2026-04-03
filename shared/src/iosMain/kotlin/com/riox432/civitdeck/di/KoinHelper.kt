@@ -232,6 +232,9 @@ import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseC
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
+import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
+import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
+import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.presentation.settings.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.presentation.settings.AuthSettingsViewModel
 import com.riox432.civitdeck.presentation.settings.ContentFilterSettingsViewModel
@@ -580,6 +583,7 @@ object KoinHelper {
     fun createStorageSettingsViewModel(): StorageSettingsViewModel = getKoin().get()
     // endregion
 
+<<<<<<< HEAD
     // region Feature ViewModels
     fun createCollectionsViewModel(): CollectionsViewModel = getKoin().get()
     fun createCollectionDetailViewModel(collectionId: Long): CollectionDetailViewModel =
@@ -587,5 +591,12 @@ object KoinHelper {
     fun createCreatorProfileViewModel(username: String): CreatorProfileViewModel =
         getKoin().get { org.koin.core.parameter.parametersOf(username) }
     fun createSavedPromptsViewModel(): SavedPromptsViewModel = getKoin().get()
+=======
+    // region Phase 2 ViewModels
+    fun createImageGalleryViewModel(modelVersionId: Long): ImageGalleryViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(modelVersionId) }
+    fun createSwipeDiscoveryViewModel(): SwipeDiscoveryViewModel = getKoin().get()
+    fun createBrowsingHistoryViewModel(): BrowsingHistoryViewModel = getKoin().get()
+>>>>>>> 8ff9d451 (Migrate Phase 2 ViewModels (Gallery, Discovery, History) to shared commonMain)
     // endregion
 }

@@ -38,12 +38,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import com.riox432.civitdeck.domain.model.RecentlyViewedModel
+import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
+import com.riox432.civitdeck.feature.search.presentation.DateGroup
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
 fun DesktopBrowsingHistoryScreen(
-    viewModel: DesktopBrowsingHistoryViewModel,
+    viewModel: BrowsingHistoryViewModel,
     onBack: () -> Unit,
     onModelClick: (Long) -> Unit = {},
     modifier: Modifier = Modifier,
@@ -143,7 +145,7 @@ private fun HistoryTopBar(
 
 @Composable
 private fun HistoryGroupCard(
-    group: DesktopDateGroup,
+    group: DateGroup,
     onModelClick: (Long) -> Unit,
     onDelete: (Long) -> Unit,
 ) {

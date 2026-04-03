@@ -41,13 +41,10 @@ import com.riox432.civitdeck.ui.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetListViewModel
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
-import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.ui.downloadqueue.DownloadQueueViewModel
 import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryViewModel
 import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsViewModel
 import com.riox432.civitdeck.ui.feed.FeedViewModel
-import com.riox432.civitdeck.ui.gallery.ImageGalleryViewModel
-import com.riox432.civitdeck.ui.history.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserViewModel
 import com.riox432.civitdeck.ui.notificationcenter.NotificationCenterViewModel
 import com.riox432.civitdeck.ui.plugin.PluginManagementViewModel
@@ -159,10 +156,8 @@ val androidModule = module {
             get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
         )
     }
-    viewModel { params -> ImageGalleryViewModel(params.get(), get(), get(), get(), get(), get()) }
     viewModel { ModelFileBrowserViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { GestureTutorialViewModel(get(), get()) }
-    viewModel { SwipeDiscoveryViewModel(get(), get()) }
     viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { ComfyUIHistoryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
@@ -179,7 +174,6 @@ val androidModule = module {
     viewModel { params -> BatchTagEditorViewModel(params.get(), get(), get(), get()) }
     viewModel { params -> DuplicateReviewViewModel(params.get(), get(), get()) }
     viewModel { AnalyticsViewModel(get()) }
-    viewModel { BrowsingHistoryViewModel(get(), get(), get()) }
     viewModel { FeedViewModel(get(), get(), get()) }
     viewModel { NotificationCenterViewModel(get(), get(), get()) }
     viewModel { BackupViewModel(get(), get(), get()) }
