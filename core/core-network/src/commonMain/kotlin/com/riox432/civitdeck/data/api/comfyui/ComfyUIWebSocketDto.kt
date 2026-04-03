@@ -30,6 +30,13 @@ sealed class ComfyUIWebSocketMessage {
     data class Executed(val promptId: String, val node: String) : ComfyUIWebSocketMessage()
     data class ExecutionSuccess(val promptId: String) : ComfyUIWebSocketMessage()
     data class ExecutionError(val promptId: String, val exceptionMessage: String) : ComfyUIWebSocketMessage()
+
+    /** Binary preview image data sent during sampling (e.g. from SaveImageWebsocket node). */
+    data class PreviewImage(val imageBytes: ByteArray) : ComfyUIWebSocketMessage() {
+        override fun equals(other: Any?): Boolean =
+            other is PreviewImage && imageBytes.contentEquals(other.imageBytes)
+        override fun hashCode(): Int = imageBytes.contentHashCode()
+    }
     data class Unknown(val type: String) : ComfyUIWebSocketMessage()
 }
 

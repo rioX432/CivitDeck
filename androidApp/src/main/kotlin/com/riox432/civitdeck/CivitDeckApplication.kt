@@ -168,7 +168,7 @@ val androidModule = module {
     viewModel { GestureTutorialViewModel(get(), get()) }
     viewModel { SwipeDiscoveryViewModel(get(), get()) }
     viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
-    viewModel { ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { ComfyUIHistoryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { ComfyUIQueueViewModel(get(), get()) }
     viewModel { WorkflowTemplateViewModel(get(), get(), get(), get(), get()) }

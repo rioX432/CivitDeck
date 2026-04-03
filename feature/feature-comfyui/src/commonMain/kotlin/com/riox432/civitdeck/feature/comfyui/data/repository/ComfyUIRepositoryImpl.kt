@@ -146,6 +146,12 @@ class ComfyUIRepositoryImpl(
                     totalSteps = msg.max,
                     currentNode = msg.node,
                 )
+                is ComfyUIWebSocketMessage.PreviewImage -> GenerationProgress(
+                    promptId = promptId,
+                    currentStep = 0,
+                    totalSteps = 0,
+                    previewImageBytes = msg.imageBytes,
+                )
                 else -> null
             }
         }
@@ -153,6 +159,11 @@ class ComfyUIRepositoryImpl(
 
     override fun getImageUrl(filename: String, subfolder: String, type: String): String {
         return api.getImageUrl(ComfyUIOutputImage(filename, subfolder, type))
+    }
+
+    override suspend fun interruptGeneration() {
+        ensureApiConfigured()
+        api.interrupt()
     }
 
     override fun observeQueue(intervalMs: Long): Flow<List<QueueJob>> = flow {

@@ -226,17 +226,28 @@ struct ComfyUIGenerationView: View {
             || viewModel.generationStatus == .running
         let canGenerate = viewModel.customWorkflowJson != nil
             || (!viewModel.selectedCheckpoint.isEmpty && !viewModel.prompt.isEmpty)
-        return Button(action: viewModel.onGenerate) {
-            HStack {
-                if isGenerating {
-                    ProgressView().tint(theme.onPrimary)
+        return HStack(spacing: Spacing.sm) {
+            Button(action: viewModel.onGenerate) {
+                HStack {
+                    if isGenerating {
+                        ProgressView().tint(theme.onPrimary)
+                    }
+                    Text(isGenerating ? "Generating..." : "Generate")
                 }
-                Text(isGenerating ? "Generating..." : "Generate")
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity)
+            .buttonStyle(.borderedProminent)
+            .disabled(isGenerating || !canGenerate)
+
+            if isGenerating {
+                Button(action: viewModel.onInterrupt) {
+                    Image(systemName: "stop.fill")
+                        .accessibilityLabel("Stop generation")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.civitError)
+            }
         }
-        .buttonStyle(.borderedProminent)
-        .disabled(isGenerating || !canGenerate)
     }
 
     @ViewBuilder
@@ -259,7 +270,7 @@ struct ComfyUIGenerationView: View {
 
     @ViewBuilder
     private var generationProgressSection: some View {
-        VStack(spacing: Spacing.xs) {
+        VStack(spacing: Spacing.sm) {
             if viewModel.totalSteps > 0 {
                 ProgressView(value: viewModel.progressFraction)
                     .progressViewStyle(.linear)
@@ -268,6 +279,19 @@ struct ComfyUIGenerationView: View {
             } else {
                 ProgressView()
                 Text("Generating...").font(.civitBodySmall)
+            }
+            if !viewModel.currentNodeName.isEmpty {
+                Text("Node: \(viewModel.currentNodeName)")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+            }
+            if let preview = viewModel.previewImage {
+                Image(uiImage: preview)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
+                    .accessibilityLabel("Generation preview")
             }
         }
     }

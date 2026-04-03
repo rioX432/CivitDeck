@@ -1,7 +1,10 @@
 package com.riox432.civitdeck.ui.comfyui
 
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,7 +13,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -19,8 +24,10 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import com.riox432.civitdeck.R
@@ -29,18 +36,39 @@ import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
-internal fun GenerateButton(state: GenerationUiState, onGenerate: () -> Unit) {
+internal fun GenerateButton(
+    state: GenerationUiState,
+    onGenerate: () -> Unit,
+    onInterrupt: () -> Unit,
+) {
     val isGenerating = state.generationStatus == GenerationStatus.Submitting ||
         state.generationStatus == GenerationStatus.Running
-    Button(
-        onClick = onGenerate,
-        enabled = !isGenerating && state.selectedCheckpoint.isNotBlank() && state.prompt.isNotBlank(),
+    val canGenerate = state.customWorkflowJson != null ||
+        (state.selectedCheckpoint.isNotBlank() && state.prompt.isNotBlank())
+    Row(
         modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
-        if (isGenerating) {
-            CircularProgressIndicator(modifier = Modifier.padding(end = Spacing.sm))
+        Button(
+            onClick = onGenerate,
+            enabled = !isGenerating && canGenerate,
+            modifier = Modifier.weight(1f),
+        ) {
+            if (isGenerating) {
+                CircularProgressIndicator(modifier = Modifier.padding(end = Spacing.sm))
+            }
+            Text(if (isGenerating) "Generating..." else "Generate")
         }
-        Text(if (isGenerating) "Generating..." else "Generate")
+        if (isGenerating) {
+            Button(
+                onClick = onInterrupt,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                ),
+            ) {
+                Icon(Icons.Default.Stop, contentDescription = "Stop generation")
+            }
+        }
     }
 }
 
@@ -68,7 +96,7 @@ internal fun GenerationStatusSection(state: GenerationUiState) {
 
 @Composable
 private fun GenerationProgressSection(state: GenerationUiState) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         if (state.totalSteps > 0) {
             LinearProgressIndicator(
                 progress = { state.progressFraction },
@@ -82,6 +110,33 @@ private fun GenerationProgressSection(state: GenerationUiState) {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             Text("Generating...", style = MaterialTheme.typography.bodySmall)
         }
+        if (state.currentNodeName.isNotEmpty()) {
+            Text(
+                "Node: ${state.currentNodeName}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        PreviewImageView(state.previewImageBytes)
+    }
+}
+
+@Composable
+private fun PreviewImageView(imageBytes: ByteArray?) {
+    if (imageBytes == null) return
+    val bitmap = remember(imageBytes) {
+        BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            ?.asImageBitmap()
+    } ?: return
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Image(
+            bitmap = bitmap,
+            contentDescription = "Generation preview",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f),
+        )
     }
 }
 

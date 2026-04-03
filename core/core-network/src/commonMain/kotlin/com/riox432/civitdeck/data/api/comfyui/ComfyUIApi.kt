@@ -123,6 +123,23 @@ class ComfyUIApi(
     }
 
     /**
+     * Interrupt the currently running generation: POST /interrupt
+     * @throws CancellationException if coroutine is cancelled
+     * @throws Exception on network failure
+     */
+    suspend fun interrupt() {
+        val url = baseUrl
+        try {
+            client.post("$url/interrupt")
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.e(TAG, "interrupt failed: ${e.message}", e)
+            throw e
+        }
+    }
+
+    /**
      * Delete (cancel) queued prompts: POST /queue with {"delete": [...promptIds]}
      * @throws CancellationException if coroutine is cancelled
      * @throws Exception on network failure

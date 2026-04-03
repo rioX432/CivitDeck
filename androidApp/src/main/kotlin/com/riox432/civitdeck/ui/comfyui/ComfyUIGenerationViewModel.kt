@@ -13,6 +13,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpoi
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
@@ -59,6 +60,9 @@ data class GenerationUiState(
     val result: GenerationResult? = null,
     val error: String? = null,
     val imageSaveSuccess: Boolean? = null,
+    /** Latest preview image bytes from WebSocket during generation. */
+    val previewImageBytes: ByteArray? = null,
+    val currentNodeName: String = "",
 ) {
     /** Progress fraction in [0f, 1f]. Returns 0 when totalSteps is unknown. */
     val progressFraction: Float
@@ -74,6 +78,7 @@ class ComfyUIGenerationViewModel(
     private val submitGeneration: SubmitComfyUIGenerationUseCase,
     private val pollResult: PollComfyUIResultUseCase,
     private val observeProgress: ObserveGenerationProgressUseCase,
+    private val interruptGeneration: InterruptComfyUIGenerationUseCase,
     private val saveImage: SaveGeneratedImageUseCase,
     private val repository: ComfyUIConnectionRepository,
 ) : ViewModel() {
@@ -272,6 +277,8 @@ class ComfyUIGenerationViewModel(
                 result = null,
                 currentStep = 0,
                 totalSteps = 0,
+                previewImageBytes = null,
+                currentNodeName = "",
             )
         }
         launchWithErrorHandling(
@@ -302,6 +309,24 @@ class ComfyUIGenerationViewModel(
         _uiState.update { it.copy(imageSaveSuccess = null) }
     }
 
+    fun onInterrupt() {
+        progressJob?.cancel()
+        launchWithErrorHandling(
+            tag = "Interrupt failed",
+            onError = { e -> _uiState.update { it.copy(error = e.message) } },
+        ) {
+            interruptGeneration()
+            _uiState.update {
+                it.copy(
+                    generationStatus = GenerationStatus.Idle,
+                    currentStep = 0,
+                    totalSteps = 0,
+                    previewImageBytes = null,
+                )
+            }
+        }
+    }
+
     private fun buildParams(state: GenerationUiState) = ComfyUIGenerationParams(
         checkpoint = state.selectedCheckpoint,
         prompt = state.prompt,
@@ -325,8 +350,24 @@ class ComfyUIGenerationViewModel(
             observeProgress(promptId, connection.hostname, connection.port)
                 .catch { pollForResult(promptId) }
                 .collect { progress ->
-                    _uiState.update {
-                        it.copy(currentStep = progress.currentStep, totalSteps = progress.totalSteps)
+                    _uiState.update { state ->
+                        state.copy(
+                            currentStep = if (progress.currentStep > 0) {
+                                progress.currentStep
+                            } else {
+                                state.currentStep
+                            },
+                            totalSteps = if (progress.totalSteps > 0) {
+                                progress.totalSteps
+                            } else {
+                                state.totalSteps
+                            },
+                            previewImageBytes = progress.previewImageBytes
+                                ?: state.previewImageBytes,
+                            currentNodeName = progress.currentNode.ifEmpty {
+                                state.currentNodeName
+                            },
+                        )
                     }
                 }
             // WebSocket flow completed: fetch final result

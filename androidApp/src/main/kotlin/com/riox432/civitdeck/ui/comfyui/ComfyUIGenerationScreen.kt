@@ -97,7 +97,7 @@ fun ComfyUIGenerationScreen(
             item { LoraSection(state, viewModel) }
             item { ControlNetSection(state, viewModel) }
             item { CustomWorkflowSection(state, viewModel) }
-            item { GenerateButton(state, viewModel::onGenerate) }
+            item { GenerateButton(state, viewModel::onGenerate, viewModel::onInterrupt) }
             item { GenerationStatusSection(state) }
             val result = state.result
             if (result?.imageUrls?.isNotEmpty() == true) {
