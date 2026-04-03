@@ -6,7 +6,7 @@ private enum CollectionsScreenTab {
 }
 
 struct CollectionsScreen: View {
-    @StateObject private var viewModel = CollectionsViewModel()
+    @StateObject private var viewModel = CollectionsViewModelOwner()
     @State private var selectedTab: CollectionsScreenTab = .collections
     @State private var showCreateSheet = false
     @State private var newCollectionName = ""
@@ -96,6 +96,7 @@ struct CollectionsScreen: View {
                 }
                 Button("Cancel", role: .cancel) {}
             }
+            .task { await viewModel.observeCollections() }
         }
     }
 

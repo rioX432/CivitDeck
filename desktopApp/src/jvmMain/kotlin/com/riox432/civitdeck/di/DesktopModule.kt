@@ -2,8 +2,6 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.DesktopAppVersionProvider
 import com.riox432.civitdeck.domain.repository.AppVersionProvider
-import com.riox432.civitdeck.ui.collections.CollectionDetailViewModel
-import com.riox432.civitdeck.ui.collections.CollectionsViewModel
 import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationViewModel
 import com.riox432.civitdeck.ui.comfyui.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsViewModel
@@ -12,8 +10,6 @@ import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryViewModel
 import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsViewModel
-import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
-import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
 import com.riox432.civitdeck.ui.comfyui.template.DesktopWorkflowTemplateViewModel
 import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueViewModel
@@ -41,12 +37,6 @@ val desktopModule = module {
             params.get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
         )
-    }
-    viewModel {
-        CollectionsViewModel(get(), get(), get(), get())
-    }
-    viewModel { params ->
-        CollectionDetailViewModel(params.get(), get(), get(), get(), get())
     }
     viewModel {
         DesktopFeedViewModel(get(), get())
@@ -103,9 +93,6 @@ val desktopModule = module {
     viewModel {
         DesktopNotificationCenterViewModel(get(), get(), get())
     }
-    // Creator & Prompts ViewModels (moved from feature modules)
-    viewModel { params -> CreatorProfileViewModel(params.get(), get(), get(), get(), get()) }
-    viewModel { SavedPromptsViewModel(get(), get(), get(), get(), get()) }
     // Download Queue ViewModel
     viewModel {
         DesktopDownloadQueueViewModel(get(), get(), get(), get(), get(), get())

@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.collections
+package com.riox432.civitdeck.feature.collections.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -45,6 +45,14 @@ class CollectionDetailViewModel(
             val filtered = if (filter != null) models.filter { it.type == filter } else models
             sortModels(filtered, sort)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
+
+    fun updateSortOrder(order: CollectionSortOrder) {
+        sortOrder.value = order
+    }
+
+    fun updateTypeFilter(type: ModelType?) {
+        typeFilter.value = type
+    }
 
     fun toggleSelection(modelId: Long) {
         selectedModelIds.value = selectedModelIds.value.let { current ->

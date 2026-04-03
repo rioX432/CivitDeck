@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct CollectionDetailScreen: View {
-    @StateObject private var viewModel: CollectionDetailViewModel
+    @StateObject private var viewModel: CollectionDetailViewModelOwner
     @EnvironmentObject private var comparisonState: ComparisonState
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var navigationPath = NavigationPath()
@@ -14,7 +14,7 @@ struct CollectionDetailScreen: View {
 
     init(collectionId: Int64, collectionName: String) {
         _viewModel = StateObject(
-            wrappedValue: CollectionDetailViewModel(collectionId: collectionId)
+            wrappedValue: CollectionDetailViewModelOwner(collectionId: collectionId)
         )
     }
 
@@ -63,6 +63,7 @@ struct CollectionDetailScreen: View {
             }
             Button("Cancel", role: .cancel) {}
         }
+        .task { await viewModel.startObserving() }
     }
 
     @ToolbarContentBuilder
@@ -92,19 +93,19 @@ struct CollectionDetailScreen: View {
 
     private var sortMenu: some View {
         Menu {
-            ForEach(CollectionSortOrder_.allCases, id: \.self) { order in
+            ForEach(Core_domainCollectionSortOrder.allCases, id: \.self) { order in
                 Button {
                     viewModel.sortOrder = order
                 } label: {
                     if viewModel.sortOrder == order {
-                        Label(order.rawValue, systemImage: "checkmark")
+                        Label(order.name, systemImage: "checkmark")
                     } else {
-                        Text(order.rawValue)
+                        Text(order.name)
                     }
                 }
             }
         } label: {
-            Label(viewModel.sortOrder.rawValue, systemImage: "arrow.up.arrow.down")
+            Label(viewModel.sortOrder.name, systemImage: "arrow.up.arrow.down")
                 .font(.civitLabelSmall)
                 .padding(.horizontal, Spacing.sm)
                 .padding(.vertical, Spacing.xs)
@@ -124,7 +125,7 @@ struct CollectionDetailScreen: View {
                     Text("All Types")
                 }
             }
-            ForEach(CollectionDetailViewModel.allModelTypes, id: \.self) { type in
+            ForEach(CollectionDetailViewModelOwner.allModelTypes, id: \.self) { type in
                 Button {
                     viewModel.typeFilter = type
                 } label: {

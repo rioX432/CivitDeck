@@ -8,11 +8,13 @@ enum PromptTab: String, CaseIterable {
 }
 
 @MainActor
-final class SavedPromptsViewModel: ObservableObject {
+final class SavedPromptsViewModelOwner: ObservableObject {
     @Published var prompts: [SavedPrompt] = []
     @Published var templates: [SavedPrompt] = []
     @Published var selectedTab: PromptTab = .all
-    @Published var searchQuery: String = ""
+    @Published var searchQuery: String = "" {
+        didSet { vm.onSearchQueryChanged(query: searchQuery) }
+    }
 
     var displayedPrompts: [SavedPrompt] {
         let source: [SavedPrompt]
@@ -34,51 +36,43 @@ final class SavedPromptsViewModel: ObservableObject {
         }
     }
 
-    private let observeSavedPromptsUseCase: ObserveSavedPromptsUseCase
-    private let deleteSavedPromptUseCase: DeleteSavedPromptUseCase
-    private let observeTemplatesUseCase: ObserveTemplatesUseCase
-    private let toggleTemplateUseCase: ToggleTemplateUseCase
-
-    private var observeTask: Task<Void, Never>?
-    private var observeTemplatesTask: Task<Void, Never>?
+    let vm: Feature_promptsSavedPromptsViewModel
+    private let store: ViewModelStore
 
     init() {
-        self.observeSavedPromptsUseCase = KoinHelper.shared.getObserveSavedPromptsUseCase()
-        self.deleteSavedPromptUseCase = KoinHelper.shared.getDeleteSavedPromptUseCase()
-        self.observeTemplatesUseCase = KoinHelper.shared.getObserveTemplatesUseCase()
-        self.toggleTemplateUseCase = KoinHelper.shared.getToggleTemplateUseCase()
-        observeTask = Task { await observeAll() }
-        observeTemplatesTask = Task { await observeTemplates() }
+        store = ViewModelStore()
+        vm = KoinHelper.shared.createSavedPromptsViewModel()
+        store.put(key: "SavedPromptsViewModel", viewModel: vm)
     }
 
-    deinit {
-        observeTask?.cancel()
-        observeTemplatesTask?.cancel()
+    deinit { store.clear() }
+
+    func startObserving() async {
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.observePrompts() }
+            group.addTask { await self.observeTemplates() }
+        }
     }
 
-    func observeAll() async {
-        for await list in observeSavedPromptsUseCase.invoke() {
+    private func observePrompts() async {
+        for await list in vm.prompts {
             let items = list.compactMap { $0 as? SavedPrompt }
             self.prompts = items
         }
     }
 
-    func observeTemplates() async {
-        for await list in observeTemplatesUseCase.invoke() {
+    private func observeTemplates() async {
+        for await list in vm.templates {
             let items = list.compactMap { $0 as? SavedPrompt }
             self.templates = items
         }
     }
 
     func delete(id: Int64) {
-        Task {
-            try await deleteSavedPromptUseCase.invoke(id: id)
-        }
+        vm.delete(id: id)
     }
 
     func toggleTemplate(id: Int64, isTemplate: Bool, templateName: String?) {
-        Task {
-            try await toggleTemplateUseCase.invoke(id: id, isTemplate: isTemplate, templateName: templateName)
-        }
+        vm.toggleTemplate(id: id, isTemplate: isTemplate, templateName: templateName)
     }
 }

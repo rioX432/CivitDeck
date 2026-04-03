@@ -2,131 +2,91 @@ import Foundation
 import Shared
 
 @MainActor
-final class CollectionDetailViewModel: ObservableObject {
-    @Published var models: [FavoriteModelSummary] = []
-    @Published var sortOrder: CollectionSortOrder_ = .dateAdded
-    @Published var typeFilter: ModelType_?
+final class CollectionDetailViewModelOwner: ObservableObject {
+    @Published var displayModels: [FavoriteModelSummary] = []
+    @Published var collections: [ModelCollection] = []
+    @Published var sortOrder: Core_domainCollectionSortOrder = .dateAdded {
+        didSet { vm.updateSortOrder(order: sortOrder) }
+    }
+    @Published var typeFilter: Core_domainModelType? {
+        didSet { vm.updateTypeFilter(type: typeFilter) }
+    }
     @Published var isSelectionMode = false
     @Published var selectedIds: Set<Int64> = []
-    @Published var collections: [ModelCollection] = []
 
     let collectionId: Int64
-
-    private let observeCollectionModelsUseCase: ObserveCollectionModelsUseCase
-    private let observeCollectionsUseCase: ObserveCollectionsUseCase
-    private let bulkRemoveModelsUseCase: BulkRemoveModelsUseCase
-    private let bulkMoveModelsUseCase: BulkMoveModelsUseCase
-    private var observeTask: Task<Void, Never>?
-    private var collectionsTask: Task<Void, Never>?
+    let vm: Feature_collectionsCollectionDetailViewModel
+    private let store: ViewModelStore
 
     init(collectionId: Int64) {
         self.collectionId = collectionId
-        self.observeCollectionModelsUseCase = KoinHelper.shared.getObserveCollectionModelsUseCase()
-        self.observeCollectionsUseCase = KoinHelper.shared.getObserveCollectionsUseCase()
-        self.bulkRemoveModelsUseCase = KoinHelper.shared.getBulkRemoveModelsUseCase()
-        self.bulkMoveModelsUseCase = KoinHelper.shared.getBulkMoveModelsUseCase()
-
-        observeTask = Task { await observeModels() }
-        collectionsTask = Task { await observeCollections() }
+        store = ViewModelStore()
+        vm = KoinHelper.shared.createCollectionDetailViewModel(collectionId: collectionId)
+        store.put(key: "CollectionDetailViewModel", viewModel: vm)
     }
 
-    deinit {
-        observeTask?.cancel()
-        collectionsTask?.cancel()
-    }
+    deinit { store.clear() }
 
-    var displayModels: [FavoriteModelSummary] {
-        var result = models
-        if let filter = typeFilter {
-            result = result.filter { $0.type == filter }
-        }
-        return sortModels(result)
-    }
-
-    func toggleSelection(_ modelId: Int64) {
-        if selectedIds.contains(modelId) {
-            selectedIds.remove(modelId)
-        } else {
-            selectedIds.insert(modelId)
-        }
-        if selectedIds.isEmpty { isSelectionMode = false }
-    }
-
-    func selectAll() {
-        selectedIds = Set(displayModels.map { $0.id })
-    }
-
-    func clearSelection() {
-        selectedIds.removeAll()
-        isSelectionMode = false
-    }
-
-    func enterSelectionMode(_ modelId: Int64) {
-        isSelectionMode = true
-        selectedIds = [modelId]
-    }
-
-    func removeSelected() {
-        let ids = Array(selectedIds).map { KotlinLong(value: $0) }
-        guard !ids.isEmpty else { return }
-        Task {
-            try await bulkRemoveModelsUseCase.invoke(collectionId: collectionId, modelIds: ids)
-            clearSelection()
+    func startObserving() async {
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.observeDisplayModels() }
+            group.addTask { await self.observeCollections() }
+            group.addTask { await self.observeSelectedIds() }
+            group.addTask { await self.observeSelectionMode() }
         }
     }
 
-    func moveSelectedTo(_ targetId: Int64) {
-        let ids = Array(selectedIds).map { KotlinLong(value: $0) }
-        guard !ids.isEmpty else { return }
-        Task {
-            try await bulkMoveModelsUseCase.invoke(from: collectionId, to: targetId, modelIds: ids)
-            clearSelection()
-        }
-    }
-
-    private func observeModels() async {
-        for await list in observeCollectionModelsUseCase.invoke(collectionId: collectionId) {
+    private func observeDisplayModels() async {
+        for await list in vm.displayModels {
             let items = list.compactMap { $0 as? FavoriteModelSummary }
-            self.models = items
+            self.displayModels = items
         }
     }
 
     private func observeCollections() async {
-        for await list in observeCollectionsUseCase.invoke() {
+        for await list in vm.collections {
             let items = list.compactMap { $0 as? ModelCollection }
             self.collections = items
         }
     }
 
-    private func sortModels(_ models: [FavoriteModelSummary]) -> [FavoriteModelSummary] {
-        switch sortOrder {
-        case .dateAdded:
-            return models.sorted { $0.favoritedAt > $1.favoritedAt }
-        case .rating:
-            return models.sorted { $0.rating > $1.rating }
-        case .type:
-            return models.sorted { $0.type.name < $1.type.name }
-        case .name:
-            return models.sorted { $0.name.lowercased() < $1.name.lowercased() }
+    private func observeSelectedIds() async {
+        for await ids in vm.selectedModelIds {
+            let set = ids.compactMap { ($0 as? NSNumber)?.int64Value }
+            self.selectedIds = Set(set)
         }
     }
-}
 
-// swiftlint:disable:next type_name
-enum CollectionSortOrder_: String, CaseIterable {
-    case dateAdded = "Date Added"
-    case rating = "Rating"
-    case type = "Type"
-    case name = "Name"
+    private func observeSelectionMode() async {
+        for await mode in vm.isSelectionMode {
+            if let boolValue = mode as? Bool {
+                self.isSelectionMode = boolValue
+            }
+        }
+    }
+
+    func toggleSelection(_ modelId: Int64) {
+        vm.toggleSelection(modelId: modelId)
+    }
+
+    func selectAll() { vm.selectAll() }
+
+    func clearSelection() { vm.clearSelection() }
+
+    func enterSelectionMode(_ modelId: Int64) {
+        vm.enterSelectionMode(modelId: modelId)
+    }
+
+    func removeSelected() { vm.removeSelected() }
+
+    func moveSelectedTo(_ targetId: Int64) {
+        vm.moveSelectedTo(targetId: targetId)
+    }
 }
 
 // swiftlint:disable:next type_name
 typealias ModelType_ = Core_domainModelType
 
-extension CollectionDetailViewModel {
-    static let allModelTypes: [ModelType_] = [
-        .checkpoint, .textualInversion, .hypernetwork, .aestheticGradient,
-        .lora, .loCon, .controlnet, .upscaler, .motionModule,
-        .vae, .poses, .wildcards, .workflows, .other,
-    ]
+extension CollectionDetailViewModelOwner {
+    static let allModelTypes: [ModelType_] = Core_domainModelType.allCases
 }

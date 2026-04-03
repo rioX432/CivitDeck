@@ -144,6 +144,8 @@ import com.riox432.civitdeck.domain.usecase.UpdatePluginConfigUseCase
 import com.riox432.civitdeck.domain.usecase.UpdateTrainableUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
+import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
+import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.feature.collections.domain.usecase.BulkMoveModelsUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.BulkRemoveModelsUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.DeleteCollectionUseCase
@@ -196,6 +198,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerat
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
+import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ActivateExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.DeleteExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.DeleteServerImagesUseCase
@@ -211,6 +214,7 @@ import com.riox432.civitdeck.feature.externalserver.domain.usecase.SaveExternalS
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.TestExternalServerConnectionUseCase
 import com.riox432.civitdeck.feature.gallery.domain.usecase.GetImagesUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.DeleteSavedPromptUseCase
+import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveSavedPromptsUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveTemplatesUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.SearchSavedPromptsUseCase
@@ -574,5 +578,14 @@ object KoinHelper {
     fun createAppBehaviorSettingsViewModel(): AppBehaviorSettingsViewModel = getKoin().get()
     fun createAuthSettingsViewModel(): AuthSettingsViewModel = getKoin().get()
     fun createStorageSettingsViewModel(): StorageSettingsViewModel = getKoin().get()
+    // endregion
+
+    // region Feature ViewModels
+    fun createCollectionsViewModel(): CollectionsViewModel = getKoin().get()
+    fun createCollectionDetailViewModel(collectionId: Long): CollectionDetailViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(collectionId) }
+    fun createCreatorProfileViewModel(username: String): CreatorProfileViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(username) }
+    fun createSavedPromptsViewModel(): SavedPromptsViewModel = getKoin().get()
     // endregion
 }

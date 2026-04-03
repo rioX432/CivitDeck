@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.collections
+package com.riox432.civitdeck.feature.collections.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

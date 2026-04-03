@@ -25,8 +25,6 @@ import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
 import com.riox432.civitdeck.ui.analytics.AnalyticsViewModel
 import com.riox432.civitdeck.ui.backup.BackupViewModel
-import com.riox432.civitdeck.ui.collections.CollectionDetailViewModel
-import com.riox432.civitdeck.ui.collections.CollectionsViewModel
 import com.riox432.civitdeck.ui.comfyhub.ComfyHubBrowserViewModel
 import com.riox432.civitdeck.ui.comfyhub.ComfyHubDetailViewModel
 import com.riox432.civitdeck.ui.comfyui.CivitaiLinkSendViewModel
@@ -38,7 +36,6 @@ import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsViewModel
 import com.riox432.civitdeck.ui.comfyui.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsViewModel
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateViewModel
-import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
 import com.riox432.civitdeck.ui.dataset.BatchTagEditorViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetListViewModel
@@ -54,7 +51,6 @@ import com.riox432.civitdeck.ui.history.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserViewModel
 import com.riox432.civitdeck.ui.notificationcenter.NotificationCenterViewModel
 import com.riox432.civitdeck.ui.plugin.PluginManagementViewModel
-import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.similar.SimilarModelsViewModel
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
@@ -157,8 +153,6 @@ val androidModule = module {
             get(),
         )
     }
-    viewModel { CollectionsViewModel(get(), get(), get(), get()) }
-    viewModel { params -> CollectionDetailViewModel(params.get(), get(), get(), get(), get()) }
     viewModel { params ->
         ModelDetailViewModel(
             params.get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
@@ -194,7 +188,5 @@ val androidModule = module {
     viewModel { ComfyHubBrowserViewModel(get()) }
     viewModel { params -> ComfyHubDetailViewModel(params.get(), get(), get()) }
     viewModel { com.riox432.civitdeck.ui.share.ShareViewModel(get(), get(), get(), get()) }
-    viewModel { params -> CreatorProfileViewModel(params.get(), get(), get(), get(), get()) }
-    viewModel { SavedPromptsViewModel(get(), get(), get(), get(), get()) }
     viewModel { DownloadQueueViewModel(get(), get(), get(), get(), get(), get(), get()) }
 }

@@ -32,7 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
-import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
+import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
 import com.riox432.civitdeck.presentation.settings.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay

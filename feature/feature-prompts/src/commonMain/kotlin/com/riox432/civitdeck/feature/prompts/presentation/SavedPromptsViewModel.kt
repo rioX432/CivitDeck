@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.prompts
+package com.riox432.civitdeck.feature.prompts.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

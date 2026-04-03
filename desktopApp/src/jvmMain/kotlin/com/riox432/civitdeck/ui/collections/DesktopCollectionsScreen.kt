@@ -47,7 +47,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.size.Size
 import com.riox432.civitdeck.domain.model.ModelCollection
-import com.riox432.civitdeck.ui.collections.CollectionsViewModel
+import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation

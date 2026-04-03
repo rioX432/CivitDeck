@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct SavedPromptsScreen: View {
-    @StateObject private var viewModel = SavedPromptsViewModel()
+    @StateObject private var viewModel = SavedPromptsViewModelOwner()
     @State private var templateDialogPromptId: Int64?
     @State private var templateNameInput = ""
     @State private var applyTemplatePrompt: SavedPrompt?
@@ -37,6 +37,7 @@ struct SavedPromptsScreen: View {
         .sheet(item: $applyTemplatePrompt) { prompt in
             ApplyTemplateSheet(prompt: prompt)
         }
+        .task { await viewModel.startObserving() }
     }
 
     private var showTemplateAlert: Binding<Bool> {
