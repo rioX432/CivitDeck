@@ -20,6 +20,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseC
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.TrackRecommendationClickUseCase
 import org.koin.dsl.module
 
 val searchModule = module {
@@ -42,4 +43,5 @@ val searchModule = module {
     factory { ObserveSavedSearchFiltersUseCase(get()) }
     factory { SaveSearchFilterUseCase(get()) }
     factory { DeleteSavedSearchFilterUseCase(get()) }
+    factory { TrackRecommendationClickUseCase(get()) }
 }

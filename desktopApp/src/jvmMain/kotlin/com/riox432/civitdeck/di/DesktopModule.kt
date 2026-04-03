@@ -50,7 +50,7 @@ val desktopModule = module {
         DesktopFeedViewModel(get(), get())
     }
     viewModel {
-        DesktopDiscoveryViewModel(get())
+        DesktopDiscoveryViewModel(get(), get())
     }
     viewModel {
         DesktopAnalyticsViewModel(get())

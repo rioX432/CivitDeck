@@ -122,6 +122,13 @@ class BrowsingHistoryRepositoryImplTest {
             val durations = entities.mapNotNull { it.durationMs }
             return if (durations.isEmpty()) null else durations.average().toLong()
         }
+
+        override suspend fun getInteractionCountByType(
+            interactionType: String,
+            sinceMillis: Long,
+        ): Int = entities.count {
+            it.interactionType == interactionType && it.viewedAt >= sinceMillis
+        }
     }
 
     @Test

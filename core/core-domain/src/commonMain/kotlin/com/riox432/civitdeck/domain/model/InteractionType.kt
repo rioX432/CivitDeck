@@ -5,4 +5,5 @@ enum class InteractionType {
     FAVORITE,
     DOWNLOAD,
     SHARE,
+    RECOMMENDATION_CLICK,
 }

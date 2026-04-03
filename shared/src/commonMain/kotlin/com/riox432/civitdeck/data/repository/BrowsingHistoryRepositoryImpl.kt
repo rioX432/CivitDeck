@@ -115,6 +115,14 @@ class BrowsingHistoryRepositoryImpl(
         return dao.getAverageViewDuration()
     }
 
+    override suspend fun getRecommendationClickCount(sinceMillis: Long): Int {
+        return dao.getInteractionCountByType(InteractionType.RECOMMENDATION_CLICK.name, sinceMillis)
+    }
+
+    override suspend fun getInteractionCountByType(type: InteractionType, sinceMillis: Long): Int {
+        return dao.getInteractionCountByType(type.name, sinceMillis)
+    }
+
     private suspend fun computeWeightedScores(
         limit: Int,
         keysSelector: (BrowsingHistoryEntity) -> List<String>,
@@ -162,6 +170,7 @@ class BrowsingHistoryRepositoryImpl(
                 InteractionType.DOWNLOAD -> DOWNLOAD_WEIGHT
                 InteractionType.FAVORITE -> FAVORITE_WEIGHT
                 InteractionType.SHARE -> FAVORITE_WEIGHT
+                InteractionType.RECOMMENDATION_CLICK -> FAVORITE_WEIGHT
                 InteractionType.VIEW, null -> durationWeight(entry.durationMs)
             }
         }

@@ -3,6 +3,7 @@ package com.riox432.civitdeck.ui.discovery
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.TrackRecommendationClickUseCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.util.suspendRunCatching
@@ -19,6 +20,7 @@ data class DesktopDiscoveryUiState(
 
 class DesktopDiscoveryViewModel(
     private val getRecommendationsUseCase: GetRecommendationsUseCase,
+    private val trackRecommendationClickUseCase: TrackRecommendationClickUseCase,
 ) : ViewModel() {
 
     private val scope = viewModelScope
@@ -49,6 +51,12 @@ class DesktopDiscoveryViewModel(
                         )
                     }
                 }
+        }
+    }
+
+    fun trackRecommendationClick(modelId: Long) {
+        scope.launch {
+            suspendRunCatching { trackRecommendationClickUseCase(modelId) }
         }
     }
 

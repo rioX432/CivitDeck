@@ -51,6 +51,8 @@ class BrowsingHistoryUseCasesTest {
         override suspend fun updateViewDuration(modelId: Long, durationMs: Long) {}
         override suspend fun trackInteraction(modelId: Long, interactionType: InteractionType) {}
         override suspend fun getAverageViewDurationMs(): Long? = null
+        override suspend fun getRecommendationClickCount(sinceMillis: Long): Int = 0
+        override suspend fun getInteractionCountByType(type: InteractionType, sinceMillis: Long): Int = 0
     }
 
     private val repo = FakeBrowsingHistoryRepository()

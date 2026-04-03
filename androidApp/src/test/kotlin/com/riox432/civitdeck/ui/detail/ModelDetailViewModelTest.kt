@@ -164,6 +164,17 @@ class ModelDetailViewModelTest {
         override suspend fun getWeightedTypes(limit: Int) = error("not used")
         override suspend fun getWeightedTags(limit: Int) = error("not used")
         override suspend fun getWeightedCreators(limit: Int) = error("not used")
+        override suspend fun updateViewDuration(modelId: Long, durationMs: Long) = Unit
+        override suspend fun trackInteraction(
+            modelId: Long,
+            interactionType: com.riox432.civitdeck.domain.model.InteractionType,
+        ) = Unit
+        override suspend fun getAverageViewDurationMs(): Long? = null
+        override suspend fun getRecommendationClickCount(sinceMillis: Long) = 0
+        override suspend fun getInteractionCountByType(
+            type: com.riox432.civitdeck.domain.model.InteractionType,
+            sinceMillis: Long,
+        ) = 0
     }
 
     private class FakePrefsRepo : ContentFilterPreferencesRepository {

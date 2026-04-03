@@ -222,6 +222,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.GetDiscoveryModelsUse
 import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.TrackRecommendationClickUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
@@ -248,6 +249,7 @@ object KoinHelper {
     fun getMultiSourceSearchUseCase(): MultiSourceSearchUseCase = getKoin().get()
     fun getDiscoveryModelsUseCase(): GetDiscoveryModelsUseCase = getKoin().get()
     fun getRecommendationsUseCase(): GetRecommendationsUseCase = getKoin().get()
+    fun getTrackRecommendationClickUseCase(): TrackRecommendationClickUseCase = getKoin().get()
     fun getEnrichModelImagesUseCase(): EnrichModelImagesUseCase = getKoin().get()
     fun getSimilarModelsUseCase(): GetSimilarModelsUseCase = getKoin().get()
     // endregion

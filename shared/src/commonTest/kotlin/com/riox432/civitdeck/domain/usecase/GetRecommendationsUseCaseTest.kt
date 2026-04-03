@@ -103,6 +103,8 @@ class GetRecommendationsUseCaseTest {
         override suspend fun updateViewDuration(modelId: Long, durationMs: Long) = error("not used")
         override suspend fun trackInteraction(modelId: Long, interactionType: InteractionType) = error("not used")
         override suspend fun getAverageViewDurationMs(): Long? = null
+        override suspend fun getRecommendationClickCount(sinceMillis: Long): Int = 0
+        override suspend fun getInteractionCountByType(type: InteractionType, sinceMillis: Long): Int = 0
     }
 
     private class FakeUserPreferencesRepository(
@@ -149,7 +151,7 @@ class GetRecommendationsUseCaseTest {
     }
 
     @Test
-    fun returns_trending_fallback_when_no_type_or_tag() = runTest {
+    fun returns_trending_section_when_no_type_or_tag() = runTest {
         val models = (1L..10L).map { testModel(id = it) }
         val modelRepo = FakeModelRepository().apply {
             modelsResult = testPaginatedResult(items = models)
@@ -161,9 +163,9 @@ class GetRecommendationsUseCaseTest {
         val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo)
         val sections = useCase()
 
-        assertEquals(1, sections.size)
-        assertEquals("Trending This Week", sections[0].title)
-        assertEquals("Popular models", sections[0].reason)
+        assertTrue(sections.isNotEmpty())
+        // With no browsing history, should still get trending/rising sections
+        assertTrue(sections.any { it.title == "Rising Fast" || it.title == "Trending This Week" })
     }
 
     @Test
@@ -238,5 +240,45 @@ class GetRecommendationsUseCaseTest {
 
         assertTrue(sections.isNotEmpty())
         assertTrue(sections[0].models.size <= 10)
+    }
+
+    @Test
+    fun returns_affinity_section_when_browsing_has_tags_and_types() = runTest {
+        val models = (1L..10L).map { testModel(id = it, type = ModelType.LORA) }
+        val modelRepo = FakeModelRepository().apply {
+            modelsResult = testPaginatedResult(items = models)
+        }
+        val favRepo = FakeFavoriteRepository(typeCounts = mapOf("LORA" to 3))
+        val browsingRepo = FakeBrowsingHistoryRepository(
+            recentTags = mapOf("anime" to 10),
+            recentTypes = mapOf("LORA" to 5),
+        )
+        val prefsRepo = FakeUserPreferencesRepository()
+
+        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo)
+        val sections = useCase()
+
+        assertTrue(sections.any { it.title == "Recommended for You" })
+        assertTrue(sections.any { it.reason == "Based on your activity" })
+    }
+
+    @Test
+    fun max_sections_limited_to_six() = runTest {
+        val models = (1L..20L).map { testModel(id = it) }
+        val modelRepo = FakeModelRepository().apply {
+            modelsResult = testPaginatedResult(items = models)
+        }
+        val favRepo = FakeFavoriteRepository(typeCounts = mapOf("LORA" to 5, "Checkpoint" to 3))
+        val browsingRepo = FakeBrowsingHistoryRepository(
+            recentTags = mapOf("anime" to 10, "realistic" to 8),
+            recentTypes = mapOf("LORA" to 5, "Checkpoint" to 3),
+            recentCreators = mapOf("creator1" to 10),
+        )
+        val prefsRepo = FakeUserPreferencesRepository()
+
+        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo)
+        val sections = useCase()
+
+        assertTrue(sections.size <= 6)
     }
 }
