@@ -14,5 +14,6 @@ interface ModelDownloadRepository {
     suspend fun updateProgress(id: Long, downloadedBytes: Long)
     suspend fun updateDestinationPath(id: Long, path: String)
     suspend fun deleteDownload(id: Long)
+    suspend fun updateHashVerified(id: Long, verified: Boolean)
     suspend fun clearCompletedDownloads()
 }

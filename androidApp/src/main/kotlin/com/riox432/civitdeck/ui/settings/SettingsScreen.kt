@@ -47,6 +47,7 @@ fun SettingsScreen(
     onNavigateToAnalytics: () -> Unit = {},
     onNavigateToNotificationCenter: () -> Unit = {},
     onNavigateToBrowsingHistory: () -> Unit = {},
+    onNavigateToDownloadQueue: () -> Unit = {},
     onNavigateToLicenses: () -> Unit = {},
     onOpenUrl: (String) -> Unit = {},
     scrollToTopTrigger: Int = 0,
@@ -81,6 +82,7 @@ fun SettingsScreen(
             item { SubScreenRow(stringResource(R.string.settings_browsing_history), onNavigateToBrowsingHistory) }
             item { SectionHeader(stringResource(R.string.settings_section_data_storage)) }
             item { SubScreenRow(stringResource(R.string.settings_section_data_storage), onNavigateToStorage) }
+            item { SubScreenRow(stringResource(R.string.download_queue_title), onNavigateToDownloadQueue) }
             item { SectionHeader(stringResource(R.string.settings_section_advanced_integrations)) }
             item { SubScreenRow(stringResource(R.string.settings_section_advanced_integrations), onNavigateToAdvanced) }
             if (appBehaviorState.powerUserMode) {

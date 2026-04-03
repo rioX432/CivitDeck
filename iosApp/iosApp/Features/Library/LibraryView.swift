@@ -45,6 +45,16 @@ struct LibraryView: View {
                         description: "Reuse and manage your prompt templates"
                     )
                 }
+
+                NavigationLink {
+                    DownloadQueueView()
+                } label: {
+                    libraryRow(
+                        icon: "arrow.down.circle",
+                        title: "Downloads",
+                        description: "Manage model downloads and queue"
+                    )
+                }
             }
         }
         .navigationTitle("Library")

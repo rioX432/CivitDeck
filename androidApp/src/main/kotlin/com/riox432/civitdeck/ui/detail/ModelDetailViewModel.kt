@@ -473,6 +473,7 @@ class ModelDetailViewModel(
         fileSizeBytes = (file.sizeKB * KB_TO_BYTES).toLong(),
         status = DownloadStatus.Pending,
         modelType = model.type.name,
+        expectedSha256 = file.hashes["SHA256"],
     )
 
     // endregion

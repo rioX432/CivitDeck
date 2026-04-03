@@ -163,6 +163,8 @@
 		CDES06012F400006000CD001 /* ExternalServerImageDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES06002F400006000CD001 /* ExternalServerImageDetailView.swift */; };
 		CDES07012F400007000CD001 /* ExternalServerGenerationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES07002F400007000CD001 /* ExternalServerGenerationSheet.swift */; };
 		CDDL01012FBB0001000CD001 /* DownloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDL01002FBB0001000CD001 /* DownloadService.swift */; };
+		CDDL02012FBB0002000CD001 /* DownloadQueueViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDL02002FBB0002000CD001 /* DownloadQueueViewModel.swift */; };
+		CDDL03012FBB0003000CD001 /* DownloadQueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDL03002FBB0003000CD001 /* DownloadQueueView.swift */; };
 		CDSH01012FDD0001000CD001 /* SocialShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSH01002FDD0001000CD001 /* SocialShareSheet.swift */; };
 		CDSH02012FDD0002000CD001 /* ShareHashtagViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSH02002FDD0002000CD001 /* ShareHashtagViewModel.swift */; };
 		CDHY01012FEE0001000CD001 /* BrowsingHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDHY01002FEE0001000CD001 /* BrowsingHistoryView.swift */; };
@@ -334,6 +336,8 @@
 		CDES06002F400006000CD001 /* ExternalServerImageDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerImageDetailView.swift; sourceTree = "<group>"; };
 		CDES07002F400007000CD001 /* ExternalServerGenerationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerGenerationSheet.swift; sourceTree = "<group>"; };
 		CDDL01002FBB0001000CD001 /* DownloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadService.swift; sourceTree = "<group>"; };
+		CDDL02002FBB0002000CD001 /* DownloadQueueViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadQueueViewModel.swift; sourceTree = "<group>"; };
+		CDDL03002FBB0003000CD001 /* DownloadQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadQueueView.swift; sourceTree = "<group>"; };
 		CDSH01002FDD0001000CD001 /* SocialShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialShareSheet.swift; sourceTree = "<group>"; };
 		CDSH02002FDD0002000CD001 /* ShareHashtagViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareHashtagViewModel.swift; sourceTree = "<group>"; };
 		CDHY01002FEE0001000CD001 /* BrowsingHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowsingHistoryView.swift; sourceTree = "<group>"; };
@@ -513,6 +517,8 @@
 			isa = PBXGroup;
 			children = (
 				CDDL01002FBB0001000CD001 /* DownloadService.swift */,
+				CDDL02002FBB0002000CD001 /* DownloadQueueViewModel.swift */,
+				CDDL03002FBB0003000CD001 /* DownloadQueueView.swift */,
 			);
 			path = Download;
 			sourceTree = "<group>";
@@ -1094,6 +1100,8 @@
 			CDES06012F400006000CD001 /* ExternalServerImageDetailView.swift in Sources */,
 			CDES07012F400007000CD001 /* ExternalServerGenerationSheet.swift in Sources */,
 			CDDL01012FBB0001000CD001 /* DownloadService.swift in Sources */,
+			CDDL02012FBB0002000CD001 /* DownloadQueueViewModel.swift in Sources */,
+			CDDL03012FBB0003000CD001 /* DownloadQueueView.swift in Sources */,
 			CDPL01012FCC0001000CD001 /* PluginListView.swift in Sources */,
 			CDPL02012FCC0002000CD001 /* PluginListViewModel.swift in Sources */,
 			CDPL03012FCC0003000CD001 /* PluginDetailView.swift in Sources */,

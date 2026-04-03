@@ -17,6 +17,8 @@ data class ModelDownload(
     val modelType: String,
     val destinationPath: String? = null,
     val errorMessage: String? = null,
+    val expectedSha256: String? = null,
+    val hashVerified: Boolean? = null,
     val createdAt: Long = 0,
     val updatedAt: Long = 0,
 )

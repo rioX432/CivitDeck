@@ -300,6 +300,7 @@ private fun CivitDeckNavDisplay(
             analyticsEntry(backStack)
             notificationCenterEntry(backStack)
             browsingHistoryEntry(backStack)
+            downloadQueueEntry(backStack)
             feedEntry(backStack)
             creatorEntry(backStack)
             galleryEntry(backStack)
@@ -324,6 +325,7 @@ private fun CivitDeckNavDisplay(
                     onNavigateToAnalytics = { backStack.add(AnalyticsRoute) },
                     onNavigateToNotificationCenter = { backStack.add(NotificationCenterRoute) },
                     onNavigateToBrowsingHistory = { backStack.add(BrowsingHistoryRoute) },
+                    onNavigateToDownloadQueue = { backStack.add(DownloadQueueRoute) },
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
                     onOpenUrl = { url ->
                         val intent = android.content.Intent(

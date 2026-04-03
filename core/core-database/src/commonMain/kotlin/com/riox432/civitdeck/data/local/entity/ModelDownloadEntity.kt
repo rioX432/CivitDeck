@@ -27,6 +27,8 @@ data class ModelDownloadEntity(
     val modelType: String,
     val destinationPath: String? = null,
     val errorMessage: String? = null,
+    val expectedSha256: String? = null,
+    val hashVerified: Int? = null,
     val createdAt: Long,
     val updatedAt: Long,
 )

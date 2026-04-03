@@ -262,6 +262,8 @@ final class ModelDetailViewModel: ObservableObject {
                 modelType: model.type.name,
                 destinationPath: nil,
                 errorMessage: nil,
+                expectedSha256: file.hashes["SHA256"] as? String,
+                hashVerified: nil,
                 createdAt: 0,
                 updatedAt: 0
             )

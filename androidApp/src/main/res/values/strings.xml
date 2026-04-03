@@ -77,6 +77,21 @@
     <string name="cd_recommended">Recommended</string>
     <string name="cd_not_recommended">Not recommended</string>
     <string name="cd_cancel_selection">Cancel selection</string>
+    <string name="cd_pause_download">Pause download</string>
+    <string name="cd_resume_download">Resume download</string>
+
+    <!-- Download Queue -->
+    <string name="download_queue_title">Downloads</string>
+    <string name="download_queue_active">Active</string>
+    <string name="download_queue_completed">Completed</string>
+    <string name="download_queue_failed">Failed</string>
+    <string name="download_queue_empty">No downloads yet</string>
+    <string name="download_queue_empty_desc">Downloads from model pages will appear here</string>
+    <string name="download_queue_clear_completed">Clear completed</string>
+    <string name="download_queue_storage_used">Storage used: %1$s</string>
+    <string name="download_queue_hash_verified">Hash verified</string>
+    <string name="download_queue_hash_mismatch">Hash mismatch</string>
+    <string name="download_queue_paused">Paused</string>
 
     <!-- Settings screens -->
     <string name="settings_no_settings_available">No settings available</string>

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -35,6 +36,7 @@ fun FileDownloadRow(
     downloadState: ModelDownload?,
     onDownload: (ModelFile) -> Unit,
     onCancel: (Long) -> Unit,
+    onPause: (Long) -> Unit = {},
 ) {
     Row(
         modifier = Modifier
@@ -79,7 +81,13 @@ fun FileDownloadRow(
                 }
             }
         }
-        DownloadAction(downloadState = downloadState, file = file, onDownload = onDownload, onCancel = onCancel)
+        DownloadAction(
+            downloadState = downloadState,
+            file = file,
+            onDownload = onDownload,
+            onCancel = onCancel,
+            onPause = onPause,
+        )
     }
 }
 
@@ -89,6 +97,7 @@ private fun DownloadAction(
     file: ModelFile,
     onDownload: (ModelFile) -> Unit,
     onCancel: (Long) -> Unit,
+    onPause: (Long) -> Unit,
 ) {
     when (downloadState?.status) {
         null, DownloadStatus.Cancelled, DownloadStatus.Paused -> {
@@ -113,6 +122,13 @@ private fun DownloadAction(
                     modifier = Modifier.size(INDICATOR_SIZE),
                     strokeWidth = 2.dp,
                 )
+                IconButton(onClick = { onPause(downloadState.id) }) {
+                    Icon(
+                        Icons.Default.Pause,
+                        contentDescription = stringResource(R.string.cd_pause_download),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
                 IconButton(onClick = { onCancel(downloadState.id) }) {
                     Icon(
                         Icons.Default.Cancel,

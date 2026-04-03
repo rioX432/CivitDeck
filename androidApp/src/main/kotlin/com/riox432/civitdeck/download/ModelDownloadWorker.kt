@@ -75,11 +75,13 @@ class ModelDownloadWorker(
 
         repository.updateProgress(downloadId, bytes)
         repository.updateDestinationPath(downloadId, destFile.absolutePath)
+        verifyHash(downloadId, download, destFile)
         repository.updateStatus(downloadId, DownloadStatus.Completed)
         DownloadNotificationHelper.showCompleted(applicationContext, downloadId, download.fileName)
         return Result.success()
     }
 
+    @Suppress("NestedBlockDepth")
     private suspend fun streamToFile(
         downloadId: Long,
         fileName: String,
@@ -96,16 +98,12 @@ class ModelDownloadWorker(
             var read: Int
             while (input.read(buffer).also { read = it } != -1) {
                 if (isStopped) {
-                    repository.updateStatus(downloadId, DownloadStatus.Cancelled)
+                    handleStopped(downloadId)
                     return -1
                 }
                 output.write(buffer, 0, read)
                 downloadedBytes += read
-                val progress = if (totalBytes > 0) {
-                    ((downloadedBytes * PERCENT_MAX) / totalBytes).toInt()
-                } else {
-                    0
-                }
+                val progress = calculateProgress(downloadedBytes, totalBytes)
                 if (progress != lastProgress) {
                     lastProgress = progress
                     repository.updateProgress(downloadId, downloadedBytes)
@@ -117,6 +115,18 @@ class ModelDownloadWorker(
             output.close()
         }
         return downloadedBytes
+    }
+
+    private suspend fun handleStopped(downloadId: Long) {
+        val current = repository.getDownloadById(downloadId)
+        if (current?.status != DownloadStatus.Paused) {
+            repository.updateStatus(downloadId, DownloadStatus.Cancelled)
+        }
+    }
+
+    private fun calculateProgress(downloaded: Long, total: Long): Int {
+        if (total <= 0) return 0
+        return ((downloaded * PERCENT_MAX) / total).toInt()
     }
 
     private fun createForegroundInfo(
@@ -141,8 +151,33 @@ class ModelDownloadWorker(
         }
     }
 
+    private suspend fun verifyHash(
+        downloadId: Long,
+        download: com.riox432.civitdeck.domain.model.ModelDownload,
+        file: File,
+    ) {
+        val expectedHash = download.expectedSha256 ?: return
+        try {
+            val digest = java.security.MessageDigest.getInstance("SHA-256")
+            file.inputStream().use { input ->
+                val buf = ByteArray(BUFFER_SIZE)
+                var read: Int
+                while (input.read(buf).also { read = it } != -1) {
+                    digest.update(buf, 0, read)
+                }
+            }
+            @OptIn(ExperimentalStdlibApi::class)
+            val actualHash = digest.digest().toHexString()
+            repository.updateHashVerified(downloadId, actualHash.equals(expectedHash, ignoreCase = true))
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            // Hash verification is non-critical — log and continue
+            android.util.Log.w(TAG, "Hash verify failed: ${e.message}")
+        }
+    }
+
     companion object {
         const val KEY_DOWNLOAD_ID = "download_id"
+        private const val TAG = "ModelDownloadWorker"
         private const val BUFFER_SIZE = 8192
         private const val PERCENT_MAX = 100
     }

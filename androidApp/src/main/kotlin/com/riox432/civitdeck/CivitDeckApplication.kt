@@ -45,6 +45,7 @@ import com.riox432.civitdeck.ui.dataset.DatasetListViewModel
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryViewModel
+import com.riox432.civitdeck.ui.downloadqueue.DownloadQueueViewModel
 import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryViewModel
 import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsViewModel
 import com.riox432.civitdeck.ui.feed.FeedViewModel
@@ -194,4 +195,5 @@ val androidModule = module {
     viewModel { com.riox432.civitdeck.ui.share.ShareViewModel(get(), get(), get(), get()) }
     viewModel { params -> CreatorProfileViewModel(params.get(), get(), get(), get(), get()) }
     viewModel { SavedPromptsViewModel(get(), get(), get(), get(), get()) }
+    viewModel { DownloadQueueViewModel(get(), get(), get(), get(), get(), get(), get()) }
 }
