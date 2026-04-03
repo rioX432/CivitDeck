@@ -10,6 +10,8 @@ import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
+import com.riox432.civitdeck.domain.usecase.QualityScoreCalculator
 import com.riox432.civitdeck.domain.util.LoadResult
 import com.riox432.civitdeck.domain.util.PaginatedLoader
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
@@ -42,9 +44,11 @@ class DesktopSearchViewModel(
     private val multiSourceSearchUseCase: MultiSourceSearchUseCase,
     private val observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase,
     private val observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase,
+    private val observeQualityThresholdUseCase: ObserveQualityThresholdUseCase,
 ) : ViewModel() {
 
     private var multiSourcePage: Int = 1
+    private var qualityThreshold: Int = 0
 
     private val _uiState = MutableStateFlow(DesktopSearchUiState())
     val uiState: StateFlow<DesktopSearchUiState> = _uiState.asStateFlow()
@@ -73,6 +77,9 @@ class DesktopSearchViewModel(
             val period = observeDefaultTimePeriodUseCase().first()
             _uiState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
             paginatedLoader.loadFirst()
+        }
+        viewModelScope.launch {
+            observeQualityThresholdUseCase().collect { qualityThreshold = it }
         }
     }
 
@@ -138,11 +145,23 @@ class DesktopSearchViewModel(
     private suspend fun loadPage(cursor: String?, limit: Int): LoadResult<Model> {
         val state = _uiState.value
         val isCivitaiOnly = state.selectedSources == setOf(ModelSource.CIVITAI)
-        return if (isCivitaiOnly) {
+        val raw = if (isCivitaiOnly) {
             loadCivitaiPage(state, cursor, limit)
         } else {
             loadMultiSourcePage(state, cursor, limit)
         }
+        val filtered = applyQualityFilter(raw.items, state)
+        val sorted = if (state.selectedSort == SortOrder.Quality) {
+            filtered.sortedByDescending { QualityScoreCalculator.calculate(it.stats) }
+        } else {
+            filtered
+        }
+        return LoadResult(items = sorted, nextCursor = raw.nextCursor)
+    }
+
+    private fun applyQualityFilter(models: List<Model>, state: DesktopSearchUiState): List<Model> {
+        if (!state.isQualityFilterEnabled || qualityThreshold <= 0) return models
+        return models.filter { QualityScoreCalculator.calculate(it.stats) >= qualityThreshold }
     }
 
     private suspend fun loadCivitaiPage(

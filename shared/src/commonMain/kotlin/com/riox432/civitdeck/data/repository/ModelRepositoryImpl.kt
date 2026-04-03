@@ -187,6 +187,8 @@ private fun SortOrder.toApiParam(): String = when (this) {
     SortOrder.HighestRated -> "Highest Rated"
     SortOrder.MostDownloaded -> "Most Downloaded"
     SortOrder.Newest -> "Newest"
+    // Quality sort is client-side only; fetch by Highest Rated as closest proxy
+    SortOrder.Quality -> "Highest Rated"
 }
 
 private fun TimePeriod.toApiParam(): String = when (this) {

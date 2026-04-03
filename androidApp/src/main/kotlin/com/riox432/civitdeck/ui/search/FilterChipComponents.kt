@@ -80,6 +80,7 @@ internal fun ModelType.displayLabel(): String = when (this) {
 internal fun SortOrder.displayLabel(): String = when (this) {
     SortOrder.HighestRated -> "Highest Rated"
     SortOrder.MostDownloaded -> "Most Downloaded"
+    SortOrder.Quality -> "Quality Score"
     else -> name
 }
 

@@ -23,6 +23,7 @@ import com.riox432.civitdeck.data.local.dao.ModelUpdateNotificationDao
 import com.riox432.civitdeck.data.local.dao.ModelVersionCheckpointDao
 import com.riox432.civitdeck.data.local.dao.PersonalTagDao
 import com.riox432.civitdeck.data.local.dao.PluginDao
+import com.riox432.civitdeck.data.local.dao.QualityScoreCacheDao
 import com.riox432.civitdeck.data.local.dao.SDWebUIConnectionDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
 import com.riox432.civitdeck.data.local.dao.SavedSearchFilterDao
@@ -51,6 +52,7 @@ import com.riox432.civitdeck.data.local.entity.ModelUpdateNotificationEntity
 import com.riox432.civitdeck.data.local.entity.ModelVersionCheckpointEntity
 import com.riox432.civitdeck.data.local.entity.PersonalTagEntity
 import com.riox432.civitdeck.data.local.entity.PluginEntity
+import com.riox432.civitdeck.data.local.entity.QualityScoreCacheEntity
 import com.riox432.civitdeck.data.local.entity.SDWebUIConnectionEntity
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import com.riox432.civitdeck.data.local.entity.SavedSearchFilterEntity
@@ -91,6 +93,7 @@ import com.riox432.civitdeck.data.local.migrations.MIGRATION_38_39
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_39_40
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_3_4
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_40_41
+import com.riox432.civitdeck.data.local.migrations.MIGRATION_41_42
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_4_5
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_5_6
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_6_7
@@ -131,8 +134,9 @@ import kotlinx.coroutines.IO
         PluginEntity::class,
         ShareHashtagEntity::class,
         ModelUpdateNotificationEntity::class,
+        QualityScoreCacheEntity::class,
     ],
-    version = 41,
+    version = 42,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -160,6 +164,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun pluginDao(): PluginDao
     abstract fun shareHashtagDao(): ShareHashtagDao
     abstract fun modelUpdateNotificationDao(): ModelUpdateNotificationDao
+    abstract fun qualityScoreCacheDao(): QualityScoreCacheDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -208,6 +213,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_38_39,
             MIGRATION_39_40,
             MIGRATION_40_41,
+            MIGRATION_41_42,
         )
         .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
         .addCallback(defaultCollectionCallback)

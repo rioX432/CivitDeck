@@ -3,7 +3,7 @@ import Shared
 
 enum SearchFilter {
     static let baseModelOptions: [BaseModel] = [.sd15, .sdxl10, .pony, .flux1D, .flux1S, .sd21, .svd]
-    static let sortOptions: [CivitSortOrder] = [.mostDownloaded, .highestRated, .newest]
+    static let sortOptions: [CivitSortOrder] = [.mostDownloaded, .highestRated, .newest, .quality]
     static let periodOptions: [TimePeriod] = [.allTime, .year, .month, .week, .day]
 
     static let modelTypeOptions: [ModelType] = [
@@ -18,6 +18,8 @@ enum SearchFilter {
         case .highestRated: return "Highest Rated"
         case .mostDownloaded: return "Most Downloaded"
         case .newest: return "Newest"
+        case .quality: return "Quality Score"
+        default: return sort.name
         }
     }
 

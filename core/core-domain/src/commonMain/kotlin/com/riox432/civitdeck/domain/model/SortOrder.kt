@@ -4,4 +4,5 @@ enum class SortOrder {
     HighestRated,
     MostDownloaded,
     Newest,
+    Quality,
 }

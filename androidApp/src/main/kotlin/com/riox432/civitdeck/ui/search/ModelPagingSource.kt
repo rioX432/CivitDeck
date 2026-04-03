@@ -170,6 +170,7 @@ internal class ModelPagingSource(
         SortOrder.MostDownloaded -> model.stats.downloadCount.toDouble()
         SortOrder.HighestRated -> model.stats.rating
         SortOrder.Newest -> model.id.toDouble()
+        SortOrder.Quality -> QualityScoreCalculator.calculate(model.stats).toDouble()
     }
 
     companion object {
