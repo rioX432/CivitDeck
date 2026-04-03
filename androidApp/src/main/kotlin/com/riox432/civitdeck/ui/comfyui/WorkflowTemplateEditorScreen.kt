@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.TemplateVariable
 import com.riox432.civitdeck.domain.model.TemplateVariableType
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
+import com.riox432.civitdeck.domain.model.WorkflowTemplateCategory
 import com.riox432.civitdeck.domain.model.WorkflowTemplateType
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -49,7 +50,9 @@ fun WorkflowTemplateEditorScreen(
     onBack: () -> Unit,
 ) {
     var name by rememberSaveable { mutableStateOf(initialTemplate.name) }
+    var description by rememberSaveable { mutableStateOf(initialTemplate.description) }
     var type by rememberSaveable { mutableStateOf(initialTemplate.type) }
+    var category by rememberSaveable { mutableStateOf(initialTemplate.category) }
     var variables by remember { mutableStateOf(initialTemplate.variables) }
 
     Scaffold(
@@ -60,7 +63,13 @@ fun WorkflowTemplateEditorScreen(
                 canSave = name.isNotBlank(),
                 onSave = {
                     viewModel.onSaveTemplate(
-                        initialTemplate.copy(name = name.trim(), type = type, variables = variables),
+                        initialTemplate.copy(
+                            name = name.trim(),
+                            description = description.trim(),
+                            type = type,
+                            category = category,
+                            variables = variables,
+                        ),
                     )
                     onBack()
                 },
@@ -70,13 +79,17 @@ fun WorkflowTemplateEditorScreen(
         EditorContent(
             modifier = Modifier.padding(padding),
             name = name,
+            description = description,
             type = type,
+            category = category,
             variables = variables,
             onNameChange = { name = it },
+            onDescriptionChange = { description = it },
             onTypeChange = { newType ->
                 type = newType
                 variables = WorkflowTemplateViewModel.defaultVariablesFor(newType)
             },
+            onCategoryChange = { category = it },
             onVariablesChange = { variables = it },
         )
     }
@@ -106,10 +119,14 @@ private fun EditorTopBar(
 private fun EditorContent(
     modifier: Modifier,
     name: String,
+    description: String,
     type: WorkflowTemplateType,
+    category: WorkflowTemplateCategory,
     variables: List<TemplateVariable>,
     onNameChange: (String) -> Unit,
+    onDescriptionChange: (String) -> Unit,
     onTypeChange: (WorkflowTemplateType) -> Unit,
+    onCategoryChange: (WorkflowTemplateCategory) -> Unit,
     onVariablesChange: (List<TemplateVariable>) -> Unit,
 ) {
     LazyColumn(
@@ -126,8 +143,27 @@ private fun EditorContent(
                 singleLine = true,
             )
         }
-        item { TypeSelector(type = type, onTypeChange = onTypeChange) }
-        item { VariablesHeader(onAdd = { onVariablesChange(variables + newVariable(variables.size)) }) }
+        item {
+            OutlinedTextField(
+                value = description,
+                onValueChange = onDescriptionChange,
+                label = { Text("Description") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 2,
+                maxLines = 4,
+            )
+        }
+        item {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+            ) {
+                TypeSelector(type = type, onTypeChange = onTypeChange)
+                CategorySelector(category = category, onCategoryChange = onCategoryChange)
+            }
+        }
+        item {
+            VariablesHeader(onAdd = { onVariablesChange(variables + newVariable(variables.size)) })
+        }
         itemsIndexed(variables, key = { _, variable -> variable.name }) { index, variable ->
             VariableEditor(
                 variable = variable,
@@ -177,21 +213,45 @@ private fun TypeSelector(type: WorkflowTemplateType, onTypeChange: (WorkflowTemp
 }
 
 @Composable
+private fun CategorySelector(
+    category: WorkflowTemplateCategory,
+    onCategoryChange: (WorkflowTemplateCategory) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Column {
+        Text("Category", style = MaterialTheme.typography.labelMedium)
+        TextButton(onClick = { expanded = true }) { Text(categoryLabel(category)) }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            WorkflowTemplateCategory.entries.forEach { c ->
+                DropdownMenuItem(
+                    text = { Text(categoryLabel(c)) },
+                    onClick = {
+                        onCategoryChange(c)
+                        expanded = false
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun VariableEditor(
     variable: TemplateVariable,
     onUpdate: (TemplateVariable) -> Unit,
     onDelete: () -> Unit,
 ) {
-    var typeMenuExpanded by remember { mutableStateOf(false) }
     Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+        Column(
+            modifier = Modifier.padding(Spacing.sm),
+            verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+        ) {
             VariableNameRow(variable = variable, onUpdate = onUpdate, onDelete = onDelete)
-            VariableTypeAndDefault(
-                variable = variable,
-                onUpdate = onUpdate,
-                typeMenuExpanded = typeMenuExpanded,
-                onTypeMenuExpand = { typeMenuExpanded = it },
-            )
+            VariableLabelRow(variable = variable, onUpdate = onUpdate)
+            VariableTypeAndDefault(variable = variable, onUpdate = onUpdate)
+            if (variable.type == TemplateVariableType.SLIDER) {
+                SliderRangeRow(variable = variable, onUpdate = onUpdate)
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Required", style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
                 Switch(checked = variable.required, onCheckedChange = { onUpdate(variable.copy(required = it)) })
@@ -221,26 +281,39 @@ private fun VariableNameRow(
 }
 
 @Composable
+private fun VariableLabelRow(
+    variable: TemplateVariable,
+    onUpdate: (TemplateVariable) -> Unit,
+) {
+    OutlinedTextField(
+        value = variable.label,
+        onValueChange = { onUpdate(variable.copy(label = it)) },
+        label = { Text("Display Label") },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+    )
+}
+
+@Composable
 private fun VariableTypeAndDefault(
     variable: TemplateVariable,
     onUpdate: (TemplateVariable) -> Unit,
-    typeMenuExpanded: Boolean,
-    onTypeMenuExpand: (Boolean) -> Unit,
 ) {
+    var typeMenuExpanded by remember { mutableStateOf(false) }
     Row(
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column {
             Text("Type", style = MaterialTheme.typography.labelSmall)
-            TextButton(onClick = { onTypeMenuExpand(true) }) { Text(variable.type.name) }
-            DropdownMenu(expanded = typeMenuExpanded, onDismissRequest = { onTypeMenuExpand(false) }) {
+            TextButton(onClick = { typeMenuExpanded = true }) { Text(variable.type.name) }
+            DropdownMenu(expanded = typeMenuExpanded, onDismissRequest = { typeMenuExpanded = false }) {
                 TemplateVariableType.entries.forEach { t ->
                     DropdownMenuItem(
                         text = { Text(t.name) },
                         onClick = {
                             onUpdate(variable.copy(type = t))
-                            onTypeMenuExpand(false)
+                            typeMenuExpanded = false
                         },
                     )
                 }
@@ -256,9 +329,51 @@ private fun VariableTypeAndDefault(
     }
 }
 
+@Composable
+private fun SliderRangeRow(
+    variable: TemplateVariable,
+    onUpdate: (TemplateVariable) -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OutlinedTextField(
+            value = variable.min?.toString() ?: "",
+            onValueChange = { onUpdate(variable.copy(min = it.toDoubleOrNull())) },
+            label = { Text("Min") },
+            modifier = Modifier.weight(1f),
+            singleLine = true,
+        )
+        OutlinedTextField(
+            value = variable.max?.toString() ?: "",
+            onValueChange = { onUpdate(variable.copy(max = it.toDoubleOrNull())) },
+            label = { Text("Max") },
+            modifier = Modifier.weight(1f),
+            singleLine = true,
+        )
+        OutlinedTextField(
+            value = variable.step?.toString() ?: "",
+            onValueChange = { onUpdate(variable.copy(step = it.toDoubleOrNull())) },
+            label = { Text("Step") },
+            modifier = Modifier.weight(1f),
+            singleLine = true,
+        )
+    }
+}
+
 private fun typeLabel(type: WorkflowTemplateType) = when (type) {
     WorkflowTemplateType.TXT2IMG -> "txt2img"
     WorkflowTemplateType.IMG2IMG -> "img2img"
     WorkflowTemplateType.INPAINTING -> "Inpainting"
     WorkflowTemplateType.UPSCALE -> "Upscale"
+    WorkflowTemplateType.LORA -> "LoRA"
+}
+
+private fun categoryLabel(category: WorkflowTemplateCategory) = when (category) {
+    WorkflowTemplateCategory.GENERAL -> "General"
+    WorkflowTemplateCategory.ANIME -> "Anime"
+    WorkflowTemplateCategory.PHOTOREALISTIC -> "Photo"
+    WorkflowTemplateCategory.ARTISTIC -> "Artistic"
+    WorkflowTemplateCategory.UTILITY -> "Utility"
 }

@@ -295,6 +295,7 @@ typealias ComfyUIGeneratedImage = Core_domainComfyUIGeneratedImage
 typealias ComfyUIGenerationMeta = Core_domainComfyUIGenerationMeta
 typealias WorkflowTemplate = Core_domainWorkflowTemplate
 typealias WorkflowTemplateType = Core_domainWorkflowTemplateType
+typealias WorkflowTemplateCategory = Core_domainWorkflowTemplateCategory
 typealias TemplateVariable = Core_domainTemplateVariable
 typealias TemplateVariableType = Core_domainTemplateVariableType
 typealias GetWorkflowTemplatesUseCase = Feature_comfyuiGetWorkflowTemplatesUseCase

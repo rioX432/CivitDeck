@@ -90,6 +90,7 @@ import com.riox432.civitdeck.data.local.migrations.MIGRATION_37_38
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_38_39
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_39_40
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_3_4
+import com.riox432.civitdeck.data.local.migrations.MIGRATION_40_41
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_4_5
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_5_6
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_6_7
@@ -131,7 +132,7 @@ import kotlinx.coroutines.IO
         ShareHashtagEntity::class,
         ModelUpdateNotificationEntity::class,
     ],
-    version = 40,
+    version = 41,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -206,6 +207,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_37_38,
             MIGRATION_38_39,
             MIGRATION_39_40,
+            MIGRATION_40_41,
         )
         .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
         .addCallback(defaultCollectionCallback)

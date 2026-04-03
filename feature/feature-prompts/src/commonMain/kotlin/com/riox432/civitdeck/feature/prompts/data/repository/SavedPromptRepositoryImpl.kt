@@ -63,6 +63,7 @@ class SavedPromptRepositoryImpl(
         autoSaved = autoSaved,
         templateVariables = templateVariables,
         templateType = templateType,
+        templateMetadata = templateMetadata,
     )
 
     private fun ImageGenerationMeta.toEntity(
@@ -99,5 +100,6 @@ class SavedPromptRepositoryImpl(
         autoSaved = autoSaved,
         templateVariables = templateVariables,
         templateType = templateType,
+        templateMetadata = templateMetadata,
     )
 }

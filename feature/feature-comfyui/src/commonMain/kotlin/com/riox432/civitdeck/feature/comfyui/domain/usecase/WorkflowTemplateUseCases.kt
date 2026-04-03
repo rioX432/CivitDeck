@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.riox432.civitdeck.feature.comfyui.domain.usecase
 
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
@@ -5,6 +7,7 @@ import com.riox432.civitdeck.domain.model.SavedPrompt
 import com.riox432.civitdeck.domain.model.TemplateVariable
 import com.riox432.civitdeck.domain.model.TemplateVariableType
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
+import com.riox432.civitdeck.domain.model.WorkflowTemplateCategory
 import com.riox432.civitdeck.domain.model.WorkflowTemplateType
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
 import com.riox432.civitdeck.domain.util.currentTimeMillis
@@ -23,25 +26,64 @@ private val templateJson = Json {
 @kotlinx.serialization.Serializable
 private data class TemplateVariableDto(
     val name: String,
+    val label: String = "",
+    val description: String = "",
     val type: String,
     val defaultValue: String,
+    val min: Double? = null,
+    val max: Double? = null,
+    val step: Double? = null,
     val options: List<String> = emptyList(),
     val required: Boolean = true,
 )
 
+@kotlinx.serialization.Serializable
+private data class TemplateMetadataDto(
+    val description: String = "",
+    val category: String = "GENERAL",
+    val version: Int = 1,
+    val author: String = "",
+)
+
 // -- Mappers --
 
+private fun TemplateVariable.toDto() = TemplateVariableDto(
+    name = name,
+    label = label,
+    description = description,
+    type = type.name,
+    defaultValue = defaultValue,
+    min = min,
+    max = max,
+    step = step,
+    options = options,
+    required = required,
+)
+
+private fun TemplateVariableDto.toModel() = TemplateVariable(
+    name = name,
+    label = label,
+    description = description,
+    type = try { TemplateVariableType.valueOf(type) } catch (_: IllegalArgumentException) {
+        TemplateVariableType.TEXT
+    },
+    defaultValue = defaultValue,
+    min = min,
+    max = max,
+    step = step,
+    options = options,
+    required = required,
+)
+
 private fun WorkflowTemplate.toSavedPrompt(): SavedPrompt {
-    val variablesJson = templateJson.encodeToString(
-        variables.map {
-            TemplateVariableDto(
-                name = it.name,
-                type = it.type.name,
-                defaultValue = it.defaultValue,
-                options = it.options,
-                required = it.required,
-            )
-        },
+    val variablesJson = templateJson.encodeToString(variables.map { it.toDto() })
+    val metadataJson = templateJson.encodeToString(
+        TemplateMetadataDto(
+            description = description,
+            category = category.name,
+            version = version,
+            author = author,
+        ),
     )
     return SavedPrompt(
         id = if (id <= 0L) 0L else id,
@@ -60,6 +102,7 @@ private fun WorkflowTemplate.toSavedPrompt(): SavedPrompt {
         autoSaved = false,
         templateVariables = variablesJson,
         templateType = type.name,
+        templateMetadata = metadataJson,
     )
 }
 
@@ -70,27 +113,30 @@ private fun SavedPrompt.toWorkflowTemplate(): WorkflowTemplate? {
         return null
     }
     val vars = try {
-        val dtos = templateJson.decodeFromString<List<TemplateVariableDto>>(templateVariables ?: "[]")
-        dtos.map {
-            TemplateVariable(
-                name = it.name,
-                type = try { TemplateVariableType.valueOf(it.type) } catch (_: IllegalArgumentException) {
-                    TemplateVariableType.TEXT
-                },
-                defaultValue = it.defaultValue,
-                options = it.options,
-                required = it.required,
-            )
-        }
+        templateJson.decodeFromString<List<TemplateVariableDto>>(templateVariables ?: "[]")
+            .map { it.toModel() }
     } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
         emptyList()
+    }
+    val metadata = try {
+        templateJson.decodeFromString<TemplateMetadataDto>(templateMetadata ?: "{}")
+    } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+        TemplateMetadataDto()
     }
     return WorkflowTemplate(
         id = id,
         name = templateName ?: "Unnamed",
+        description = metadata.description,
         type = type,
+        category = try {
+            WorkflowTemplateCategory.valueOf(metadata.category)
+        } catch (_: IllegalArgumentException) {
+            WorkflowTemplateCategory.GENERAL
+        },
         variables = vars,
         isBuiltIn = id < 0L,
+        version = metadata.version,
+        author = metadata.author,
         createdAt = savedAt,
     )
 }
@@ -124,23 +170,23 @@ class ExportWorkflowTemplateUseCase {
     @kotlinx.serialization.Serializable
     private data class ExportDto(
         val name: String,
+        val description: String = "",
         val type: String,
+        val category: String = "GENERAL",
+        val version: Int = 1,
+        val author: String = "",
         val variables: List<TemplateVariableDto>,
     )
 
     operator fun invoke(template: WorkflowTemplate): String {
         val dto = ExportDto(
             name = template.name,
+            description = template.description,
             type = template.type.name,
-            variables = template.variables.map {
-                TemplateVariableDto(
-                    name = it.name,
-                    type = it.type.name,
-                    defaultValue = it.defaultValue,
-                    options = it.options,
-                    required = it.required,
-                )
-            },
+            category = template.category.name,
+            version = template.version,
+            author = template.author,
+            variables = template.variables.map { it.toDto() },
         )
         return Json { prettyPrint = true }.encodeToString(dto)
     }
@@ -150,7 +196,11 @@ class ImportWorkflowTemplateUseCase(private val repository: SavedPromptRepositor
     @kotlinx.serialization.Serializable
     private data class ImportDto(
         val name: String,
+        val description: String = "",
         val type: String,
+        val category: String = "GENERAL",
+        val version: Int = 1,
+        val author: String = "",
         val variables: List<TemplateVariableDto>,
     )
 
@@ -167,23 +217,21 @@ class ImportWorkflowTemplateUseCase(private val repository: SavedPromptRepositor
         } catch (_: IllegalArgumentException) {
             error("Unknown template type: ${dto.type}")
         }
-        val variables = dto.variables.map {
-            TemplateVariable(
-                name = it.name,
-                type = try { TemplateVariableType.valueOf(it.type) } catch (_: IllegalArgumentException) {
-                    TemplateVariableType.TEXT
-                },
-                defaultValue = it.defaultValue,
-                options = it.options,
-                required = it.required,
-            )
+        val category = try {
+            WorkflowTemplateCategory.valueOf(dto.category)
+        } catch (_: IllegalArgumentException) {
+            WorkflowTemplateCategory.GENERAL
         }
         val template = WorkflowTemplate(
             id = 0L,
             name = dto.name,
+            description = dto.description,
             type = type,
-            variables = variables,
+            category = category,
+            variables = dto.variables.map { it.toModel() },
             isBuiltIn = false,
+            version = dto.version,
+            author = dto.author,
             createdAt = currentTimeMillis(),
         )
         repository.saveTemplate(template.toSavedPrompt())
