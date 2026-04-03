@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.plugin
+package com.riox432.civitdeck.presentation.plugin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -23,6 +23,7 @@ data class PluginManagementUiState(
     val selectedPluginConfig: String = "{}",
 )
 
+@Suppress("LongParameterList")
 class PluginManagementViewModel(
     private val observeInstalledPluginsUseCase: ObserveInstalledPluginsUseCase,
     private val activatePluginUseCase: ActivatePluginUseCase,

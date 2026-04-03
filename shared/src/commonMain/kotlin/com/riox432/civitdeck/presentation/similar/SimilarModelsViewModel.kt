@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.similar
+package com.riox432.civitdeck.presentation.similar
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -45,7 +45,9 @@ class SimilarModelsViewModel(
                 val similar = getSimilarModels(source)
                 _uiState.update { it.copy(similarModels = similar, isLoading = false) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message ?: "Failed to load similar models", isLoading = false) }
+                _uiState.update {
+                    it.copy(error = e.message ?: "Failed to load similar models", isLoading = false)
+                }
             }
         }
     }

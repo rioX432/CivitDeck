@@ -21,7 +21,7 @@ struct ModelDetailScreen: View {
     @State private var showQRCodeSheet = false
     @State private var showSubmitReviewSheet = false
     @State private var showShareSheet = false
-    @StateObject private var shareHashtagVM = ShareHashtagViewModel()
+    @StateObject private var shareHashtagVM = ShareHashtagViewModelOwner()
 
     var body: some View {
         Group {
@@ -103,7 +103,7 @@ struct ModelDetailScreen: View {
                              onRemove: { shareHashtagVM.remove(tag: $0) })
             .presentationDetents([.medium, .large])
         }
-        .task { await shareHashtagVM.startObserving() }
+        .task { await shareHashtagVM.observeHashtags() }
         .sheet(isPresented: $showCollectionSheet) {
             AddToCollectionSheet(
                 collections: viewModel.collections,

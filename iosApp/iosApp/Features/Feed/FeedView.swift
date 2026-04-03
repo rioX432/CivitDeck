@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct FeedView: View {
-    @StateObject private var viewModel = FeedViewModel()
+    @StateObject private var viewModel = FeedViewModelOwner()
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
@@ -12,7 +12,7 @@ struct FeedView: View {
                     LoadingStateView()
                 } else if let error = viewModel.errorMessage, viewModel.feedItems.isEmpty {
                     ErrorStateView(message: error) {
-                        Task { await viewModel.loadFeed(forceRefresh: true) }
+                        Task { viewModel.refresh() }
                     }
                 } else if viewModel.feedItems.isEmpty {
                     emptyState
@@ -21,7 +21,7 @@ struct FeedView: View {
                 }
             }
             .navigationTitle("Feed")
-            .task { await viewModel.loadFeed() }
+            .task { await viewModel.observeUiState() }
             .navigationDestination(for: Int64.self) { modelId in
                 ModelDetailScreen(modelId: modelId)
             }
@@ -53,7 +53,7 @@ struct FeedView: View {
             .padding(.top, Spacing.sm)
         }
         .refreshable {
-            await viewModel.loadFeed(forceRefresh: true)
+            viewModel.refresh()
         }
     }
 }

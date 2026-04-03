@@ -2,11 +2,11 @@ import SwiftUI
 import Shared
 
 struct SimilarModelsView: View {
-    @StateObject private var viewModel: SimilarModelsViewModel
+    @StateObject private var viewModel: SimilarModelsViewModelOwner
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     init(modelId: Int64) {
-        _viewModel = StateObject(wrappedValue: SimilarModelsViewModel(modelId: modelId))
+        _viewModel = StateObject(wrappedValue: SimilarModelsViewModelOwner(modelId: modelId))
     }
 
     var body: some View {
@@ -27,6 +27,7 @@ struct SimilarModelsView: View {
                 similarModelsGrid
             }
         }
+        .task { await viewModel.observeUiState() }
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
     }

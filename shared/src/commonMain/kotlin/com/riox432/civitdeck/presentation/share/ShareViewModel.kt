@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.share
+package com.riox432.civitdeck.presentation.share
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

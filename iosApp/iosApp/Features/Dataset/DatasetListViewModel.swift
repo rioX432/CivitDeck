@@ -2,72 +2,36 @@ import Foundation
 import Shared
 
 @MainActor
-final class DatasetListViewModel: ObservableObject {
+final class DatasetListViewModelOwner: ObservableObject {
     @Published var datasets: [DatasetCollection] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
-    private let observeCollectionsUseCase: ObserveDatasetCollectionsUseCase
-    private let createUseCase: CreateDatasetCollectionUseCase
-    private let renameUseCase: RenameDatasetCollectionUseCase
-    private let deleteUseCase: DeleteDatasetCollectionUseCase
-    private var observeTask: Task<Void, Never>?
+    private let vm: DatasetListViewModel
+    private let store: ViewModelStore
 
     init() {
-        self.observeCollectionsUseCase = KoinHelper.shared.getObserveDatasetCollectionsUseCase()
-        self.createUseCase = KoinHelper.shared.getCreateDatasetCollectionUseCase()
-        self.renameUseCase = KoinHelper.shared.getRenameDatasetCollectionUseCase()
-        self.deleteUseCase = KoinHelper.shared.getDeleteDatasetCollectionUseCase()
+        store = ViewModelStore()
+        vm = KoinHelper.shared.createDatasetListViewModel()
+        store.put(key: "DatasetListViewModel", viewModel: vm)
     }
 
-    deinit {
-        observeTask?.cancel()
-    }
+    deinit { store.clear() }
 
-    func startObserving() {
-        observeTask?.cancel()
-        observeTask = Task { await observe() }
-    }
-
-    func stopObserving() {
-        observeTask?.cancel()
-        observeTask = nil
-    }
-
-    private func observe() async {
-        for await list in observeCollectionsUseCase.invoke() {
-            let items = list.compactMap { $0 as? DatasetCollection }
-            self.datasets = items
+    func observeDatasets() async {
+        for await list in vm.datasets {
+            datasets = list as? [DatasetCollection] ?? []
         }
     }
 
-    func createDataset(name: String) {
-        Task {
-            do {
-                try await createUseCase.invoke(name: name, description: "")
-            } catch {
-                errorMessage = error.localizedDescription
-            }
+    func observeLoading() async {
+        for await loading in vm.isLoading {
+            guard let boolValue = loading as? Bool else { continue }
+            isLoading = boolValue
         }
     }
 
-    func renameDataset(id: Int64, name: String) {
-        Task {
-            do {
-                try await renameUseCase.invoke(id: id, name: name)
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-        }
-    }
-
-    func deleteDataset(id: Int64) {
-        Task {
-            do {
-                try await deleteUseCase.invoke(id: id)
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-        }
-    }
+    func createDataset(name: String) { vm.createDataset(name: name) }
+    func renameDataset(id: Int64, name: String) { vm.renameDataset(id: id, name: name) }
+    func deleteDataset(id: Int64) { vm.deleteDataset(id: id) }
 }

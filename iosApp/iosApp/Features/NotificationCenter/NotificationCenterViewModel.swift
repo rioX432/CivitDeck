@@ -2,43 +2,28 @@ import Foundation
 import Shared
 
 @MainActor
-final class NotificationCenterViewModel: ObservableObject {
+final class NotificationCenterViewModelOwner: ObservableObject {
     @Published var notifications: [ModelUpdateNotification] = []
     @Published var isLoading = true
 
-    private let getNotificationsUseCase: GetModelUpdateNotificationsUseCase
-    private let markReadUseCase: MarkNotificationReadUseCase
-    private let markAllReadUseCase: MarkAllNotificationsReadUseCase
-    private var observeTask: Task<Void, Never>?
+    private let vm: NotificationCenterViewModel
+    private let store: ViewModelStore
 
     init() {
-        self.getNotificationsUseCase = KoinHelper.shared.getModelUpdateNotificationsUseCase()
-        self.markReadUseCase = KoinHelper.shared.getMarkNotificationReadUseCase()
-        self.markAllReadUseCase = KoinHelper.shared.getMarkAllNotificationsReadUseCase()
-        observeNotifications()
+        store = ViewModelStore()
+        vm = KoinHelper.shared.createNotificationCenterViewModel()
+        store.put(key: "NotificationCenterViewModel", viewModel: vm)
     }
 
-    func markRead(notificationId: Int64) {
-        Task {
-            try? await markReadUseCase.invoke(notificationId: notificationId)
+    deinit { store.clear() }
+
+    func observeUiState() async {
+        for await state in vm.uiState {
+            notifications = state.notifications as? [ModelUpdateNotification] ?? []
+            isLoading = state.isLoading
         }
     }
 
-    func markAllRead() {
-        Task {
-            try? await markAllReadUseCase.invoke()
-        }
-    }
-
-    private func observeNotifications() {
-        observeTask = Task {
-            for await items in getNotificationsUseCase.invoke() {
-                guard !Task.isCancelled else { return }
-                if let list = items as? [ModelUpdateNotification] {
-                    self.notifications = list
-                    self.isLoading = false
-                }
-            }
-        }
-    }
+    func markRead(notificationId: Int64) { vm.markRead(notificationId: notificationId) }
+    func markAllRead() { vm.markAllRead() }
 }

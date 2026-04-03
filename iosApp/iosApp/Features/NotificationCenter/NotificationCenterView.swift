@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct NotificationCenterView: View {
-    @StateObject private var viewModel = NotificationCenterViewModel()
+    @StateObject private var viewModel = NotificationCenterViewModelOwner()
     @Environment(\.civitTheme) private var theme
 
     var body: some View {
@@ -19,6 +19,7 @@ struct NotificationCenterView: View {
                 notificationList
             }
         }
+        .task { await viewModel.observeUiState() }
         .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

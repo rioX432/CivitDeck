@@ -40,7 +40,7 @@ private struct ServerImageDetailPage: View {
     let image: ServerImage
     @State private var showImageViewer = false
     @State private var showShareSheet = false
-    @StateObject private var shareHashtagVM = ShareHashtagViewModel()
+    @StateObject private var shareHashtagVM = ShareHashtagViewModelOwner()
 
     var body: some View {
         ScrollView {
@@ -100,7 +100,7 @@ private struct ServerImageDetailPage: View {
             )
             .presentationDetents([.medium, .large])
         }
-        .task { await shareHashtagVM.startObserving() }
+        .task { await shareHashtagVM.observeHashtags() }
         .fullScreenCover(isPresented: $showImageViewer) {
             ServerImageViewer(url: image.file, isPresented: $showImageViewer)
         }

@@ -41,7 +41,7 @@ private struct ComfyUIOutputDetailPage: View {
     @State private var showDatasetPicker = false
     @State private var showShareSheet = false
     @State private var datasets: [DatasetCollection] = []
-    @StateObject private var shareHashtagVM = ShareHashtagViewModel()
+    @StateObject private var shareHashtagVM = ShareHashtagViewModelOwner()
 
     private let saveImageUseCase = KoinHelper.shared.getSaveGeneratedImageUseCase()
     private let observeDatasetUseCase = KoinHelper.shared.getObserveDatasetCollectionsUseCase()
@@ -99,7 +99,7 @@ private struct ComfyUIOutputDetailPage: View {
             .presentationDetents([.medium, .large])
         }
         .task {
-            await shareHashtagVM.startObserving()
+            await shareHashtagVM.observeHashtags()
         }
         .task {
             for await list in observeDatasetUseCase.invoke() {

@@ -240,6 +240,18 @@ import com.riox432.civitdeck.presentation.settings.AuthSettingsViewModel
 import com.riox432.civitdeck.presentation.settings.ContentFilterSettingsViewModel
 import com.riox432.civitdeck.presentation.settings.DisplaySettingsViewModel
 import com.riox432.civitdeck.presentation.settings.StorageSettingsViewModel
+import com.riox432.civitdeck.presentation.analytics.AnalyticsViewModel
+import com.riox432.civitdeck.presentation.backup.BackupViewModel
+import com.riox432.civitdeck.presentation.dataset.BatchTagEditorViewModel
+import com.riox432.civitdeck.presentation.dataset.DatasetDetailViewModel
+import com.riox432.civitdeck.presentation.dataset.DatasetListViewModel
+import com.riox432.civitdeck.presentation.similar.SimilarModelsViewModel
+import com.riox432.civitdeck.presentation.feed.FeedViewModel
+import com.riox432.civitdeck.presentation.notificationcenter.NotificationCenterViewModel
+import com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel
+import com.riox432.civitdeck.presentation.share.ShareViewModel
+import com.riox432.civitdeck.presentation.tutorial.GestureTutorialViewModel
+import com.riox432.civitdeck.presentation.update.UpdateViewModel
 import com.riox432.civitdeck.usecase.ActivateThemePluginUseCase
 import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
 import com.riox432.civitdeck.usecase.GetActiveThemeUseCase
@@ -583,20 +595,35 @@ object KoinHelper {
     fun createStorageSettingsViewModel(): StorageSettingsViewModel = getKoin().get()
     // endregion
 
-<<<<<<< HEAD
-    // region Feature ViewModels
+    // region Feature ViewModels (Phase 1)
     fun createCollectionsViewModel(): CollectionsViewModel = getKoin().get()
     fun createCollectionDetailViewModel(collectionId: Long): CollectionDetailViewModel =
         getKoin().get { org.koin.core.parameter.parametersOf(collectionId) }
     fun createCreatorProfileViewModel(username: String): CreatorProfileViewModel =
         getKoin().get { org.koin.core.parameter.parametersOf(username) }
     fun createSavedPromptsViewModel(): SavedPromptsViewModel = getKoin().get()
-=======
+
     // region Phase 2 ViewModels
     fun createImageGalleryViewModel(modelVersionId: Long): ImageGalleryViewModel =
         getKoin().get { org.koin.core.parameter.parametersOf(modelVersionId) }
     fun createSwipeDiscoveryViewModel(): SwipeDiscoveryViewModel = getKoin().get()
     fun createBrowsingHistoryViewModel(): BrowsingHistoryViewModel = getKoin().get()
->>>>>>> 8ff9d451 (Migrate Phase 2 ViewModels (Gallery, Discovery, History) to shared commonMain)
+
+    // region Phase 3 ViewModels
+    fun createAnalyticsViewModel(): AnalyticsViewModel = getKoin().get()
+    fun createBackupViewModel(): BackupViewModel = getKoin().get()
+    fun createFeedViewModel(): FeedViewModel = getKoin().get()
+    fun createNotificationCenterViewModel(): NotificationCenterViewModel = getKoin().get()
+    fun createPluginManagementViewModel(): PluginManagementViewModel = getKoin().get()
+    fun createShareViewModel(): ShareViewModel = getKoin().get()
+    fun createGestureTutorialViewModel(): GestureTutorialViewModel = getKoin().get()
+    fun createUpdateViewModel(): UpdateViewModel = getKoin().get()
+    fun createDatasetListViewModel(): DatasetListViewModel = getKoin().get()
+    fun createSimilarModelsViewModel(modelId: Long): SimilarModelsViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(modelId) }
+    fun createDatasetDetailViewModel(datasetId: Long): DatasetDetailViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(datasetId) }
+    fun createBatchTagEditorViewModel(datasetId: Long): BatchTagEditorViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(datasetId) }
     // endregion
 }

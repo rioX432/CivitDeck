@@ -2,35 +2,35 @@ import Foundation
 import Shared
 
 @MainActor
-final class ShareHashtagViewModel: ObservableObject {
+final class ShareHashtagViewModelOwner: ObservableObject {
     @Published var hashtags: [ShareHashtag] = []
 
-    private let observeUseCase = KoinHelper.shared.getObserveShareHashtagsUseCase()
-    private let addUseCase = KoinHelper.shared.getAddShareHashtagUseCase()
-    private let removeUseCase = KoinHelper.shared.getRemoveShareHashtagUseCase()
-    private let toggleUseCase = KoinHelper.shared.getToggleShareHashtagUseCase()
+    private let vm: ShareViewModel
+    private let store: ViewModelStore
 
-    func startObserving() async {
-        for await list in observeUseCase.invoke() {
-            hashtags = list.compactMap { $0 as? ShareHashtag }
+    init() {
+        store = ViewModelStore()
+        vm = KoinHelper.shared.createShareViewModel()
+        store.put(key: "ShareViewModel", viewModel: vm)
+    }
+
+    deinit { store.clear() }
+
+    func observeHashtags() async {
+        for await list in vm.hashtags {
+            hashtags = list as? [ShareHashtag] ?? []
         }
     }
 
     func toggle(tag: String, isEnabled: Bool) {
-        Task {
-            try? await toggleUseCase.invoke(tag: tag, isEnabled: isEnabled)
-        }
+        vm.onToggle(tag: tag, isEnabled: isEnabled)
     }
 
     func add(tag: String) {
-        Task {
-            try? await addUseCase.invoke(tag: tag)
-        }
+        vm.onAdd(tag: tag)
     }
 
     func remove(tag: String) {
-        Task {
-            try? await removeUseCase.invoke(tag: tag)
-        }
+        vm.onRemove(tag: tag)
     }
 }

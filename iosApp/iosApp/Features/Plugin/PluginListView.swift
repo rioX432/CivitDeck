@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct PluginListView: View {
-    @StateObject private var viewModel = PluginListViewModel()
+    @StateObject private var viewModel = PluginListViewModelOwner()
 
     var body: some View {
         Group {
@@ -16,7 +16,7 @@ struct PluginListView: View {
         }
         .navigationTitle("Plugins")
         .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.observePlugins() }
+        .task { await viewModel.observeUiState() }
     }
 
     private var emptyState: some View {
@@ -49,7 +49,7 @@ private let pluginIconSize: CGFloat = 40
 
 private struct PluginRow: View {
     let plugin: InstalledPlugin
-    let viewModel: PluginListViewModel
+    let viewModel: PluginListViewModelOwner
     @Environment(\.civitTheme) private var theme
 
     var body: some View {

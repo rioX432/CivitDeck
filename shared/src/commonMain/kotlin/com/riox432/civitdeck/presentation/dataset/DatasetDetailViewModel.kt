@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.dataset
+package com.riox432.civitdeck.presentation.dataset
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+@Suppress("LongParameterList", "TooManyFunctions")
 class DatasetDetailViewModel(
     val datasetId: Long,
     observeDatasetImagesUseCase: ObserveDatasetImagesUseCase,
@@ -63,9 +64,10 @@ class DatasetDetailViewModel(
     private val _minHeight = MutableStateFlow(0)
     val minHeight: StateFlow<Int> = _minHeight.asStateFlow()
 
-    val filteredImages: StateFlow<List<DatasetImage>> = combine(images, _selectedSource) { imgs, src ->
-        if (src == null) imgs else imgs.filter { it.sourceType == src }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
+    val filteredImages: StateFlow<List<DatasetImage>> =
+        combine(images, _selectedSource) { imgs, src ->
+            if (src == null) imgs else imgs.filter { it.sourceType == src }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
     val lowResImages: StateFlow<List<DatasetImage>> =
         combine(images, _minWidth, _minHeight) { imgs, w, h ->

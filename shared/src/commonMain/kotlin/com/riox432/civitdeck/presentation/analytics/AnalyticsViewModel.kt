@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.analytics
+package com.riox432.civitdeck.presentation.analytics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

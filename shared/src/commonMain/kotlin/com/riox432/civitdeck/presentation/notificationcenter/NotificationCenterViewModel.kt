@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.notificationcenter
+package com.riox432.civitdeck.presentation.notificationcenter
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

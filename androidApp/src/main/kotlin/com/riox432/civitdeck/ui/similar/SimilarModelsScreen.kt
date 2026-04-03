@@ -20,6 +20,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.presentation.similar.SimilarModelsUiState
+import com.riox432.civitdeck.presentation.similar.SimilarModelsViewModel
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
@@ -67,10 +69,11 @@ private fun SimilarModelsContent(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val errorMessage = state.error
     when {
         state.isLoading -> LoadingStateOverlay(modifier = modifier)
-        state.error != null -> ErrorStateView(
-            message = state.error,
+        errorMessage != null -> ErrorStateView(
+            message = errorMessage,
             onRetry = onRetry,
             modifier = modifier,
         )

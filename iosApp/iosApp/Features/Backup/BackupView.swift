@@ -3,7 +3,7 @@ import UniformTypeIdentifiers
 import Shared
 
 struct BackupView: View {
-    @StateObject private var viewModel = BackupViewModel()
+    @StateObject private var viewModel = BackupViewModelOwner()
     @State private var showAlert = false
     @State private var alertMessage = ""
 
@@ -47,6 +47,7 @@ struct BackupView: View {
                 viewModel.error = nil
             }
         }
+        .task { await viewModel.observeUiState() }
         .alert("Notice", isPresented: $showAlert) {
             Button("OK") {}
         } message: {

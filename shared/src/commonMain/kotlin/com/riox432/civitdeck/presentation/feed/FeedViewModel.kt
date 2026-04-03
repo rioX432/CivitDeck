@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.feed
+package com.riox432.civitdeck.presentation.feed
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.dataset
+package com.riox432.civitdeck.presentation.dataset
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

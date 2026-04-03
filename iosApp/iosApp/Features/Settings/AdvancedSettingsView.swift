@@ -4,7 +4,7 @@ import Shared
 struct AdvancedSettingsView: View {
     let viewModel: AppBehaviorSettingsViewModel
     let displayViewModel: DisplaySettingsViewModel
-    @StateObject private var shareHashtagVM = ShareHashtagViewModel()
+    @StateObject private var shareHashtagVM = ShareHashtagViewModelOwner()
 
     var body: some View {
         Observing(viewModel.uiState) {
@@ -51,7 +51,7 @@ struct AdvancedSettingsView: View {
             .navigationTitle("Advanced & Integrations")
             .navigationBarTitleDisplayMode(.inline)
         }
-        .task { await shareHashtagVM.startObserving() }
+        .task { await shareHashtagVM.observeHashtags() }
     }
 
     @Environment(\.civitTheme) private var theme

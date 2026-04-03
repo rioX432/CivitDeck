@@ -2,13 +2,13 @@ import SwiftUI
 import Shared
 
 struct BatchTagEditorView: View {
-    @StateObject private var viewModel: BatchTagEditorViewModel
+    @StateObject private var viewModel: BatchTagEditorViewModelOwner
     @Environment(\.dismiss) private var dismiss
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.civitTheme) private var theme
 
     init(datasetId: Int64) {
-        _viewModel = StateObject(wrappedValue: BatchTagEditorViewModel(datasetId: datasetId))
+        _viewModel = StateObject(wrappedValue: BatchTagEditorViewModelOwner(datasetId: datasetId))
     }
 
     var body: some View {
@@ -20,6 +20,10 @@ struct BatchTagEditorView: View {
             }
             .navigationTitle(viewModel.isAddMode ? "Add Tags" : "Remove Tags")
             .navigationBarTitleDisplayMode(.inline)
+            .task { await viewModel.observeImages() }
+            .task { await viewModel.observeSelectionState() }
+            .task { await viewModel.observeSuggestions() }
+            .task { await viewModel.observeMode() }
             .toolbar { toolbarContent }
         }
     }

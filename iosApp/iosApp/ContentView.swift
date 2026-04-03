@@ -5,7 +5,7 @@ struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var selectedTabId: String = "discover"
     @StateObject private var comparisonState = ComparisonState()
-    @StateObject private var tutorialVm = GestureTutorialViewModel()
+    @StateObject private var tutorialVm = GestureTutorialViewModelOwner()
     @StateObject private var searchViewModel = ModelSearchViewModel()
     @EnvironmentObject private var router: NavigationRouter
     @StateObject private var displayVMHolder = DisplayViewModelHolder()
@@ -22,6 +22,7 @@ struct ContentView: View {
                 }
             }
         }
+        .task { await tutorialVm.observeShouldShow() }
         .environmentObject(comparisonState)
         .onChange(of: router.pendingDeepLink) { link in
             guard let link else { return }
