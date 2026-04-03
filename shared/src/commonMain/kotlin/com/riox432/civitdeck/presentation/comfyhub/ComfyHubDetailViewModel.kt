@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.comfyhub
+package com.riox432.civitdeck.presentation.comfyhub
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,7 +10,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.json.JSONObject
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 data class ComfyHubDetailUiState(
     val workflow: ComfyHubWorkflow? = null,
@@ -82,11 +85,12 @@ class ComfyHubDetailViewModel(
     @Suppress("SwallowedException")
     private fun parseNodeNames(workflowJson: String): List<String> {
         return try {
-            val obj = JSONObject(workflowJson)
+            val jsonElement = Json.parseToJsonElement(workflowJson)
+            val obj = jsonElement.jsonObject
             val names = mutableSetOf<String>()
-            for (key in obj.keys()) {
-                val node = obj.optJSONObject(key) ?: continue
-                val classType = node.optString("class_type", "")
+            for ((_, value) in obj) {
+                val node = (value as? JsonObject) ?: continue
+                val classType = node["class_type"]?.jsonPrimitive?.content ?: ""
                 if (classType.isNotEmpty()) names.add(classType)
             }
             names.sorted()

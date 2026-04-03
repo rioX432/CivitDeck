@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct CivitaiLinkSettingsView: View {
-    @StateObject private var viewModel = CivitaiLinkSettingsViewModel()
+    @StateObject private var viewModel = CivitaiLinkSettingsViewModelOwner()
 
     var body: some View {
         List {
@@ -15,9 +15,7 @@ struct CivitaiLinkSettingsView: View {
         }
         .navigationTitle("Civitai Link")
         .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.observeLinkKey() }
-        .task { await viewModel.observeLinkStatus() }
-        .task { await viewModel.observeLinkActivities() }
+        .task { await viewModel.observeUiState() }
     }
 
     private var subscriptionRequiredBanner: some View {

@@ -2,51 +2,31 @@ import Foundation
 import Shared
 
 @MainActor
-class ComfyUIQueueViewModel: ObservableObject {
+final class ComfyUIQueueViewModelOwner: ObservableObject {
+    let vm: Feature_comfyuiComfyUIQueueViewModel
+    private let store = ViewModelStore()
+
     @Published var jobs: [QueueJob] = []
     @Published var isLoading = true
     @Published var error: String?
     @Published var cancellingIds: Set<String> = []
 
-    private let observeQueue = KoinHelper.shared.getObserveComfyUIQueueUseCase()
-    private let cancelJob = KoinHelper.shared.getCancelComfyUIJobUseCase()
-    private var observeTask: Task<Void, Never>?
+    init() {
+        vm = KoinHelper.shared.createComfyUIQueueViewModel()
+        store.put(key: "ComfyUIQueueViewModel", viewModel: vm)
+    }
 
-    func startObserving() {
-        observeTask?.cancel()
-        observeTask = Task {
-            do {
-                for try await jobList in observeQueue.invoke() {
-                    guard !Task.isCancelled else { return }
-                    jobs = jobList as? [QueueJob] ?? []
-                    isLoading = false
-                }
-            } catch {
-                self.error = error.localizedDescription
-                isLoading = false
-            }
+    deinit { store.clear() }
+
+    func observeUiState() async {
+        for await state in vm.uiState {
+            jobs = state.jobs as? [QueueJob] ?? []
+            isLoading = state.isLoading
+            error = state.error
+            cancellingIds = Set((state.cancellingIds as? Set<String>) ?? [])
         }
     }
 
-    func stopObserving() {
-        observeTask?.cancel()
-        observeTask = nil
-    }
-
-    func onCancelJob(promptId: String) {
-        guard !cancellingIds.contains(promptId) else { return }
-        cancellingIds.insert(promptId)
-        Task {
-            defer { cancellingIds.remove(promptId) }
-            do {
-                try await cancelJob.invoke(promptId: promptId)
-            } catch {
-                self.error = error.localizedDescription
-            }
-        }
-    }
-
-    func dismissError() {
-        error = nil
-    }
+    func onCancelJob(promptId: String) { vm.onCancelJob(promptId: promptId) }
+    func dismissError() { vm.dismissError() }
 }

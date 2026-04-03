@@ -42,6 +42,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.CivitaiLinkActivity
 import com.riox432.civitdeck.domain.model.CivitaiLinkStatus
+import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsUiState
+import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
 import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.Spacing
 

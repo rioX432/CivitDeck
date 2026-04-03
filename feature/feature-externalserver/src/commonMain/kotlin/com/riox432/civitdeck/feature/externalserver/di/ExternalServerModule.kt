@@ -18,8 +18,11 @@ import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveExtern
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.SaveExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.TestExternalServerConnectionUseCase
 import com.riox432.civitdeck.feature.externalserver.plugin.ExternalServerWorkflowPlugin
+import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
+import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val externalServerModule = module {
@@ -42,4 +45,8 @@ val externalServerModule = module {
 
     // Plugin adapter
     single { ExternalServerWorkflowPlugin(get(), get()) }
+
+    // ViewModels
+    viewModel { ExternalServerSettingsViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { ExternalServerGalleryViewModel(get(), get(), get(), get(), get(), get(), get()) }
 }

@@ -5,7 +5,7 @@ private let negativePromptEditorMinHeight: CGFloat = 60
 private let seedFieldWidth: CGFloat = 100
 
 struct SDWebUIGenerationView: View {
-    @StateObject private var viewModel = SDWebUIGenerationViewModel()
+    @StateObject private var viewModel = SDWebUIGenerationViewModelOwner()
     @State private var showError = false
 
     var body: some View {
@@ -18,7 +18,7 @@ struct SDWebUIGenerationView: View {
         }
         .navigationTitle("SD WebUI Generation")
         .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.loadResources() }
+        .task { await viewModel.observeUiState() }
         .alert("Error", isPresented: $showError, presenting: viewModel.error) { _ in
             Button("OK") { viewModel.error = nil }
         } message: { error in
@@ -118,7 +118,7 @@ struct SDWebUIGenerationView: View {
         HStack {
             Text("Seed (-1 = random)").font(.civitBodyMedium)
             Spacer()
-            TextField("-1", text: $viewModel.seedText)
+            TextField("-1", text: $viewModel.seed)
                 .keyboardType(.numbersAndPunctuation)
                 .multilineTextAlignment(.trailing)
                 .frame(width: seedFieldWidth)
@@ -134,11 +134,11 @@ struct SDWebUIGenerationView: View {
                         : "Generating..."
                     Text(label).font(.civitBodySmall)
                     ProgressView(value: viewModel.progress)
-                    Button("Interrupt", action: viewModel.interruptGeneration)
+                    Button("Interrupt") { viewModel.onInterrupt() }
                         .foregroundColor(.civitError)
                 }
             } else {
-                Button("Generate") { viewModel.generate() }
+                Button("Generate") { viewModel.onGenerate() }
                     .disabled(viewModel.prompt.isEmpty)
                     .frame(maxWidth: .infinity)
             }

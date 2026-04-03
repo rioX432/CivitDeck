@@ -36,6 +36,7 @@ val sharedModules: List<Module>
         searchModule,
         externalServerModule,
         pluginModule,
+        sharedViewModelModule,
     )
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {

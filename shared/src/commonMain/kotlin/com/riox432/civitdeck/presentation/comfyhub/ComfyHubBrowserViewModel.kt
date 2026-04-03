@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.comfyhub
+package com.riox432.civitdeck.presentation.comfyhub
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct ComfyUIQueueView: View {
-    @StateObject private var viewModel = ComfyUIQueueViewModel()
+    @StateObject private var viewModel = ComfyUIQueueViewModelOwner()
 
     var body: some View {
         Group {
@@ -25,10 +25,9 @@ struct ComfyUIQueueView: View {
         .navigationTitle("Queue")
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            viewModel.startObserving()
+            await viewModel.observeUiState()
         }
         .onDisappear {
-            viewModel.stopObserving()
         }
     }
 

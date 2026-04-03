@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.externalserver
+package com.riox432.civitdeck.feature.externalserver.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -23,30 +23,9 @@ import com.riox432.civitdeck.domain.usecase.CleanupBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
-import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
-import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
-import com.riox432.civitdeck.ui.comfyhub.ComfyHubBrowserViewModel
-import com.riox432.civitdeck.ui.comfyhub.ComfyHubDetailViewModel
-import com.riox432.civitdeck.ui.comfyui.CivitaiLinkSendViewModel
-import com.riox432.civitdeck.ui.comfyui.CivitaiLinkSettingsViewModel
-import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationViewModel
-import com.riox432.civitdeck.ui.comfyui.ComfyUIHistoryViewModel
-import com.riox432.civitdeck.ui.comfyui.ComfyUIQueueViewModel
-import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsViewModel
-import com.riox432.civitdeck.ui.comfyui.SDWebUIGenerationViewModel
-import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsViewModel
-import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateViewModel
-import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
-import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.ui.downloadqueue.DownloadQueueViewModel
-import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryViewModel
-import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsViewModel
-import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
-import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
-import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserViewModel
-import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.widget.WidgetRefreshWorker
 import kotlinx.coroutines.CoroutineScope
@@ -145,33 +124,12 @@ val androidModule = module {
             get(),
         )
     }
-    viewModel { CollectionsViewModel(get(), get(), get(), get()) }
-    viewModel { params -> CollectionDetailViewModel(params.get(), get(), get(), get(), get()) }
     viewModel { params ->
         ModelDetailViewModel(
             params.get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
         )
     }
-    viewModel { params -> ImageGalleryViewModel(params.get(), get(), get(), get(), get(), get()) }
-    viewModel { ModelFileBrowserViewModel(get(), get(), get(), get(), get(), get()) }
-    viewModel { SwipeDiscoveryViewModel(get(), get()) }
-    viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
-    viewModel { ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    viewModel { ComfyUIHistoryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    viewModel { ComfyUIQueueViewModel(get(), get()) }
-    viewModel { WorkflowTemplateViewModel(get(), get(), get(), get(), get()) }
-    viewModel { SDWebUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
-    viewModel { SDWebUIGenerationViewModel(get(), get(), get(), get(), get()) }
-    viewModel { CivitaiLinkSettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
-    viewModel { CivitaiLinkSendViewModel(get(), get()) }
-    viewModel { ExternalServerSettingsViewModel(get(), get(), get(), get(), get(), get()) }
-    viewModel { ExternalServerGalleryViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { params -> DuplicateReviewViewModel(params.get(), get(), get()) }
-    viewModel { BrowsingHistoryViewModel(get(), get(), get()) }
-    viewModel { ComfyHubBrowserViewModel(get()) }
-    viewModel { params -> ComfyHubDetailViewModel(params.get(), get(), get()) }
-    viewModel { params -> CreatorProfileViewModel(params.get(), get(), get(), get(), get()) }
-    viewModel { SavedPromptsViewModel(get(), get(), get(), get(), get()) }
     viewModel { DownloadQueueViewModel(get(), get(), get(), get(), get(), get(), get()) }
 }

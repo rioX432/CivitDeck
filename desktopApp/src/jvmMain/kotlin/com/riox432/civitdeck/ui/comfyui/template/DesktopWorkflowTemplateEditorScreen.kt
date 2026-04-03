@@ -2,6 +2,8 @@
 
 package com.riox432.civitdeck.ui.comfyui.template
 
+import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,7 +45,7 @@ import com.riox432.civitdeck.ui.theme.Spacing
 @Composable
 fun DesktopWorkflowTemplateEditorScreen(
     initialTemplate: WorkflowTemplate,
-    viewModel: DesktopWorkflowTemplateViewModel,
+    viewModel: WorkflowTemplateViewModel,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -82,7 +84,7 @@ fun DesktopWorkflowTemplateEditorScreen(
                 onDescriptionChange = { description = it },
                 onTypeChange = { newType ->
                     type = newType
-                    variables = DesktopWorkflowTemplateViewModel.defaultVariablesFor(newType)
+                    variables = WorkflowTemplateViewModel.defaultVariablesFor(newType)
                 },
                 onCategoryChange = { category = it },
                 onVariablesChange = { variables = it },

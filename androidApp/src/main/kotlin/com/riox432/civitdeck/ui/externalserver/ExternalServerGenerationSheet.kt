@@ -36,6 +36,7 @@ import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationJob
 import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationJobStatus
 import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationOption
 import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationOptionType
+import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryUiState
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -2,6 +2,9 @@
 
 package com.riox432.civitdeck.ui.comfyui.template
 
+import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateUiState
+
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,7 +56,7 @@ import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
 fun DesktopWorkflowTemplateScreen(
-    viewModel: DesktopWorkflowTemplateViewModel,
+    viewModel: WorkflowTemplateViewModel,
     onBack: () -> Unit,
     onCreateTemplate: () -> Unit,
     onEditTemplate: (WorkflowTemplate) -> Unit,
@@ -259,7 +262,7 @@ private fun TypeFilterRow(
 @Composable
 @Suppress("LongParameterList")
 private fun TemplateList(
-    state: DesktopWorkflowTemplateUiState,
+    state: WorkflowTemplateUiState,
     onSelectTemplate: ((WorkflowTemplate) -> Unit)?,
     onEditTemplate: (WorkflowTemplate) -> Unit,
     onExport: (WorkflowTemplate) -> Unit,

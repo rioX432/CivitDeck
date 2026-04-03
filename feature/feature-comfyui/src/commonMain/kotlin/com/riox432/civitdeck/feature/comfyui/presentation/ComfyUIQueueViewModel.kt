@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.comfyui
+package com.riox432.civitdeck.feature.comfyui.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -58,11 +58,11 @@ class ComfyUIQueueViewModel(
         }
     }
 
-    companion object {
-        private const val TAG = "ComfyUIQueueVM"
-    }
-
     fun dismissError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    companion object {
+        private const val TAG = "ComfyUIQueueVM"
     }
 }

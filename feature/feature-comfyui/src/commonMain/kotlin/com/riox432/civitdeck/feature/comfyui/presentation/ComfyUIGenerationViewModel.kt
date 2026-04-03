@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.comfyui
+package com.riox432.civitdeck.feature.comfyui.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -60,6 +60,7 @@ data class GenerationUiState(
     val result: GenerationResult? = null,
     val error: String? = null,
     val imageSaveSuccess: Boolean? = null,
+    /** Latest preview image bytes from WebSocket during generation. */
     val previewImageBytes: ByteArray? = null,
     val currentNodeName: String = "",
 ) {
@@ -93,10 +94,6 @@ class ComfyUIGenerationViewModel(
         loadControlNets()
     }
 
-    /**
-     * Launches a coroutine with standardised error handling.
-     * Re-throws [CancellationException] and logs + delegates all other errors to [onError].
-     */
     private inline fun launchWithErrorHandling(
         tag: String,
         crossinline onError: (Exception) -> Unit,
@@ -114,10 +111,6 @@ class ComfyUIGenerationViewModel(
         }
     }
 
-    /**
-     * Runs [block] with standardised error handling inside an existing coroutine.
-     * Returns `true` on success, `false` on handled error.
-     */
     private suspend inline fun runCatchingLogged(
         tag: String,
         onError: (Exception) -> Unit,

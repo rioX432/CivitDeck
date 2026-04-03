@@ -1,41 +1,49 @@
 import SwiftUI
 import Shared
 
-// MARK: - Civitai Link Send
+// MARK: - Civitai Link Send Owner
 @MainActor
-class CivitaiLinkSendViewModel: ObservableObject {
+final class CivitaiLinkSendViewModelOwner: ObservableObject {
+    let vm: Feature_comfyuiCivitaiLinkSendViewModel
+    private let store = ViewModelStore()
+
     @Published var status: CivitaiLinkStatus = .disconnected
-    private let observeStatus = KoinHelper.shared.getObserveCivitaiLinkStatusUseCase()
-    private let sendResource = KoinHelper.shared.getSendResourceToPCUseCase()
 
     var isConnected: Bool { status == .connected }
 
-    func observeLinkStatus() async {
-        for await s in observeStatus.invoke() { self.status = s }
+    init() {
+        vm = KoinHelper.shared.createCivitaiLinkSendViewModel()
+        store.put(key: "CivitaiLinkSendViewModel", viewModel: vm)
+    }
+
+    deinit { store.clear() }
+
+    func observeStatus() async {
+        for await s in vm.status {
+            self.status = s
+        }
     }
 
     func sendToPC(versionId: Int64, modelId: Int64, versionName: String, downloadUrl: String) {
-        Task {
-            let resource = CivitaiLinkResource(
-                versionId: versionId,
-                modelId: modelId,
-                versionName: versionName,
-                downloadUrl: downloadUrl
-            )
-            try? await sendResource.invoke(resource: resource)
-        }
+        let resource = CivitaiLinkResource(
+            versionId: versionId,
+            modelId: modelId,
+            versionName: versionName,
+            downloadUrl: downloadUrl
+        )
+        vm.sendToPC(resource: resource)
     }
 }
 
 struct CivitaiLinkSendSheet: View {
     let model: Model
-    @StateObject private var vm = CivitaiLinkSendViewModel()
+    @StateObject private var vmOwner = CivitaiLinkSendViewModelOwner()
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationView {
             Group {
-                if vm.isConnected {
+                if vmOwner.isConnected {
                     connectedView
                 } else {
                     notConnectedView
@@ -49,7 +57,7 @@ struct CivitaiLinkSendSheet: View {
                 }
             }
         }
-        .task { await vm.observeLinkStatus() }
+        .task { await vmOwner.observeStatus() }
     }
 
     private var notConnectedView: some View {
@@ -68,7 +76,7 @@ struct CivitaiLinkSendSheet: View {
         List {
             if let version = model.modelVersions.first {
                 Button("Send \(version.name) to PC") {
-                    vm.sendToPC(
+                    vmOwner.sendToPC(
                         versionId: version.id,
                         modelId: model.id,
                         versionName: version.name,

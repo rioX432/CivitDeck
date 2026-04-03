@@ -3,7 +3,7 @@ import Shared
 
 struct WorkflowTemplateEditorView: View {
     let initialTemplate: WorkflowTemplate
-    let viewModel: WorkflowTemplateViewModel
+    let viewModel: WorkflowTemplateViewModelOwner
 
     @State private var name: String
     @State private var templateDescription: String
@@ -12,7 +12,7 @@ struct WorkflowTemplateEditorView: View {
     @State private var variables: [TemplateVariableSwift]
     @Environment(\.dismiss) private var dismiss
 
-    init(initialTemplate: WorkflowTemplate, viewModel: WorkflowTemplateViewModel) {
+    init(initialTemplate: WorkflowTemplate, viewModel: WorkflowTemplateViewModelOwner) {
         self.initialTemplate = initialTemplate
         self.viewModel = viewModel
         _name = State(initialValue: initialTemplate.name)
@@ -41,7 +41,7 @@ struct WorkflowTemplateEditorView: View {
                 }
                 .pickerStyle(.menu)
                 .onChange(of: templateType) { newType in
-                    variables = WorkflowTemplateViewModel.defaultVariables(for: newType)
+                    variables = WorkflowTemplateViewModelOwner.defaultVariablesFor(type: newType)
                         .map { TemplateVariableSwift(from: $0) }
                 }
                 Picker("Category", selection: $templateCategory) {

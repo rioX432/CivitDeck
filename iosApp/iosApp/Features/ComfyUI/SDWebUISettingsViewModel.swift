@@ -2,67 +2,56 @@ import Foundation
 import Shared
 
 @MainActor
-class SDWebUISettingsViewModel: ObservableObject {
+final class SDWebUISettingsViewModelOwner: ObservableObject {
+    let vm: Feature_comfyuiSDWebUISettingsViewModel
+    private let store = ViewModelStore()
+
     @Published var connections: [SDWebUIConnection] = []
     @Published var activeConnection: SDWebUIConnection?
+    @Published var connectionStatus: Core_domainSDWebUIConnectionStatus = .notConfigured
     @Published var isTesting = false
     @Published var testError: String?
     @Published var showAddSheet = false
     @Published var editingConnection: SDWebUIConnection?
 
-    private let observeConnections = KoinHelper.shared.getObserveSDWebUIConnectionsUseCase()
-    private let observeActive = KoinHelper.shared.getObserveActiveSDWebUIConnectionUseCase()
-    private let saveConnection = KoinHelper.shared.getSaveSDWebUIConnectionUseCase()
-    private let deleteConnection = KoinHelper.shared.getDeleteSDWebUIConnectionUseCase()
-    private let activateConnection = KoinHelper.shared.getActivateSDWebUIConnectionUseCase()
-    private let testConnection = KoinHelper.shared.getTestSDWebUIConnectionUseCase()
-
-    func observeConnectionsList() async {
-        for await list in observeConnections.invoke() {
-            self.connections = list
-        }
+    init() {
+        vm = KoinHelper.shared.createSDWebUISettingsViewModel()
+        store.put(key: "SDWebUISettingsViewModel", viewModel: vm)
     }
 
-    func observeActiveConn() async {
-        for await conn in observeActive.invoke() {
-            self.activeConnection = conn
+    deinit { store.clear() }
+
+    func observeUiState() async {
+        for await state in vm.uiState {
+            connections = state.connections as? [SDWebUIConnection] ?? []
+            activeConnection = state.activeConnection
+            connectionStatus = state.connectionStatus
+            isTesting = state.isTesting
+            testError = state.testError
+            showAddSheet = state.showAddDialog
+            editingConnection = state.editingConnection
         }
     }
 
     func onSave(name: String, hostname: String, port: Int32) {
-        Task {
-            let conn = SDWebUIConnection(
-                id: editingConnection?.id ?? 0,
-                name: name,
-                hostname: hostname,
-                port: port,
-                isActive: false,
-                lastTestedAt: nil,
-                lastTestSuccess: nil
-            )
-            _ = try await saveConnection.invoke(connection: conn)
-            showAddSheet = false
-            editingConnection = nil
-        }
+        vm.onSaveConnection(name: name, hostname: hostname, port: port)
     }
-
-    func onDelete(id: Int64) {
-        Task { try await deleteConnection.invoke(id: id) }
+    func onDelete(id: Int64) { vm.onDeleteConnection(id: id) }
+    func onActivate(id: Int64) { vm.onActivateConnection(id: id) }
+    func onTest() { vm.onTestConnection() }
+    func onShowAddDialog() {
+        showAddSheet = true
+        vm.onShowAddDialog()
     }
-
-    func onActivate(id: Int64) {
-        Task { try await activateConnection.invoke(id: id) }
+    func onEditConnection(_ conn: SDWebUIConnection) {
+        editingConnection = conn
+        showAddSheet = true
+        vm.onEditConnection(conn: conn)
     }
-
-    func onTest() {
-        guard let active = activeConnection else { return }
-        isTesting = true
-        testError = nil
-        Task {
-            let success = try await testConnection.invoke(connection: active)
-            isTesting = false
-            testError = success.boolValue ? nil : "Connection failed"
-        }
+    func onDismissDialog() {
+        showAddSheet = false
+        editingConnection = nil
+        vm.onDismissDialog()
     }
 
     var isConnected: Bool {

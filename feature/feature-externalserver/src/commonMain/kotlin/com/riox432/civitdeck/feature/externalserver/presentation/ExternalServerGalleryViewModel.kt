@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.externalserver
+package com.riox432.civitdeck.feature.externalserver.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -64,6 +64,7 @@ private const val PAGE_SIZE = 96
 private const val POLL_INTERVAL_MS = 2000L
 private const val MAX_POLL_TIMEOUT_MS = 600_000L
 
+@Suppress("TooManyFunctions")
 class ExternalServerGalleryViewModel(
     private val getImages: GetExternalServerImagesUseCase,
     private val getCapabilities: GetExternalServerCapabilitiesUseCase,
@@ -244,7 +245,6 @@ class ExternalServerGalleryViewModel(
         newParams[key] = value
         _uiState.update { it.copy(generationParams = newParams) }
 
-        // Check if any option depends on this key and reload choices
         val dependents = _uiState.value.generationOptions.filter { it.dependsOn == key }
         dependents.forEach { option ->
             option.choicesEndpoint?.let { endpoint ->
@@ -288,7 +288,6 @@ class ExternalServerGalleryViewModel(
             _uiState.update { it.copy(isLoadingOptions = true) }
             suspendRunCatching { getGenerationOptions() }
                 .onSuccess { options ->
-                    // Set default values
                     val defaults = options.mapNotNull { option ->
                         option.defaultValue?.let { option.key to it }
                     }.toMap()

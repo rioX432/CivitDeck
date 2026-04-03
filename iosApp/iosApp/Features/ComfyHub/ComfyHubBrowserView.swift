@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct ComfyHubBrowserView: View {
-    @StateObject private var viewModel = ComfyHubBrowserViewModel()
+    @StateObject private var viewModel = ComfyHubBrowserViewModelOwner()
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {

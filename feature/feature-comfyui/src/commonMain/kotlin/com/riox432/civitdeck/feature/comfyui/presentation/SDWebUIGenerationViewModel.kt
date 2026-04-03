@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.ui.comfyui
+package com.riox432.civitdeck.feature.comfyui.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -132,10 +132,6 @@ class SDWebUIGenerationViewModel(
         }
     }
 
-    companion object {
-        private const val TAG = "SDWebUIGenerationVM"
-    }
-
     fun onInterrupt() {
         generationJob?.cancel()
         viewModelScope.launch {
@@ -143,5 +139,9 @@ class SDWebUIGenerationViewModel(
                 .onFailure { e -> Logger.w(TAG, "Interrupt failed: ${e.message}") }
             _uiState.update { it.copy(isGenerating = false) }
         }
+    }
+
+    companion object {
+        private const val TAG = "SDWebUIGenerationVM"
     }
 }

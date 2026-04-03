@@ -32,6 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.GenerationStatus
+import com.riox432.civitdeck.feature.comfyui.presentation.GenerationUiState
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.theme.Spacing
 
