@@ -12,6 +12,9 @@ import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.domain.model.NavShortcut
+import com.riox432.civitdeck.domain.model.PollingInterval
+import com.riox432.civitdeck.domain.repository.AppBehaviorPreferencesRepository
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
@@ -116,6 +119,23 @@ class GetRecommendationsUseCaseTest {
         override suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings) = error("not used")
     }
 
+    private class FakeAppBehaviorRepository(
+        private val qualityThreshold: Int = 0,
+    ) : AppBehaviorPreferencesRepository {
+        override fun observePowerUserMode(): Flow<Boolean> = flowOf(false)
+        override suspend fun setPowerUserMode(enabled: Boolean) = Unit
+        override fun observeNotificationsEnabled(): Flow<Boolean> = flowOf(false)
+        override suspend fun setNotificationsEnabled(enabled: Boolean) = Unit
+        override fun observePollingInterval(): Flow<PollingInterval> = flowOf(PollingInterval.Off)
+        override suspend fun setPollingInterval(interval: PollingInterval) = Unit
+        override fun observeSeenTutorialVersion(): Flow<Int> = flowOf(0)
+        override suspend fun setSeenTutorialVersion(version: Int) = Unit
+        override fun observeCustomNavShortcuts(): Flow<List<NavShortcut>> = flowOf(emptyList())
+        override suspend fun setCustomNavShortcuts(items: List<NavShortcut>) = Unit
+        override fun observeFeedQualityThreshold(): Flow<Int> = flowOf(qualityThreshold)
+        override suspend fun setFeedQualityThreshold(threshold: Int) = Unit
+    }
+
     @Test
     fun returns_type_section_when_favorites_have_types() = runTest {
         val models = (1L..10L).map { testModel(id = it, type = ModelType.LORA) }
@@ -126,7 +146,7 @@ class GetRecommendationsUseCaseTest {
         val browsingRepo = FakeBrowsingHistoryRepository()
         val prefsRepo = FakeUserPreferencesRepository()
 
-        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo)
+        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo, FakeAppBehaviorRepository())
         val sections = useCase()
 
         assertTrue(sections.isNotEmpty())
@@ -144,7 +164,7 @@ class GetRecommendationsUseCaseTest {
         val browsingRepo = FakeBrowsingHistoryRepository(recentTags = mapOf("anime" to 10))
         val prefsRepo = FakeUserPreferencesRepository()
 
-        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo)
+        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo, FakeAppBehaviorRepository())
         val sections = useCase()
 
         assertTrue(sections.any { it.title.contains("anime") })
@@ -160,7 +180,7 @@ class GetRecommendationsUseCaseTest {
         val browsingRepo = FakeBrowsingHistoryRepository()
         val prefsRepo = FakeUserPreferencesRepository()
 
-        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo)
+        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo, FakeAppBehaviorRepository())
         val sections = useCase()
 
         assertTrue(sections.isNotEmpty())
@@ -178,7 +198,7 @@ class GetRecommendationsUseCaseTest {
         val browsingRepo = FakeBrowsingHistoryRepository(recentModelIds = listOf(3L, 4L))
         val prefsRepo = FakeUserPreferencesRepository()
 
-        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo)
+        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo, FakeAppBehaviorRepository())
         val sections = useCase()
 
         assertTrue(sections.isNotEmpty())
@@ -198,7 +218,7 @@ class GetRecommendationsUseCaseTest {
         val browsingRepo = FakeBrowsingHistoryRepository()
         val prefsRepo = FakeUserPreferencesRepository()
 
-        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo)
+        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo, FakeAppBehaviorRepository())
         val sections = useCase()
 
         assertTrue(sections.isEmpty())
@@ -218,7 +238,7 @@ class GetRecommendationsUseCaseTest {
         )
         val prefsRepo = FakeUserPreferencesRepository()
 
-        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo)
+        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo, FakeAppBehaviorRepository())
         val sections = useCase()
 
         assertTrue(sections.isNotEmpty())
@@ -235,7 +255,7 @@ class GetRecommendationsUseCaseTest {
         val browsingRepo = FakeBrowsingHistoryRepository()
         val prefsRepo = FakeUserPreferencesRepository()
 
-        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo)
+        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo, FakeAppBehaviorRepository())
         val sections = useCase()
 
         assertTrue(sections.isNotEmpty())
@@ -255,7 +275,7 @@ class GetRecommendationsUseCaseTest {
         )
         val prefsRepo = FakeUserPreferencesRepository()
 
-        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo)
+        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo, FakeAppBehaviorRepository())
         val sections = useCase()
 
         assertTrue(sections.any { it.title == "Recommended for You" })
@@ -276,7 +296,7 @@ class GetRecommendationsUseCaseTest {
         )
         val prefsRepo = FakeUserPreferencesRepository()
 
-        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo)
+        val useCase = GetRecommendationsUseCase(modelRepo, favRepo, browsingRepo, prefsRepo, FakeAppBehaviorRepository())
         val sections = useCase()
 
         assertTrue(sections.size <= 6)

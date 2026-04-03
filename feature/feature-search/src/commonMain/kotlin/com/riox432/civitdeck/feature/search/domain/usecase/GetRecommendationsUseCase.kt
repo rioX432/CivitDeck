@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.feature.search.domain.usecase
 
+import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.RecommendationSection
@@ -7,10 +8,12 @@ import com.riox432.civitdeck.domain.model.RecommendationSectionType
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.model.filterNsfwImages
+import com.riox432.civitdeck.domain.repository.AppBehaviorPreferencesRepository
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
+import com.riox432.civitdeck.domain.usecase.QualityScoreCalculator
 import kotlinx.coroutines.flow.first
 
 class GetRecommendationsUseCase(
@@ -18,12 +21,14 @@ class GetRecommendationsUseCase(
     private val favoriteRepository: FavoriteRepository,
     private val browsingHistoryRepository: BrowsingHistoryRepository,
     private val userPreferencesRepository: ContentFilterPreferencesRepository,
+    private val appBehaviorRepository: AppBehaviorPreferencesRepository,
 ) {
     @Suppress("LongMethod")
     suspend operator fun invoke(): List<RecommendationSection> {
         val sections = mutableListOf<RecommendationSection>()
         val seenIds = mutableSetOf<Long>()
         val nsfwLevel = userPreferencesRepository.observeNsfwFilterLevel().first()
+        val qualityThreshold = appBehaviorRepository.observeFeedQualityThreshold().first()
 
         val favIds = favoriteRepository.getAllFavoriteIds()
         seenIds.addAll(favIds)
@@ -34,28 +39,28 @@ class GetRecommendationsUseCase(
         val favTypes = favoriteRepository.getFavoriteTypeCounts()
 
         // Affinity-based "Recommended for You" section
-        val affinitySection = buildAffinitySection(seenIds, nsfwLevel, favTypes)
+        val affinitySection = buildAffinitySection(seenIds, nsfwLevel, favTypes, qualityThreshold)
         if (affinitySection != null) sections.add(affinitySection)
 
-        val typeSections = buildTypeSections(seenIds, nsfwLevel, favTypes)
+        val typeSections = buildTypeSections(seenIds, nsfwLevel, favTypes, qualityThreshold)
         sections.addAll(typeSections)
 
-        val tagSections = buildTagSections(seenIds, nsfwLevel)
+        val tagSections = buildTagSections(seenIds, nsfwLevel, qualityThreshold)
         sections.addAll(tagSections)
 
-        val creatorSection = buildCreatorSection(seenIds, nsfwLevel)
+        val creatorSection = buildCreatorSection(seenIds, nsfwLevel, qualityThreshold)
         if (creatorSection != null) sections.add(creatorSection)
 
         // Trending velocity section — models gaining traction fast
-        val trendingSection = buildTrendingVelocitySection(seenIds, nsfwLevel)
+        val trendingSection = buildTrendingVelocitySection(seenIds, nsfwLevel, qualityThreshold)
         if (trendingSection != null) sections.add(trendingSection)
 
         // Diversity: inject exploration section if too homogeneous
-        val explorationSection = buildExplorationSection(seenIds, nsfwLevel, sections)
+        val explorationSection = buildExplorationSection(seenIds, nsfwLevel, sections, qualityThreshold)
         if (explorationSection != null) sections.add(explorationSection)
 
         if (sections.isEmpty()) {
-            val fallback = buildTrendingFallback(seenIds, nsfwLevel)
+            val fallback = buildTrendingFallback(seenIds, nsfwLevel, qualityThreshold)
             if (fallback != null) sections.add(fallback)
         }
 
@@ -70,6 +75,7 @@ class GetRecommendationsUseCase(
         seenIds: Set<Long>,
         nsfwLevel: NsfwFilterLevel,
         favTypes: Map<String, Int>,
+        qualityThreshold: Int,
     ): RecommendationSection? {
         val weightedTags = browsingHistoryRepository.getWeightedTags()
         val topTag = weightedTags.entries.maxByOrNull { it.value }?.key ?: return null
@@ -92,6 +98,7 @@ class GetRecommendationsUseCase(
             type = topType,
             tag = topTag,
             sectionType = RecommendationSectionType.PERSONALIZED,
+            qualityThreshold = qualityThreshold,
         )
     }
 
@@ -99,6 +106,7 @@ class GetRecommendationsUseCase(
         seenIds: Set<Long>,
         nsfwLevel: NsfwFilterLevel,
         favTypes: Map<String, Int>,
+        qualityThreshold: Int,
     ): List<RecommendationSection> {
         val weightedTypes = browsingHistoryRepository.getWeightedTypes()
         val merged = mutableMapOf<String, Double>()
@@ -121,6 +129,7 @@ class GetRecommendationsUseCase(
                 seenIds = seenIds,
                 nsfwLevel = nsfwLevel,
                 type = modelType,
+                qualityThreshold = qualityThreshold,
             )
         }
     }
@@ -128,6 +137,7 @@ class GetRecommendationsUseCase(
     private suspend fun buildTagSections(
         seenIds: Set<Long>,
         nsfwLevel: NsfwFilterLevel,
+        qualityThreshold: Int,
     ): List<RecommendationSection> {
         val weightedTags = browsingHistoryRepository.getWeightedTags()
         val topTags = weightedTags.entries
@@ -142,6 +152,7 @@ class GetRecommendationsUseCase(
                 seenIds = seenIds,
                 nsfwLevel = nsfwLevel,
                 tag = tag,
+                qualityThreshold = qualityThreshold,
             )
         }
     }
@@ -149,6 +160,7 @@ class GetRecommendationsUseCase(
     private suspend fun buildCreatorSection(
         seenIds: Set<Long>,
         nsfwLevel: NsfwFilterLevel,
+        qualityThreshold: Int,
     ): RecommendationSection? {
         val weightedCreators = browsingHistoryRepository.getWeightedCreators()
         val topCreator = weightedCreators.entries
@@ -160,6 +172,7 @@ class GetRecommendationsUseCase(
             seenIds = seenIds,
             nsfwLevel = nsfwLevel,
             username = topCreator,
+            qualityThreshold = qualityThreshold,
         )
     }
 
@@ -170,6 +183,7 @@ class GetRecommendationsUseCase(
     private suspend fun buildTrendingVelocitySection(
         seenIds: Set<Long>,
         nsfwLevel: NsfwFilterLevel,
+        qualityThreshold: Int,
     ): RecommendationSection? {
         val nsfw = if (nsfwLevel == NsfwFilterLevel.Off) false else null
         val result = modelRepository.getModels(
@@ -181,6 +195,7 @@ class GetRecommendationsUseCase(
         val filtered = result.items
             .filterNot { it.id in seenIds }
             .filterNsfwImages(nsfwLevel)
+            .filterByQuality(qualityThreshold)
             .take(SECTION_SIZE)
         if (filtered.isEmpty()) return null
 
@@ -200,6 +215,7 @@ class GetRecommendationsUseCase(
         seenIds: Set<Long>,
         nsfwLevel: NsfwFilterLevel,
         existingSections: List<RecommendationSection>,
+        qualityThreshold: Int,
     ): RecommendationSection? {
         if (existingSections.size < MIN_SECTIONS_FOR_EXPLORATION) return null
 
@@ -222,6 +238,7 @@ class GetRecommendationsUseCase(
             sort = SortOrder.MostDownloaded,
             period = TimePeriod.Week,
             sectionType = RecommendationSectionType.EXPLORATION,
+            qualityThreshold = qualityThreshold,
         )
     }
 
@@ -236,6 +253,7 @@ class GetRecommendationsUseCase(
         sort: SortOrder? = SortOrder.HighestRated,
         period: TimePeriod? = TimePeriod.Month,
         sectionType: RecommendationSectionType = RecommendationSectionType.PERSONALIZED,
+        qualityThreshold: Int = 0,
     ): RecommendationSection? {
         val nsfw = if (nsfwLevel == NsfwFilterLevel.Off) false else null
         val result = modelRepository.getModels(
@@ -250,6 +268,7 @@ class GetRecommendationsUseCase(
         val filtered = result.items
             .filterNot { it.id in seenIds }
             .filterNsfwImages(nsfwLevel)
+            .filterByQuality(qualityThreshold)
             .take(SECTION_SIZE)
         if (filtered.isEmpty()) return null
 
@@ -264,6 +283,7 @@ class GetRecommendationsUseCase(
     private suspend fun buildTrendingFallback(
         seenIds: Set<Long>,
         nsfwLevel: NsfwFilterLevel,
+        qualityThreshold: Int,
     ): RecommendationSection? {
         val nsfw = if (nsfwLevel == NsfwFilterLevel.Off) false else null
         val result = modelRepository.getModels(
@@ -275,6 +295,7 @@ class GetRecommendationsUseCase(
         val filtered = result.items
             .filterNot { it.id in seenIds }
             .filterNsfwImages(nsfwLevel)
+            .filterByQuality(qualityThreshold)
             .take(SECTION_SIZE)
         if (filtered.isEmpty()) return null
 
@@ -284,6 +305,15 @@ class GetRecommendationsUseCase(
             models = filtered,
             sectionType = RecommendationSectionType.TRENDING,
         )
+    }
+
+    /**
+     * Filters models below the quality threshold.
+     * Threshold of 0 means no filtering (disabled).
+     */
+    private fun List<Model>.filterByQuality(threshold: Int): List<Model> {
+        if (threshold <= 0) return this
+        return filter { QualityScoreCalculator.calculate(it.stats) >= threshold }
     }
 
     companion object {

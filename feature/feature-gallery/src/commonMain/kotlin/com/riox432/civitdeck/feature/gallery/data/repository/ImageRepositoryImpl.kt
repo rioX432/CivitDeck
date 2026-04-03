@@ -38,6 +38,7 @@ class ImageRepositoryImpl(
                     SortOrder.HighestRated -> "Most Reactions"
                     SortOrder.MostDownloaded -> "Most Comments"
                     SortOrder.Newest -> "Newest"
+                    SortOrder.Quality -> "Most Reactions"
                 }
             },
             period?.name,
@@ -55,6 +56,7 @@ class ImageRepositoryImpl(
                         SortOrder.HighestRated -> "Most Reactions"
                         SortOrder.MostDownloaded -> "Most Comments"
                         SortOrder.Newest -> "Newest"
+                        SortOrder.Quality -> "Most Reactions"
                     }
                 },
                 period = period?.name,

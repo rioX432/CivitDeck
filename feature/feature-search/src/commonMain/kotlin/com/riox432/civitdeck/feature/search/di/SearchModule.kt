@@ -34,7 +34,7 @@ val searchModule = module {
     factory { GetModelsUseCase(get()) }
     factory { MultiSourceSearchUseCase(get(), get(), get()) }
     factory { GetDiscoveryModelsUseCase(get()) }
-    factory { GetRecommendationsUseCase(get(), get(), get(), get()) }
+    factory { GetRecommendationsUseCase(get(), get(), get(), get(), get()) }
     factory { ObserveSearchHistoryUseCase(get()) }
     factory { AddSearchHistoryUseCase(get()) }
     factory { DeleteSearchHistoryItemUseCase(get()) }

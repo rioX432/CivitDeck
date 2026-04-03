@@ -50,6 +50,7 @@ val databaseModule = module {
     single { get<CivitDeckDatabase>().pluginDao() }
     single { get<CivitDeckDatabase>().shareHashtagDao() }
     single { get<CivitDeckDatabase>().modelUpdateNotificationDao() }
+    single { get<CivitDeckDatabase>().qualityScoreCacheDao() }
 
     // Data Sources
     single { LocalCacheDataSource(get()) }

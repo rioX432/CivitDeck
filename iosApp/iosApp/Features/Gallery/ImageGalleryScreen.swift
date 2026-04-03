@@ -230,6 +230,8 @@ struct ImageGalleryScreen: View {
         case .highestRated: return "Highest Rated"
         case .mostDownloaded: return "Most Downloaded"
         case .newest: return "Newest"
+        case .quality: return "Quality Score"
+        default: return sort.name
         }
     }
 
@@ -246,5 +248,5 @@ struct ImageGalleryScreen: View {
 
 // MARK: - Filter Options
 
-private let sortOptions: [CivitSortOrder] = [.highestRated, .mostDownloaded, .newest]
+private let sortOptions: [CivitSortOrder] = [.highestRated, .mostDownloaded, .newest, .quality]
 private let periodOptions: [TimePeriod] = [.allTime, .year, .month, .week, .day]

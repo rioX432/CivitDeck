@@ -333,6 +333,7 @@ private extension ModelSearchViewModel {
         case .mostDownloaded: return Double(model.stats.downloadCount)
         case .highestRated: return model.stats.rating
         case .newest: return Double(model.id)
+        case .quality: return Double(FeedQualityScoreHelper.calculate(stats: model.stats))
         default: return Double(model.id)
         }
     }
