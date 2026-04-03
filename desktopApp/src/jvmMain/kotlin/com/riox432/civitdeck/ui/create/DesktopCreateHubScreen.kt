@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Dns
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +37,7 @@ private val CREATE_ITEMS = listOf(
     CreateHubItem("ComfyUI", "Node-based generation workflow", Icons.Default.Brush),
     CreateHubItem("SD WebUI", "Stable Diffusion WebUI generation", Icons.Default.Cloud),
     CreateHubItem("External Server", "Custom server connection", Icons.Default.Dns),
+    CreateHubItem("Workflow Templates", "Manage and use workflow templates", Icons.Default.Description),
 )
 
 @Composable
@@ -43,9 +45,10 @@ fun DesktopCreateHubScreen(
     onComfyUIClick: () -> Unit,
     onSDWebUIClick: () -> Unit,
     onExternalServerClick: () -> Unit,
+    onWorkflowTemplatesClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val callbacks = listOf(onComfyUIClick, onSDWebUIClick, onExternalServerClick)
+    val callbacks = listOf(onComfyUIClick, onSDWebUIClick, onExternalServerClick, onWorkflowTemplatesClick)
 
     Column(
         modifier = modifier
