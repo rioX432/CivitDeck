@@ -17,7 +17,6 @@ import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.feature.gallery.domain.usecase.GetImagesUseCase
-import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow

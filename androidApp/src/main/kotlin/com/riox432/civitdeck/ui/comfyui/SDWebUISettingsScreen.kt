@@ -42,8 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.SDWebUIConnection
 import com.riox432.civitdeck.domain.model.SDWebUIConnectionStatus
-import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsUiState
-import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 

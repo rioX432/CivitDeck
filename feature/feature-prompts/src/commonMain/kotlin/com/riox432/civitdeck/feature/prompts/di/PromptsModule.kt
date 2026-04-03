@@ -7,8 +7,6 @@ import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveSavedPromptsU
 import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveTemplatesUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.SearchSavedPromptsUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.ToggleTemplateUseCase
-import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
-import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val promptsModule = module {
@@ -18,5 +16,4 @@ val promptsModule = module {
     factory { ToggleTemplateUseCase(get()) }
     factory { SearchSavedPromptsUseCase(get()) }
     factory { ObserveTemplatesUseCase(get()) }
-    viewModel { SavedPromptsViewModel(get(), get(), get(), get(), get()) }
 }

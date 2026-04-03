@@ -23,8 +23,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.SDWebUIConnectionStatus
-import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
+import com.riox432.civitdeck.ui.comfyui.SDWebUIGenerationViewModel
+import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsViewModel
 import com.riox432.civitdeck.domain.model.SDWebUIConnection
 import com.riox432.civitdeck.ui.theme.Spacing
 

@@ -45,9 +45,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryUiState
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.HistorySortOrder
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView

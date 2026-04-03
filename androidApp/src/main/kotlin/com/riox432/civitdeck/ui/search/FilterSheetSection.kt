@@ -32,7 +32,6 @@ import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
-import com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState
 import com.riox432.civitdeck.ui.theme.Spacing
 
 /**

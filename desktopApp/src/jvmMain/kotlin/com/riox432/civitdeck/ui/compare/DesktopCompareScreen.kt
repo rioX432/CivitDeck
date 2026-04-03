@@ -37,8 +37,8 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
-import com.riox432.civitdeck.feature.detail.presentation.ModelDetailUiState
-import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
+import com.riox432.civitdeck.ui.detail.ModelDetailUiState
+import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
 import com.riox432.civitdeck.ui.theme.Elevation

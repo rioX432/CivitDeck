@@ -330,13 +330,7 @@ typealias ExecuteGenerationUseCase = Feature_externalserverExecuteGenerationUseC
 typealias GetGenerationStatusUseCase = Feature_externalserverGetGenerationStatusUseCase
 typealias DeleteServerImagesUseCase = Feature_externalserverDeleteServerImagesUseCase
 
-// MARK: - Feature: Settings
-
-typealias ContentFilterSettingsViewModel = Feature_settingsContentFilterSettingsViewModel
-typealias DisplaySettingsViewModel = Feature_settingsDisplaySettingsViewModel
-typealias AppBehaviorSettingsViewModel = Feature_settingsAppBehaviorSettingsViewModel
-typealias AuthSettingsViewModel = Feature_settingsAuthSettingsViewModel
-typealias StorageSettingsViewModel = Feature_settingsStorageSettingsViewModel
+// MARK: - Settings (SKIE auto-renames Shared* prefix, no typealiases needed)
 
 // MARK: - ModelImage Swift Extensions
 // Kotlin extension functions are not exported to Swift, so we mirror them here.

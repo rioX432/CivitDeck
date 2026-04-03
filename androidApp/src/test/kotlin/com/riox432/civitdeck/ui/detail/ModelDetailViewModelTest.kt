@@ -238,7 +238,7 @@ class ModelDetailViewModelTest {
         model: Model = testModel(),
         isFavorite: Boolean = false,
     ): Triple<
-        com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel,
+        com.riox432.civitdeck.ui.detail.ModelDetailViewModel,
         FakeModelRepo,
         FakeFavoriteRepo,
         > {
@@ -250,7 +250,7 @@ class ModelDetailViewModelTest {
         val noteRepo = FakeNoteRepo()
         val powerUserRepo = FakePowerUserRepo()
 
-        val vm = com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel(
+        val vm = com.riox432.civitdeck.ui.detail.ModelDetailViewModel(
             modelId = model.id,
             getModelDetailUseCase = GetModelDetailUseCase(modelRepo),
             observeIsFavoriteUseCase = ObserveIsFavoriteUseCase(favRepo),

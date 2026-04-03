@@ -19,8 +19,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
-import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
+import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
+import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.compare.DesktopCompareScreen
 import com.riox432.civitdeck.ui.creator.DesktopCreatorScreen

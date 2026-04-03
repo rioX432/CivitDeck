@@ -23,10 +23,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.ComfyUIConnectionStatus
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.HistorySortOrder
+import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.ui.comfyui.ComfyUIHistoryViewModel
+import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsViewModel
+import com.riox432.civitdeck.ui.comfyui.HistorySortOrder
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.ui.theme.Spacing
 
