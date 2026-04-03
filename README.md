@@ -59,7 +59,8 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Model Notes & Tags** — add personal notes and tags to any model for your own organization
 - **Community Reviews** — read and submit reviews on models
 - **Backup & Restore** — export/import app data (collections, prompts, filters, notes, datasets) with granular category selection
-- **Background Downloads** — download model files with background progress tracking and notifications
+- **Background Downloads** — download model files with pause/resume queue management, hash verification, and notifications
+- **Real-time Generation Preview** — live WebSocket preview of ComfyUI generation progress with interrupt support
 - **ComfyHub** — browse and import community workflows from ComfyHub directly into your workflow library
 - **Image Similarity Search** — find visually similar models across the platform
 - **Model Update Notifications** — get notified when followed models receive updates

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add image quality auto-curation filter with Quality sort option (#605) (170fd070)
+- Add workflow template library with parameter editor and curated templates (#603) (9cd10f47)
+- Add personalized feed with affinity scoring, diversity controls, and click tracking (89245935)
+- Add download queue management with pause/resume and hash verification (ed12c8b0)
+- Add real-time WebSocket generation preview with interrupt support (#601) (800052cb)
+
+### Changed
+
+- Move ViewModels from shared feature modules to platform modules (b571b339)
+
+### Fixed
+
+- Fix trailing newline in ModelSearchViewModel.swift (96cf66ba)
+- Fix CI: split ModelSearchViewModel for SwiftLint, add missing Desktop DI param (4d1f97ab)
+
+### Infrastructure
+
+- Audit tech debt cleanup: fix 15 codebase health issues (fd1f6d10)
+- Audit tech debt cleanup: fix 17 of 18 codebase health issues (aeaedb05)
+
 ## [2.1.0] - 2026-04-01
 
 ### Added
