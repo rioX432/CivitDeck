@@ -2,49 +2,55 @@ import SwiftUI
 import Shared
 
 struct AdvancedSettingsView: View {
-    @ObservedObject var viewModel: AppBehaviorSettingsViewModelOwner
-    @ObservedObject var displayViewModel: DisplaySettingsViewModelOwner
+    let viewModel: AppBehaviorSettingsViewModel
+    let displayViewModel: DisplaySettingsViewModel
     @StateObject private var shareHashtagVM = ShareHashtagViewModel()
 
     var body: some View {
-        List {
-            Section("Power User") {
-                powerUserModeToggle
-            }
-            sharingSection
-            if viewModel.powerUserMode {
-                Section("Integrations") {
-                    NavigationLink(destination: IntegrationsHubView()) {
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text("Server Integrations")
-                                .font(.civitBodyMedium)
-                            Text("ComfyUI, SD WebUI, Civitai Link, Custom Server")
-                                .font(.civitBodySmall)
-                                .foregroundColor(.civitOnSurfaceVariant)
+        Observing(viewModel.uiState) {
+            ProgressView()
+        } content: { state in
+            List {
+                Section("Power User") {
+                    powerUserModeToggle(state: state)
+                }
+                sharingSection
+                if state.powerUserMode {
+                    Section("Integrations") {
+                        NavigationLink(destination: IntegrationsHubView()) {
+                            VStack(alignment: .leading, spacing: Spacing.xs) {
+                                Text("Server Integrations")
+                                    .font(.civitBodyMedium)
+                                Text("ComfyUI, SD WebUI, Civitai Link, Custom Server")
+                                    .font(.civitBodySmall)
+                                    .foregroundColor(.civitOnSurfaceVariant)
+                            }
+                        }
+                    }
+                    Section("Model Files") {
+                        NavigationLink {
+                            ModelFileBrowserScreen()
+                        } label: {
+                            Label("Model File Browser", systemImage: "folder.badge.gearshape")
+                        }
+                    }
+                    Section("Navigation") {
+                        NavigationLink(
+                            destination: NavShortcutsSettingsView(viewModel: displayViewModel)
+                        ) {
+                            Text("Navigation Shortcuts")
                         }
                     }
                 }
-                Section("Model Files") {
-                    NavigationLink {
-                        ModelFileBrowserScreen()
-                    } label: {
-                        Label("Model File Browser", systemImage: "folder.badge.gearshape")
-                    }
-                }
-                Section("Navigation") {
-                    NavigationLink(destination: NavShortcutsSettingsView(viewModel: displayViewModel)) {
-                        Text("Navigation Shortcuts")
+                Section("Plugins") {
+                    NavigationLink(destination: PluginListView()) {
+                        Label("Plugins", systemImage: "puzzlepiece.extension")
                     }
                 }
             }
-            Section("Plugins") {
-                NavigationLink(destination: PluginListView()) {
-                    Label("Plugins", systemImage: "puzzlepiece.extension")
-                }
-            }
+            .navigationTitle("Advanced & Integrations")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle("Advanced & Integrations")
-        .navigationBarTitleDisplayMode(.inline)
         .task { await shareHashtagVM.startObserving() }
     }
 
@@ -113,10 +119,10 @@ struct AdvancedSettingsView: View {
         newHashtagInput = ""
     }
 
-    private var powerUserModeToggle: some View {
+    private func powerUserModeToggle(state: AppBehaviorSettingsUiState) -> some View {
         Toggle(isOn: Binding(
-            get: { viewModel.powerUserMode },
-            set: { viewModel.powerUserMode = $0; viewModel.onPowerUserModeChanged($0) }
+            get: { state.powerUserMode },
+            set: { viewModel.onPowerUserModeChanged(enabled: $0) }
         )) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Power User Mode")

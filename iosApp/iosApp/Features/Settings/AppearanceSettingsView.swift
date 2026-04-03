@@ -3,36 +3,40 @@ import Shared
 import UniformTypeIdentifiers
 
 struct AppearanceSettingsView: View {
-    @ObservedObject var viewModel: DisplaySettingsViewModelOwner
+    let viewModel: DisplaySettingsViewModel
     @StateObject private var themePickerVM = ThemePickerViewModel()
     @State private var showingFilePicker = false
     @State private var importError: String?
     @State private var showImportError = false
 
     var body: some View {
-        List {
-            Section("Theme") {
-                themeModePicker
-                accentColorPicker
-                amoledDarkModeToggle
-            }
-            if !themePickerVM.themePlugins.isEmpty {
-                Section("Custom Themes") {
-                    builtInThemeRow
-                    ForEach(themePickerVM.themePlugins, id: \.manifest.id) { plugin in
-                        customThemeRow(plugin)
+        Observing(viewModel.uiState) {
+            ProgressView()
+        } content: { state in
+            List {
+                Section("Theme") {
+                    themeModePicker(state: state)
+                    accentColorPicker(state: state)
+                    amoledDarkModeToggle(state: state)
+                }
+                if !themePickerVM.themePlugins.isEmpty {
+                    Section("Custom Themes") {
+                        builtInThemeRow
+                        ForEach(themePickerVM.themePlugins, id: \.manifest.id) { plugin in
+                            customThemeRow(plugin)
+                        }
                     }
                 }
+                Section {
+                    importThemeButton
+                }
+                Section("Display") {
+                    gridColumnsPicker(state: state)
+                }
             }
-            Section {
-                importThemeButton
-            }
-            Section("Display") {
-                gridColumnsPicker
-            }
+            .navigationTitle("Appearance")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle("Appearance")
-        .navigationBarTitleDisplayMode(.inline)
         .task { await themePickerVM.observe() }
         .fileImporter(
             isPresented: $showingFilePicker,
@@ -51,10 +55,10 @@ struct AppearanceSettingsView: View {
         }
     }
 
-    private var themeModePicker: some View {
+    private func themeModePicker(state: DisplaySettingsUiState) -> some View {
         Picker("Color Scheme", selection: Binding(
-            get: { viewModel.themeMode },
-            set: { viewModel.themeMode = $0; viewModel.onThemeModeChanged($0) }
+            get: { state.themeMode },
+            set: { viewModel.onThemeModeChanged(mode: $0) }
         )) {
             Text("Light").tag(ThemeMode.light)
             Text("Dark").tag(ThemeMode.dark)
@@ -63,10 +67,10 @@ struct AppearanceSettingsView: View {
         .pickerStyle(.segmented)
     }
 
-    private var accentColorPicker: some View {
+    private func accentColorPicker(state: DisplaySettingsUiState) -> some View {
         Picker("Accent Color", selection: Binding(
-            get: { viewModel.accentColor },
-            set: { viewModel.accentColor = $0; viewModel.onAccentColorChanged($0) }
+            get: { state.accentColor },
+            set: { viewModel.onAccentColorChanged(color: $0) }
         )) {
             ForEach(AccentColor.allCases, id: \.self) { color in
                 Text(color.displayName).tag(color)
@@ -74,10 +78,10 @@ struct AppearanceSettingsView: View {
         }
     }
 
-    private var amoledDarkModeToggle: some View {
+    private func amoledDarkModeToggle(state: DisplaySettingsUiState) -> some View {
         Toggle(isOn: Binding(
-            get: { viewModel.amoledDarkMode },
-            set: { viewModel.amoledDarkMode = $0; viewModel.onAmoledDarkModeChanged($0) }
+            get: { state.amoledDarkMode },
+            set: { viewModel.onAmoledDarkModeChanged(enabled: $0) }
         )) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("AMOLED Dark Mode")
@@ -89,10 +93,10 @@ struct AppearanceSettingsView: View {
         }
     }
 
-    private var gridColumnsPicker: some View {
+    private func gridColumnsPicker(state: DisplaySettingsUiState) -> some View {
         Picker("Grid Columns", selection: Binding(
-            get: { viewModel.gridColumns },
-            set: { viewModel.gridColumns = $0; viewModel.onGridColumnsChanged($0) }
+            get: { state.gridColumns },
+            set: { viewModel.onGridColumnsChanged(columns: $0) }
         )) {
             Text("2").tag(Int32(2))
             Text("3").tag(Int32(3))

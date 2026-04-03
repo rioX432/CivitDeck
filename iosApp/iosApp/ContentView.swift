@@ -7,20 +7,21 @@ struct ContentView: View {
     @StateObject private var comparisonState = ComparisonState()
     @StateObject private var tutorialVm = GestureTutorialViewModel()
     @StateObject private var searchViewModel = ModelSearchViewModel()
-    @StateObject private var displaySettings = DisplaySettingsViewModelOwner()
     @EnvironmentObject private var router: NavigationRouter
+    @StateObject private var displayVMHolder = DisplayViewModelHolder()
 
     var body: some View {
-        Group {
-            if tutorialVm.shouldShowTutorial {
-                GestureTutorialView(onDismiss: tutorialVm.dismissTutorial)
-            } else if sizeClass == .regular {
-                sidebarLayout
-            } else {
-                tabLayout
+        Observing(displayVMHolder.vm.uiState) { displayState in
+            Group {
+                if tutorialVm.shouldShowTutorial {
+                    GestureTutorialView(onDismiss: tutorialVm.dismissTutorial)
+                } else if sizeClass == .regular {
+                    sidebarLayout
+                } else {
+                    tabLayout(shortcuts: displayState.customNavShortcuts as? [NavShortcut] ?? [])
+                }
             }
         }
-        .task { await displaySettings.observeUiState() }
         .environmentObject(comparisonState)
         .onChange(of: router.pendingDeepLink) { link in
             guard let link else { return }
@@ -38,7 +39,7 @@ struct ContentView: View {
         }
     }
 
-    private var tabLayout: some View {
+    private func tabLayout(shortcuts: [NavShortcut]) -> some View {
         TabView(selection: $selectedTabId) {
             ModelSearchScreen(viewModel: searchViewModel)
                 .tabItem { Label("Discover", systemImage: "magnifyingglass") }
@@ -52,7 +53,7 @@ struct ContentView: View {
                 .tabItem { Label("Library", systemImage: "folder") }
                 .tag("library")
 
-            ForEach(displaySettings.customNavShortcuts, id: \.name) { shortcut in
+            ForEach(shortcuts, id: \.name) { shortcut in
                 shortcutView(for: shortcut)
                     .tabItem { Label(shortcut.navTabLabel, systemImage: shortcut.navTabIcon) }
                     .tag(shortcut.name)
@@ -125,4 +126,19 @@ extension NavShortcut {
         default: return "square.grid.2x2"
         }
     }
+}
+
+// MARK: - KMP ViewModel Holder
+
+@MainActor
+final class DisplayViewModelHolder: ObservableObject {
+    let vm: DisplaySettingsViewModel
+    private let store = ViewModelStore()
+
+    init() {
+        vm = KoinHelper.shared.createDisplaySettingsViewModel()
+        store.put(key: "DisplaySettingsViewModel", viewModel: vm)
+    }
+
+    deinit { store.clear() }
 }

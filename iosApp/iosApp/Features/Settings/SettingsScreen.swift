@@ -2,16 +2,10 @@ import SwiftUI
 import Shared
 
 struct SettingsScreen: View {
-    @StateObject private var authViewModel = AuthSettingsViewModelOwner()
-    @StateObject private var appBehaviorViewModel = AppBehaviorSettingsViewModelOwner()
-    @StateObject private var storageViewModel = StorageSettingsViewModelOwner()
-    @StateObject private var displayViewModel = DisplaySettingsViewModelOwner()
-    @StateObject private var contentFilterViewModel = ContentFilterSettingsViewModelOwner()
+    @StateObject private var vmStore = SettingsViewModelStore()
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
-        // On iPad (regular size class), NavigationSplitView already provides navigation context.
-        // Adding NavigationStack here causes double back buttons in sub-screens.
         if sizeClass == .regular {
             settingsContent
         } else {
@@ -22,37 +16,36 @@ struct SettingsScreen: View {
     }
 
     private var settingsContent: some View {
-        List {
-            if !storageViewModel.isOnline {
-                offlineBanner
-            }
-            accountSection
-            appearanceSection
-            notificationsSection
-            contentBehaviorSection
-            historySection
-            dataStorageSection
-            advancedIntegrationsSection
-            if appBehaviorViewModel.powerUserMode {
-                analyticsSection
-                datasetsSection
-            }
-            aboutSection
-            if !appBehaviorViewModel.powerUserMode {
-                Section {
-                    Text("Enable Power User Mode in Advanced & Integrations for more features")
-                        .font(.civitBodySmall)
-                        .foregroundColor(.civitOnSurfaceVariant)
+        Observing(vmStore.storage.uiState, vmStore.appBehavior.uiState, vmStore.auth.uiState) {
+            ProgressView()
+        } content: { storageState, appBehaviorState, authState in
+            List {
+                if !storageState.isOnline {
+                    offlineBanner
+                }
+                accountSection(authState: authState)
+                appearanceSection
+                notificationsSection
+                contentBehaviorSection
+                historySection
+                dataStorageSection
+                advancedIntegrationsSection
+                if appBehaviorState.powerUserMode {
+                    analyticsSection
+                    datasetsSection
+                }
+                aboutSection
+                if !appBehaviorState.powerUserMode {
+                    Section {
+                        Text("Enable Power User Mode in Advanced & Integrations for more features")
+                            .font(.civitBodySmall)
+                            .foregroundColor(.civitOnSurfaceVariant)
+                    }
                 }
             }
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle("Settings")
-        .navigationBarTitleDisplayMode(.inline)
-        .task { await authViewModel.observeUiState() }
-        .task { await appBehaviorViewModel.observeUiState() }
-        .task { await storageViewModel.observeUiState() }
-        .task { await displayViewModel.observeUiState() }
-        .task { await contentFilterViewModel.observeUiState() }
     }
 
     private var offlineBanner: some View {
@@ -66,15 +59,15 @@ struct SettingsScreen: View {
         .listRowBackground(Color.civitErrorContainer)
     }
 
-    private var accountSection: some View {
+    private func accountSection(authState: AuthSettingsUiState) -> some View {
         Section("Account") {
-            if let username = authViewModel.connectedUsername, authViewModel.apiKey != nil {
-                ConnectedAccountRow(username: username, onClear: authViewModel.onClearApiKey)
+            if let username = authState.connectedUsername, authState.apiKey != nil {
+                ConnectedAccountRow(username: username, onClear: vmStore.auth.onClearApiKey)
             } else {
                 ApiKeyInputRow(
-                    isValidating: authViewModel.isValidatingApiKey,
-                    error: authViewModel.apiKeyError,
-                    onValidateAndSave: authViewModel.onValidateAndSaveApiKey
+                    isValidating: authState.isValidatingApiKey,
+                    error: authState.apiKeyError,
+                    onValidateAndSave: { vmStore.auth.onValidateAndSaveApiKey(apiKey: $0) }
                 )
             }
         }
@@ -82,7 +75,7 @@ struct SettingsScreen: View {
 
     private var appearanceSection: some View {
         Section {
-            NavigationLink(destination: AppearanceSettingsView(viewModel: displayViewModel)) {
+            NavigationLink(destination: AppearanceSettingsView(viewModel: vmStore.display)) {
                 Text("Appearance")
             }
         }
@@ -99,9 +92,9 @@ struct SettingsScreen: View {
     private var contentBehaviorSection: some View {
         Section {
             NavigationLink(destination: ContentFilterSettingsView(
-                viewModel: contentFilterViewModel,
-                displayViewModel: displayViewModel,
-                appBehaviorViewModel: appBehaviorViewModel
+                viewModel: vmStore.contentFilter,
+                displayViewModel: vmStore.display,
+                appBehaviorViewModel: vmStore.appBehavior
             )) {
                 Text("Content & Behavior")
             }
@@ -118,7 +111,7 @@ struct SettingsScreen: View {
 
     private var dataStorageSection: some View {
         Section {
-            NavigationLink(destination: StorageSettingsView(viewModel: storageViewModel)) {
+            NavigationLink(destination: StorageSettingsView(viewModel: vmStore.storage)) {
                 Text("Data & Storage")
             }
         }
@@ -127,8 +120,8 @@ struct SettingsScreen: View {
     private var advancedIntegrationsSection: some View {
         Section {
             NavigationLink(destination: AdvancedSettingsView(
-                viewModel: appBehaviorViewModel,
-                displayViewModel: displayViewModel
+                viewModel: vmStore.appBehavior,
+                displayViewModel: vmStore.display
             )) {
                 Text("Advanced & Integrations")
             }
