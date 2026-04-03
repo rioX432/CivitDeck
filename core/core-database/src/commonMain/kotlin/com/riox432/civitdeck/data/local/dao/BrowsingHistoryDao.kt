@@ -106,4 +106,10 @@ interface BrowsingHistoryDao {
         "SELECT AVG(durationMs) FROM browsing_history WHERE durationMs IS NOT NULL",
     )
     suspend fun getAverageViewDuration(): Long?
+
+    @Query(
+        "SELECT COUNT(*) FROM browsing_history " +
+            "WHERE interactionType = :interactionType AND viewedAt >= :sinceMillis",
+    )
+    suspend fun getInteractionCountByType(interactionType: String, sinceMillis: Long): Int
 }

@@ -34,4 +34,6 @@ interface BrowsingHistoryRepository {
     suspend fun updateViewDuration(modelId: Long, durationMs: Long)
     suspend fun trackInteraction(modelId: Long, interactionType: InteractionType)
     suspend fun getAverageViewDurationMs(): Long?
+    suspend fun getRecommendationClickCount(sinceMillis: Long): Int
+    suspend fun getInteractionCountByType(type: InteractionType, sinceMillis: Long): Int
 }

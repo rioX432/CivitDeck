@@ -3,6 +3,7 @@ package com.riox432.civitdeck.feature.search.domain.usecase
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.RecommendationSection
+import com.riox432.civitdeck.domain.model.RecommendationSectionType
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.model.filterNsfwImages
@@ -32,6 +33,10 @@ class GetRecommendationsUseCase(
 
         val favTypes = favoriteRepository.getFavoriteTypeCounts()
 
+        // Affinity-based "Recommended for You" section
+        val affinitySection = buildAffinitySection(seenIds, nsfwLevel, favTypes)
+        if (affinitySection != null) sections.add(affinitySection)
+
         val typeSections = buildTypeSections(seenIds, nsfwLevel, favTypes)
         sections.addAll(typeSections)
 
@@ -41,12 +46,53 @@ class GetRecommendationsUseCase(
         val creatorSection = buildCreatorSection(seenIds, nsfwLevel)
         if (creatorSection != null) sections.add(creatorSection)
 
+        // Trending velocity section — models gaining traction fast
+        val trendingSection = buildTrendingVelocitySection(seenIds, nsfwLevel)
+        if (trendingSection != null) sections.add(trendingSection)
+
+        // Diversity: inject exploration section if too homogeneous
+        val explorationSection = buildExplorationSection(seenIds, nsfwLevel, sections)
+        if (explorationSection != null) sections.add(explorationSection)
+
         if (sections.isEmpty()) {
-            val trendingSection = buildTrendingFallback(seenIds, nsfwLevel)
-            if (trendingSection != null) sections.add(trendingSection)
+            val fallback = buildTrendingFallback(seenIds, nsfwLevel)
+            if (fallback != null) sections.add(fallback)
         }
 
-        return sections.shuffled().take(MAX_SECTIONS)
+        return sections.take(MAX_SECTIONS)
+    }
+
+    /**
+     * "Recommended for You" — combines top affinity tag + type into a single query
+     * for the user's most engaged content profile.
+     */
+    private suspend fun buildAffinitySection(
+        seenIds: Set<Long>,
+        nsfwLevel: NsfwFilterLevel,
+        favTypes: Map<String, Int>,
+    ): RecommendationSection? {
+        val weightedTags = browsingHistoryRepository.getWeightedTags()
+        val topTag = weightedTags.entries.maxByOrNull { it.value }?.key ?: return null
+
+        val weightedTypes = browsingHistoryRepository.getWeightedTypes()
+        val mergedTypes = mutableMapOf<String, Double>()
+        for ((type, score) in weightedTypes) mergedTypes[type] = (mergedTypes[type] ?: 0.0) + score
+        for ((type, count) in favTypes) {
+            mergedTypes[type] = (mergedTypes[type] ?: 0.0) + count * FAVORITE_WEIGHT
+        }
+        val topType = mergedTypes.entries
+            .maxByOrNull { it.value }
+            ?.let { runCatching { ModelType.valueOf(it.key) }.getOrNull() }
+
+        return fetchSection(
+            title = "Recommended for You",
+            reason = "Based on your activity",
+            seenIds = seenIds,
+            nsfwLevel = nsfwLevel,
+            type = topType,
+            tag = topTag,
+            sectionType = RecommendationSectionType.PERSONALIZED,
+        )
     }
 
     private suspend fun buildTypeSections(
@@ -117,6 +163,68 @@ class GetRecommendationsUseCase(
         )
     }
 
+    /**
+     * Trending velocity — models sorted by most downloads this day,
+     * representing fast-rising content rather than all-time popular.
+     */
+    private suspend fun buildTrendingVelocitySection(
+        seenIds: Set<Long>,
+        nsfwLevel: NsfwFilterLevel,
+    ): RecommendationSection? {
+        val nsfw = if (nsfwLevel == NsfwFilterLevel.Off) false else null
+        val result = modelRepository.getModels(
+            sort = SortOrder.MostDownloaded,
+            period = TimePeriod.Day,
+            limit = SECTION_SIZE + seenIds.size.coerceAtMost(BUFFER),
+            nsfw = nsfw,
+        )
+        val filtered = result.items
+            .filterNot { it.id in seenIds }
+            .filterNsfwImages(nsfwLevel)
+            .take(SECTION_SIZE)
+        if (filtered.isEmpty()) return null
+
+        return RecommendationSection(
+            title = "Rising Fast",
+            reason = "Trending in the last 24 hours",
+            models = filtered,
+            sectionType = RecommendationSectionType.TRENDING,
+        )
+    }
+
+    /**
+     * Diversity control — if all personalized sections share the same type,
+     * inject an exploration section from a different category to prevent filter bubbles.
+     */
+    private suspend fun buildExplorationSection(
+        seenIds: Set<Long>,
+        nsfwLevel: NsfwFilterLevel,
+        existingSections: List<RecommendationSection>,
+    ): RecommendationSection? {
+        if (existingSections.size < MIN_SECTIONS_FOR_EXPLORATION) return null
+
+        // Collect types already represented in sections
+        val coveredTypes = existingSections.flatMap { section ->
+            section.models.map { it.type }
+        }.toSet()
+
+        // Find a type NOT yet represented
+        val unexploredType = ModelType.entries
+            .filter { it !in coveredTypes }
+            .randomOrNull() ?: return null
+
+        return fetchSection(
+            title = "Explore ${unexploredType.name}",
+            reason = "Something different to try",
+            seenIds = seenIds,
+            nsfwLevel = nsfwLevel,
+            type = unexploredType,
+            sort = SortOrder.MostDownloaded,
+            period = TimePeriod.Week,
+            sectionType = RecommendationSectionType.EXPLORATION,
+        )
+    }
+
     private suspend fun fetchSection(
         title: String,
         reason: String,
@@ -125,14 +233,17 @@ class GetRecommendationsUseCase(
         type: ModelType? = null,
         tag: String? = null,
         username: String? = null,
+        sort: SortOrder? = SortOrder.HighestRated,
+        period: TimePeriod? = TimePeriod.Month,
+        sectionType: RecommendationSectionType = RecommendationSectionType.PERSONALIZED,
     ): RecommendationSection? {
         val nsfw = if (nsfwLevel == NsfwFilterLevel.Off) false else null
         val result = modelRepository.getModels(
             type = type,
             tag = tag,
             username = username,
-            sort = SortOrder.HighestRated,
-            period = TimePeriod.Month,
+            sort = sort,
+            period = period,
             limit = SECTION_SIZE + seenIds.size.coerceAtMost(BUFFER),
             nsfw = nsfw,
         )
@@ -146,6 +257,7 @@ class GetRecommendationsUseCase(
             title = title,
             reason = reason,
             models = filtered,
+            sectionType = sectionType,
         )
     }
 
@@ -170,6 +282,7 @@ class GetRecommendationsUseCase(
             title = "Trending This Week",
             reason = "Popular models",
             models = filtered,
+            sectionType = RecommendationSectionType.TRENDING,
         )
     }
 
@@ -177,8 +290,9 @@ class GetRecommendationsUseCase(
         private const val SECTION_SIZE = 10
         private const val BUFFER = 20
         private const val FAVORITE_WEIGHT = 3
-        private const val MAX_SECTIONS = 5
+        private const val MAX_SECTIONS = 6
         private const val MAX_TYPE_SECTIONS = 2
         private const val MAX_TAG_SECTIONS = 2
+        private const val MIN_SECTIONS_FOR_EXPLORATION = 2
     }
 }

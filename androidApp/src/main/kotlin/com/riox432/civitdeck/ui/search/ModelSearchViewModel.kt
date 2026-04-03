@@ -40,6 +40,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseC
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.TrackRecommendationClickUseCase
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -113,6 +114,7 @@ class ModelSearchViewModel(
     private val saveSearchFilterUseCase: SaveSearchFilterUseCase,
     private val deleteSavedSearchFilterUseCase: DeleteSavedSearchFilterUseCase,
     private val observeQualityThresholdUseCase: ObserveQualityThresholdUseCase,
+    private val trackRecommendationClickUseCase: TrackRecommendationClickUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelSearchUiState())
@@ -388,6 +390,12 @@ class ModelSearchViewModel(
 
     fun deleteSavedFilter(id: Long) {
         viewModelScope.launch { deleteSavedSearchFilterUseCase(id) }
+    }
+
+    fun trackRecommendationClick(modelId: Long) {
+        viewModelScope.launch {
+            suspendRunCatching { trackRecommendationClickUseCase(modelId) }
+        }
     }
 
     fun toggleFavorite(model: Model) {

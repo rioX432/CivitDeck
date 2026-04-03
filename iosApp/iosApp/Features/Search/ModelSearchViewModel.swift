@@ -54,6 +54,7 @@ final class ModelSearchViewModel: ObservableObject {
     let saveSearchFilterUseCase: SaveSearchFilterUseCase
     let deleteSavedSearchFilterUseCase: DeleteSavedSearchFilterUseCase
     private let observeQualityThresholdUseCase: ObserveQualityThresholdUseCase
+    private let trackRecommendationClickUseCase: TrackRecommendationClickUseCase
     private var qualityThreshold: Int32 = 0
     private var thresholdObserveTask: Task<Void, Never>?
     private var nextCursor: String?
@@ -91,6 +92,7 @@ final class ModelSearchViewModel: ObservableObject {
         self.saveSearchFilterUseCase = KoinHelper.shared.getSaveSearchFilterUseCase()
         self.deleteSavedSearchFilterUseCase = KoinHelper.shared.getDeleteSavedSearchFilterUseCase()
         self.observeQualityThresholdUseCase = KoinHelper.shared.getObserveQualityThresholdUseCase()
+        self.trackRecommendationClickUseCase = KoinHelper.shared.getTrackRecommendationClickUseCase()
         loadExcludedTags()
         loadDefaults()
         observeQualityThreshold()
@@ -140,6 +142,12 @@ final class ModelSearchViewModel: ObservableObject {
             } catch {
                 // Non-critical, silently fail
             }
+        }
+    }
+
+    func trackRecommendationClick(modelId: Int64) {
+        Task {
+            try? await trackRecommendationClickUseCase.invoke(modelId: modelId)
         }
     }
 
