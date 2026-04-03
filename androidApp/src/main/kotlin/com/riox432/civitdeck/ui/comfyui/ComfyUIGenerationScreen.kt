@@ -40,8 +40,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.LoraSelection
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.GenerationUiState
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)

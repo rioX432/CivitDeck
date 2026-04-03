@@ -8,7 +8,6 @@ import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveSavedPromptsU
 import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveTemplatesUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.SearchSavedPromptsUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.ToggleTemplateUseCase
-import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow

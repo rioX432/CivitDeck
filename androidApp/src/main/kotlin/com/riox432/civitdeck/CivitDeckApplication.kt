@@ -22,37 +22,39 @@ import com.riox432.civitdeck.domain.repository.AppVersionProvider
 import com.riox432.civitdeck.domain.usecase.CleanupBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
-import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
-import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ModelFileBrowserViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
-import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
-import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
-import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
-import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
-import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
-import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
 import com.riox432.civitdeck.ui.analytics.AnalyticsViewModel
 import com.riox432.civitdeck.ui.backup.BackupViewModel
+import com.riox432.civitdeck.ui.collections.CollectionDetailViewModel
+import com.riox432.civitdeck.ui.collections.CollectionsViewModel
 import com.riox432.civitdeck.ui.comfyhub.ComfyHubBrowserViewModel
 import com.riox432.civitdeck.ui.comfyhub.ComfyHubDetailViewModel
+import com.riox432.civitdeck.ui.comfyui.CivitaiLinkSendViewModel
+import com.riox432.civitdeck.ui.comfyui.CivitaiLinkSettingsViewModel
+import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.ui.comfyui.ComfyUIHistoryViewModel
+import com.riox432.civitdeck.ui.comfyui.ComfyUIQueueViewModel
+import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsViewModel
+import com.riox432.civitdeck.ui.comfyui.SDWebUIGenerationViewModel
+import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsViewModel
+import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateViewModel
+import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
 import com.riox432.civitdeck.ui.dataset.BatchTagEditorViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DatasetListViewModel
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
+import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
+import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryViewModel
+import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryViewModel
+import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsViewModel
 import com.riox432.civitdeck.ui.feed.FeedViewModel
+import com.riox432.civitdeck.ui.gallery.ImageGalleryViewModel
 import com.riox432.civitdeck.ui.history.BrowsingHistoryViewModel
+import com.riox432.civitdeck.ui.modelfiles.ModelFileBrowserViewModel
 import com.riox432.civitdeck.ui.notificationcenter.NotificationCenterViewModel
 import com.riox432.civitdeck.ui.plugin.PluginManagementViewModel
+import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
+import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.similar.SimilarModelsViewModel
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
 import com.riox432.civitdeck.ui.update.UpdateViewModel
@@ -190,4 +192,6 @@ val androidModule = module {
     viewModel { ComfyHubBrowserViewModel(get()) }
     viewModel { params -> ComfyHubDetailViewModel(params.get(), get(), get()) }
     viewModel { com.riox432.civitdeck.ui.share.ShareViewModel(get(), get(), get(), get()) }
+    viewModel { params -> CreatorProfileViewModel(params.get(), get(), get(), get(), get()) }
+    viewModel { SavedPromptsViewModel(get(), get(), get(), get(), get()) }
 }

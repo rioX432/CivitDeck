@@ -20,8 +20,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.ExternalServerConnectionStatus
-import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
-import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
+import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryViewModel
+import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable

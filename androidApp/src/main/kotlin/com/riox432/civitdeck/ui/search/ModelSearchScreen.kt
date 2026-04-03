@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.riox432.civitdeck.R
-import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -113,7 +112,7 @@ fun ModelSearchScreen(
 @Composable
 private fun SearchScreenBody(
     headerState: CollapsibleHeaderState,
-    uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
+    uiState: com.riox432.civitdeck.ui.search.ModelSearchUiState,
     searchHistory: List<String>,
     gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
     viewModel: ModelSearchViewModel,

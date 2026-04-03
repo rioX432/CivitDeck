@@ -39,8 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.ExternalServerConfig
 import com.riox432.civitdeck.domain.model.ExternalServerConnectionStatus
-import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsUiState
-import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)

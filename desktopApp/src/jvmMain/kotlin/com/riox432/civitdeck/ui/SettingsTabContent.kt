@@ -11,11 +11,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
-import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
+import com.riox432.civitdeck.presentation.settings.AppBehaviorSettingsViewModel
+import com.riox432.civitdeck.presentation.settings.AuthSettingsViewModel
+import com.riox432.civitdeck.presentation.settings.ContentFilterSettingsViewModel
+import com.riox432.civitdeck.presentation.settings.DisplaySettingsViewModel
+import com.riox432.civitdeck.presentation.settings.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsScreen
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel

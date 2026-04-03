@@ -49,12 +49,12 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import com.riox432.civitdeck.domain.model.NavShortcut
-import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
-import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
+import com.riox432.civitdeck.presentation.settings.AppBehaviorSettingsViewModel
+import com.riox432.civitdeck.presentation.settings.AuthSettingsViewModel
+import com.riox432.civitdeck.presentation.settings.DisplaySettingsViewModel
+import com.riox432.civitdeck.presentation.settings.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchScreen
+import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.search.SearchScreenCallbacks
 import com.riox432.civitdeck.ui.settings.SettingsScreen
 import com.riox432.civitdeck.ui.theme.Duration

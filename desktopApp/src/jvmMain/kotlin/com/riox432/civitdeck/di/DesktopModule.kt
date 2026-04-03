@@ -2,20 +2,18 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.DesktopAppVersionProvider
 import com.riox432.civitdeck.domain.repository.AppVersionProvider
-import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
-import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
-import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
-import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
-import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
+import com.riox432.civitdeck.ui.collections.CollectionDetailViewModel
+import com.riox432.civitdeck.ui.collections.CollectionsViewModel
+import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.ui.comfyui.ComfyUIHistoryViewModel
+import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsViewModel
+import com.riox432.civitdeck.ui.comfyui.SDWebUIGenerationViewModel
+import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsViewModel
+import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
+import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryViewModel
+import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsViewModel
+import com.riox432.civitdeck.ui.creator.CreatorProfileViewModel
+import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
 import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterViewModel
 import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryViewModel
@@ -60,21 +58,6 @@ val desktopModule = module {
     viewModel {
         DesktopBrowsingHistoryViewModel(get(), get(), get())
     }
-    // Settings ViewModels
-    viewModel {
-        DisplaySettingsViewModel(
-            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-        )
-    }
-    viewModel {
-        ContentFilterSettingsViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get())
-    }
-    viewModel {
-        AppBehaviorSettingsViewModel(get(), get(), get(), get(), get(), get(), get(), get())
-    }
-    viewModel {
-        StorageSettingsViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
-    }
     // ComfyUI ViewModels
     viewModel {
         ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get())
@@ -118,4 +101,7 @@ val desktopModule = module {
     viewModel {
         DesktopNotificationCenterViewModel(get(), get(), get())
     }
+    // Creator & Prompts ViewModels (moved from feature modules)
+    viewModel { params -> CreatorProfileViewModel(params.get(), get(), get(), get(), get()) }
+    viewModel { SavedPromptsViewModel(get(), get(), get(), get(), get()) }
 }

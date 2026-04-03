@@ -25,6 +25,7 @@ val sharedModules: List<Module>
         dataModule,
         domainModule,
         settingsModule,
+        settingsViewModelModule,
         creatorModule,
         promptsModule,
         galleryModule,

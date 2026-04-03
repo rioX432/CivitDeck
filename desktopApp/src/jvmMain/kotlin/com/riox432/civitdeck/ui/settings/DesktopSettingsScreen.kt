@@ -30,11 +30,11 @@ import com.riox432.civitdeck.domain.model.AccentColor
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.model.ThemeMode
-import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
+import com.riox432.civitdeck.presentation.settings.AppBehaviorSettingsViewModel
+import com.riox432.civitdeck.presentation.settings.AuthSettingsViewModel
+import com.riox432.civitdeck.presentation.settings.ContentFilterSettingsViewModel
+import com.riox432.civitdeck.presentation.settings.DisplaySettingsViewModel
+import com.riox432.civitdeck.presentation.settings.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.update.DesktopUpdateViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
