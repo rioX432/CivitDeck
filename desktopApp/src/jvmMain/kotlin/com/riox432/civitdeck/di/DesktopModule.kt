@@ -63,7 +63,7 @@ val desktopModule = module {
         ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get())
     }
     viewModel {
-        ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get())
+        ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     viewModel {
         ComfyUIHistoryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get())

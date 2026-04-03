@@ -43,6 +43,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.GetWorkflowTemplates
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportComfyHubWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptSDWebUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveSDWebUIConnectionUseCase
@@ -90,6 +91,7 @@ val comfyuiModule = module {
     factory { ObserveGenerationProgressUseCase(get()) }
     factory { ObserveComfyUIQueueUseCase(get()) }
     factory { CancelComfyUIJobUseCase(get()) }
+    factory { InterruptComfyUIGenerationUseCase(get()) }
     factory { FindMatchingLocalModelUseCase(get()) }
     factory { PopulateGenerationFromModelUseCase() }
     factory { SaveGeneratedImageUseCase(get(named("comfyui")), get()) }

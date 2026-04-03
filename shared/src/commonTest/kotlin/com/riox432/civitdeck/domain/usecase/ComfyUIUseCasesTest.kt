@@ -70,6 +70,7 @@ class ComfyUIUseCasesTest {
         override fun observeQueue(intervalMs: Long): Flow<List<QueueJob>> =
             kotlinx.coroutines.flow.flowOf(emptyList())
         override suspend fun cancelJob(promptId: String) {}
+        override suspend fun interruptGeneration() {}
     }
 
     private val repo = FakeComfyUIRepository()

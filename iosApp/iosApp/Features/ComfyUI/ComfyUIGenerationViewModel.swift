@@ -1,5 +1,6 @@
 import Foundation
 import Shared
+import UIKit
 
 @MainActor
 class ComfyUIGenerationViewModel: ObservableObject {
@@ -32,6 +33,9 @@ class ComfyUIGenerationViewModel: ObservableObject {
     @Published var resultImageUrls: [String] = []
     @Published var error: String?
     @Published var imageSaveSuccess: Bool?
+    // Preview
+    @Published var previewImage: UIImage?
+    @Published var currentNodeName: String = ""
 
     var progressFraction: Float {
         guard totalSteps > 0 else { return 0 }
@@ -44,6 +48,9 @@ class ComfyUIGenerationViewModel: ObservableObject {
     private let importWorkflowUseCase = KoinHelper.shared.getImportWorkflowUseCase()
     private let submitGeneration = KoinHelper.shared.getSubmitComfyUIGenerationUseCase()
     private let pollResult = KoinHelper.shared.getPollComfyUIResultUseCase()
+    private let observeProgressUseCase = KoinHelper.shared.getObserveGenerationProgressUseCase()
+    private let interruptGenerationUseCase = KoinHelper.shared.getInterruptComfyUIGenerationUseCase()
+    private let connectionRepository = KoinHelper.shared.getComfyUIConnectionRepository()
     private let saveImageUseCase = KoinHelper.shared.getSaveGeneratedImageUseCase()
     private var progressTask: Task<Void, Never>?
 
@@ -136,37 +143,41 @@ class ComfyUIGenerationViewModel: ObservableObject {
         resultImageUrls = []
         currentStep = 0
         totalSteps = 0
+        previewImage = nil
+        currentNodeName = ""
 
         Task {
             do {
-                let w = Int32(width) ?? 512
-                let h = Int32(height) ?? 512
-                let s = Int64(seed) ?? -1
-                let kLoras = loraSelections.map {
-                    LoraSelection(name: $0.name, strengthModel: $0.strengthModel, strengthClip: $0.strengthClip)
-                }
-                let params = ComfyUIGenerationParams(
-                    checkpoint: selectedCheckpoint,
-                    prompt: prompt,
-                    negativePrompt: negativePrompt,
-                    steps: Int32(steps),
-                    cfgScale: cfgScale,
-                    seed: s,
-                    width: w,
-                    height: h,
-                    samplerName: "euler",
-                    scheduler: "normal",
-                    loraSelections: kLoras,
-                    controlNetEnabled: controlNetEnabled,
-                    controlNetModel: selectedControlNet,
-                    controlNetStrength: Float(controlNetStrength),
-                    customWorkflowJson: customWorkflowJson
-                )
+                let params = buildParams()
                 let promptId = try await submitGeneration.invoke(params: params)
                 generationStatus = .running
-                await pollForResult(promptId: promptId)
+                let connection = try await connectionRepository.getActiveConnection()
+                if let conn = connection {
+                    await startWebSocketProgress(
+                        promptId: promptId,
+                        host: conn.hostname,
+                        port: conn.port
+                    )
+                } else {
+                    await pollForResult(promptId: promptId)
+                }
             } catch {
                 generationStatus = .error
+                self.error = error.localizedDescription
+            }
+        }
+    }
+
+    func onInterrupt() {
+        progressTask?.cancel()
+        Task {
+            do {
+                try await interruptGenerationUseCase.invoke()
+                generationStatus = .idle
+                currentStep = 0
+                totalSteps = 0
+                previewImage = nil
+            } catch {
                 self.error = error.localizedDescription
             }
         }
@@ -180,6 +191,81 @@ class ComfyUIGenerationViewModel: ObservableObject {
             } catch {
                 imageSaveSuccess = false
             }
+        }
+    }
+
+    private func buildParams() -> ComfyUIGenerationParams {
+        let w = Int32(width) ?? 512
+        let h = Int32(height) ?? 512
+        let s = Int64(seed) ?? -1
+        let kLoras = loraSelections.map {
+            LoraSelection(name: $0.name, strengthModel: $0.strengthModel, strengthClip: $0.strengthClip)
+        }
+        return ComfyUIGenerationParams(
+            checkpoint: selectedCheckpoint,
+            prompt: prompt,
+            negativePrompt: negativePrompt,
+            steps: Int32(steps),
+            cfgScale: cfgScale,
+            seed: s,
+            width: w,
+            height: h,
+            samplerName: "euler",
+            scheduler: "normal",
+            loraSelections: kLoras,
+            controlNetEnabled: controlNetEnabled,
+            controlNetModel: selectedControlNet,
+            controlNetStrength: Float(controlNetStrength),
+            customWorkflowJson: customWorkflowJson
+        )
+    }
+
+    private func startWebSocketProgress(promptId: String, host: String, port: Int32) async {
+        // Collect progress from WebSocket flow via SKIE async sequence
+        do {
+            for try await progress in observeProgressUseCase.invoke(
+                promptId: promptId,
+                host: host,
+                port: port
+            ) {
+                if progress.currentStep > 0 {
+                    currentStep = Int(progress.currentStep)
+                }
+                if progress.totalSteps > 0 {
+                    totalSteps = Int(progress.totalSteps)
+                }
+                if !progress.currentNode.isEmpty {
+                    currentNodeName = progress.currentNode
+                }
+                if let bytes = progress.previewImageBytes {
+                    let data = kotlinByteArrayToData(bytes)
+                    if let image = UIImage(data: data) {
+                        previewImage = image
+                    }
+                }
+            }
+            // WebSocket flow completed: fetch final result
+            await fetchFinalResult(promptId: promptId)
+        } catch {
+            // WebSocket failed: fall back to polling
+            await pollForResult(promptId: promptId)
+        }
+    }
+
+    private func fetchFinalResult(promptId: String) async {
+        do {
+            let result = try await pollResult.invoke(promptId: promptId)
+            let status = result.status
+            if status == .completed {
+                resultImageUrls = result.imageUrls
+                generationStatus = .completed
+            } else {
+                self.error = result.error ?? "Generation failed"
+                generationStatus = .error
+            }
+        } catch {
+            self.error = error.localizedDescription
+            generationStatus = .error
         }
     }
 
@@ -207,6 +293,16 @@ class ComfyUIGenerationViewModel: ObservableObject {
         self.error = "Generation timed out"
         generationStatus = .error
     }
+}
+
+/// Convert Kotlin ByteArray to Swift Data
+private func kotlinByteArrayToData(_ byteArray: KotlinByteArray) -> Data {
+    let size = byteArray.size
+    var bytes = [UInt8](repeating: 0, count: Int(size))
+    for i in 0..<size {
+        bytes[Int(i)] = UInt8(bitPattern: byteArray.get(index: i))
+    }
+    return Data(bytes)
 }
 
 struct LoraSelectionSwift: Identifiable {

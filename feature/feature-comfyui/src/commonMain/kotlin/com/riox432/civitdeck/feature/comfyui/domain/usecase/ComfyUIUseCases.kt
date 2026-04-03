@@ -91,6 +91,10 @@ class PollComfyUIResultUseCase(private val repository: ComfyUIGenerationReposito
         repository.pollGenerationResult(promptId)
 }
 
+class InterruptComfyUIGenerationUseCase(private val repository: ComfyUIGenerationRepository) {
+    suspend operator fun invoke() = repository.interruptGeneration()
+}
+
 // -- History --
 
 class FetchComfyUIHistoryUseCase(private val repository: ComfyUIHistoryRepository) {

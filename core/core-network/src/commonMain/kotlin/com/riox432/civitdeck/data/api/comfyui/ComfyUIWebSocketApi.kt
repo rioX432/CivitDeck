@@ -15,6 +15,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 private const val MAX_RETRIES = 5
 private const val BASE_DELAY_MS = 1_000L
 private const val MAX_DELAY_MS = 16_000L
+private const val BINARY_HEADER_SIZE = 8
 
 /**
  * Manages a ComfyUI WebSocket connection and emits typed [ComfyUIWebSocketMessage] events.
@@ -79,9 +80,24 @@ class ComfyUIWebSocketApi(
     }
 
     private fun Frame.toRelevantMessage(promptId: String): ComfyUIWebSocketMessage? {
-        if (this !is Frame.Text) return null
-        val msg = parseMessage(readText()) ?: return null
-        return if (isRelevant(msg, promptId)) msg else null
+        return when (this) {
+            is Frame.Text -> {
+                val msg = parseMessage(readText()) ?: return null
+                if (isRelevant(msg, promptId)) msg else null
+            }
+            is Frame.Binary -> parseBinaryPreview(data)
+            else -> null
+        }
+    }
+
+    /**
+     * ComfyUI sends preview images as binary frames.
+     * Format: first 8 bytes are a header (event type + format), remaining bytes are image data.
+     */
+    private fun parseBinaryPreview(data: ByteArray): ComfyUIWebSocketMessage? {
+        if (data.size <= BINARY_HEADER_SIZE) return null
+        val imageBytes = data.copyOfRange(BINARY_HEADER_SIZE, data.size)
+        return ComfyUIWebSocketMessage.PreviewImage(imageBytes)
     }
 
     private fun isTerminal(msg: ComfyUIWebSocketMessage): Boolean =
@@ -139,6 +155,7 @@ class ComfyUIWebSocketApi(
         is ComfyUIWebSocketMessage.Executed -> msg.promptId == promptId
         is ComfyUIWebSocketMessage.ExecutionSuccess -> msg.promptId == promptId
         is ComfyUIWebSocketMessage.ExecutionError -> msg.promptId == promptId
+        is ComfyUIWebSocketMessage.PreviewImage -> true
         is ComfyUIWebSocketMessage.Unknown -> false
     }
 }

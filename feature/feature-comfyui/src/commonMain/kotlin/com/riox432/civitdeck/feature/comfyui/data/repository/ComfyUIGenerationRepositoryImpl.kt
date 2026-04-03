@@ -85,9 +85,20 @@ class ComfyUIGenerationRepositoryImpl(
                     totalSteps = msg.max,
                     currentNode = msg.node,
                 )
+                is ComfyUIWebSocketMessage.PreviewImage -> GenerationProgress(
+                    promptId = promptId,
+                    currentStep = 0,
+                    totalSteps = 0,
+                    previewImageBytes = msg.imageBytes,
+                )
                 else -> null
             }
         }
+    }
+
+    override suspend fun interruptGeneration() {
+        ensureApiConfigured()
+        api.interrupt()
     }
 
     override fun getImageUrl(filename: String, subfolder: String, type: String): String {

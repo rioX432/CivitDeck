@@ -2,6 +2,7 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
+import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
 import com.riox432.civitdeck.domain.usecase.ActivatePluginUseCase
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
@@ -171,6 +172,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.GetWorkflowTemplates
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportComfyHubWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptSDWebUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveSDWebUIConnectionUseCase
@@ -399,6 +401,8 @@ object KoinHelper {
     fun getObserveGenerationProgressUseCase(): ObserveGenerationProgressUseCase = getKoin().get()
     fun getObserveComfyUIQueueUseCase(): ObserveComfyUIQueueUseCase = getKoin().get()
     fun getCancelComfyUIJobUseCase(): CancelComfyUIJobUseCase = getKoin().get()
+    fun getInterruptComfyUIGenerationUseCase(): InterruptComfyUIGenerationUseCase = getKoin().get()
+    fun getComfyUIConnectionRepository(): ComfyUIConnectionRepository = getKoin().get()
     fun getFindMatchingLocalModelUseCase(): FindMatchingLocalModelUseCase = getKoin().get()
     fun getPopulateGenerationFromModelUseCase(): PopulateGenerationFromModelUseCase = getKoin().get()
     fun getSaveGeneratedImageUseCase(): SaveGeneratedImageUseCase = getKoin().get()
