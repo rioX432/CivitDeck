@@ -39,6 +39,11 @@ interface ModelDownloadDao {
     @Query("DELETE FROM model_downloads WHERE id = :id")
     suspend fun delete(id: Long): Int
 
+    @Query(
+        "UPDATE model_downloads SET hashVerified = :verified, updatedAt = :updatedAt WHERE id = :id",
+    )
+    suspend fun updateHashVerified(id: Long, verified: Int, updatedAt: Long): Int
+
     @Query("DELETE FROM model_downloads WHERE status = 'Completed'")
     suspend fun deleteCompleted(): Int
 }

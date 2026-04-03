@@ -98,6 +98,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveShareHashtagsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.ParseBackupUseCase
+import com.riox432.civitdeck.domain.usecase.PauseDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveImageFromDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelDirectoryUseCase
@@ -106,6 +107,7 @@ import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.RenameDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.RestoreBackupUseCase
+import com.riox432.civitdeck.domain.usecase.ResumeDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.ScanModelDirectoriesUseCase
@@ -134,6 +136,7 @@ import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.domain.usecase.VerifyDownloadHashUseCase
 import com.riox432.civitdeck.domain.usecase.UnfollowCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.UninstallPluginUseCase
@@ -528,6 +531,9 @@ object KoinHelper {
     fun getCancelDownloadUseCase(): CancelDownloadUseCase = getKoin().get()
     fun getDeleteDownloadUseCase(): DeleteDownloadUseCase = getKoin().get()
     fun getClearCompletedDownloadsUseCase(): ClearCompletedDownloadsUseCase = getKoin().get()
+    fun getPauseDownloadUseCase(): PauseDownloadUseCase = getKoin().get()
+    fun getResumeDownloadUseCase(): ResumeDownloadUseCase = getKoin().get()
+    fun getVerifyDownloadHashUseCase(): VerifyDownloadHashUseCase = getKoin().get()
     // endregion
 
     // region Backup & Restore

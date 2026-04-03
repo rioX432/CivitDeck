@@ -22,6 +22,8 @@ import com.riox432.civitdeck.ui.dataset.DuplicateReviewScreen
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
 import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
+import com.riox432.civitdeck.ui.downloadqueue.DownloadQueueScreen
+import com.riox432.civitdeck.ui.downloadqueue.DownloadQueueViewModel
 import com.riox432.civitdeck.ui.feed.FeedScreen
 import com.riox432.civitdeck.ui.feed.FeedViewModel
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
@@ -299,6 +301,23 @@ internal fun EntryProviderScope<Any>.browsingHistoryEntry(backStack: MutableList
             onModelClick = { modelId ->
                 backStack.add(DetailRoute(modelId))
             },
+        )
+    }
+}
+
+internal fun EntryProviderScope<Any>.downloadQueueEntry(backStack: MutableList<Any>) {
+    entry<DownloadQueueRoute> {
+        val viewModel: DownloadQueueViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+        DownloadQueueScreen(
+            uiState = uiState,
+            onBack = { backStack.removeLastOrNull() },
+            onPause = viewModel::pauseDownload,
+            onResume = viewModel::resumeDownload,
+            onCancel = viewModel::cancelDownload,
+            onRetry = viewModel::retryDownload,
+            onDelete = viewModel::deleteDownload,
+            onClearCompleted = viewModel::clearCompleted,
         )
     }
 }

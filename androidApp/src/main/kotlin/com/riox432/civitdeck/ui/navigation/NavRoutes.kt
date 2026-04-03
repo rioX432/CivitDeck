@@ -113,6 +113,8 @@ data object NotificationCenterRoute
 
 data object FeedRoute
 
+data object DownloadQueueRoute
+
 data object CreateHubRoute
 
 data object LibraryRoute

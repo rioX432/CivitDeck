@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import Shared
 
@@ -37,9 +38,31 @@ final class DownloadService: NSObject, ObservableObject {
         task.resume()
     }
 
+    /// Stores resume data keyed by download ID for pause/resume
+    private var resumeDataStore: [Int64: Data] = [:]
+
     func cancelDownload(downloadId: Int64) {
-        activeTasks[downloadId]?.cancel()
+        if let task = activeTasks[downloadId] {
+            task.cancel(byProducingResumeData: { [weak self] data in
+                Task { @MainActor [weak self] in
+                    if let data {
+                        self?.resumeDataStore[downloadId] = data
+                    }
+                }
+            })
+        }
         activeTasks.removeValue(forKey: downloadId)
+    }
+
+    func resumeDownload(downloadId: Int64, url: String, apiKey: String?) {
+        if let resumeData = resumeDataStore.removeValue(forKey: downloadId) {
+            let task = session.downloadTask(withResumeData: resumeData)
+            task.taskDescription = String(downloadId)
+            activeTasks[downloadId] = task
+            task.resume()
+        } else {
+            startDownload(downloadId: downloadId, url: url, apiKey: apiKey)
+        }
     }
 
     fileprivate func handleProgress(downloadId: Int64, written: Int64, total: Int64) {
@@ -81,6 +104,7 @@ final class DownloadService: NSObject, ObservableObject {
             do {
                 try FileManager.default.moveItem(at: location, to: destFile)
                 try? await repository.updateDestinationPath(id: downloadId, path: destFile.path)
+                await verifyHash(downloadId: downloadId, filePath: destFile, expectedSha256: download.expectedSha256)
                 try? await repository.updateStatus(
                     id: downloadId, status: .completed, errorMessage: nil
                 )
@@ -91,6 +115,14 @@ final class DownloadService: NSObject, ObservableObject {
                 )
             }
         }
+    }
+    private func verifyHash(downloadId: Int64, filePath: URL, expectedSha256: String?) async {
+        guard let expectedHash = expectedSha256, !expectedHash.isEmpty else { return }
+        guard let fileData = try? Data(contentsOf: filePath) else { return }
+        let digest = SHA256.hash(data: fileData)
+        let actualHash = digest.map { String(format: "%02x", $0) }.joined()
+        let matched = actualHash.lowercased() == expectedHash.lowercased()
+        try? await repository.updateHashVerified(id: downloadId, verified: matched)
     }
 }
 

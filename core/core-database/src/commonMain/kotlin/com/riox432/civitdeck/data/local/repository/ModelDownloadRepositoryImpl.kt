@@ -26,6 +26,7 @@ class ModelDownloadRepositoryImpl(
             fileSizeBytes = download.fileSizeBytes,
             status = download.status.name,
             modelType = download.modelType,
+            expectedSha256 = download.expectedSha256,
             createdAt = now,
             updatedAt = now,
         )
@@ -63,6 +64,11 @@ class ModelDownloadRepositoryImpl(
         dao.delete(id)
     }
 
+    override suspend fun updateHashVerified(id: Long, verified: Boolean) {
+        val now = currentTimeMillis()
+        dao.updateHashVerified(id, if (verified) 1 else 0, now)
+    }
+
     override suspend fun clearCompletedDownloads() {
         dao.deleteCompleted()
     }
@@ -82,6 +88,8 @@ class ModelDownloadRepositoryImpl(
         modelType = modelType,
         destinationPath = destinationPath,
         errorMessage = errorMessage,
+        expectedSha256 = expectedSha256,
+        hashVerified = hashVerified?.let { it == 1 },
         createdAt = createdAt,
         updatedAt = updatedAt,
     )
