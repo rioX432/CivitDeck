@@ -3,66 +3,13 @@ import Shared
 
 struct ExternalServerGalleryView: View {
     let serverName: String
-    @StateObject private var viewModel = ExternalServerGalleryViewModel()
+    @StateObject private var viewModel = ExternalServerGalleryViewModelOwner()
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var selectedIndex: Int?
     @State private var showJobAlert = false
 
     var body: some View {
-        Group {
-            if viewModel.isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let error = viewModel.error, viewModel.images.isEmpty {
-                VStack(spacing: Spacing.md) {
-                    Text("Failed to load images")
-                        .font(.civitTitleMedium)
-                    Text(error)
-                        .font(.civitBodySmall)
-                        .foregroundColor(.civitOnSurfaceVariant)
-                        .multilineTextAlignment(.center)
-                    Button("Retry") {
-                        Task { await viewModel.loadFirstPage() }
-                    }
-                }
-                .padding(Spacing.lg)
-            } else {
-                ScrollView {
-                    LazyVGrid(columns: AdaptiveGrid.columns(sizeClass: sizeClass), spacing: Spacing.sm) {
-                        ForEach(Array(viewModel.images.enumerated()), id: \.element.id) { idx, image in
-                            ServerImageCell(
-                                image: image,
-                                isSelectionMode: viewModel.isSelectionMode,
-                                isSelected: viewModel.selectedCloudKeys.contains(image.cloudKey)
-                            )
-                            .accessibilityLabel("Select image")
-                            .onTapGesture {
-                                if viewModel.isSelectionMode {
-                                    viewModel.toggleSelection(cloudKey: image.cloudKey)
-                                } else {
-                                    selectedIndex = idx
-                                }
-                            }
-                            .onLongPressGesture {
-                                if !viewModel.isSelectionMode {
-                                    viewModel.enterSelectionMode(cloudKey: image.cloudKey)
-                                }
-                            }
-                            .onAppear {
-                                if image.id == viewModel.images.last?.id {
-                                    Task { await viewModel.loadMore() }
-                                }
-                            }
-                        }
-                    }
-                    if viewModel.isLoadingMore {
-                        ProgressView()
-                            .padding(Spacing.md)
-                    }
-                }
-                .refreshable { await viewModel.refresh() }
-            }
-        }
+        galleryContent
         .navigationTitle(viewModel.isSelectionMode
             ? "\(viewModel.selectedCloudKeys.count) selected"
             : serverName)
@@ -78,7 +25,7 @@ struct ExternalServerGalleryView: View {
                             .accessibilityLabel("Select all")
                     }
                     Button {
-                        Task { await viewModel.deleteSelected() }
+                        Task { viewModel.deleteSelected() }
                     } label: {
                         Image(systemName: "trash")
                             .foregroundColor(.red)
@@ -100,7 +47,7 @@ struct ExternalServerGalleryView: View {
                         Button {
                             viewModel.showGenerationSheet = true
                             if viewModel.generationOptions.isEmpty {
-                                Task { await viewModel.loadGenerationOptions() }
+                                Task { viewModel.onShowGenerationSheet() }
                             }
                         } label: {
                             Image(systemName: "bolt.fill")
@@ -113,8 +60,8 @@ struct ExternalServerGalleryView: View {
         .sheet(isPresented: $viewModel.showFilterSheet) {
             ExternalServerFilterSheet(
                 filters: viewModel.filters,
-                onApply: { viewModel.applyFilters($0) },
-                onReset: { viewModel.resetFilters() }
+                onApply: { viewModel.vm.onFiltersChanged(filters: $0) },
+                onReset: { viewModel.onResetFilters() }
             )
         }
         .sheet(isPresented: $viewModel.showGenerationSheet) {
@@ -135,16 +82,76 @@ struct ExternalServerGalleryView: View {
         }
         .onChange(of: viewModel.activeJob != nil) { showJobAlert = $0 }
         .alert("Generation Status", isPresented: $showJobAlert) {
-            Button("Dismiss") { viewModel.dismissJobStatus() }
+            Button("Dismiss") { viewModel.onDismissJobStatus() }
         } message: {
             if let job = viewModel.activeJob {
                 Text(jobStatusMessage(job))
             }
         }
         .task {
-            await viewModel.loadCapabilities()
-            await viewModel.loadFirstPage()
+            
+            viewModel.onRetry()
         }
+    }
+
+    @ViewBuilder
+    private var galleryContent: some View {
+        if viewModel.isLoading {
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else if let error = viewModel.error, viewModel.images.isEmpty {
+            VStack(spacing: Spacing.md) {
+                Text("Failed to load images")
+                    .font(.civitTitleMedium)
+                Text(error)
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+                    .multilineTextAlignment(.center)
+                Button("Retry") {
+                    Task { viewModel.onRetry() }
+                }
+            }
+            .padding(Spacing.lg)
+        } else {
+            galleryGrid
+        }
+    }
+
+    private var galleryGrid: some View {
+        ScrollView {
+            LazyVGrid(columns: AdaptiveGrid.columns(sizeClass: sizeClass), spacing: Spacing.sm) {
+                ForEach(Array(viewModel.images.enumerated()), id: \.element.id) { idx, image in
+                    ServerImageCell(
+                        image: image,
+                        isSelectionMode: viewModel.isSelectionMode,
+                        isSelected: viewModel.selectedCloudKeys.contains(image.cloudKey)
+                    )
+                    .accessibilityLabel("Select image")
+                    .onTapGesture {
+                        if viewModel.isSelectionMode {
+                            viewModel.toggleSelection(cloudKey: image.cloudKey)
+                        } else {
+                            selectedIndex = idx
+                        }
+                    }
+                    .onLongPressGesture {
+                        if !viewModel.isSelectionMode {
+                            viewModel.enterSelectionMode(cloudKey: image.cloudKey)
+                        }
+                    }
+                    .onAppear {
+                        if image.id == viewModel.images.last?.id {
+                            Task { viewModel.onLoadMore() }
+                        }
+                    }
+                }
+            }
+            if viewModel.isLoadingMore {
+                ProgressView()
+                    .padding(Spacing.md)
+            }
+        }
+        .refreshable { viewModel.onRefresh() }
     }
 
     private func jobStatusMessage(_ job: GenerationJob) -> String {

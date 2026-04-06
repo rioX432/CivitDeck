@@ -1,8 +1,12 @@
 import SwiftUI
 import Shared
+import UIKit
 
 @MainActor
-class SDWebUIGenerationViewModel: ObservableObject {
+final class SDWebUIGenerationViewModelOwner: ObservableObject {
+    let vm: Feature_comfyuiSDWebUIGenerationViewModel
+    private let store = ViewModelStore()
+
     @Published var models: [String] = []
     @Published var samplers: [String] = []
     @Published var selectedModel: String = ""
@@ -11,9 +15,9 @@ class SDWebUIGenerationViewModel: ObservableObject {
     @Published var negativePrompt: String = ""
     @Published var steps: Double = 20
     @Published var cfgScale: Double = 7.0
-    @Published var width: Int = 512
-    @Published var height: Int = 512
-    @Published var seedText: String = "-1"
+    @Published var width: Int32 = 512
+    @Published var height: Int32 = 512
+    @Published var seed: String = "-1"
     @Published var isLoading: Bool = false
     @Published var isGenerating: Bool = false
     @Published var progress: Double = 0
@@ -22,73 +26,43 @@ class SDWebUIGenerationViewModel: ObservableObject {
     @Published var generatedImages: [UIImage] = []
     @Published var error: String?
 
-    private let fetchModelsUC = KoinHelper.shared.getFetchSDWebUIModelsUseCase()
-    private let fetchSamplersUC = KoinHelper.shared.getFetchSDWebUISamplersUseCase()
-    private let generateImageUC = KoinHelper.shared.getGenerateSDWebUIImageUseCase()
-    private let interruptUC = KoinHelper.shared.getInterruptSDWebUIGenerationUseCase()
-
-    func loadResources() async {
-        isLoading = true
-        do {
-            let fetchedModels = try await fetchModelsUC.invoke()
-            let fetchedSamplers = try await fetchSamplersUC.invoke()
-            self.models = fetchedModels
-            self.samplers = fetchedSamplers
-            self.selectedModel = fetchedModels.first ?? ""
-            self.selectedSampler = fetchedSamplers.first ?? "Euler"
-        } catch {
-            self.error = error.localizedDescription
-        }
-        isLoading = false
+    init() {
+        vm = KoinHelper.shared.createSDWebUIGenerationViewModel()
+        store.put(key: "SDWebUIGenerationViewModel", viewModel: vm)
     }
 
-    func generate() {
-        guard !isGenerating, !prompt.isEmpty else { return }
-        let seed = Int64(seedText) ?? -1
-        let params = SDWebUIGenerationParams(
-            prompt: prompt,
-            negativePrompt: negativePrompt,
-            steps: Int32(steps),
-            cfgScale: cfgScale,
-            width: Int32(width),
-            height: Int32(height),
-            samplerName: selectedSampler,
-            seed: seed,
-            initImageBase64: nil,
-            denoisingStrength: 0.75
-        )
-        isGenerating = true
-        generatedImages = []
-        progress = 0
-        Task {
-            for await prog in generateImageUC.invoke(params: params) {
-                if let generating = prog as? SDWebUIGenerationProgressGenerating {
-                    self.progress = generating.fraction
-                    self.progressStep = generating.step
-                    self.progressTotalSteps = generating.totalSteps
-                } else if let completed = prog as? SDWebUIGenerationProgressCompleted {
-                    self.isGenerating = false
-                    self.progress = 1.0
-                    self.generatedImages = decodeImages(completed.base64Images)
-                } else if let err = prog as? SDWebUIGenerationProgressError {
-                    self.isGenerating = false
-                    self.error = err.message
-                }
+    deinit { store.clear() }
+
+    func observeUiState() async {
+        for await state in vm.uiState {
+            models = state.models as? [String] ?? []
+            samplers = state.samplers as? [String] ?? []
+            selectedModel = state.selectedModel
+            selectedSampler = state.selectedSampler
+            isLoading = state.isLoading
+            isGenerating = state.isGenerating
+            progress = state.progress
+            progressStep = state.progressStep
+            progressTotalSteps = state.progressTotalSteps
+            let base64List = state.generatedImages as? [String] ?? []
+            generatedImages = base64List.compactMap { b64 in
+                guard let data = Data(base64Encoded: b64) else { return nil }
+                return UIImage(data: data)
             }
+            error = state.error
         }
     }
 
-    func interruptGeneration() {
-        Task {
-            try? await interruptUC.invoke()
-            isGenerating = false
-        }
-    }
-
-    private func decodeImages(_ base64List: [String]) -> [UIImage] {
-        base64List.compactMap { b64 in
-            guard let data = Data(base64Encoded: b64) else { return nil }
-            return UIImage(data: data)
-        }
-    }
+    func onPromptChanged(_ value: String) { vm.onPromptChanged(value: value) }
+    func onNegativePromptChanged(_ value: String) { vm.onNegativePromptChanged(value: value) }
+    func onModelSelected(_ model: String) { vm.onModelSelected(model: model) }
+    func onSamplerSelected(_ sampler: String) { vm.onSamplerSelected(sampler: sampler) }
+    func onStepsChanged(_ steps: Int32) { vm.onStepsChanged(steps: steps) }
+    func onCfgChanged(_ cfg: Double) { vm.onCfgChanged(cfg: cfg) }
+    func onWidthChanged(_ w: Int32) { vm.onWidthChanged(w: w) }
+    func onHeightChanged(_ h: Int32) { vm.onHeightChanged(h: h) }
+    func onSeedChanged(_ seed: Int64) { vm.onSeedChanged(seed: seed) }
+    func onDismissError() { vm.onDismissError() }
+    func onGenerate() { vm.onGenerate() }
+    func onInterrupt() { vm.onInterrupt() }
 }

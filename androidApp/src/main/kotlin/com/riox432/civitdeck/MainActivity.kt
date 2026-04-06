@@ -13,11 +13,11 @@ import com.riox432.civitdeck.domain.model.ThemeMode
 import com.riox432.civitdeck.domain.usecase.ObserveAccentColorUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAmoledDarkModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveThemeModeUseCase
+import com.riox432.civitdeck.presentation.tutorial.GestureTutorialViewModel
 import com.riox432.civitdeck.ui.navigation.CivitDeckNavGraph
 import com.riox432.civitdeck.ui.navigation.Tab
 import com.riox432.civitdeck.ui.theme.CivitDeckTheme
 import com.riox432.civitdeck.ui.tutorial.GestureTutorialScreen
-import com.riox432.civitdeck.ui.tutorial.GestureTutorialViewModel
 import com.riox432.civitdeck.usecase.GetActiveThemeUseCase
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.component.KoinComponent

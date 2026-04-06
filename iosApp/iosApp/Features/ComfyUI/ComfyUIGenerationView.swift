@@ -7,7 +7,7 @@ private let sliderLabelWidth: CGFloat = 120
 private let loraLabelWidth: CGFloat = 110
 
 struct ComfyUIGenerationView: View {
-    @StateObject private var viewModel = ComfyUIGenerationViewModel()
+    @StateObject private var viewModel = ComfyUIGenerationViewModelOwner()
     @Environment(\.civitTheme) private var theme
     @State private var showWorkflowImport = false
     @State private var workflowInputText = ""
@@ -40,7 +40,7 @@ struct ComfyUIGenerationView: View {
                 }
             }
         }
-        .task { await viewModel.loadAll() }
+        .task { await viewModel.observeUiState() }
         .sheet(isPresented: $showTemplatePicker) {
             NavigationStack {
                 WorkflowTemplateView(isPicker: true, onSelect: { _ in
@@ -137,7 +137,7 @@ struct ComfyUIGenerationView: View {
                     }
                     .buttonStyle(.bordered)
                 }
-                ForEach(viewModel.loraSelections) { lora in
+                ForEach(viewModel.loraSelections, id: \.name) { lora in
                     LoraRow(lora: lora, viewModel: viewModel)
                 }
             }
@@ -333,8 +333,8 @@ struct ComfyUIGenerationView: View {
 }
 
 private struct LoraRow: View {
-    let lora: LoraSelectionSwift
-    let viewModel: ComfyUIGenerationViewModel
+    let lora: LoraSelection
+    let viewModel: ComfyUIGenerationViewModelOwner
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -356,7 +356,7 @@ private struct LoraRow: View {
                 Slider(
                     value: Binding(
                         get: { Double(lora.strengthModel) },
-                        set: { viewModel.onLoraStrengthChanged(name: lora.name, strength: $0) }
+                        set: { viewModel.onLoraStrengthChanged(name: lora.name, strengthModel: Float($0), strengthClip: Float($0)) }
                     ),
                     in: 0...2
                 )

@@ -24,7 +24,7 @@ import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
 import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueScreen
 import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueViewModel
 import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryScreen
-import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryViewModel
+import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterScreen
 import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterViewModel
 import com.riox432.civitdeck.ui.plugin.DesktopPluginDetailScreen
@@ -153,8 +153,7 @@ private fun SettingsOverlayContent(
             )
         }
         is DesktopRoute.BrowsingHistory -> {
-            val vm: DesktopBrowsingHistoryViewModel = koinViewModel()
-            DisposableEffect(vm) { onDispose { vm.onCleared() } }
+            val vm: BrowsingHistoryViewModel = koinViewModel()
             DesktopBrowsingHistoryScreen(
                 viewModel = vm,
                 onBack = { backstack.removeLastOrNull() },

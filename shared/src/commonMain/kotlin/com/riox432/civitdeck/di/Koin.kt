@@ -26,6 +26,7 @@ val sharedModules: List<Module>
         domainModule,
         settingsModule,
         settingsViewModelModule,
+        phase3ViewModelModule,
         creatorModule,
         promptsModule,
         galleryModule,
@@ -35,6 +36,7 @@ val sharedModules: List<Module>
         searchModule,
         externalServerModule,
         pluginModule,
+        sharedViewModelModule,
     )
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {

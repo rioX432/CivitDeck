@@ -1,8 +1,9 @@
 import Foundation
 import Shared
 
+// swiftlint:disable type_body_length
 @MainActor
-final class DatasetDetailViewModel: ObservableObject {
+final class DatasetDetailViewModelOwner: ObservableObject {
     @Published var images: [DatasetImage] = []
     @Published var selectedImageIds: Set<Int64> = []
     @Published var isSelectionMode = false
@@ -12,49 +13,67 @@ final class DatasetDetailViewModel: ObservableObject {
     @Published var showResolutionFilter = false
     @Published var showExportSheet = false
     @Published var exportProgress: ExportProgress?
-    @Published var minWidth = 0
-    @Published var minHeight = 0
-    @Published var duplicateImageCount = 0
+    @Published var minWidth: Int = 0
+    @Published var minHeight: Int = 0
+    @Published var duplicateImageCount: Int = 0
     @Published var availableExportFormats: [PluginExportFormat] = []
     @Published var selectedExportFormatId: String?
 
     let datasetId: Int64
 
-    private let observeImagesUseCase: ObserveDatasetImagesUseCase
-    private let removeImagesUseCase: RemoveImageFromDatasetUseCase
-    private let updateTrainableUseCase: UpdateTrainableUseCase
-    private let editCaptionUseCase: EditCaptionUseCase
-    private let detectDuplicatesUseCase: DetectDuplicatesUseCase
-    private let filterByResolutionUseCase: FilterByResolutionUseCase
-    private let markImageExcludedUseCase: MarkImageExcludedUseCase
-    private let exportWithPluginUseCase: ExportWithPluginUseCase
-    private let getAvailableExportFormatsUseCase: GetAvailableExportFormatsUseCase
-    private var observeTask: Task<Void, Never>?
-    private var duplicatesTask: Task<Void, Never>?
-    private var exportTask: Task<Void, Never>?
-    private var formatsTask: Task<Void, Never>?
+    private let vm: DatasetDetailViewModel
+    private let store: ViewModelStore
 
     init(datasetId: Int64) {
         self.datasetId = datasetId
-        self.observeImagesUseCase = KoinHelper.shared.getObserveDatasetImagesUseCase()
-        self.removeImagesUseCase = KoinHelper.shared.getRemoveImageFromDatasetUseCase()
-        self.updateTrainableUseCase = KoinHelper.shared.getUpdateTrainableUseCase()
-        self.editCaptionUseCase = KoinHelper.shared.getEditCaptionUseCase()
-        self.detectDuplicatesUseCase = KoinHelper.shared.getDetectDuplicatesUseCase()
-        self.filterByResolutionUseCase = KoinHelper.shared.getFilterByResolutionUseCase()
-        self.markImageExcludedUseCase = KoinHelper.shared.getMarkImageExcludedUseCase()
-        self.exportWithPluginUseCase = KoinHelper.shared.getExportWithPluginUseCase()
-        self.getAvailableExportFormatsUseCase = KoinHelper.shared.getGetAvailableExportFormatsUseCase()
-        observeTask = Task { await observeImages() }
-        duplicatesTask = Task { await observeDuplicateCount() }
-        formatsTask = Task { await observeExportFormats() }
+        store = ViewModelStore()
+        vm = KoinHelper.shared.createDatasetDetailViewModel(datasetId: datasetId)
+        store.put(key: "DatasetDetailViewModel", viewModel: vm)
     }
 
-    deinit {
-        observeTask?.cancel()
-        duplicatesTask?.cancel()
-        exportTask?.cancel()
-        formatsTask?.cancel()
+    deinit { store.clear() }
+
+    func observeImages() async {
+        for await list in vm.images {
+            images = list as? [DatasetImage] ?? []
+        }
+    }
+
+    func observeSelectionState() async {
+        for await ids in vm.selectedImageIds {
+            let longIds = ids as? Set<KotlinLong> ?? []
+            selectedImageIds = Set(longIds.map { $0.int64Value })
+        }
+    }
+
+    func observeSelectionMode() async {
+        for await mode in vm.isSelectionMode {
+            guard let boolValue = mode as? Bool else { continue }
+            isSelectionMode = boolValue
+        }
+    }
+
+    func observeDuplicateCount() async {
+        for await count in vm.duplicateCount {
+            guard let intValue = count as? Int32 else { continue }
+            duplicateImageCount = Int(intValue)
+        }
+    }
+
+    func observeExportFormats() async {
+        for await formats in vm.availableExportFormats {
+            let items = formats as? [PluginExportFormat] ?? []
+            availableExportFormats = items
+            if selectedExportFormatId == nil, let first = items.first {
+                selectedExportFormatId = first.id
+            }
+        }
+    }
+
+    func observeExportProgress() async {
+        for await progress in vm.exportProgress {
+            exportProgress = progress as? ExportProgress
+        }
     }
 
     var filteredImages: [DatasetImage] {
@@ -66,92 +85,30 @@ final class DatasetDetailViewModel: ObservableObject {
         guard minWidth > 0 || minHeight > 0 else { return 0 }
         return images.filter { img in
             guard let width = img.width, let height = img.height else { return false }
-            return Int(width.int32Value) < minWidth || Int(height.int32Value) < minHeight
+            return Int32(truncating: width) < minWidth || Int32(truncating: height) < minHeight
         }.count
-    }
-
-    private func observeImages() async {
-        for await list in observeImagesUseCase.invoke(datasetId: datasetId) {
-            let items = list.compactMap { $0 as? DatasetImage }
-            self.images = items
-        }
-    }
-
-    private func observeDuplicateCount() async {
-        for await result in detectDuplicatesUseCase.invoke(
-            datasetId: datasetId,
-            threshold: 10
-        ) {
-            let groups = result.compactMap { $0 as? DuplicateGroup }
-            duplicateImageCount = groups.reduce(0) { $0 + $1.images.count } - groups.count
-        }
-    }
-
-    private func observeExportFormats() async {
-        for await formats in getAvailableExportFormatsUseCase.invoke() {
-            let items = formats.compactMap { $0 as? PluginExportFormat }
-            self.availableExportFormats = items
-            if selectedExportFormatId == nil, let first = items.first {
-                selectedExportFormatId = first.id
-            }
-        }
     }
 
     func setResolutionFilter(minWidth: Int, minHeight: Int) {
         self.minWidth = minWidth
         self.minHeight = minHeight
+        vm.setResolutionFilter(w: Int32(minWidth), h: Int32(minHeight))
     }
 
-    func toggleSelection(id: Int64) {
-        if selectedImageIds.contains(id) {
-            selectedImageIds.remove(id)
-        } else {
-            selectedImageIds.insert(id)
-        }
-        if selectedImageIds.isEmpty { isSelectionMode = false }
-    }
-
-    func enterSelectionMode(id: Int64) {
-        isSelectionMode = true
-        selectedImageIds = [id]
-    }
-
-    func clearSelection() {
-        selectedImageIds.removeAll()
-        isSelectionMode = false
-    }
-
-    func removeSelected() {
-        let ids = Array(selectedImageIds).map { KotlinLong(value: $0) }
-        guard !ids.isEmpty else { return }
-        Task {
-            try? await removeImagesUseCase.invoke(imageIds: ids)
-            clearSelection()
-        }
-    }
-
-    func setSourceFilter(_ source: ImageSource?) { selectedSource = source }
-
-    func showDetail(_ image: DatasetImage) { detailImage = image }
-
-    func dismissDetail() { detailImage = nil }
+    func toggleSelection(id: Int64) { vm.toggleSelection(imageId: id) }
+    func enterSelectionMode(id: Int64) { vm.enterSelectionMode(imageId: id) }
+    func clearSelection() { vm.clearSelection() }
+    func removeSelected() { vm.removeSelected() }
+    func setSourceFilter(_ source: ImageSource?) { vm.setSourceFilter(source: source) }
+    func showDetail(_ image: DatasetImage) { vm.showDetail(image: image) }
+    func dismissDetail() { vm.dismissDetail() }
 
     func updateTrainable(id: Int64, trainable: Bool) {
-        Task {
-            try? await updateTrainableUseCase.invoke(
-                imageId: id,
-                trainable: trainable
-            )
-        }
+        vm.updateTrainable(imageId: id, trainable: trainable)
     }
 
     func saveCaption(imageId: Int64, text: String) {
-        Task {
-            try? await editCaptionUseCase.invoke(
-                datasetImageId: imageId,
-                text: text
-            )
-        }
+        vm.editCaption(imageId: imageId, text: text)
     }
 
     var trainableImageCount: Int {
@@ -164,26 +121,17 @@ final class DatasetDetailViewModel: ObservableObject {
 
     func selectExportFormat(_ formatId: String) {
         selectedExportFormatId = formatId
+        vm.selectExportFormat(formatId: formatId)
     }
 
     func startExport() {
         guard let formatId = selectedExportFormatId ?? availableExportFormats.first?.id else { return }
         showExportSheet = false
-        exportTask = Task { await runExport(formatId: formatId) }
+        vm.startExport(formatId: formatId)
     }
 
     func dismissExportResult() {
-        exportProgress = nil
-    }
-
-    private func runExport(formatId: String) async {
-        for await progress in exportWithPluginUseCase.invoke(
-            datasetId: datasetId,
-            formatId: formatId,
-            options: [:]
-        ) {
-            guard let value = progress as? ExportProgress else { continue }
-            self.exportProgress = value
-        }
+        vm.dismissExportResult()
     }
 }
+// swiftlint:enable type_body_length

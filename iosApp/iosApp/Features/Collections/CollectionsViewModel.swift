@@ -2,30 +2,23 @@ import Foundation
 import Shared
 
 @MainActor
-final class CollectionsViewModel: ObservableObject {
+final class CollectionsViewModelOwner: ObservableObject {
     @Published var collections: [ModelCollection] = []
     @Published var isLoading = true
 
-    private let observeCollectionsUseCase: ObserveCollectionsUseCase
-    private let createCollectionUseCase: CreateCollectionUseCase
-    private let renameCollectionUseCase: RenameCollectionUseCase
-    private let deleteCollectionUseCase: DeleteCollectionUseCase
-    private var observeTask: Task<Void, Never>?
+    let vm: Feature_collectionsCollectionsViewModel
+    private let store: ViewModelStore
 
     init() {
-        self.observeCollectionsUseCase = KoinHelper.shared.getObserveCollectionsUseCase()
-        self.createCollectionUseCase = KoinHelper.shared.getCreateCollectionUseCase()
-        self.renameCollectionUseCase = KoinHelper.shared.getRenameCollectionUseCase()
-        self.deleteCollectionUseCase = KoinHelper.shared.getDeleteCollectionUseCase()
-        observeTask = Task { await observe() }
+        store = ViewModelStore()
+        vm = KoinHelper.shared.createCollectionsViewModel()
+        store.put(key: "CollectionsViewModel", viewModel: vm)
     }
 
-    deinit {
-        observeTask?.cancel()
-    }
+    deinit { store.clear() }
 
-    private func observe() async {
-        for await list in observeCollectionsUseCase.invoke() {
+    func observeCollections() async {
+        for await list in vm.collections {
             let items = list.compactMap { $0 as? ModelCollection }
             self.collections = items
             if isLoading { isLoading = false }
@@ -33,20 +26,14 @@ final class CollectionsViewModel: ObservableObject {
     }
 
     func createCollection(name: String) {
-        Task {
-            try await createCollectionUseCase.invoke(name: name)
-        }
+        vm.createCollection(name: name)
     }
 
     func renameCollection(id: Int64, name: String) {
-        Task {
-            try await renameCollectionUseCase.invoke(id: id, name: name)
-        }
+        vm.renameCollection(id: id, name: name)
     }
 
     func deleteCollection(id: Int64) {
-        Task {
-            try await deleteCollectionUseCase.invoke(id: id)
-        }
+        vm.deleteCollection(id: id)
     }
 }

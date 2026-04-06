@@ -5,7 +5,7 @@ private let chartHeight: CGFloat = 180
 private let barRowHeight: CGFloat = 36
 
 struct AnalyticsView: View {
-    @StateObject private var viewModel = AnalyticsViewModel()
+    @StateObject private var viewModel = AnalyticsViewModelOwner()
     @Environment(\.civitTheme) private var theme
 
     var body: some View {
@@ -18,7 +18,7 @@ struct AnalyticsView: View {
         }
         .navigationTitle("Usage Stats")
         .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.loadStats() }
+        .task { await viewModel.observeUiState() }
     }
 
     private var analyticsContent: some View {

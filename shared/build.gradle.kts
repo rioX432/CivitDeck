@@ -51,6 +51,12 @@ kotlin {
     }
 }
 
+skie {
+    features {
+        enableSwiftUIObservingPreview = true
+    }
+}
+
 android {
     namespace = "com.riox432.civitdeck.shared"
 }

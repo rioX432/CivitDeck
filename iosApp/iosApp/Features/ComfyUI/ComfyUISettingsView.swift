@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct ComfyUISettingsView: View {
-    @StateObject private var viewModel = ComfyUISettingsViewModel()
+    @StateObject private var viewModel = ComfyUISettingsViewModelOwner()
     @Environment(\.civitTheme) private var theme
 
     var body: some View {
@@ -39,8 +39,7 @@ struct ComfyUISettingsView: View {
                 onSave: viewModel.onSave
             )
         }
-        .task { await viewModel.observeConnectionsList() }
-        .task { await viewModel.observeActiveConn() }
+        .task { await viewModel.observeUiState() }
     }
 
     private var statusSection: some View {

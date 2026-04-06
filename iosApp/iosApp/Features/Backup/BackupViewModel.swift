@@ -2,7 +2,7 @@ import Foundation
 import Shared
 
 @MainActor
-final class BackupViewModel: ObservableObject {
+final class BackupViewModelOwner: ObservableObject {
     @Published var selectedCategories: Set<String> = Set(allCategoryNames)
     @Published var isExporting = false
     @Published var isImporting = false
@@ -16,51 +16,48 @@ final class BackupViewModel: ObservableObject {
     @Published var message: String?
     @Published var error: String?
 
-    private let createBackupUseCase = KoinHelper.shared.getCreateBackupUseCase()
-    private let restoreBackupUseCase = KoinHelper.shared.getRestoreBackupUseCase()
-    private let parseBackupUseCase = KoinHelper.shared.getParseBackupUseCase()
+    private let vm: BackupViewModel
+    private let store: ViewModelStore
 
     static let allCategoryNames: [String] = BackupCategory.allCases.map { $0.name }
 
-    func toggleCategory(_ name: String) {
-        if selectedCategories.contains(name) {
-            selectedCategories.remove(name)
-        } else {
-            selectedCategories.insert(name)
-        }
+    init() {
+        store = ViewModelStore()
+        vm = KoinHelper.shared.createBackupViewModel()
+        store.put(key: "BackupViewModel", viewModel: vm)
     }
 
-    func selectAll() {
-        selectedCategories = Set(Self.allCategoryNames)
-    }
+    deinit { store.clear() }
 
-    func deselectAll() {
-        selectedCategories = []
-    }
-
-    func exportBackup() {
-        guard !selectedCategories.isEmpty else { return }
-        isExporting = true
-        error = nil
-
-        let categories = selectedCategories.compactMap { name in
-            BackupCategory.allCases.first { $0.name == name }
-        }
-        let categorySet = Set(categories)
-
-        Task {
-            do {
-                let json = try await createBackupUseCase.invoke(categories: categorySet)
+    func observeUiState() async {
+        for await state in vm.uiState {
+            let categories = state.selectedCategories as? Set<BackupCategory> ?? []
+            selectedCategories = Set(categories.map { $0.name })
+            isExporting = state.isExporting
+            isImporting = state.isImporting
+            showImportConfirmation = state.showImportConfirmation
+            restoreStrategy = state.restoreStrategy
+            message = state.message
+            error = state.error
+            if let json = state.exportedJson {
                 let url = writeBackupFile(json: json)
                 exportFileURL = url
                 showExportSheet = url != nil
-                isExporting = false
-            } catch {
-                self.error = "Export failed: \(error.localizedDescription)"
-                isExporting = false
+                vm.onExportHandled()
             }
         }
     }
+
+    func toggleCategory(_ name: String) {
+        if let category = BackupCategory.allCases.first(where: { $0.name == name }) {
+            vm.onToggleCategory(category: category)
+        }
+    }
+
+    func selectAll() { vm.onSelectAll() }
+    func deselectAll() { vm.onDeselectAll() }
+
+    func exportBackup() { vm.onExport() }
 
     func onImportFileSelected(url: URL) {
         guard url.startAccessingSecurityScopedResource() else {
@@ -71,58 +68,23 @@ final class BackupViewModel: ObservableObject {
 
         do {
             let json = try String(contentsOf: url, encoding: .utf8)
-            importJson = json
-
-            Task {
-                do {
-                    let categories = try await parseBackupUseCase.invoke(json: json)
-                    let categoryNames = categories.compactMap { ($0 as? BackupCategory)?.name }
-                    importCategories = Set(categoryNames)
-                    selectedCategories = Set(categoryNames)
-                    showImportConfirmation = true
-                } catch {
-                    self.error = "Invalid backup file: \(error.localizedDescription)"
-                }
-            }
+            vm.onImportFileLoaded(json: json)
         } catch {
             self.error = "Cannot read file: \(error.localizedDescription)"
         }
     }
 
-    func confirmImport() {
-        guard let json = importJson, !selectedCategories.isEmpty else { return }
-        isImporting = true
-        showImportConfirmation = false
-        error = nil
-
-        let categories = selectedCategories.compactMap { name in
-            BackupCategory.allCases.first { $0.name == name }
-        }
-        let categorySet = Set(categories)
-
-        Task {
-            do {
-                try await restoreBackupUseCase.invoke(
-                    json: json,
-                    strategy: restoreStrategy,
-                    categories: categorySet
-                )
-                message = "Restore completed successfully"
-                importJson = nil
-                importCategories = []
-                isImporting = false
-            } catch {
-                self.error = "Restore failed: \(error.localizedDescription)"
-                isImporting = false
-            }
-        }
+    func onRestoreStrategyChanged(_ strategy: RestoreStrategy) {
+        vm.onRestoreStrategyChanged(strategy: strategy)
     }
 
-    func dismissImportConfirmation() {
-        showImportConfirmation = false
-        importJson = nil
-        importCategories = []
-    }
+    func confirmImport() { vm.onConfirmImport() }
+
+    func dismissImportConfirmation() { vm.onDismissImportConfirmation() }
+
+    func dismissMessage() { vm.onMessageDismissed() }
+
+    func dismissError() { vm.onErrorDismissed() }
 
     private func writeBackupFile(json: String) -> URL? {
         let formatter = DateFormatter()

@@ -2,32 +2,28 @@ import Foundation
 import Shared
 
 @MainActor
-final class GestureTutorialViewModel: ObservableObject {
+final class GestureTutorialViewModelOwner: ObservableObject {
     @Published var shouldShowTutorial: Bool = false
 
-    private let observeSeenTutorialVersion: ObserveSeenTutorialVersionUseCase
-    private let setSeenTutorialVersion: SetSeenTutorialVersionUseCase
-
-    static let currentTutorialVersion: Int32 = 1
+    private let vm: GestureTutorialViewModel
+    private let store: ViewModelStore
 
     init() {
-        self.observeSeenTutorialVersion = KoinHelper.shared.getObserveSeenTutorialVersionUseCase()
-        self.setSeenTutorialVersion = KoinHelper.shared.getSetSeenTutorialVersionUseCase()
-        observeVersion()
+        store = ViewModelStore()
+        vm = KoinHelper.shared.createGestureTutorialViewModel()
+        store.put(key: "GestureTutorialViewModel", viewModel: vm)
     }
 
-    private func observeVersion() {
-        Task {
-            for await version in observeSeenTutorialVersion.invoke() {
-                guard let intVersion = version as? Int32 else { continue }
-                self.shouldShowTutorial = intVersion < Self.currentTutorialVersion
-            }
+    deinit { store.clear() }
+
+    func observeShouldShow() async {
+        for await show in vm.shouldShowTutorial {
+            guard let boolValue = show as? Bool else { continue }
+            self.shouldShowTutorial = boolValue
         }
     }
 
     func dismissTutorial() {
-        Task {
-            try? await setSeenTutorialVersion.invoke(version: Self.currentTutorialVersion)
-        }
+        vm.dismissTutorial()
     }
 }

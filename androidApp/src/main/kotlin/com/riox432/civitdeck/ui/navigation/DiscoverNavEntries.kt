@@ -3,14 +3,14 @@ package com.riox432.civitdeck.ui.navigation
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
+import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
+import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
+import com.riox432.civitdeck.presentation.share.ShareViewModel
+import com.riox432.civitdeck.presentation.similar.SimilarModelsViewModel
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryScreen
-import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
-import com.riox432.civitdeck.ui.gallery.ImageGalleryViewModel
 import com.riox432.civitdeck.ui.qrcode.QRScannerScreen
-import com.riox432.civitdeck.ui.share.ShareViewModel
 import com.riox432.civitdeck.ui.similar.SimilarModelsScreen
-import com.riox432.civitdeck.ui.similar.SimilarModelsViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 

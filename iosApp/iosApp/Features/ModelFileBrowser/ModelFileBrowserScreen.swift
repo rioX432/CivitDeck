@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct ModelFileBrowserScreen: View {
-    @StateObject private var viewModel = ModelFileBrowserViewModel()
+    @StateObject private var viewModel = ModelFileBrowserViewModelOwner()
     @State private var showAddDialog = false
     @State private var newDirectoryPath = ""
 
@@ -16,8 +16,7 @@ struct ModelFileBrowserScreen: View {
         .navigationTitle("Model Files")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
-        .task { await viewModel.observeDirectories() }
-        .task { await viewModel.observeFiles() }
+        .task { await viewModel.observeUiState() }
         .overlay { emptyOverlay }
         .alert("Add Model Directory", isPresented: $showAddDialog) {
             addDirectoryAlert

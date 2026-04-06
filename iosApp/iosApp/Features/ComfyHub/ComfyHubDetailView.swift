@@ -2,12 +2,12 @@ import SwiftUI
 import Shared
 
 struct ComfyHubDetailView: View {
-    @StateObject private var viewModel: ComfyHubDetailViewModel
+    @StateObject private var viewModel: ComfyHubDetailViewModelOwner
     @State private var showImportAlert = false
     @State private var alertMessage = ""
 
     init(workflowId: String) {
-        _viewModel = StateObject(wrappedValue: ComfyHubDetailViewModel(workflowId: workflowId))
+        _viewModel = StateObject(wrappedValue: ComfyHubDetailViewModelOwner(workflowId: workflowId))
     }
 
     var body: some View {
@@ -29,15 +29,17 @@ struct ComfyHubDetailView: View {
         } message: {
             Text(alertMessage)
         }
-        .onChange(of: viewModel.importResult != nil) { hasResult in
-            guard hasResult, let result = viewModel.importResult else { return }
-            switch result {
-            case .success:
+        .onChange(of: viewModel.importSuccess) { success in
+            if success {
                 alertMessage = "Workflow imported successfully!"
-            case .failure(let msg):
-                alertMessage = "Import failed: \(msg)"
+                showImportAlert = true
             }
-            showImportAlert = true
+        }
+        .onChange(of: viewModel.importError) { error in
+            if let msg = error {
+                alertMessage = "Import failed: \(msg)"
+                showImportAlert = true
+            }
         }
     }
 

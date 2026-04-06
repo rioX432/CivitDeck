@@ -2,6 +2,20 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
+import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
+import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
+import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
+import com.riox432.civitdeck.presentation.comfyhub.ComfyHubBrowserViewModel
+import com.riox432.civitdeck.presentation.comfyhub.ComfyHubDetailViewModel
+import com.riox432.civitdeck.presentation.modelfiles.ModelFileBrowserViewModel
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
 import com.riox432.civitdeck.domain.usecase.ActivatePluginUseCase
@@ -574,5 +588,71 @@ object KoinHelper {
     fun createAppBehaviorSettingsViewModel(): AppBehaviorSettingsViewModel = getKoin().get()
     fun createAuthSettingsViewModel(): AuthSettingsViewModel = getKoin().get()
     fun createStorageSettingsViewModel(): StorageSettingsViewModel = getKoin().get()
+    // endregion
+
+    // region Feature Module ViewModels
+    fun createCreatorProfileViewModel(username: String):
+        com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(username) }
+    fun createSavedPromptsViewModel():
+        com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel = getKoin().get()
+    fun createCollectionsViewModel():
+        com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel = getKoin().get()
+    fun createCollectionDetailViewModel(collectionId: Long):
+        com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(collectionId) }
+    fun createImageGalleryViewModel(modelVersionId: Long):
+        com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(modelVersionId) }
+    fun createSwipeDiscoveryViewModel():
+        com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel = getKoin().get()
+    fun createBrowsingHistoryViewModel():
+        com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel = getKoin().get()
+    // endregion
+
+    // region Phase 3 ViewModels
+    fun createAnalyticsViewModel():
+        com.riox432.civitdeck.presentation.analytics.AnalyticsViewModel = getKoin().get()
+    fun createBackupViewModel():
+        com.riox432.civitdeck.presentation.backup.BackupViewModel = getKoin().get()
+    fun createFeedViewModel():
+        com.riox432.civitdeck.presentation.feed.FeedViewModel = getKoin().get()
+    fun createNotificationCenterViewModel():
+        com.riox432.civitdeck.presentation.notificationcenter.NotificationCenterViewModel = getKoin().get()
+    fun createPluginManagementViewModel():
+        com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel = getKoin().get()
+    fun createSimilarModelsViewModel(modelId: Long):
+        com.riox432.civitdeck.presentation.similar.SimilarModelsViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(modelId) }
+    fun createShareViewModel():
+        com.riox432.civitdeck.presentation.share.ShareViewModel = getKoin().get()
+    fun createGestureTutorialViewModel():
+        com.riox432.civitdeck.presentation.tutorial.GestureTutorialViewModel = getKoin().get()
+    fun createDatasetListViewModel():
+        com.riox432.civitdeck.presentation.dataset.DatasetListViewModel = getKoin().get()
+    fun createDatasetDetailViewModel(datasetId: Long):
+        com.riox432.civitdeck.presentation.dataset.DatasetDetailViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(datasetId) }
+    fun createBatchTagEditorViewModel(datasetId: Long):
+        com.riox432.civitdeck.presentation.dataset.BatchTagEditorViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(datasetId) }
+    // endregion
+
+    // region Phase 4 ViewModels
+    fun createComfyUIGenerationViewModel(): ComfyUIGenerationViewModel = getKoin().get()
+    fun createComfyUIQueueViewModel(): ComfyUIQueueViewModel = getKoin().get()
+    fun createComfyUIHistoryViewModel(): ComfyUIHistoryViewModel = getKoin().get()
+    fun createComfyUISettingsViewModel(): ComfyUISettingsViewModel = getKoin().get()
+    fun createSDWebUIGenerationViewModel(): SDWebUIGenerationViewModel = getKoin().get()
+    fun createSDWebUISettingsViewModel(): SDWebUISettingsViewModel = getKoin().get()
+    fun createCivitaiLinkSettingsViewModel(): CivitaiLinkSettingsViewModel = getKoin().get()
+    fun createCivitaiLinkSendViewModel(): CivitaiLinkSendViewModel = getKoin().get()
+    fun createWorkflowTemplateViewModel(): WorkflowTemplateViewModel = getKoin().get()
+    fun createComfyHubBrowserViewModel(): ComfyHubBrowserViewModel = getKoin().get()
+    fun createComfyHubDetailViewModel(workflowId: String): ComfyHubDetailViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(workflowId) }
+    fun createExternalServerSettingsViewModel(): ExternalServerSettingsViewModel = getKoin().get()
+    fun createExternalServerGalleryViewModel(): ExternalServerGalleryViewModel = getKoin().get()
+    fun createModelFileBrowserViewModel(): ModelFileBrowserViewModel = getKoin().get()
     // endregion
 }

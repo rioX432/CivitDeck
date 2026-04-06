@@ -53,13 +53,13 @@ import com.riox432.civitdeck.presentation.settings.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.presentation.settings.AuthSettingsViewModel
 import com.riox432.civitdeck.presentation.settings.DisplaySettingsViewModel
 import com.riox432.civitdeck.presentation.settings.StorageSettingsViewModel
+import com.riox432.civitdeck.presentation.update.UpdateViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchScreen
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.ui.search.SearchScreenCallbacks
 import com.riox432.civitdeck.ui.settings.SettingsScreen
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
-import com.riox432.civitdeck.ui.update.UpdateViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 internal enum class Tab(

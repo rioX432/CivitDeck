@@ -2,50 +2,54 @@ import SwiftUI
 import Shared
 
 struct StorageSettingsView: View {
-    @ObservedObject var viewModel: StorageSettingsViewModelOwner
+    let viewModel: StorageSettingsViewModel
 
     var body: some View {
-        List {
-            Section("Offline Cache") {
-                offlineCacheToggle
-                if viewModel.offlineCacheEnabled {
-                    cacheSizeLimitPicker
+        Observing(viewModel.uiState) {
+            ProgressView()
+        } content: { state in
+            List {
+                Section("Offline Cache") {
+                    offlineCacheToggle(state: state)
+                    if state.offlineCacheEnabled {
+                        cacheSizeLimitPicker(state: state)
+                    }
+                    cacheInfoRow(state: state)
                 }
-                cacheInfoRow
-            }
-            Section("Backup") {
-                NavigationLink(destination: BackupView()) {
-                    Label("Backup & Restore", systemImage: "arrow.up.arrow.down.circle")
-                }
-            }
-            Section("Data Management") {
-                NavigationLink {
-                    HiddenModelsView(
-                        models: viewModel.hiddenModels,
-                        onUnhide: viewModel.onUnhideModel
-                    )
-                } label: {
-                    HStack {
-                        Text("Hidden Models")
-                        Spacer()
-                        Text("\(viewModel.hiddenModels.count) models")
-                            .font(.civitBodySmall)
-                            .foregroundColor(.civitOnSurfaceVariant)
+                Section("Backup") {
+                    NavigationLink(destination: BackupView()) {
+                        Label("Backup & Restore", systemImage: "arrow.up.arrow.down.circle")
                     }
                 }
-                ClearActionButton(label: "Clear Search History", action: viewModel.onClearSearchHistory)
-                ClearActionButton(label: "Clear Browsing History", action: viewModel.onClearBrowsingHistory)
-                ClearActionButton(label: "Clear Cache", action: viewModel.onClearCache)
+                Section("Data Management") {
+                    NavigationLink {
+                        HiddenModelsView(
+                            models: state.hiddenModels as? [Core_domainHiddenModel] ?? [],
+                            onUnhide: { viewModel.onUnhideModel(modelId: $0) }
+                        )
+                    } label: {
+                        HStack {
+                            Text("Hidden Models")
+                            Spacer()
+                            Text("\((state.hiddenModels as? [Core_domainHiddenModel] ?? []).count) models")
+                                .font(.civitBodySmall)
+                                .foregroundColor(.civitOnSurfaceVariant)
+                        }
+                    }
+                    ClearActionButton(label: "Clear Search History", action: viewModel.onClearSearchHistory)
+                    ClearActionButton(label: "Clear Browsing History", action: viewModel.onClearBrowsingHistory)
+                    ClearActionButton(label: "Clear Cache", action: viewModel.onClearCache)
+                }
             }
+            .navigationTitle("Data & Storage")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle("Data & Storage")
-        .navigationBarTitleDisplayMode(.inline)
     }
 
-    private var offlineCacheToggle: some View {
+    private func offlineCacheToggle(state: StorageSettingsUiState) -> some View {
         Toggle(isOn: Binding(
-            get: { viewModel.offlineCacheEnabled },
-            set: { viewModel.offlineCacheEnabled = $0; viewModel.onOfflineCacheEnabledChanged($0) }
+            get: { state.offlineCacheEnabled },
+            set: { viewModel.onOfflineCacheEnabledChanged(enabled: $0) }
         )) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Offline Cache")
@@ -57,10 +61,10 @@ struct StorageSettingsView: View {
         }
     }
 
-    private var cacheSizeLimitPicker: some View {
+    private func cacheSizeLimitPicker(state: StorageSettingsUiState) -> some View {
         Picker("Cache Size Limit", selection: Binding(
-            get: { viewModel.cacheSizeLimitMb },
-            set: { viewModel.cacheSizeLimitMb = $0; viewModel.onCacheSizeLimitChanged($0) }
+            get: { state.cacheSizeLimitMb },
+            set: { viewModel.onCacheSizeLimitChanged(limitMb: $0) }
         )) {
             Text("50 MB").tag(Int32(50))
             Text("100 MB").tag(Int32(100))
@@ -69,11 +73,11 @@ struct StorageSettingsView: View {
         }
     }
 
-    private var cacheInfoRow: some View {
+    private func cacheInfoRow(state: StorageSettingsUiState) -> some View {
         HStack {
             Text("Cached Entries")
             Spacer()
-            Text("\(viewModel.cacheEntryCount) entries (\(viewModel.cacheFormattedSize))")
+            Text("\(state.cacheInfo.entryCount) entries (\(state.cacheInfo.formattedSize))")
                 .font(.civitBodySmall)
                 .foregroundColor(.civitOnSurfaceVariant)
         }

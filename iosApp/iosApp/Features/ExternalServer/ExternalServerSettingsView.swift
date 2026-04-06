@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct ExternalServerSettingsView: View {
-    @StateObject private var viewModel = ExternalServerSettingsViewModel()
+    @StateObject private var viewModel = ExternalServerSettingsViewModelOwner()
     @Environment(\.civitTheme) private var theme
 
     var body: some View {
@@ -36,8 +36,7 @@ struct ExternalServerSettingsView: View {
                 onSave: viewModel.onSave
             )
         }
-        .task { await viewModel.observeConfigsList() }
-        .task { await viewModel.observeActiveConfig() }
+        .task { await viewModel.observeUiState() }
     }
 
     private var statusSection: some View {

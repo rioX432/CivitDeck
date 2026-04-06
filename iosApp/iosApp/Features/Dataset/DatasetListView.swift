@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct DatasetListView: View {
-    @StateObject private var viewModel = DatasetListViewModel()
+    @StateObject private var viewModel = DatasetListViewModelOwner()
     @State private var showCreateAlert = false
     @State private var newDatasetName = ""
     @State private var renameTarget: (id: Int64, name: String)?
@@ -62,8 +62,7 @@ struct DatasetListView: View {
                 Button("Cancel", role: .cancel) {}
             }
         }
-        .task { viewModel.startObserving() }
-        .onDisappear { viewModel.stopObserving() }
+        .task { await viewModel.observeDatasets() }
     }
 
     private var datasetList: some View {

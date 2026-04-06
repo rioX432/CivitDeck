@@ -10,7 +10,7 @@ struct ImageViewerScreen: View {
     @State private var showMetadata = false
     @State private var controlsVisible = true
     @State private var showShareSheet = false
-    @StateObject private var shareHashtagVM = ShareHashtagViewModel()
+    @StateObject private var shareHashtagVM = ShareHashtagViewModelOwner()
 
     // Swipe-to-dismiss state
     @State private var dragOffset: CGFloat = 0
@@ -99,7 +99,7 @@ struct ImageViewerScreen: View {
                 )
                 .presentationDetents([.medium, .large])
             }
-            .task { await shareHashtagVM.startObserving() }
+            .task { await shareHashtagVM.observeHashtags() }
         }
     }
 

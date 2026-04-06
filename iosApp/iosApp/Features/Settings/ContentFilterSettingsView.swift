@@ -2,52 +2,61 @@ import SwiftUI
 import Shared
 
 struct ContentFilterSettingsView: View {
-    @ObservedObject var viewModel: ContentFilterSettingsViewModelOwner
-    @ObservedObject var displayViewModel: DisplaySettingsViewModelOwner
-    @ObservedObject var appBehaviorViewModel: AppBehaviorSettingsViewModelOwner
+    let viewModel: ContentFilterSettingsViewModel
+    let displayViewModel: DisplaySettingsViewModel
+    let appBehaviorViewModel: AppBehaviorSettingsViewModel
 
     var body: some View {
-        List {
-            Section("NSFW") {
-                nsfwToggle
-                if viewModel.nsfwFilterLevel != .off {
-                    NsfwBlurSettingsSection(
-                        settings: viewModel.nsfwBlurSettings,
-                        onChanged: viewModel.onNsfwBlurSettingsChanged
-                    )
-                }
-            }
-            Section("Defaults") {
-                sortOrderPicker
-                timePeriodPicker
-            }
-            Section("Tags") {
-                NavigationLink {
-                    ExcludedTagsView(
-                        tags: viewModel.excludedTags,
-                        onAdd: viewModel.onAddExcludedTag,
-                        onRemove: viewModel.onRemoveExcludedTag
-                    )
-                } label: {
-                    HStack {
-                        Text("Excluded Tags")
-                        Spacer()
-                        Text("\(viewModel.excludedTags.count) tags")
-                            .font(.civitBodySmall)
-                            .foregroundColor(.civitOnSurfaceVariant)
+        Observing(
+            viewModel.uiState,
+            displayViewModel.uiState,
+            appBehaviorViewModel.uiState
+        ) {
+            ProgressView()
+        } content: { filterState, displayState, behaviorState in
+            List {
+                Section("NSFW") {
+                    nsfwToggle(state: filterState)
+                    if filterState.nsfwFilterLevel != .off {
+                        NsfwBlurSettingsSection(
+                            settings: filterState.nsfwBlurSettings,
+                            onChanged: { viewModel.onNsfwBlurSettingsChanged(settings: $0) }
+                        )
                     }
                 }
+                Section("Defaults") {
+                    sortOrderPicker(state: displayState)
+                    timePeriodPicker(state: displayState)
+                }
+                Section("Tags") {
+                    let excludedTags = filterState.excludedTags as? [String] ?? []
+                    NavigationLink {
+                        ExcludedTagsView(
+                            tags: excludedTags,
+                            onAdd: { viewModel.onAddExcludedTag(tag: $0) },
+                            onRemove: { viewModel.onRemoveExcludedTag(tag: $0) }
+                        )
+                    } label: {
+                        HStack {
+                            Text("Excluded Tags")
+                            Spacer()
+                            Text("\(excludedTags.count) tags")
+                                .font(.civitBodySmall)
+                                .foregroundColor(.civitOnSurfaceVariant)
+                        }
+                    }
+                }
+                feedQualitySection(state: behaviorState)
+                notificationsSection(state: behaviorState)
             }
-            feedQualitySection
-            notificationsSection
+            .navigationTitle("Content & Behavior")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle("Content & Behavior")
-        .navigationBarTitleDisplayMode(.inline)
     }
 
-    private var nsfwToggle: some View {
+    private func nsfwToggle(state: ContentFilterSettingsUiState) -> some View {
         Toggle(isOn: Binding(
-            get: { viewModel.nsfwFilterLevel != .off },
+            get: { state.nsfwFilterLevel != .off },
             set: { _ in viewModel.onNsfwFilterToggle() }
         )) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -60,10 +69,10 @@ struct ContentFilterSettingsView: View {
         }
     }
 
-    private var sortOrderPicker: some View {
+    private func sortOrderPicker(state: DisplaySettingsUiState) -> some View {
         Picker("Default Sort", selection: Binding(
-            get: { displayViewModel.defaultSortOrder },
-            set: { displayViewModel.defaultSortOrder = $0; displayViewModel.onSortOrderChanged($0) }
+            get: { state.defaultSortOrder },
+            set: { displayViewModel.onSortOrderChanged(sort: $0) }
         )) {
             ForEach(SearchFilter.sortOptions, id: \.self) { sort in
                 Text(SearchFilter.sortLabel(sort)).tag(sort)
@@ -71,10 +80,10 @@ struct ContentFilterSettingsView: View {
         }
     }
 
-    private var timePeriodPicker: some View {
+    private func timePeriodPicker(state: DisplaySettingsUiState) -> some View {
         Picker("Default Period", selection: Binding(
-            get: { displayViewModel.defaultTimePeriod },
-            set: { displayViewModel.defaultTimePeriod = $0; displayViewModel.onTimePeriodChanged($0) }
+            get: { state.defaultTimePeriod },
+            set: { displayViewModel.onTimePeriodChanged(period: $0) }
         )) {
             ForEach(SearchFilter.periodOptions, id: \.self) { period in
                 Text(SearchFilter.periodLabel(period)).tag(period)
@@ -82,14 +91,14 @@ struct ContentFilterSettingsView: View {
         }
     }
 
-    private var feedQualitySection: some View {
+    private func feedQualitySection(state: AppBehaviorSettingsUiState) -> some View {
         Section("Search Quality Filter") {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 HStack {
                     Text("Quality Threshold")
                         .font(.civitBodyMedium)
                     Spacer()
-                    Text(appBehaviorViewModel.feedQualityThreshold == 0 ? "Off" : "\(appBehaviorViewModel.feedQualityThreshold)")
+                    Text(state.feedQualityThreshold == 0 ? "Off" : "\(state.feedQualityThreshold)")
                         .font(.civitBodySmall)
                         .foregroundColor(.civitOnSurfaceVariant)
                 }
@@ -98,11 +107,8 @@ struct ContentFilterSettingsView: View {
                     .foregroundColor(.civitOnSurfaceVariant)
                 Slider(
                     value: Binding(
-                        get: { Double(appBehaviorViewModel.feedQualityThreshold) },
-                        set: {
-                            appBehaviorViewModel.feedQualityThreshold = Int32($0)
-                            appBehaviorViewModel.onFeedQualityThresholdChanged(Int32($0))
-                        }
+                        get: { Double(state.feedQualityThreshold) },
+                        set: { appBehaviorViewModel.onFeedQualityThresholdChanged(threshold: Int32($0)) }
                     ),
                     in: 0...100,
                     step: 1
@@ -111,22 +117,19 @@ struct ContentFilterSettingsView: View {
         }
     }
 
-    private var notificationsSection: some View {
+    private func notificationsSection(state: AppBehaviorSettingsUiState) -> some View {
         Section("Notifications") {
-            notificationsToggle
-            if appBehaviorViewModel.notificationsEnabled {
-                pollingIntervalPicker
+            notificationsToggle(state: state)
+            if state.notificationsEnabled {
+                pollingIntervalPicker(state: state)
             }
         }
     }
 
-    private var notificationsToggle: some View {
+    private func notificationsToggle(state: AppBehaviorSettingsUiState) -> some View {
         Toggle(isOn: Binding(
-            get: { appBehaviorViewModel.notificationsEnabled },
-            set: {
-                appBehaviorViewModel.notificationsEnabled = $0
-                appBehaviorViewModel.onNotificationsEnabledChanged($0)
-            }
+            get: { state.notificationsEnabled },
+            set: { appBehaviorViewModel.onNotificationsEnabledChanged(enabled: $0) }
         )) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Model Update Alerts")
@@ -138,13 +141,10 @@ struct ContentFilterSettingsView: View {
         }
     }
 
-    private var pollingIntervalPicker: some View {
+    private func pollingIntervalPicker(state: AppBehaviorSettingsUiState) -> some View {
         Picker("Check Frequency", selection: Binding(
-            get: { appBehaviorViewModel.pollingInterval },
-            set: {
-                appBehaviorViewModel.pollingInterval = $0
-                appBehaviorViewModel.onPollingIntervalChanged($0)
-            }
+            get: { state.pollingInterval },
+            set: { appBehaviorViewModel.onPollingIntervalChanged(interval: $0) }
         )) {
             ForEach(PollingInterval.allCases.filter { $0 != .off }, id: \.self) { interval in
                 Text(interval.displayName).tag(interval)

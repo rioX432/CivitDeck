@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct ComfyUIHistoryView: View {
-    @StateObject private var viewModel = ComfyUIHistoryViewModel()
+    @StateObject private var viewModel = ComfyUIHistoryViewModelOwner()
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
@@ -10,9 +10,9 @@ struct ComfyUIHistoryView: View {
             Group {
                 if viewModel.isLoading && viewModel.images.isEmpty {
                     LoadingStateView()
-                } else if let error = viewModel.errorMessage, viewModel.images.isEmpty {
+                } else if let error = viewModel.error, viewModel.images.isEmpty {
                     ErrorStateView(message: error) {
-                        viewModel.retry()
+                        viewModel.refresh()
                     }
                 } else if viewModel.images.isEmpty {
                     EmptyStateView(
@@ -30,8 +30,9 @@ struct ComfyUIHistoryView: View {
             .navigationTitle("History")
             .navigationBarTitleDisplayMode(.inline)
         }
-        .task { viewModel.startObserving() }
-        .onDisappear { viewModel.stopObserving() }
+        .task { await viewModel.observeUiState() }
+        .task { await viewModel.observeDatasets() }
+        .task { await viewModel.observeShareHashtags() }
         .sheet(isPresented: $viewModel.showDatasetPicker, onDismiss: viewModel.onDismissDatasetPicker) {
             AddToDatasetSheet(
                 datasets: viewModel.datasets,
@@ -50,11 +51,11 @@ struct ComfyUIHistoryView: View {
     private var filterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.sm) {
-                ForEach(HistorySortOrder.allCases, id: \.self) { sort in
+                ForEach(Feature_comfyuiHistorySortOrder.allCases, id: \.self) { sort in
                     ChipButton(
-                        label: sort.rawValue,
+                        label: sort.name,
                         isSelected: viewModel.selectedSort == sort,
-                        action: { viewModel.selectedSort = sort }
+                        action: { viewModel.onSelectSort(sort) }
                     )
                 }
             }
@@ -77,7 +78,7 @@ struct ComfyUIHistoryView: View {
             .padding(Spacing.sm)
         }
         .refreshable {
-            viewModel.retry()
+            viewModel.refresh()
         }
     }
 

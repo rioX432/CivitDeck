@@ -2,11 +2,11 @@ import SwiftUI
 import Shared
 
 struct ImageGalleryScreen: View {
-    @StateObject private var viewModel: ImageGalleryViewModel
+    @StateObject private var viewModel: ImageGalleryViewModelOwner
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     init(modelVersionId: Int64) {
-        _viewModel = StateObject(wrappedValue: ImageGalleryViewModel(modelVersionId: modelVersionId))
+        _viewModel = StateObject(wrappedValue: ImageGalleryViewModelOwner(modelVersionId: modelVersionId))
     }
 
     var body: some View {
@@ -19,10 +19,7 @@ struct ImageGalleryScreen: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .task {
-            await viewModel.observeNsfwFilter()
-        }
-        .task {
-            await viewModel.observeNsfwBlurSettings()
+            await viewModel.observeUiState()
         }
         .fullScreenCover(isPresented: Binding(
             get: { viewModel.selectedImageIndex != nil },

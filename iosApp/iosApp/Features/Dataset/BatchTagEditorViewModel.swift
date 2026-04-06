@@ -2,7 +2,7 @@ import Foundation
 import Shared
 
 @MainActor
-final class BatchTagEditorViewModel: ObservableObject {
+final class BatchTagEditorViewModelOwner: ObservableObject {
     @Published var images: [DatasetImage] = []
     @Published var selectedImageIds: Set<Int64> = []
     @Published var tagInput = ""
@@ -11,82 +11,61 @@ final class BatchTagEditorViewModel: ObservableObject {
 
     let datasetId: Int64
 
-    private let observeImagesUseCase: ObserveDatasetImagesUseCase
-    private let batchEditTagsUseCase: BatchEditTagsUseCase
-    private let getTagSuggestionsUseCase: GetTagSuggestionsUseCase
-    private var observeTask: Task<Void, Never>?
+    private let vm: BatchTagEditorViewModel
+    private let store: ViewModelStore
 
     init(datasetId: Int64) {
         self.datasetId = datasetId
-        self.observeImagesUseCase = KoinHelper.shared.getObserveDatasetImagesUseCase()
-        self.batchEditTagsUseCase = KoinHelper.shared.getBatchEditTagsUseCase()
-        self.getTagSuggestionsUseCase = KoinHelper.shared.getGetTagSuggestionsUseCase()
-        observeTask = Task { await observeImages() }
+        store = ViewModelStore()
+        vm = KoinHelper.shared.createBatchTagEditorViewModel(datasetId: datasetId)
+        store.put(key: "BatchTagEditorViewModel", viewModel: vm)
     }
 
-    deinit {
-        observeTask?.cancel()
-    }
+    deinit { store.clear() }
 
-    private func observeImages() async {
-        for await list in observeImagesUseCase.invoke(datasetId: datasetId) {
-            images = list.compactMap { $0 as? DatasetImage }
+    func observeImages() async {
+        for await list in vm.images {
+            images = list as? [DatasetImage] ?? []
         }
     }
 
-    func toggleSelection(_ id: Int64) {
-        if selectedImageIds.contains(id) {
-            selectedImageIds.remove(id)
-        } else {
-            selectedImageIds.insert(id)
+    func observeSelectionState() async {
+        for await ids in vm.selectedImageIds {
+            let longIds = ids as? Set<KotlinLong> ?? []
+            selectedImageIds = Set(longIds.map { $0.int64Value })
         }
     }
 
-    func selectAll() {
-        selectedImageIds = Set(images.map { $0.id })
+    func observeTagInput() async {
+        for await text in vm.tagInput {
+            guard let str = text as? String else { continue }
+            tagInput = str
+        }
     }
 
-    func clearSelection() {
-        selectedImageIds.removeAll()
+    func observeSuggestions() async {
+        for await list in vm.tagSuggestions {
+            suggestions = list as? [String] ?? []
+        }
     }
 
-    func toggleMode() {
-        isAddMode.toggle()
+    func observeMode() async {
+        for await mode in vm.isAddMode {
+            guard let boolValue = mode as? Bool else { continue }
+            isAddMode = boolValue
+        }
     }
+
+    func toggleSelection(_ id: Int64) { vm.toggleSelection(imageId: id) }
+    func selectAll() { vm.selectAll() }
+    func clearSelection() { vm.clearSelection() }
+    func toggleMode() { vm.toggleMode() }
 
     func updateTagInput(_ text: String) {
-        tagInput = text
-        Task { await loadSuggestions(prefix: text) }
-    }
-
-    private func loadSuggestions(prefix: String) async {
-        guard !prefix.isEmpty else {
-            suggestions = []
-            return
-        }
-        let result = try? await getTagSuggestionsUseCase.invoke(datasetId: datasetId, prefix: prefix)
-        suggestions = result as? [String] ?? []
+        vm.setTagInput(text: text)
     }
 
     func applyTag(_ tag: String) {
-        guard !selectedImageIds.isEmpty else { return }
-        let ids = Array(selectedImageIds).map { KotlinLong(value: $0) }
-        Task {
-            if isAddMode {
-                try? await batchEditTagsUseCase.invoke(
-                    imageIds: ids,
-                    addTags: [tag],
-                    removeTags: []
-                )
-            } else {
-                try? await batchEditTagsUseCase.invoke(
-                    imageIds: ids,
-                    addTags: [],
-                    removeTags: [tag]
-                )
-            }
-            tagInput = ""
-            suggestions = []
-        }
+        vm.applyTags(tags: [tag])
     }
 }

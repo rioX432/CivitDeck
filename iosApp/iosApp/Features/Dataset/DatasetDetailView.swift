@@ -4,7 +4,7 @@ import Shared
 extension DatasetImage: @retroactive Identifiable {}
 
 struct DatasetDetailView: View {
-    @StateObject private var viewModel: DatasetDetailViewModel
+    @StateObject private var viewModel: DatasetDetailViewModelOwner
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.civitTheme) private var theme
 
@@ -18,7 +18,7 @@ struct DatasetDetailView: View {
 
     init(datasetId: Int64, datasetName: String) {
         _viewModel = StateObject(
-            wrappedValue: DatasetDetailViewModel(datasetId: datasetId)
+            wrappedValue: DatasetDetailViewModelOwner(datasetId: datasetId)
         )
         self.datasetName = datasetName
     }
@@ -35,6 +35,12 @@ struct DatasetDetailView: View {
             ? "\(viewModel.selectedImageIds.count) selected"
             : datasetName)
         .navigationBarTitleDisplayMode(.inline)
+        .task { await viewModel.observeImages() }
+        .task { await viewModel.observeSelectionState() }
+        .task { await viewModel.observeSelectionMode() }
+        .task { await viewModel.observeDuplicateCount() }
+        .task { await viewModel.observeExportFormats() }
+        .task { await viewModel.observeExportProgress() }
         .toolbar { toolbarContent }
         .overlay(alignment: .bottom) {
             if viewModel.isSelectionMode && !viewModel.selectedImageIds.isEmpty {

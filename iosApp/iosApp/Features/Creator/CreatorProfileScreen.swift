@@ -2,11 +2,11 @@ import SwiftUI
 import Shared
 
 struct CreatorProfileScreen: View {
-    @StateObject private var viewModel: CreatorProfileViewModel
+    @StateObject private var viewModel: CreatorProfileViewModelOwner
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     init(username: String) {
-        _viewModel = StateObject(wrappedValue: CreatorProfileViewModel(username: username))
+        _viewModel = StateObject(wrappedValue: CreatorProfileViewModelOwner(username: username))
     }
 
     private var columns: [GridItem] {
@@ -19,12 +19,13 @@ struct CreatorProfileScreen: View {
                 LoadingStateView()
             } else if let error = viewModel.error, viewModel.models.isEmpty {
                 ErrorStateView(message: error) {
-                    Task { await viewModel.refresh() }
+                    viewModel.refresh()
                 }
             } else {
                 modelGrid
             }
         }
+        .task { await viewModel.observeUiState() }
         .navigationTitle(viewModel.username)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -60,7 +61,7 @@ struct CreatorProfileScreen: View {
             }
         }
         .refreshable {
-            await viewModel.refresh()
+            viewModel.refresh()
         }
     }
 }

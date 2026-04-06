@@ -27,11 +27,11 @@ import com.riox432.civitdeck.presentation.settings.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.presentation.settings.AuthSettingsUiState
 import com.riox432.civitdeck.presentation.settings.AuthSettingsViewModel
 import com.riox432.civitdeck.presentation.settings.StorageSettingsViewModel
+import com.riox432.civitdeck.presentation.update.UpdateUiState
+import com.riox432.civitdeck.presentation.update.UpdateViewModel
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.update.UpdateBanner
-import com.riox432.civitdeck.ui.update.UpdateUiState
-import com.riox432.civitdeck.ui.update.UpdateViewModel
 
 @Suppress("LongParameterList")
 @Composable

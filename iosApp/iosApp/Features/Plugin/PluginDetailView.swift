@@ -4,13 +4,13 @@ import Shared
 private let configEditorMinHeight: CGFloat = 80
 
 struct PluginDetailView: View {
-    @StateObject private var viewModel: PluginDetailViewModel
+    @StateObject private var viewModel: PluginDetailViewModelOwner
     @Environment(\.dismiss) private var dismiss
     @State private var editedConfig = ""
     @State private var showUninstallConfirm = false
 
     init(pluginId: String) {
-        _viewModel = StateObject(wrappedValue: PluginDetailViewModel(pluginId: pluginId))
+        _viewModel = StateObject(wrappedValue: PluginDetailViewModelOwner(pluginId: pluginId))
     }
 
     var body: some View {
@@ -30,11 +30,8 @@ struct PluginDetailView: View {
         .alert("Uninstall Plugin", isPresented: $showUninstallConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Uninstall", role: .destructive) {
-                Task {
-                    if await viewModel.uninstall() {
-                        dismiss()
-                    }
-                }
+                viewModel.uninstall()
+                dismiss()
             }
         } message: {
             Text("Are you sure? This will remove the plugin and its data.")

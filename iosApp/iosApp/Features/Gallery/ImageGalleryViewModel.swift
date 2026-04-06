@@ -11,7 +11,10 @@ enum AspectRatioFilter: String, CaseIterable {
 }
 
 @MainActor
-final class ImageGalleryViewModel: ObservableObject {
+final class ImageGalleryViewModelOwner: ObservableObject {
+    let vm: ImageGalleryViewModel
+    private let store = ViewModelStore()
+
     @Published var allImages: [CivitImage] = []
     @Published var selectedSort: CivitSortOrder = .highestRated
     @Published var selectedPeriod: TimePeriod = .allTime
@@ -39,65 +42,40 @@ final class ImageGalleryViewModel: ObservableObject {
         }
     }
 
-    private let modelVersionId: Int64
-    private let getImagesUseCase: GetImagesUseCase
-    private let savePromptUseCase: SavePromptUseCase
-    private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
-    private let observeNsfwBlurSettingsUseCase: ObserveNsfwBlurSettingsUseCase
-    private let autoSavePromptUseCase: AutoSavePromptUseCase
-    private var nextCursor: String?
-    private var loadTask: Task<Void, Never>?
-
-    private let pageSize: Int32 = 20
-    private static let timeoutSeconds: UInt64 = 30
-
     init(modelVersionId: Int64) {
-        self.modelVersionId = modelVersionId
-        self.getImagesUseCase = KoinHelper.shared.getImagesUseCase()
-        self.savePromptUseCase = KoinHelper.shared.getSavePromptUseCase()
-        self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
-        self.observeNsfwBlurSettingsUseCase = KoinHelper.shared.getObserveNsfwBlurSettingsUseCase()
-        self.autoSavePromptUseCase = KoinHelper.shared.getAutoSavePromptUseCase()
-        loadImages()
+        vm = KoinHelper.shared.createImageGalleryViewModel(modelVersionId: modelVersionId)
+        store.put(key: "ImageGalleryViewModel", viewModel: vm)
     }
 
-    func observeNsfwBlurSettings() async {
-        for await value in observeNsfwBlurSettingsUseCase.invoke() {
-            nsfwBlurSettings = value
-        }
-    }
+    deinit { store.clear() }
 
-    func observeNsfwFilter() async {
-        let flow = SkieSwiftFlow<NsfwFilterLevel>(observeNsfwFilterUseCase.invoke())
-        for await value in flow {
-            let prev = nsfwFilterLevel
-            nsfwFilterLevel = value
-            if prev != value {
-                loadTask?.cancel()
-                allImages = []
-                nextCursor = nil
-                hasMore = true
-                loadImages()
+    func observeUiState() async {
+        for await state in vm.uiState {
+            allImages = state.allImages as? [CivitImage] ?? []
+            selectedSort = state.selectedSort
+            selectedPeriod = state.selectedPeriod
+            nsfwFilterLevel = state.nsfwFilterLevel
+            nsfwBlurSettings = state.nsfwBlurSettings
+            isLoading = state.isLoading
+            isLoadingMore = state.isLoadingMore
+            error = state.error
+            hasMore = state.hasMore
+            if let idx = state.selectedImageIndex {
+                selectedImageIndex = Int(idx.int32Value)
+            } else {
+                selectedImageIndex = nil
             }
         }
     }
 
     func onSortSelected(_ sort: CivitSortOrder) {
-        loadTask?.cancel()
         selectedSort = sort
-        allImages = []
-        nextCursor = nil
-        hasMore = true
-        loadImages()
+        vm.onSortSelected(sort: sort)
     }
 
     func onPeriodSelected(_ period: TimePeriod) {
-        loadTask?.cancel()
         selectedPeriod = period
-        allImages = []
-        nextCursor = nil
-        hasMore = true
-        loadImages()
+        vm.onPeriodSelected(period: period)
     }
 
     func onAspectRatioSelected(_ filter: AspectRatioFilter?) {
@@ -105,104 +83,24 @@ final class ImageGalleryViewModel: ObservableObject {
     }
 
     func loadMore() {
-        guard !isLoading, !isLoadingMore, hasMore else { return }
-        loadImages(isLoadMore: true)
+        vm.loadMore()
     }
 
     func onImageSelected(_ index: Int) {
         selectedImageIndex = index
-        autoSaveCurrentImagePrompt(index: index)
-    }
-
-    private func autoSaveCurrentImagePrompt(index: Int) {
-        guard index >= 0, index < allImages.count else { return }
-        let image = allImages[index]
-        guard let meta = image.meta else { return }
-        Task {
-            try? await autoSavePromptUseCase.invoke(meta: meta, sourceImageUrl: image.url)
-        }
+        vm.onImageSelected(index: Int32(index))
     }
 
     func onDismissViewer() {
+        vm.onDismissViewer()
         selectedImageIndex = nil
     }
 
     func retry() {
-        loadImages()
+        vm.retry()
     }
 
     func savePrompt(meta: ImageGenerationMeta, sourceImageUrl: String) {
-        Task {
-            try await savePromptUseCase.invoke(meta: meta, sourceImageUrl: sourceImageUrl)
-        }
-    }
-
-    private func loadImages(isLoadMore: Bool = false) {
-        loadTask?.cancel()
-        loadTask = Task {
-            if isLoadMore {
-                isLoadingMore = true
-            } else {
-                isLoading = true
-            }
-            error = nil
-
-            // Timeout guard: SKIE may not propagate Kotlin exceptions to Swift,
-            // leaving `try await` hanging forever. This task sets an error state
-            // if the API call doesn't complete in time.
-            let timeoutTask = Task { @MainActor in
-                try await Task.sleep(nanoseconds: Self.timeoutSeconds * 1_000_000_000)
-                if self.isLoading || self.isLoadingMore {
-                    self.error = "Request timed out. Please try again."
-                    self.isLoading = false
-                    self.isLoadingMore = false
-                }
-            }
-
-            do {
-                let nsfwLevel: NsfwLevel? = {
-                    switch nsfwFilterLevel {
-                    case .off: return NsfwLevel.none
-                    case .soft: return .soft
-                    default: return nil
-                    }
-                }()
-                let result = try await getImagesUseCase.invoke(
-                    modelId: nil,
-                    modelVersionId: KotlinLong(longLong: modelVersionId),
-                    username: nil,
-                    sort: selectedSort,
-                    period: selectedPeriod,
-                    nsfwLevel: nsfwLevel,
-                    limit: KotlinInt(int: pageSize),
-                    cursor: isLoadMore ? nextCursor : nil
-                )
-                timeoutTask.cancel()
-
-                guard !Task.isCancelled else { return }
-                // If timeout already fired, skip updating state
-                guard error == nil else { return }
-
-                let newImages = result.items.compactMap { $0 as? CivitImage }
-                if isLoadMore {
-                    allImages.append(contentsOf: newImages)
-                } else {
-                    allImages = newImages
-                }
-                nextCursor = result.metadata.nextCursor
-                hasMore = result.metadata.nextCursor != nil
-                isLoading = false
-                isLoadingMore = false
-            } catch is CancellationError {
-                timeoutTask.cancel()
-                return
-            } catch {
-                timeoutTask.cancel()
-                guard !Task.isCancelled else { return }
-                self.error = error.localizedDescription
-                isLoading = false
-                isLoadingMore = false
-            }
-        }
+        vm.savePrompt(meta: meta, sourceImageUrl: sourceImageUrl)
     }
 }

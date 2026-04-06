@@ -2,48 +2,40 @@ import Foundation
 import Shared
 
 @MainActor
-final class ComfyHubBrowserViewModel: ObservableObject {
+final class ComfyHubBrowserViewModelOwner: ObservableObject {
+    let vm: ComfyHubBrowserViewModel
+    private let store = ViewModelStore()
+
     @Published var workflows: [ComfyHubWorkflow] = []
     @Published var isLoading: Bool = true
     @Published var error: String?
     @Published var query: String = ""
     @Published var selectedCategory: ComfyHubCategory = .all
 
-    private let searchWorkflows = KoinHelper.shared.getSearchComfyHubWorkflowsUseCase()
-
     init() {
-        Task { await search() }
+        vm = KoinHelper.shared.createComfyHubBrowserViewModel()
+        store.put(key: "ComfyHubBrowserViewModel", viewModel: vm)
+    }
+
+    deinit { store.clear() }
+
+    func observeUiState() async {
+        for await state in vm.uiState {
+            workflows = state.workflows as? [ComfyHubWorkflow] ?? []
+            isLoading = state.isLoading
+            error = state.error
+            query = state.query
+            selectedCategory = state.selectedCategory
+        }
     }
 
     func onQueryChanged(_ query: String) {
         self.query = query
-        Task { await search() }
+        vm.onQueryChange(query: query)
     }
-
     func onCategorySelected(_ category: ComfyHubCategory) {
         selectedCategory = category
-        Task { await search() }
+        vm.onCategorySelected(category: category)
     }
-
-    func retry() {
-        Task { await search() }
-    }
-
-    private func search() async {
-        isLoading = true
-        error = nil
-        do {
-            let results = try await searchWorkflows.invoke(
-                query: query,
-                category: selectedCategory,
-                sort: .mostDownloaded,
-                page: 1
-            )
-            workflows = results
-            isLoading = false
-        } catch {
-            self.error = error.localizedDescription
-            isLoading = false
-        }
-    }
+    func retry() { vm.retry() }
 }

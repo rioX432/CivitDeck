@@ -4,7 +4,7 @@ import Shared
 private let templateJsonEditorMinHeight: CGFloat = 200
 
 struct WorkflowTemplateView: View {
-    @StateObject private var viewModel = WorkflowTemplateViewModel()
+    @StateObject private var viewModel = WorkflowTemplateViewModelOwner()
     let isPicker: Bool
     var onSelect: ((WorkflowTemplate) -> Void)?
 
@@ -50,7 +50,7 @@ struct WorkflowTemplateView: View {
         .sheet(isPresented: $showCreateEditor) {
             NavigationStack {
                 WorkflowTemplateEditorView(
-                    initialTemplate: WorkflowTemplateViewModel.emptyTemplate(),
+                    initialTemplate: WorkflowTemplateViewModelOwner.emptyTemplate(),
                     viewModel: viewModel
                 )
             }

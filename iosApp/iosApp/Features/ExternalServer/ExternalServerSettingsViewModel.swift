@@ -2,68 +2,56 @@ import Foundation
 import Shared
 
 @MainActor
-class ExternalServerSettingsViewModel: ObservableObject {
+final class ExternalServerSettingsViewModelOwner: ObservableObject {
+    let vm: Feature_externalserverExternalServerSettingsViewModel
+    private let store = ViewModelStore()
+
     @Published var configs: [ExternalServerConfig] = []
     @Published var activeConfig: ExternalServerConfig?
+    @Published var connectionStatus: Core_domainExternalServerConnectionStatus = .notConfigured
     @Published var isTesting = false
     @Published var testError: String?
     @Published var showAddSheet = false
     @Published var editingConfig: ExternalServerConfig?
 
-    private let observeConfigs = KoinHelper.shared.getObserveExternalServerConfigsUseCase()
-    private let observeActive = KoinHelper.shared.getObserveActiveExternalServerConfigUseCase()
-    private let saveConfig = KoinHelper.shared.getSaveExternalServerConfigUseCase()
-    private let deleteConfig = KoinHelper.shared.getDeleteExternalServerConfigUseCase()
-    private let activateConfig = KoinHelper.shared.getActivateExternalServerConfigUseCase()
-    private let testConnection = KoinHelper.shared.getTestExternalServerConnectionUseCase()
-
-    func observeConfigsList() async {
-        for await list in observeConfigs.invoke() {
-            self.configs = list
-        }
+    init() {
+        vm = KoinHelper.shared.createExternalServerSettingsViewModel()
+        store.put(key: "ExternalServerSettingsViewModel", viewModel: vm)
     }
 
-    func observeActiveConfig() async {
-        for await config in observeActive.invoke() {
-            self.activeConfig = config
+    deinit { store.clear() }
+
+    func observeUiState() async {
+        for await state in vm.uiState {
+            configs = state.configs as? [ExternalServerConfig] ?? []
+            activeConfig = state.activeConfig
+            connectionStatus = state.connectionStatus
+            isTesting = state.isTesting
+            testError = state.testError
+            showAddSheet = state.showAddDialog
+            editingConfig = state.editingConfig
         }
     }
 
     func onSave(name: String, baseUrl: String, apiKey: String) {
-        Task {
-            let config = ExternalServerConfig(
-                id: editingConfig?.id ?? 0,
-                name: name,
-                baseUrl: baseUrl,
-                apiKey: apiKey,
-                isActive: false,
-                lastTestedAt: nil,
-                lastTestSuccess: nil,
-                createdAt: 0
-            )
-            _ = try await saveConfig.invoke(config: config)
-            showAddSheet = false
-            editingConfig = nil
-        }
+        vm.onSaveConfig(name: name, baseUrl: baseUrl, apiKey: apiKey)
     }
-
-    func onDelete(id: Int64) {
-        Task { try await deleteConfig.invoke(id: id) }
+    func onDelete(id: Int64) { vm.onDeleteConfig(id: id) }
+    func onActivate(id: Int64) { vm.onActivateConfig(id: id) }
+    func onTest() { vm.onTestConnection() }
+    func onShowAddDialog() {
+        showAddSheet = true
+        vm.onShowAddDialog()
     }
-
-    func onActivate(id: Int64) {
-        Task { try await activateConfig.invoke(id: id) }
+    func onEditConfig(_ config: ExternalServerConfig) {
+        editingConfig = config
+        showAddSheet = true
+        vm.onEditConfig(config: config)
     }
-
-    func onTest() {
-        guard let active = activeConfig else { return }
-        isTesting = true
-        testError = nil
-        Task {
-            let success = try await testConnection.invoke(config: active)
-            isTesting = false
-            testError = success.boolValue ? nil : "Connection failed. Check the server URL and API key."
-        }
+    func onDismissDialog() {
+        showAddSheet = false
+        editingConfig = nil
+        vm.onDismissDialog()
     }
 
     var isConnected: Bool {

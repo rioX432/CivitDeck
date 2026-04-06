@@ -268,12 +268,18 @@ typealias ObserveSavedSearchFiltersUseCase = Feature_searchObserveSavedSearchFil
 typealias ObserveSearchHistoryUseCase = Feature_searchObserveSearchHistoryUseCase
 typealias RemoveExcludedTagUseCase = Core_domainRemoveExcludedTagUseCase
 typealias SaveSearchFilterUseCase = Feature_searchSaveSearchFilterUseCase
+typealias SwipeDiscoveryViewModel = Feature_searchSwipeDiscoveryViewModel
+typealias SwipeDiscoveryState = Feature_searchSwipeDiscoveryState
+typealias BrowsingHistoryViewModel = Feature_searchBrowsingHistoryViewModel
+typealias BrowsingHistoryUiState = Feature_searchBrowsingHistoryUiState
 typealias UnhideModelUseCase = Core_domainUnhideModelUseCase
 
-// MARK: - Feature: Gallery (shared use cases in core-domain)
+// MARK: - Feature: Gallery
 
 typealias EnrichModelImagesUseCase = Core_domainEnrichModelImagesUseCase
 typealias GetImagesUseCase = Feature_galleryGetImagesUseCase
+typealias ImageGalleryViewModel = Feature_galleryImageGalleryViewModel
+typealias ImageGalleryUiState = Feature_galleryImageGalleryUiState
 
 // MARK: - Feature: Prompts (shared use cases in core-domain)
 

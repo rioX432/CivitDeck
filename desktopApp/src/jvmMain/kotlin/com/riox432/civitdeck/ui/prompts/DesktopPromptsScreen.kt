@@ -37,8 +37,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.SavedPrompt
-import com.riox432.civitdeck.ui.prompts.PromptTab
-import com.riox432.civitdeck.ui.prompts.SavedPromptsViewModel
+import com.riox432.civitdeck.feature.prompts.presentation.PromptTab
+import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation

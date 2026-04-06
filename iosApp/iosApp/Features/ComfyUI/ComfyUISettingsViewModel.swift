@@ -2,67 +2,56 @@ import Foundation
 import Shared
 
 @MainActor
-class ComfyUISettingsViewModel: ObservableObject {
+final class ComfyUISettingsViewModelOwner: ObservableObject {
+    let vm: Feature_comfyuiComfyUISettingsViewModel
+    private let store = ViewModelStore()
+
     @Published var connections: [ComfyUIConnection] = []
     @Published var activeConnection: ComfyUIConnection?
+    @Published var connectionStatus: Core_domainComfyUIConnectionStatus = .notConfigured
     @Published var isTesting = false
     @Published var testError: String?
     @Published var showAddSheet = false
     @Published var editingConnection: ComfyUIConnection?
 
-    private let observeConnections = KoinHelper.shared.getObserveComfyUIConnectionsUseCase()
-    private let observeActive = KoinHelper.shared.getObserveActiveComfyUIConnectionUseCase()
-    private let saveConnection = KoinHelper.shared.getSaveComfyUIConnectionUseCase()
-    private let deleteConnection = KoinHelper.shared.getDeleteComfyUIConnectionUseCase()
-    private let activateConnection = KoinHelper.shared.getActivateComfyUIConnectionUseCase()
-    private let testConnection = KoinHelper.shared.getTestComfyUIConnectionUseCase()
-
-    func observeConnectionsList() async {
-        for await list in observeConnections.invoke() {
-            self.connections = list
-        }
+    init() {
+        vm = KoinHelper.shared.createComfyUISettingsViewModel()
+        store.put(key: "ComfyUISettingsViewModel", viewModel: vm)
     }
 
-    func observeActiveConn() async {
-        for await conn in observeActive.invoke() {
-            self.activeConnection = conn
+    deinit { store.clear() }
+
+    func observeUiState() async {
+        for await state in vm.uiState {
+            connections = state.connections as? [ComfyUIConnection] ?? []
+            activeConnection = state.activeConnection
+            connectionStatus = state.connectionStatus
+            isTesting = state.isTesting
+            testError = state.testError
+            showAddSheet = state.showAddDialog
+            editingConnection = state.editingConnection
         }
     }
 
     func onSave(name: String, hostname: String, port: Int32) {
-        Task {
-            let conn = ComfyUIConnection(
-                id: editingConnection?.id ?? 0,
-                name: name,
-                hostname: hostname,
-                port: port,
-                isActive: false,
-                lastTestedAt: nil,
-                lastTestSuccess: nil
-            )
-            _ = try await saveConnection.invoke(connection: conn)
-            showAddSheet = false
-            editingConnection = nil
-        }
+        vm.onSaveConnection(name: name, hostname: hostname, port: port)
     }
-
-    func onDelete(id: Int64) {
-        Task { try await deleteConnection.invoke(id: id) }
+    func onDelete(id: Int64) { vm.onDeleteConnection(id: id) }
+    func onActivate(id: Int64) { vm.onActivateConnection(id: id) }
+    func onTest() { vm.onTestConnection() }
+    func onShowAddDialog() {
+        showAddSheet = true
+        vm.onShowAddDialog()
     }
-
-    func onActivate(id: Int64) {
-        Task { try await activateConnection.invoke(id: id) }
+    func onEditConnection(_ connection: ComfyUIConnection) {
+        editingConnection = connection
+        showAddSheet = true
+        vm.onEditConnection(connection: connection)
     }
-
-    func onTest() {
-        guard let active = activeConnection else { return }
-        isTesting = true
-        testError = nil
-        Task {
-            let success = try await testConnection.invoke(connection: active)
-            isTesting = false
-            testError = success.boolValue ? nil : "Connection failed"
-        }
+    func onDismissDialog() {
+        showAddSheet = false
+        editingConnection = nil
+        vm.onDismissDialog()
     }
 
     var isConnected: Bool {

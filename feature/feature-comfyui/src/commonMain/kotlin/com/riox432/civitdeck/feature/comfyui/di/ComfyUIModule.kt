@@ -64,8 +64,18 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerat
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.plugin.ComfyUIWorkflowPlugin
+import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -138,4 +148,15 @@ val comfyuiModule = module {
 
     // Plugin adapter
     single { ComfyUIWorkflowPlugin(get()) }
+
+    // ViewModels
+    viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { ComfyUIHistoryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { ComfyUIQueueViewModel(get(), get()) }
+    viewModel { WorkflowTemplateViewModel(get(), get(), get(), get(), get()) }
+    viewModel { SDWebUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { SDWebUIGenerationViewModel(get(), get(), get(), get(), get()) }
+    viewModel { CivitaiLinkSettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { CivitaiLinkSendViewModel(get(), get()) }
 }

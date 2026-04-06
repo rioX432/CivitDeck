@@ -2,55 +2,38 @@ import Foundation
 import Shared
 
 @MainActor
-class CivitaiLinkSettingsViewModel: ObservableObject {
+final class CivitaiLinkSettingsViewModelOwner: ObservableObject {
+    let vm: Feature_comfyuiCivitaiLinkSettingsViewModel
+    private let store = ViewModelStore()
+
     @Published var linkKey: String = ""
     @Published var status: CivitaiLinkStatus = .disconnected
     @Published var activities: [CivitaiLinkActivity] = []
     @Published var isSaving = false
 
-    private let observeKey = KoinHelper.shared.getObserveCivitaiLinkKeyUseCase()
-    private let setKey = KoinHelper.shared.getSetCivitaiLinkKeyUseCase()
-    private let observeStatus = KoinHelper.shared.getObserveCivitaiLinkStatusUseCase()
-    private let observeActivities = KoinHelper.shared.getObserveCivitaiLinkActivitiesUseCase()
-    private let connect = KoinHelper.shared.getConnectCivitaiLinkUseCase()
-    private let disconnect = KoinHelper.shared.getDisconnectCivitaiLinkUseCase()
-    private let cancelActivity = KoinHelper.shared.getCancelLinkActivityUseCase()
+    init() {
+        vm = KoinHelper.shared.createCivitaiLinkSettingsViewModel()
+        store.put(key: "CivitaiLinkSettingsViewModel", viewModel: vm)
+    }
 
-    func observeLinkKey() async {
-        for await key in observeKey.invoke() where self.linkKey.isEmpty {
-            self.linkKey = key ?? ""
+    deinit { store.clear() }
+
+    func observeUiState() async {
+        for await state in vm.uiState {
+            linkKey = state.linkKey
+            status = state.status
+            activities = state.activities as? [CivitaiLinkActivity] ?? []
+            isSaving = state.isSaving
         }
     }
 
-    func observeLinkStatus() async {
-        for await s in observeStatus.invoke() {
-            self.status = s
-        }
+    func onKeyChanged(_ key: String) {
+        linkKey = key
+        vm.onKeyChanged(key: key)
     }
-
-    func observeLinkActivities() async {
-        for await acts in observeActivities.invoke() {
-            self.activities = acts
-        }
-    }
-
-    func saveAndConnect() {
-        guard !linkKey.isEmpty else { return }
-        isSaving = true
-        Task {
-            try? await setKey.invoke(key: linkKey)
-            _ = try? await connect.invoke()
-            isSaving = false
-        }
-    }
-
-    func onDisconnect() {
-        disconnect.invoke()
-    }
-
-    func onCancelActivity(id: String) {
-        Task { try? await cancelActivity.invoke(activityId: id) }
-    }
+    func saveAndConnect() { vm.onSaveAndConnect() }
+    func onDisconnect() { vm.onDisconnect() }
+    func onCancelActivity(id: String) { vm.onCancelActivity(activityId: id) }
 
     var isConnected: Bool { status == .connected }
 }

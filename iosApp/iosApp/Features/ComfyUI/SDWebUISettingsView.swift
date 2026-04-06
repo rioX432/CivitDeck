@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct SDWebUISettingsView: View {
-    @StateObject private var viewModel = SDWebUISettingsViewModel()
+    @StateObject private var viewModel = SDWebUISettingsViewModelOwner()
     @Environment(\.civitTheme) private var theme
 
     var body: some View {
@@ -34,8 +34,7 @@ struct SDWebUISettingsView: View {
                 onSave: viewModel.onSave
             )
         }
-        .task { await viewModel.observeConnectionsList() }
-        .task { await viewModel.observeActiveConn() }
+        .task { await viewModel.observeUiState() }
     }
 
     private var statusSection: some View {

@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct BrowsingHistoryView: View {
-    @StateObject private var viewModel = BrowsingHistoryViewModel()
+    @StateObject private var viewModel = BrowsingHistoryViewModelOwner()
     @State private var showClearAlert = false
 
     var body: some View {
@@ -48,7 +48,7 @@ struct BrowsingHistoryView: View {
         } message: {
             Text("Are you sure? This cannot be undone.")
         }
-        .task { await viewModel.observeHistory() }
+        .task { await viewModel.observeUiState() }
     }
 }
 

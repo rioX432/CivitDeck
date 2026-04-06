@@ -2,55 +2,12 @@ import SwiftUI
 import Shared
 
 struct ExternalServerGenerationSheet: View {
-    @ObservedObject var viewModel: ExternalServerGalleryViewModel
+    @ObservedObject var viewModel: ExternalServerGalleryViewModelOwner
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
-            Group {
-                if viewModel.isLoadingOptions {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    Form {
-                        ForEach(viewModel.generationOptions, id: \.key) { option in
-                            DynamicFormField(
-                                option: option,
-                                value: Binding(
-                                    get: { viewModel.generationParams[option.key] ?? "" },
-                                    set: { viewModel.updateGenerationParam(key: option.key, value: $0) }
-                                ),
-                                dependentChoices: viewModel.dependentChoices[option.key]
-                            )
-                        }
-
-                        if let error = viewModel.generationError {
-                            Section {
-                                Text(error)
-                                    .foregroundColor(.civitError)
-                                    .font(.civitBodySmall)
-                            }
-                        }
-
-                        Section {
-                            Button {
-                                Task { await viewModel.submitGeneration() }
-                            } label: {
-                                HStack {
-                                    Spacer()
-                                    if viewModel.isSubmittingGeneration {
-                                        ProgressView()
-                                    } else {
-                                        Text("Start Generation")
-                                    }
-                                    Spacer()
-                                }
-                            }
-                            .disabled(viewModel.isSubmittingGeneration)
-                        }
-                    }
-                }
-            }
+            generationContent
             .navigationTitle("Generate")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -60,6 +17,56 @@ struct ExternalServerGenerationSheet: View {
             }
         }
         .presentationDetents([.large])
+    }
+
+    @ViewBuilder
+    private var generationContent: some View {
+        if viewModel.isLoadingOptions {
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            generationForm
+        }
+    }
+
+    private var generationForm: some View {
+        Form {
+            ForEach(viewModel.generationOptions, id: \.key) { option in
+                DynamicFormField(
+                    option: option,
+                    value: Binding(
+                        get: { viewModel.generationParams[option.key] ?? "" },
+                        set: { viewModel.onGenerationParamChanged(key: option.key, value: $0) }
+                    ),
+                    dependentChoices: viewModel.dependentChoices[option.key]
+                )
+            }
+
+            if let error = viewModel.generationError {
+                Section {
+                    Text(error)
+                        .foregroundColor(.civitError)
+                        .font(.civitBodySmall)
+                }
+            }
+
+            Section {
+                Button {
+                    Task { viewModel.onSubmitGeneration() }
+                } label: {
+                    HStack {
+                        Spacer()
+                        if viewModel.isSubmittingGeneration {
+                            ProgressView()
+                        } else {
+                            Text("Start Generation")
+                        }
+                        Spacer()
+                    }
+                }
+                .disabled(viewModel.isSubmittingGeneration)
+            }
+        }
     }
 }
 

@@ -22,17 +22,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
-import com.riox432.civitdeck.ui.comfyui.ComfyUIGenerationViewModel
-import com.riox432.civitdeck.ui.comfyui.ComfyUIHistoryViewModel
-import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsViewModel
-import com.riox432.civitdeck.ui.comfyui.SDWebUIGenerationViewModel
-import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
 import com.riox432.civitdeck.ui.comfyui.template.DesktopTemplateParameterScreen
 import com.riox432.civitdeck.ui.comfyui.template.DesktopWorkflowTemplateEditorScreen
 import com.riox432.civitdeck.ui.comfyui.template.DesktopWorkflowTemplateScreen
-import com.riox432.civitdeck.ui.comfyui.template.DesktopWorkflowTemplateViewModel
-import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryViewModel
-import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
+import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
+import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
 import com.riox432.civitdeck.ui.create.DesktopCreateHubScreen
 import com.riox432.civitdeck.ui.settings.ComfyUIGenerationSection
 import com.riox432.civitdeck.ui.settings.ComfyUIHistorySection
@@ -82,13 +82,13 @@ fun CreateTabContent(
                 )
             }
             is CreateRoute.WorkflowTemplates -> {
-                val vm: DesktopWorkflowTemplateViewModel = koinViewModel()
+                val vm: WorkflowTemplateViewModel = koinViewModel()
                 DesktopWorkflowTemplateScreen(
                     viewModel = vm,
                     onBack = { route = CreateRoute.Hub },
                     onCreateTemplate = {
                         route = CreateRoute.WorkflowTemplateEditor(
-                            DesktopWorkflowTemplateViewModel.emptyTemplate(),
+                            WorkflowTemplateViewModel.emptyTemplate(),
                         )
                     },
                     onEditTemplate = { template ->
@@ -100,7 +100,7 @@ fun CreateTabContent(
                 )
             }
             is CreateRoute.WorkflowTemplateEditor -> {
-                val vm: DesktopWorkflowTemplateViewModel = koinViewModel()
+                val vm: WorkflowTemplateViewModel = koinViewModel()
                 DesktopWorkflowTemplateEditorScreen(
                     initialTemplate = currentRoute.template,
                     viewModel = vm,

@@ -2,63 +2,44 @@ import Foundation
 import Shared
 
 @MainActor
-final class PluginListViewModel: ObservableObject {
+final class PluginListViewModelOwner: ObservableObject {
     @Published var plugins: [InstalledPlugin] = []
     @Published var isLoading = true
     @Published var errorMessage: String?
 
-    private let observeInstalledPluginsUseCase: ObserveInstalledPluginsUseCase
-    private let activatePluginUseCase: ActivatePluginUseCase
-    private let deactivatePluginUseCase: DeactivatePluginUseCase
+    private let vm: PluginManagementViewModel
+    private let store: ViewModelStore
 
     init() {
-        self.observeInstalledPluginsUseCase = KoinHelper.shared.getObserveInstalledPluginsUseCase()
-        self.activatePluginUseCase = KoinHelper.shared.getActivatePluginUseCase()
-        self.deactivatePluginUseCase = KoinHelper.shared.getDeactivatePluginUseCase()
+        store = ViewModelStore()
+        vm = KoinHelper.shared.createPluginManagementViewModel()
+        store.put(key: "PluginManagementViewModel", viewModel: vm)
     }
 
-    func observePlugins() async {
-        isLoading = true
-        do {
-            for try await plugins in observeInstalledPluginsUseCase.invoke() {
-                let swiftPlugins = plugins.compactMap { $0 as? InstalledPlugin }
-                self.plugins = swiftPlugins
-                self.isLoading = false
-            }
-        } catch {
-            errorMessage = error.localizedDescription
-            isLoading = false
+    deinit { store.clear() }
+
+    func observeUiState() async {
+        for await state in vm.uiState {
+            plugins = state.plugins as? [InstalledPlugin] ?? []
+            isLoading = state.isLoading
+            errorMessage = state.error
         }
     }
 
     func togglePlugin(_ plugin: InstalledPlugin, isActive: Bool) {
-        Task {
-            do {
-                if isActive {
-                    try await activatePluginUseCase.invoke(pluginId: plugin.id)
-                } else {
-                    try await deactivatePluginUseCase.invoke(pluginId: plugin.id)
-                }
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-        }
+        vm.togglePlugin(pluginId: plugin.id, isActive: isActive)
     }
 
     func isActive(_ plugin: InstalledPlugin) -> Bool {
-        plugin.state == .active
+        vm.isPluginActive(plugin: plugin)
     }
 
     func typeLabel(for type: InstalledPluginType) -> String {
         switch type {
-        case .workflowEngine:
-            return "Workflow"
-        case .exportFormat:
-            return "Export"
-        case .theme:
-            return "Theme"
-        default:
-            return "Unknown"
+        case .workflowEngine: return "Workflow"
+        case .exportFormat: return "Export"
+        case .theme: return "Theme"
+        default: return "Unknown"
         }
     }
 }

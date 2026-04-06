@@ -1,0 +1,183 @@
+package com.riox432.civitdeck.feature.gallery.presentation
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.riox432.civitdeck.domain.model.AspectRatioFilter
+import com.riox432.civitdeck.domain.model.Image
+import com.riox432.civitdeck.domain.model.ImageGenerationMeta
+import com.riox432.civitdeck.domain.model.NsfwBlurSettings
+import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.domain.model.NsfwLevel
+import com.riox432.civitdeck.domain.model.SortOrder
+import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.domain.usecase.AutoSavePromptUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
+import com.riox432.civitdeck.domain.util.LoadResult
+import com.riox432.civitdeck.domain.util.PaginatedLoader
+import com.riox432.civitdeck.feature.gallery.domain.usecase.GetImagesUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+data class ImageGalleryUiState(
+    val allImages: List<Image> = emptyList(),
+    val selectedSort: SortOrder = SortOrder.HighestRated,
+    val selectedPeriod: TimePeriod = TimePeriod.AllTime,
+    val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
+    val nsfwBlurSettings: NsfwBlurSettings = NsfwBlurSettings(),
+    val selectedAspectRatio: AspectRatioFilter? = null,
+    val isLoading: Boolean = false,
+    val isLoadingMore: Boolean = false,
+    val error: String? = null,
+    val nextCursor: String? = null,
+    val hasMore: Boolean = true,
+    val selectedImageIndex: Int? = null,
+) {
+    val images: List<Image>
+        get() = allImages.filterByAspectRatio(selectedAspectRatio)
+}
+
+class ImageGalleryViewModel(
+    private val modelVersionId: Long,
+    private val getImagesUseCase: GetImagesUseCase,
+    private val savePromptUseCase: SavePromptUseCase,
+    private val observeNsfwFilterUseCase: ObserveNsfwFilterUseCase,
+    private val autoSavePromptUseCase: AutoSavePromptUseCase,
+    private val observeNsfwBlurSettingsUseCase: ObserveNsfwBlurSettingsUseCase,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(ImageGalleryUiState())
+    val uiState: StateFlow<ImageGalleryUiState> = _uiState.asStateFlow()
+
+    private val paginatedLoader = PaginatedLoader<Image>(
+        scope = viewModelScope,
+        pageSize = PAGE_SIZE,
+        load = { cursor, limit -> loadPage(cursor, limit) },
+        onStateChanged = { loadState ->
+            _uiState.update {
+                it.copy(
+                    allImages = loadState.items,
+                    isLoading = loadState.isLoading,
+                    isLoadingMore = loadState.isLoadingMore,
+                    error = loadState.error,
+                    nextCursor = loadState.nextCursor,
+                    hasMore = loadState.hasMore,
+                )
+            }
+        },
+    )
+
+    init {
+        observeNsfwFilter()
+        observeBlurSettings()
+        paginatedLoader.loadFirst()
+    }
+
+    private fun observeBlurSettings() {
+        viewModelScope.launch {
+            observeNsfwBlurSettingsUseCase().collect { settings ->
+                _uiState.update { it.copy(nsfwBlurSettings = settings) }
+            }
+        }
+    }
+
+    private fun observeNsfwFilter() {
+        viewModelScope.launch {
+            observeNsfwFilterUseCase().collect { level ->
+                val prev = _uiState.value.nsfwFilterLevel
+                _uiState.update { it.copy(nsfwFilterLevel = level) }
+                if (prev != level) {
+                    paginatedLoader.loadFirst()
+                }
+            }
+        }
+    }
+
+    fun onSortSelected(sort: SortOrder) {
+        _uiState.update { it.copy(selectedSort = sort) }
+        paginatedLoader.loadFirst()
+    }
+
+    fun onPeriodSelected(period: TimePeriod) {
+        _uiState.update { it.copy(selectedPeriod = period) }
+        paginatedLoader.loadFirst()
+    }
+
+    fun onAspectRatioSelected(filter: AspectRatioFilter?) {
+        _uiState.update { it.copy(selectedAspectRatio = filter) }
+    }
+
+    fun loadMore() {
+        paginatedLoader.loadMore()
+    }
+
+    fun onImageSelected(index: Int) {
+        _uiState.update { it.copy(selectedImageIndex = index) }
+        autoSaveCurrentImagePrompt(index)
+    }
+
+    private fun autoSaveCurrentImagePrompt(index: Int) {
+        val images = _uiState.value.images
+        val image = images.getOrNull(index) ?: return
+        val meta = image.meta ?: return
+        viewModelScope.launch {
+            autoSavePromptUseCase(meta, image.url)
+        }
+    }
+
+    fun onDismissViewer() {
+        _uiState.update { it.copy(selectedImageIndex = null) }
+    }
+
+    fun retry() {
+        paginatedLoader.loadFirst()
+    }
+
+    fun savePrompt(meta: ImageGenerationMeta, sourceImageUrl: String?) {
+        viewModelScope.launch {
+            savePromptUseCase(meta, sourceImageUrl)
+        }
+    }
+
+    private suspend fun loadPage(cursor: String?, limit: Int): LoadResult<Image> {
+        val state = _uiState.value
+        val nsfwLevel = when (state.nsfwFilterLevel) {
+            NsfwFilterLevel.Off -> NsfwLevel.None
+            NsfwFilterLevel.Soft -> NsfwLevel.Soft
+            NsfwFilterLevel.All -> null
+        }
+        val result = getImagesUseCase(
+            modelVersionId = modelVersionId,
+            sort = state.selectedSort,
+            period = state.selectedPeriod,
+            nsfwLevel = nsfwLevel,
+            cursor = cursor,
+            limit = limit,
+        )
+        return LoadResult(
+            items = result.items,
+            nextCursor = result.metadata.nextCursor,
+        )
+    }
+
+    companion object {
+        private const val PAGE_SIZE = 20
+    }
+}
+
+private fun List<Image>.filterByAspectRatio(filter: AspectRatioFilter?): List<Image> {
+    if (filter == null) return this
+    return filter { image ->
+        if (image.width <= 0 || image.height <= 0) return@filter true
+        val ratio = image.width.toFloat() / image.height.toFloat()
+        when (filter) {
+            AspectRatioFilter.Portrait -> ratio < 0.83f
+            AspectRatioFilter.Landscape -> ratio > 1.2f
+            AspectRatioFilter.Square -> ratio in 0.83f..1.2f
+        }
+    }
+}
