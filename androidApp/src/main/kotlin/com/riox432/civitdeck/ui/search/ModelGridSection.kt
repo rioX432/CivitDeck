@@ -28,13 +28,12 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.paging.LoadState
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemKey
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.thumbnailUrl
@@ -60,7 +59,12 @@ data class ModelGridCallbacks(
 internal fun ModelSearchContent(
     recommendations: List<RecommendationSection>,
     gridState: LazyGridState,
-    lazyPagingItems: LazyPagingItems<Model>,
+    models: List<Model>,
+    isLoading: Boolean,
+    isLoadingMore: Boolean,
+    error: String?,
+    onLoadMore: () -> Unit,
+    onRefresh: () -> Unit,
     callbacks: ModelGridCallbacks,
     topPadding: androidx.compose.ui.unit.Dp = 0.dp,
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
@@ -69,23 +73,23 @@ internal fun ModelSearchContent(
     favoriteIds: Set<Long> = emptySet(),
     isComparing: Boolean = false,
 ) {
-    val refreshState = lazyPagingItems.loadState.refresh
-    val isInitialLoading = refreshState is LoadState.Loading
-    val refreshError = (refreshState as? LoadState.Error)?.error
     val stateKey = when {
-        isInitialLoading -> "loading"
-        refreshError != null && lazyPagingItems.itemCount == 0 -> "error"
+        isLoading && models.isEmpty() -> "loading"
+        error != null && models.isEmpty() -> "error"
         else -> "content"
     }
 
     SearchContentPullToRefresh(
-        refreshState = refreshState,
-        lazyPagingItems = lazyPagingItems,
+        isRefreshing = isLoading && models.isNotEmpty(),
+        onRefresh = onRefresh,
         topPadding = topPadding,
         stateKey = stateKey,
-        refreshError = refreshError,
+        error = error,
         recommendations = recommendations,
         gridState = gridState,
+        models = models,
+        isLoadingMore = isLoadingMore,
+        onLoadMore = onLoadMore,
         callbacks = callbacks,
         bottomPadding = bottomPadding,
         gridColumns = gridColumns,
@@ -99,13 +103,16 @@ internal fun ModelSearchContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchContentPullToRefresh(
-    refreshState: LoadState,
-    lazyPagingItems: LazyPagingItems<Model>,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
     topPadding: androidx.compose.ui.unit.Dp,
     stateKey: String,
-    refreshError: Throwable?,
+    error: String?,
     recommendations: List<RecommendationSection>,
     gridState: LazyGridState,
+    models: List<Model>,
+    isLoadingMore: Boolean,
+    onLoadMore: () -> Unit,
     callbacks: ModelGridCallbacks,
     bottomPadding: androidx.compose.ui.unit.Dp,
     gridColumns: Int,
@@ -116,14 +123,14 @@ private fun SearchContentPullToRefresh(
     val pullToRefreshState = rememberPullToRefreshState()
 
     PullToRefreshBox(
-        isRefreshing = refreshState is LoadState.Loading && lazyPagingItems.itemCount > 0,
-        onRefresh = { lazyPagingItems.refresh() },
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
         modifier = Modifier.fillMaxSize(),
         state = pullToRefreshState,
         indicator = {
             PullToRefreshDefaults.Indicator(
                 state = pullToRefreshState,
-                isRefreshing = refreshState is LoadState.Loading && lazyPagingItems.itemCount > 0,
+                isRefreshing = isRefreshing,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = topPadding),
@@ -132,8 +139,10 @@ private fun SearchContentPullToRefresh(
     ) {
         SearchContentCrossfade(
             stateKey = stateKey,
-            refreshError = refreshError,
-            lazyPagingItems = lazyPagingItems,
+            error = error,
+            models = models,
+            isLoadingMore = isLoadingMore,
+            onLoadMore = onLoadMore,
             recommendations = recommendations,
             gridState = gridState,
             callbacks = callbacks,
@@ -151,8 +160,10 @@ private fun SearchContentPullToRefresh(
 @Composable
 private fun SearchContentCrossfade(
     stateKey: String,
-    refreshError: Throwable?,
-    lazyPagingItems: LazyPagingItems<Model>,
+    error: String?,
+    models: List<Model>,
+    isLoadingMore: Boolean,
+    onLoadMore: () -> Unit,
     recommendations: List<RecommendationSection>,
     gridState: LazyGridState,
     callbacks: ModelGridCallbacks,
@@ -177,14 +188,16 @@ private fun SearchContentCrossfade(
             "error" -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = refreshError?.message ?: "Unknown error",
+                        text = error ?: "Unknown error",
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
             }
             else -> {
                 ModelGrid(
-                    lazyPagingItems = lazyPagingItems,
+                    models = models,
+                    isLoadingMore = isLoadingMore,
+                    onLoadMore = onLoadMore,
                     recommendations = recommendations,
                     gridState = gridState,
                     callbacks = callbacks,
@@ -203,7 +216,9 @@ private fun SearchContentCrossfade(
 @Suppress("LongParameterList")
 @Composable
 private fun ModelGrid(
-    lazyPagingItems: LazyPagingItems<Model>,
+    models: List<Model>,
+    isLoadingMore: Boolean,
+    onLoadMore: () -> Unit,
     recommendations: List<RecommendationSection>,
     gridState: LazyGridState,
     callbacks: ModelGridCallbacks,
@@ -214,8 +229,20 @@ private fun ModelGrid(
     favoriteIds: Set<Long> = emptySet(),
     isComparing: Boolean = false,
 ) {
-    val isAppendLoading = lazyPagingItems.loadState.append is LoadState.Loading
     val reducedMotion = isReducedMotionEnabled()
+
+    // Trigger load-more when approaching end of list
+    LaunchedEffect(gridState, models.size) {
+        snapshotFlow {
+            val layoutInfo = gridState.layoutInfo
+            val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            lastVisible to layoutInfo.totalItemsCount
+        }.collect { (lastVisible, totalItems) ->
+            if (totalItems > 0 && lastVisible >= totalItems - LOAD_MORE_THRESHOLD) {
+                onLoadMore()
+            }
+        }
+    }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(gridColumns),
@@ -230,15 +257,15 @@ private fun ModelGrid(
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
         recommendationItems(recommendations, callbacks.onModelClick)
-        modelPagingItems(
-            lazyPagingItems,
+        modelItems(
+            models,
             ownedHashes,
             favoriteIds,
             isComparing,
             reducedMotion,
             callbacks,
         )
-        appendLoadingItem(isAppendLoading)
+        appendLoadingItem(isLoadingMore)
     }
 }
 
@@ -260,8 +287,8 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.recommendationIt
     }
 }
 
-private fun androidx.compose.foundation.lazy.grid.LazyGridScope.modelPagingItems(
-    lazyPagingItems: LazyPagingItems<Model>,
+private fun androidx.compose.foundation.lazy.grid.LazyGridScope.modelItems(
+    models: List<Model>,
     ownedHashes: Set<String>,
     favoriteIds: Set<Long>,
     isComparing: Boolean,
@@ -269,11 +296,11 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.modelPagingItems
     callbacks: ModelGridCallbacks,
 ) {
     items(
-        count = lazyPagingItems.itemCount,
-        key = lazyPagingItems.itemKey { it.id },
+        count = models.size,
+        key = { models[it].id },
         contentType = { "model" },
     ) { index ->
-        val model = lazyPagingItems[index] ?: return@items
+        val model = models[index]
         val thumbnailUrl = model.modelVersions
             .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
         val isOwned = ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
@@ -317,3 +344,5 @@ private fun Model.isOwnedBy(ownedHashes: Set<String>): Boolean =
             file.hashes["SHA256"]?.lowercase() in ownedHashes
         }
     }
+
+private const val LOAD_MORE_THRESHOLD = 10

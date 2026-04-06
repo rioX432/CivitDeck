@@ -5,8 +5,12 @@ import os
 
 private let logger = Logger(subsystem: "com.riox432.civitdeck", category: "Search")
 
+// swiftlint:disable type_body_length
 @MainActor
 final class ModelSearchViewModel: ObservableObject {
+    let vm: Feature_searchModelSearchViewModel
+    private let store = ViewModelStore()
+
     @Published var models: [Model] = []
     @Published var query: String = ""
     @Published var selectedType: ModelType?
@@ -30,73 +34,11 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var savedFilters: [SavedSearchFilter] = []
     @Published var selectedSources: Set<Core_domainModelSource> = [.civitai]
 
-    private let getModelsUseCase: GetModelsUseCase
-    private let multiSourceSearchUseCase: MultiSourceSearchUseCase
-    private let getRecommendationsUseCase: GetRecommendationsUseCase
-    private let observeNsfwFilterUseCase: ObserveNsfwFilterUseCase
-    private let observeSearchHistoryUseCase: ObserveSearchHistoryUseCase
-    private let addSearchHistoryUseCase: AddSearchHistoryUseCase
-    private let clearSearchHistoryUseCase: ClearSearchHistoryUseCase
-    private let deleteSearchHistoryItemUseCase: DeleteSearchHistoryItemUseCase
-    private let getViewedModelIdsUseCase: GetViewedModelIdsUseCase
-    private let getExcludedTagsUseCase: GetExcludedTagsUseCase
-    private let addExcludedTagUseCase: AddExcludedTagUseCase
-    private let removeExcludedTagUseCase: RemoveExcludedTagUseCase
-    let getHiddenModelIdsUseCase: GetHiddenModelIdsUseCase
-    let hideModelUseCase: HideModelUseCase
-    private let observeGridColumnsUseCase: ObserveGridColumnsUseCase
-    private let observeDefaultSortOrderUseCase: ObserveDefaultSortOrderUseCase
-    private let observeDefaultTimePeriodUseCase: ObserveDefaultTimePeriodUseCase
-    private let observeOwnedModelHashesUseCase: ObserveOwnedModelHashesUseCase
-    let toggleFavoriteUseCase: ToggleFavoriteUseCase
-    let observeFavoritesUseCase: ObserveFavoritesUseCase
-    let observeSavedSearchFiltersUseCase: ObserveSavedSearchFiltersUseCase
-    let saveSearchFilterUseCase: SaveSearchFilterUseCase
-    let deleteSavedSearchFilterUseCase: DeleteSavedSearchFilterUseCase
-    private let observeQualityThresholdUseCase: ObserveQualityThresholdUseCase
-    private let trackRecommendationClickUseCase: TrackRecommendationClickUseCase
-    private var qualityThreshold: Int32 = 0
-    private var thresholdObserveTask: Task<Void, Never>?
-    private var nextCursor: String?
-    var loadTask: Task<Void, Never>?
-    var hiddenModelIds: Set<KotlinLong> = []
-    private var sortWatermark: Double?
-    private var multiSourcePage: Int32 = 1
-
-    private let pageSize: Int32 = 20
-    private let maxFetchIterations = 5
     private var memoryWarningToken: NSObjectProtocol?
 
     init() {
-        self.getModelsUseCase = KoinHelper.shared.getModelsUseCase()
-        self.multiSourceSearchUseCase = KoinHelper.shared.getMultiSourceSearchUseCase()
-        self.getRecommendationsUseCase = KoinHelper.shared.getRecommendationsUseCase()
-        self.observeNsfwFilterUseCase = KoinHelper.shared.getObserveNsfwFilterUseCase()
-        self.observeSearchHistoryUseCase = KoinHelper.shared.getObserveSearchHistoryUseCase()
-        self.addSearchHistoryUseCase = KoinHelper.shared.getAddSearchHistoryUseCase()
-        self.clearSearchHistoryUseCase = KoinHelper.shared.getClearSearchHistoryUseCase()
-        self.deleteSearchHistoryItemUseCase = KoinHelper.shared.getDeleteSearchHistoryItemUseCase()
-        self.getViewedModelIdsUseCase = KoinHelper.shared.getViewedModelIdsUseCase()
-        self.getExcludedTagsUseCase = KoinHelper.shared.getExcludedTagsUseCase()
-        self.addExcludedTagUseCase = KoinHelper.shared.getAddExcludedTagUseCase()
-        self.removeExcludedTagUseCase = KoinHelper.shared.getRemoveExcludedTagUseCase()
-        self.getHiddenModelIdsUseCase = KoinHelper.shared.getHiddenModelIdsUseCase()
-        self.hideModelUseCase = KoinHelper.shared.getHideModelUseCase()
-        self.observeGridColumnsUseCase = KoinHelper.shared.getObserveGridColumnsUseCase()
-        self.observeDefaultSortOrderUseCase = KoinHelper.shared.getObserveDefaultSortOrderUseCase()
-        self.observeDefaultTimePeriodUseCase = KoinHelper.shared.getObserveDefaultTimePeriodUseCase()
-        self.observeOwnedModelHashesUseCase = KoinHelper.shared.getObserveOwnedModelHashesUseCase()
-        self.toggleFavoriteUseCase = KoinHelper.shared.getToggleFavoriteUseCase()
-        self.observeFavoritesUseCase = KoinHelper.shared.getObserveFavoritesUseCase()
-        self.observeSavedSearchFiltersUseCase = KoinHelper.shared.getObserveSavedSearchFiltersUseCase()
-        self.saveSearchFilterUseCase = KoinHelper.shared.getSaveSearchFilterUseCase()
-        self.deleteSavedSearchFilterUseCase = KoinHelper.shared.getDeleteSavedSearchFilterUseCase()
-        self.observeQualityThresholdUseCase = KoinHelper.shared.getObserveQualityThresholdUseCase()
-        self.trackRecommendationClickUseCase = KoinHelper.shared.getTrackRecommendationClickUseCase()
-        loadExcludedTags()
-        loadDefaults()
-        observeQualityThreshold()
-        loadRecommendations()
+        vm = KoinHelper.shared.createModelSearchViewModel()
+        store.put(key: "ModelSearchViewModel", viewModel: vm)
         memoryWarningToken = NotificationCenter.default.addObserver(
             forName: UIApplication.didReceiveMemoryWarningNotification,
             object: nil,
@@ -107,364 +49,200 @@ final class ModelSearchViewModel: ObservableObject {
         }
     }
 
-    deinit { memoryWarningToken.map { NotificationCenter.default.removeObserver($0) } }
+    deinit {
+        memoryWarningToken.map { NotificationCenter.default.removeObserver($0) }
+        store.clear()
+    }
 
-    private func loadDefaults() {
-        Task {
-            if let sort = try? await observeDefaultSortOrderUseCase.invoke().first(where: { _ in true }) {
-                selectedSort = sort
-            }
-            if let period = try? await observeDefaultTimePeriodUseCase.invoke().first(where: { _ in true }) {
-                selectedPeriod = period
-            }
-            loadModels()
+    // MARK: - State observation
+
+    func observeUiState() async {
+        for await state in vm.uiState {
+            models = state.models as? [Model] ?? []
+            query = state.query
+            selectedType = state.selectedType
+            selectedBaseModels = Set(state.selectedBaseModels.compactMap { $0 as? BaseModel })
+            nsfwFilterLevel = state.nsfwFilterLevel
+            selectedSort = state.selectedSort
+            selectedPeriod = state.selectedPeriod
+            isLoading = state.isLoading
+            isLoadingMore = state.isLoadingMore
+            error = state.error
+            hasMore = state.hasMore
+            isFreshFindEnabled = state.isFreshFindEnabled
+            isQualityFilterEnabled = state.isQualityFilterEnabled
+            includedTags = state.includedTags.compactMap { $0 as? String }
+            excludedTags = state.excludedTags.compactMap { $0 as? String }
+            recommendations = state.recommendations as? [RecommendationSection] ?? []
+            selectedSources = Set(state.selectedSources.compactMap { $0 as? Core_domainModelSource })
+            WidgetDataWriter.writeTrendingModel(from: recommendations)
+        }
+    }
+
+    func observeSearchHistory() async {
+        for await value in vm.searchHistory {
+            searchHistory = value as? [String] ?? []
         }
     }
 
     func observeGridColumns() async {
-        for await value in observeGridColumnsUseCase.invoke() {
+        for await value in vm.gridColumns {
             gridColumns = value.int32Value
         }
     }
 
     func observeOwnedHashes() async {
-        for await value in observeOwnedModelHashesUseCase.invoke() {
+        for await value in vm.ownedHashes {
             ownedHashes = Set(value.compactMap { $0 as? String })
         }
     }
 
-    private func loadRecommendations() {
-        Task {
-            do {
-                let sections = try await getRecommendationsUseCase.invoke()
-                recommendations = sections
-                WidgetDataWriter.writeTrendingModel(from: sections)
-            } catch {
-                // Non-critical, silently fail
-            }
+    func observeFavorites() async {
+        for await value in vm.favoriteIds {
+            favoriteIds = Set(value.compactMap { ($0 as? KotlinLong)?.int64Value })
         }
     }
 
-    func trackRecommendationClick(modelId: Int64) {
-        Task {
-            try? await trackRecommendationClickUseCase.invoke(modelId: modelId)
+    func observeSavedFilters() async {
+        for await value in vm.savedFilters {
+            savedFilters = value as? [SavedSearchFilter] ?? []
         }
     }
 
-    func observeNsfwFilter() async {
-        let flow = SkieSwiftFlow<NsfwFilterLevel>(observeNsfwFilterUseCase.invoke())
-        for await value in flow {
-            let prev = nsfwFilterLevel
-            nsfwFilterLevel = value
-            if prev != value {
-                loadTask?.cancel()
-                resetPaginationState()
-                loadModels()
-            }
-        }
-    }
+    // MARK: - Search & filter actions
 
-    func observeSearchHistory() async {
-        for await value in observeSearchHistoryUseCase.invoke() {
-            searchHistory = value
-        }
+    func onQueryChange(_ query: String) {
+        self.query = query
+        vm.onQueryChange(query: query)
     }
 
     func onSearch() {
-        let trimmed = query.trimmingCharacters(in: .whitespaces)
-        if !trimmed.isEmpty {
-            Task { try? await addSearchHistoryUseCase.invoke(query: trimmed) }
-        }
-        loadTask?.cancel()
-        resetPaginationState()
-        loadModels()
+        vm.onSearch()
     }
 
     func onHistoryItemClick(_ item: String) {
-        query = item
-        onSearch()
+        vm.onHistoryItemClick(query: item)
     }
 
     func removeSearchHistoryItem(_ item: String) {
-        Task { try? await deleteSearchHistoryItemUseCase.invoke(query: item) }
-    }
-    func clearSearchHistory() {
-        Task { try? await clearSearchHistoryUseCase.invoke() }
-    }
-    func onTypeSelected(_ type: ModelType?) {
-        loadTask?.cancel()
-        selectedType = type
-        resetPaginationState()
-        loadModels()
+        vm.removeSearchHistoryItem(query: item)
     }
 
-    func onBaseModelToggled(_ baseModel: BaseModel) {
-        loadTask?.cancel()
-        if selectedBaseModels.contains(baseModel) {
-            selectedBaseModels.remove(baseModel)
-        } else { selectedBaseModels.insert(baseModel) }
-        resetPaginationState()
-        loadModels()
-    }
-    func onSortSelected(_ sort: CivitSortOrder) {
-        loadTask?.cancel(); selectedSort = sort; resetPaginationState(); loadModels()
-    }
-    func onPeriodSelected(_ period: TimePeriod) {
-        loadTask?.cancel(); selectedPeriod = period; resetPaginationState(); loadModels()
-    }
-    func onFreshFindToggled() {
-        loadTask?.cancel(); isFreshFindEnabled.toggle(); resetPaginationState(); loadModels()
-    }
-    func onQualityFilterToggled() {
-        loadTask?.cancel(); isQualityFilterEnabled.toggle(); resetPaginationState(); loadModels()
-    }
-    func toggleSource(_ source: Core_domainModelSource) {
-        if selectedSources.contains(source) {
-            guard selectedSources.count > 1 else { return }
-            selectedSources.remove(source)
-        } else { selectedSources.insert(source) }
-        reloadModels()
+    func clearSearchHistory() {
+        vm.clearSearchHistory()
     }
 
     func resetFilters() {
-        loadTask?.cancel()
-        selectedType = nil
-        selectedSort = .mostDownloaded
-        selectedPeriod = .allTime
-        selectedBaseModels = []
-        isFreshFindEnabled = false
-        isQualityFilterEnabled = false
-        includedTags = []
-        selectedSources = [.civitai]
-        resetPaginationState()
-        loadModels()
+        vm.resetFilters()
+    }
+
+    func onTypeSelected(_ type: ModelType?) {
+        vm.onTypeSelected(type: type)
+    }
+
+    func onBaseModelToggled(_ baseModel: BaseModel) {
+        vm.onBaseModelToggled(baseModel: baseModel)
+    }
+
+    func onSortSelected(_ sort: CivitSortOrder) {
+        vm.onSortSelected(sort: sort)
+    }
+
+    func onPeriodSelected(_ period: TimePeriod) {
+        vm.onPeriodSelected(period: period)
+    }
+
+    func onFreshFindToggled() {
+        vm.onFreshFindToggled()
+    }
+
+    func onQualityFilterToggled() {
+        vm.onQualityFilterToggled()
+    }
+
+    func toggleSource(_ source: Core_domainModelSource) {
+        vm.toggleSource(source: source)
     }
 
     func addIncludedTag(_ tag: String) {
-        let trimmed = tag.trimmingCharacters(in: .whitespaces).lowercased()
-        guard !trimmed.isEmpty, !includedTags.contains(trimmed) else { return }
-        includedTags.append(trimmed)
-        reloadModels()
+        vm.onAddIncludedTag(tag: tag)
     }
 
     func removeIncludedTag(_ tag: String) {
-        includedTags.removeAll { $0 == tag }
-        reloadModels()
+        vm.onRemoveIncludedTag(tag: tag)
     }
 
     func addExcludedTag(_ tag: String) {
-        let trimmed = tag.trimmingCharacters(in: .whitespaces).lowercased()
-        guard !trimmed.isEmpty else { return }
-        Task {
-            try? await addExcludedTagUseCase.invoke(tag: trimmed)
-            loadExcludedTags()
-            reloadModels()
-        }
+        vm.onAddExcludedTag(tag: tag)
     }
 
     func removeExcludedTag(_ tag: String) {
-        Task {
-            try? await removeExcludedTagUseCase.invoke(tag: tag)
-            loadExcludedTags()
-            reloadModels()
-        }
+        vm.onRemoveExcludedTag(tag: tag)
     }
 
-    private func loadExcludedTags() {
-        Task {
-            excludedTags = (try? await getExcludedTagsUseCase.invoke()) ?? []
-            hiddenModelIds = (try? await getHiddenModelIdsUseCase.invoke()) ?? []
-        }
+    // MARK: - Hidden models
+
+    func hideModel(_ modelId: Int64, name: String) {
+        vm.onHideModel(modelId: modelId, modelName: name)
+        // Also remove from local list for immediate UI feedback
+        models.removeAll { $0.id == modelId }
     }
 
-    private func observeQualityThreshold() {
-        thresholdObserveTask = Task {
-            for await threshold in observeQualityThresholdUseCase.invoke() {
-                guard !Task.isCancelled else { return }
-                if let intThreshold = threshold as? Int32 {
-                    self.qualityThreshold = intThreshold
-                }
-            }
-        }
-    }
-
-    func reloadModels() {
-        loadTask?.cancel()
-        resetPaginationState()
-        loadModels()
-    }
+    // MARK: - Pagination
 
     func onModelAppear(_ modelId: Int64) {
         guard let index = models.firstIndex(where: { $0.id == modelId }) else { return }
         if index >= models.count - 10 {
-            loadMore()
+            vm.loadMore()
         }
     }
 
     func loadMore() {
-        guard !isLoading, !isLoadingMore, hasMore else { return }
-        isLoadingMore = true
-        loadModels(isLoadMore: true)
+        vm.loadMore()
     }
 
     func refresh() async {
-        loadTask?.cancel()
-        nextCursor = nil
-        hasMore = true
-        sortWatermark = nil
-        loadModels(isRefresh: true)
-        await loadTask?.value
+        vm.refresh()
+        // Wait briefly for state to propagate
+        try? await Task.sleep(nanoseconds: 100_000_000)
     }
 
-    private func resetPaginationState() {
-        models = []
-        nextCursor = nil
-        hasMore = true
-        sortWatermark = nil
-        multiSourcePage = 1
-    }
-}
+    // MARK: - Favorites
 
-// MARK: - Pagination & Filtering
-
-private extension ModelSearchViewModel {
-    func sortValueOf(_ model: Model) -> Double {
-        switch selectedSort {
-        case .mostDownloaded: return Double(model.stats.downloadCount)
-        case .highestRated: return model.stats.rating
-        case .newest: return Double(model.id)
-        case .quality: return Double(FeedQualityScoreHelper.calculate(stats: model.stats))
-        default: return Double(model.id)
-        }
+    func toggleFavorite(_ model: Model) {
+        vm.toggleFavorite(model: model)
     }
 
-    struct FetchResult { let models: [Model]; let cursor: String? }
-
-    func loadModels(isLoadMore: Bool = false, isRefresh: Bool = false) {
-        loadTask = Task {
-            if isLoadMore { isLoadingMore = true } else { isLoading = true }
-            error = nil
-            do {
-                let result = try await fetchAndAccumulate(isLoadMore: isLoadMore)
-                guard !Task.isCancelled else { return }
-                if isLoadMore {
-                    models.append(contentsOf: result.models)
-                } else {
-                    models = result.models
+    func isModelOwned(_ model: Model) -> Bool {
+        guard !ownedHashes.isEmpty else { return false }
+        return model.modelVersions.contains { version in
+            version.files.contains { file in
+                if let sha256 = file.hashes["SHA256"] as? String {
+                    return ownedHashes.contains(sha256.lowercased())
                 }
-                logger.debug("Load complete. total models=\(self.models.count) isLoadMore=\(isLoadMore)")
-                nextCursor = result.cursor
-                hasMore = result.cursor != nil
-                isLoading = false
-                isLoadingMore = false
-            } catch is CancellationError {
-                return
-            } catch {
-                guard !Task.isCancelled else { return }
-                self.error = error.localizedDescription
-                isLoading = false
-                isLoadingMore = false
+                return false
             }
         }
     }
 
-    private var isCivitaiOnly: Bool {
-        selectedSources == [.civitai]
+    // MARK: - Saved filters
+
+    func saveCurrentFilter(name: String) {
+        vm.saveCurrentFilter(name: name)
     }
 
-    func fetchAndAccumulate(isLoadMore: Bool) async throws -> FetchResult {
-        if isCivitaiOnly {
-            return try await fetchCivitaiOnly(isLoadMore: isLoadMore)
-        } else {
-            return try await fetchMultiSource(isLoadMore: isLoadMore)
-        }
+    func applyFilter(_ filter: SavedSearchFilter) {
+        vm.applyFilter(filter: filter)
     }
 
-    private func fetchCivitaiOnly(isLoadMore: Bool) async throws -> FetchResult {
-        let baseModelList: [BaseModel]? = selectedBaseModels.isEmpty ? nil : Array(selectedBaseModels)
-        let nsfw: KotlinBoolean? = nsfwFilterLevel == .off ? KotlinBoolean(bool: false) : nil
-        let viewedIds: Set<KotlinLong> = isFreshFindEnabled
-            ? try await getViewedModelIdsUseCase.invoke() : []
-        var accumulated: [Model] = []
-        var accumulatedIds = Set<Int64>()
-        var currentCursor: String? = isLoadMore ? nextCursor : nil
-        var fetchedNextCursor: String?
-        let pageWatermark = sortWatermark
-        if isLoadMore { accumulatedIds = Set(models.map { $0.id }) }
-        for iteration in 0..<maxFetchIterations {
-            guard !Task.isCancelled else { break }
-            if accumulated.count >= Int(pageSize) { break }
-            let result = try await getModelsUseCase.invoke(
-                query: query.isEmpty ? nil : query,
-                tag: includedTags.first, type: selectedType, sort: selectedSort,
-                period: selectedPeriod, baseModels: baseModelList,
-                cursor: currentCursor, limit: KotlinInt(int: pageSize), nsfw: nsfw
-            )
-            let allModels = result.items.compactMap { $0 as? Model }
-            var filtered = applyClientFilters(allModels, viewedIds: viewedIds)
-            if let watermark = pageWatermark {
-                filtered = filtered.filter { sortValueOf($0) <= watermark }
-            }
-            for model in filtered where !accumulatedIds.contains(model.id) {
-                accumulated.append(model)
-                accumulatedIds.insert(model.id)
-            }
-            logger.debug("Iteration \(iteration): fetched=\(allModels.count) filtered=\(filtered.count) accumulated=\(accumulated.count)")
-            fetchedNextCursor = result.metadata.nextCursor
-            if fetchedNextCursor == nil || fetchedNextCursor == currentCursor { break }
-            currentCursor = fetchedNextCursor
-        }
-        accumulated.sort { sortValueOf($0) > sortValueOf($1) }
-        if !accumulated.isEmpty { sortWatermark = accumulated.map { sortValueOf($0) }.min()! }
-        return FetchResult(models: accumulated, cursor: fetchedNextCursor)
+    func deleteSavedFilter(id: Int64) {
+        vm.deleteSavedFilter(id: id)
     }
 
-    /// Multi-source: queries CivitAI, HuggingFace, and/or TensorArt in parallel.
-    /// Limitation: HuggingFace/TensorArt use page-based pagination while CivitAI uses cursor.
-    private func fetchMultiSource(isLoadMore: Bool) async throws -> FetchResult {
-        let viewedIds: Set<KotlinLong> = isFreshFindEnabled
-            ? try await getViewedModelIdsUseCase.invoke() : []
-        let currentCursor: String? = isLoadMore ? nextCursor : nil
-        if !isLoadMore { multiSourcePage = 1 }
-        let result = try await multiSourceSearchUseCase.invoke(
-            query: query.isEmpty ? nil : query,
-            selectedSources: selectedSources,
-            cursor: currentCursor,
-            page: multiSourcePage,
-            limit: pageSize
-        )
-        let allModels = result.models.compactMap { $0 as? Model }
-        let filtered = applyClientFilters(allModels, viewedIds: viewedIds)
-        multiSourcePage += 1
-        return FetchResult(models: filtered, cursor: result.nextCursor)
-    }
+    // MARK: - Recommendations
 
-    func applyClientFilters(_ models: [Model], viewedIds: Set<KotlinLong>) -> [Model] {
-        var filtered = models.filterNsfwImages(nsfwFilterLevel)
-        if isFreshFindEnabled {
-            filtered = filtered.filter { !viewedIds.contains(KotlinLong(value: $0.id)) }
-        }
-        if includedTags.count > 1 {
-            let remaining = Set(includedTags.dropFirst().map { $0.lowercased() })
-            filtered = filtered.filter { model in
-                let modelTags = Set(model.tags.compactMap { ($0 as? String)?.lowercased() })
-                return modelTags.isSuperset(of: remaining)
-            }
-        }
-        if !excludedTags.isEmpty {
-            let excluded = Set(excludedTags)
-            filtered = filtered.filter { model in
-                model.tags.allSatisfy { !excluded.contains(($0 as? String)?.lowercased() ?? "") }
-            }
-        }
-        if !hiddenModelIds.isEmpty {
-            filtered = filtered.filter { !hiddenModelIds.contains(KotlinLong(value: $0.id)) }
-        }
-        if isQualityFilterEnabled && qualityThreshold > 0 {
-            filtered = filtered.filter {
-                FeedQualityScoreHelper.calculate(stats: $0.stats) >= qualityThreshold
-            }
-        }
-        return filtered
+    func trackRecommendationClick(modelId: Int64) {
+        vm.trackRecommendationClick(modelId: modelId)
     }
 }
+// swiftlint:enable type_body_length

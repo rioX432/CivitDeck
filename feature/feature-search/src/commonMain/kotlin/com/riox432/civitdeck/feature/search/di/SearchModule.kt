@@ -22,6 +22,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryU
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.TrackRecommendationClickUseCase
 import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
+import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -49,6 +50,15 @@ val searchModule = module {
     factory { TrackRecommendationClickUseCase(get()) }
 
     // ViewModels
+    viewModel {
+        ModelSearchViewModel(
+            get(), get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(), get(),
+            get(),
+        )
+    }
     viewModel { SwipeDiscoveryViewModel(get(), get()) }
     viewModel { BrowsingHistoryViewModel(get(), get(), get()) }
 }

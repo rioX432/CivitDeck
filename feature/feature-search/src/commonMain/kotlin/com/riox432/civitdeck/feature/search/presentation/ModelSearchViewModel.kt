@@ -1,11 +1,9 @@
-package com.riox432.civitdeck.ui.search
+@file:Suppress("TooManyFunctions")
+
+package com.riox432.civitdeck.feature.search.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelSource
@@ -15,6 +13,7 @@ import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.SavedSearchFilter
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.domain.model.filterNsfwImages
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
@@ -26,8 +25,11 @@ import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
+import com.riox432.civitdeck.domain.usecase.QualityScoreCalculator
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
+import com.riox432.civitdeck.domain.util.LoadResult
+import com.riox432.civitdeck.domain.util.PaginatedLoader
 import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSavedSearchFilterUseCase
@@ -42,16 +44,12 @@ import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryU
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.TrackRecommendationClickUseCase
 import com.riox432.civitdeck.util.Logger
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -71,9 +69,18 @@ data class ModelSearchUiState(
     val excludedTags: List<String> = emptyList(),
     val includedTags: List<String> = emptyList(),
     val selectedSources: Set<ModelSource> = setOf(ModelSource.CIVITAI),
+    // Pagination state from PaginatedLoader
+    val models: List<Model> = emptyList(),
+    val isLoading: Boolean = false,
+    val isLoadingMore: Boolean = false,
+    val error: String? = null,
+    val hasMore: Boolean = true,
 )
 
-data class FilterState(
+/**
+ * Internal filter state used to track all filter parameters and trigger reloads.
+ */
+internal data class FilterState(
     val query: String = "",
     val selectedType: ModelType? = null,
     val selectedSort: SortOrder = SortOrder.MostDownloaded,
@@ -123,54 +130,46 @@ class ModelSearchViewModel(
     private val _filterState = MutableStateFlow(FilterState())
     private val _hiddenModelIds = MutableStateFlow<Set<Long>>(emptySet())
     private var recommendationsJob: Job? = null
+    private var sortWatermark: Double? = null
+    private var multiSourcePage: Int = 1
 
     val searchHistory: StateFlow<List<String>> =
         observeSearchHistoryUseCase()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
     val gridColumns: StateFlow<Int> =
         observeGridColumnsUseCase()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 2)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), 2)
 
     val ownedHashes: StateFlow<Set<String>> =
         observeOwnedModelHashesUseCase()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptySet())
 
     val favoriteIds: StateFlow<Set<Long>> =
         observeFavoritesUseCase()
             .map { favorites -> favorites.map { it.id }.toSet() }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptySet())
 
     val savedFilters: StateFlow<List<SavedSearchFilter>> =
         observeSavedSearchFiltersUseCase()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val pagingData: Flow<PagingData<Model>> = combine(
-        _filterState,
-        _hiddenModelIds,
-    ) { filters, hiddenIds ->
-        filters to hiddenIds
-    }
-        .flatMapLatest { (filters, hiddenIds) ->
-            Pager(
-                config = PagingConfig(
-                    pageSize = PAGE_SIZE,
-                    prefetchDistance = PAGE_SIZE,
-                    initialLoadSize = PAGE_SIZE,
-                ),
-                pagingSourceFactory = {
-                    ModelPagingSource(
-                        getModelsUseCase = getModelsUseCase,
-                        multiSourceSearchUseCase = multiSourceSearchUseCase,
-                        getViewedModelIdsUseCase = getViewedModelIdsUseCase,
-                        filterState = filters,
-                        hiddenModelIds = hiddenIds,
-                    )
-                },
-            ).flow
-        }
-        .cachedIn(viewModelScope)
+    private val paginatedLoader = PaginatedLoader<Model>(
+        scope = viewModelScope,
+        pageSize = PAGE_SIZE,
+        load = { cursor, limit -> loadPage(cursor, limit) },
+        onStateChanged = { loadState ->
+            _uiState.update {
+                it.copy(
+                    models = loadState.items,
+                    isLoading = loadState.isLoading,
+                    isLoadingMore = loadState.isLoadingMore,
+                    error = loadState.error,
+                    hasMore = loadState.hasMore,
+                )
+            }
+        },
+    )
 
     init {
         observeNsfwFilter()
@@ -180,58 +179,7 @@ class ModelSearchViewModel(
         loadRecommendations()
     }
 
-    private fun loadDefaults(
-        observeSortUseCase: ObserveDefaultSortOrderUseCase,
-        observePeriodUseCase: ObserveDefaultTimePeriodUseCase,
-    ) {
-        viewModelScope.launch {
-            val sort = observeSortUseCase().first()
-            val period = observePeriodUseCase().first()
-            _uiState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
-            // Only update filterState (which triggers paging restart) if different from defaults
-            val current = _filterState.value
-            if (current.selectedSort != sort || current.selectedPeriod != period) {
-                _filterState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
-            }
-        }
-    }
-
-    private fun observeNsfwFilter() {
-        viewModelScope.launch {
-            observeNsfwFilterUseCase().collect { level ->
-                val prev = _uiState.value.nsfwFilterLevel
-                _uiState.update { it.copy(nsfwFilterLevel = level) }
-                if (prev != level) {
-                    _filterState.update { it.copy(nsfwFilterLevel = level) }
-                    loadRecommendations()
-                }
-            }
-        }
-    }
-
-    private fun observeQualityThreshold() {
-        viewModelScope.launch {
-            observeQualityThresholdUseCase().collect { threshold ->
-                _filterState.update { it.copy(qualityThreshold = threshold) }
-            }
-        }
-    }
-
-    private fun loadRecommendations() {
-        recommendationsJob?.cancel()
-        recommendationsJob = viewModelScope.launch {
-            _uiState.update { it.copy(isLoadingRecommendations = true) }
-            try {
-                val sections = getRecommendationsUseCase()
-                _uiState.update {
-                    it.copy(recommendations = sections, isLoadingRecommendations = false)
-                }
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                Logger.w(TAG, "Failed to load recommendations: ${e.message}")
-                _uiState.update { it.copy(isLoadingRecommendations = false) }
-            }
-        }
-    }
+    // region Filter actions
 
     fun onQueryChange(query: String) {
         _uiState.update { it.copy(query = query) }
@@ -243,6 +191,7 @@ class ModelSearchViewModel(
             viewModelScope.launch { addSearchHistoryUseCase(query.trim()) }
         }
         _filterState.update { it.copy(query = query) }
+        resetPaginationAndReload()
     }
 
     fun onHistoryItemClick(query: String) {
@@ -271,18 +220,22 @@ class ModelSearchViewModel(
                 selectedSources = setOf(ModelSource.CIVITAI),
             )
         }
+        resetPaginationAndReload()
     }
 
     fun onTypeSelected(type: ModelType?) {
         updateFilter { it.copy(selectedType = type) }
+        resetPaginationAndReload()
     }
 
     fun onSortSelected(sort: SortOrder) {
         updateFilter { it.copy(selectedSort = sort) }
+        resetPaginationAndReload()
     }
 
     fun onPeriodSelected(period: TimePeriod) {
         updateFilter { it.copy(selectedPeriod = period) }
+        resetPaginationAndReload()
     }
 
     fun onBaseModelToggled(baseModel: BaseModel) {
@@ -292,14 +245,17 @@ class ModelSearchViewModel(
             }.toSet()
             it.copy(selectedBaseModels = updated)
         }
+        resetPaginationAndReload()
     }
 
     fun onFreshFindToggled() {
         updateFilter { it.copy(isFreshFindEnabled = !it.isFreshFindEnabled) }
+        resetPaginationAndReload()
     }
 
     fun onQualityFilterToggled() {
         updateFilter { it.copy(isQualityFilterEnabled = !it.isQualityFilterEnabled) }
+        resetPaginationAndReload()
     }
 
     fun onAddIncludedTag(tag: String) {
@@ -308,24 +264,30 @@ class ModelSearchViewModel(
         val current = _filterState.value.includedTags
         if (trimmed in current) return
         updateFilter { it.copy(includedTags = it.includedTags + trimmed) }
+        resetPaginationAndReload()
     }
 
     fun onRemoveIncludedTag(tag: String) {
         updateFilter { it.copy(includedTags = it.includedTags - tag) }
+        resetPaginationAndReload()
     }
 
     fun toggleSource(source: ModelSource) {
         updateFilter {
             val updated = it.selectedSources.toMutableSet()
             if (source in updated) {
-                // Don't allow deselecting all sources
                 if (updated.size > 1) updated.remove(source)
             } else {
                 updated.add(source)
             }
             it.copy(selectedSources = updated.toSet())
         }
+        resetPaginationAndReload()
     }
+
+    // endregion
+
+    // region Excluded tags & hidden models
 
     fun onAddExcludedTag(tag: String) {
         val trimmed = tag.trim().lowercase()
@@ -333,6 +295,7 @@ class ModelSearchViewModel(
         viewModelScope.launch {
             addExcludedTagUseCase(trimmed)
             loadExcludedTags()
+            resetPaginationAndReload()
         }
     }
 
@@ -340,6 +303,7 @@ class ModelSearchViewModel(
         viewModelScope.launch {
             removeExcludedTagUseCase(tag)
             loadExcludedTags()
+            resetPaginationAndReload()
         }
     }
 
@@ -350,6 +314,10 @@ class ModelSearchViewModel(
             _hiddenModelIds.value = ids
         }
     }
+
+    // endregion
+
+    // region Saved filters
 
     fun saveCurrentFilter(name: String) {
         val filter = _filterState.value
@@ -386,11 +354,16 @@ class ModelSearchViewModel(
                 selectedSources = filter.selectedSources,
             )
         }
+        resetPaginationAndReload()
     }
 
     fun deleteSavedFilter(id: Long) {
         viewModelScope.launch { deleteSavedSearchFilterUseCase(id) }
     }
+
+    // endregion
+
+    // region Favorites & recommendations
 
     fun trackRecommendationClick(modelId: Long) {
         viewModelScope.launch {
@@ -404,6 +377,83 @@ class ModelSearchViewModel(
         }
     }
 
+    // endregion
+
+    // region Pagination
+
+    fun loadMore() {
+        paginatedLoader.loadMore()
+    }
+
+    fun refresh() {
+        resetPaginationAndReload()
+    }
+
+    // endregion
+
+    // region Private helpers
+
+    private fun resetPaginationAndReload() {
+        sortWatermark = null
+        multiSourcePage = 1
+        paginatedLoader.loadFirst()
+    }
+
+    private fun loadDefaults(
+        observeSortUseCase: ObserveDefaultSortOrderUseCase,
+        observePeriodUseCase: ObserveDefaultTimePeriodUseCase,
+    ) {
+        viewModelScope.launch {
+            val sort = observeSortUseCase().first()
+            val period = observePeriodUseCase().first()
+            _uiState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
+            val current = _filterState.value
+            if (current.selectedSort != sort || current.selectedPeriod != period) {
+                _filterState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
+            }
+            // Initial load after defaults are set
+            paginatedLoader.loadFirst()
+        }
+    }
+
+    private fun observeNsfwFilter() {
+        viewModelScope.launch {
+            observeNsfwFilterUseCase().collect { level ->
+                val prev = _uiState.value.nsfwFilterLevel
+                _uiState.update { it.copy(nsfwFilterLevel = level) }
+                if (prev != level) {
+                    _filterState.update { it.copy(nsfwFilterLevel = level) }
+                    loadRecommendations()
+                    resetPaginationAndReload()
+                }
+            }
+        }
+    }
+
+    private fun observeQualityThreshold() {
+        viewModelScope.launch {
+            observeQualityThresholdUseCase().collect { threshold ->
+                _filterState.update { it.copy(qualityThreshold = threshold) }
+            }
+        }
+    }
+
+    private fun loadRecommendations() {
+        recommendationsJob?.cancel()
+        recommendationsJob = viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingRecommendations = true) }
+            try {
+                val sections = getRecommendationsUseCase()
+                _uiState.update {
+                    it.copy(recommendations = sections, isLoadingRecommendations = false)
+                }
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.w(TAG, "Failed to load recommendations: ${e.message}")
+                _uiState.update { it.copy(isLoadingRecommendations = false) }
+            }
+        }
+    }
+
     private fun loadExcludedTags() {
         viewModelScope.launch {
             val tags = getExcludedTagsUseCase()
@@ -413,10 +463,6 @@ class ModelSearchViewModel(
         }
     }
 
-    /**
-     * Updates both [_filterState] and [_uiState] in sync.
-     * The [transform] lambda is applied to [FilterState]; shared fields are then mirrored to [ModelSearchUiState].
-     */
     private fun updateFilter(transform: (FilterState) -> FilterState) {
         _filterState.update(transform)
         val f = _filterState.value
@@ -437,8 +483,150 @@ class ModelSearchViewModel(
         }
     }
 
+    // endregion
+
+    // region Page loading
+
+    private suspend fun loadPage(cursor: String?, limit: Int): LoadResult<Model> {
+        val filter = _filterState.value
+        val isCivitaiOnly = filter.selectedSources == setOf(ModelSource.CIVITAI)
+        return if (isCivitaiOnly) {
+            loadCivitaiPage(filter, cursor, limit)
+        } else {
+            loadMultiSourcePage(filter, cursor, limit)
+        }
+    }
+
+    private suspend fun loadCivitaiPage(
+        filter: FilterState,
+        cursor: String?,
+        limit: Int,
+    ): LoadResult<Model> {
+        val viewedIds = if (filter.isFreshFindEnabled) {
+            getViewedModelIdsUseCase()
+        } else {
+            emptySet()
+        }
+
+        val accumulated = mutableListOf<Model>()
+        val seenIds = mutableSetOf<Long>()
+        var currentCursor = cursor
+        var nextCursor: String? = null
+        val pageWatermark = sortWatermark
+
+        repeat(MAX_FETCH_ITERATIONS) {
+            if (accumulated.size >= limit) return@repeat
+
+            val remaining = limit - accumulated.size
+            val result = getModelsUseCase(
+                query = filter.query.ifBlank { null },
+                tag = filter.includedTags.firstOrNull(),
+                type = filter.selectedType,
+                sort = filter.selectedSort,
+                period = filter.selectedPeriod,
+                baseModels = filter.selectedBaseModels.toList().ifEmpty { null },
+                cursor = currentCursor,
+                limit = remaining.coerceAtLeast(PAGE_SIZE),
+                nsfw = if (filter.nsfwFilterLevel == NsfwFilterLevel.Off) false else null,
+            )
+
+            var filtered = applyClientFilters(result.items, filter, viewedIds)
+            if (pageWatermark != null) {
+                filtered = filtered.filter { sortValueOf(it, filter) <= pageWatermark }
+            }
+            for (model in filtered) {
+                if (seenIds.add(model.id)) {
+                    accumulated.add(model)
+                }
+            }
+            nextCursor = result.metadata.nextCursor
+            if (nextCursor == null || nextCursor == currentCursor) return@repeat
+            currentCursor = nextCursor
+        }
+
+        accumulated.sortByDescending { sortValueOf(it, filter) }
+
+        if (accumulated.isNotEmpty()) {
+            sortWatermark = accumulated.minOf { sortValueOf(it, filter) }
+        }
+
+        return LoadResult(items = accumulated, nextCursor = nextCursor)
+    }
+
+    private suspend fun loadMultiSourcePage(
+        filter: FilterState,
+        cursor: String?,
+        limit: Int,
+    ): LoadResult<Model> {
+        val viewedIds = if (filter.isFreshFindEnabled) {
+            getViewedModelIdsUseCase()
+        } else {
+            emptySet()
+        }
+
+        if (cursor == null) multiSourcePage = 1
+        val result = multiSourceSearchUseCase(
+            query = filter.query.ifBlank { null },
+            selectedSources = filter.selectedSources,
+            cursor = cursor,
+            page = multiSourcePage,
+            limit = limit.coerceAtLeast(PAGE_SIZE),
+        )
+
+        val filtered = applyClientFilters(result.models, filter, viewedIds)
+        multiSourcePage++
+
+        return LoadResult(items = filtered, nextCursor = result.nextCursor)
+    }
+
+    private fun applyClientFilters(
+        models: List<Model>,
+        filter: FilterState,
+        viewedIds: Set<Long>,
+    ): List<Model> {
+        val hiddenIds = _hiddenModelIds.value
+        var filtered = models.filterNsfwImages(filter.nsfwFilterLevel)
+        if (filter.isFreshFindEnabled) {
+            filtered = filtered.filter { it.id !in viewedIds }
+        }
+        if (filter.includedTags.size > 1) {
+            val remaining = filter.includedTags.drop(1).map { it.lowercase() }.toSet()
+            filtered = filtered.filter { model ->
+                val modelTags = model.tags.map { it.lowercase() }.toSet()
+                modelTags.containsAll(remaining)
+            }
+        }
+        if (filter.excludedTags.isNotEmpty()) {
+            val excluded = filter.excludedTags.toSet()
+            filtered = filtered.filter { model ->
+                model.tags.none { it.lowercase() in excluded }
+            }
+        }
+        if (hiddenIds.isNotEmpty()) {
+            filtered = filtered.filter { it.id !in hiddenIds }
+        }
+        if (filter.isQualityFilterEnabled && filter.qualityThreshold > 0) {
+            filtered = filtered.filter { model ->
+                QualityScoreCalculator.calculate(model.stats) >= filter.qualityThreshold
+            }
+        }
+        return filtered
+    }
+
+    private fun sortValueOf(model: Model, filter: FilterState): Double =
+        when (filter.selectedSort) {
+            SortOrder.MostDownloaded -> model.stats.downloadCount.toDouble()
+            SortOrder.HighestRated -> model.stats.rating
+            SortOrder.Newest -> model.id.toDouble()
+            SortOrder.Quality -> QualityScoreCalculator.calculate(model.stats).toDouble()
+        }
+
+    // endregion
+
     companion object {
         private const val TAG = "ModelSearchViewModel"
         private const val PAGE_SIZE = 20
+        private const val MAX_FETCH_ITERATIONS = 5
+        private const val STOP_TIMEOUT = 5_000L
     }
 }

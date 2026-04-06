@@ -44,8 +44,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.riox432.civitdeck.R
+import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -76,7 +76,6 @@ fun ModelSearchScreen(
     val gridColumns = adaptiveGridColumns(userGridColumns)
     val ownedHashes by viewModel.ownedHashes.collectAsStateWithLifecycle()
     val favoriteIds by viewModel.favoriteIds.collectAsStateWithLifecycle()
-    val lazyPagingItems = viewModel.pagingData.collectAsLazyPagingItems()
     val gridState = rememberLazyGridState()
     val headerState = rememberCollapsibleHeaderState()
 
@@ -98,7 +97,6 @@ fun ModelSearchScreen(
         gridState = gridState,
         viewModel = viewModel,
         gridColumns = gridColumns,
-        lazyPagingItems = lazyPagingItems,
         compareModelName = compareModelName,
         ownedHashes = ownedHashes,
         favoriteIds = favoriteIds,
@@ -112,12 +110,11 @@ fun ModelSearchScreen(
 @Composable
 private fun SearchScreenBody(
     headerState: CollapsibleHeaderState,
-    uiState: com.riox432.civitdeck.ui.search.ModelSearchUiState,
+    uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
     searchHistory: List<String>,
     gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
     viewModel: ModelSearchViewModel,
     gridColumns: Int,
-    lazyPagingItems: androidx.paging.compose.LazyPagingItems<com.riox432.civitdeck.domain.model.Model>,
     compareModelName: String? = null,
     ownedHashes: Set<String> = emptySet(),
     favoriteIds: Set<Long> = emptySet(),
@@ -158,7 +155,12 @@ private fun SearchScreenBody(
         ModelSearchContent(
             recommendations = uiState.recommendations,
             gridState = gridState,
-            lazyPagingItems = lazyPagingItems,
+            models = uiState.models,
+            isLoading = uiState.isLoading,
+            isLoadingMore = uiState.isLoadingMore,
+            error = uiState.error,
+            onLoadMore = viewModel::loadMore,
+            onRefresh = viewModel::refresh,
             callbacks = ModelGridCallbacks(
                 onModelClick = callbacks.onModelClick,
                 onHideModel = viewModel::onHideModel,

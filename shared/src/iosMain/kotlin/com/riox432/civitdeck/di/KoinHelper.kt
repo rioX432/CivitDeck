@@ -604,6 +604,8 @@ object KoinHelper {
     fun createImageGalleryViewModel(modelVersionId: Long):
         com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel =
         getKoin().get { org.koin.core.parameter.parametersOf(modelVersionId) }
+    fun createModelSearchViewModel():
+        com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel = getKoin().get()
     fun createSwipeDiscoveryViewModel():
         com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel = getKoin().get()
     fun createBrowsingHistoryViewModel():

@@ -31,7 +31,7 @@ import com.riox432.civitdeck.ui.feed.DesktopFeedScreen
 import com.riox432.civitdeck.ui.feed.DesktopFeedViewModel
 import com.riox432.civitdeck.ui.qrcode.DesktopQRCodeScreen
 import com.riox432.civitdeck.ui.search.DesktopSearchScreen
-import com.riox432.civitdeck.ui.search.DesktopSearchViewModel
+import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.ui.search.DesktopUrlImportDialog
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -125,7 +125,7 @@ private fun DiscoverBaseContent(
 ) {
     when (section) {
         DiscoverSection.Search -> {
-            val searchVm: DesktopSearchViewModel = koinViewModel()
+            val searchVm: ModelSearchViewModel = koinViewModel()
             DesktopSearchScreen(
                 viewModel = searchVm,
                 onModelClick = { backstack.add(DesktopRoute.ModelDetail(it)) },
