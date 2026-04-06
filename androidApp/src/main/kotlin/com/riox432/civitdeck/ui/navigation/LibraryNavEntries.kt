@@ -14,6 +14,7 @@ import com.riox432.civitdeck.presentation.analytics.AnalyticsViewModel
 import com.riox432.civitdeck.presentation.dataset.BatchTagEditorViewModel
 import com.riox432.civitdeck.presentation.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.presentation.dataset.DatasetListViewModel
+import com.riox432.civitdeck.presentation.download.DownloadQueueViewModel
 import com.riox432.civitdeck.presentation.feed.FeedViewModel
 import com.riox432.civitdeck.presentation.notificationcenter.NotificationCenterViewModel
 import com.riox432.civitdeck.presentation.share.ShareViewModel
@@ -29,7 +30,6 @@ import com.riox432.civitdeck.ui.dataset.DuplicateReviewScreen
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
 import com.riox432.civitdeck.ui.downloadqueue.DownloadQueueScreen
-import com.riox432.civitdeck.ui.downloadqueue.DownloadQueueViewModel
 import com.riox432.civitdeck.ui.feed.FeedScreen
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
 import com.riox432.civitdeck.ui.history.BrowsingHistoryScreen

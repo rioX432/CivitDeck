@@ -1,7 +1,8 @@
-package com.riox432.civitdeck.ui.downloadqueue
+package com.riox432.civitdeck.presentation.download
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.riox432.civitdeck.domain.download.DownloadScheduler
 import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.ModelDownload
 import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
@@ -18,7 +19,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
-data class DesktopDownloadQueueUiState(
+data class DownloadQueueUiState(
     val activeDownloads: List<ModelDownload> = emptyList(),
     val completedDownloads: List<ModelDownload> = emptyList(),
     val failedDownloads: List<ModelDownload> = emptyList(),
@@ -26,17 +27,18 @@ data class DesktopDownloadQueueUiState(
     val totalStorageBytes: Long = 0,
 )
 
-class DesktopDownloadQueueViewModel(
+class DownloadQueueViewModel(
     observeDownloadsUseCase: ObserveDownloadsUseCase,
     private val pauseDownloadUseCase: PauseDownloadUseCase,
     private val resumeDownloadUseCase: ResumeDownloadUseCase,
     private val cancelDownloadUseCase: CancelDownloadUseCase,
     private val deleteDownloadUseCase: DeleteDownloadUseCase,
     private val clearCompletedDownloadsUseCase: ClearCompletedDownloadsUseCase,
+    private val downloadScheduler: DownloadScheduler,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(DesktopDownloadQueueUiState())
-    val uiState: StateFlow<DesktopDownloadQueueUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(DownloadQueueUiState())
+    val uiState: StateFlow<DownloadQueueUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -68,25 +70,37 @@ class DesktopDownloadQueueViewModel(
 
     fun pauseDownload(downloadId: Long) {
         viewModelScope.launch {
-            safeCall("Pause") { pauseDownloadUseCase(downloadId) }
+            safeCall("Pause") {
+                downloadScheduler.cancel(downloadId)
+                pauseDownloadUseCase(downloadId)
+            }
         }
     }
 
     fun resumeDownload(downloadId: Long) {
         viewModelScope.launch {
-            safeCall("Resume") { resumeDownloadUseCase(downloadId) }
+            safeCall("Resume") {
+                resumeDownloadUseCase(downloadId)
+                downloadScheduler.enqueue(downloadId)
+            }
         }
     }
 
     fun cancelDownload(downloadId: Long) {
         viewModelScope.launch {
-            safeCall("Cancel") { cancelDownloadUseCase(downloadId) }
+            safeCall("Cancel") {
+                downloadScheduler.cancel(downloadId)
+                cancelDownloadUseCase(downloadId)
+            }
         }
     }
 
     fun retryDownload(downloadId: Long) {
         viewModelScope.launch {
-            safeCall("Retry") { resumeDownloadUseCase(downloadId) }
+            safeCall("Retry") {
+                resumeDownloadUseCase(downloadId)
+                downloadScheduler.enqueue(downloadId)
+            }
         }
     }
 
@@ -113,4 +127,4 @@ class DesktopDownloadQueueViewModel(
     }
 }
 
-private const val TAG = "DesktopDownloadQueueVM"
+private const val TAG = "DownloadQueueVM"

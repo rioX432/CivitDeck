@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct DownloadQueueView: View {
-    @StateObject private var viewModel = DownloadQueueViewModel()
+    @StateObject private var viewModel = DownloadQueueViewModelOwner()
 
     var body: some View {
         Group {
@@ -15,6 +15,7 @@ struct DownloadQueueView: View {
             }
         }
         .navigationTitle("Downloads")
+        .task { await viewModel.observeUiState() }
     }
 
     private var isEmpty: Bool {

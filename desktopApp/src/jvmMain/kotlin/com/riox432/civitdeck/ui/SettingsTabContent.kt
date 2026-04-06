@@ -22,7 +22,7 @@ import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupScreen
 import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
 import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueScreen
-import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueViewModel
+import com.riox432.civitdeck.presentation.download.DownloadQueueViewModel
 import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryScreen
 import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterScreen
@@ -163,7 +163,7 @@ private fun SettingsOverlayContent(
             )
         }
         is DesktopRoute.DownloadQueue -> {
-            val vm: DesktopDownloadQueueViewModel = koinViewModel()
+            val vm: DownloadQueueViewModel = koinViewModel()
             DesktopDownloadQueueScreen(
                 viewModel = vm,
                 onBack = { backstack.removeLastOrNull() },

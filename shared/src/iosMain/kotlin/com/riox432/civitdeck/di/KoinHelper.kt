@@ -639,6 +639,8 @@ object KoinHelper {
     fun createBatchTagEditorViewModel(datasetId: Long):
         com.riox432.civitdeck.presentation.dataset.BatchTagEditorViewModel =
         getKoin().get { org.koin.core.parameter.parametersOf(datasetId) }
+    fun createDownloadQueueViewModel():
+        com.riox432.civitdeck.presentation.download.DownloadQueueViewModel = getKoin().get()
     // endregion
 
     // region Phase 4 ViewModels

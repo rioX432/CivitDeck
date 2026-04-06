@@ -39,6 +39,7 @@ import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.ModelDownload
 import com.riox432.civitdeck.domain.util.FormatUtils
+import com.riox432.civitdeck.presentation.download.DownloadQueueUiState
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.theme.Spacing
 

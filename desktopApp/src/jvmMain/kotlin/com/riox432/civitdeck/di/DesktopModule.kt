@@ -3,7 +3,6 @@ package com.riox432.civitdeck.di
 import com.riox432.civitdeck.DesktopAppVersionProvider
 import com.riox432.civitdeck.domain.repository.AppVersionProvider
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
-import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueViewModel
 import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterViewModel
 import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
@@ -55,9 +54,6 @@ val desktopModule = module {
     viewModel {
         DesktopNotificationCenterViewModel(get(), get(), get())
     }
-    // Download Queue ViewModel
-    viewModel {
-        DesktopDownloadQueueViewModel(get(), get(), get(), get(), get(), get())
-    }
+    // Download Queue ViewModel now registered in shared phase3ViewModelModule
     // Workflow Template VM now registered in shared comfyuiModule
 }
