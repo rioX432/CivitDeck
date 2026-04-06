@@ -29,12 +29,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
+import com.riox432.civitdeck.presentation.analytics.AnalyticsViewModel
+import com.riox432.civitdeck.presentation.analytics.AnalyticsUiState
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
 
 @Composable
 fun DesktopAnalyticsScreen(
-    viewModel: DesktopAnalyticsViewModel,
+    viewModel: AnalyticsViewModel,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -106,7 +108,7 @@ private fun AnalyticsTopBar(onBack: () -> Unit, onRefresh: () -> Unit) {
 }
 
 @Composable
-private fun SummaryCard(state: DesktopAnalyticsUiState) {
+private fun SummaryCard(state: AnalyticsUiState) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = Elevation.xs),

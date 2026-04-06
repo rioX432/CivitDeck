@@ -60,6 +60,7 @@ import coil3.request.ImageRequest
 import coil3.size.Size
 import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.domain.model.ImageSource
+import com.riox432.civitdeck.presentation.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.presentation.settings.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -73,7 +74,7 @@ private const val DATASET_IMAGE_SIZE = 300
 @Composable
 fun DesktopDatasetDetailScreen(
     datasetName: String,
-    viewModel: DesktopDatasetDetailViewModel,
+    viewModel: DatasetDetailViewModel,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

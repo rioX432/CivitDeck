@@ -33,12 +33,13 @@ import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.InstalledPlugin
 import com.riox432.civitdeck.domain.model.InstalledPluginState
 import com.riox432.civitdeck.domain.model.InstalledPluginType
+import com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
 
 @Composable
 fun DesktopPluginListScreen(
-    viewModel: DesktopPluginViewModel,
+    viewModel: PluginManagementViewModel,
     onPluginClick: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,

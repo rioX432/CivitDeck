@@ -27,8 +27,8 @@ import com.riox432.civitdeck.ui.creator.DesktopCreatorScreen
 import com.riox432.civitdeck.ui.detail.DesktopDetailScreen
 import com.riox432.civitdeck.ui.discovery.DesktopDiscoveryScreen
 import com.riox432.civitdeck.ui.discovery.DesktopDiscoveryViewModel
+import com.riox432.civitdeck.presentation.feed.FeedViewModel
 import com.riox432.civitdeck.ui.feed.DesktopFeedScreen
-import com.riox432.civitdeck.ui.feed.DesktopFeedViewModel
 import com.riox432.civitdeck.ui.qrcode.DesktopQRCodeScreen
 import com.riox432.civitdeck.ui.search.DesktopSearchScreen
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
@@ -143,7 +143,7 @@ private fun DiscoverBaseContent(
             )
         }
         DiscoverSection.Feed -> {
-            val feedVm: DesktopFeedViewModel = koinViewModel()
+            val feedVm: FeedViewModel = koinViewModel()
             DesktopFeedScreen(
                 viewModel = feedVm,
                 onModelClick = { backstack.add(DesktopRoute.ModelDetail(it)) },

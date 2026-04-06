@@ -17,7 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Move ViewModels from shared feature modules to platform modules (b571b339)
+- Unify 37 ViewModels in shared commonMain with SKIE Observing pattern for iOS (#684-#694) (cb77719b, 2ed7e95a, 896b77b4, 995ddcb9)
+- Migrate ModelDetailViewModel to shared commonMain (#693) (f0db5424)
+- Migrate DownloadQueueViewModel with expect/actual DownloadScheduler interface (#694) (61b5771a)
+- Migrate ModelSearchViewModel to shared commonMain with PaginatedLoader replacing Android Paging 3 (#692) (710468e1)
+- Replace iOS Settings ObservableObject wrappers with SKIE Observing (e994ba47)
+- Port download queue and workflow template screens to Desktop (abace2c9)
 
 ### Fixed
 
@@ -28,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Audit tech debt cleanup: fix 15 codebase health issues (fd1f6d10)
 - Audit tech debt cleanup: fix 17 of 18 codebase health issues (aeaedb05)
+- Sync docs with implementation: DB v42, changelog, new features (5d89f7eb)
 
 ## [2.1.0] - 2026-04-01
 

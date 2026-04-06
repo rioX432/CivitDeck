@@ -36,6 +36,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.BackupCategory
 import com.riox432.civitdeck.domain.model.RestoreStrategy
+import com.riox432.civitdeck.presentation.backup.BackupViewModel
+import com.riox432.civitdeck.presentation.backup.BackupUiState
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
 import java.io.File
@@ -48,7 +50,7 @@ import javax.swing.filechooser.FileNameExtensionFilter
 
 @Composable
 fun DesktopBackupScreen(
-    viewModel: DesktopBackupViewModel,
+    viewModel: BackupViewModel,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -120,7 +122,7 @@ private fun BackupToolbar(onBack: () -> Unit) {
 @Composable
 private fun BackupBody(
     state: BackupUiState,
-    viewModel: DesktopBackupViewModel,
+    viewModel: BackupViewModel,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -284,7 +286,7 @@ private fun saveBackupToFile(json: String) {
     }
 }
 
-private fun loadBackupFromFile(viewModel: DesktopBackupViewModel) {
+private fun loadBackupFromFile(viewModel: BackupViewModel) {
     SwingUtilities.invokeLater {
         val chooser = JFileChooser().apply {
             dialogTitle = "Open Backup File"
