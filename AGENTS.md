@@ -47,31 +47,32 @@ cd iosApp && swiftlint --strict       # SwiftLint (config: iosApp/.swiftlint.yml
 ```
 CivitDeck/
 ├── build-logic/              # Convention Plugins (civitdeck.kmp.library, civitdeck.kmp.feature, civitdeck.android.application)
-├── shared/                   # KMP coordinator — re-exports core modules via api(); KoinHelper for iOS
+├── shared/                   # KMP coordinator — re-exports core modules via api(); shared ViewModels (presentation/); KoinHelper for iOS
 ├── core/
 │   ├── core-domain/          # Domain layer: models, repository interfaces, use cases, DomainModule (Koin)
 │   ├── core-network/         # Network layer: Ktor client, DTOs (CivitAI + ComfyUI + WebUI + ExternalServer), NetworkModule (Koin)
 │   ├── core-database/        # Database layer: Room KMP entities/DAOs/migrations (v42), DatabaseModule (Koin)
 │   ├── core-ui/              # Shared Compose components + design tokens (KMP: Android + Desktop)
 │   └── core-plugin/          # Plugin system: interfaces, registry, capability adapters, PluginModule (Koin)
-├── feature/
-│   ├── feature-search/       # Model search & swipe discovery
-│   ├── feature-detail/       # Model detail + model comparison
-│   ├── feature-gallery/      # Image gallery with NSFW blur and prompt extraction
-│   ├── feature-creator/      # Creator profile browser
-│   ├── feature-collections/  # User model collections (create, rename, bulk manage)
-│   ├── feature-prompts/      # Saved prompts + template library (built-in & user-created)
+├── feature/                  # Feature modules with shared ViewModels in commonMain/presentation/
+│   ├── feature-search/       # Model search & swipe discovery (shared ViewModels)
+│   ├── feature-detail/       # Model detail + model comparison (shared ViewModels)
+│   ├── feature-gallery/      # Image gallery with NSFW blur and prompt extraction (shared ViewModels)
+│   ├── feature-creator/      # Creator profile browser (shared ViewModels)
+│   ├── feature-collections/  # User model collections (shared ViewModels)
+│   ├── feature-prompts/      # Saved prompts + template library (shared ViewModels)
 │   ├── feature-settings/     # App settings (NSFW, appearance, notifications, storage)
-│   ├── feature-comfyui/      # ComfyUI integration: generation, queue, LoRA/ControlNet, workflow import
-│   └── feature-externalserver/ # Custom external server: connection management, image gallery, filters
+│   ├── feature-comfyui/      # ComfyUI integration (shared ViewModels)
+│   └── feature-externalserver/ # Custom external server (shared ViewModels)
 ├── androidApp/               # Android app entry point, Navigation 3, ModelCard, widgets, tiles
-│   └── ui/                   # Screens: dataset, compare, analytics, backup, feed, download, plugin (in androidApp, not feature module)
-├── desktopApp/               # Desktop app entry point (Compose Desktop / JVM), state-based navigation, Desktop ViewModels
+│   └── ui/                   # Platform-specific VM (DuplicateReview) + screens (dataset, compare, analytics, etc.)
+├── desktopApp/               # Desktop app entry point (Compose Desktop / JVM), state-based navigation, thin VM wrappers
 └── iosApp/                   # iOS app entry point (SwiftUI)
     └── iosApp/
-        ├── Features/         # Feature screens + ViewModels (Search, Detail, Gallery, Creator, Collections,
-        │                     #   Prompts, Settings, ComfyUI, Dataset, Compare, ExternalServer, ModelFileBrowser,
-        │                     #   Analytics, Backup, Discovery, Feed, Download, QRCode, Plugin, Shortcuts, Tutorial)
+        ├── Features/         # Feature screens consuming shared ViewModels via SKIE Observing
+        │                     #   (Search, Detail, Gallery, Creator, Collections, Prompts, Settings, ComfyUI,
+        │                     #   Dataset, Compare, ExternalServer, ModelFileBrowser, Analytics, Backup,
+        │                     #   Discovery, Feed, Download, QRCode, Plugin, Shortcuts, Tutorial)
         └── DesignSystem/     # Design tokens (CivitDeckColors, CivitDeckFonts, CivitDeckSpacing,
                               #   CivitDeckMotion, CivitDeckShapes) + CachedAsyncImage, ShimmerModifier
 ```
@@ -79,8 +80,9 @@ CivitDeck/
 ### Key Design Patterns
 
 **MVVM + UDF**
-- ViewModels are platform-specific: `androidx.lifecycle.ViewModel` (Android), `ObservableObject` (iOS), plain classes with `CoroutineScope` (Desktop)
-- Shared module exposes UseCases returning `Flow`/`StateFlow` — ViewModels subscribe to these
+- 37 ViewModels are shared in `commonMain` using `androidx.lifecycle.ViewModel` (lifecycle 2.9.0), all 3 platforms consume the same VM class
+- Android: `koinViewModel()` + `collectAsStateWithLifecycle()`; Desktop: `koinViewModel()` + `collectAsState()`; iOS: `*Owner` class + SKIE async sequence observation
+- Platform-specific deps use expect/actual (e.g., `DownloadScheduler`); 9 Desktop-specific simplified VMs remain for screens with different Desktop UI
 - Complex screens may use sealed class Action/State for UDF; simple screens use plain StateFlow
 
 **API Client**
@@ -96,9 +98,9 @@ CivitDeck/
 
 **Dependency Injection**
 - Koin modules per core layer: `NetworkModule` (core-network), `DatabaseModule` (core-database), `DomainModule` (core-domain), `PluginModule` (core-plugin)
-- `shared/src/commonMain/di/` re-exports core modules; `ViewModelModule` for SettingsViewModel
-- Android: `CivitDeckApplication.kt` registers platform ViewModels
-- iOS: `KoinHelper.shared.getXxx()` in `shared/src/iosMain/di/KoinHelper.kt`
+- `shared/src/commonMain/di/` re-exports core modules; `SharedViewModelModule`, `Phase3ViewModelModule`, `SettingsViewModelModule` for shared ViewModels
+- Android: `CivitDeckApplication.kt` registers platform-specific bindings (DownloadScheduler actual, DuplicateReviewViewModel)
+- iOS: `KoinHelper.shared.getXxx()` in `shared/src/iosMain/di/KoinHelper.kt` for ViewModel access
 
 **Image Loading**
 - Android: Coil 3.x with `SubcomposeAsyncImage` for loading states
