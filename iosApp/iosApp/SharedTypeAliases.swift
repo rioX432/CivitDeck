@@ -230,10 +230,7 @@ typealias ThemeColorScheme = Core_pluginThemeColorScheme
 typealias PluginState = Core_pluginPluginState
 typealias PluginManifest = Core_pluginPluginManifest
 
-// ReviewSortOrder is not exported from KMP (no public API uses it), so define in Swift
-enum ReviewSortOrder: CaseIterable {
-    case newest, highestRated, lowestRated
-}
+typealias ReviewSortOrder = Core_domainReviewSortOrder
 
 // MARK: - Feature: Collections (shared use cases in core-domain)
 
@@ -273,6 +270,11 @@ typealias SwipeDiscoveryState = Feature_searchSwipeDiscoveryState
 typealias BrowsingHistoryViewModel = Feature_searchBrowsingHistoryViewModel
 typealias BrowsingHistoryUiState = Feature_searchBrowsingHistoryUiState
 typealias UnhideModelUseCase = Core_domainUnhideModelUseCase
+
+// MARK: - Feature: Detail
+
+typealias SharedModelDetailViewModel = Feature_detailModelDetailViewModel
+typealias SharedModelDetailUiState = Feature_detailModelDetailUiState
 
 // MARK: - Feature: Gallery
 

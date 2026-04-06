@@ -40,7 +40,7 @@ import coil3.size.Size
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.util.FormatUtils
-import com.riox432.civitdeck.ui.detail.ModelDetailUiState
+import com.riox432.civitdeck.feature.detail.presentation.ModelDetailUiState
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.components.ModelStatsRow
 import com.riox432.civitdeck.ui.theme.CornerRadius

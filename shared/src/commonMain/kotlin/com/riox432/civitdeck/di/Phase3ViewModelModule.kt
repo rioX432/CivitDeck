@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.di
 
+import com.riox432.civitdeck.domain.download.DownloadScheduler
 import com.riox432.civitdeck.domain.usecase.ActivatePluginUseCase
 import com.riox432.civitdeck.domain.usecase.AddShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
@@ -10,6 +11,9 @@ import com.riox432.civitdeck.domain.usecase.DeactivatePluginUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DetectDuplicatesUseCase
 import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
+import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
+import com.riox432.civitdeck.domain.usecase.ClearCompletedDownloadsUseCase
+import com.riox432.civitdeck.domain.usecase.DeleteDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
 import com.riox432.civitdeck.domain.usecase.GetCreatorFeedUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
@@ -22,9 +26,12 @@ import com.riox432.civitdeck.domain.usecase.MarkAllNotificationsReadUseCase
 import com.riox432.civitdeck.domain.usecase.MarkFeedReadUseCase
 import com.riox432.civitdeck.domain.usecase.MarkNotificationReadUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAutoUpdateCheckUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveDownloadsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDatasetImagesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveInstalledPluginsUseCase
+import com.riox432.civitdeck.domain.usecase.PauseDownloadUseCase
+import com.riox432.civitdeck.domain.usecase.ResumeDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveSeenTutorialVersionUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveShareHashtagsUseCase
 import com.riox432.civitdeck.domain.usecase.ParseBackupUseCase
@@ -41,6 +48,7 @@ import com.riox432.civitdeck.domain.usecase.UpdateTrainableUseCase
 import com.riox432.civitdeck.presentation.analytics.AnalyticsViewModel
 import com.riox432.civitdeck.presentation.backup.BackupViewModel
 import com.riox432.civitdeck.presentation.dataset.BatchTagEditorViewModel
+import com.riox432.civitdeck.presentation.download.DownloadQueueViewModel
 import com.riox432.civitdeck.presentation.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.presentation.dataset.DatasetListViewModel
 import com.riox432.civitdeck.presentation.feed.FeedViewModel
@@ -143,6 +151,17 @@ val phase3ViewModelModule = module {
             observeDatasetImagesUseCase = get<ObserveDatasetImagesUseCase>(),
             batchEditTagsUseCase = get<BatchEditTagsUseCase>(),
             getTagSuggestionsUseCase = get<GetTagSuggestionsUseCase>(),
+        )
+    }
+    viewModel {
+        DownloadQueueViewModel(
+            observeDownloadsUseCase = get<ObserveDownloadsUseCase>(),
+            pauseDownloadUseCase = get<PauseDownloadUseCase>(),
+            resumeDownloadUseCase = get<ResumeDownloadUseCase>(),
+            cancelDownloadUseCase = get<CancelDownloadUseCase>(),
+            deleteDownloadUseCase = get<DeleteDownloadUseCase>(),
+            clearCompletedDownloadsUseCase = get<ClearCompletedDownloadsUseCase>(),
+            downloadScheduler = get<DownloadScheduler>(),
         )
     }
 }

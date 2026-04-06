@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.EntryProviderScope
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
+import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
@@ -13,6 +14,7 @@ import com.riox432.civitdeck.presentation.analytics.AnalyticsViewModel
 import com.riox432.civitdeck.presentation.dataset.BatchTagEditorViewModel
 import com.riox432.civitdeck.presentation.dataset.DatasetDetailViewModel
 import com.riox432.civitdeck.presentation.dataset.DatasetListViewModel
+import com.riox432.civitdeck.presentation.download.DownloadQueueViewModel
 import com.riox432.civitdeck.presentation.feed.FeedViewModel
 import com.riox432.civitdeck.presentation.notificationcenter.NotificationCenterViewModel
 import com.riox432.civitdeck.presentation.share.ShareViewModel
@@ -27,9 +29,7 @@ import com.riox432.civitdeck.ui.dataset.DatasetListScreen
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewScreen
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.ui.detail.ModelDetailScreen
-import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.downloadqueue.DownloadQueueScreen
-import com.riox432.civitdeck.ui.downloadqueue.DownloadQueueViewModel
 import com.riox432.civitdeck.ui.feed.FeedScreen
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
 import com.riox432.civitdeck.ui.history.BrowsingHistoryScreen

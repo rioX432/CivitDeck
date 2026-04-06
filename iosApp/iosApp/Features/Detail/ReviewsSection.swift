@@ -226,6 +226,7 @@ private extension ReviewSortOrder {
         case .newest: return "Newest"
         case .highestRated: return "Highest"
         case .lowestRated: return "Lowest"
+        @unknown default: return "Unknown"
         }
     }
 }

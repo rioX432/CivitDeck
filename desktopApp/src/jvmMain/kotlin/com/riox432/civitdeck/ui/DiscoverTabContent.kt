@@ -20,7 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
-import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
+import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.compare.DesktopCompareScreen
 import com.riox432.civitdeck.ui.creator.DesktopCreatorScreen
@@ -31,7 +31,7 @@ import com.riox432.civitdeck.ui.feed.DesktopFeedScreen
 import com.riox432.civitdeck.ui.feed.DesktopFeedViewModel
 import com.riox432.civitdeck.ui.qrcode.DesktopQRCodeScreen
 import com.riox432.civitdeck.ui.search.DesktopSearchScreen
-import com.riox432.civitdeck.ui.search.DesktopSearchViewModel
+import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.ui.search.DesktopUrlImportDialog
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -125,7 +125,7 @@ private fun DiscoverBaseContent(
 ) {
     when (section) {
         DiscoverSection.Search -> {
-            val searchVm: DesktopSearchViewModel = koinViewModel()
+            val searchVm: ModelSearchViewModel = koinViewModel()
             DesktopSearchScreen(
                 viewModel = searchVm,
                 onModelClick = { backstack.add(DesktopRoute.ModelDetail(it)) },

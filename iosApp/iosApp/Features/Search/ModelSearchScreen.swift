@@ -80,7 +80,7 @@ struct ModelSearchScreen: View {
                 filterSheet
             }
             .task {
-                await viewModel.observeNsfwFilter()
+                await viewModel.observeUiState()
             }
             .navigationDestination(for: Int64.self) { modelId in
                 ModelDetailScreen(modelId: modelId)
@@ -148,7 +148,10 @@ struct ModelSearchScreen: View {
 
     private var searchBarWithFilterButton: some View {
         SearchBarView(
-            text: $viewModel.query,
+            text: Binding(
+                get: { viewModel.query },
+                set: { viewModel.onQueryChange($0) }
+            ),
             placeholder: "Search models...",
             onSubmit: {
                 viewModel.onSearch()

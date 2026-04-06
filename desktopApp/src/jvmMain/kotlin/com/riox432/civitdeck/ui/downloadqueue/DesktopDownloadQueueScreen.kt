@@ -38,12 +38,14 @@ import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.ModelDownload
 import com.riox432.civitdeck.domain.util.FormatUtils
+import com.riox432.civitdeck.presentation.download.DownloadQueueUiState
+import com.riox432.civitdeck.presentation.download.DownloadQueueViewModel
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
 fun DesktopDownloadQueueScreen(
-    viewModel: DesktopDownloadQueueViewModel,
+    viewModel: DownloadQueueViewModel,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -89,7 +91,7 @@ private fun DownloadQueueToolbar(onBack: () -> Unit) {
 @Composable
 @Suppress("LongParameterList")
 private fun DownloadQueueBody(
-    state: DesktopDownloadQueueUiState,
+    state: DownloadQueueUiState,
     onPause: (Long) -> Unit,
     onResume: (Long) -> Unit,
     onCancel: (Long) -> Unit,
