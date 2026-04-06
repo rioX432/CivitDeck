@@ -35,13 +35,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.InstalledPlugin
+import com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
 
 @Composable
 fun DesktopPluginDetailScreen(
     pluginId: String,
-    viewModel: DesktopPluginViewModel,
+    viewModel: PluginManagementViewModel,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -90,7 +91,7 @@ private fun PluginDetailToolbar(pluginName: String, onBack: () -> Unit) {
 private fun PluginDetailBody(
     plugin: InstalledPlugin,
     configJson: String,
-    viewModel: DesktopPluginViewModel,
+    viewModel: PluginManagementViewModel,
     onBack: () -> Unit,
 ) {
     LazyColumn(
@@ -148,7 +149,7 @@ private fun ManifestRow(label: String, value: String) {
 @Composable
 private fun EnableToggleRow(
     plugin: InstalledPlugin,
-    viewModel: DesktopPluginViewModel,
+    viewModel: PluginManagementViewModel,
 ) {
     Row(
         modifier = Modifier
@@ -191,7 +192,7 @@ private fun CapabilitiesSection(capabilities: List<String>) {
 private fun ConfigSection(
     pluginId: String,
     configJson: String,
-    viewModel: DesktopPluginViewModel,
+    viewModel: PluginManagementViewModel,
 ) {
     var editedConfig by remember(configJson) { mutableStateOf(configJson) }
 
@@ -217,7 +218,7 @@ private fun ConfigSection(
 @Composable
 private fun UninstallSection(
     pluginId: String,
-    viewModel: DesktopPluginViewModel,
+    viewModel: PluginManagementViewModel,
     onBack: () -> Unit,
 ) {
     var showConfirm by remember { mutableStateOf(false) }

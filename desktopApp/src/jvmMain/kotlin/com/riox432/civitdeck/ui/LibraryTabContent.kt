@@ -12,7 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,10 +28,10 @@ import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.collections.DesktopCollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.DesktopCollectionsScreen
 import com.riox432.civitdeck.ui.creator.DesktopCreatorScreen
+import com.riox432.civitdeck.presentation.dataset.DatasetDetailViewModel
+import com.riox432.civitdeck.presentation.dataset.DatasetListViewModel
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailScreen
-import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailViewModel
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetListScreen
-import com.riox432.civitdeck.ui.dataset.DesktopDatasetListViewModel
 import com.riox432.civitdeck.ui.detail.DesktopDetailScreen
 import com.riox432.civitdeck.ui.prompts.DesktopPromptsScreen
 import com.riox432.civitdeck.ui.theme.Elevation
@@ -121,8 +120,7 @@ private fun LibraryBaseContent(
             )
         }
         LibrarySection.Datasets -> {
-            val vm: DesktopDatasetListViewModel = koinViewModel()
-            DisposableEffect(vm) { onDispose { vm.onCleared() } }
+            val vm: DatasetListViewModel = koinViewModel()
             DesktopDatasetListScreen(
                 viewModel = vm,
                 onDatasetClick = { id, name ->
@@ -159,10 +157,9 @@ private fun LibraryOverlayContent(
             )
         }
         is DesktopRoute.DatasetDetail -> {
-            val vm: DesktopDatasetDetailViewModel = koinViewModel(
+            val vm: DatasetDetailViewModel = koinViewModel(
                 key = "dataset_detail_${currentRoute.datasetId}",
             ) { parametersOf(currentRoute.datasetId) }
-            DisposableEffect(vm) { onDispose { vm.onCleared() } }
             DesktopDatasetDetailScreen(
                 datasetName = currentRoute.datasetName,
                 viewModel = vm,

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.presentation.settings.AppBehaviorSettingsViewModel
@@ -17,19 +16,19 @@ import com.riox432.civitdeck.presentation.settings.ContentFilterSettingsViewMode
 import com.riox432.civitdeck.presentation.settings.DisplaySettingsViewModel
 import com.riox432.civitdeck.presentation.settings.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.DesktopRoute
+import com.riox432.civitdeck.presentation.analytics.AnalyticsViewModel
+import com.riox432.civitdeck.presentation.backup.BackupViewModel
+import com.riox432.civitdeck.presentation.notificationcenter.NotificationCenterViewModel
+import com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsScreen
-import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
 import com.riox432.civitdeck.ui.backup.DesktopBackupScreen
-import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
 import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueScreen
 import com.riox432.civitdeck.presentation.download.DownloadQueueViewModel
 import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryScreen
 import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterScreen
-import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterViewModel
 import com.riox432.civitdeck.ui.plugin.DesktopPluginDetailScreen
 import com.riox432.civitdeck.ui.plugin.DesktopPluginListScreen
-import com.riox432.civitdeck.ui.plugin.DesktopPluginViewModel
 import com.riox432.civitdeck.ui.settings.DesktopSettingsScreen
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.update.DesktopUpdateViewModel
@@ -106,16 +105,14 @@ private fun SettingsOverlayContent(
 ) {
     when (currentRoute) {
         is DesktopRoute.Backup -> {
-            val vm: DesktopBackupViewModel = koinViewModel()
-            DisposableEffect(vm) { onDispose { vm.onCleared() } }
+            val vm: BackupViewModel = koinViewModel()
             DesktopBackupScreen(
                 viewModel = vm,
                 onBack = { backstack.removeLastOrNull() },
             )
         }
         is DesktopRoute.PluginList -> {
-            val vm: DesktopPluginViewModel = koinViewModel()
-            DisposableEffect(vm) { onDispose { vm.onCleared() } }
+            val vm: PluginManagementViewModel = koinViewModel()
             DesktopPluginListScreen(
                 viewModel = vm,
                 onPluginClick = { pluginId ->
@@ -125,8 +122,7 @@ private fun SettingsOverlayContent(
             )
         }
         is DesktopRoute.PluginDetail -> {
-            val vm: DesktopPluginViewModel = koinViewModel()
-            DisposableEffect(vm) { onDispose { vm.onCleared() } }
+            val vm: PluginManagementViewModel = koinViewModel()
             DesktopPluginDetailScreen(
                 pluginId = currentRoute.pluginId,
                 viewModel = vm,
@@ -134,16 +130,14 @@ private fun SettingsOverlayContent(
             )
         }
         is DesktopRoute.Analytics -> {
-            val vm: DesktopAnalyticsViewModel = koinViewModel()
-            DisposableEffect(vm) { onDispose { vm.onCleared() } }
+            val vm: AnalyticsViewModel = koinViewModel()
             DesktopAnalyticsScreen(
                 viewModel = vm,
                 onBack = { backstack.removeLastOrNull() },
             )
         }
         is DesktopRoute.NotificationCenter -> {
-            val vm: DesktopNotificationCenterViewModel = koinViewModel()
-            DisposableEffect(vm) { onDispose { vm.onCleared() } }
+            val vm: NotificationCenterViewModel = koinViewModel()
             DesktopNotificationCenterScreen(
                 viewModel = vm,
                 onBack = { backstack.removeLastOrNull() },

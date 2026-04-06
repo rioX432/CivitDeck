@@ -120,5 +120,5 @@ val androidModule = module {
         )
     }
     viewModel { params -> DuplicateReviewViewModel(params.get(), get(), get()) }
-    viewModel { DownloadQueueViewModel(get(), get(), get(), get(), get(), get(), get()) }
+    // DownloadQueueViewModel now registered in shared Phase3ViewModelModule
 }

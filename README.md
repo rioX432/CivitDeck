@@ -71,7 +71,7 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Fresh Find** — discover recently published models before they trend
 - **Quality Filter** — filter models by calculated quality score based on downloads, favorites, and ratings
 - **Integrations Hub** — unified management screen for ComfyUI, SD WebUI, Civitai Link, and external servers
-- **Cross-Platform** — native Android (Jetpack Compose), iOS (SwiftUI) & Desktop (Compose Desktop) from a shared KMP codebase
+- **Cross-Platform** — native Android (Jetpack Compose), iOS (SwiftUI) & Desktop (Compose Desktop) with 37 shared ViewModels in KMP commonMain
 
 See the full [Roadmap](docs/ROADMAP.md) for planned features.
 
@@ -101,19 +101,11 @@ graph TB
     subgraph shared["Shared (KMP)"]
         ktor["Ktor Client"] & repo["Repository"] --> usecase["Use Case"]
         room["Room KMP (Cache)"] --> entity["Entity"]
+        usecase --> vm["Shared ViewModel"]
     end
-    subgraph android["Android"]
-        avm["ViewModel"] --> compose["Compose"]
-    end
-    subgraph desktop["Desktop"]
-        dvm["ViewModel"] --> cdesktop["Compose Desktop"]
-    end
-    subgraph ios["iOS"]
-        ivm["ViewModel"] --> swiftui["SwiftUI"]
-    end
-    usecase --> avm
-    usecase --> dvm
-    usecase --> ivm
+    vm --> compose["Compose (Android)"]
+    vm -- "SKIE Observing" --> swiftui["SwiftUI (iOS)"]
+    vm --> cdesktop["Compose Desktop"]
 ```
 
 ## Getting Started

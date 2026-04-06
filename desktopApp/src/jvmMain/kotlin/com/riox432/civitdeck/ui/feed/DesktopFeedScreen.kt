@@ -44,6 +44,7 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.size.Size
 import com.riox432.civitdeck.domain.model.FeedItem
+import com.riox432.civitdeck.presentation.feed.FeedViewModel
 import com.riox432.civitdeck.presentation.settings.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -53,7 +54,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun DesktopFeedScreen(
-    viewModel: DesktopFeedViewModel,
+    viewModel: FeedViewModel,
     onModelClick: (Long) -> Unit,
     onCreatorClick: (String) -> Unit,
     modifier: Modifier = Modifier,

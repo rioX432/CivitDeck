@@ -3,15 +3,7 @@ package com.riox432.civitdeck.di
 import com.riox432.civitdeck.DesktopAppVersionProvider
 import com.riox432.civitdeck.domain.repository.AppVersionProvider
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
-import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
-import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueViewModel
-import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterViewModel
-import com.riox432.civitdeck.ui.backup.DesktopBackupViewModel
-import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailViewModel
-import com.riox432.civitdeck.ui.dataset.DesktopDatasetListViewModel
 import com.riox432.civitdeck.ui.discovery.DesktopDiscoveryViewModel
-import com.riox432.civitdeck.ui.feed.DesktopFeedViewModel
-import com.riox432.civitdeck.ui.plugin.DesktopPluginViewModel
 import com.riox432.civitdeck.ui.update.DesktopUpdateViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -26,38 +18,11 @@ val desktopModule = module {
         )
     }
     viewModel {
-        DesktopFeedViewModel(get(), get())
-    }
-    viewModel {
         DesktopDiscoveryViewModel(get(), get())
-    }
-    viewModel {
-        DesktopAnalyticsViewModel(get())
     }
     // BrowsingHistoryViewModel now registered in shared searchModule
     // ComfyUI, SDWebUI, ExternalServer VMs now registered in shared modules
-    // Dataset ViewModels
-    viewModel {
-        DesktopDatasetListViewModel(get(), get(), get(), get())
-    }
-    viewModel { params ->
-        DesktopDatasetDetailViewModel(params.get(), get(), get(), get(), get(), get(), get())
-    }
-    // Backup ViewModel
-    viewModel {
-        DesktopBackupViewModel(get(), get(), get())
-    }
-    // Plugin ViewModel
-    viewModel {
-        DesktopPluginViewModel(get(), get(), get(), get(), get(), get())
-    }
-    // Notification Center ViewModel
-    viewModel {
-        DesktopNotificationCenterViewModel(get(), get(), get())
-    }
-    // Download Queue ViewModel
-    viewModel {
-        DesktopDownloadQueueViewModel(get(), get(), get(), get(), get(), get())
-    }
+    // Feed, Analytics, DatasetList, DatasetDetail, Backup, Plugin, NotificationCenter,
+    // DownloadQueue VMs now registered in shared Phase3ViewModelModule
     // Workflow Template VM now registered in shared comfyuiModule
 }
