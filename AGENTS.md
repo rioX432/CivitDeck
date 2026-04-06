@@ -82,7 +82,7 @@ CivitDeck/
 **MVVM + UDF**
 - 37 ViewModels are shared in `commonMain` using `androidx.lifecycle.ViewModel` (lifecycle 2.9.0), all 3 platforms consume the same VM class
 - Android: `koinViewModel()` + `collectAsStateWithLifecycle()`; Desktop: `koinViewModel()` + `collectAsState()`; iOS: `*Owner` class + SKIE async sequence observation
-- Platform-specific deps use expect/actual (e.g., `DownloadScheduler`); 9 Desktop-specific simplified VMs remain for screens with different Desktop UI
+- Platform-specific deps use expect/actual (e.g., `DownloadScheduler`); only 2 Desktop-only VMs remain (`DesktopUpdateViewModel`, `DesktopDiscoveryViewModel`)
 - Complex screens may use sealed class Action/State for UDF; simple screens use plain StateFlow
 
 **API Client**

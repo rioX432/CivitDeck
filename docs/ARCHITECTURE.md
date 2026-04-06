@@ -71,7 +71,7 @@ CivitDeck/
 │   └── src/jvmMain/kotlin/
 │       ├── Main.kt                   # Application entry point, Window setup
 │       ├── navigation/               # State-based routing (no Navigation 3)
-│       └── ui/                       # Desktop screens + 9 Desktop-specific ViewModels (simplified variants for Desktop UI)
+│       └── ui/                       # Desktop screens + 2 Desktop-only ViewModels (DesktopUpdateViewModel, DesktopDiscoveryViewModel)
 └── iosApp/                   # iOS app entry point (SwiftUI)
     └── iosApp/
         ├── Features/         # Feature-based screens; ViewModels consumed via SKIE Observing
@@ -133,7 +133,7 @@ Platform-specific dependencies are handled via `expect/actual`:
 
 Remaining platform-specific ViewModels:
 - **Android**: `DuplicateReviewViewModel` (1)
-- **Desktop**: 9 simplified ViewModels (`DesktopAnalyticsViewModel`, `DesktopBackupViewModel`, etc.) — these are independent implementations with fewer features than the shared VMs, used where Desktop UI differs significantly
+- **Desktop**: `DesktopUpdateViewModel` (Desktop-only update check) and `DesktopDiscoveryViewModel` (recommendations-only, no swipe)
 
 ### UI Layer (Platform-specific)
 
@@ -166,7 +166,7 @@ Room KMP provides the same API as Jetpack Room (familiar to Android developers) 
 - **Desktop** injects via Koin `koinViewModel()` and collects with `collectAsState()`
 - **iOS** wraps each VM in a Swift `*Owner` class (for `ViewModelStore` lifecycle) and observes `StateFlow` via SKIE's async sequence bridging
 
-Platform-specific dependencies (e.g., WorkManager for downloads) are abstracted via `expect/actual` interfaces (e.g., `DownloadScheduler`), keeping the ViewModel itself fully shared. 9 Desktop-specific simplified ViewModels remain for screens where Desktop UI differs significantly from mobile.
+Platform-specific dependencies (e.g., WorkManager for downloads) are abstracted via `expect/actual` interfaces (e.g., `DownloadScheduler`), keeping the ViewModel itself fully shared. Only 2 Desktop-specific VMs remain (`DesktopUpdateViewModel` for Desktop-only update check, `DesktopDiscoveryViewModel` for recommendations-only discovery).
 
 ### Why Navigation 3 (Android)?
 
@@ -182,7 +182,7 @@ Koin is used as the DI framework across all modules:
 - **core-plugin** (`core/core-plugin/.../di/PluginModule`): Plugin registry, built-in capability adapters
 - **shared** (`shared/src/commonMain/di/`): Re-exports core modules; `SharedViewModelModule`, `Phase3ViewModelModule`, `SettingsViewModelModule` for shared ViewModels
 - **Android** (`androidApp/CivitDeckApplication.kt`): Platform-specific bindings (DownloadScheduler actual, DuplicateReviewViewModel), platform drivers
-- **Desktop** (`desktopApp/`): 9 Desktop-specific ViewModel registrations, JVM platform drivers (shared VMs are auto-registered via feature module Koin modules)
+- **Desktop** (`desktopApp/`): 2 Desktop-only ViewModel registrations (`DesktopUpdateViewModel`, `DesktopDiscoveryViewModel`), JVM platform drivers (shared VMs are auto-registered via feature module Koin modules)
 - **iOS** (`shared/src/iosMain/di/KoinHelper.kt`): ViewModel accessors for SwiftUI consumption via `KoinHelper.shared.getXxx()`
 
 ## CI/CD
