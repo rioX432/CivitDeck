@@ -2,7 +2,6 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.DesktopAppVersionProvider
 import com.riox432.civitdeck.domain.repository.AppVersionProvider
-import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsViewModel
 import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueViewModel
 import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterViewModel
@@ -23,12 +22,6 @@ val desktopModule = module {
     viewModel { DesktopUpdateViewModel(get(), get(), get()) }
     viewModel {
         DesktopSearchViewModel(get(), get(), get(), get(), get())
-    }
-    viewModel { params ->
-        ModelDetailViewModel(
-            params.get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-        )
     }
     viewModel {
         DesktopFeedViewModel(get(), get())

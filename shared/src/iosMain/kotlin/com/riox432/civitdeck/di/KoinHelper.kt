@@ -608,6 +608,9 @@ object KoinHelper {
         com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel = getKoin().get()
     fun createBrowsingHistoryViewModel():
         com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel = getKoin().get()
+    fun createModelDetailViewModel(modelId: Long):
+        com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel =
+        getKoin().get { org.koin.core.parameter.parametersOf(modelId) }
     // endregion
 
     // region Phase 3 ViewModels

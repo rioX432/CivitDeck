@@ -40,6 +40,8 @@ import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
 import com.riox432.civitdeck.domain.model.stripCdnWidth
 import com.riox432.civitdeck.download.DownloadScheduler
+import com.riox432.civitdeck.feature.detail.presentation.ModelDetailUiState
+import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.qrcode.QRCodeSheet

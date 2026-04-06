@@ -1,7 +1,14 @@
 package com.riox432.civitdeck.feature.detail.di
 
+import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val detailModule = module {
-    // ModelDetailViewModel is registered in androidApp's androidModule (requires modelId param)
+    viewModel { params ->
+        ModelDetailViewModel(
+            params.get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
+        )
+    }
 }

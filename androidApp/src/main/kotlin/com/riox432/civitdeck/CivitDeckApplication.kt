@@ -24,7 +24,6 @@ import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
-import com.riox432.civitdeck.ui.detail.ModelDetailViewModel
 import com.riox432.civitdeck.ui.downloadqueue.DownloadQueueViewModel
 import com.riox432.civitdeck.ui.search.ModelSearchViewModel
 import com.riox432.civitdeck.widget.WidgetRefreshWorker
@@ -122,12 +121,6 @@ val androidModule = module {
             get(), get(), get(), get(), get(), get(),
             get(), get(), get(), get(), get(), get(),
             get(),
-        )
-    }
-    viewModel { params ->
-        ModelDetailViewModel(
-            params.get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
         )
     }
     viewModel { params -> DuplicateReviewViewModel(params.get(), get(), get()) }

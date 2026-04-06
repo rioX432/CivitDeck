@@ -2,11 +2,11 @@ import SwiftUI
 import Shared
 
 struct ModelDetailScreen: View {
-    @StateObject private var viewModel: ModelDetailViewModel
+    @StateObject private var viewModel: ModelDetailViewModelOwner
     @Environment(\.civitTheme) private var theme
 
     init(modelId: Int64) {
-        _viewModel = StateObject(wrappedValue: ModelDetailViewModel(modelId: modelId))
+        _viewModel = StateObject(wrappedValue: ModelDetailViewModelOwner(modelId: modelId))
     }
     @State private var isDescriptionExpanded = false
     @State private var showCarouselViewer = false
@@ -42,17 +42,7 @@ struct ModelDetailScreen: View {
         .animation(MotionAnimation.standard, value: viewModel.model != nil)
         .navigationTitle(viewModel.model?.name ?? "")
         .navigationBarTitleDisplayMode(.inline)
-        .task {
-            await withTaskGroup(of: Void.self) { group in
-                group.addTask { await viewModel.observeFavorite() }
-                group.addTask { await viewModel.observeNsfwFilter() }
-                group.addTask { await viewModel.observePowerUserMode() }
-                group.addTask { await viewModel.observeNote() }
-                group.addTask { await viewModel.observePersonalTags() }
-                group.addTask { await viewModel.observeDownloads() }
-            }
-        }
-        .task { viewModel.loadReviews() }
+        .task { await viewModel.observeUiState() }
         .onDisappear { viewModel.onDisappear() }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
