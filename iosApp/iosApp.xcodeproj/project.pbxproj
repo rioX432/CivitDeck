@@ -10,6 +10,7 @@
 		058557BB273AAA24004C7B11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557BA273AAA24004C7B11 /* Assets.xcassets */; };
 		058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
+		CDML01012800001000CD001 /* SigLIP2Embedder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDML01002800001000CD001 /* SigLIP2Embedder.swift */; };
 		CD0001012D000001000CD001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0001002D000001000CD001 /* ContentView.swift */; };
 		CDFF01012DFFA101000CD001 /* SharedTypeAliases.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFF01002DFFA100000CD001 /* SharedTypeAliases.swift */; };
 		CDFF01032DFFA103000CD001 /* SharedServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFF01022DFFA102000CD001 /* SharedServices.swift */; };
@@ -177,6 +178,7 @@
 		058557BA273AAA24004C7B11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
+		CDML01002800001000CD001 /* SigLIP2Embedder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigLIP2Embedder.swift; sourceTree = "<group>"; };
 		7555FF7B242A565900829871 /* CivitDeck.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CivitDeck.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AB3632DC29227652001CCB65 /* Config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
@@ -404,9 +406,18 @@
 				CD0003002D000003000CD001 /* Features */,
 				CDSP0A002E900001000CD001 /* Services */,
 				CDDL0A002E900003000CD001 /* Utils */,
+				CDML0A00280000000CD001 /* ML */,
 				058557D7273AAEEB004C7B11 /* Preview Content */,
 			);
 			path = iosApp;
+			sourceTree = "<group>";
+		};
+		CDML0A00280000000CD001 /* ML */ = {
+			isa = PBXGroup;
+			children = (
+				CDML01002800001000CD001 /* SigLIP2Embedder.swift */,
+			);
+			path = ML;
 			sourceTree = "<group>";
 		};
 		CDSP0A002E900001000CD001 /* Services */ = {
@@ -951,6 +962,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
+				CDML01012800001000CD001 /* SigLIP2Embedder.swift in Sources */,
 				CD0001012D000001000CD001 /* ContentView.swift in Sources */,
 				CDFF01012DFFA101000CD001 /* SharedTypeAliases.swift in Sources */,
 			CDFF01032DFFA103000CD001 /* SharedServices.swift in Sources */,

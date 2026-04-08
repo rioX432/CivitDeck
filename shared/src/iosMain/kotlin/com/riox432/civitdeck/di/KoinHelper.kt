@@ -2,8 +2,11 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
+import com.riox432.civitdeck.domain.ml.ImageEmbeddingModel
+import com.riox432.civitdeck.domain.ml.SigLIP2Bridge
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
+import com.riox432.civitdeck.domain.repository.ModelEmbeddingRepository
 import com.riox432.civitdeck.domain.usecase.ActivatePluginUseCase
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.AddImageToDatasetUseCase
@@ -31,11 +34,13 @@ import com.riox432.civitdeck.domain.usecase.DeleteDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.DetectDuplicatesUseCase
 import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
+import com.riox432.civitdeck.domain.usecase.EmbedImageUseCase
 import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
 import com.riox432.civitdeck.domain.usecase.ExportDatasetUseCase
 import com.riox432.civitdeck.domain.usecase.FilterByResolutionUseCase
+import com.riox432.civitdeck.domain.usecase.FindSimilarModelsByEmbeddingUseCase
 import com.riox432.civitdeck.domain.usecase.FollowCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.GetAllPersonalTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
@@ -255,6 +260,7 @@ import com.riox432.civitdeck.usecase.GetAvailableExportFormatsUseCase
 import com.riox432.civitdeck.usecase.ImportThemeUseCase
 import com.riox432.civitdeck.usecase.ObserveThemePluginsUseCase
 import org.koin.mp.KoinPlatform.getKoin
+import com.riox432.civitdeck.domain.ml.registerSigLIP2Bridge as registerSigLIP2BridgeImpl
 
 @Suppress("TooManyFunctions")
 object KoinHelper {
@@ -267,6 +273,21 @@ object KoinHelper {
     fun getTrackRecommendationClickUseCase(): TrackRecommendationClickUseCase = getKoin().get()
     fun getEnrichModelImagesUseCase(): EnrichModelImagesUseCase = getKoin().get()
     fun getSimilarModelsUseCase(): GetSimilarModelsUseCase = getKoin().get()
+    // endregion
+
+    // region Image Embedding (#700)
+    fun getImageEmbeddingModel(): ImageEmbeddingModel = getKoin().get()
+    fun getEmbedImageUseCase(): EmbedImageUseCase = getKoin().get()
+    fun getFindSimilarModelsByEmbeddingUseCase(): FindSimilarModelsByEmbeddingUseCase = getKoin().get()
+    fun getModelEmbeddingRepository(): ModelEmbeddingRepository = getKoin().get()
+
+    /**
+     * Registers the Swift Core ML bridge so the iOS [ImageEmbeddingModel] actual can use it.
+     * Called once from `iOSApp.swift` after `doInitKoin`.
+     */
+    fun registerSigLIP2Bridge(bridge: SigLIP2Bridge) {
+        registerSigLIP2BridgeImpl(bridge)
+    }
     // endregion
 
     // region Search History & Filters
