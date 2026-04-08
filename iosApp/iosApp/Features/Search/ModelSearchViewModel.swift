@@ -5,7 +5,6 @@ import os
 
 private let logger = Logger(subsystem: "com.riox432.civitdeck", category: "Search")
 
-// swiftlint:disable type_body_length
 @MainActor
 final class ModelSearchViewModel: ObservableObject {
     let vm: Feature_searchModelSearchViewModel
@@ -245,4 +244,3 @@ final class ModelSearchViewModel: ObservableObject {
         vm.trackRecommendationClick(modelId: modelId)
     }
 }
-// swiftlint:enable type_body_length

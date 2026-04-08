@@ -1,7 +1,6 @@
 import Foundation
 import Shared
 
-// swiftlint:disable type_body_length
 @MainActor
 final class DatasetDetailViewModelOwner: ObservableObject {
     @Published var images: [DatasetImage] = []
@@ -134,4 +133,3 @@ final class DatasetDetailViewModelOwner: ObservableObject {
         vm.dismissExportResult()
     }
 }
-// swiftlint:enable type_body_length
