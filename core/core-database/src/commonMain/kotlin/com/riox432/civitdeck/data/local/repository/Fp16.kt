@@ -61,7 +61,7 @@ internal object Fp16 {
         return out
     }
 
-    @Suppress("MagicNumber")
+    @Suppress("MagicNumber", "ReturnCount")
     private fun floatToHalf(value: Float): Int {
         val bits = value.toRawBits()
         val sign = (bits ushr FP32_SIGN_SHIFT) and 0x1

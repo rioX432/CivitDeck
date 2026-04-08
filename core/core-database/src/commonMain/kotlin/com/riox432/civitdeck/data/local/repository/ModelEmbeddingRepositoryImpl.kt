@@ -39,15 +39,18 @@ class ModelEmbeddingRepositoryImpl(
         val rows = dao.getAllForModel(embeddingModel)
         if (rows.isEmpty()) return emptyList()
 
-        val scored = ArrayList<SimilarModelHit>(rows.size)
-        for (row in rows) {
-            if (excludeModelId != null && row.modelId == excludeModelId) continue
-            if (row.dim != query.size) continue
-            val vector = Fp16.decode(row.embedding, row.dim)
-            scored += SimilarModelHit(modelId = row.modelId, score = cosine(query, vector))
-        }
-        scored.sortByDescending { it.score }
-        return if (scored.size > limit) scored.subList(0, limit).toList() else scored
+        val scored = rows
+            .asSequence()
+            .filter { row -> excludeModelId == null || row.modelId != excludeModelId }
+            .filter { row -> row.dim == query.size }
+            .map { row ->
+                val vector = Fp16.decode(row.embedding, row.dim)
+                SimilarModelHit(modelId = row.modelId, score = cosine(query, vector))
+            }
+            .sortedByDescending { it.score }
+            .take(limit)
+            .toList()
+        return scored
     }
 
     override suspend fun deleteStale(keepModel: String): Int = dao.deleteStale(keepModel)

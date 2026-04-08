@@ -2,20 +2,6 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
-import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
-import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
-import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
-import com.riox432.civitdeck.presentation.comfyhub.ComfyHubBrowserViewModel
-import com.riox432.civitdeck.presentation.comfyhub.ComfyHubDetailViewModel
-import com.riox432.civitdeck.presentation.modelfiles.ModelFileBrowserViewModel
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
 import com.riox432.civitdeck.domain.usecase.ActivatePluginUseCase
@@ -150,13 +136,13 @@ import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
-import com.riox432.civitdeck.domain.usecase.VerifyDownloadHashUseCase
 import com.riox432.civitdeck.domain.usecase.UnfollowCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.UninstallPluginUseCase
 import com.riox432.civitdeck.domain.usecase.UpdatePluginConfigUseCase
 import com.riox432.civitdeck.domain.usecase.UpdateTrainableUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
+import com.riox432.civitdeck.domain.usecase.VerifyDownloadHashUseCase
 import com.riox432.civitdeck.domain.usecase.VerifyModelHashUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.BulkMoveModelsUseCase
 import com.riox432.civitdeck.feature.collections.domain.usecase.BulkRemoveModelsUseCase
@@ -209,6 +195,15 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.SendResourceToPCUseC
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ActivateExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.DeleteExternalServerConfigUseCase
@@ -223,6 +218,8 @@ import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveActive
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveExternalServerConfigsUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.SaveExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.TestExternalServerConnectionUseCase
+import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
+import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
 import com.riox432.civitdeck.feature.gallery.domain.usecase.GetImagesUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.DeleteSavedPromptUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveSavedPromptsUseCase
@@ -236,12 +233,16 @@ import com.riox432.civitdeck.feature.search.domain.usecase.GetDiscoveryModelsUse
 import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.TrackRecommendationClickUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.TrackRecommendationClickUseCase
+import com.riox432.civitdeck.presentation.comfyhub.ComfyHubBrowserViewModel
+import com.riox432.civitdeck.presentation.comfyhub.ComfyHubDetailViewModel
+import com.riox432.civitdeck.presentation.download.DownloadQueueViewModel
+import com.riox432.civitdeck.presentation.modelfiles.ModelFileBrowserViewModel
 import com.riox432.civitdeck.presentation.settings.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.presentation.settings.AuthSettingsViewModel
 import com.riox432.civitdeck.presentation.settings.ContentFilterSettingsViewModel
@@ -610,39 +611,35 @@ object KoinHelper {
         com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel = getKoin().get()
     fun createBrowsingHistoryViewModel():
         com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel = getKoin().get()
-    fun createModelDetailViewModel(modelId: Long):
-        com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel =
+    fun createModelDetailViewModel(
+        modelId: Long
+    ): com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel =
         getKoin().get { org.koin.core.parameter.parametersOf(modelId) }
     // endregion
 
     // region Phase 3 ViewModels
-    fun createAnalyticsViewModel():
-        com.riox432.civitdeck.presentation.analytics.AnalyticsViewModel = getKoin().get()
-    fun createBackupViewModel():
-        com.riox432.civitdeck.presentation.backup.BackupViewModel = getKoin().get()
-    fun createFeedViewModel():
-        com.riox432.civitdeck.presentation.feed.FeedViewModel = getKoin().get()
+    fun createAnalyticsViewModel(): com.riox432.civitdeck.presentation.analytics.AnalyticsViewModel = getKoin().get()
+    fun createBackupViewModel(): com.riox432.civitdeck.presentation.backup.BackupViewModel = getKoin().get()
+    fun createFeedViewModel(): com.riox432.civitdeck.presentation.feed.FeedViewModel = getKoin().get()
     fun createNotificationCenterViewModel():
         com.riox432.civitdeck.presentation.notificationcenter.NotificationCenterViewModel = getKoin().get()
     fun createPluginManagementViewModel():
         com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel = getKoin().get()
-    fun createSimilarModelsViewModel(modelId: Long):
-        com.riox432.civitdeck.presentation.similar.SimilarModelsViewModel =
+    fun createSimilarModelsViewModel(modelId: Long): com.riox432.civitdeck.presentation.similar.SimilarModelsViewModel =
         getKoin().get { org.koin.core.parameter.parametersOf(modelId) }
-    fun createShareViewModel():
-        com.riox432.civitdeck.presentation.share.ShareViewModel = getKoin().get()
+    fun createShareViewModel(): com.riox432.civitdeck.presentation.share.ShareViewModel = getKoin().get()
     fun createGestureTutorialViewModel():
         com.riox432.civitdeck.presentation.tutorial.GestureTutorialViewModel = getKoin().get()
-    fun createDatasetListViewModel():
-        com.riox432.civitdeck.presentation.dataset.DatasetListViewModel = getKoin().get()
-    fun createDatasetDetailViewModel(datasetId: Long):
-        com.riox432.civitdeck.presentation.dataset.DatasetDetailViewModel =
+    fun createDatasetListViewModel(): com.riox432.civitdeck.presentation.dataset.DatasetListViewModel = getKoin().get()
+    fun createDatasetDetailViewModel(
+        datasetId: Long
+    ): com.riox432.civitdeck.presentation.dataset.DatasetDetailViewModel =
         getKoin().get { org.koin.core.parameter.parametersOf(datasetId) }
-    fun createBatchTagEditorViewModel(datasetId: Long):
-        com.riox432.civitdeck.presentation.dataset.BatchTagEditorViewModel =
+    fun createBatchTagEditorViewModel(
+        datasetId: Long
+    ): com.riox432.civitdeck.presentation.dataset.BatchTagEditorViewModel =
         getKoin().get { org.koin.core.parameter.parametersOf(datasetId) }
-    fun createDownloadQueueViewModel():
-        com.riox432.civitdeck.presentation.download.DownloadQueueViewModel = getKoin().get()
+    fun createDownloadQueueViewModel(): DownloadQueueViewModel = getKoin().get()
     // endregion
 
     // region Phase 4 ViewModels
