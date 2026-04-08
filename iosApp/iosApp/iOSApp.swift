@@ -10,6 +10,7 @@ struct iOSApp: App {
 
     init() {
         KoinKt.doInitKoin(appDeclaration: { _ in })
+        KoinHelper.shared.registerSigLIP2Bridge(bridge: SigLIP2Embedder())
         Task {
             try? await WorkflowPluginInitializerKt.registerWorkflowPlugins()
             try? await ExportPluginInitializerKt.registerExportPlugins()
