@@ -22,9 +22,9 @@ import com.riox432.civitdeck.domain.repository.AppVersionProvider
 import com.riox432.civitdeck.domain.usecase.CleanupBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
+import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
-import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.widget.WidgetRefreshWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

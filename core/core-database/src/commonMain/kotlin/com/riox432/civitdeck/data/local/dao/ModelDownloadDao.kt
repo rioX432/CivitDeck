@@ -7,6 +7,7 @@ import com.riox432.civitdeck.data.local.entity.ModelDownloadEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
+@Suppress("TooManyFunctions")
 interface ModelDownloadDao {
     @Insert
     suspend fun insert(entity: ModelDownloadEntity): Long

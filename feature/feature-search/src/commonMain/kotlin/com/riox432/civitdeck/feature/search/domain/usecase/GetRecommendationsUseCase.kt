@@ -242,6 +242,7 @@ class GetRecommendationsUseCase(
         )
     }
 
+    @Suppress("LongParameterList")
     private suspend fun fetchSection(
         title: String,
         reason: String,

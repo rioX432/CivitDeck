@@ -4,6 +4,7 @@ import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.ModelDownload
 import kotlinx.coroutines.flow.Flow
 
+@Suppress("TooManyFunctions")
 interface ModelDownloadRepository {
     suspend fun enqueueDownload(download: ModelDownload): Long
     fun observeAllDownloads(): Flow<List<ModelDownload>>

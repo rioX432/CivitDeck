@@ -89,7 +89,6 @@ struct ExternalServerGalleryView: View {
             }
         }
         .task {
-            
             viewModel.onRetry()
         }
     }

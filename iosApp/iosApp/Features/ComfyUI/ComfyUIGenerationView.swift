@@ -356,7 +356,13 @@ private struct LoraRow: View {
                 Slider(
                     value: Binding(
                         get: { Double(lora.strengthModel) },
-                        set: { viewModel.onLoraStrengthChanged(name: lora.name, strengthModel: Float($0), strengthClip: Float($0)) }
+                        set: { newValue in
+                            viewModel.onLoraStrengthChanged(
+                                name: lora.name,
+                                strengthModel: Float(newValue),
+                                strengthClip: Float(newValue),
+                            )
+                        },
                     ),
                     in: 0...2
                 )
