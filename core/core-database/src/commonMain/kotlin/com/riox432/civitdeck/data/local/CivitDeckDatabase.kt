@@ -18,6 +18,7 @@ import com.riox432.civitdeck.data.local.dao.FollowedCreatorDao
 import com.riox432.civitdeck.data.local.dao.HiddenModelDao
 import com.riox432.civitdeck.data.local.dao.LocalModelFileDao
 import com.riox432.civitdeck.data.local.dao.ModelDownloadDao
+import com.riox432.civitdeck.data.local.dao.ModelEmbeddingDao
 import com.riox432.civitdeck.data.local.dao.ModelNoteDao
 import com.riox432.civitdeck.data.local.dao.ModelUpdateNotificationDao
 import com.riox432.civitdeck.data.local.dao.ModelVersionCheckpointDao
@@ -47,6 +48,7 @@ import com.riox432.civitdeck.data.local.entity.ImageTagEntity
 import com.riox432.civitdeck.data.local.entity.LocalModelFileEntity
 import com.riox432.civitdeck.data.local.entity.ModelDirectoryEntity
 import com.riox432.civitdeck.data.local.entity.ModelDownloadEntity
+import com.riox432.civitdeck.data.local.entity.ModelEmbeddingEntity
 import com.riox432.civitdeck.data.local.entity.ModelNoteEntity
 import com.riox432.civitdeck.data.local.entity.ModelUpdateNotificationEntity
 import com.riox432.civitdeck.data.local.entity.ModelVersionCheckpointEntity
@@ -94,6 +96,7 @@ import com.riox432.civitdeck.data.local.migrations.MIGRATION_39_40
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_3_4
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_40_41
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_41_42
+import com.riox432.civitdeck.data.local.migrations.MIGRATION_42_43
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_4_5
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_5_6
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_6_7
@@ -135,8 +138,9 @@ import kotlinx.coroutines.IO
         ShareHashtagEntity::class,
         ModelUpdateNotificationEntity::class,
         QualityScoreCacheEntity::class,
+        ModelEmbeddingEntity::class,
     ],
-    version = 42,
+    version = 43,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -165,6 +169,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun shareHashtagDao(): ShareHashtagDao
     abstract fun modelUpdateNotificationDao(): ModelUpdateNotificationDao
     abstract fun qualityScoreCacheDao(): QualityScoreCacheDao
+    abstract fun modelEmbeddingDao(): ModelEmbeddingDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -214,6 +219,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_39_40,
             MIGRATION_40_41,
             MIGRATION_41_42,
+            MIGRATION_42_43,
         )
         .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
         .addCallback(defaultCollectionCallback)

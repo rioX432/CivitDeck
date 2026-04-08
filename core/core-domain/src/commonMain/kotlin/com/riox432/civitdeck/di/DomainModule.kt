@@ -27,6 +27,7 @@ val domainModule = module {
         shareDomainModule,
         updateDomainModule,
         similarityDomainModule,
+        embeddingDomainModule,
         collectionsDomainModule,
         galleryDomainModule,
         promptsDomainModule,
