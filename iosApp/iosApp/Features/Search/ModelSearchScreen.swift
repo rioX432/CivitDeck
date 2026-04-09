@@ -61,6 +61,7 @@ struct ModelSearchScreen: View {
                 HStack {
                     Spacer()
                     VStack(spacing: Spacing.sm) {
+                        if FeatureFlags.similaritySearch { AiSearchFab(visible: headerVisible) }
                         QRScannerFab(visible: headerVisible)
                         DiscoverFab(visible: headerVisible)
                         filterFab
@@ -93,11 +94,12 @@ struct ModelSearchScreen: View {
                 ModelCompareScreen(leftModelId: dest.leftModelId, rightModelId: dest.rightModelId)
             }
             .navigationDestination(for: DiscoveryDestination.self) { _ in
-                SwipeDiscoveryView(onModelDetail: { modelId in navigationPath.append(modelId) })
+                SwipeDiscoveryView(onModelDetail: { navigationPath.append($0) })
             }
             .navigationDestination(for: QRScannerDestination.self) { _ in
                 QRScannerView { navigationPath.removeLast(); navigationPath.append($0) }
             }
+            .navigationDestination(for: TextSearchDestination.self) { _ in TextSearchView() }
             .task { await viewModel.observeSearchHistory() }
             .task { await viewModel.observeGridColumns() }
             .task { await viewModel.observeOwnedHashes() }

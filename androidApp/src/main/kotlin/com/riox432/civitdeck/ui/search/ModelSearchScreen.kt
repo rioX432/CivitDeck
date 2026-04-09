@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Style
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
@@ -44,6 +45,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.BuildConfig
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
@@ -60,6 +62,7 @@ data class SearchScreenCallbacks(
     val onDiscoverClick: () -> Unit = {},
     val onCompareModel: (Long, String) -> Unit = { _, _ -> },
     val onScanQRCode: () -> Unit = {},
+    val onTextSearch: () -> Unit = {},
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -186,6 +189,16 @@ private fun SearchScreenBody(
             onClearHistory = viewModel::clearSearchHistory,
         )
 
+        if (BuildConfig.FEATURE_SIMILARITY_SEARCH) {
+            AiSearchFab(
+                visible = isFabVisible,
+                onClick = callbacks.onTextSearch,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(bottom = AI_SEARCH_FAB_BOTTOM_PADDING, end = Spacing.lg),
+            )
+        }
+
         QRScannerFab(
             visible = isFabVisible,
             onClick = callbacks.onScanQRCode,
@@ -298,6 +311,36 @@ private fun SaveFilterDialog(
 }
 
 @Composable
+private fun AiSearchFab(
+    visible: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = slideInVertically(
+            initialOffsetY = { it },
+            animationSpec = tween(Duration.fast, easing = Easing.standard),
+        ) + fadeIn(animationSpec = tween(Duration.fast, easing = Easing.standard)),
+        exit = slideOutVertically(
+            targetOffsetY = { it },
+            animationSpec = tween(Duration.fast, easing = Easing.standard),
+        ) + fadeOut(animationSpec = tween(Duration.fast, easing = Easing.standard)),
+    ) {
+        SmallFloatingActionButton(
+            onClick = onClick,
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        ) {
+            Icon(
+                Icons.Outlined.AutoAwesome,
+                contentDescription = "AI Search",
+            )
+        }
+    }
+}
+
+@Composable
 private fun DiscoverFab(
     visible: Boolean,
     onClick: () -> Unit,
@@ -396,3 +439,4 @@ private fun FilterFab(
 
 private val DISCOVER_FAB_BOTTOM_PADDING = 80.dp
 private val QR_FAB_BOTTOM_PADDING = 136.dp
+private val AI_SEARCH_FAB_BOTTOM_PADDING = 192.dp
