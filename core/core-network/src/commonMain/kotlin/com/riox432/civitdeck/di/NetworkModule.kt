@@ -3,6 +3,8 @@ package com.riox432.civitdeck.di
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.api.CivitAiApi
 import com.riox432.civitdeck.data.api.GitHubReleaseApi
+import com.riox432.civitdeck.data.api.ThumbnailDownloaderImpl
+import com.riox432.civitdeck.domain.repository.ThumbnailDownloader
 import com.riox432.civitdeck.data.api.civitailink.CivitaiLinkApi
 import com.riox432.civitdeck.data.api.comfyhub.ComfyHubApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
@@ -36,6 +38,9 @@ val networkModule = module {
             encodeDefaults = true
         }
     }
+
+    // Thumbnail downloader (used by background embedding indexer)
+    single<ThumbnailDownloader> { ThumbnailDownloaderImpl(get()) }
 
     // GitHub Releases
     single { GitHubReleaseApi(get()) }

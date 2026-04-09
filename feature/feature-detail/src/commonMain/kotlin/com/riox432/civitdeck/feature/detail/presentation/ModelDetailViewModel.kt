@@ -17,6 +17,7 @@ import com.riox432.civitdeck.domain.model.RatingTotals
 import com.riox432.civitdeck.domain.model.ResourceReview
 import com.riox432.civitdeck.domain.model.ReviewSortOrder
 import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
+import com.riox432.civitdeck.domain.usecase.EmbedOnBrowseUseCase
 import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
@@ -103,6 +104,7 @@ class ModelDetailViewModel(
     private val getModelReviewsUseCase: GetModelReviewsUseCase,
     private val getRatingTotalsUseCase: GetRatingTotalsUseCase,
     private val submitReviewUseCase: SubmitReviewUseCase,
+    private val embedOnBrowseUseCase: EmbedOnBrowseUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelDetailUiState())
@@ -144,6 +146,7 @@ class ModelDetailViewModel(
             toggleFavoriteUseCase(model)
             trackModelViewUseCase.trackInteraction(modelId, InteractionType.FAVORITE)
         }
+        triggerBackgroundEmbed(model)
     }
 
     fun retry() {
@@ -264,6 +267,7 @@ class ModelDetailViewModel(
                     _uiState.update { it.copy(model = model, isLoading = false) }
                     enrichCurrentVersion()
                     trackModelView(model)
+                    triggerBackgroundEmbed(model)
                     viewStartTimeMs = currentTimeMillis()
                 }
                 .onFailure { e ->
@@ -426,6 +430,19 @@ class ModelDetailViewModel(
         viewModelScope.launch {
             suspendRunCatching { block() }
                 .onFailure { e -> Logger.w(TAG, "$operationName failed: ${e.message}") }
+        }
+    }
+
+    /**
+     * Fire-and-forget background embed of the model's first thumbnail.
+     * Silent on failure — never blocks or surfaces errors to the user.
+     */
+    private fun triggerBackgroundEmbed(model: Model) {
+        val url = model.modelVersions.firstOrNull()
+            ?.images?.firstOrNull()?.url ?: return
+        viewModelScope.launch {
+            suspendRunCatching { embedOnBrowseUseCase(model.id, url) }
+                .onFailure { e -> Logger.d(TAG, "Background embed skipped: ${e.message}") }
         }
     }
 
