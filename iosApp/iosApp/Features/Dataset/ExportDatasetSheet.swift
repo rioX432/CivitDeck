@@ -163,6 +163,7 @@ struct ExportProgressOverlay: View {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.civitIconExtraLarge)
                     .foregroundColor(theme.primary)
+                    .accessibilityHidden(true)
                 Text("Export Complete").font(.civitTitleMedium)
                 Text(fileName).font(.civitBodySmall).foregroundColor(.civitOnSurfaceVariant)
                 if warnings > 0 {
@@ -195,6 +196,7 @@ struct ExportProgressOverlay: View {
                 Image(systemName: "xmark.circle.fill")
                     .font(.civitIconExtraLarge)
                     .foregroundColor(.civitError)
+                    .accessibilityHidden(true)
                 Text("Export Failed").font(.civitTitleMedium)
                 Text(message).font(.civitBodySmall).foregroundColor(.civitOnSurfaceVariant)
                 Button("OK") { onDismiss() }.buttonStyle(.borderedProminent)

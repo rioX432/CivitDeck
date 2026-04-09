@@ -66,6 +66,7 @@ struct CreateHubView: View {
                 .font(.title3)
                 .foregroundColor(.civitPrimary)
                 .frame(width: 32, height: 32)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(title)

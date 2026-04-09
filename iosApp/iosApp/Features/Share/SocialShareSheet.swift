@@ -109,6 +109,7 @@ struct SocialShareSheet: View {
                     } label: {
                         Image(systemName: "xmark")
                             .font(.civitLabelXSmall)
+                            .accessibilityLabel("Remove hashtag")
                     }
                 }
             }
@@ -131,6 +132,7 @@ struct SocialShareSheet: View {
             Button { addTag() } label: {
                 Image(systemName: "plus")
                     .fontWeight(.semibold)
+                    .accessibilityLabel("Add tag")
             }
             .disabled(newTagInput.trimmingCharacters(in: .whitespaces).isEmpty)
         }

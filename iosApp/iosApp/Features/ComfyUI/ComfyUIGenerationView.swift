@@ -37,6 +37,7 @@ struct ComfyUIGenerationView: View {
                     showTemplatePicker = true
                 } label: {
                     Image(systemName: "folder")
+                        .accessibilityLabel("Templates")
                 }
             }
         }

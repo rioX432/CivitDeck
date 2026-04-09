@@ -192,6 +192,7 @@ private struct CollectionRow: View {
             .overlay {
                 Image(systemName: "folder")
                     .foregroundColor(.civitOnSurfaceVariant)
+                    .accessibilityHidden(true)
             }
     }
 }

@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.riox432.civitdeck.R
+import com.riox432.civitdeck.data.api.CivitAiUrls
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import java.io.File
@@ -50,7 +51,7 @@ fun QRCodeSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val context = LocalContext.current
-    val civitaiUrl = "https://civitai.com/models/$modelId"
+    val civitaiUrl = CivitAiUrls.modelUrl(modelId)
     val qrBitmap = remember(civitaiUrl) { QRCodeGenerator.generate(civitaiUrl) }
 
     ModalBottomSheet(

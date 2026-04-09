@@ -243,6 +243,7 @@ struct DatasetDetailView: View {
                     Image(systemName: "checkmark")
                         .font(.caption.bold())
                         .foregroundColor(theme.onPrimary)
+                        .accessibilityHidden(true)
                 }
             }
             .padding(Spacing.sm)

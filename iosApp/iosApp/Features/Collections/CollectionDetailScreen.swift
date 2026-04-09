@@ -219,6 +219,7 @@ struct CollectionDetailScreen: View {
             Image(systemName: "tray")
                 .font(.largeTitle)
                 .foregroundColor(.civitOnSurfaceVariant)
+                .accessibilityHidden(true)
             Text("No models in this collection")
                 .font(.civitTitleMedium)
                 .foregroundColor(.civitOnSurfaceVariant)
@@ -288,6 +289,7 @@ private struct CollectionModelCard: View {
                     Image(systemName: "checkmark")
                         .font(.caption.bold())
                         .foregroundColor(theme.onPrimary)
+                        .accessibilityHidden(true)
                 }
             }
             .padding(Spacing.sm)

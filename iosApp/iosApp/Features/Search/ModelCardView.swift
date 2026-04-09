@@ -84,8 +84,8 @@ struct SourceBadgeView: View {
 
     private var badgeColor: Color {
         switch source {
-        case .huggingFace: return Color(red: 1.0, green: 0.616, blue: 0.0)
-        case .tensorArt: return Color(red: 0.612, green: 0.153, blue: 0.69)
+        case .huggingFace: return .huggingFaceBadge
+        case .tensorArt: return .tensorArtBadge
         default: return .clear
         }
     }

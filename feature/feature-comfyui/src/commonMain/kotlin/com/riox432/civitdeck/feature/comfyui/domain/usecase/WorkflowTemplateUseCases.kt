@@ -11,10 +11,13 @@ import com.riox432.civitdeck.domain.model.WorkflowTemplateCategory
 import com.riox432.civitdeck.domain.model.WorkflowTemplateType
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
 import com.riox432.civitdeck.domain.util.currentTimeMillis
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+
+private const val TAG = "WorkflowTemplate"
 
 private val templateJson = Json {
     ignoreUnknownKeys = true
@@ -115,12 +118,14 @@ private fun SavedPrompt.toWorkflowTemplate(): WorkflowTemplate? {
     val vars = try {
         templateJson.decodeFromString<List<TemplateVariableDto>>(templateVariables ?: "[]")
             .map { it.toModel() }
-    } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+    } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+        Logger.w(TAG, "Failed to parse template variables: ${e.message}")
         emptyList()
     }
     val metadata = try {
         templateJson.decodeFromString<TemplateMetadataDto>(templateMetadata ?: "{}")
-    } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+    } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+        Logger.w(TAG, "Failed to parse template metadata: ${e.message}")
         TemplateMetadataDto()
     }
     return WorkflowTemplate(

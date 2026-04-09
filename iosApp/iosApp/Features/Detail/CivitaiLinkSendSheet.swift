@@ -63,6 +63,7 @@ struct CivitaiLinkSendSheet: View {
     private var notConnectedView: some View {
         VStack(spacing: Spacing.md) {
             Image(systemName: "link.circle").font(.civitIconExtraLarge)
+                .accessibilityHidden(true)
             Text("Civitai Link not configured").font(.civitTitleMedium)
             Text("Set up Civitai Link in Settings \u{2192} Advanced to send models to your PC")
                 .font(.civitBodySmall)
@@ -80,7 +81,7 @@ struct CivitaiLinkSendSheet: View {
                         versionId: version.id,
                         modelId: model.id,
                         versionName: version.name,
-                        downloadUrl: "https://civitai.com/api/download/models/\(version.id)"
+                        downloadUrl: CivitAiUrls.downloadUrl(versionId: version.id)
                     )
                     dismiss()
                 }

@@ -146,8 +146,11 @@ struct BatchTagEditorView: View {
                     Image(systemName: "checkmark")
                         .font(.caption.bold())
                         .foregroundColor(theme.onPrimary)
+                        .accessibilityHidden(true)
                 }
             }
+            .frame(minWidth: 44, minHeight: 44)
+            .contentShape(Rectangle())
             .padding(Spacing.sm)
     }
 

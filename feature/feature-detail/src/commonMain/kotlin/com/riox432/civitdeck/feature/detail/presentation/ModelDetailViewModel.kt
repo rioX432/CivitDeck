@@ -17,11 +17,11 @@ import com.riox432.civitdeck.domain.model.RatingTotals
 import com.riox432.civitdeck.domain.model.ResourceReview
 import com.riox432.civitdeck.domain.model.ReviewSortOrder
 import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
-import com.riox432.civitdeck.domain.usecase.EmbedOnBrowseUseCase
 import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
+import com.riox432.civitdeck.domain.usecase.EmbedOnBrowseUseCase
 import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase

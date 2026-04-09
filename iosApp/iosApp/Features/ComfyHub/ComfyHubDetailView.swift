@@ -128,6 +128,7 @@ struct ComfyHubDetailView: View {
                     Text("Importing...")
                 } else {
                     Image(systemName: "arrow.down.circle")
+                        .accessibilityHidden(true)
                     Text("Import to ComfyUI")
                 }
             }

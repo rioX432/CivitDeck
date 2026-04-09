@@ -202,12 +202,14 @@ struct ModelSearchScreen: View {
                             showSavedFiltersSheet = true
                         } label: {
                             Image(systemName: "bookmark.fill")
+                                .accessibilityLabel("Saved filters")
                         }
                         Button {
                             saveFilterName = ""
                             showSaveFilterAlert = true
                         } label: {
                             Image(systemName: "bookmark.badge.plus")
+                                .accessibilityLabel("Save current filter")
                         }
                         Button("Done") {
                             showFilterSheet = false
@@ -256,6 +258,7 @@ struct ModelSearchScreen: View {
                                 .padding(.leading, Spacing.lg)
                                 .padding(.vertical, Spacing.sm)
                                 .padding(.trailing, Spacing.sm)
+                                .accessibilityLabel("Remove from history")
                         }
                         Button {
                             viewModel.onHistoryItemClick(item)
@@ -453,6 +456,7 @@ extension ModelSearchScreen { // MARK: - Filter FAB
                 Image(systemName: "line.3.horizontal.decrease")
                     .font(.title2)
                     .foregroundColor(theme.primary)
+                    .accessibilityLabel("Filters")
                     .frame(width: 56, height: 56)
                     .background(Color.civitSurfaceContainerHigh)
                     .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))

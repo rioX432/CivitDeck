@@ -172,6 +172,7 @@ struct SubmitReviewSheet: View {
                                 SwiftUI.Image(systemName: i <= rating ? "star.fill" : "star")
                                     .font(.title2)
                                     .foregroundColor(i <= rating ? theme.primary : .civitOnSurfaceVariant.opacity(0.3))
+                                    .accessibilityLabel("\(i) star\(i == 1 ? "" : "s")")
                             }
                             .buttonStyle(.plain)
                         }

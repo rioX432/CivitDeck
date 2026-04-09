@@ -29,6 +29,7 @@ struct NotificationCenterView: View {
                         viewModel.markAllRead()
                     } label: {
                         Image(systemName: "checkmark.circle")
+                            .accessibilityLabel("Mark all as read")
                     }
                 }
             }
