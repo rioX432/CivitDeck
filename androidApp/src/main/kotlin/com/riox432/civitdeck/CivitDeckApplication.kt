@@ -116,7 +116,7 @@ val androidModule = module {
     viewModel { params ->
         ModelDetailViewModel(
             params.get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
         )
     }
     viewModel { params -> DuplicateReviewViewModel(params.get(), get(), get()) }

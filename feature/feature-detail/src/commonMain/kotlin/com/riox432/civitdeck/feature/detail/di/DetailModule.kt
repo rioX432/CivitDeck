@@ -8,7 +8,7 @@ val detailModule = module {
     viewModel { params ->
         ModelDetailViewModel(
             params.get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
         )
     }
 }

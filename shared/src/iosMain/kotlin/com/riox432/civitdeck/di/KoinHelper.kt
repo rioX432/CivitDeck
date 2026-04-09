@@ -35,6 +35,7 @@ import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.DetectDuplicatesUseCase
 import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
 import com.riox432.civitdeck.domain.usecase.EmbedImageUseCase
+import com.riox432.civitdeck.domain.usecase.EmbedOnBrowseUseCase
 import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.EvictCacheUseCase
@@ -276,6 +277,7 @@ object KoinHelper {
     // region Image Embedding (#700)
     fun getImageEmbeddingModel(): ImageEmbeddingModel = getKoin().get()
     fun getEmbedImageUseCase(): EmbedImageUseCase = getKoin().get()
+    fun getEmbedOnBrowseUseCase(): EmbedOnBrowseUseCase = getKoin().get()
     fun getFindSimilarModelsByEmbeddingUseCase(): FindSimilarModelsByEmbeddingUseCase = getKoin().get()
     fun getModelEmbeddingRepository(): ModelEmbeddingRepository = getKoin().get()
 
