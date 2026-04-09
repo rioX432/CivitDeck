@@ -13,6 +13,8 @@ android {
         versionCode = 6
         versionName = "2.1.0"
 
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
         // Gate embedding-based similarity search UI. Default off until SigLIP-2 embeddings
         // are being produced on-device (parent #602, phases C/D).
         buildConfigField("boolean", "FEATURE_SIMILARITY_SEARCH", "false")
@@ -57,6 +59,11 @@ dependencies {
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
+
+    androidTestImplementation(libs.kotlin.test)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
 
     implementation(project(":shared"))
     implementation(project(":core:core-ui"))
