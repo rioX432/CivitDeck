@@ -3,6 +3,7 @@ package com.riox432.civitdeck.presentation.comfyhub
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.ComfyHubWorkflow
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.GetComfyHubWorkflowDetailUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportComfyHubWorkflowUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,13 +18,13 @@ import kotlinx.serialization.json.jsonPrimitive
 
 data class ComfyHubDetailUiState(
     val workflow: ComfyHubWorkflow? = null,
-    val isLoading: Boolean = true,
-    val error: String? = null,
+    override val isLoading: Boolean = true,
+    override val error: String? = null,
     val isImporting: Boolean = false,
     val importSuccess: Boolean = false,
     val importError: String? = null,
     val nodeNames: List<String> = emptyList(),
-)
+) : UiLoadingState
 
 class ComfyHubDetailViewModel(
     private val workflowId: String,

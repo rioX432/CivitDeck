@@ -14,6 +14,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveDatasetCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveShareHashtagsUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleShareHashtagUseCase
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
 import com.riox432.civitdeck.util.Logger
@@ -32,14 +33,14 @@ enum class HistorySortOrder { Newest, Oldest }
 
 data class ComfyUIHistoryUiState(
     val images: List<ComfyUIGeneratedImage> = emptyList(),
-    val isLoading: Boolean = false,
-    val error: String? = null,
+    override val isLoading: Boolean = false,
+    override val error: String? = null,
     val selectedSort: HistorySortOrder = HistorySortOrder.Newest,
     val imageSaveSuccess: Boolean? = null,
     val showDatasetPicker: Boolean = false,
     val pendingImageForDataset: ComfyUIGeneratedImage? = null,
     val addToDatasetSuccess: Boolean? = null,
-)
+) : UiLoadingState
 
 class ComfyUIHistoryViewModel(
     private val fetchHistory: FetchComfyUIHistoryUseCase,

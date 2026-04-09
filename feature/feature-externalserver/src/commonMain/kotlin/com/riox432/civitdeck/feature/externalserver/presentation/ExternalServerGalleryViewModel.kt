@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.externalserver.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.feature.externalserver.domain.model.ExternalServerImageFilters
 import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationChoice
@@ -32,10 +33,10 @@ data class ExternalServerGalleryUiState(
     val filters: ExternalServerImageFilters = ExternalServerImageFilters(),
     val currentPage: Int = 1,
     val totalPages: Int = 1,
-    val isLoading: Boolean = false,
+    override val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
     val isRefreshing: Boolean = false,
-    val error: String? = null,
+    override val error: String? = null,
     // Capabilities
     val capabilities: ServerCapabilities = ServerCapabilities(),
     val supportsFilters: Boolean = false,
@@ -57,7 +58,7 @@ data class ExternalServerGalleryUiState(
     val selectedCloudKeys: Set<String> = emptySet(),
     val isDeleting: Boolean = false,
     val deleteError: String? = null,
-)
+) : UiLoadingState
 
 private const val TAG = "ExternalServerGalleryViewModel"
 private const val PAGE_SIZE = 96

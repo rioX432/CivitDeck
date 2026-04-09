@@ -8,6 +8,7 @@ import com.riox432.civitdeck.domain.usecase.IsFollowingCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.UnfollowCreatorUseCase
 import com.riox432.civitdeck.domain.util.LoadResult
 import com.riox432.civitdeck.domain.util.PaginatedLoader
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,14 +19,14 @@ import kotlinx.coroutines.launch
 data class CreatorProfileUiState(
     val username: String = "",
     val models: List<Model> = emptyList(),
-    val isLoading: Boolean = false,
+    override val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
     val isRefreshing: Boolean = false,
     val isFollowing: Boolean = false,
-    val error: String? = null,
+    override val error: String? = null,
     val nextCursor: String? = null,
     val hasMore: Boolean = true,
-)
+) : UiLoadingState
 
 class CreatorProfileViewModel(
     private val username: String,

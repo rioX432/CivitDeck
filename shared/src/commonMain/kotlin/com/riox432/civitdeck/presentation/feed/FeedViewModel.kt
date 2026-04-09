@@ -6,6 +6,7 @@ import com.riox432.civitdeck.domain.model.FeedItem
 import com.riox432.civitdeck.domain.usecase.GetCreatorFeedUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadFeedCountUseCase
 import com.riox432.civitdeck.domain.usecase.MarkFeedReadUseCase
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,11 +15,11 @@ import kotlinx.coroutines.launch
 
 data class FeedUiState(
     val feedItems: List<FeedItem> = emptyList(),
-    val isLoading: Boolean = true,
+    override val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
-    val error: String? = null,
+    override val error: String? = null,
     val unreadCount: Int = 0,
-)
+) : UiLoadingState
 
 class FeedViewModel(
     private val getCreatorFeedUseCase: GetCreatorFeedUseCase,

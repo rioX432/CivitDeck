@@ -7,6 +7,7 @@ import com.riox432.civitdeck.domain.model.TemplateVariableType
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
 import com.riox432.civitdeck.domain.model.WorkflowTemplateCategory
 import com.riox432.civitdeck.domain.model.WorkflowTemplateType
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExportWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.GetWorkflowTemplatesUseCase
@@ -22,14 +23,14 @@ import kotlinx.coroutines.launch
 data class WorkflowTemplateUiState(
     val templates: List<WorkflowTemplate> = emptyList(),
     val filteredTemplates: List<WorkflowTemplate> = emptyList(),
-    val isLoading: Boolean = true,
-    val error: String? = null,
+    override val isLoading: Boolean = true,
+    override val error: String? = null,
     val exportedJson: String? = null,
     val importError: String? = null,
     val searchQuery: String = "",
     val selectedCategory: WorkflowTemplateCategory? = null,
     val selectedType: WorkflowTemplateType? = null,
-)
+) : UiLoadingState
 
 @Suppress("TooManyFunctions")
 class WorkflowTemplateViewModel(

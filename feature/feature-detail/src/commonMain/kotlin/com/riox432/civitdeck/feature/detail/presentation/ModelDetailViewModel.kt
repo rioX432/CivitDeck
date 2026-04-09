@@ -112,6 +112,15 @@ class ModelDetailViewModel(
     private val enrichedVersionIds = MutableStateFlow<Set<Long>>(emptySet())
     private var viewStartTimeMs: Long = 0L
 
+    private val reviewDelegate = DetailReviewDelegate(
+        modelId = modelId,
+        scope = viewModelScope,
+        uiState = _uiState,
+        getModelReviewsUseCase = getModelReviewsUseCase,
+        getRatingTotalsUseCase = getRatingTotalsUseCase,
+        submitReviewUseCase = submitReviewUseCase,
+    )
+
     private val _downloadEnqueuedEvent = MutableSharedFlow<Long>(extraBufferCapacity = 1)
     val downloadEnqueuedEvent: SharedFlow<Long> = _downloadEnqueuedEvent
 
@@ -127,7 +136,7 @@ class ModelDetailViewModel(
         loadModel()
         observeFavorite()
         startObservers()
-        loadReviews()
+        reviewDelegate.loadReviews()
     }
 
     fun onVersionSelected(index: Int) {
@@ -221,39 +230,16 @@ class ModelDetailViewModel(
 
     // region Reviews
 
-    fun onReviewSortChanged(order: ReviewSortOrder) {
-        _uiState.update { it.copy(reviewSortOrder = order) }
-        loadReviews()
-    }
+    fun onReviewSortChanged(order: ReviewSortOrder) = reviewDelegate.onReviewSortChanged(order)
 
-    @Suppress("LongParameterList")
     fun submitReview(
         modelVersionId: Long,
         rating: Int,
         recommended: Boolean,
         details: String?,
-    ) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isSubmittingReview = true) }
-            suspendRunCatching {
-                submitReviewUseCase(modelId, modelVersionId, rating, recommended, details)
-            }
-                .onSuccess {
-                    _uiState.update {
-                        it.copy(isSubmittingReview = false, reviewSubmitSuccess = true)
-                    }
-                    loadReviews()
-                }
-                .onFailure { e ->
-                    Logger.w(TAG, "Submit review failed: ${e.message}")
-                    _uiState.update { it.copy(isSubmittingReview = false) }
-                }
-        }
-    }
+    ) = reviewDelegate.submitReview(modelVersionId, rating, recommended, details)
 
-    fun dismissReviewSuccess() {
-        _uiState.update { it.copy(reviewSubmitSuccess = false) }
-    }
+    fun dismissReviewSuccess() = reviewDelegate.dismissReviewSuccess()
 
     // endregion
 
@@ -378,44 +364,6 @@ class ModelDetailViewModel(
                 _uiState.update { it.copy(downloads = downloads) }
             }
         }
-    }
-
-    // endregion
-
-    // region Private — Reviews
-
-    private fun loadReviews() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isReviewsLoading = true, reviewsError = null) }
-            suspendRunCatching {
-                val totals = getRatingTotalsUseCase(modelId)
-                val page = getModelReviewsUseCase(modelId)
-                totals to sortReviews(page.items, _uiState.value.reviewSortOrder)
-            }
-                .onSuccess { (totals, sorted) ->
-                    _uiState.update {
-                        it.copy(
-                            reviews = sorted,
-                            ratingTotals = totals,
-                            isReviewsLoading = false,
-                        )
-                    }
-                }
-                .onFailure { e ->
-                    _uiState.update {
-                        it.copy(isReviewsLoading = false, reviewsError = e.message)
-                    }
-                }
-        }
-    }
-
-    private fun sortReviews(
-        reviews: List<ResourceReview>,
-        order: ReviewSortOrder,
-    ): List<ResourceReview> = when (order) {
-        ReviewSortOrder.Newest -> reviews.sortedByDescending { it.createdAt }
-        ReviewSortOrder.HighestRated -> reviews.sortedByDescending { it.rating }
-        ReviewSortOrder.LowestRated -> reviews.sortedBy { it.rating }
     }
 
     // endregion

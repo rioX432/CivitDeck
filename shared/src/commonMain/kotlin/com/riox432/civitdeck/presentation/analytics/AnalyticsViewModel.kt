@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.CategoryStat
 import com.riox432.civitdeck.domain.model.DailyViewCount
 import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.domain.util.suspendRunCatching
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class AnalyticsUiState(
-    val isLoading: Boolean = true,
+    override val isLoading: Boolean = true,
     val totalViews: Int = 0,
     val totalFavorites: Int = 0,
     val totalSearches: Int = 0,
@@ -21,8 +22,8 @@ data class AnalyticsUiState(
     val topModelTypes: List<CategoryStat> = emptyList(),
     val topCreators: List<CategoryStat> = emptyList(),
     val topSearchQueries: List<CategoryStat> = emptyList(),
-    val error: String? = null,
-)
+    override val error: String? = null,
+) : UiLoadingState
 
 class AnalyticsViewModel(
     private val getBrowsingStatsUseCase: GetBrowsingStatsUseCase,
