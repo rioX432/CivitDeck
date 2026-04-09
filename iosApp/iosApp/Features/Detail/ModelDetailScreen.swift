@@ -61,6 +61,16 @@ struct ModelDetailScreen: View {
                         .accessibilityLabel("QR code")
                 }
             }
+            if FeatureFlags.similaritySearch {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink {
+                        SimilarModelsView(modelId: viewModel.modelId)
+                    } label: {
+                        Image(systemName: "sparkle.magnifyingglass")
+                            .accessibilityLabel("Find similar models")
+                    }
+                }
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     showShareSheet = true
@@ -276,14 +286,6 @@ struct ModelDetailScreen: View {
                     showLinkSheet = true
                 } label: {
                     Text("Send to PC")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-
-                NavigationLink {
-                    SimilarModelsView(modelId: viewModel.modelId)
-                } label: {
-                    Text("Find Similar")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)

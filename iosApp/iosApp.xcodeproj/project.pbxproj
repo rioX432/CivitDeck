@@ -13,6 +13,7 @@
 		CDML01012800001000CD001 /* SigLIP2Embedder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDML01002800001000CD001 /* SigLIP2Embedder.swift */; };
 		CD0001012D000001000CD001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0001002D000001000CD001 /* ContentView.swift */; };
 		CDFF01012DFFA101000CD001 /* SharedTypeAliases.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFF01002DFFA100000CD001 /* SharedTypeAliases.swift */; };
+		CDFF07021DFFA702000CD001 /* FeatureFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFF07001DFFA700000CD001 /* FeatureFlags.swift */; };
 		CDFF01032DFFA103000CD001 /* SharedServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFF01022DFFA102000CD001 /* SharedServices.swift */; };
 		CD0002012D000002000CD001 /* ModelSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002002D000002000CD001 /* ModelSearchViewModel.swift */; };
 		CD0002032D000002000CD001 /* ModelSearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0002022D000002000CD001 /* ModelSearchScreen.swift */; };
@@ -184,6 +185,7 @@
 		AB3632DC29227652001CCB65 /* Config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		CD0001002D000001000CD001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		CDFF01002DFFA100000CD001 /* SharedTypeAliases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedTypeAliases.swift; sourceTree = "<group>"; };
+		CDFF07001DFFA700000CD001 /* FeatureFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlags.swift; sourceTree = "<group>"; };
 		CDFF01022DFFA102000CD001 /* SharedServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedServices.swift; sourceTree = "<group>"; };
 		CD0002002D000002000CD001 /* ModelSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSearchViewModel.swift; sourceTree = "<group>"; };
 		CD0002022D000002000CD001 /* ModelSearchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSearchScreen.swift; sourceTree = "<group>"; };
@@ -401,6 +403,7 @@
 				2152FB032600AC8F00CF470E /* iOSApp.swift */,
 				CD0001002D000001000CD001 /* ContentView.swift */,
 				CDFF01002DFFA100000CD001 /* SharedTypeAliases.swift */,
+				CDFF07001DFFA700000CD001 /* FeatureFlags.swift */,
 			CDFF01022DFFA102000CD001 /* SharedServices.swift */,
 				CD0006082D000006000CD001 /* DesignSystem */,
 				CD0003002D000003000CD001 /* Features */,
@@ -965,6 +968,7 @@
 				CDML01012800001000CD001 /* SigLIP2Embedder.swift in Sources */,
 				CD0001012D000001000CD001 /* ContentView.swift in Sources */,
 				CDFF01012DFFA101000CD001 /* SharedTypeAliases.swift in Sources */,
+				CDFF07021DFFA702000CD001 /* FeatureFlags.swift in Sources */,
 			CDFF01032DFFA103000CD001 /* SharedServices.swift in Sources */,
 				CD0002012D000002000CD001 /* ModelSearchViewModel.swift in Sources */,
 				CD0002032D000002000CD001 /* ModelSearchScreen.swift in Sources */,
