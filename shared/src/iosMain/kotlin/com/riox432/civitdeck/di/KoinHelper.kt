@@ -648,6 +648,7 @@ object KoinHelper {
         com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel = getKoin().get()
     fun createSimilarModelsViewModel(modelId: Long): com.riox432.civitdeck.presentation.similar.SimilarModelsViewModel =
         getKoin().get { org.koin.core.parameter.parametersOf(modelId) }
+    fun createTextSearchViewModel(): com.riox432.civitdeck.presentation.textsearch.TextSearchViewModel = getKoin().get()
     fun createShareViewModel(): com.riox432.civitdeck.presentation.share.ShareViewModel = getKoin().get()
     fun createGestureTutorialViewModel():
         com.riox432.civitdeck.presentation.tutorial.GestureTutorialViewModel = getKoin().get()

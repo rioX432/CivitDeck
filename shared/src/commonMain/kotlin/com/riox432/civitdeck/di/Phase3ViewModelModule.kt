@@ -42,6 +42,7 @@ import com.riox432.civitdeck.domain.usecase.RestoreBackupUseCase
 import com.riox432.civitdeck.domain.usecase.ResumeDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.SetAutoUpdateCheckUseCase
 import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
+import com.riox432.civitdeck.domain.usecase.TextSearchUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.UninstallPluginUseCase
 import com.riox432.civitdeck.domain.usecase.UpdatePluginConfigUseCase
@@ -57,6 +58,7 @@ import com.riox432.civitdeck.presentation.notificationcenter.NotificationCenterV
 import com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel
 import com.riox432.civitdeck.presentation.share.ShareViewModel
 import com.riox432.civitdeck.presentation.similar.SimilarModelsViewModel
+import com.riox432.civitdeck.presentation.textsearch.TextSearchViewModel
 import com.riox432.civitdeck.presentation.tutorial.GestureTutorialViewModel
 import com.riox432.civitdeck.presentation.update.UpdateViewModel
 import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
@@ -153,6 +155,12 @@ val phase3ViewModelModule = module {
             observeDatasetImagesUseCase = get<ObserveDatasetImagesUseCase>(),
             batchEditTagsUseCase = get<BatchEditTagsUseCase>(),
             getTagSuggestionsUseCase = get<GetTagSuggestionsUseCase>(),
+        )
+    }
+    viewModel {
+        TextSearchViewModel(
+            textSearchUseCase = get<TextSearchUseCase>(),
+            getModelDetail = get<GetModelDetailUseCase>(),
         )
     }
     viewModel {

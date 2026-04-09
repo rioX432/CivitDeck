@@ -39,6 +39,9 @@
 		CDFE02012FAB0002000CD001 /* FeedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFE02002FAB0002000CD001 /* FeedViewModel.swift */; };
 		CDSM01013100001000CD001 /* SimilarModelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSM01003100001000CD001 /* SimilarModelsView.swift */; };
 		CDSM02013100002000CD001 /* SimilarModelsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDSM02003100002000CD001 /* SimilarModelsViewModel.swift */; };
+		CDTS01013400001000CD001 /* TextSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDTS01003400001000CD001 /* TextSearchView.swift */; };
+		CDTS02013400002000CD001 /* TextSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDTS02003400002000CD001 /* TextSearchViewModel.swift */; };
+		CDTS03013400003000CD001 /* AiSearchFab.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDTS03003400003000CD001 /* AiSearchFab.swift */; };
 		CDCH01013200001000CD001 /* ComfyHubBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCH01003200001000CD001 /* ComfyHubBrowserView.swift */; };
 		CDCH02013200002000CD001 /* ComfyHubBrowserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCH02003200002000CD001 /* ComfyHubBrowserViewModel.swift */; };
 		CDCH03013200003000CD001 /* ComfyHubDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCH03003200003000CD001 /* ComfyHubDetailView.swift */; };
@@ -211,6 +214,9 @@
 		CDFE02002FAB0002000CD001 /* FeedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewModel.swift; sourceTree = "<group>"; };
 		CDSM01003100001000CD001 /* SimilarModelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimilarModelsView.swift; sourceTree = "<group>"; };
 		CDSM02003100002000CD001 /* SimilarModelsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimilarModelsViewModel.swift; sourceTree = "<group>"; };
+		CDTS01003400001000CD001 /* TextSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextSearchView.swift; sourceTree = "<group>"; };
+		CDTS02003400002000CD001 /* TextSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextSearchViewModel.swift; sourceTree = "<group>"; };
+		CDTS03003400003000CD001 /* AiSearchFab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AiSearchFab.swift; sourceTree = "<group>"; };
 		CDCH01003200001000CD001 /* ComfyHubBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyHubBrowserView.swift; sourceTree = "<group>"; };
 		CDCH02003200002000CD001 /* ComfyHubBrowserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyHubBrowserViewModel.swift; sourceTree = "<group>"; };
 		CDCH03003200003000CD001 /* ComfyHubDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyHubDetailView.swift; sourceTree = "<group>"; };
@@ -520,6 +526,7 @@
 				CDSH0A002FDD0000000CD001 /* Share */,
 				CDHY0A002FEE0000000CD001 /* History */,
 				CDSM0A003100000000CD001 /* SimilarModels */,
+				CDTS0A003400000000CD001 /* TextSearch */,
 				CDCH0A003200000000CD001 /* ComfyHub */,
 				CDCR0A003300000000CD001 /* Create */,
 				CDLB0A003300000000CD001 /* Library */,
@@ -618,6 +625,16 @@
 				CDSM02003100002000CD001 /* SimilarModelsViewModel.swift */,
 			);
 			path = SimilarModels;
+			sourceTree = "<group>";
+		};
+		CDTS0A003400000000CD001 /* TextSearch */ = {
+			isa = PBXGroup;
+			children = (
+				CDTS01003400001000CD001 /* TextSearchView.swift */,
+				CDTS02003400002000CD001 /* TextSearchViewModel.swift */,
+				CDTS03003400003000CD001 /* AiSearchFab.swift */,
+			);
+			path = TextSearch;
 			sourceTree = "<group>";
 		};
 		CDCH0A003200000000CD001 /* ComfyHub */ = {
@@ -1042,6 +1059,9 @@
 				CDFE02012FAB0002000CD001 /* FeedViewModel.swift in Sources */,
 				CDSM01013100001000CD001 /* SimilarModelsView.swift in Sources */,
 				CDSM02013100002000CD001 /* SimilarModelsViewModel.swift in Sources */,
+				CDTS01013400001000CD001 /* TextSearchView.swift in Sources */,
+				CDTS02013400002000CD001 /* TextSearchViewModel.swift in Sources */,
+				CDTS03013400003000CD001 /* AiSearchFab.swift in Sources */,
 				CDCH01013200001000CD001 /* ComfyHubBrowserView.swift in Sources */,
 				CDCH02013200002000CD001 /* ComfyHubBrowserViewModel.swift in Sources */,
 				CDCH03013200003000CD001 /* ComfyHubDetailView.swift in Sources */,
