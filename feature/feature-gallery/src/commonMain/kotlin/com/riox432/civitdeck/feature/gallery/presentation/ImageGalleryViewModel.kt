@@ -16,6 +16,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.SavePromptUseCase
 import com.riox432.civitdeck.domain.util.LoadResult
 import com.riox432.civitdeck.domain.util.PaginatedLoader
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.feature.gallery.domain.usecase.GetImagesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,13 +31,13 @@ data class ImageGalleryUiState(
     val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
     val nsfwBlurSettings: NsfwBlurSettings = NsfwBlurSettings(),
     val selectedAspectRatio: AspectRatioFilter? = null,
-    val isLoading: Boolean = false,
+    override val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
-    val error: String? = null,
+    override val error: String? = null,
     val nextCursor: String? = null,
     val hasMore: Boolean = true,
     val selectedImageIndex: Int? = null,
-) {
+) : UiLoadingState {
     val images: List<Image>
         get() = allImages.filterByAspectRatio(selectedAspectRatio)
 }

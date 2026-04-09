@@ -13,7 +13,6 @@ import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.SavedSearchFilter
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
-import com.riox432.civitdeck.domain.model.filterNsfwImages
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
@@ -25,11 +24,10 @@ import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
-import com.riox432.civitdeck.domain.usecase.QualityScoreCalculator
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
-import com.riox432.civitdeck.domain.util.LoadResult
 import com.riox432.civitdeck.domain.util.PaginatedLoader
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSavedSearchFilterUseCase
@@ -71,11 +69,11 @@ data class ModelSearchUiState(
     val selectedSources: Set<ModelSource> = setOf(ModelSource.CIVITAI),
     // Pagination state from PaginatedLoader
     val models: List<Model> = emptyList(),
-    val isLoading: Boolean = false,
+    override val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
-    val error: String? = null,
+    override val error: String? = null,
     val hasMore: Boolean = true,
-)
+) : UiLoadingState
 
 /**
  * Internal filter state used to track all filter parameters and trigger reloads.
@@ -130,8 +128,13 @@ class ModelSearchViewModel(
     private val _filterState = MutableStateFlow(FilterState())
     private val _hiddenModelIds = MutableStateFlow<Set<Long>>(emptySet())
     private var recommendationsJob: Job? = null
-    private var sortWatermark: Double? = null
-    private var multiSourcePage: Int = 1
+
+    private val pageLoader = SearchPageLoader(
+        getModelsUseCase = getModelsUseCase,
+        multiSourceSearchUseCase = multiSourceSearchUseCase,
+        getViewedModelIdsUseCase = getViewedModelIdsUseCase,
+        hiddenModelIds = _hiddenModelIds,
+    )
 
     val searchHistory: StateFlow<List<String>> =
         observeSearchHistoryUseCase()
@@ -156,8 +159,8 @@ class ModelSearchViewModel(
 
     private val paginatedLoader = PaginatedLoader<Model>(
         scope = viewModelScope,
-        pageSize = PAGE_SIZE,
-        load = { cursor, limit -> loadPage(cursor, limit) },
+        pageSize = SearchPageLoader.PAGE_SIZE,
+        load = { cursor, limit -> pageLoader.loadPage(_filterState.value, cursor, limit) },
         onStateChanged = { loadState ->
             _uiState.update {
                 it.copy(
@@ -394,8 +397,7 @@ class ModelSearchViewModel(
     // region Private helpers
 
     private fun resetPaginationAndReload() {
-        sortWatermark = null
-        multiSourcePage = 1
+        pageLoader.resetPagination()
         paginatedLoader.loadFirst()
     }
 
@@ -485,148 +487,8 @@ class ModelSearchViewModel(
 
     // endregion
 
-    // region Page loading
-
-    private suspend fun loadPage(cursor: String?, limit: Int): LoadResult<Model> {
-        val filter = _filterState.value
-        val isCivitaiOnly = filter.selectedSources == setOf(ModelSource.CIVITAI)
-        return if (isCivitaiOnly) {
-            loadCivitaiPage(filter, cursor, limit)
-        } else {
-            loadMultiSourcePage(filter, cursor, limit)
-        }
-    }
-
-    private suspend fun loadCivitaiPage(
-        filter: FilterState,
-        cursor: String?,
-        limit: Int,
-    ): LoadResult<Model> {
-        val viewedIds = if (filter.isFreshFindEnabled) {
-            getViewedModelIdsUseCase()
-        } else {
-            emptySet()
-        }
-
-        val accumulated = mutableListOf<Model>()
-        val seenIds = mutableSetOf<Long>()
-        var currentCursor = cursor
-        var nextCursor: String? = null
-        val pageWatermark = sortWatermark
-
-        repeat(MAX_FETCH_ITERATIONS) {
-            if (accumulated.size >= limit) return@repeat
-
-            val remaining = limit - accumulated.size
-            val result = getModelsUseCase(
-                query = filter.query.ifBlank { null },
-                tag = filter.includedTags.firstOrNull(),
-                type = filter.selectedType,
-                sort = filter.selectedSort,
-                period = filter.selectedPeriod,
-                baseModels = filter.selectedBaseModels.toList().ifEmpty { null },
-                cursor = currentCursor,
-                limit = remaining.coerceAtLeast(PAGE_SIZE),
-                nsfw = if (filter.nsfwFilterLevel == NsfwFilterLevel.Off) false else null,
-            )
-
-            var filtered = applyClientFilters(result.items, filter, viewedIds)
-            if (pageWatermark != null) {
-                filtered = filtered.filter { sortValueOf(it, filter) <= pageWatermark }
-            }
-            for (model in filtered) {
-                if (seenIds.add(model.id)) {
-                    accumulated.add(model)
-                }
-            }
-            nextCursor = result.metadata.nextCursor
-            if (nextCursor == null || nextCursor == currentCursor) return@repeat
-            currentCursor = nextCursor
-        }
-
-        accumulated.sortByDescending { sortValueOf(it, filter) }
-
-        if (accumulated.isNotEmpty()) {
-            sortWatermark = accumulated.minOf { sortValueOf(it, filter) }
-        }
-
-        return LoadResult(items = accumulated, nextCursor = nextCursor)
-    }
-
-    private suspend fun loadMultiSourcePage(
-        filter: FilterState,
-        cursor: String?,
-        limit: Int,
-    ): LoadResult<Model> {
-        val viewedIds = if (filter.isFreshFindEnabled) {
-            getViewedModelIdsUseCase()
-        } else {
-            emptySet()
-        }
-
-        if (cursor == null) multiSourcePage = 1
-        val result = multiSourceSearchUseCase(
-            query = filter.query.ifBlank { null },
-            selectedSources = filter.selectedSources,
-            cursor = cursor,
-            page = multiSourcePage,
-            limit = limit.coerceAtLeast(PAGE_SIZE),
-        )
-
-        val filtered = applyClientFilters(result.models, filter, viewedIds)
-        multiSourcePage++
-
-        return LoadResult(items = filtered, nextCursor = result.nextCursor)
-    }
-
-    private fun applyClientFilters(
-        models: List<Model>,
-        filter: FilterState,
-        viewedIds: Set<Long>,
-    ): List<Model> {
-        val hiddenIds = _hiddenModelIds.value
-        var filtered = models.filterNsfwImages(filter.nsfwFilterLevel)
-        if (filter.isFreshFindEnabled) {
-            filtered = filtered.filter { it.id !in viewedIds }
-        }
-        if (filter.includedTags.size > 1) {
-            val remaining = filter.includedTags.drop(1).map { it.lowercase() }.toSet()
-            filtered = filtered.filter { model ->
-                val modelTags = model.tags.map { it.lowercase() }.toSet()
-                modelTags.containsAll(remaining)
-            }
-        }
-        if (filter.excludedTags.isNotEmpty()) {
-            val excluded = filter.excludedTags.toSet()
-            filtered = filtered.filter { model ->
-                model.tags.none { it.lowercase() in excluded }
-            }
-        }
-        if (hiddenIds.isNotEmpty()) {
-            filtered = filtered.filter { it.id !in hiddenIds }
-        }
-        if (filter.isQualityFilterEnabled && filter.qualityThreshold > 0) {
-            filtered = filtered.filter { model ->
-                QualityScoreCalculator.calculate(model.stats) >= filter.qualityThreshold
-            }
-        }
-        return filtered
-    }
-
-    private fun sortValueOf(model: Model, filter: FilterState): Double =
-        when (filter.selectedSort) {
-            SortOrder.MostDownloaded -> model.stats.downloadCount.toDouble()
-            SortOrder.HighestRated -> model.stats.rating
-            SortOrder.Newest -> model.id.toDouble()
-            SortOrder.Quality -> QualityScoreCalculator.calculate(model.stats).toDouble()
-        }
-
-    // endregion
-
     companion object {
         private const val TAG = "ModelSearchViewModel"
-        private const val PAGE_SIZE = 20
-        private const val MAX_FETCH_ITERATIONS = 5
         private const val STOP_TIMEOUT = 5_000L
     }
 }

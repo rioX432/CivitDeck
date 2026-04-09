@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.SDWebUIGenerationParams
 import com.riox432.civitdeck.domain.model.SDWebUIGenerationProgress
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIModelsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUISamplersUseCase
@@ -32,14 +33,14 @@ data class SDWebUIGenerationUiState(
     val width: Int = 512,
     val height: Int = 512,
     val seed: Long = -1,
-    val isLoading: Boolean = false,
+    override val isLoading: Boolean = false,
     val isGenerating: Boolean = false,
     val progress: Double = 0.0,
     val progressStep: Int = 0,
     val progressTotalSteps: Int = 0,
     val generatedImages: List<String> = emptyList(),
-    val error: String? = null,
-)
+    override val error: String? = null,
+) : UiLoadingState
 
 class SDWebUIGenerationViewModel(
     private val fetchModels: FetchSDWebUIModelsUseCase,

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.feature.search.domain.usecase.GetDiscoveryModelsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,10 +14,10 @@ import kotlinx.coroutines.launch
 
 data class SwipeDiscoveryState(
     val cards: List<Model> = emptyList(),
-    val isLoading: Boolean = false,
-    val error: String? = null,
+    override val isLoading: Boolean = false,
+    override val error: String? = null,
     val lastDismissed: DismissedCard? = null,
-)
+) : UiLoadingState
 
 data class DismissedCard(
     val model: Model,

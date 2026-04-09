@@ -3,6 +3,7 @@ package com.riox432.civitdeck.feature.comfyui.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.QueueJob
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.CancelComfyUIJobUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIQueueUseCase
 import com.riox432.civitdeck.util.Logger
@@ -14,10 +15,10 @@ import kotlinx.coroutines.launch
 
 data class QueueUiState(
     val jobs: List<QueueJob> = emptyList(),
-    val isLoading: Boolean = true,
-    val error: String? = null,
+    override val isLoading: Boolean = true,
+    override val error: String? = null,
     val cancellingIds: Set<String> = emptySet(),
-)
+) : UiLoadingState
 
 class ComfyUIQueueViewModel(
     private val observeQueue: ObserveComfyUIQueueUseCase,

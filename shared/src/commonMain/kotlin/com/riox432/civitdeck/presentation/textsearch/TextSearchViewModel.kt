@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.TextSearchUseCase
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -17,11 +18,11 @@ import kotlinx.coroutines.launch
 data class TextSearchUiState(
     val query: String = "",
     val results: List<Model> = emptyList(),
-    val isLoading: Boolean = false,
+    override val isLoading: Boolean = false,
     val isModelAvailable: Boolean = false,
-    val error: String? = null,
+    override val error: String? = null,
     val hasSearched: Boolean = false,
-)
+) : UiLoadingState
 
 /**
  * Drives the "AI Search" screen — natural language text-to-image search using

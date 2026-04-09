@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.ComfyHubCategory
 import com.riox432.civitdeck.domain.model.ComfyHubSortOrder
 import com.riox432.civitdeck.domain.model.ComfyHubWorkflow
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SearchComfyHubWorkflowsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,12 +15,12 @@ import kotlinx.coroutines.launch
 
 data class ComfyHubBrowserUiState(
     val workflows: List<ComfyHubWorkflow> = emptyList(),
-    val isLoading: Boolean = true,
-    val error: String? = null,
+    override val isLoading: Boolean = true,
+    override val error: String? = null,
     val query: String = "",
     val selectedCategory: ComfyHubCategory = ComfyHubCategory.ALL,
     val sortOrder: ComfyHubSortOrder = ComfyHubSortOrder.MOST_DOWNLOADED,
-)
+) : UiLoadingState
 
 class ComfyHubBrowserViewModel(
     private val searchWorkflows: SearchComfyHubWorkflowsUseCase,

@@ -6,6 +6,7 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.repository.ModelEmbeddingRepository
 import com.riox432.civitdeck.domain.usecase.FindSimilarModelsByEmbeddingUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -18,9 +19,9 @@ import kotlinx.coroutines.launch
 data class SimilarModelsUiState(
     val sourceModel: Model? = null,
     val similarModels: List<Model> = emptyList(),
-    val isLoading: Boolean = true,
-    val error: String? = null,
-)
+    override val isLoading: Boolean = true,
+    override val error: String? = null,
+) : UiLoadingState
 
 /**
  * Drives the "Find Similar Models" screen using cached SigLIP-2 image embeddings.
