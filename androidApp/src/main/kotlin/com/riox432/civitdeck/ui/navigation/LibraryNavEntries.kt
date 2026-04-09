@@ -3,6 +3,7 @@ package com.riox432.civitdeck.ui.navigation
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
+import com.riox432.civitdeck.BuildConfig
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
@@ -201,7 +202,11 @@ internal fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {
             } else {
                 null
             },
-            onFindSimilar = { modelId -> backStack.add(SimilarModelsRoute(modelId)) },
+            onFindSimilar = if (BuildConfig.FEATURE_SIMILARITY_SEARCH) {
+                { modelId -> backStack.add(SimilarModelsRoute(modelId)) }
+            } else {
+                null
+            },
         )
     }
 }

@@ -3,6 +3,7 @@ package com.riox432.civitdeck.ui.navigation
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
+import com.riox432.civitdeck.BuildConfig
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.presentation.share.ShareViewModel
@@ -56,6 +57,9 @@ internal fun EntryProviderScope<Any>.qrScannerEntry(backStack: MutableList<Any>)
 }
 
 internal fun EntryProviderScope<Any>.similarModelsEntry(backStack: MutableList<Any>) {
+    // Defense-in-depth: keep the destination unregistered entirely while the
+    // feature flag is off, so deep links / future call sites cannot surface it.
+    if (!BuildConfig.FEATURE_SIMILARITY_SEARCH) return
     entry<SimilarModelsRoute> { key ->
         val viewModel: SimilarModelsViewModel = koinViewModel(
             key = "similar_${key.modelId}",

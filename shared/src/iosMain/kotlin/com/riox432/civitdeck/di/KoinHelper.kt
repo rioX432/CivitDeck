@@ -56,7 +56,6 @@ import com.riox432.civitdeck.domain.usecase.GetModelUpdateNotificationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetNonTrainableImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetPluginConfigUseCase
 import com.riox432.civitdeck.domain.usecase.GetRatingTotalsUseCase
-import com.riox432.civitdeck.domain.usecase.GetSimilarModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadFeedCountUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadNotificationCountUseCase
@@ -272,7 +271,6 @@ object KoinHelper {
     fun getRecommendationsUseCase(): GetRecommendationsUseCase = getKoin().get()
     fun getTrackRecommendationClickUseCase(): TrackRecommendationClickUseCase = getKoin().get()
     fun getEnrichModelImagesUseCase(): EnrichModelImagesUseCase = getKoin().get()
-    fun getSimilarModelsUseCase(): GetSimilarModelsUseCase = getKoin().get()
     // endregion
 
     // region Image Embedding (#700)

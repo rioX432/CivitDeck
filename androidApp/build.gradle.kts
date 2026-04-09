@@ -12,6 +12,10 @@ android {
         applicationId = "com.riox432.civitdeck"
         versionCode = 6
         versionName = "2.1.0"
+
+        // Gate embedding-based similarity search UI. Default off until SigLIP-2 embeddings
+        // are being produced on-device (parent #602, phases C/D).
+        buildConfigField("boolean", "FEATURE_SIMILARITY_SEARCH", "false")
     }
 
     // Release signing config from environment variables (CI)

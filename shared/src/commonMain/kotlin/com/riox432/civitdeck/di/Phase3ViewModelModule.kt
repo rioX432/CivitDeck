@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.domain.download.DownloadScheduler
+import com.riox432.civitdeck.domain.repository.ModelEmbeddingRepository
 import com.riox432.civitdeck.domain.usecase.ActivatePluginUseCase
 import com.riox432.civitdeck.domain.usecase.AddShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
@@ -14,12 +15,12 @@ import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.DetectDuplicatesUseCase
 import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
+import com.riox432.civitdeck.domain.usecase.FindSimilarModelsByEmbeddingUseCase
 import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
 import com.riox432.civitdeck.domain.usecase.GetCreatorFeedUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelUpdateNotificationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetPluginConfigUseCase
-import com.riox432.civitdeck.domain.usecase.GetSimilarModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadFeedCountUseCase
 import com.riox432.civitdeck.domain.usecase.MarkAllNotificationsReadUseCase
@@ -101,7 +102,8 @@ val phase3ViewModelModule = module {
         SimilarModelsViewModel(
             modelId = params.get(),
             getModelDetail = get<GetModelDetailUseCase>(),
-            getSimilarModels = get<GetSimilarModelsUseCase>(),
+            embeddingRepository = get<ModelEmbeddingRepository>(),
+            findSimilarByEmbedding = get<FindSimilarModelsByEmbeddingUseCase>(),
         )
     }
     viewModel {
