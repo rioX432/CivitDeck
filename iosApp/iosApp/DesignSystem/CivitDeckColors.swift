@@ -50,6 +50,10 @@ extension Color {
     // MARK: - Scrim
     static let civitScrim = hex(0x000000)
 
+    // MARK: - External Source Badges
+    static let huggingFaceBadge = hex(0xFF9D00)
+    static let tensorArtBadge = hex(0x9C27B0)
+
     // MARK: - AMOLED Dark Mode
     static let amoledSurface = hex(0x000000)
     static let amoledSurfaceContainer = hex(0x0F0F0F)

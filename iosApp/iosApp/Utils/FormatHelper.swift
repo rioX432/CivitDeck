@@ -1,5 +1,21 @@
 import Foundation
 
+// MARK: - CivitAI URL Constants
+
+enum CivitAiUrls {
+    static let baseUrl = "https://civitai.com"
+
+    static func modelUrl(modelId: Int64) -> String {
+        "\(baseUrl)/models/\(modelId)"
+    }
+
+    static func downloadUrl(versionId: Int64) -> String {
+        "\(baseUrl)/api/download/models/\(versionId)"
+    }
+}
+
+// MARK: - Format Helpers
+
 /// Native Swift formatting helpers that mirror FormatUtils in the shared KMP module.
 /// iOS DesignSystem components must NOT import FormatUtils (KMP-only).
 enum FormatHelper {

@@ -24,6 +24,7 @@ struct AddToCollectionSheet: View {
                             if modelCollectionIds.contains(collection.id) {
                                 Image(systemName: "checkmark")
                                     .foregroundColor(.accentColor)
+                                    .accessibilityHidden(true)
                             }
                         }
                     }

@@ -36,11 +36,13 @@ struct WorkflowTemplateView: View {
                             showImportSheet = true
                         } label: {
                             Image(systemName: "square.and.arrow.down")
+                                .accessibilityLabel("Import template")
                         }
                         Button {
                             showCreateEditor = true
                         } label: {
                             Image(systemName: "plus")
+                                .accessibilityLabel("Create template")
                         }
                     }
                 }
@@ -93,6 +95,7 @@ struct WorkflowTemplateView: View {
         HStack {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.civitOnSurfaceVariant)
+                .accessibilityHidden(true)
             TextField("Search templates...", text: $viewModel.searchQuery)
                 .font(.civitBodyMedium)
             if !viewModel.searchQuery.isEmpty {
@@ -101,6 +104,7 @@ struct WorkflowTemplateView: View {
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.civitOnSurfaceVariant)
+                        .accessibilityLabel("Clear search")
                 }
             }
         }
@@ -266,6 +270,7 @@ private struct TemplateRow: View {
                 Button(action: { onSelect?() }) {
                     Image(systemName: "checkmark.circle")
                         .foregroundColor(theme.primary)
+                        .accessibilityLabel("Select template")
                 }
                 .buttonStyle(.plain)
             } else {
@@ -283,6 +288,7 @@ private struct TemplateRow: View {
                 } label: {
                     Image(systemName: "ellipsis.circle")
                         .foregroundColor(.civitOnSurfaceVariant)
+                        .accessibilityLabel("More options")
                 }
                 .buttonStyle(.plain)
             }

@@ -4,7 +4,6 @@ import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.api.CivitAiApi
 import com.riox432.civitdeck.data.api.GitHubReleaseApi
 import com.riox432.civitdeck.data.api.ThumbnailDownloaderImpl
-import com.riox432.civitdeck.domain.repository.ThumbnailDownloader
 import com.riox432.civitdeck.data.api.civitailink.CivitaiLinkApi
 import com.riox432.civitdeck.data.api.comfyhub.ComfyHubApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
@@ -23,6 +22,7 @@ import com.riox432.civitdeck.data.api.webui.SDWebUIApi
 import com.riox432.civitdeck.data.api.webui.createSDWebUIHttpClient
 import com.riox432.civitdeck.domain.repository.HuggingFaceRepository
 import com.riox432.civitdeck.domain.repository.TensorArtRepository
+import com.riox432.civitdeck.domain.repository.ThumbnailDownloader
 import kotlinx.serialization.json.Json
 import org.koin.core.qualifier.named
 import org.koin.dsl.module

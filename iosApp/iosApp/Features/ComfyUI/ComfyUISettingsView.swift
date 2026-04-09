@@ -30,6 +30,7 @@ struct ComfyUISettingsView: View {
                     viewModel.showAddSheet = true
                 } label: {
                     Image(systemName: "plus")
+                        .accessibilityLabel("Add connection")
                 }
             }
         }

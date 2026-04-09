@@ -209,6 +209,7 @@ private struct ComfyUIOutputDetailPage: View {
         HStack(spacing: Spacing.xs) {
             Image(systemName: icon)
                 .font(.civitBodySmall)
+                .accessibilityHidden(true)
             Text(label)
                 .font(.civitBodySmall)
         }

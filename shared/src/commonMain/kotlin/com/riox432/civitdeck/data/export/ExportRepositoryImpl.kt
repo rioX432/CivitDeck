@@ -41,8 +41,8 @@ class ExportRepositoryImpl(
         val outputDir = getExportCacheDirectory()
         val outputPath = "$outputDir/$datasetDir.zip"
 
+        val zipWriter = DatasetZipWriter(outputPath)
         try {
-            val zipWriter = DatasetZipWriter(outputPath)
             exportable.forEachIndexed { index, image ->
                 emit(ExportProgress.Downloading(index + 1, exportable.size))
                 val imageBytes = httpClient.get(image.imageUrl).bodyAsBytes()
@@ -59,12 +59,13 @@ class ExportRepositoryImpl(
             emit(ExportProgress.WritingManifest)
             val manifest = buildManifest(exportable, datasetDir)
             zipWriter.addEntry("$datasetDir/manifest.jsonl", manifest.encodeToByteArray())
-            zipWriter.close()
 
             emit(ExportProgress.Completed(outputPath, warningCount))
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Logger.e(TAG, "Export failed for dataset $datasetId: ${e.message}")
             emit(ExportProgress.Failed(e.message ?: "Export failed"))
+        } finally {
+            zipWriter.close()
         }
     }
 }

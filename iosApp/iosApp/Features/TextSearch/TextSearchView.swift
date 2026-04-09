@@ -48,6 +48,7 @@ struct TextSearchView: View {
             } label: {
                 Image(systemName: "magnifyingglass")
                     .font(.body)
+                    .accessibilityLabel("Search")
             }
             .disabled(viewModel.query.trimmingCharacters(in: .whitespaces).isEmpty)
         }

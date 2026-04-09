@@ -6,7 +6,7 @@ struct QRCodeSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     private var civitaiUrl: String {
-        "https://civitai.com/models/\(modelId)"
+        CivitAiUrls.modelUrl(modelId: modelId)
     }
 
     private var qrImage: UIImage? {

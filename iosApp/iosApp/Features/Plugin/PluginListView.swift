@@ -24,6 +24,7 @@ struct PluginListView: View {
             Image(systemName: "puzzlepiece.extension")
                 .font(.civitIconExtraLarge)
                 .foregroundColor(.civitOnSurfaceVariant)
+                .accessibilityHidden(true)
             Text("No plugins installed")
                 .font(.civitBodyMedium)
                 .foregroundColor(.civitOnSurface)
@@ -74,6 +75,7 @@ private struct PluginRow: View {
                 .frame(width: pluginIconSize, height: pluginIconSize)
             Image(systemName: "puzzlepiece.extension")
                 .foregroundColor(theme.onPrimaryContainer)
+                .accessibilityHidden(true)
         }
     }
 

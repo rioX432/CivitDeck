@@ -176,7 +176,7 @@ private fun ModelCardInfoSection(model: Model, isOwned: Boolean = false) {
                         color = MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(CornerRadius.chip),
                     )
-                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                    .padding(horizontal = Spacing.sm, vertical = Spacing.xxs),
             )
             SourceBadge(source = model.source)
         }
@@ -206,6 +206,6 @@ private fun SourceBadge(source: ModelSource) {
                 color = color,
                 shape = RoundedCornerShape(CornerRadius.chip),
             )
-            .padding(horizontal = 6.dp, vertical = 2.dp),
+            .padding(horizontal = Spacing.sm, vertical = Spacing.xxs),
     )
 }

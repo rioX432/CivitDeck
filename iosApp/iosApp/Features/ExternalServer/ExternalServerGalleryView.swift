@@ -194,6 +194,7 @@ private struct ServerImageCell: View {
                         .overlay {
                             Image(systemName: "photo")
                                 .foregroundColor(.civitOnSurfaceVariant)
+                                .accessibilityHidden(true)
                         }
                 case .empty:
                     Color.civitSurfaceVariant
@@ -213,6 +214,7 @@ private struct ServerImageCell: View {
                     .font(.title3)
                     .padding(Spacing.xs)
                     .shadow(radius: 2)
+                    .accessibilityLabel(isSelected ? "Selected" : "Not selected")
             }
         }
     }

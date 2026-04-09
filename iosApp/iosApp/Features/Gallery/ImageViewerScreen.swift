@@ -39,6 +39,7 @@ struct ImageViewerScreen: View {
                                     SwiftUI.Image(systemName: "play.slash")
                                         .font(.largeTitle)
                                         .foregroundColor(.civitInverseOnSurface)
+                                        .accessibilityHidden(true)
                                     Text("WebM format not supported on iOS")
                                         .font(.civitBodyMedium)
                                         .foregroundColor(.civitInverseOnSurface)

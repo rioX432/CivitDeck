@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.data.api.CivitAiUrls
 import com.riox432.civitdeck.domain.model.CivitaiLinkResource
 import com.riox432.civitdeck.domain.model.CivitaiLinkStatus
 import com.riox432.civitdeck.domain.model.Model
@@ -73,7 +74,7 @@ private fun CivitaiLinkSendSheetContent(
                         versionId = version.id,
                         modelId = safeModel.id,
                         versionName = version.name,
-                        downloadUrl = "https://civitai.com/api/download/models/${version.id}",
+                        downloadUrl = CivitAiUrls.downloadUrl(version.id),
                     )
                 )
             },

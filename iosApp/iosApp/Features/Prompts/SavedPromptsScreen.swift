@@ -154,6 +154,7 @@ private struct PromptCardView: View {
             Button(action: onToggleTemplate) {
                 SwiftUI.Image(systemName: prompt.isTemplate ? "star.fill" : "star")
                     .foregroundColor(prompt.isTemplate ? theme.primary : .civitOnSurfaceVariant)
+                    .accessibilityLabel(prompt.isTemplate ? "Remove from templates" : "Add to templates")
             }
             .buttonStyle(.borderless)
         }
@@ -203,6 +204,7 @@ private struct PromptCardView: View {
                 onDelete()
             } label: {
                 SwiftUI.Image(systemName: "trash")
+                    .accessibilityLabel("Delete prompt")
             }
             .buttonStyle(.borderless)
         }

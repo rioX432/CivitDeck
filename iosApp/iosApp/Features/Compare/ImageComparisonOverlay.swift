@@ -40,6 +40,7 @@ struct ImageComparisonOverlay: View {
     private var topBar: some View {
         HStack {
             OverlayCircleButton(systemName: "xmark", action: onDismiss)
+                .accessibilityLabel("Close")
             Spacer()
             OverlayCircleButton(
                 systemName: orientation == .horizontal

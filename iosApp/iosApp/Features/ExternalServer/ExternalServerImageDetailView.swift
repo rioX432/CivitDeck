@@ -57,6 +57,7 @@ private struct ServerImageDetailPage: View {
                             .overlay {
                                 Image(systemName: "photo")
                                     .foregroundColor(.civitOnSurfaceVariant)
+                                    .accessibilityHidden(true)
                             }
                     case .empty:
                         Color.civitSurfaceVariant

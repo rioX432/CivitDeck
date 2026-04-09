@@ -128,6 +128,7 @@ private struct DatasetRow: View {
                 .overlay {
                     Image(systemName: "photo.on.rectangle.angled")
                         .foregroundColor(.civitOnSurfaceVariant)
+                        .accessibilityHidden(true)
                 }
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(dataset.name)

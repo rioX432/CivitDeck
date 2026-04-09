@@ -27,12 +27,13 @@ struct DownloadQueueView: View {
     private var emptyState: some View {
         VStack(spacing: Spacing.md) {
             Image(systemName: "arrow.down.circle")
-                .font(.system(size: 48))
+                .font(.civitIconExtraLarge)
                 .foregroundColor(.secondary)
+                .accessibilityHidden(true)
             Text("No downloads yet")
-                .font(.headline)
+                .font(.civitTitleMedium)
             Text("Downloads from model pages will appear here")
-                .font(.subheadline)
+                .font(.civitBodyMedium)
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -163,12 +164,14 @@ private struct ActiveDownloadRow: View {
                 Button { onPause() } label: {
                     Image(systemName: "pause.fill")
                         .foregroundColor(.civitPrimary)
+                        .accessibilityLabel("Pause download")
                 }
                 .buttonStyle(.plain)
             } else if download.status == .paused {
                 Button { onResume() } label: {
                     Image(systemName: "play.fill")
                         .foregroundColor(.civitPrimary)
+                        .accessibilityLabel("Resume download")
                 }
                 .buttonStyle(.plain)
             } else {
@@ -178,6 +181,7 @@ private struct ActiveDownloadRow: View {
             Button { onCancel() } label: {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundColor(.red)
+                    .accessibilityLabel("Cancel download")
             }
             .buttonStyle(.plain)
         }
@@ -222,11 +226,13 @@ private struct FailedDownloadRow: View {
             Button { onRetry() } label: {
                 Image(systemName: "arrow.clockwise")
                     .foregroundColor(.civitPrimary)
+                    .accessibilityLabel("Retry download")
             }
             .buttonStyle(.plain)
             Button { onDelete() } label: {
                 Image(systemName: "trash")
                     .foregroundColor(.red)
+                    .accessibilityLabel("Delete download")
             }
             .buttonStyle(.plain)
         }
@@ -254,9 +260,11 @@ private struct CompletedDownloadRow: View {
             Spacer()
             Image(systemName: "checkmark.circle.fill")
                 .foregroundColor(.civitPrimary)
+                .accessibilityLabel("Download complete")
             Button { onDelete() } label: {
                 Image(systemName: "trash")
                     .foregroundColor(.red)
+                    .accessibilityLabel("Delete download")
             }
             .buttonStyle(.plain)
         }
