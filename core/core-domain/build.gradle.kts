@@ -12,6 +12,10 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
         }
 
+        androidMain.dependencies {
+            implementation(libs.onnxruntime.android)
+        }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
