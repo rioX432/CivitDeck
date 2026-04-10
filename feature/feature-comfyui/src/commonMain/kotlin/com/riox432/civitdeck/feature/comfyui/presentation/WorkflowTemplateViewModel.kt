@@ -32,7 +32,6 @@ data class WorkflowTemplateUiState(
     val selectedType: WorkflowTemplateType? = null,
 ) : UiLoadingState
 
-@Suppress("TooManyFunctions")
 class WorkflowTemplateViewModel(
     private val getTemplates: GetWorkflowTemplatesUseCase,
     private val saveTemplate: SaveWorkflowTemplateUseCase,
@@ -128,6 +127,7 @@ class WorkflowTemplateViewModel(
         _uiState.update { it.copy(error = null) }
     }
 
+    @Suppress("TooManyFunctions")
     companion object {
         private const val TAG = "WorkflowTemplateVM"
 

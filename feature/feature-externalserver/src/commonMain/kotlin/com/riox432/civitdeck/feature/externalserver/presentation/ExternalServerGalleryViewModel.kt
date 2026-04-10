@@ -7,7 +7,6 @@ import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.feature.externalserver.domain.model.ExternalServerImageFilters
 import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationChoice
 import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationJob
-import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationJobStatus
 import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationOption
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerCapabilities
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerImage
@@ -19,14 +18,11 @@ import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetExternalSe
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationOptionsUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.GetGenerationStatusUseCase
 import com.riox432.civitdeck.util.Logger
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
 
 data class ExternalServerGalleryUiState(
     val images: List<ServerImage> = emptyList(),
@@ -62,24 +58,30 @@ data class ExternalServerGalleryUiState(
 
 private const val TAG = "ExternalServerGalleryViewModel"
 private const val PAGE_SIZE = 96
-private const val POLL_INTERVAL_MS = 2000L
-private const val MAX_POLL_TIMEOUT_MS = 600_000L
 
 @Suppress("TooManyFunctions")
 class ExternalServerGalleryViewModel(
     private val getImages: GetExternalServerImagesUseCase,
     private val getCapabilities: GetExternalServerCapabilitiesUseCase,
-    private val getGenerationOptions: GetGenerationOptionsUseCase,
-    private val getDependentChoices: GetDependentChoicesUseCase,
-    private val executeGeneration: ExecuteGenerationUseCase,
-    private val getGenerationStatus: GetGenerationStatusUseCase,
+    getGenerationOptions: GetGenerationOptionsUseCase,
+    getDependentChoices: GetDependentChoicesUseCase,
+    executeGeneration: ExecuteGenerationUseCase,
+    getGenerationStatus: GetGenerationStatusUseCase,
     private val deleteServerImages: DeleteServerImagesUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ExternalServerGalleryUiState())
     val uiState: StateFlow<ExternalServerGalleryUiState> = _uiState.asStateFlow()
 
-    private var pollJob: Job? = null
+    private val generationDelegate = GalleryGenerationDelegate(
+        scope = viewModelScope,
+        uiState = _uiState,
+        getGenerationOptions = getGenerationOptions,
+        getDependentChoices = getDependentChoices,
+        executeGeneration = executeGeneration,
+        getGenerationStatus = getGenerationStatus,
+        onGenerationCompleted = ::onRefresh,
+    )
 
     init {
         loadCapabilities()
@@ -228,136 +230,14 @@ class ExternalServerGalleryViewModel(
 
     // endregion
 
-    // region Generation
+    // region Generation (delegated)
 
-    fun onShowGenerationSheet() {
-        _uiState.update { it.copy(showGenerationSheet = true, generationError = null) }
-        if (_uiState.value.generationOptions.isEmpty()) {
-            loadGenerationOptions()
-        }
-    }
-
-    fun onDismissGenerationSheet() {
-        _uiState.update { it.copy(showGenerationSheet = false) }
-    }
-
-    fun onGenerationParamChanged(key: String, value: String) {
-        val newParams = _uiState.value.generationParams.toMutableMap()
-        newParams[key] = value
-        _uiState.update { it.copy(generationParams = newParams) }
-
-        val dependents = _uiState.value.generationOptions.filter { it.dependsOn == key }
-        dependents.forEach { option ->
-            option.choicesEndpoint?.let { endpoint ->
-                loadDependentChoices(option.key, endpoint.replace("{$key}", value))
-            }
-        }
-    }
-
-    fun onSubmitGeneration() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isSubmittingGeneration = true, generationError = null) }
-            suspendRunCatching {
-                executeGeneration(_uiState.value.generationParams)
-            }.onSuccess { job ->
-                _uiState.update {
-                    it.copy(
-                        activeJob = job,
-                        isSubmittingGeneration = false,
-                        showGenerationSheet = false,
-                    )
-                }
-                startPollingJobStatus(job.jobId)
-            }.onFailure { e ->
-                _uiState.update {
-                    it.copy(
-                        isSubmittingGeneration = false,
-                        generationError = e.message ?: "Generation failed",
-                    )
-                }
-            }
-        }
-    }
-
-    fun onDismissJobStatus() {
-        pollJob?.cancel()
-        _uiState.update { it.copy(activeJob = null) }
-    }
-
-    private fun loadGenerationOptions() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoadingOptions = true) }
-            suspendRunCatching { getGenerationOptions() }
-                .onSuccess { options ->
-                    val defaults = options.mapNotNull { option ->
-                        option.defaultValue?.let { option.key to it }
-                    }.toMap()
-                    _uiState.update {
-                        it.copy(
-                            generationOptions = options,
-                            generationParams = defaults,
-                            isLoadingOptions = false,
-                        )
-                    }
-                }.onFailure { e ->
-                    _uiState.update {
-                        it.copy(
-                            isLoadingOptions = false,
-                            generationError = e.message ?: "Failed to load options",
-                        )
-                    }
-                }
-        }
-    }
-
-    private fun loadDependentChoices(key: String, endpoint: String) {
-        viewModelScope.launch {
-            suspendRunCatching { getDependentChoices(endpoint) }
-                .onSuccess { choices ->
-                    _uiState.update {
-                        it.copy(
-                            dependentChoices = it.dependentChoices + (key to choices),
-                        )
-                    }
-                }
-                .onFailure { e ->
-                    Logger.w(TAG, "Load dependent choices failed for '$key': ${e.message}")
-                }
-        }
-    }
-
-    @Suppress("MagicNumber")
-    private fun startPollingJobStatus(jobId: String) {
-        pollJob?.cancel()
-        pollJob = viewModelScope.launch {
-            val result = withTimeoutOrNull(MAX_POLL_TIMEOUT_MS) {
-                while (true) {
-                    delay(POLL_INTERVAL_MS)
-                    suspendRunCatching { getGenerationStatus(jobId) }
-                        .onSuccess { job ->
-                            _uiState.update { it.copy(activeJob = job) }
-                            if (job.status == GenerationJobStatus.COMPLETED ||
-                                job.status == GenerationJobStatus.ERROR
-                            ) {
-                                if (job.status == GenerationJobStatus.COMPLETED) {
-                                    onRefresh()
-                                }
-                                return@withTimeoutOrNull
-                            }
-                        }
-                        .onFailure { return@withTimeoutOrNull }
-                }
-            }
-            if (result == null) {
-                _uiState.update {
-                    it.copy(
-                        activeJob = null,
-                        generationError = "Generation timed out after 10 minutes",
-                    )
-                }
-            }
-        }
-    }
+    fun onShowGenerationSheet() = generationDelegate.onShowGenerationSheet()
+    fun onDismissGenerationSheet() = generationDelegate.onDismissGenerationSheet()
+    fun onGenerationParamChanged(key: String, value: String) =
+        generationDelegate.onGenerationParamChanged(key, value)
+    fun onSubmitGeneration() = generationDelegate.onSubmitGeneration()
+    fun onDismissJobStatus() = generationDelegate.onDismissJobStatus()
 
     // endregion
 
@@ -417,6 +297,6 @@ class ExternalServerGalleryViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        pollJob?.cancel()
+        generationDelegate.cancelPolling()
     }
 }

@@ -3,7 +3,6 @@ package com.riox432.civitdeck.feature.comfyui.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
-import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
@@ -19,11 +18,8 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUse
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -69,63 +65,37 @@ data class GenerationUiState(
         get() = if (totalSteps > 0) currentStep.toFloat() / totalSteps.toFloat() else 0f
 }
 
-@Suppress("TooManyFunctions")
 class ComfyUIGenerationViewModel(
     private val fetchCheckpoints: FetchComfyUICheckpointsUseCase,
     private val fetchLoras: FetchComfyUILorasUseCase,
     private val fetchControlNets: FetchComfyUIControlNetsUseCase,
     private val importWorkflow: ImportWorkflowUseCase,
-    private val submitGeneration: SubmitComfyUIGenerationUseCase,
-    private val pollResult: PollComfyUIResultUseCase,
-    private val observeProgress: ObserveGenerationProgressUseCase,
-    private val interruptGeneration: InterruptComfyUIGenerationUseCase,
-    private val saveImage: SaveGeneratedImageUseCase,
-    private val repository: ComfyUIConnectionRepository,
+    submitGeneration: SubmitComfyUIGenerationUseCase,
+    pollResult: PollComfyUIResultUseCase,
+    observeProgress: ObserveGenerationProgressUseCase,
+    interruptGeneration: InterruptComfyUIGenerationUseCase,
+    saveImage: SaveGeneratedImageUseCase,
+    repository: ComfyUIConnectionRepository,
 ) : ViewModel() {
-
-    private var progressJob: Job? = null
 
     private val _uiState = MutableStateFlow(GenerationUiState())
     val uiState: StateFlow<GenerationUiState> = _uiState
+
+    private val generationDelegate = GenerationExecutionDelegate(
+        scope = viewModelScope,
+        uiState = _uiState,
+        submitGeneration = submitGeneration,
+        pollResult = pollResult,
+        observeProgress = observeProgress,
+        interruptGeneration = interruptGeneration,
+        saveImage = saveImage,
+        repository = repository,
+    )
 
     init {
         loadCheckpoints()
         loadLoras()
         loadControlNets()
-    }
-
-    private inline fun launchWithErrorHandling(
-        tag: String,
-        crossinline onError: (Exception) -> Unit,
-        crossinline block: suspend () -> Unit,
-    ) {
-        viewModelScope.launch {
-            try {
-                block()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                Logger.e(TAG, "$tag: ${e.message}")
-                onError(e)
-            }
-        }
-    }
-
-    private suspend inline fun runCatchingLogged(
-        tag: String,
-        onError: (Exception) -> Unit,
-        block: () -> Unit,
-    ): Boolean {
-        return try {
-            block()
-            true
-        } catch (e: CancellationException) {
-            throw e
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            Logger.e(TAG, "$tag: ${e.message}")
-            onError(e)
-            false
-        }
     }
 
     private fun loadCheckpoints() {
@@ -257,67 +227,20 @@ class ComfyUIGenerationViewModel(
         _uiState.update { it.copy(customWorkflowJson = null, workflowImportError = null) }
     }
 
+    // -- Generation (delegated) --
+
     fun onGenerate() {
         val state = _uiState.value
         val hasCustomWorkflow = state.customWorkflowJson != null
         if (!hasCustomWorkflow && (state.selectedCheckpoint.isBlank() || state.prompt.isBlank())) return
-        progressJob?.cancel()
-        _uiState.update {
-            it.copy(
-                generationStatus = GenerationStatus.Submitting,
-                error = null,
-                result = null,
-                currentStep = 0,
-                totalSteps = 0,
-                previewImageBytes = null,
-                currentNodeName = "",
-            )
-        }
-        launchWithErrorHandling(
-            tag = "Generation submission failed",
-            onError = { e ->
-                _uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
-            },
-        ) {
-            val promptId = submitGeneration(buildParams(state))
-            _uiState.update { it.copy(generationStatus = GenerationStatus.Running) }
-            val connection = repository.getActiveConnection()
-            if (connection != null) {
-                startWebSocketProgress(promptId, connection)
-            } else {
-                pollForResult(promptId)
-            }
-        }
+        generationDelegate.onGenerate(buildParams(state))
     }
 
-    fun onSaveImage(imageUrl: String) {
-        viewModelScope.launch {
-            val success = saveImage(imageUrl)
-            _uiState.update { it.copy(imageSaveSuccess = success) }
-        }
-    }
+    fun onSaveImage(imageUrl: String) = generationDelegate.onSaveImage(imageUrl)
 
-    fun onDismissSaveResult() {
-        _uiState.update { it.copy(imageSaveSuccess = null) }
-    }
+    fun onDismissSaveResult() = generationDelegate.onDismissSaveResult()
 
-    fun onInterrupt() {
-        progressJob?.cancel()
-        launchWithErrorHandling(
-            tag = "Interrupt failed",
-            onError = { e -> _uiState.update { it.copy(error = e.message) } },
-        ) {
-            interruptGeneration()
-            _uiState.update {
-                it.copy(
-                    generationStatus = GenerationStatus.Idle,
-                    currentStep = 0,
-                    totalSteps = 0,
-                    previewImageBytes = null,
-                )
-            }
-        }
-    }
+    fun onInterrupt() = generationDelegate.onInterrupt()
 
     private fun buildParams(state: GenerationUiState) = ComfyUIGenerationParams(
         checkpoint = state.selectedCheckpoint,
@@ -337,88 +260,24 @@ class ComfyUIGenerationViewModel(
         customWorkflowJson = state.customWorkflowJson,
     )
 
-    private fun startWebSocketProgress(promptId: String, connection: ComfyUIConnection) {
-        progressJob = viewModelScope.launch {
-            observeProgress(promptId, connection.hostname, connection.port)
-                .catch { pollForResult(promptId) }
-                .collect { progress ->
-                    _uiState.update { state ->
-                        state.copy(
-                            currentStep = if (progress.currentStep > 0) {
-                                progress.currentStep
-                            } else {
-                                state.currentStep
-                            },
-                            totalSteps = if (progress.totalSteps > 0) {
-                                progress.totalSteps
-                            } else {
-                                state.totalSteps
-                            },
-                            previewImageBytes = progress.previewImageBytes
-                                ?: state.previewImageBytes,
-                            currentNodeName = progress.currentNode.ifEmpty {
-                                state.currentNodeName
-                            },
-                        )
-                    }
-                }
-            // WebSocket flow completed: fetch final result
-            fetchFinalResult(promptId)
-        }
-    }
-
-    private suspend fun fetchFinalResult(promptId: String) {
-        val onError = { e: Exception ->
-            _uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
-        }
-        runCatchingLogged("Failed to fetch final result", onError) {
-            val result = pollResult(promptId)
-            _uiState.update {
-                if (result.status == GenerationStatus.Completed) {
-                    it.copy(generationStatus = GenerationStatus.Completed, result = result)
-                } else {
-                    it.copy(generationStatus = GenerationStatus.Error, error = result.error)
-                }
+    private inline fun launchWithErrorHandling(
+        tag: String,
+        crossinline onError: (Exception) -> Unit,
+        crossinline block: suspend () -> Unit,
+    ) {
+        viewModelScope.launch {
+            try {
+                block()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.e(TAG, "$tag: ${e.message}")
+                onError(e)
             }
-        }
-    }
-
-    private suspend fun pollForResult(promptId: String) {
-        val onError = { e: Exception ->
-            _uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
-        }
-        var attempts = 0
-        while (attempts < MAX_POLL_ATTEMPTS) {
-            delay(POLL_INTERVAL_MS)
-            var done = false
-            val success = runCatchingLogged("Poll for result failed", onError) {
-                val result = pollResult(promptId)
-                when (result.status) {
-                    GenerationStatus.Completed -> {
-                        _uiState.update {
-                            it.copy(generationStatus = GenerationStatus.Completed, result = result)
-                        }
-                        done = true
-                    }
-                    GenerationStatus.Error -> {
-                        _uiState.update {
-                            it.copy(generationStatus = GenerationStatus.Error, error = result.error)
-                        }
-                        done = true
-                    }
-                    else -> attempts++
-                }
-            }
-            if (!success || done) return
-        }
-        _uiState.update {
-            it.copy(generationStatus = GenerationStatus.Error, error = "Generation timed out")
         }
     }
 
     companion object {
         private const val TAG = "ComfyUIGenerationVM"
-        private const val POLL_INTERVAL_MS = 3000L
-        private const val MAX_POLL_ATTEMPTS = 120
     }
 }
