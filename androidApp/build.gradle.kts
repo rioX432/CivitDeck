@@ -10,8 +10,8 @@ android {
 
     defaultConfig {
         applicationId = "com.riox432.civitdeck"
-        versionCode = 6
-        versionName = "2.1.0"
+        versionCode = 7
+        versionName = "2.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

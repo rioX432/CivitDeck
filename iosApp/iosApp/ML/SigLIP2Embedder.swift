@@ -65,7 +65,12 @@ final class SigLIP2Embedder: NSObject, SigLIP2Bridge {
         ) else {
             return nil
         }
-        return try? MLModel(contentsOf: url)
+        do {
+            return try MLModel(contentsOf: url)
+        } catch {
+            print("SigLIP2Embedder: model loading failed: \(error)")
+            return nil
+        }
     }()
 
     // MARK: Private — inference
@@ -79,13 +84,21 @@ final class SigLIP2Embedder: NSObject, SigLIP2Bridge {
         }
 
         let featureValue = MLFeatureValue(multiArray: inputArray)
-        guard let provider = try? MLDictionaryFeatureProvider(
-            dictionary: ["pixel_values": featureValue]
-        ) else {
+        let provider: MLDictionaryFeatureProvider
+        do {
+            provider = try MLDictionaryFeatureProvider(
+                dictionary: ["pixel_values": featureValue]
+            )
+        } catch {
+            print("SigLIP2Embedder: failed to create feature provider: \(error)")
             return nil
         }
 
-        guard let prediction = try? model.prediction(from: provider) else {
+        let prediction: MLFeatureProvider
+        do {
+            prediction = try model.prediction(from: provider)
+        } catch {
+            print("SigLIP2Embedder: prediction failed: \(error)")
             return nil
         }
 
@@ -137,10 +150,16 @@ final class SigLIP2Embedder: NSObject, SigLIP2Bridge {
         let width = Self.imageSize
         let height = Self.imageSize
 
-        guard let array = try? MLMultiArray(
-            shape: [1, 3, NSNumber(value: height), NSNumber(value: width)],
-            dataType: .float32
-        ) else { return nil }
+        let array: MLMultiArray
+        do {
+            array = try MLMultiArray(
+                shape: [1, 3, NSNumber(value: height), NSNumber(value: width)],
+                dataType: .float32
+            )
+        } catch {
+            print("SigLIP2Embedder: failed to create MLMultiArray: \(error)")
+            return nil
+        }
 
         guard let context = CGContext(
             data: nil,

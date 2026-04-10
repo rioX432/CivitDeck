@@ -247,9 +247,7 @@ struct ModelSearchScreen: View {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(viewModel.searchHistory, id: \.self) { item in
                     HStack(spacing: 0) {
-                        Button {
-                            viewModel.removeSearchHistoryItem(item)
-                        } label: {
+                        Button { viewModel.removeSearchHistoryItem(item) } label: {
                             Image(systemName: "xmark")
                                 .foregroundColor(.civitOnSurfaceVariant)
                                 .font(.civitBodySmall)
@@ -264,25 +262,16 @@ struct ModelSearchScreen: View {
                             isSearchFocused = false
                         } label: {
                             HStack {
-                                Text(item)
-                                    .font(.civitBodyMedium)
-                                    .foregroundColor(.civitOnSurface)
+                                Text(item).font(.civitBodyMedium).foregroundColor(.civitOnSurface)
                                 Spacer()
                             }
-                            .padding(.vertical, Spacing.sm)
-                            .padding(.trailing, Spacing.lg)
+                            .padding(.vertical, Spacing.sm).padding(.trailing, Spacing.lg)
                         }
                     }
                 }
-                Button {
-                    viewModel.clearSearchHistory()
-                    showHistory = false
-                } label: {
-                    Text("Clear history")
-                        .font(.civitLabelMedium)
-                        .foregroundColor(theme.primary)
-                        .padding(.horizontal, Spacing.lg)
-                        .padding(.vertical, Spacing.sm)
+                Button { viewModel.clearSearchHistory(); showHistory = false } label: {
+                    Text("Clear history").font(.civitLabelMedium).foregroundColor(theme.primary)
+                        .padding(.horizontal, Spacing.lg).padding(.vertical, Spacing.sm)
                 }
             }
             .background(Color.civitSurfaceContainerHigh)

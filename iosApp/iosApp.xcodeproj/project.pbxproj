@@ -134,6 +134,7 @@
 		CDHI01012F280001000CD001 /* ComfyUIHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDHI01002F280001000CD001 /* ComfyUIHistoryView.swift */; };
 		CDHI02012F280002000CD001 /* ComfyUIHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDHI02002F280002000CD001 /* ComfyUIHistoryViewModel.swift */; };
 		CDHI03012F280003000CD001 /* ComfyUIOutputDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDHI03002F280003000CD001 /* ComfyUIOutputDetailView.swift */; };
+		CDAU04012F280004000CD001 /* ComfyUIOutputMetadataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDAU04002F280004000CD001 /* ComfyUIOutputMetadataView.swift */; };
 		CD00SS012E208001000CD001 /* AppearanceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS002E208001000CD001 /* AppearanceSettingsView.swift */; };
 		CD00SS032E208001000CD001 /* ContentFilterSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS022E208001000CD001 /* ContentFilterSettingsView.swift */; };
 		CD00SS072E208001000CD001 /* StorageSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00SS062E208001000CD001 /* StorageSettingsView.swift */; };
@@ -313,6 +314,7 @@
 		CDHI01002F280001000CD001 /* ComfyUIHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIHistoryView.swift; sourceTree = "<group>"; };
 		CDHI02002F280002000CD001 /* ComfyUIHistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIHistoryViewModel.swift; sourceTree = "<group>"; };
 		CDHI03002F280003000CD001 /* ComfyUIOutputDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIOutputDetailView.swift; sourceTree = "<group>"; };
+		CDAU04002F280004000CD001 /* ComfyUIOutputMetadataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIOutputMetadataView.swift; sourceTree = "<group>"; };
 		CDSP01002E900001000CD001 /* SpotlightIndexManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightIndexManager.swift; sourceTree = "<group>"; };
 		CDSP02002E900002000CD001 /* SpotlightItemBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightItemBuilder.swift; sourceTree = "<group>"; };
 		CDDL01002E900003000CD001 /* DeepLinkHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkHandler.swift; sourceTree = "<group>"; };
@@ -846,6 +848,7 @@
 				CDHI01002F280001000CD001 /* ComfyUIHistoryView.swift */,
 				CDHI02002F280002000CD001 /* ComfyUIHistoryViewModel.swift */,
 				CDHI03002F280003000CD001 /* ComfyUIOutputDetailView.swift */,
+				CDAU04002F280004000CD001 /* ComfyUIOutputMetadataView.swift */,
 			);
 			path = ComfyUI;
 			sourceTree = "<group>";
@@ -1102,6 +1105,7 @@
 				CDHI01012F280001000CD001 /* ComfyUIHistoryView.swift in Sources */,
 				CDHI02012F280002000CD001 /* ComfyUIHistoryViewModel.swift in Sources */,
 				CDHI03012F280003000CD001 /* ComfyUIOutputDetailView.swift in Sources */,
+				CDAU04012F280004000CD001 /* ComfyUIOutputMetadataView.swift in Sources */,
 				CD00SS012E208001000CD001 /* AppearanceSettingsView.swift in Sources */,
 				CD00SS032E208001000CD001 /* ContentFilterSettingsView.swift in Sources */,
 				CD00SS072E208001000CD001 /* StorageSettingsView.swift in Sources */,
