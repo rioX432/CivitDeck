@@ -7,33 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-04-10
+
 ### Added
 
-- Add image quality auto-curation filter with Quality sort option (#605) (170fd070)
-- Add workflow template library with parameter editor and curated templates (#603) (9cd10f47)
-- Add personalized feed with affinity scoring, diversity controls, and click tracking (89245935)
-- Add download queue management with pause/resume and hash verification (ed12c8b0)
-- Add real-time WebSocket generation preview with interrupt support (#601) (800052cb)
+- Text-to-image search with SigLIP-2 text encoder (#713, #715)
+- Background embedding indexer — auto-embed on browse/favorite (#712, #714)
+- On-device image embedding with ONNX Runtime (Android) and Core ML (iOS) (#699-#711)
+- On-device Stable Diffusion feasibility research (#610, #716)
+- Image quality auto-curation filter with Quality sort option (#605)
+- Workflow template library with parameter editor and curated templates (#603)
+- Personalized feed with affinity scoring, diversity controls, and click tracking
+- Download queue management with pause/resume and hash verification
+- Real-time WebSocket generation preview with interrupt support (#601)
+- UiLoadingState interface for shared loading/error patterns across 16 UiState classes (#727)
 
 ### Changed
 
-- Unify 37 ViewModels in shared commonMain with SKIE Observing pattern for iOS (#684-#694) (cb77719b, 2ed7e95a, 896b77b4, 995ddcb9)
-- Migrate ModelDetailViewModel to shared commonMain (#693) (f0db5424)
-- Migrate DownloadQueueViewModel with expect/actual DownloadScheduler interface (#694) (61b5771a)
-- Migrate ModelSearchViewModel to shared commonMain with PaginatedLoader replacing Android Paging 3 (#692) (710468e1)
-- Replace iOS Settings ObservableObject wrappers with SKIE Observing (e994ba47)
-- Port download queue and workflow template screens to Desktop (abace2c9)
+- Move 24 ViewModels from shared to owning feature modules (#724, #745)
+- Split large ViewModels with delegate pattern: SearchPageLoader, DetailReviewDelegate, SearchFilterDelegate, GenerationExecutionDelegate, DetailNotesTagsDelegate, GalleryGenerationDelegate, DatasetExportDelegate (#720, #721, #736, #742)
+- Split KoinHelper.kt (684 lines) into 7 focused files (#719, #740)
+- Split WorkflowTemplateUseCases into 7 individual files (#736)
+- Centralize CivitAI URLs into CivitAiUrls constants (#723, #739)
+- Enable Dynamic Type support in iOS CivitDeckFonts (#726, #739)
+- Remove lifecycle.viewmodel dependency from core-domain (#728, #739)
+- Unify 37 ViewModels in shared commonMain with SKIE Observing pattern (#684-#694)
+- Port download queue and workflow template screens to Desktop
 
 ### Fixed
 
-- Fix trailing newline in ModelSearchViewModel.swift (96cf66ba)
-- Fix CI: split ModelSearchViewModel for SwiftLint, add missing Desktop DI param (4d1f97ab)
+- Fix DatasetZipWriter resource leak with try-finally (#717, #739)
+- Fix silent error swallowing in WorkflowTemplateUseCases (#730, #739)
+- Add iOS accessibility: 50+ accessibilityLabel/accessibilityHidden additions (#725, #739)
+- Fix hardcoded spacing in ModelCardLayout (#732), badge colors (#737), empty state fonts (#738)
+- Fix Desktop DI missing embedOnBrowseUseCase parameter (#743)
+- Fix iOS SwiftLint type_body_length violation (#744)
 
 ### Infrastructure
 
-- Audit tech debt cleanup: fix 15 codebase health issues (fd1f6d10)
-- Audit tech debt cleanup: fix 17 of 18 codebase health issues (aeaedb05)
-- Sync docs with implementation: DB v42, changelog, new features (5d89f7eb)
+- Codebase health audit with automated issue creation (#717-#738)
+- Add HuggingFace/TensorArt badge colors to iOS design system (#737)
 
 ## [2.1.0] - 2026-04-01
 

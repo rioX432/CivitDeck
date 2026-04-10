@@ -62,7 +62,8 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Background Downloads** — download model files with pause/resume queue management, hash verification, and notifications
 - **Real-time Generation Preview** — live WebSocket preview of ComfyUI generation progress with interrupt support
 - **ComfyHub** — browse and import community workflows from ComfyHub directly into your workflow library
-- **Image Similarity Search** — find visually similar models across the platform
+- **Image Similarity Search** — find visually similar models using on-device SigLIP-2 embeddings
+- **Text-to-Image Search** — describe what you want in natural language, find matching models via SigLIP-2 text encoder
 - **Model Update Notifications** — get notified when followed models receive updates
 - **Smart Recommendations** — personalized model suggestions with time-decay scoring and engagement tracking
 - **Browsing History** — dedicated history screen with search frequency charts

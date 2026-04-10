@@ -7,14 +7,12 @@ This document describes CivitDeck's architecture, module structure, data flow, a
 ```
 CivitDeck/
 ├── build-logic/              # Convention Plugins (civitdeck.kmp.library, civitdeck.kmp.feature, civitdeck.android.application)
-├── shared/                   # KMP coordinator — re-exports core modules via api()
+├── shared/                   # KMP coordinator — re-exports core + feature modules via api()
 │   └── src/
-│       ├── commonMain/       # DI wiring, shared ViewModels (presentation/), ViewModelModules
-│       │   └── presentation/ # Shared ViewModels: analytics, backup, comfyhub, dataset, download,
-│       │                     #   feed, modelfiles, notificationcenter, plugin, settings, share, similar, tutorial, update
+│       ├── commonMain/       # DI wiring (ViewModelModules), repository impls, PluginManagementVM
 │       ├── androidMain/      # Android-specific Koin setup
 │       ├── jvmMain/          # Desktop-specific Koin setup
-│       └── iosMain/          # iOS Koin setup, KoinHelper.kt
+│       └── iosMain/          # iOS Koin setup, KoinHelper (split into 7 files)
 ├── core/
 │   ├── core-domain/          # Domain layer: models, repository interfaces, use cases
 │   │   └── src/commonMain/kotlin/.../
@@ -28,8 +26,8 @@ CivitDeck/
 │   │       └── di/                   # NetworkModule (Koin)
 │   ├── core-database/        # Database layer: Room KMP entities, DAOs, migrations
 │   │   └── src/commonMain/kotlin/.../
-│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v42)
-│   │       ├── data/local/migration/ # Sequential migrations (1→2 … 41→42)
+│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v43)
+│   │       ├── data/local/migration/ # Sequential migrations (1→2 … 42→43)
 │   │       └── di/                   # DatabaseModule (Koin)
 │   ├── core-ui/              # Shared Compose components + design tokens (KMP: Android + Desktop)
 │   │   └── src/{androidMain,jvmMain}/kotlin/.../
@@ -41,16 +39,16 @@ CivitDeck/
 │           ├── plugin/capability/    # ExportFormatPlugin, ThemePlugin, WorkflowEnginePlugin
 │           ├── plugin/model/         # Plugin data models
 │           └── plugin/di/            # PluginModule (Koin)
-├── feature/                  # Feature modules — each has presentation/ with shared ViewModels in commonMain
-│   ├── feature-search/       # Model search & swipe discovery (ModelSearchViewModel, SwipeDiscoveryViewModel, BrowsingHistoryViewModel)
-│   ├── feature-detail/       # Model detail view + model comparison (ModelDetailViewModel)
-│   ├── feature-gallery/      # Image gallery with NSFW blur and prompt extraction (ImageGalleryViewModel)
-│   ├── feature-creator/      # Creator profile browser (CreatorProfileViewModel)
-│   ├── feature-collections/  # User model collections (CollectionsViewModel, CollectionDetailViewModel)
-│   ├── feature-prompts/      # Saved prompts + template library (SavedPromptsViewModel)
-│   ├── feature-settings/     # App settings (NSFW, appearance, notifications, storage)
-│   ├── feature-comfyui/      # ComfyUI integration (ComfyUIGeneration/History/Queue/Settings, SDWebUI*, WorkflowTemplate, CivitaiLink* ViewModels)
-│   └── feature-externalserver/ # Custom external server (ExternalServerGallery/Settings ViewModels)
+├── feature/                  # Feature modules — each owns its ViewModels + use cases in commonMain
+│   ├── feature-search/       # Search, swipe discovery, text search, similar models, browsing history
+│   ├── feature-detail/       # Model detail view + model comparison
+│   ├── feature-gallery/      # Image gallery, downloads, analytics, notifications, share, update
+│   ├── feature-creator/      # Creator profiles, follow system, feed
+│   ├── feature-collections/  # Collections, datasets, batch tag editor, export
+│   ├── feature-prompts/      # Saved prompts + template library
+│   ├── feature-settings/     # Settings (auth, display, content filter, storage, app behavior, backup)
+│   ├── feature-comfyui/      # ComfyUI/SDWebUI integration, workflow templates, ComfyHub, CivitaiLink
+│   └── feature-externalserver/ # Custom external server gallery + generation
 ├── androidApp/               # Android app entry point
 │   └── src/main/kotlin/
 │       ├── CivitDeckApplication.kt   # Koin init + ViewModel DI
@@ -120,7 +118,7 @@ graph TB
 
 ### Presentation Layer (Shared ViewModels)
 
-37 ViewModels live in shared `commonMain` — either in feature modules (`feature/*/src/commonMain/.../presentation/`) or in the shared module (`shared/src/commonMain/.../presentation/`). All extend `androidx.lifecycle.ViewModel` (KMP-compatible since lifecycle 2.9.0) and expose `StateFlow` properties.
+ViewModels live in their owning feature modules (`feature/*/src/commonMain/.../presentation/`). Only `PluginManagementViewModel` remains in the shared module. All extend `androidx.lifecycle.ViewModel` (KMP-compatible since lifecycle 2.9.0) and expose `StateFlow` properties.
 
 All 3 platforms consume the **same ViewModel instance** — there is no per-platform ViewModel duplication:
 
@@ -160,7 +158,7 @@ Room KMP provides the same API as Jetpack Room (familiar to Android developers) 
 
 ### Why Shared ViewModels?
 
-37 ViewModels are shared in `commonMain` using `androidx.lifecycle.ViewModel` (KMP-compatible since lifecycle 2.9.0). All 3 platforms consume the **same ViewModel class** — no per-platform duplication of state management logic.
+ViewModels are shared in `commonMain` using `androidx.lifecycle.ViewModel` (KMP-compatible since lifecycle 2.9.0). Each ViewModel lives in its owning feature module. All 3 platforms consume the **same ViewModel class** — no per-platform duplication of state management logic.
 
 - **Android** injects via Koin `koinViewModel()` and collects with `collectAsStateWithLifecycle()`
 - **Desktop** injects via Koin `koinViewModel()` and collects with `collectAsState()`
