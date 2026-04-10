@@ -42,8 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.FeedItem
-import com.riox432.civitdeck.presentation.feed.FeedUiState
-import com.riox432.civitdeck.presentation.feed.FeedViewModel
+import com.riox432.civitdeck.feature.creator.presentation.FeedUiState
+import com.riox432.civitdeck.feature.creator.presentation.FeedViewModel
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView

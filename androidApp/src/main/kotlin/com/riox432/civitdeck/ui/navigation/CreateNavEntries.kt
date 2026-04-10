@@ -5,6 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubBrowserViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubDetailViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
@@ -15,8 +17,6 @@ import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewMo
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerImage
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
-import com.riox432.civitdeck.presentation.comfyhub.ComfyHubBrowserViewModel
-import com.riox432.civitdeck.presentation.comfyhub.ComfyHubDetailViewModel
 import com.riox432.civitdeck.ui.comfyhub.ComfyHubBrowserScreen
 import com.riox432.civitdeck.ui.comfyhub.ComfyHubDetailScreen
 import com.riox432.civitdeck.ui.comfyui.CivitaiLinkSettingsScreen

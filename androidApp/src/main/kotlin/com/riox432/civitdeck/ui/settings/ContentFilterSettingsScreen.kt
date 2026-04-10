@@ -18,12 +18,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
-import com.riox432.civitdeck.presentation.settings.AppBehaviorSettingsUiState
-import com.riox432.civitdeck.presentation.settings.AppBehaviorSettingsViewModel
-import com.riox432.civitdeck.presentation.settings.ContentFilterSettingsUiState
-import com.riox432.civitdeck.presentation.settings.ContentFilterSettingsViewModel
-import com.riox432.civitdeck.presentation.settings.DisplaySettingsUiState
-import com.riox432.civitdeck.presentation.settings.DisplaySettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsUiState
+import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsUiState
+import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsUiState
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 
 @Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)

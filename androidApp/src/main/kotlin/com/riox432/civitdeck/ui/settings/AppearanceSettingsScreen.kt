@@ -35,9 +35,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ThemeMode
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.plugin.ThemePlugin
 import com.riox432.civitdeck.plugin.model.PluginState
-import com.riox432.civitdeck.presentation.settings.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.usecase.ActivateThemePluginUseCase
 import com.riox432.civitdeck.usecase.ImportThemeUseCase

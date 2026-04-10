@@ -38,8 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.ComfyHubCategory
 import com.riox432.civitdeck.domain.model.ComfyHubWorkflow
-import com.riox432.civitdeck.presentation.comfyhub.ComfyHubBrowserUiState
-import com.riox432.civitdeck.presentation.comfyhub.ComfyHubBrowserViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubBrowserUiState
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubBrowserViewModel
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay

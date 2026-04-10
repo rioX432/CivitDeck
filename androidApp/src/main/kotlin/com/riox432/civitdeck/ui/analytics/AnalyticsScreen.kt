@@ -40,8 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.CategoryStat
 import com.riox432.civitdeck.domain.model.DailyViewCount
-import com.riox432.civitdeck.presentation.analytics.AnalyticsUiState
-import com.riox432.civitdeck.presentation.analytics.AnalyticsViewModel
+import com.riox432.civitdeck.feature.gallery.presentation.AnalyticsUiState
+import com.riox432.civitdeck.feature.gallery.presentation.AnalyticsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)

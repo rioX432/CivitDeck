@@ -60,8 +60,8 @@ import coil3.request.ImageRequest
 import coil3.size.Size
 import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.domain.model.ImageSource
-import com.riox432.civitdeck.presentation.dataset.DatasetDetailViewModel
-import com.riox432.civitdeck.presentation.settings.DisplaySettingsViewModel
+import com.riox432.civitdeck.feature.collections.presentation.DatasetDetailViewModel
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation

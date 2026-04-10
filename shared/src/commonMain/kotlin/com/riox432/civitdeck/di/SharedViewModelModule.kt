@@ -1,8 +1,8 @@
 package com.riox432.civitdeck.di
 
-import com.riox432.civitdeck.presentation.comfyhub.ComfyHubBrowserViewModel
-import com.riox432.civitdeck.presentation.comfyhub.ComfyHubDetailViewModel
-import com.riox432.civitdeck.presentation.modelfiles.ModelFileBrowserViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubBrowserViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubDetailViewModel
+import com.riox432.civitdeck.feature.gallery.presentation.ModelFileBrowserViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 

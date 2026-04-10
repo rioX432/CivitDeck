@@ -17,7 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ShareHashtag
-import com.riox432.civitdeck.presentation.settings.AppBehaviorSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.ui.share.ShareSettingsSection
 
 @Suppress("LongParameterList")

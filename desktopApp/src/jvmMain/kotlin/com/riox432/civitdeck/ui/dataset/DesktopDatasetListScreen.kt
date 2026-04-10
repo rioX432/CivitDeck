@@ -46,7 +46,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.DatasetCollection
-import com.riox432.civitdeck.presentation.dataset.DatasetListViewModel
+import com.riox432.civitdeck.feature.collections.presentation.DatasetListViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation

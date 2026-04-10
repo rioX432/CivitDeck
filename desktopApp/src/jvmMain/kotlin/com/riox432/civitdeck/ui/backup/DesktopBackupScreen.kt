@@ -36,8 +36,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.BackupCategory
 import com.riox432.civitdeck.domain.model.RestoreStrategy
-import com.riox432.civitdeck.presentation.backup.BackupViewModel
-import com.riox432.civitdeck.presentation.backup.BackupUiState
+import com.riox432.civitdeck.feature.settings.presentation.BackupViewModel
+import com.riox432.civitdeck.feature.settings.presentation.BackupUiState
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
 import java.io.File

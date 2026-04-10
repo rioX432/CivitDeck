@@ -29,8 +29,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
-import com.riox432.civitdeck.presentation.analytics.AnalyticsViewModel
-import com.riox432.civitdeck.presentation.analytics.AnalyticsUiState
+import com.riox432.civitdeck.feature.gallery.presentation.AnalyticsViewModel
+import com.riox432.civitdeck.feature.gallery.presentation.AnalyticsUiState
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
 

@@ -33,7 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.ModelUpdateNotification
 import com.riox432.civitdeck.domain.model.UpdateSource
-import com.riox432.civitdeck.presentation.notificationcenter.NotificationCenterViewModel
+import com.riox432.civitdeck.feature.gallery.presentation.NotificationCenterViewModel
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 
