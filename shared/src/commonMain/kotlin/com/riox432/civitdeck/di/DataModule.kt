@@ -35,10 +35,10 @@ import com.riox432.civitdeck.domain.repository.ModelVersionCheckpointRepository
 import com.riox432.civitdeck.domain.repository.ReviewRepository
 import com.riox432.civitdeck.domain.repository.TagRepository
 import com.riox432.civitdeck.domain.repository.UpdateRepository
+import com.riox432.civitdeck.feature.collections.domain.usecase.ExportWithPluginUseCase
+import com.riox432.civitdeck.feature.collections.domain.usecase.GetAvailableExportFormatsUseCase
 import com.riox432.civitdeck.usecase.ActivateThemePluginUseCase
-import com.riox432.civitdeck.usecase.ExportWithPluginUseCase
 import com.riox432.civitdeck.usecase.GetActiveThemeUseCase
-import com.riox432.civitdeck.usecase.GetAvailableExportFormatsUseCase
 import com.riox432.civitdeck.usecase.ImportThemeUseCase
 import com.riox432.civitdeck.usecase.ObserveThemePluginsUseCase
 import org.koin.core.module.dsl.bind

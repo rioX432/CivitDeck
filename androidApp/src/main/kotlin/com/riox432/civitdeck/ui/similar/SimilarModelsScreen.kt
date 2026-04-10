@@ -20,8 +20,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.riox432.civitdeck.presentation.similar.SimilarModelsUiState
-import com.riox432.civitdeck.presentation.similar.SimilarModelsViewModel
+import com.riox432.civitdeck.feature.search.presentation.SimilarModelsUiState
+import com.riox432.civitdeck.feature.search.presentation.SimilarModelsViewModel
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay

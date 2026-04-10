@@ -27,8 +27,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.riox432.civitdeck.presentation.textsearch.TextSearchUiState
-import com.riox432.civitdeck.presentation.textsearch.TextSearchViewModel
+import com.riox432.civitdeck.feature.search.presentation.TextSearchUiState
+import com.riox432.civitdeck.feature.search.presentation.TextSearchViewModel
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay

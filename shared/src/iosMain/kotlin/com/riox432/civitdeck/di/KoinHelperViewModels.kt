@@ -4,6 +4,8 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubBrowserViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubDetailViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
@@ -13,15 +15,13 @@ import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewMod
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
-import com.riox432.civitdeck.presentation.comfyhub.ComfyHubBrowserViewModel
-import com.riox432.civitdeck.presentation.comfyhub.ComfyHubDetailViewModel
-import com.riox432.civitdeck.presentation.download.DownloadQueueViewModel
-import com.riox432.civitdeck.presentation.modelfiles.ModelFileBrowserViewModel
-import com.riox432.civitdeck.presentation.settings.AppBehaviorSettingsViewModel
-import com.riox432.civitdeck.presentation.settings.AuthSettingsViewModel
-import com.riox432.civitdeck.presentation.settings.ContentFilterSettingsViewModel
-import com.riox432.civitdeck.presentation.settings.DisplaySettingsViewModel
-import com.riox432.civitdeck.presentation.settings.StorageSettingsViewModel
+import com.riox432.civitdeck.feature.gallery.presentation.DownloadQueueViewModel
+import com.riox432.civitdeck.feature.gallery.presentation.ModelFileBrowserViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import org.koin.mp.KoinPlatform.getKoin
 
 // Settings ViewModels
@@ -58,30 +58,32 @@ fun KoinHelper.createModelDetailViewModel(
 
 // Phase 3 ViewModels
 fun KoinHelper.createAnalyticsViewModel():
-    com.riox432.civitdeck.presentation.analytics.AnalyticsViewModel = getKoin().get()
-fun KoinHelper.createBackupViewModel(): com.riox432.civitdeck.presentation.backup.BackupViewModel = getKoin().get()
-fun KoinHelper.createFeedViewModel(): com.riox432.civitdeck.presentation.feed.FeedViewModel = getKoin().get()
+    com.riox432.civitdeck.feature.gallery.presentation.AnalyticsViewModel = getKoin().get()
+fun KoinHelper.createBackupViewModel():
+    com.riox432.civitdeck.feature.settings.presentation.BackupViewModel = getKoin().get()
+fun KoinHelper.createFeedViewModel(): com.riox432.civitdeck.feature.creator.presentation.FeedViewModel = getKoin().get()
 fun KoinHelper.createNotificationCenterViewModel():
-    com.riox432.civitdeck.presentation.notificationcenter.NotificationCenterViewModel = getKoin().get()
+    com.riox432.civitdeck.feature.gallery.presentation.NotificationCenterViewModel = getKoin().get()
 fun KoinHelper.createPluginManagementViewModel():
     com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel = getKoin().get()
 fun KoinHelper.createSimilarModelsViewModel(modelId: Long):
-    com.riox432.civitdeck.presentation.similar.SimilarModelsViewModel =
+    com.riox432.civitdeck.feature.search.presentation.SimilarModelsViewModel =
     getKoin().get { org.koin.core.parameter.parametersOf(modelId) }
 fun KoinHelper.createTextSearchViewModel():
-    com.riox432.civitdeck.presentation.textsearch.TextSearchViewModel = getKoin().get()
-fun KoinHelper.createShareViewModel(): com.riox432.civitdeck.presentation.share.ShareViewModel = getKoin().get()
+    com.riox432.civitdeck.feature.search.presentation.TextSearchViewModel = getKoin().get()
+fun KoinHelper.createShareViewModel():
+    com.riox432.civitdeck.feature.gallery.presentation.ShareViewModel = getKoin().get()
 fun KoinHelper.createGestureTutorialViewModel():
-    com.riox432.civitdeck.presentation.tutorial.GestureTutorialViewModel = getKoin().get()
+    com.riox432.civitdeck.feature.gallery.presentation.GestureTutorialViewModel = getKoin().get()
 fun KoinHelper.createDatasetListViewModel():
-    com.riox432.civitdeck.presentation.dataset.DatasetListViewModel = getKoin().get()
+    com.riox432.civitdeck.feature.collections.presentation.DatasetListViewModel = getKoin().get()
 fun KoinHelper.createDatasetDetailViewModel(
     datasetId: Long
-): com.riox432.civitdeck.presentation.dataset.DatasetDetailViewModel =
+): com.riox432.civitdeck.feature.collections.presentation.DatasetDetailViewModel =
     getKoin().get { org.koin.core.parameter.parametersOf(datasetId) }
 fun KoinHelper.createBatchTagEditorViewModel(
     datasetId: Long
-): com.riox432.civitdeck.presentation.dataset.BatchTagEditorViewModel =
+): com.riox432.civitdeck.feature.collections.presentation.BatchTagEditorViewModel =
     getKoin().get { org.koin.core.parameter.parametersOf(datasetId) }
 fun KoinHelper.createDownloadQueueViewModel(): DownloadQueueViewModel = getKoin().get()
 

@@ -28,8 +28,8 @@ import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.collections.DesktopCollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.DesktopCollectionsScreen
 import com.riox432.civitdeck.ui.creator.DesktopCreatorScreen
-import com.riox432.civitdeck.presentation.dataset.DatasetDetailViewModel
-import com.riox432.civitdeck.presentation.dataset.DatasetListViewModel
+import com.riox432.civitdeck.feature.collections.presentation.DatasetDetailViewModel
+import com.riox432.civitdeck.feature.collections.presentation.DatasetListViewModel
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailScreen
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetListScreen
 import com.riox432.civitdeck.ui.detail.DesktopDetailScreen

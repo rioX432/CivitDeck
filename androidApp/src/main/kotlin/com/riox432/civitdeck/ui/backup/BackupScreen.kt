@@ -47,8 +47,8 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.domain.model.BackupCategory
 import com.riox432.civitdeck.domain.model.RestoreStrategy
-import com.riox432.civitdeck.presentation.backup.BackupUiState
-import com.riox432.civitdeck.presentation.backup.BackupViewModel
+import com.riox432.civitdeck.feature.settings.presentation.BackupUiState
+import com.riox432.civitdeck.feature.settings.presentation.BackupViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 import java.io.File
 import java.text.SimpleDateFormat

@@ -48,7 +48,7 @@ import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.LocalModelFile
 import com.riox432.civitdeck.domain.model.ModelDirectory
 import com.riox432.civitdeck.domain.model.ScanStatus
-import com.riox432.civitdeck.presentation.modelfiles.ModelFileBrowserViewModel
+import com.riox432.civitdeck.feature.gallery.presentation.ModelFileBrowserViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)

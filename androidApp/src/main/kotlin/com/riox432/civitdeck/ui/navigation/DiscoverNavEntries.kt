@@ -5,10 +5,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import com.riox432.civitdeck.BuildConfig
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
+import com.riox432.civitdeck.feature.gallery.presentation.ShareViewModel
+import com.riox432.civitdeck.feature.search.presentation.SimilarModelsViewModel
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
-import com.riox432.civitdeck.presentation.share.ShareViewModel
-import com.riox432.civitdeck.presentation.similar.SimilarModelsViewModel
-import com.riox432.civitdeck.presentation.textsearch.TextSearchViewModel
+import com.riox432.civitdeck.feature.search.presentation.TextSearchViewModel
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryScreen
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
 import com.riox432.civitdeck.ui.qrcode.QRScannerScreen

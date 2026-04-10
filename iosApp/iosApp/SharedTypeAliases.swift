@@ -351,7 +351,60 @@ typealias ExecuteGenerationUseCase = Feature_externalserverExecuteGenerationUseC
 typealias GetGenerationStatusUseCase = Feature_externalserverGetGenerationStatusUseCase
 typealias DeleteServerImagesUseCase = Feature_externalserverDeleteServerImagesUseCase
 
-// MARK: - Settings (SKIE auto-renames Shared* prefix, no typealiases needed)
+// MARK: - Settings VMs (moved from shared to feature-settings)
+typealias AuthSettingsViewModel = Feature_settingsAuthSettingsViewModel
+typealias ContentFilterSettingsViewModel = Feature_settingsContentFilterSettingsViewModel
+typealias DisplaySettingsViewModel = Feature_settingsDisplaySettingsViewModel
+typealias StorageSettingsViewModel = Feature_settingsStorageSettingsViewModel
+typealias AppBehaviorSettingsViewModel = Feature_settingsAppBehaviorSettingsViewModel
+
+typealias AuthSettingsUiState = Feature_settingsAuthSettingsUiState
+typealias ContentFilterSettingsUiState = Feature_settingsContentFilterSettingsUiState
+typealias DisplaySettingsUiState = Feature_settingsDisplaySettingsUiState
+typealias StorageSettingsUiState = Feature_settingsStorageSettingsUiState
+typealias AppBehaviorSettingsUiState = Feature_settingsAppBehaviorSettingsUiState
+typealias BackupViewModel = Feature_settingsBackupViewModel
+typealias BackupUiState = Feature_settingsBackupUiState
+
+// MARK: - ComfyHub VMs (moved from shared to feature-comfyui)
+typealias ComfyHubBrowserViewModel = Feature_comfyuiComfyHubBrowserViewModel
+typealias ComfyHubBrowserUiState = Feature_comfyuiComfyHubBrowserUiState
+typealias ComfyHubDetailViewModel = Feature_comfyuiComfyHubDetailViewModel
+typealias ComfyHubDetailUiState = Feature_comfyuiComfyHubDetailUiState
+
+// MARK: - Dataset VMs (moved from shared to feature-collections)
+typealias DatasetListViewModel = Feature_collectionsDatasetListViewModel
+
+typealias DatasetDetailViewModel = Feature_collectionsDatasetDetailViewModel
+
+typealias BatchTagEditorViewModel = Feature_collectionsBatchTagEditorViewModel
+
+typealias ExportWithPluginUseCase = Feature_collectionsExportWithPluginUseCase
+typealias GetAvailableExportFormatsUseCase = Feature_collectionsGetAvailableExportFormatsUseCase
+
+// MARK: - Search VMs (moved from shared to feature-search)
+typealias TextSearchViewModel = Feature_searchTextSearchViewModel
+typealias TextSearchUiState = Feature_searchTextSearchUiState
+typealias SimilarModelsViewModel = Feature_searchSimilarModelsViewModel
+typealias SimilarModelsUiState = Feature_searchSimilarModelsUiState
+
+// MARK: - Gallery VMs (moved from shared to feature-gallery)
+typealias DownloadQueueViewModel = Feature_galleryDownloadQueueViewModel
+typealias DownloadQueueUiState = Feature_galleryDownloadQueueUiState
+typealias ModelFileBrowserViewModel = Feature_galleryModelFileBrowserViewModel
+typealias ModelFileBrowserUiState = Feature_galleryModelFileBrowserUiState
+typealias ShareViewModel = Feature_galleryShareViewModel
+
+typealias GestureTutorialViewModel = Feature_galleryGestureTutorialViewModel
+typealias AnalyticsViewModel = Feature_galleryAnalyticsViewModel
+typealias AnalyticsUiState = Feature_galleryAnalyticsUiState
+typealias NotificationCenterViewModel = Feature_galleryNotificationCenterViewModel
+typealias NotificationCenterUiState = Feature_galleryNotificationCenterUiState
+
+
+// MARK: - Creator VMs (moved from shared to feature-creator)
+typealias FeedViewModel = Feature_creatorFeedViewModel
+typealias FeedUiState = Feature_creatorFeedUiState
 
 // MARK: - ModelImage Swift Extensions
 // Kotlin extension functions are not exported to Swift, so we mirror them here.
