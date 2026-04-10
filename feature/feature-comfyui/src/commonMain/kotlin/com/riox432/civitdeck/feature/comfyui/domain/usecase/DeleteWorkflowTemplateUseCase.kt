@@ -1,0 +1,7 @@
+package com.riox432.civitdeck.feature.comfyui.domain.usecase
+
+import com.riox432.civitdeck.domain.repository.SavedPromptRepository
+
+class DeleteWorkflowTemplateUseCase(private val repository: SavedPromptRepository) {
+    suspend operator fun invoke(id: Long) = repository.delete(id)
+}

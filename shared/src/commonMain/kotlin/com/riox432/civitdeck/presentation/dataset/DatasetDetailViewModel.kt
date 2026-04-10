@@ -32,7 +32,7 @@ class DatasetDetailViewModel(
     private val editCaptionUseCase: EditCaptionUseCase,
     private val updateTrainableUseCase: UpdateTrainableUseCase,
     detectDuplicatesUseCase: DetectDuplicatesUseCase,
-    private val exportWithPluginUseCase: ExportWithPluginUseCase,
+    exportWithPluginUseCase: ExportWithPluginUseCase,
     getAvailableExportFormatsUseCase: GetAvailableExportFormatsUseCase,
 ) : ViewModel() {
 
@@ -87,34 +87,23 @@ class DatasetDetailViewModel(
             .map { groups -> groups.sumOf { it.images.size } - groups.size }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), 0)
 
-    private val _showExportSheet = MutableStateFlow(false)
-    val showExportSheet: StateFlow<Boolean> = _showExportSheet.asStateFlow()
+    private val exportDelegate = DatasetExportDelegate(
+        datasetId = datasetId,
+        scope = viewModelScope,
+        exportWithPluginUseCase = exportWithPluginUseCase,
+        getAvailableExportFormatsUseCase = getAvailableExportFormatsUseCase,
+    )
 
-    private val _exportProgress = MutableStateFlow<ExportProgress?>(null)
-    val exportProgress: StateFlow<ExportProgress?> = _exportProgress.asStateFlow()
+    val showExportSheet: StateFlow<Boolean> = exportDelegate.showExportSheet
+    val exportProgress: StateFlow<ExportProgress?> = exportDelegate.exportProgress
+    val selectedExportFormatId: StateFlow<String?> = exportDelegate.selectedExportFormatId
+    val availableExportFormats: StateFlow<List<PluginExportFormat>> = exportDelegate.availableExportFormats
 
-    private val _selectedExportFormatId = MutableStateFlow<String?>(null)
-    val selectedExportFormatId: StateFlow<String?> = _selectedExportFormatId.asStateFlow()
-
-    val availableExportFormats: StateFlow<List<PluginExportFormat>> =
-        getAvailableExportFormatsUseCase()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
-
-    fun openExportSheet() { _showExportSheet.value = true }
-    fun dismissExportSheet() { _showExportSheet.value = false }
-
-    fun selectExportFormat(formatId: String) { _selectedExportFormatId.value = formatId }
-
-    fun startExport(formatId: String) {
-        _showExportSheet.value = false
-        viewModelScope.launch {
-            exportWithPluginUseCase(datasetId, formatId).collect { progress ->
-                _exportProgress.value = progress
-            }
-        }
-    }
-
-    fun dismissExportResult() { _exportProgress.value = null }
+    fun openExportSheet() = exportDelegate.openExportSheet()
+    fun dismissExportSheet() = exportDelegate.dismissExportSheet()
+    fun selectExportFormat(formatId: String) = exportDelegate.selectExportFormat(formatId)
+    fun startExport(formatId: String) = exportDelegate.startExport(formatId)
+    fun dismissExportResult() = exportDelegate.dismissExportResult()
 
     fun enterSelectionMode(imageId: Long) {
         _isSelectionMode.value = true

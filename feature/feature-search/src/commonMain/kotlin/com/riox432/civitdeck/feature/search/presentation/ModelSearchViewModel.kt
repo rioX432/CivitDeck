@@ -1,5 +1,3 @@
-@file:Suppress("TooManyFunctions")
-
 package com.riox432.civitdeck.feature.search.presentation
 
 import androidx.lifecycle.ViewModel
@@ -136,6 +134,21 @@ class ModelSearchViewModel(
         hiddenModelIds = _hiddenModelIds,
     )
 
+    private val filterDelegate = SearchFilterDelegate(
+        scope = viewModelScope,
+        filterState = _filterState,
+        hiddenModelIds = _hiddenModelIds,
+        getExcludedTagsUseCase = getExcludedTagsUseCase,
+        addExcludedTagUseCase = addExcludedTagUseCase,
+        removeExcludedTagUseCase = removeExcludedTagUseCase,
+        getHiddenModelIdsUseCase = getHiddenModelIdsUseCase,
+        hideModelUseCase = hideModelUseCase,
+        saveSearchFilterUseCase = saveSearchFilterUseCase,
+        deleteSavedSearchFilterUseCase = deleteSavedSearchFilterUseCase,
+        updateFilter = { transform -> updateFilter(transform) },
+        resetPaginationAndReload = ::refresh,
+    )
+
     val searchHistory: StateFlow<List<String>> =
         observeSearchHistoryUseCase()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
@@ -177,7 +190,7 @@ class ModelSearchViewModel(
     init {
         observeNsfwFilter()
         observeQualityThreshold()
-        loadExcludedTags()
+        filterDelegate.loadExcludedTags()
         loadDefaults(observeDefaultSortOrderUseCase, observeDefaultTimePeriodUseCase)
         loadRecommendations()
     }
@@ -194,7 +207,7 @@ class ModelSearchViewModel(
             viewModelScope.launch { addSearchHistoryUseCase(query.trim()) }
         }
         _filterState.update { it.copy(query = query) }
-        resetPaginationAndReload()
+        refresh()
     }
 
     fun onHistoryItemClick(query: String) {
@@ -223,22 +236,22 @@ class ModelSearchViewModel(
                 selectedSources = setOf(ModelSource.CIVITAI),
             )
         }
-        resetPaginationAndReload()
+        refresh()
     }
 
     fun onTypeSelected(type: ModelType?) {
         updateFilter { it.copy(selectedType = type) }
-        resetPaginationAndReload()
+        refresh()
     }
 
     fun onSortSelected(sort: SortOrder) {
         updateFilter { it.copy(selectedSort = sort) }
-        resetPaginationAndReload()
+        refresh()
     }
 
     fun onPeriodSelected(period: TimePeriod) {
         updateFilter { it.copy(selectedPeriod = period) }
-        resetPaginationAndReload()
+        refresh()
     }
 
     fun onBaseModelToggled(baseModel: BaseModel) {
@@ -248,17 +261,17 @@ class ModelSearchViewModel(
             }.toSet()
             it.copy(selectedBaseModels = updated)
         }
-        resetPaginationAndReload()
+        refresh()
     }
 
     fun onFreshFindToggled() {
         updateFilter { it.copy(isFreshFindEnabled = !it.isFreshFindEnabled) }
-        resetPaginationAndReload()
+        refresh()
     }
 
     fun onQualityFilterToggled() {
         updateFilter { it.copy(isQualityFilterEnabled = !it.isQualityFilterEnabled) }
-        resetPaginationAndReload()
+        refresh()
     }
 
     fun onAddIncludedTag(tag: String) {
@@ -267,12 +280,12 @@ class ModelSearchViewModel(
         val current = _filterState.value.includedTags
         if (trimmed in current) return
         updateFilter { it.copy(includedTags = it.includedTags + trimmed) }
-        resetPaginationAndReload()
+        refresh()
     }
 
     fun onRemoveIncludedTag(tag: String) {
         updateFilter { it.copy(includedTags = it.includedTags - tag) }
-        resetPaginationAndReload()
+        refresh()
     }
 
     fun toggleSource(source: ModelSource) {
@@ -285,84 +298,19 @@ class ModelSearchViewModel(
             }
             it.copy(selectedSources = updated.toSet())
         }
-        resetPaginationAndReload()
+        refresh()
     }
 
     // endregion
 
-    // region Excluded tags & hidden models
+    // region Excluded tags, hidden models & saved filters (delegated)
 
-    fun onAddExcludedTag(tag: String) {
-        val trimmed = tag.trim().lowercase()
-        if (trimmed.isBlank()) return
-        viewModelScope.launch {
-            addExcludedTagUseCase(trimmed)
-            loadExcludedTags()
-            resetPaginationAndReload()
-        }
-    }
-
-    fun onRemoveExcludedTag(tag: String) {
-        viewModelScope.launch {
-            removeExcludedTagUseCase(tag)
-            loadExcludedTags()
-            resetPaginationAndReload()
-        }
-    }
-
-    fun onHideModel(modelId: Long, modelName: String) {
-        viewModelScope.launch {
-            hideModelUseCase(modelId, modelName)
-            val ids = getHiddenModelIdsUseCase()
-            _hiddenModelIds.value = ids
-        }
-    }
-
-    // endregion
-
-    // region Saved filters
-
-    fun saveCurrentFilter(name: String) {
-        val filter = _filterState.value
-        val toSave = SavedSearchFilter(
-            id = 0,
-            name = name,
-            query = filter.query,
-            selectedType = filter.selectedType,
-            selectedSort = filter.selectedSort,
-            selectedPeriod = filter.selectedPeriod,
-            selectedBaseModels = filter.selectedBaseModels,
-            nsfwFilterLevel = filter.nsfwFilterLevel,
-            isFreshFindEnabled = filter.isFreshFindEnabled,
-            excludedTags = filter.excludedTags,
-            includedTags = filter.includedTags,
-            selectedSources = filter.selectedSources,
-            savedAt = 0,
-        )
-        viewModelScope.launch { saveSearchFilterUseCase(name, toSave) }
-    }
-
-    fun applyFilter(filter: SavedSearchFilter) {
-        updateFilter {
-            it.copy(
-                query = filter.query,
-                selectedType = filter.selectedType,
-                selectedSort = filter.selectedSort,
-                selectedPeriod = filter.selectedPeriod,
-                selectedBaseModels = filter.selectedBaseModels,
-                nsfwFilterLevel = filter.nsfwFilterLevel,
-                isFreshFindEnabled = filter.isFreshFindEnabled,
-                includedTags = filter.includedTags,
-                excludedTags = filter.excludedTags,
-                selectedSources = filter.selectedSources,
-            )
-        }
-        resetPaginationAndReload()
-    }
-
-    fun deleteSavedFilter(id: Long) {
-        viewModelScope.launch { deleteSavedSearchFilterUseCase(id) }
-    }
+    fun onAddExcludedTag(tag: String) = filterDelegate.onAddExcludedTag(tag)
+    fun onRemoveExcludedTag(tag: String) = filterDelegate.onRemoveExcludedTag(tag)
+    fun onHideModel(modelId: Long, modelName: String) = filterDelegate.onHideModel(modelId, modelName)
+    fun saveCurrentFilter(name: String) = filterDelegate.saveCurrentFilter(name)
+    fun applyFilter(filter: SavedSearchFilter) = filterDelegate.applyFilter(filter)
+    fun deleteSavedFilter(id: Long) = filterDelegate.deleteSavedFilter(id)
 
     // endregion
 
@@ -389,17 +337,13 @@ class ModelSearchViewModel(
     }
 
     fun refresh() {
-        resetPaginationAndReload()
+        pageLoader.resetPagination()
+        paginatedLoader.loadFirst()
     }
 
     // endregion
 
     // region Private helpers
-
-    private fun resetPaginationAndReload() {
-        pageLoader.resetPagination()
-        paginatedLoader.loadFirst()
-    }
 
     private fun loadDefaults(
         observeSortUseCase: ObserveDefaultSortOrderUseCase,
@@ -426,7 +370,7 @@ class ModelSearchViewModel(
                 if (prev != level) {
                     _filterState.update { it.copy(nsfwFilterLevel = level) }
                     loadRecommendations()
-                    resetPaginationAndReload()
+                    refresh()
                 }
             }
         }
@@ -456,16 +400,7 @@ class ModelSearchViewModel(
         }
     }
 
-    private fun loadExcludedTags() {
-        viewModelScope.launch {
-            val tags = getExcludedTagsUseCase()
-            val hiddenIds = getHiddenModelIdsUseCase()
-            _hiddenModelIds.value = hiddenIds
-            updateFilter { it.copy(excludedTags = tags) }
-        }
-    }
-
-    private fun updateFilter(transform: (FilterState) -> FilterState) {
+    internal val updateFilter: (transform: (FilterState) -> FilterState) -> Unit = { transform ->
         _filterState.update(transform)
         val f = _filterState.value
         _uiState.update {

@@ -121,6 +121,15 @@ class ModelDetailViewModel(
         submitReviewUseCase = submitReviewUseCase,
     )
 
+    private val notesTagsDelegate = DetailNotesTagsDelegate(
+        modelId = modelId,
+        scope = viewModelScope,
+        saveModelNoteUseCase = saveModelNoteUseCase,
+        deleteModelNoteUseCase = deleteModelNoteUseCase,
+        addPersonalTagUseCase = addPersonalTagUseCase,
+        removePersonalTagUseCase = removePersonalTagUseCase,
+    )
+
     private val _downloadEnqueuedEvent = MutableSharedFlow<Long>(extraBufferCapacity = 1)
     val downloadEnqueuedEvent: SharedFlow<Long> = _downloadEnqueuedEvent
 
@@ -162,27 +171,11 @@ class ModelDetailViewModel(
         loadModel()
     }
 
-    // region Notes & Tags
+    // region Notes & Tags (delegated)
 
-    fun saveNote(text: String) {
-        launchCatching("Note save") {
-            if (text.isBlank()) {
-                deleteModelNoteUseCase(modelId)
-            } else {
-                saveModelNoteUseCase(modelId, text)
-            }
-        }
-    }
-
-    fun addTag(tag: String) {
-        val trimmed = tag.trim().lowercase()
-        if (trimmed.isBlank()) return
-        launchCatching("Add tag") { addPersonalTagUseCase(modelId, trimmed) }
-    }
-
-    fun removeTag(tag: String) {
-        launchCatching("Remove tag") { removePersonalTagUseCase(modelId, tag) }
-    }
+    fun saveNote(text: String) = notesTagsDelegate.saveNote(text)
+    fun addTag(tag: String) = notesTagsDelegate.addTag(tag)
+    fun removeTag(tag: String) = notesTagsDelegate.removeTag(tag)
 
     // endregion
 
