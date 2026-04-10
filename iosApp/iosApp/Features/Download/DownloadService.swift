@@ -67,10 +67,18 @@ final class DownloadService: NSObject, ObservableObject {
 
     fileprivate func handleProgress(downloadId: Int64, written: Int64, total: Int64) {
         Task {
-            try? await repository.updateProgress(id: downloadId, downloadedBytes: written)
-            try? await repository.updateStatus(
-                id: downloadId, status: .downloading, errorMessage: nil
-            )
+            do {
+                try await repository.updateProgress(id: downloadId, downloadedBytes: written)
+            } catch {
+                print("DownloadService: progress update failed: \(error)")
+            }
+            do {
+                try await repository.updateStatus(
+                    id: downloadId, status: .downloading, errorMessage: nil
+                )
+            } catch {
+                print("DownloadService: status update failed: \(error)")
+            }
         }
     }
 
@@ -78,15 +86,28 @@ final class DownloadService: NSObject, ObservableObject {
         activeTasks.removeValue(forKey: downloadId)
         if let error {
             Task {
-                try? await repository.updateStatus(
-                    id: downloadId, status: .failed, errorMessage: error.localizedDescription
-                )
+                do {
+                    try await repository.updateStatus(
+                        id: downloadId, status: .failed, errorMessage: error.localizedDescription
+                    )
+                } catch {
+                    print("DownloadService: status update failed: \(error)")
+                }
             }
             return
         }
         guard let location else { return }
         Task {
-            guard let download = try? await repository.getDownloadById(id: downloadId) else {
+            let download: ModelDownload
+            do {
+                guard let fetched = try await repository.getDownloadById(id: downloadId) else {
+                    print("DownloadService: download record not found for id \(downloadId)")
+                    try? FileManager.default.removeItem(at: location)
+                    return
+                }
+                download = fetched
+            } catch {
+                print("DownloadService: failed to fetch download record: \(error)")
                 try? FileManager.default.removeItem(at: location)
                 return
             }
@@ -96,33 +117,59 @@ final class DownloadService: NSObject, ObservableObject {
             let typeDir = documentsDir
                 .appendingPathComponent("Downloads")
                 .appendingPathComponent(download.modelType)
-            try? FileManager.default.createDirectory(
-                at: typeDir, withIntermediateDirectories: true
-            )
+            do {
+                try FileManager.default.createDirectory(
+                    at: typeDir, withIntermediateDirectories: true
+                )
+            } catch {
+                print("DownloadService: failed to create directory: \(error)")
+            }
             let destFile = typeDir.appendingPathComponent(download.fileName)
             try? FileManager.default.removeItem(at: destFile)
             do {
                 try FileManager.default.moveItem(at: location, to: destFile)
-                try? await repository.updateDestinationPath(id: downloadId, path: destFile.path)
+                do {
+                    try await repository.updateDestinationPath(id: downloadId, path: destFile.path)
+                } catch {
+                    print("DownloadService: failed to update destination path: \(error)")
+                }
                 await verifyHash(downloadId: downloadId, filePath: destFile, expectedSha256: download.expectedSha256)
-                try? await repository.updateStatus(
-                    id: downloadId, status: .completed, errorMessage: nil
-                )
+                do {
+                    try await repository.updateStatus(
+                        id: downloadId, status: .completed, errorMessage: nil
+                    )
+                } catch {
+                    print("DownloadService: failed to update completed status: \(error)")
+                }
             } catch {
-                try? await repository.updateStatus(
-                    id: downloadId, status: .failed,
-                    errorMessage: "Failed to move file: \(error.localizedDescription)"
-                )
+                do {
+                    try await repository.updateStatus(
+                        id: downloadId, status: .failed,
+                        errorMessage: "Failed to move file: \(error.localizedDescription)"
+                    )
+                } catch {
+                    print("DownloadService: failed to update failed status: \(error)")
+                }
             }
         }
     }
     private func verifyHash(downloadId: Int64, filePath: URL, expectedSha256: String?) async {
         guard let expectedHash = expectedSha256, !expectedHash.isEmpty else { return }
-        guard let fileData = try? Data(contentsOf: filePath) else { return }
+        let fileData: Data
+        do {
+            fileData = try Data(contentsOf: filePath)
+        } catch {
+            print("DownloadService: failed to read file for hash verification: \(error)")
+            return
+        }
         let digest = SHA256.hash(data: fileData)
         let actualHash = digest.map { String(format: "%02x", $0) }.joined()
         let matched = actualHash.lowercased() == expectedHash.lowercased()
-        try? await repository.updateHashVerified(id: downloadId, verified: matched)
+        do {
+            try await repository.updateHashVerified(id: downloadId, verified: matched)
+        } catch {
+            print("DownloadService: failed to update hash verification: \(error)")
+        }
     }
 }
 
@@ -140,7 +187,15 @@ private class DownloadSessionDelegate: NSObject, URLSessionDownloadDelegate {
         // Copy to temp before dispatching to main actor (location is only valid in this callback)
         let tempDir = FileManager.default.temporaryDirectory
         let tempFile = tempDir.appendingPathComponent(UUID().uuidString)
-        try? FileManager.default.copyItem(at: location, to: tempFile)
+        do {
+            try FileManager.default.copyItem(at: location, to: tempFile)
+        } catch {
+            print("DownloadService: failed to copy downloaded file to temp: \(error)")
+            Task { @MainActor [weak service] in
+                service?.handleComplete(downloadId: downloadId, location: nil, error: error)
+            }
+            return
+        }
 
         Task { @MainActor [weak service] in
             service?.handleComplete(downloadId: downloadId, location: tempFile, error: nil)

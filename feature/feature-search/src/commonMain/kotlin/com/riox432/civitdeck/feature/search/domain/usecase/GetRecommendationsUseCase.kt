@@ -23,7 +23,6 @@ class GetRecommendationsUseCase(
     private val userPreferencesRepository: ContentFilterPreferencesRepository,
     private val appBehaviorRepository: AppBehaviorPreferencesRepository,
 ) {
-    @Suppress("LongMethod")
     suspend operator fun invoke(): List<RecommendationSection> {
         val sections = mutableListOf<RecommendationSection>()
         val seenIds = mutableSetOf<Long>()

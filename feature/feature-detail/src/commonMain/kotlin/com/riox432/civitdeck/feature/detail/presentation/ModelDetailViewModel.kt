@@ -2,7 +2,6 @@ package com.riox432.civitdeck.feature.detail.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.InteractionType
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelCollection
@@ -10,7 +9,6 @@ import com.riox432.civitdeck.domain.model.ModelDownload
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelNote
-import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PersonalTag
 import com.riox432.civitdeck.domain.model.RatingTotals
@@ -141,6 +139,23 @@ class ModelDetailViewModel(
         observeModelCollectionsUseCase(modelId)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
+    private val collectionDelegate = DetailCollectionDelegate(
+        scope = viewModelScope,
+        modelCollectionIds = modelCollectionIds,
+        addModelToCollectionUseCase = addModelToCollectionUseCase,
+        removeModelFromCollectionUseCase = removeModelFromCollectionUseCase,
+        createCollectionUseCase = createCollectionUseCase,
+    )
+
+    private val downloadDelegate = DetailDownloadDelegate(
+        modelId = modelId,
+        scope = viewModelScope,
+        enqueueDownloadUseCase = enqueueDownloadUseCase,
+        cancelDownloadUseCase = cancelDownloadUseCase,
+        trackModelViewUseCase = trackModelViewUseCase,
+        downloadEnqueuedEvent = _downloadEnqueuedEvent,
+    )
+
     init {
         loadModel()
         observeFavorite()
@@ -179,45 +194,26 @@ class ModelDetailViewModel(
 
     // endregion
 
-    // region Collections
+    // region Collections (delegated)
 
-    fun toggleCollection(collectionId: Long) {
-        val model = _uiState.value.model ?: return
-        launchCatching("Collection toggle") {
-            if (collectionId in modelCollectionIds.value) {
-                removeModelFromCollectionUseCase(collectionId, model.id)
-            } else {
-                addModelToCollectionUseCase(collectionId, model)
-            }
-        }
-    }
+    fun toggleCollection(collectionId: Long) =
+        collectionDelegate.toggleCollection(collectionId, _uiState.value.model)
 
-    fun createCollectionAndAdd(name: String) {
-        val model = _uiState.value.model ?: return
-        launchCatching("Create collection and add") {
-            val newId = createCollectionUseCase(name)
-            addModelToCollectionUseCase(newId, model)
-        }
-    }
+    fun createCollectionAndAdd(name: String) =
+        collectionDelegate.createCollectionAndAdd(name, _uiState.value.model)
 
     // endregion
 
-    // region Downloads
+    // region Downloads (delegated)
 
     fun downloadFile(file: ModelFile) {
-        val model = _uiState.value.model ?: return
-        val version = model.modelVersions.getOrNull(_uiState.value.selectedVersionIndex) ?: return
-        launchCatching("Download enqueue") {
-            val download = buildModelDownload(model, version, file)
-            val id = enqueueDownloadUseCase(download)
-            _downloadEnqueuedEvent.tryEmit(id)
-            trackModelViewUseCase.trackInteraction(modelId, InteractionType.DOWNLOAD)
-        }
+        val state = _uiState.value
+        val model = state.model ?: return
+        val version = model.modelVersions.getOrNull(state.selectedVersionIndex)
+        downloadDelegate.downloadFile(file, model, version)
     }
 
-    fun cancelDownload(downloadId: Long) {
-        launchCatching("Cancel download") { cancelDownloadUseCase(downloadId) }
-    }
+    fun cancelDownload(downloadId: Long) = downloadDelegate.cancelDownload(downloadId)
 
     // endregion
 
@@ -416,28 +412,9 @@ class ModelDetailViewModel(
         )
     }
 
-    private fun buildModelDownload(
-        model: Model,
-        version: ModelVersion,
-        file: ModelFile,
-    ): ModelDownload = ModelDownload(
-        modelId = model.id,
-        modelName = model.name,
-        versionId = version.id,
-        versionName = version.name,
-        fileId = file.id,
-        fileName = file.name,
-        fileUrl = file.downloadUrl,
-        fileSizeBytes = (file.sizeKB * KB_TO_BYTES).toLong(),
-        status = DownloadStatus.Pending,
-        modelType = model.type.name,
-        expectedSha256 = file.hashes["SHA256"],
-    )
-
     // endregion
 }
 
 private const val TAG = "ModelDetailViewModel"
 private const val STOP_TIMEOUT = 5_000L
 private const val END_VIEW_TIMEOUT = 5_000L
-private const val KB_TO_BYTES = 1024.0
