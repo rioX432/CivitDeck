@@ -359,9 +359,6 @@ struct ModelSearchScreen: View {
                     previousDragY = currentY
 
                     guard abs(delta) > 0.5 else { return }
-
-                    // delta > 0 → finger moves down → scroll up → show header
-                    // delta < 0 → finger moves up → scroll down → hide header
                     let draggingDown = delta < 0
 
                     if draggingDown != isDraggingDown {
@@ -392,8 +389,7 @@ struct ModelSearchScreen: View {
     private var emptyView: some View {
         EmptyStateView(icon: "magnifyingglass", title: "No models found")
     }
-}
-extension ModelSearchScreen { // MARK: - Filter Chips
+    // MARK: - Filter Chips
     var sourceFilterChips: some View {
         filterChipRow {
             ForEach(Core_domainModelSource.allCases, id: \.self) { source in
@@ -446,8 +442,7 @@ extension ModelSearchScreen { // MARK: - Filter Chips
             }
         }
     }
-}
-extension ModelSearchScreen { // MARK: - Filter FAB
+    // MARK: - Filter FAB
     var filterFab: some View {
         Button {
             showFilterSheet = true
@@ -476,8 +471,6 @@ extension ModelSearchScreen { // MARK: - Filter FAB
         .opacity(headerVisible ? 1 : 0)
         .animation(MotionAnimation.fast, value: headerVisible)
     }
-}
-extension ModelSearchScreen { // MARK: - Extracted Subviews
     var includedTagsSection: some View {
         TagFilterSection(
             title: "Tags (include)",
