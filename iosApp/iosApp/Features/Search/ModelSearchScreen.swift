@@ -112,7 +112,6 @@ struct ModelSearchScreen: View {
             }
         }
     }
-
     private var activeFilterCount: Int {
         var count = 0
         if viewModel.selectedType != nil { count += 1 }
@@ -126,7 +125,6 @@ struct ModelSearchScreen: View {
         if viewModel.selectedSources != Set([Core_domainModelSource.civitai]) { count += 1 }
         return count
     }
-
     private var collapsibleHeader: some View {
         VStack(spacing: 0) {
             searchBarWithFilterButton
@@ -294,7 +292,6 @@ struct ModelSearchScreen: View {
             .animation(MotionAnimation.standard, value: showHistory)
         }
     }
-
     private var modelGrid: some View {
         ScrollView {
             VStack(spacing: 0) {
@@ -389,7 +386,8 @@ struct ModelSearchScreen: View {
     private var emptyView: some View {
         EmptyStateView(icon: "magnifyingglass", title: "No models found")
     }
-    // MARK: - Filter Chips
+}
+extension ModelSearchScreen { // MARK: - Filter Chips
     var sourceFilterChips: some View {
         filterChipRow {
             ForEach(Core_domainModelSource.allCases, id: \.self) { source in
@@ -442,7 +440,8 @@ struct ModelSearchScreen: View {
             }
         }
     }
-    // MARK: - Filter FAB
+}
+extension ModelSearchScreen { // MARK: - Filter FAB
     var filterFab: some View {
         Button {
             showFilterSheet = true
@@ -471,6 +470,8 @@ struct ModelSearchScreen: View {
         .opacity(headerVisible ? 1 : 0)
         .animation(MotionAnimation.fast, value: headerVisible)
     }
+}
+extension ModelSearchScreen { // MARK: - Tag Sections
     var includedTagsSection: some View {
         TagFilterSection(
             title: "Tags (include)",
