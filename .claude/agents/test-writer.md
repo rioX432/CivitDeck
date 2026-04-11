@@ -4,7 +4,6 @@ description: "Generate unit tests for changed or new code. Use during developmen
 tools: Read, Grep, Glob, Write, Edit, Bash
 model: sonnet
 maxTurns: 30
-permissionMode: bypassPermissions
 ---
 
 # Test Writer Agent
