@@ -4,7 +4,6 @@ description: "Security vulnerability scanner based on OWASP. Use during code rev
 tools: Read, Grep, Glob
 model: sonnet
 maxTurns: 20
-permissionMode: bypassPermissions
 ---
 
 # Security Reviewer Agent
