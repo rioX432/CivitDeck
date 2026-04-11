@@ -2,6 +2,17 @@
 
 Strictly follow the rules in [AGENTS.md](./AGENTS.md).
 
+## Core Values
+
+1. **CivitAIモデルの快適なブラウジング** — ネイティブUIでスワイプ・比較・メタデータ確認がスムーズ
+2. **見つけたモデルをローカル生成環境に直結** — CivitAI→ComfyUI/A1111へシームレスに送れる
+3. **スマホから自宅ComfyUIを完全操作** — 画像生成・LoRA学習を簡単操作で。圧倒的なモバイルUXの追求
+
+## Won't Do
+- **アプリ内画像生成（オンデバイス推論）** — ComfyUIサーバーに送るのが本質。スマホで推論する必要なし
+- **SNS/コミュニティ機能** — CivitAI本体の領域。ブラウジングと操作に集中
+- **モデル学習/ファインチューニングのUI以外の処理** — 操作UIは提供するが、学習処理自体はComfyUI側の責務
+
 ## Think Twice
 
 Before acting, always pause and reconsider. Re-read the requirements, re-check your assumptions, and verify your approach is correct before writing any code.
