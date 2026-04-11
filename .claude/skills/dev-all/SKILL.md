@@ -44,6 +44,16 @@ Each issue gets its own branch, PR, and merge cycle:
 
 ---
 
+## Step 0: Core Value Check (GATE)
+
+1. Read the project's `CLAUDE.md` and look for `## Core Values` section
+2. **If missing**: Warn the user that Core Values are undefined. Ask if they want to:
+   - Define Core Values now (recommended)
+   - Proceed without the filter (not recommended — risk of feature bloat)
+3. If user chooses to proceed without, log a warning in the final report
+
+---
+
 ## Step 1: Resolve Target Issues
 
 **If `$ARGUMENTS` is provided:** Extract issue numbers.
@@ -51,6 +61,11 @@ Each issue gets its own branch, PR, and merge cycle:
 ```bash
 gh issue list --state open --json number,title,labels,body --limit 100
 ```
+
+### 1a. Filter Issues
+
+- **Skip issues labeled `won't`** — these are explicitly decided not to implement
+- **Skip issues listed in CLAUDE.md `## Won't Do`** — cross-reference issue titles
 
 ---
 
@@ -83,8 +98,9 @@ Topological sort:
 Present:
 1. Ordered list of issues
 2. Dependencies detected
-3. Skipped issues (with reasons)
+3. Skipped issues (with reasons — including `won't` label and Won't Do matches)
 4. Estimated scope per issue
+5. **Core Value alignment per issue** (if Core Values are defined)
 
 Ask user to confirm before proceeding.
 
