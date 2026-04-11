@@ -1,6 +1,6 @@
 ---
 name: update-docs
-description: "Audit and update project docs — ARCHITECTURE.md from module structure, CHANGELOG.md from git history, README cross-references, and missing OSS docs"
+description: "Audit and update project docs — ARCHITECTURE.md, CHANGELOG.md, README cross-references, and missing OSS docs"
 argument-hint: "[target: all | architecture | changelog | readme | oss]"
 user-invocable: true
 disable-model-invocation: true
@@ -8,25 +8,24 @@ allowed-tools:
   - Bash(git log:*)
   - Bash(git tag:*)
   - Bash(git show:*)
+  - Bash(git diff:*)
   - Bash(ls *)
   - Glob
   - Grep
   - Read
   - Edit
   - Write
-  - Task
+  - Agent
   - TaskCreate
   - TaskUpdate
   - TaskList
   - TaskGet
   - AskUserQuestion
-  - mcp__codex__codex
-  - mcp__codex__codex-reply
 ---
 
 # /update-docs — Documentation Audit & Update
 
-Sync CivitDeck documentation with implementation state. Reads module structure, git history, and existing docs to fix gaps.
+Sync project documentation with implementation state. Reads project structure, git history, and existing docs to find and fix gaps.
 
 **Arguments:** "$ARGUMENTS"
 
@@ -35,78 +34,72 @@ Sync CivitDeck documentation with implementation state. Reads module structure, 
 ## Phase 0: Parse Arguments
 
 Parse `$ARGUMENTS` (case-insensitive):
-- `architecture` → update ARCHITECTURE.md + AGENTS.md only
+- `architecture` → update ARCHITECTURE.md only
 - `changelog` → generate/update CHANGELOG.md only
-- `readme` → update README.md + README.ja.md cross-references only
-- `oss` → create missing OSS docs (SECURITY.md) + add README links
+- `readme` → update README cross-references only
+- `oss` → create missing OSS docs (SECURITY.md, CONTRIBUTING.md) + add README links
 - `all` or empty → run all phases
 
 If `$ARGUMENTS` is empty or unrecognized, use `AskUserQuestion`:
 
 **Q: Which documents should be updated?**
 - All documents (architecture + changelog + readme + oss) *(Recommended)*
-- ARCHITECTURE.md + AGENTS.md — fix outdated module structure
+- ARCHITECTURE.md — fix outdated module/directory structure
 - CHANGELOG.md — generate from git history
-- README.md + README.ja.md — update cross-references and Features
+- README.md — update cross-references and features
 - OSS docs — create SECURITY.md, add README links
 
 ---
 
 ## Phase 1: Create Task Tracker
 
-Create tasks based on selected scope. Use `TaskCreate` for each:
+Create tasks based on selected scope:
 
 | Subject | When |
 |---------|------|
-| "Gather: modules + docs + git + features (parallel scan)" | always |
-| "Update ARCHITECTURE.md + AGENTS.md" | target = architecture or all |
+| "Gather: project structure + docs + git history (parallel scan)" | always |
+| "Update ARCHITECTURE.md" | target = architecture or all |
 | "Generate/update CHANGELOG.md" | target = changelog or all |
-| "Update README.md + README.ja.md" | target = readme or all |
-| "Create SECURITY.md" | target = oss or all |
+| "Update README.md" | target = readme or all |
+| "Create missing OSS docs" | target = oss or all |
 | "Verify internal links" | target = all (or whenever files are modified) |
 
 ---
 
 ## Phase 1b: Parallel Information Gathering
 
-Mark task 1 `in_progress`. Launch **4 Task subagents in parallel** (`subagent_type: "Explore"`, `model: "haiku"`).
+Mark gathering task `in_progress`. Launch **4 Explore subagents in parallel** (model: haiku).
 
 ---
 
-### Subagent A: Module Structure Scanner
+### Subagent A: Project Structure Scanner
 
 ```
-Scan the CivitDeck KMP project module structure.
+Scan the project directory structure to understand the codebase layout.
 
-Root: /Users/rio/workspace/projects/CivitDeck/
+Root: {project root — derive from git rev-parse --show-toplevel}
 
 ## What to find:
 
-### 1. All Gradle modules
-Read `settings.gradle.kts` and extract every `include(...)` line.
-For each module path (e.g. ":core:core-domain"), derive:
-- gradle path (e.g. ":core:core-domain")
-- directory path (e.g. "core/core-domain/")
-- one-line description (infer from directory name and contents)
+### 1. Top-level directory inventory
+List all top-level directories and their purpose (infer from names and contents).
 
-### 2. Module contents (spot-check)
-For each module, check if its `src/commonMain/kotlin/.../` (or `src/main/kotlin/...`) directory exists and list top-level subdirectories (e.g. domain/model, data/api, ui/components).
+### 2. Source code structure
+Find the primary source directories and their organization:
+- Look for src/, lib/, app/, packages/, modules/, feature/, core/ patterns
+- For each major directory, list subdirectories (1-2 levels deep)
+- Note the primary language(s) (check file extensions)
 
-### 3. Convention plugins
-Check `build-logic/` for convention plugin files (*.gradle.kts). List their names.
+### 3. Build system
+Identify the build system and its configuration:
+- Package managers: package.json, Cargo.toml, go.mod, build.gradle.kts, pyproject.toml, etc.
+- Monorepo tools: nx.json, turbo.json, lerna.json, settings.gradle.kts, Cargo workspace
+- If monorepo: list all packages/modules with their names
 
-Return format (JSON-like):
-{
-  "modules": [
-    {
-      "gradlePath": ":core:core-domain",
-      "dirPath": "core/core-domain",
-      "description": "Domain layer: models, repository interfaces, use cases",
-      "topLevelDirs": ["domain/model", "domain/repository", "domain/usecase"]
-    }
-  ],
-  "conventionPlugins": ["civitdeck.kmp.library", "civitdeck.android.application"]
-}
+### 4. Configuration files
+List notable config files: CI workflows, Docker, linting, formatting, etc.
+
+Return a structured summary of the project layout.
 ```
 
 ---
@@ -114,50 +107,31 @@ Return format (JSON-like):
 ### Subagent B: Existing Docs Scanner
 
 ```
-Scan all documentation files in the CivitDeck project.
+Scan all documentation files in the project.
 
-Root: /Users/rio/workspace/projects/CivitDeck/
+Root: {project root}
 
 ## What to find:
 
 ### 1. Document inventory
 Use Glob to find all *.md files in: root, docs/, .github/.
-For each file, record:
-- path
-- first heading (title)
-- approximate line count
-- last-modified (not available — skip)
+For each file, record: path, first heading (title), approximate line count.
 
 ### 2. Document content summary
-For each of these specific files, read and summarize key sections:
-- README.md — Features section, links section
-- README.ja.md — Features section (機能), links
-- docs/ARCHITECTURE.md — Module Structure section
-- AGENTS.md — any Module Structure or module list section
-- docs/CONTRIBUTING.md — first 10 lines
-- docs/ROADMAP.md — first 10 lines
+For each of these files (if they exist), read and summarize key sections:
+- README.md — Features/description section, links section
+- docs/ARCHITECTURE.md or ARCHITECTURE.md — structure section
+- CONTRIBUTING.md or docs/CONTRIBUTING.md — first 10 lines
+- CHANGELOG.md — latest version entry
 
 ### 3. Internal link inventory
-For README.md and README.ja.md, extract ALL markdown links (pattern: `[text](path)`).
-For each link, record: link text, target path, is relative (starts with docs/ or #).
+For README.md, extract ALL markdown links (pattern: `[text](path)`).
+For each link: text, target path, whether it's a relative link.
 
-### 4. Missing OSS files
-Check if these files exist (use ls or Glob):
-- CHANGELOG.md (root)
-- SECURITY.md (root)
-- docs/CODE_OF_CONDUCT.md
+### 4. Missing standard files
+Check existence of: CHANGELOG.md, SECURITY.md, CONTRIBUTING.md, LICENSE
 
-Return format (JSON-like):
-{
-  "allDocs": ["README.md", "README.ja.md", "AGENTS.md", "docs/ARCHITECTURE.md", ...],
-  "missingOssDocs": ["CHANGELOG.md", "SECURITY.md"],
-  "readmeLinks": [
-    {"text": "CONTRIBUTING.md", "path": "docs/CONTRIBUTING.md", "exists": true},
-    {"text": "ROADMAP.md", "path": "docs/ROADMAP.md", "exists": true}
-  ],
-  "architectureMdModuleTree": "copy of the Module Structure section content",
-  "agentsMdModuleSection": "copy of any module list in AGENTS.md"
-}
+Return a structured summary including: allDocs, missingFiles, readmeLinks, existing doc summaries.
 ```
 
 ---
@@ -165,49 +139,35 @@ Return format (JSON-like):
 ### Subagent C: Git History Scanner
 
 ```
-Scan git history for CHANGELOG generation in CivitDeck.
+Scan git history for CHANGELOG generation.
 
-Root: /Users/rio/workspace/projects/CivitDeck/
+Root: {project root}
 
 ## What to find:
 
-### 1. Latest git tag
-Run: git tag --sort=-version:refname | head -5
-If no tags exist, note "no tags — will use full history from initial commit".
+### 1. Latest git tags
+Run: git tag --sort=-version:refname | head -10
+If no tags, note "no tags — will use full history".
 
-### 2. Commits since last tag (or all if no tags)
+### 2. Commits since last tag (or recent 100 if no tags)
 If tag exists:
   git log {latest_tag}..HEAD --pretty=format:"%H|%s|%as|%an" --no-merges
 If no tag:
   git log --pretty=format:"%H|%s|%as|%an" --no-merges | head -100
 
 ### 3. Classify each commit
-For each commit subject line, classify into one category:
-- Added: new feature, new screen, new module, "add", "implement", "support"
+For each commit subject, classify into:
+- Added: new feature, "add", "implement", "support", "introduce"
 - Changed: update, refactor, improve, bump, migrate, rename
-- Fixed: fix, bug, crash, error, broken, wrong, revert
+- Fixed: fix, bug, crash, error, broken, revert
 - Removed: remove, delete, drop, clean
-- Infrastructure: CI, lint, Detekt, SwiftLint, build, gradle, workflow, githubactions
+- Infrastructure: CI, lint, build, workflow, docker, deps
 
-### 4. PR merge commits (for context only)
-Run: git log --pretty=format:"%H|%s|%as" --merges | head -20
-Extract PR numbers from merge commit subjects if present.
+### 4. Tagged releases
+For each tag found, get the tag date:
+  git log -1 --format="%as" {tag}
 
-Return format (JSON-like):
-{
-  "latestTag": "v1.0.0",  // or null
-  "commits": [
-    {
-      "hash": "abc1234",
-      "subject": "Add ComfyUI queue management (#194)",
-      "date": "2025-01-15",
-      "category": "Added"
-    }
-  ],
-  "prMerges": [
-    {"hash": "def5678", "subject": "Add workflow template library (#177)", "date": "2025-01-10"}
-  ]
-}
+Return: latestTag, classified commits, tag list with dates.
 ```
 
 ---
@@ -215,82 +175,52 @@ Return format (JSON-like):
 ### Subagent D: Feature Inventory Scanner
 
 ```
-Inventory implemented features in CivitDeck.
+Inventory the project's implemented features by examining the source code.
 
-Root: /Users/rio/workspace/projects/CivitDeck/
+Root: {project root}
 
 ## What to find:
 
-### 1. Android feature modules (from feature/ directory)
-For each subdirectory in feature/:
-- Module name (e.g. feature-comfyui)
-- Does it have a Screen composable? (Grep for "fun.*Screen(" in the module)
-- Does it have a ViewModel? (Grep for "ViewModel()" in the module)
-- One-line inferred description
+### 1. Entry points and main modules
+Find main application entry points (main.py, index.ts, App.kt, main.go, etc.).
+List the primary features/screens/routes/commands exposed.
 
-### 2. iOS feature ViewModels
-List Swift files matching: iosApp/iosApp/Features/**/*ViewModel.swift
-For each: ViewModel name, parent feature directory
+### 2. API surface (if applicable)
+Grep for route/endpoint definitions, CLI commands, or exported modules.
 
-### 3. Database version
-Read: core/core-database/src/commonMain/kotlin/.../CivitDeckDatabase.kt
-Extract the `version = N` value.
-Also count migration files in: core/core-database/src/commonMain/kotlin/.../migration/
+### 3. Notable integrations
+Grep for: database, auth, API client, websocket, queue, cache, storage patterns.
+List external service integrations found.
 
-### 4. Notable implemented features (deep check)
-Check for these specific feature signals:
-- ComfyUI integration: Grep for "ComfyUI" in feature-comfyui/
-- Collections: Grep for "Collection" in feature-collections/
-- Prompt templates: Grep for "template" (case-insensitive) in feature-prompts/
-- LoRA/ControlNet: Grep for "LoRA\|ControlNet" in feature-comfyui/
-- Custom workflow import: Grep for "import.*workflow\|workflow.*import" (case-insensitive)
+### 4. README-claimed features vs actual
+Read README.md's features section. For each claimed feature, verify it exists in code.
+Note any features found in code but NOT mentioned in README.
 
-Return format (JSON-like):
-{
-  "androidFeatures": [
-    {
-      "module": "feature-comfyui",
-      "hasScreen": true,
-      "hasViewModel": true,
-      "description": "ComfyUI generation with queue management and workflow templates"
-    }
-  ],
-  "iosViewModels": ["ComfyUIGenerationViewModel", "CollectionsViewModel", ...],
-  "dbVersion": 19,
-  "migrationCount": 18,
-  "notableFeatures": {
-    "comfyUI": true,
-    "collections": true,
-    "promptTemplates": true,
-    "loraControlNet": true,
-    "customWorkflowImport": true
-  }
-}
+Return: list of implemented features, integrations, and any README gaps.
 ```
 
 ---
 
 ## Phase 2: Gap Analysis
 
-Mark task 1 `completed`.
+Mark gathering task `completed`.
 
-Consolidate results from all 4 subagents and identify gaps:
+Consolidate results from all subagents and identify gaps:
 
 ### Architecture gaps (compare A vs B)
-- Modules in `settings.gradle.kts` (Subagent A) that are NOT reflected in `docs/ARCHITECTURE.md` Module Structure tree (Subagent B)
-- Outdated module paths (e.g. `shared/data/`, `shared/domain/` — the old monolith structure)
-- DI section still referring to `shared/di/` instead of per-module DI
+- Directories/modules in the actual project (Subagent A) NOT reflected in ARCHITECTURE.md (Subagent B)
+- Outdated paths or descriptions in ARCHITECTURE.md
 
 ### CHANGELOG gaps (from C)
-- Does `CHANGELOG.md` exist? (Subagent B: missingOssDocs)
-- How many unlogged commits since last tag?
+- Does CHANGELOG.md exist?
+- How many unlogged commits since last tag/entry?
 
 ### README gaps (compare B vs D)
-- Features in Subagent D's `notableFeatures` that are NOT in README.md Features section
-- Missing links to CHANGELOG.md or SECURITY.md
+- Features found in code (Subagent D) NOT listed in README Features section
+- Broken or missing internal links
 
 ### OSS gaps (from B)
-- Which files in `missingOssDocs` are absent?
+- Which standard files (SECURITY.md, CONTRIBUTING.md, LICENSE) are missing?
 
 ---
 
@@ -301,88 +231,53 @@ Present gap analysis to user with `AskUserQuestion`:
 ```
 Gap Analysis Results:
 
-Architecture: [N outdated module paths found in ARCHITECTURE.md]
+Architecture: [N outdated/missing entries in ARCHITECTURE.md]
 CHANGELOG: [exists / missing — N unlogged commits]
 README Features: [N implemented features not listed]
-OSS docs: [SECURITY.md missing / CHANGELOG.md missing]
+OSS docs: [list missing files]
 ```
 
 **Q: Proceed with these updates?**
 - Yes, update everything found above *(Recommended)*
-- Let me review first (show full diff preview)
+- Let me review first (show details)
 - Skip specific section (specify which)
-
-If user wants to skip a section, ask which one to skip.
 
 ---
 
-## Phase 4: Update ARCHITECTURE.md + AGENTS.md
+## Phase 4: Update ARCHITECTURE.md
 
 *(Skip if target = changelog, readme, or oss)*
 
-Mark task "Update ARCHITECTURE.md + AGENTS.md" `in_progress`.
+Mark task `in_progress`.
 
-### 4a. Build new Module Structure tree
+### 4a. Build updated structure
 
-Using Subagent A results, construct the full module tree:
+Using Subagent A results, construct/update the project structure tree. Match the style already used in ARCHITECTURE.md (if it exists). If no ARCHITECTURE.md exists, create one with this structure:
+
+```markdown
+# Architecture
+
+## Project Structure
 
 ```
-CivitDeck/
-├── build-logic/              # Convention Plugins (civitdeck.kmp.library, civitdeck.android.application)
-├── shared/                   # KMP coordinator — re-exports core modules via api()
-├── core/
-│   ├── core-domain/          # Domain layer: models, repository interfaces, use cases
-│   ├── core-network/         # Data layer: Ktor client, DTOs, DtoMapper, NetworkModule
-│   ├── core-database/        # Data layer: Room KMP entities/DAOs/migrations, DatabaseModule
-│   └── core-ui/              # UI layer: shared Compose components, design tokens (ui/theme/)
-├── feature/
-│   ├── feature-search/       # Model search screen
-│   ├── feature-detail/       # Model detail screen
-│   ├── feature-gallery/      # Image gallery screen
-│   ├── feature-creator/      # Creator profile screen
-│   ├── feature-collections/  # Collections (saved model lists) screen
-│   ├── feature-prompts/      # Prompt metadata + template library screen
-│   ├── feature-settings/     # Settings screen
-│   └── feature-comfyui/      # ComfyUI generation workflow screen
-├── androidApp/               # Android app entry point, Navigation 3, DI wiring, ModelCard
-└── iosApp/                   # iOS app entry point, SwiftUI navigation, DesignSystem
+project-root/
+├── {dir}/    # {description}
+├── {dir}/    # {description}
+└── ...
 ```
 
-Fill in descriptions from actual Subagent A scan results.
+## Key Design Decisions
 
-### 4b. Update Layer Responsibilities section
-
-Change path references in the Data Layer and Domain Layer sections:
-- Old: `shared/data/` → New: `core/core-network/` (API) and `core/core-database/` (local)
-- Old: `shared/domain/` → New: `core/core-domain/`
-
-Do NOT change: Data Flow diagram, Key Design Decisions, CI/CD section.
-
-### 4c. Update DI section
-
-Replace:
-```
-- **Shared module** (`shared/di/`): Defines modules for API clients, repositories, and use cases
-- **Android** (`androidApp/di/`): Extends shared modules with Android-specific bindings
-- **iOS** (`iosApp/`): Initializes Koin in app entry point, resolves use cases
+{Extract from existing docs or leave as TODO for user}
 ```
 
-With:
-```
-- **core-network** (`core/core-network/.../di/NetworkModule`): Ktor client, API services
-- **core-database** (`core/core-database/.../di/DatabaseModule`): Room DB, DAOs
-- **core-domain** (`core/core-domain/.../di/DomainModule`): Repository bindings, use cases
-- **shared** (`shared/src/commonMain/di/`): Re-exports core modules; ViewModelModule (SettingsViewModel)
-- **Android** (`androidApp/.../CivitDeckApplication.kt`): Platform-specific ViewModels
-- **iOS** (`shared/src/iosMain/di/KoinHelper.kt`): iOS use case accessors via `KoinHelper.shared.getXxx()`
-```
+### 4b. Update existing sections
 
-### 4d. Update AGENTS.md
-
-Find the module structure section in AGENTS.md (if any) and apply the same module tree update.
-If AGENTS.md has no module list, skip this step.
-
-Use `Edit` tool to make targeted replacements. Read the files first, then edit only the sections that changed.
+If ARCHITECTURE.md already exists:
+- Read the file first
+- Use `Edit` to update only the outdated sections (structure tree, module descriptions)
+- Preserve sections that are still accurate (design decisions, diagrams, etc.)
+- Do NOT rewrite sections that haven't changed
 
 Mark task `completed`.
 
@@ -392,27 +287,16 @@ Mark task `completed`.
 
 *(Skip if target = architecture, readme, or oss)*
 
-Mark task "Generate/update CHANGELOG.md" `in_progress`.
+Mark task `in_progress`.
 
-### 5a. Check if CHANGELOG.md exists
+### 5a. Check existing CHANGELOG
 
-If it exists: read it to find the latest version recorded.
-If it doesn't exist: create from scratch.
+If exists: read to find the latest version/entry recorded.
+If not: create from scratch.
 
-### 5b. Classify commits from Subagent C
+### 5b. Write CHANGELOG.md
 
-Group commits by category in Keep a Changelog format:
-- **Added** — new features
-- **Changed** — changes to existing functionality, refactors, dependency bumps
-- **Fixed** — bug fixes
-- **Removed** — removed features or files
-- **Infrastructure** — CI, build system, lint, non-functional changes
-
-Filter out commits that are already covered by the existing CHANGELOG.
-
-### 5c. Write CHANGELOG.md
-
-Format (Keep a Changelog 1.1.0 — https://keepachangelog.com/en/1.1.0/):
+Format: [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/)
 
 ```markdown
 # Changelog
@@ -426,7 +310,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - {commit subject} ({short hash})
-- ...
 
 ### Changed
 - ...
@@ -435,102 +318,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ...
 
 ### Infrastructure
-- {CI/lint/build changes}
 - ...
-
-## [1.0.0] - YYYY-MM-DD
-
-...
 ```
 
 Rules:
-- Group commits by category within the `[Unreleased]` section
-- Use the commit subject as-is, appended with `({short_hash})`
-- Skip merge commits (already filtered by `--no-merges`)
-- Infrastructure category goes last in each version block
-- If a tag exists, create a section for each tagged version
-
-Use `Write` to create the file at `/Users/rio/workspace/projects/CivitDeck/CHANGELOG.md`.
+- Group commits by category (Added, Changed, Fixed, Removed, Infrastructure)
+- Use commit subject as-is, appended with `({short_hash})`
+- Skip merge commits
+- Infrastructure category goes last
+- If tags exist, create a section for each tagged version with its date
+- Filter out commits already in the existing CHANGELOG
 
 Mark task `completed`.
 
 ---
 
-## Phase 6: Update README.md + README.ja.md
+## Phase 6: Update README.md
 
 *(Skip if target = architecture, changelog, or oss)*
 
-Mark task "Update README.md + README.ja.md" `in_progress`.
+Mark task `in_progress`.
 
 ### 6a. Determine missing features
 
-From Subagent D's `androidFeatures` and `notableFeatures`, identify shipped features not in current README Features section.
+From Subagent D, identify features implemented in code but not listed in README.
 
-"Shipped" = both Android Screen AND iOS ViewModel exist for that feature.
+### 6b. Update Features section
 
-Feature name mapping:
-| Module | Display name (EN) | Display name (JA) |
-|--------|-------------------|-------------------|
-| feature-comfyui | **ComfyUI Integration** — queue management, workflow templates, LoRA/ControlNet support | **ComfyUI 連携** — キュー管理、ワークフローテンプレート、LoRA/ControlNet 対応 |
-| feature-collections | **Collections** — organize models into named groups | **コレクション** — モデルを名前付きグループで整理 |
-| feature-prompts (template) | **Prompt Templates** — built-in and user-created template library | **プロンプトテンプレート** — 組み込み＋ユーザー作成のテンプレートライブラリ |
+Add missing feature descriptions to the Features section. Keep existing content unchanged.
 
-### 6b. Update README.md Features section
+### 6c. Add doc links
 
-Add missing feature bullet points to the `## Features` section in README.md.
-Keep existing bullets unchanged. Append new ones before the closing paragraph.
-
-### 6c. Add CHANGELOG.md link to README.md
-
-In the `## Contributing` section (or after it), add:
-
+If CHANGELOG.md exists (or was just created) and not already linked in README:
 ```markdown
 ## Changelog
-
 See [CHANGELOG.md](CHANGELOG.md) for a full list of changes.
 ```
 
-Only add if CHANGELOG.md was created or already exists AND the link is not already present.
-
-### 6d. Add SECURITY.md link to README.md
-
-If SECURITY.md was created (Phase 7) or already exists, add to the Contributing section:
-
+If SECURITY.md exists (or was just created) and not already linked:
 ```markdown
 For security issues, see [SECURITY.md](SECURITY.md).
 ```
 
-Only add if not already present.
+### 6d. Mirror in localized README (if exists)
 
-### 6e. Mirror changes in README.ja.md
+Check for `README.ja.md`, `README.ko.md`, etc. If found, apply equivalent changes (translated headings, same link paths).
 
-Apply equivalent changes to README.ja.md:
-- Add Japanese feature bullets
-- Add CHANGELOG.md link (same path, Japanese label: `変更履歴`)
-- Add SECURITY.md link (Japanese label: `セキュリティポリシー`)
-
-### 6f. Update Roadmap reference (if ComfyUI is shipped)
-
-README.md currently says: *"See the full Roadmap for planned features including ComfyUI integration..."*
-If ComfyUI is now shipped, update this sentence to remove ComfyUI from the "planned" list.
-
-Use `Edit` tool for targeted replacements. Read each file before editing.
+Use `Edit` for targeted replacements. Read files before editing.
 
 Mark task `completed`.
 
 ---
 
-## Phase 7: Create SECURITY.md
+## Phase 7: Create Missing OSS Docs
 
 *(Skip if target = architecture, changelog, or readme)*
 
-Mark task "Create SECURITY.md" `in_progress`.
+Mark task `in_progress`.
 
-Only run if SECURITY.md does NOT exist (check from Subagent B).
+### SECURITY.md (if missing)
 
-### Content
-
-CivitDeck is a client-only app (local DB + API key are the main attack surface).
+Adapt to the project's context (web app, CLI tool, library, mobile app):
 
 ```markdown
 # Security Policy
@@ -542,40 +390,22 @@ CivitDeck is a client-only app (local DB + API key are the main attack surface).
 | Latest  | ✅        |
 | Older   | ❌        |
 
-CivitDeck is in active development. Only the latest release receives security fixes.
-
-## Scope
-
-This policy covers the CivitDeck Android and iOS applications.
-
-**In scope:**
-- Local database (Room KMP) — data leakage, unauthorized access
-- API key storage — insecure storage of CivitAI API credentials
-- Network requests — MITM, insecure TLS configuration
-- Input handling — injection vulnerabilities in search/filter inputs
-
-**Out of scope:**
-- CivitAI's own servers or API (report those to Civitai Inc. directly)
-- Issues in third-party libraries (report upstream)
-
 ## Reporting a Vulnerability
 
 Please **do not** open a public GitHub Issue for security vulnerabilities.
 
-Report via [GitHub Security Advisories](https://github.com/rioX432/CivitDeck/security/advisories/new):
+Report via [GitHub Security Advisories]({repo_url}/security/advisories/new):
 
 1. Go to the Security tab → Advisories → "Report a vulnerability"
 2. Describe the vulnerability, steps to reproduce, and potential impact
 3. We aim to respond within 7 days
-
-## What to Expect
-
-- Acknowledgement within 7 days
-- Regular updates on the fix timeline
-- Credit in the CHANGELOG.md when the fix is released (unless you prefer to stay anonymous)
 ```
 
-Use `Write` tool to create `/Users/rio/workspace/projects/CivitDeck/SECURITY.md`.
+Derive `{repo_url}` from `git remote get-url origin`.
+
+### CONTRIBUTING.md (if missing and project has >5 contributors or is public)
+
+Only suggest creation — do NOT auto-create without user confirmation, as contribution guidelines are opinionated.
 
 Mark task `completed`.
 
@@ -585,25 +415,9 @@ Mark task `completed`.
 
 *(Always run when any file was modified)*
 
-Check that all relative links in modified docs resolve to existing files.
+For each modified doc file, extract all relative markdown links `[text](path)` and verify the target file exists using `ls`.
 
-### Links to verify
-
-| Source file | Link target | Check |
-|------------|-------------|-------|
-| README.md | docs/ARCHITECTURE.md | `ls` |
-| README.md | docs/CONTRIBUTING.md | `ls` |
-| README.md | docs/ROADMAP.md | `ls` |
-| README.md | CHANGELOG.md | `ls` (only if added) |
-| README.md | SECURITY.md | `ls` (only if added) |
-| README.md | LICENSE | `ls` |
-| README.ja.md | same as above | `ls` |
-| docs/CONTRIBUTING.md | ARCHITECTURE.md (relative) | resolve relative path |
-| CHANGELOG.md | (no links to verify) | — |
-
-For each broken link found:
-1. Note the broken link in the report
-2. If the target file was supposed to be created in this run but wasn't, create it now (or note as error)
+Report any broken links. If the target was supposed to be created in this run but wasn't, note as error.
 
 ---
 
@@ -619,23 +433,18 @@ Target: {all | architecture | changelog | readme | oss}
 ### Files Modified
 | File | Action |
 |------|--------|
-| docs/ARCHITECTURE.md | Updated module structure tree + DI section |
-| AGENTS.md | Updated module list |
-| CHANGELOG.md | Created ({N} commits logged) / Updated |
-| README.md | Added {N} features, added CHANGELOG + SECURITY links |
-| README.ja.md | Mirrored README.md changes |
-| SECURITY.md | Created |
+| {path} | {Created / Updated — brief description} |
 
 ### Gap Analysis Results
 | Area | Before | After |
 |------|--------|-------|
-| Architecture outdated modules | {N} | 0 |
+| Architecture outdated entries | {N} | 0 |
 | Unlogged commits | {N} | 0 |
 | README missing features | {N} | 0 |
 | Missing OSS files | {N} | 0 |
 
 ### Internal Links
-All {N} verified links: ✓
+All {N} verified links: ✓ (or list broken ones)
 
 ### Skipped
 {Any phases skipped and reason}
@@ -647,11 +456,12 @@ All {N} verified links: ✓
 
 | Situation | Action |
 |-----------|--------|
-| Subagent returns no data | Use fallback: read settings.gradle.kts directly |
-| AGENTS.md has no module section | Skip AGENTS.md update, note in report |
+| Subagent returns no data | Fallback: read project root directly |
+| ARCHITECTURE.md doesn't exist | Create new one from scratch |
 | git log returns nothing | Note "no commits to log", skip CHANGELOG |
-| Feature module exists but no ViewModel on iOS | Mark as Android-only, don't add to README as shipped |
-| CHANGELOG.md already exists and is up to date | Note "already current", skip |
+| Feature exists but can't determine if shipped | Mark as "likely implemented", let user confirm |
+| CHANGELOG.md already up to date | Note "already current", skip |
 | SECURITY.md already exists | Skip creation, note in report |
-| Broken internal link to non-created file | Report as warning, do not fail |
-| Edit tool fails (pattern not found) | Read file again, check current content, retry with correct pattern |
+| Edit tool fails (pattern not found) | Read file again, retry with correct pattern |
+| No README.md exists | Skip README update phase, note in report |
+| Localized README out of sync | Only update links section, flag content sync as manual task |
