@@ -4,6 +4,13 @@ description: "Security vulnerability scanner based on OWASP. Use during code rev
 tools: Read, Grep, Glob
 model: sonnet
 maxTurns: 20
+hooks:
+  PreToolUse:
+    - matcher: "Read|Edit"
+      hooks:
+        - type: command
+          command: "${CLAUDE_PLUGIN_ROOT}/scripts/block-secret-access.sh"
+          timeout: 5
 ---
 
 # Security Reviewer Agent
