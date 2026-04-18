@@ -30,6 +30,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -185,6 +191,26 @@ private fun ActiveDownloadItem(
     onResume: (Long) -> Unit,
     onCancel: (Long) -> Unit,
 ) {
+    var prevBytes by remember { mutableLongStateOf(download.downloadedBytes) }
+    var prevTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var speedText by remember { mutableStateOf("") }
+
+    LaunchedEffect(download.downloadedBytes) {
+        val now = System.currentTimeMillis()
+        val elapsed = now - prevTime
+        if (elapsed > SPEED_SAMPLE_INTERVAL_MS && download.status == DownloadStatus.Downloading) {
+            val bytesDelta = download.downloadedBytes - prevBytes
+            val speedBps = bytesDelta.toDouble() / (elapsed / MS_PER_SECOND_DOUBLE)
+            val speedMbps = speedBps / BYTES_PER_MB
+            val remaining = download.fileSizeBytes - download.downloadedBytes
+            val etaSeconds = if (speedBps > 0) (remaining / speedBps).toLong() else 0L
+            val etaLabel = formatEta(etaSeconds)
+            speedText = "%.1f MB/s".format(speedMbps) + if (etaLabel.isNotEmpty()) " \u2022 $etaLabel" else ""
+            prevBytes = download.downloadedBytes
+            prevTime = now
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -209,6 +235,14 @@ private fun ActiveDownloadItem(
             DownloadActions(download, onPause, onResume, onCancel)
         }
         DownloadProgress(download)
+        if (speedText.isNotEmpty() && download.status == DownloadStatus.Downloading) {
+            Text(
+                text = speedText,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = Spacing.xs),
+            )
+        }
     }
 }
 
@@ -393,6 +427,18 @@ private fun HashBadge(download: ModelDownload) {
     }
 }
 
+private fun formatEta(seconds: Long): String = when {
+    seconds <= 0 -> ""
+    seconds < SECONDS_PER_MINUTE -> "~${seconds}s remaining"
+    seconds < SECONDS_PER_HOUR -> "~${seconds / SECONDS_PER_MINUTE}m remaining"
+    else -> "~${seconds / SECONDS_PER_HOUR}h ${(seconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE}m remaining"
+}
+
 private val INDICATOR_SIZE = 24.dp
 private const val PERCENT_MAX = 100
 private const val KB_DIVISOR = 1024.0
+private const val SPEED_SAMPLE_INTERVAL_MS = 500L
+private const val MS_PER_SECOND_DOUBLE = 1000.0
+private const val BYTES_PER_MB = 1_048_576.0
+private const val SECONDS_PER_MINUTE = 60L
+private const val SECONDS_PER_HOUR = 3600L

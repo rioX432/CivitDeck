@@ -3,9 +3,11 @@ import Shared
 
 struct DatasetListView: View {
     @StateObject private var viewModel = DatasetListViewModelOwner()
-    @State private var showCreateAlert = false
-    @State private var newDatasetName = ""
-    @State private var renameTarget: (id: Int64, name: String)?
+    @State private var showCreateSheet = false
+    @State private var showRenameSheet = false
+    @State private var createName = ""
+    @State private var renameName = ""
+    @State private var renameTargetId: Int64?
 
     var body: some View {
         NavigationStack {
@@ -20,8 +22,8 @@ struct DatasetListView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        newDatasetName = ""
-                        showCreateAlert = true
+                        createName = ""
+                        showCreateSheet = true
                     } label: {
                         Image(systemName: "plus")
                             .accessibilityLabel("Create dataset")
@@ -31,35 +33,33 @@ struct DatasetListView: View {
             .navigationDestination(for: DatasetDestination.self) { dest in
                 DatasetDetailView(datasetId: dest.datasetId, datasetName: dest.datasetName)
             }
-            .alert("New Dataset", isPresented: $showCreateAlert) {
-                TextField("Dataset name", text: $newDatasetName)
-                Button("Create") {
-                    let name = newDatasetName.trimmingCharacters(in: .whitespaces)
+            .sheet(isPresented: $showCreateSheet) {
+                DatasetNameSheet(
+                    title: "New Dataset",
+                    name: $createName,
+                    actionLabel: "Create"
+                ) {
+                    let name = createName.trimmingCharacters(in: .whitespaces)
                     if !name.isEmpty {
                         viewModel.createDataset(name: name)
                     }
+                    showCreateSheet = false
                 }
-                Button("Cancel", role: .cancel) {}
             }
-            .alert(
-                "Rename Dataset",
-                isPresented: Binding(
-                    get: { renameTarget != nil },
-                    set: { if !$0 { renameTarget = nil } }
-                )
-            ) {
-                let currentName = renameTarget?.name ?? ""
-                TextField("Dataset name", text: $newDatasetName)
-                    .onAppear { newDatasetName = currentName }
-                Button("Rename") {
-                    if let target = renameTarget {
-                        let name = newDatasetName.trimmingCharacters(in: .whitespaces)
+            .sheet(isPresented: $showRenameSheet) {
+                DatasetNameSheet(
+                    title: "Rename Dataset",
+                    name: $renameName,
+                    actionLabel: "Rename"
+                ) {
+                    if let targetId = renameTargetId {
+                        let name = renameName.trimmingCharacters(in: .whitespaces)
                         if !name.isEmpty {
-                            viewModel.renameDataset(id: target.id, name: name)
+                            viewModel.renameDataset(id: targetId, name: name)
                         }
                     }
+                    showRenameSheet = false
                 }
-                Button("Cancel", role: .cancel) {}
             }
         }
         .task { await viewModel.observeDatasets() }
@@ -78,8 +78,9 @@ struct DatasetListView: View {
                         Label("Delete", systemImage: "trash")
                     }
                     Button {
-                        newDatasetName = dataset.name
-                        renameTarget = (id: dataset.id, name: dataset.name)
+                        renameName = dataset.name
+                        renameTargetId = dataset.id
+                        showRenameSheet = true
                     } label: {
                         Label("Rename", systemImage: "pencil")
                     }
@@ -87,8 +88,9 @@ struct DatasetListView: View {
                 }
                 .contextMenu {
                     Button {
-                        newDatasetName = dataset.name
-                        renameTarget = (id: dataset.id, name: dataset.name)
+                        renameName = dataset.name
+                        renameTargetId = dataset.id
+                        showRenameSheet = true
                     } label: {
                         Label("Rename", systemImage: "pencil")
                     }
@@ -115,6 +117,42 @@ struct DatasetListView: View {
 struct DatasetDestination: Hashable {
     let datasetId: Int64
     let datasetName: String
+}
+
+// MARK: - Dataset Name Sheet
+
+private struct DatasetNameSheet: View {
+    let title: String
+    @Binding var name: String
+    let actionLabel: String
+    let onConfirm: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var isNameFocused: Bool
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Dataset name", text: $name)
+                        .focused($isNameFocused)
+                }
+            }
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(actionLabel) { onConfirm() }
+                        .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+            .onAppear { isNameFocused = true }
+        }
+        .presentationDetents([.medium])
+    }
 }
 
 private struct DatasetRow: View {

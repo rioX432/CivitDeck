@@ -43,11 +43,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryUiState
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.HistorySortOrder
+import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
@@ -57,7 +60,6 @@ import com.riox432.civitdeck.ui.dataset.AddToDatasetSheet
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
-private const val GRID_COLUMNS = 2
 private const val IMAGE_ASPECT_RATIO = 1f
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,12 +90,15 @@ fun ComfyUIHistoryScreen(
                 title = { Text("Output Gallery") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_navigate_back)
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = viewModel::refresh) {
-                        Icon(Icons.Default.Refresh, "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.cd_refresh))
                     }
                 },
             )
@@ -190,8 +195,9 @@ private fun HistoryBody(
                     isRefreshing = state.isLoading,
                     onRefresh = onRetry,
                 ) {
+                    val gridColumns = adaptiveGridColumns()
                     LazyVerticalGrid(
-                        columns = GridCells.Fixed(GRID_COLUMNS),
+                        columns = GridCells.Fixed(gridColumns),
                         contentPadding = PaddingValues(Spacing.sm),
                         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
                         verticalArrangement = Arrangement.spacedBy(Spacing.sm),

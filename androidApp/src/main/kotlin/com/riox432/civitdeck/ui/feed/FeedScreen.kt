@@ -3,6 +3,7 @@ package com.riox432.civitdeck.ui.feed
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -98,12 +99,18 @@ private fun FeedContent(
     contentPadding: PaddingValues,
 ) {
     when {
-        uiState.isLoading && uiState.feedItems.isEmpty() -> LoadingStateOverlay()
+        uiState.isLoading && uiState.feedItems.isEmpty() -> {
+            Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+                LoadingStateOverlay()
+            }
+        }
         uiState.error != null && uiState.feedItems.isEmpty() -> {
-            ErrorStateView(
-                message = uiState.error ?: "Unknown error",
-                onRetry = onRefresh,
-            )
+            Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+                ErrorStateView(
+                    message = uiState.error ?: "Unknown error",
+                    onRetry = onRefresh,
+                )
+            }
         }
         uiState.feedItems.isEmpty() && !uiState.isLoading -> {
             PullToRefreshBox(

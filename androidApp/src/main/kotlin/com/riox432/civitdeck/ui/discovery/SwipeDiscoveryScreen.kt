@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
@@ -80,25 +81,32 @@ fun SwipeDiscoveryScreen(
                 )
             }
 
-            ActionButtons(
-                canUndo = state.lastDismissed != null,
-                hasCards = state.cards.isNotEmpty(),
-                onSkip = {
-                    state.cards.firstOrNull()?.let {
-                        viewModel.onSwipeLeft(it)
-                    }
-                },
-                onFavorite = {
-                    state.cards.firstOrNull()?.let {
-                        viewModel.onSwipeRight(it)
-                    }
-                },
-                onUndo = viewModel::undoLastSwipe,
-            )
+            DiscoveryActionButtons(state, viewModel, onModelDetail)
 
             Spacer(modifier = Modifier.height(Spacing.lg))
         }
     }
+}
+
+@Composable
+private fun DiscoveryActionButtons(
+    state: SwipeDiscoveryState,
+    viewModel: SwipeDiscoveryViewModel,
+    onModelDetail: (Long) -> Unit,
+) {
+    ActionButtons(
+        canUndo = state.lastDismissed != null,
+        hasCards = state.cards.isNotEmpty(),
+        onSkip = { state.cards.firstOrNull()?.let { viewModel.onSwipeLeft(it) } },
+        onFavorite = { state.cards.firstOrNull()?.let { viewModel.onSwipeRight(it) } },
+        onUndo = viewModel::undoLastSwipe,
+        onOpenDetails = {
+            state.cards.firstOrNull()?.let {
+                val id = viewModel.onSwipeUp(it)
+                onModelDetail(id)
+            }
+        },
+    )
 }
 
 @Composable
@@ -148,6 +156,7 @@ private fun ActionButtons(
     onSkip: () -> Unit,
     onFavorite: () -> Unit,
     onUndo: () -> Unit,
+    onOpenDetails: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -185,6 +194,17 @@ private fun ActionButtons(
                 Icons.Filled.Favorite,
                 contentDescription = stringResource(R.string.cd_favorite),
                 tint = MaterialTheme.colorScheme.primary,
+            )
+        }
+
+        FilledTonalIconButton(
+            onClick = onOpenDetails,
+            enabled = hasCards,
+            modifier = Modifier.size(IconSize.large),
+        ) {
+            Icon(
+                Icons.Filled.Info,
+                contentDescription = stringResource(R.string.cd_open_details),
             )
         }
     }

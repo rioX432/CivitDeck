@@ -2,12 +2,15 @@ package com.riox432.civitdeck.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -81,6 +84,7 @@ fun DesktopSettingsScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 @Suppress("LongParameterList")
 private fun ToolsSection(
@@ -93,7 +97,10 @@ private fun ToolsSection(
     onNavigateToDownloadQueue: () -> Unit,
 ) {
     SettingsCard(title = "Tools") {
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
             OutlinedButton(onClick = onNavigateToDatasets) { Text("Datasets") }
             OutlinedButton(onClick = onNavigateToBackup) { Text("Backup & Restore") }
             OutlinedButton(onClick = onNavigateToPlugins) { Text("Plugins") }
@@ -352,6 +359,9 @@ private fun UpdateSection(viewModel: DesktopUpdateViewModel) {
 @Composable
 private fun StorageSection(viewModel: StorageSettingsViewModel) {
     val state by viewModel.uiState.collectAsState()
+    var showClearCacheDialog by remember { mutableStateOf(false) }
+    var showClearSearchDialog by remember { mutableStateOf(false) }
+    var showClearHistoryDialog by remember { mutableStateOf(false) }
 
     SettingsCard(title = "Storage & Cache") {
         Text(
@@ -386,10 +396,61 @@ private fun StorageSection(viewModel: StorageSettingsViewModel) {
         )
         Spacer(modifier = Modifier.height(Spacing.sm))
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            OutlinedButton(onClick = viewModel::onClearCache) { Text("Clear Cache") }
-            OutlinedButton(onClick = viewModel::onClearSearchHistory) { Text("Clear Search") }
-            OutlinedButton(onClick = viewModel::onClearBrowsingHistory) { Text("Clear History") }
+            OutlinedButton(onClick = { showClearCacheDialog = true }) { Text("Clear Cache") }
+            OutlinedButton(onClick = { showClearSearchDialog = true }) { Text("Clear Search") }
+            OutlinedButton(onClick = { showClearHistoryDialog = true }) { Text("Clear History") }
         }
+    }
+
+    if (showClearCacheDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearCacheDialog = false },
+            title = { Text("Clear Cache") },
+            text = { Text("Are you sure you want to clear all cached data? This cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.onClearCache()
+                    showClearCacheDialog = false
+                }) { Text("Clear") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearCacheDialog = false }) { Text("Cancel") }
+            },
+        )
+    }
+
+    if (showClearSearchDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearSearchDialog = false },
+            title = { Text("Clear Search History") },
+            text = { Text("Are you sure you want to clear your search history? This cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.onClearSearchHistory()
+                    showClearSearchDialog = false
+                }) { Text("Clear") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearSearchDialog = false }) { Text("Cancel") }
+            },
+        )
+    }
+
+    if (showClearHistoryDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearHistoryDialog = false },
+            title = { Text("Clear Browsing History") },
+            text = { Text("Are you sure you want to clear your browsing history? This cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.onClearBrowsingHistory()
+                    showClearHistoryDialog = false
+                }) { Text("Clear") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearHistoryDialog = false }) { Text("Cancel") }
+            },
+        )
     }
 }
 

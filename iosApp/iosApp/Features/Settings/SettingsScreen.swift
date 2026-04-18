@@ -155,6 +155,12 @@ struct SettingsScreen: View {
             NavigationLink("Open Source Licenses") {
                 LicensesView()
             }
+            Button {
+                vmStore.replayGestureTutorial()
+            } label: {
+                Text("Replay Gesture Tutorial")
+                    .foregroundColor(.civitOnSurface)
+            }
         }
     }
 }

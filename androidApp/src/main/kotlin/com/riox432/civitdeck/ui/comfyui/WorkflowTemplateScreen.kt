@@ -49,7 +49,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
 import com.riox432.civitdeck.domain.model.WorkflowTemplateCategory
 import com.riox432.civitdeck.domain.model.WorkflowTemplateType
@@ -152,7 +154,10 @@ private fun TemplateScaffold(
                 title = { Text(if (isPicker) "Pick Template" else "Workflow Templates") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_navigate_back)
+                        )
                     }
                 },
                 actions = {

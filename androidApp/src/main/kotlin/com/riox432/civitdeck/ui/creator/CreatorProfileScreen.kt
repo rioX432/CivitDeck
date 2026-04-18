@@ -134,13 +134,17 @@ private fun CreatorContent(
 ) {
     when {
         uiState.isLoading && uiState.models.isEmpty() -> {
-            LoadingStateOverlay()
+            Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+                LoadingStateOverlay()
+            }
         }
         uiState.error != null && uiState.models.isEmpty() -> {
-            ErrorStateView(
-                message = uiState.error ?: "Unknown error",
-                onRetry = onRefresh,
-            )
+            Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+                ErrorStateView(
+                    message = uiState.error ?: "Unknown error",
+                    onRetry = onRefresh,
+                )
+            }
         }
         else -> {
             PullToRefreshBox(

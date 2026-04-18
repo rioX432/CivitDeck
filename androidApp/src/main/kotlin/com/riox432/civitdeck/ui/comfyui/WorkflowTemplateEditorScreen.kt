@@ -35,6 +35,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.TemplateVariable
 import com.riox432.civitdeck.domain.model.TemplateVariableType
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
@@ -107,7 +109,14 @@ private fun EditorTopBar(
     TopAppBar(
         title = { Text(if (isNew) "Create Template" else "Edit Template") },
         navigationIcon = {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
+            IconButton(
+                onClick = onBack
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.cd_navigate_back)
+                )
+            }
         },
         actions = {
             TextButton(onClick = onSave, enabled = canSave) { Text("Save") }

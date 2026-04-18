@@ -24,6 +24,7 @@ import coil3.size.Size
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
+import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
@@ -65,6 +66,7 @@ internal fun ImageGridPanel(
                                 Modifier
                             },
                         )
+                        .desktopFocusRing()
                         .clickable { onImageSelect(index) },
                     contentScale = ContentScale.Crop,
                     loading = { Box(Modifier.fillMaxSize().shimmer()) },

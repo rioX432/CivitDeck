@@ -25,6 +25,13 @@ class GestureTutorialViewModel(
         }
     }
 
+    /** Resets the tutorial so it will be shown again on next check. */
+    fun resetTutorial() {
+        viewModelScope.launch {
+            setSeenTutorialVersion(0)
+        }
+    }
+
     companion object {
         const val CURRENT_TUTORIAL_VERSION = 1
     }

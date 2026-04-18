@@ -42,10 +42,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerImage
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryUiState
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
+import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
@@ -130,7 +133,10 @@ private fun GalleryTopBar(
             title = { Text(serverName) },
             navigationIcon = {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.cd_navigate_back)
+                    )
                 }
             },
             actions = {
@@ -219,8 +225,9 @@ private fun ImageGrid(
     viewModel: ExternalServerGalleryViewModel,
     onImageClick: (ServerImage) -> Unit,
 ) {
+    val gridColumns = adaptiveGridColumns()
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Fixed(gridColumns),
         state = gridState,
         contentPadding = PaddingValues(Spacing.sm),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),

@@ -42,6 +42,7 @@ import com.riox432.civitdeck.ui.theme.shimmer
 import com.riox432.civitdeck.ui.theme.Elevation
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.foundation.clickable
+import com.riox432.civitdeck.ui.desktopFocusRing
 
 @Composable
 fun DesktopCollectionDetailScreen(
@@ -133,7 +134,7 @@ private fun CollectionModelCard(
     onClick: () -> Unit,
 ) {
     Surface(
-        modifier = Modifier.clickable(onClick = onClick),
+        modifier = Modifier.desktopFocusRing().clickable(onClick = onClick),
         shape = RoundedCornerShape(CornerRadius.card),
         tonalElevation = Elevation.xs,
     ) {

@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.ModelUpdateNotification
 import com.riox432.civitdeck.domain.model.UpdateSource
 import com.riox432.civitdeck.feature.gallery.presentation.NotificationCenterViewModel
+import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -122,6 +123,7 @@ private fun NotificationRow(
         modifier = Modifier
             .fillMaxWidth()
             .background(bgColor)
+            .desktopFocusRing()
             .clickable(onClick = onClick)
             .padding(horizontal = Spacing.md, vertical = Spacing.sm),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),

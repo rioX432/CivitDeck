@@ -40,6 +40,7 @@ import coil3.compose.SubcomposeAsyncImage
 import com.riox432.civitdeck.domain.model.RecentlyViewedModel
 import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
 import com.riox432.civitdeck.feature.search.presentation.DateGroup
+import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -176,6 +177,7 @@ private fun HistoryItemRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .desktopFocusRing()
             .clickable(onClick = onClick)
             .padding(vertical = Spacing.xs),
         horizontalArrangement = Arrangement.spacedBy(Spacing.md),

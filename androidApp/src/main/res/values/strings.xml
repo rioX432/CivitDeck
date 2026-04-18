@@ -79,6 +79,19 @@
     <string name="cd_cancel_selection">Cancel selection</string>
     <string name="cd_pause_download">Pause download</string>
     <string name="cd_resume_download">Resume download</string>
+    <string name="cd_refresh">Refresh</string>
+    <string name="cd_mark_all_read">Mark all as read</string>
+    <string name="cd_load_template">Load template</string>
+    <string name="cd_add_lora">Add LoRA</string>
+    <string name="cd_remove_lora">Remove LoRA</string>
+    <string name="cd_clear_workflow">Clear workflow</string>
+    <string name="cd_stop_generation">Stop generation</string>
+    <string name="cd_open_details">Open details</string>
+    <string name="cd_enable_plugin">Enable %1$s</string>
+    <string name="cd_plugin_active">Active</string>
+    <string name="cd_plugin_inactive">Inactive</string>
+    <string name="cd_plugin_error">Error</string>
+    <string name="settings_replay_gesture_tutorial">Replay Gesture Tutorial</string>
 
     <!-- Download Queue -->
     <string name="download_queue_title">Downloads</string>

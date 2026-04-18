@@ -35,9 +35,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.CategoryStat
 import com.riox432.civitdeck.domain.model.DailyViewCount
 import com.riox432.civitdeck.feature.gallery.presentation.AnalyticsUiState
@@ -54,7 +58,10 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel, onBack: () -> Unit) {
                 title = { Text("Usage Stats") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_navigate_back)
+                        )
                     }
                 },
             )
@@ -178,9 +185,40 @@ private fun SectionTitle(text: String) {
 private fun ViewTrendChart(data: List<DailyViewCount>) {
     val primary = MaterialTheme.colorScheme.primary
     val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+    val maxCount = data.maxOfOrNull { it.count } ?: 0
+    val totalViews = data.sumOf { it.count }
+    val chartDescription = "View trend chart showing $totalViews total views over ${data.size} days, " +
+        "peak $maxCount views in a day"
     Card(colors = CardDefaults.cardColors(containerColor = surfaceVariant)) {
-        Canvas(modifier = Modifier.fillMaxWidth().height(CHART_HEIGHT).padding(Spacing.md)) {
-            drawViewTrend(data, primary)
+        Box {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(CHART_HEIGHT)
+                    .padding(start = Y_AXIS_LABEL_WIDTH, top = Spacing.md, end = Spacing.md, bottom = Spacing.md)
+                    .semantics { contentDescription = chartDescription },
+            ) {
+                drawViewTrend(data, primary)
+            }
+            // Y-axis labels
+            Column(
+                modifier = Modifier
+                    .width(Y_AXIS_LABEL_WIDTH)
+                    .height(CHART_HEIGHT)
+                    .padding(vertical = Spacing.md),
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = maxCount.toString(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = "0",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
@@ -215,8 +253,11 @@ private fun HorizontalBarChart(data: List<CategoryStat>) {
 
 @Composable
 private fun BarRow(stat: CategoryStat, maxCount: Int, color: Color) {
+    val barDescription = "${stat.name}: ${stat.count}"
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics { contentDescription = barDescription },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -252,6 +293,7 @@ private fun RankedRow(stat: CategoryStat) {
 private val CHART_HEIGHT = 160.dp
 private val BAR_HEIGHT = 20.dp
 private val BAR_LABEL_WIDTH = 100.dp
+private val Y_AXIS_LABEL_WIDTH = 32.dp
 private const val DOT_RADIUS = 4f
 private const val LINE_WIDTH = 2f
 private const val TOP_N = 5

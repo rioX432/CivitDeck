@@ -35,6 +35,7 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
+import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -79,13 +80,13 @@ fun DesktopSearchScreen(
                 focusRequester = searchFocusRequester,
                 modifier = Modifier.weight(1f),
             )
-            IconButton(onClick = onQRCodeClick) {
+            IconButton(onClick = onQRCodeClick, modifier = Modifier.desktopFocusRing()) {
                 Icon(
                     Icons.Default.QrCode,
                     contentDescription = "QR Code",
                 )
             }
-            IconButton(onClick = onUrlImportClick) {
+            IconButton(onClick = onUrlImportClick, modifier = Modifier.desktopFocusRing()) {
                 Icon(
                     Icons.Default.Link,
                     contentDescription = "Import from URL",

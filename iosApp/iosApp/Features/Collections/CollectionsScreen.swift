@@ -1,6 +1,9 @@
 import SwiftUI
 import Shared
 
+/// Collection thumbnail size. TODO: Unify with shared design token
+private let collectionThumbnailSize: CGFloat = 56
+
 private enum CollectionsScreenTab {
     case collections, prompts
 }
@@ -178,7 +181,7 @@ private struct CollectionRow: View {
                     folderPlaceholder
                 }
             }
-            .frame(width: 56, height: 56)
+            .frame(width: collectionThumbnailSize, height: collectionThumbnailSize)
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
         } else {
             folderPlaceholder
@@ -188,7 +191,7 @@ private struct CollectionRow: View {
     private var folderPlaceholder: some View {
         RoundedRectangle(cornerRadius: CornerRadius.image)
             .fill(Color.civitSurfaceVariant)
-            .frame(width: 56, height: 56)
+            .frame(width: collectionThumbnailSize, height: collectionThumbnailSize)
             .overlay {
                 Image(systemName: "folder")
                     .foregroundColor(.civitOnSurfaceVariant)

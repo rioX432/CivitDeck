@@ -62,6 +62,7 @@ import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.domain.model.ImageSource
 import com.riox432.civitdeck.feature.collections.presentation.DatasetDetailViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
+import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
@@ -299,6 +300,7 @@ private fun DesktopDatasetImageItem(
 ) {
     Box(
         modifier = Modifier
+            .desktopFocusRing()
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick,
