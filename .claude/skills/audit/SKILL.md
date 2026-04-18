@@ -38,8 +38,9 @@ Create task tracker:
 3. "Scan code quality"
 4. "Scan architecture"
 5. "Scan visual bugs"
-6. "Aggregate findings"
-7. "Create GitHub Issues"
+6. "Scan dependencies"
+7. "Aggregate findings"
+8. "Create GitHub Issues"
 
 ---
 
@@ -147,6 +148,29 @@ Return findings as structured list:
 
 Mark task for Agent D `completed`.
 
+### Agent E: Dependency Scanner
+
+```
+Scan project dependencies for security and freshness issues.
+
+## What to find:
+1. Known security vulnerabilities (CVEs)
+   - Gradle: `./gradlew dependencyCheckAnalyze` or check dependency versions against known CVEs
+   - npm: `npm audit`
+   - pip: `pip-audit` or check requirements
+2. Outdated major versions (1+ major behind)
+   - Gradle: check version catalogs or dependency declarations
+   - npm: `npm outdated`
+3. Deprecated dependencies (archived repos, no updates in 2+ years)
+4. Dependency conflicts or duplicate versions
+5. Unused dependencies (declared but not imported)
+
+For each finding include:
+- dependency name, current version, latest version, severity, CVE ID (if applicable), upgrade risk (low/medium/high)
+```
+
+Mark task for Agent E `completed`.
+
 ---
 
 ## Step 4: Aggregate Findings
@@ -239,6 +263,7 @@ EOF
 | Code Quality | `tech-debt` |
 | Architecture | `tech-debt` |
 | Visual | `ux` |
+| Dependency | `dependencies`, `security` (if CVE) |
 
 Mark task 6 `completed`.
 
