@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.feature.comfyui.presentation.GenerationUiState
+import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -67,7 +68,7 @@ internal fun GenerateButton(
                     containerColor = MaterialTheme.colorScheme.error,
                 ),
             ) {
-                Icon(Icons.Default.Stop, contentDescription = "Stop generation")
+                Icon(Icons.Default.Stop, contentDescription = stringResource(R.string.cd_stop_generation))
             }
         }
     }
@@ -143,8 +144,9 @@ private fun PreviewImageView(imageBytes: ByteArray?) {
 
 @Composable
 internal fun ResultGrid(imageUrls: List<String>, onSaveImage: (String) -> Unit) {
+    val gridColumns = adaptiveGridColumns()
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Fixed(gridColumns),
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),

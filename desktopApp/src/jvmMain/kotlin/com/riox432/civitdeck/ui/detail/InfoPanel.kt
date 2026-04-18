@@ -43,6 +43,7 @@ import com.riox432.civitdeck.domain.util.FormatUtils
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailUiState
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.components.ModelStatsRow
+import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
@@ -120,7 +121,7 @@ private fun ModelInfoHeader(
             model.creator?.let { creator ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { onCreatorClick(creator.username) },
+                    modifier = Modifier.desktopFocusRing().clickable { onCreatorClick(creator.username) },
                 ) {
                     creator.image?.let { avatarUrl ->
                         SubcomposeAsyncImage(

@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,6 +29,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -46,7 +48,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.R
@@ -56,6 +57,7 @@ import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.prompts.SavedPromptsScreen
 import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 private enum class CollectionsScreenTab { Collections, Prompts, Datasets }
@@ -200,6 +202,7 @@ private fun CollectionCard(
     onDelete: () -> Unit,
 ) {
     var showRenameDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -211,7 +214,7 @@ private fun CollectionCard(
         CollectionCardContent(
             collection = collection,
             onShowRename = { showRenameDialog = true },
-            onDelete = onDelete,
+            onDelete = { showDeleteDialog = true },
         )
     }
 
@@ -223,6 +226,17 @@ private fun CollectionCard(
                 onRename(name)
                 showRenameDialog = false
             },
+        )
+    }
+
+    if (showDeleteDialog) {
+        DeleteCollectionDialog(
+            collectionName = collection.name,
+            onConfirm = {
+                onDelete()
+                showDeleteDialog = false
+            },
+            onDismiss = { showDeleteDialog = false },
         )
     }
 }
@@ -275,11 +289,9 @@ private fun CollectionOverflowMenu(
     onDelete: () -> Unit,
 ) {
     Box {
-        Text(
-            text = "...",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.clickable(role = Role.Button, onClickLabel = "Open menu") { onToggleMenu(true) },
-        )
+        IconButton(onClick = { onToggleMenu(true) }) {
+            Icon(Icons.Default.MoreVert, contentDescription = "More options")
+        }
         DropdownMenu(
             expanded = showMenu,
             onDismissRequest = { onToggleMenu(false) },
@@ -306,7 +318,7 @@ private fun CollectionOverflowMenu(
 
 @Composable
 private fun CollectionThumbnail(thumbnailUrl: String?) {
-    val thumbnailSize = 56.dp
+    val thumbnailSize = IconSize.xlarge // TODO: Unify with shared design token
     if (thumbnailUrl != null) {
         CivitAsyncImage(
             imageUrl = thumbnailUrl,
@@ -365,6 +377,25 @@ internal fun CreateCollectionDialog(
             TextButton(onClick = onDismiss) {
                 Text("Cancel")
             }
+        },
+    )
+}
+
+@Composable
+private fun DeleteCollectionDialog(
+    collectionName: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Delete Collection") },
+        text = { Text("Are you sure you want to delete \"$collectionName\"? This cannot be undone.") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) { Text("Delete") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
         },
     )
 }

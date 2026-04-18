@@ -7,8 +7,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
@@ -75,6 +78,36 @@ fun main() {
             title = windowTitle,
             state = windowState,
         ) {
+            MenuBar {
+                Menu("Edit") {
+                    Item("Cut", shortcut = KeyShortcut(Key.X, meta = true), onClick = {})
+                    Item("Copy", shortcut = KeyShortcut(Key.C, meta = true), onClick = {})
+                    Item("Paste", shortcut = KeyShortcut(Key.V, meta = true), onClick = {})
+                    Item("Select All", shortcut = KeyShortcut(Key.A, meta = true), onClick = {})
+                }
+                Menu("View") {
+                    Item(
+                        "Refresh",
+                        shortcut = KeyShortcut(Key.R, meta = true),
+                        onClick = { currentScreen = "Discover" },
+                    )
+                    Item(
+                        "Toggle Sidebar",
+                        shortcut = KeyShortcut(Key.Backslash, meta = true),
+                        onClick = {},
+                    )
+                }
+                Menu("Window") {
+                    Item(
+                        "Minimize",
+                        shortcut = KeyShortcut(Key.M, meta = true),
+                        onClick = { windowState.isMinimized = true },
+                    )
+                }
+                Menu("Help") {
+                    Item("About", onClick = {})
+                }
+            }
             window.minimumSize = java.awt.Dimension(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
 
             DisposableEffect(Unit) {

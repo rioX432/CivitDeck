@@ -30,4 +30,9 @@ final class SettingsViewModelStore: ObservableObject {
     }
 
     deinit { store.clear() }
+
+    func replayGestureTutorial() {
+        let tutorialVm = KoinHelper.shared.createGestureTutorialViewModel()
+        tutorialVm.resetTutorial()
+    }
 }

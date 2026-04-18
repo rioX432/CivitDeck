@@ -21,6 +21,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -38,7 +39,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
+import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.GenerationUiState
@@ -53,58 +57,100 @@ fun ComfyUIGenerationScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    SaveResultSnackbar(state.imageSaveSuccess, snackbarHostState, viewModel::onDismissSaveResult)
 
-    LaunchedEffect(state.imageSaveSuccess) {
-        when (state.imageSaveSuccess) {
+    val isGenerating = state.generationStatus == GenerationStatus.Submitting ||
+        state.generationStatus == GenerationStatus.Running
+
+    Scaffold(
+        topBar = {
+            GenerationTopBar(onBack, onLoadTemplate, isGenerating, state)
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { padding ->
+        GenerationContent(padding, state, viewModel)
+    }
+}
+
+@Composable
+private fun SaveResultSnackbar(
+    imageSaveSuccess: Boolean?,
+    snackbarHostState: SnackbarHostState,
+    onDismiss: () -> Unit,
+) {
+    LaunchedEffect(imageSaveSuccess) {
+        when (imageSaveSuccess) {
             true -> {
                 snackbarHostState.showSnackbar("Image saved to gallery")
-                viewModel.onDismissSaveResult()
+                onDismiss()
             }
             false -> {
                 snackbarHostState.showSnackbar("Failed to save image")
-                viewModel.onDismissSaveResult()
+                onDismiss()
             }
             null -> {}
         }
     }
+}
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("txt2img") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun GenerationTopBar(
+    onBack: () -> Unit,
+    onLoadTemplate: (() -> Unit)?,
+    isGenerating: Boolean,
+    state: GenerationUiState,
+) {
+    Column {
+        TopAppBar(
+            title = { Text("txt2img") },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.cd_navigate_back),
+                    )
+                }
+            },
+            actions = {
+                onLoadTemplate?.let {
+                    IconButton(onClick = it) {
+                        Icon(
+                            Icons.Default.FolderOpen,
+                            contentDescription = stringResource(R.string.cd_load_template),
+                        )
                     }
-                },
-                actions = {
-                    onLoadTemplate?.let {
-                        IconButton(onClick = it) {
-                            Icon(Icons.Default.FolderOpen, "Load template")
-                        }
-                    }
-                },
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier.padding(padding),
-            contentPadding = PaddingValues(Spacing.lg),
-            verticalArrangement = Arrangement.spacedBy(Spacing.md),
-        ) {
-            item { CheckpointSelector(state, viewModel::onCheckpointSelected) }
-            item { PromptInputs(state, viewModel) }
-            item { ParameterControls(state, viewModel) }
-            item { LoraSection(state, viewModel) }
-            item { ControlNetSection(state, viewModel) }
-            item { CustomWorkflowSection(state, viewModel) }
-            item { GenerateButton(state, viewModel::onGenerate, viewModel::onInterrupt) }
-            item { GenerationStatusSection(state) }
-            val result = state.result
-            if (result?.imageUrls?.isNotEmpty() == true) {
-                item { ResultGrid(result.imageUrls, viewModel::onSaveImage) }
-            }
+                }
+            },
+        )
+        if (isGenerating) {
+            TopBarProgress(state)
+        }
+    }
+}
+
+@Composable
+private fun GenerationContent(
+    padding: PaddingValues,
+    state: GenerationUiState,
+    viewModel: ComfyUIGenerationViewModel,
+) {
+    LazyColumn(
+        modifier = Modifier.padding(padding),
+        contentPadding = PaddingValues(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md),
+    ) {
+        item { CheckpointSelector(state, viewModel::onCheckpointSelected) }
+        item { PromptInputs(state, viewModel) }
+        item { ParameterControls(state, viewModel) }
+        item { LoraSection(state, viewModel) }
+        item { ControlNetSection(state, viewModel) }
+        item { CustomWorkflowSection(state, viewModel) }
+        item { GenerateButton(state, viewModel::onGenerate, viewModel::onInterrupt) }
+        item { GenerationStatusSection(state) }
+        val result = state.result
+        if (result?.imageUrls?.isNotEmpty() == true) {
+            item { ResultGrid(result.imageUrls, viewModel::onSaveImage) }
         }
     }
 }
@@ -117,7 +163,7 @@ private fun LoraSection(state: GenerationUiState, viewModel: ComfyUIGenerationVi
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("LoRA", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
                 IconButton(onClick = { expanded = true }, enabled = state.availableLoras.isNotEmpty()) {
-                    Icon(Icons.Default.Add, "Add LoRA")
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add_lora))
                 }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     state.availableLoras.forEach { lora ->
@@ -156,7 +202,7 @@ private fun LoraRow(lora: LoraSelection, viewModel: ComfyUIGenerationViewModel) 
                 maxLines = 1
             )
             IconButton(onClick = { viewModel.onLoraRemoved(lora.name) }) {
-                Icon(Icons.Default.Close, "Remove LoRA")
+                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_remove_lora))
             }
         }
         SliderRow(
@@ -215,7 +261,7 @@ private fun CustomWorkflowSection(state: GenerationUiState, viewModel: ComfyUIGe
                 )
                 if (state.customWorkflowJson != null) {
                     IconButton(onClick = viewModel::onClearCustomWorkflow) {
-                        Icon(Icons.Default.Close, "Clear workflow")
+                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_clear_workflow))
                     }
                 }
             }
@@ -273,4 +319,16 @@ private fun WorkflowImportDialog(
         confirmButton = { Button(onClick = onConfirm) { Text("Import") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
+}
+
+@Composable
+private fun TopBarProgress(state: GenerationUiState) {
+    if (state.totalSteps > 0) {
+        LinearProgressIndicator(
+            progress = { state.progressFraction },
+            modifier = Modifier.fillMaxWidth(),
+        )
+    } else {
+        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+    }
 }

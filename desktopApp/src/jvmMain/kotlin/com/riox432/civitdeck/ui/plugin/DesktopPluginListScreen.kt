@@ -34,6 +34,7 @@ import com.riox432.civitdeck.domain.model.InstalledPlugin
 import com.riox432.civitdeck.domain.model.InstalledPluginState
 import com.riox432.civitdeck.domain.model.InstalledPluginType
 import com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel
+import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
 
@@ -127,6 +128,7 @@ private fun DesktopPluginRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .desktopFocusRing()
             .clickable(onClickLabel = "View plugin details", onClick = onClick)
             .padding(horizontal = Spacing.lg, vertical = Spacing.md),
         verticalAlignment = Alignment.CenterVertically,

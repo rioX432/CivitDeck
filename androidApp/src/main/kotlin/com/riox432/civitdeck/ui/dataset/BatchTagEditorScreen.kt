@@ -51,12 +51,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.feature.collections.presentation.BatchTagEditorViewModel
+import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 
-private const val BATCH_GRID_COLUMNS = 3
+private const val BATCH_GRID_BASE_COLUMNS = 3
 private const val IMAGE_ASPECT = 1f
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -264,7 +265,7 @@ private fun BatchImageGrid(
         )
     } else {
         LazyVerticalGrid(
-            columns = GridCells.Fixed(BATCH_GRID_COLUMNS),
+            columns = GridCells.Fixed(adaptiveGridColumns(BATCH_GRID_BASE_COLUMNS)),
             contentPadding = PaddingValues(
                 start = Spacing.md,
                 end = Spacing.md,

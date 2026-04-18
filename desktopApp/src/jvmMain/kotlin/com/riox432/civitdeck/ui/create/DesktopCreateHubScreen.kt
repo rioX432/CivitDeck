@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.Spacing
 
 private data class CreateHubItem(
@@ -85,6 +86,7 @@ private fun CreateHubCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .desktopFocusRing()
             .clickable(onClick = onClick),
     ) {
         Row(

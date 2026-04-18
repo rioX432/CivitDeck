@@ -1,6 +1,10 @@
 import SwiftUI
 import Shared
 
+/// Size of the unread indicator dot.
+// TODO: Unify with shared design token
+private let unreadDotSize: CGFloat = 8
+
 struct NotificationCenterView: View {
     @StateObject private var viewModel = NotificationCenterViewModelOwner()
     @Environment(\.civitTheme) private var theme
@@ -59,11 +63,11 @@ private struct NotificationRow: View {
                 if !notification.isRead {
                     Circle()
                         .fill(theme.primary)
-                        .frame(width: 8, height: 8)
+                        .frame(width: unreadDotSize, height: unreadDotSize)
                 } else {
                     Circle()
                         .fill(Color.clear)
-                        .frame(width: 8, height: 8)
+                        .frame(width: unreadDotSize, height: unreadDotSize)
                 }
 
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
@@ -76,9 +80,14 @@ private struct NotificationRow: View {
                         .font(.civitBodySmall)
                         .foregroundColor(.civitOnSurfaceVariant)
 
-                    Text(sourceLabel(notification.source))
-                        .font(.civitLabelSmall)
-                        .foregroundColor(theme.primary.opacity(0.7))
+                    HStack(spacing: Spacing.sm) {
+                        Text(sourceLabel(notification.source))
+                            .font(.civitLabelSmall)
+                            .foregroundColor(theme.primary.opacity(0.7))
+                        Text(relativeTimeLabel(notification.createdAt))
+                            .font(.civitLabelSmall)
+                            .foregroundColor(.civitOnSurfaceVariant)
+                    }
                 }
             }
         }
@@ -93,6 +102,28 @@ private struct NotificationRow: View {
             return "Followed Creator"
         default:
             return "Unknown"
+        }
+    }
+
+    private func relativeTimeLabel(_ epochMs: Int64) -> String {
+        let date = Date(timeIntervalSince1970: TimeInterval(epochMs) / 1000.0)
+        let diff = Date().timeIntervalSince(date)
+        let minutes = Int(diff / 60)
+        let hours = Int(diff / 3600)
+        let days = Int(diff / 86400)
+        switch true {
+        case minutes < 1:
+            return "Just now"
+        case minutes < 60:
+            return "\(minutes)m ago"
+        case hours < 24:
+            return "\(hours)h ago"
+        case days < 2:
+            return "Yesterday"
+        case days < 30:
+            return "\(days)d ago"
+        default:
+            return "\(days / 30)mo ago"
         }
     }
 }

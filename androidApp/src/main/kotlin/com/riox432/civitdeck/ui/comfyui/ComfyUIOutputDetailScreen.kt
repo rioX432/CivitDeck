@@ -47,6 +47,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationMeta
+import com.riox432.civitdeck.domain.model.DatasetCollection
+import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryUiState
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
@@ -80,7 +82,10 @@ fun ComfyUIOutputDetailScreen(
                 title = { Text("${pagerState.currentPage + 1} / ${images.size}", maxLines = 1) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_navigate_back)
+                        )
                     }
                 },
                 actions = {
@@ -104,6 +109,18 @@ fun ComfyUIOutputDetailScreen(
             DetailPage(image = images[page])
         }
     }
+    OutputDetailSheets(state, datasets, hashtags, viewModel, showShareSheet) { showShareSheet = false }
+}
+
+@Composable
+private fun OutputDetailSheets(
+    state: ComfyUIHistoryUiState,
+    datasets: List<DatasetCollection>,
+    hashtags: List<ShareHashtag>,
+    viewModel: ComfyUIHistoryViewModel,
+    showShareSheet: Boolean,
+    onDismissShare: () -> Unit,
+) {
     if (state.showDatasetPicker) {
         AddToDatasetSheet(
             datasets = datasets,
@@ -118,7 +135,7 @@ fun ComfyUIOutputDetailScreen(
             onToggleHashtag = viewModel::onToggleShareHashtag,
             onAddHashtag = viewModel::onAddShareHashtag,
             onRemoveHashtag = viewModel::onRemoveShareHashtag,
-            onDismiss = { showShareSheet = false },
+            onDismiss = onDismissShare,
         )
     }
 }

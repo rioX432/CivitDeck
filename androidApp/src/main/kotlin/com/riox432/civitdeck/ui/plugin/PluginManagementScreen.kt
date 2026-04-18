@@ -33,7 +33,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.InstalledPlugin
@@ -43,6 +44,7 @@ import com.riox432.civitdeck.presentation.plugin.PluginManagementUiState
 import com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,7 +61,10 @@ fun PluginManagementScreen(
                 title = { Text("Plugins") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_navigate_back)
+                        )
                     }
                 },
             )
@@ -144,8 +149,13 @@ private fun PluginRow(
     ) {
         PluginIcon()
         PluginInfo(plugin, Modifier.weight(1f))
-        StatusIndicator(plugin.state)
-        Switch(checked = isActive, onCheckedChange = onToggle)
+        StatusBadge(plugin.state)
+        val enableLabel = stringResource(R.string.cd_enable_plugin, plugin.name)
+        Switch(
+            checked = isActive,
+            onCheckedChange = onToggle,
+            modifier = Modifier.semantics { contentDescription = enableLabel },
+        )
     }
 }
 
@@ -153,7 +163,7 @@ private fun PluginRow(
 private fun PluginIcon() {
     Box(
         modifier = Modifier
-            .size(40.dp)
+            .size(IconSize.large) // 48.dp — TODO: Unify with shared design token
             .clip(RoundedCornerShape(CornerRadius.image))
             .background(MaterialTheme.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center,
@@ -162,7 +172,7 @@ private fun PluginIcon() {
             Icons.Default.Extension,
             contentDescription = stringResource(R.string.cd_plugin),
             tint = MaterialTheme.colorScheme.onPrimaryContainer,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(IconSize.medium),
         )
     }
 }
@@ -206,17 +216,36 @@ internal fun PluginTypeBadge(type: InstalledPluginType) {
 }
 
 @Composable
-private fun StatusIndicator(state: InstalledPluginState) {
-    val color = when (state) {
-        InstalledPluginState.ACTIVE -> MaterialTheme.colorScheme.primary
-        InstalledPluginState.INSTALLED -> MaterialTheme.colorScheme.outline
-        InstalledPluginState.INACTIVE -> MaterialTheme.colorScheme.outline
-        InstalledPluginState.ERROR -> MaterialTheme.colorScheme.error
+private fun StatusBadge(state: InstalledPluginState) {
+    val (label, containerColor, contentColor) = when (state) {
+        InstalledPluginState.ACTIVE -> Triple(
+            stringResource(R.string.cd_plugin_active),
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+        InstalledPluginState.INSTALLED -> Triple(
+            stringResource(R.string.cd_plugin_inactive),
+            MaterialTheme.colorScheme.surfaceVariant,
+            MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        InstalledPluginState.INACTIVE -> Triple(
+            stringResource(R.string.cd_plugin_inactive),
+            MaterialTheme.colorScheme.outlineVariant,
+            MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        InstalledPluginState.ERROR -> Triple(
+            stringResource(R.string.cd_plugin_error),
+            MaterialTheme.colorScheme.errorContainer,
+            MaterialTheme.colorScheme.onErrorContainer,
+        )
     }
-    Box(
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall,
+        color = contentColor,
         modifier = Modifier
-            .size(8.dp)
-            .clip(RoundedCornerShape(CornerRadius.xs))
-            .background(color),
+            .background(containerColor, RoundedCornerShape(CornerRadius.xs))
+            .padding(horizontal = Spacing.sm, vertical = Spacing.xxs)
+            .semantics { contentDescription = label },
     )
 }

@@ -23,6 +23,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -34,19 +38,23 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.RecentlyViewedModel
 import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryUiState
 import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,6 +65,9 @@ fun BrowsingHistoryScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showClearDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var pendingDeleteId by remember { mutableStateOf<Long?>(null) }
 
     Scaffold(
         topBar = {
@@ -66,11 +77,26 @@ fun BrowsingHistoryScreen(
                 onClear = { showClearDialog = true },
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         HistoryContent(
             state = state,
             onModelClick = onModelClick,
-            onDelete = viewModel::deleteItem,
+            onDelete = { historyId ->
+                pendingDeleteId = historyId
+                scope.launch {
+                    val result = snackbarHostState.showSnackbar(
+                        message = "Deleted",
+                        actionLabel = "Undo",
+                        duration = SnackbarDuration.Short,
+                    )
+                    if (result != SnackbarResult.ActionPerformed && pendingDeleteId == historyId) {
+                        viewModel.deleteItem(historyId)
+                    }
+                    pendingDeleteId = null
+                }
+            },
+            pendingDeleteId = pendingDeleteId,
             modifier = Modifier.padding(padding),
         )
     }
@@ -97,7 +123,10 @@ private fun HistoryTopAppBar(
         title = { Text("Browsing History") },
         navigationIcon = {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.cd_navigate_back)
+                )
             }
         },
         actions = {
@@ -113,6 +142,7 @@ private fun HistoryContent(
     state: BrowsingHistoryUiState,
     onModelClick: (Long) -> Unit,
     onDelete: (Long) -> Unit,
+    pendingDeleteId: Long? = null,
     modifier: Modifier = Modifier,
 ) {
     if (state.isEmpty) {
@@ -127,7 +157,8 @@ private fun HistoryContent(
                 stickyHeader(key = group.label) {
                     GroupHeader(group.label)
                 }
-                items(items = group.items, key = { it.historyId }) { item ->
+                val visibleItems = group.items.filter { it.historyId != pendingDeleteId }
+                items(items = visibleItems, key = { it.historyId }) { item ->
                     HistoryItem(
                         item = item,
                         onClick = { onModelClick(item.modelId) },
@@ -218,7 +249,9 @@ private fun HistoryItemContent(item: RecentlyViewedModel, onClick: () -> Unit) {
         CivitAsyncImage(
             imageUrl = item.thumbnailUrl,
             contentDescription = item.modelName,
-            modifier = Modifier.size(56.dp).clip(MaterialTheme.shapes.small),
+            modifier = Modifier.size(
+                IconSize.xlarge
+            ).clip(MaterialTheme.shapes.small), // TODO: Unify with shared design token
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(

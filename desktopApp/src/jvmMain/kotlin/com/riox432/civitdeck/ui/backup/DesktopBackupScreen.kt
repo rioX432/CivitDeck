@@ -38,6 +38,7 @@ import com.riox432.civitdeck.domain.model.BackupCategory
 import com.riox432.civitdeck.domain.model.RestoreStrategy
 import com.riox432.civitdeck.feature.settings.presentation.BackupViewModel
 import com.riox432.civitdeck.feature.settings.presentation.BackupUiState
+import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
 import java.io.File
@@ -149,6 +150,7 @@ private fun BackupBody(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Spacing.lg, vertical = Spacing.sm)
+                    .desktopFocusRing()
                     .clickable(onClickLabel = "Toggle") { viewModel.onToggleCategory(category) },
                 verticalAlignment = Alignment.CenterVertically,
             ) {

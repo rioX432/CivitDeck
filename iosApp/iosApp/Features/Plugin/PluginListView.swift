@@ -58,12 +58,13 @@ private struct PluginRow: View {
             pluginIcon
             pluginInfo
             Spacer()
-            statusDot
+            statusBadge
             Toggle("", isOn: Binding(
                 get: { viewModel.isActive(plugin) },
                 set: { viewModel.togglePlugin(plugin, isActive: $0) }
             ))
             .labelsHidden()
+            .accessibilityLabel("Enable \(plugin.name)")
         }
         .padding(.vertical, Spacing.xs)
     }
@@ -93,20 +94,49 @@ private struct PluginRow: View {
         }
     }
 
-    private var statusDot: some View {
-        Circle()
-            .fill(statusColor)
-            .frame(width: Spacing.sm, height: Spacing.sm)
+    private var statusBadge: some View {
+        Text(stateLabel)
+            .font(.civitLabelSmall)
+            .foregroundColor(stateLabelColor)
+            .padding(.horizontal, Spacing.sm)
+            .padding(.vertical, Spacing.xxs)
+            .background(stateBackgroundColor)
+            .cornerRadius(Spacing.xs)
+            .accessibilityLabel(stateLabel)
     }
 
-    private var statusColor: Color {
+    private var stateLabel: String {
         switch plugin.state {
         case .active:
-            return theme.primary
+            return "Active"
+        case .inactive:
+            return "Inactive"
         case .error:
-            return .civitError
+            return "Error"
         default:
-            return .civitOutline
+            return "Inactive"
+        }
+    }
+
+    private var stateLabelColor: Color {
+        switch plugin.state {
+        case .active:
+            return theme.onPrimaryContainer
+        case .error:
+            return .civitOnErrorContainer
+        default:
+            return .civitOnSurfaceVariant
+        }
+    }
+
+    private var stateBackgroundColor: Color {
+        switch plugin.state {
+        case .active:
+            return theme.primaryContainer
+        case .error:
+            return .civitErrorContainer
+        default:
+            return .civitSurfaceVariant
         }
     }
 }

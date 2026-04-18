@@ -46,6 +46,7 @@ import coil3.size.Size
 import com.riox432.civitdeck.domain.model.FeedItem
 import com.riox432.civitdeck.feature.creator.presentation.FeedViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
+import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
@@ -196,6 +197,7 @@ private fun FeedGridCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .desktopFocusRing()
             .clickable(onClick = onModelClick),
         shape = RoundedCornerShape(CornerRadius.card),
         elevation = CardDefaults.cardElevation(defaultElevation = Elevation.xs),

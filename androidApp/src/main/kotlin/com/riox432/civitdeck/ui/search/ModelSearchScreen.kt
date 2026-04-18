@@ -4,14 +4,22 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Style
 import androidx.compose.material.icons.outlined.AutoAwesome
@@ -43,7 +51,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.BuildConfig
 import com.riox432.civitdeck.R
@@ -124,7 +131,7 @@ private fun SearchScreenBody(
     callbacks: SearchScreenCallbacks,
     onToggleFavorite: (com.riox432.civitdeck.domain.model.Model) -> Unit = {},
 ) {
-    val padding = PaddingValues()
+    val padding = WindowInsets.safeDrawing.asPaddingValues()
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
     var showFilterSheet by remember { mutableStateOf(false) }
@@ -189,36 +196,13 @@ private fun SearchScreenBody(
             onClearHistory = viewModel::clearSearchHistory,
         )
 
-        if (BuildConfig.FEATURE_SIMILARITY_SEARCH) {
-            AiSearchFab(
-                visible = isFabVisible,
-                onClick = callbacks.onTextSearch,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(bottom = AI_SEARCH_FAB_BOTTOM_PADDING, end = Spacing.lg),
-            )
-        }
-
-        QRScannerFab(
+        SpeedDialFab(
             visible = isFabVisible,
-            onClick = callbacks.onScanQRCode,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = QR_FAB_BOTTOM_PADDING, end = Spacing.lg),
-        )
-
-        DiscoverFab(
-            visible = isFabVisible,
-            onClick = callbacks.onDiscoverClick,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = DISCOVER_FAB_BOTTOM_PADDING, end = Spacing.lg),
-        )
-
-        FilterFab(
             activeFilterCount = activeFilterCount,
-            visible = isFabVisible,
-            onClick = { showFilterSheet = true },
+            onFilterClick = { showFilterSheet = true },
+            onDiscoverClick = callbacks.onDiscoverClick,
+            onScanQRCode = callbacks.onScanQRCode,
+            onTextSearch = if (BuildConfig.FEATURE_SIMILARITY_SEARCH) callbacks.onTextSearch else null,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(Spacing.lg),
@@ -310,103 +294,19 @@ private fun SaveFilterDialog(
     )
 }
 
+@Suppress("LongParameterList")
 @Composable
-private fun AiSearchFab(
+private fun SpeedDialFab(
     visible: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    AnimatedVisibility(
-        visible = visible,
-        modifier = modifier,
-        enter = slideInVertically(
-            initialOffsetY = { it },
-            animationSpec = tween(Duration.fast, easing = Easing.standard),
-        ) + fadeIn(animationSpec = tween(Duration.fast, easing = Easing.standard)),
-        exit = slideOutVertically(
-            targetOffsetY = { it },
-            animationSpec = tween(Duration.fast, easing = Easing.standard),
-        ) + fadeOut(animationSpec = tween(Duration.fast, easing = Easing.standard)),
-    ) {
-        SmallFloatingActionButton(
-            onClick = onClick,
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-        ) {
-            Icon(
-                Icons.Outlined.AutoAwesome,
-                contentDescription = "AI Search",
-            )
-        }
-    }
-}
-
-@Composable
-private fun DiscoverFab(
-    visible: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    AnimatedVisibility(
-        visible = visible,
-        modifier = modifier,
-        enter = slideInVertically(
-            initialOffsetY = { it },
-            animationSpec = tween(Duration.fast, easing = Easing.standard),
-        ) + fadeIn(animationSpec = tween(Duration.fast, easing = Easing.standard)),
-        exit = slideOutVertically(
-            targetOffsetY = { it },
-            animationSpec = tween(Duration.fast, easing = Easing.standard),
-        ) + fadeOut(animationSpec = tween(Duration.fast, easing = Easing.standard)),
-    ) {
-        SmallFloatingActionButton(
-            onClick = onClick,
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-        ) {
-            Icon(
-                Icons.Filled.Style,
-                contentDescription = stringResource(R.string.cd_discover),
-            )
-        }
-    }
-}
-
-@Composable
-private fun QRScannerFab(
-    visible: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    AnimatedVisibility(
-        visible = visible,
-        modifier = modifier,
-        enter = slideInVertically(
-            initialOffsetY = { it },
-            animationSpec = tween(Duration.fast, easing = Easing.standard),
-        ) + fadeIn(animationSpec = tween(Duration.fast, easing = Easing.standard)),
-        exit = slideOutVertically(
-            targetOffsetY = { it },
-            animationSpec = tween(Duration.fast, easing = Easing.standard),
-        ) + fadeOut(animationSpec = tween(Duration.fast, easing = Easing.standard)),
-    ) {
-        SmallFloatingActionButton(
-            onClick = onClick,
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-        ) {
-            Icon(
-                Icons.Filled.QrCodeScanner,
-                contentDescription = stringResource(R.string.cd_scan_qr_code),
-            )
-        }
-    }
-}
-
-@Composable
-private fun FilterFab(
     activeFilterCount: Int,
-    visible: Boolean,
-    onClick: () -> Unit,
+    onFilterClick: () -> Unit,
+    onDiscoverClick: () -> Unit,
+    onScanQRCode: () -> Unit,
+    onTextSearch: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     AnimatedVisibility(
         visible = visible,
         modifier = modifier,
@@ -419,24 +319,157 @@ private fun FilterFab(
             animationSpec = tween(Duration.fast, easing = Easing.standard),
         ) + fadeOut(animationSpec = tween(Duration.fast, easing = Easing.standard)),
     ) {
-        BadgedBox(
-            badge = {
-                if (activeFilterCount > 0) {
-                    Badge { Text(activeFilterCount.toString()) }
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            // Expandable mini-FABs
+            SpeedDialItems(
+                expanded = expanded,
+                onFilterClick = {
+                    expanded = false
+                    onFilterClick()
+                },
+                activeFilterCount = activeFilterCount,
+                onDiscoverClick = {
+                    expanded = false
+                    onDiscoverClick()
+                },
+                onScanQRCode = {
+                    expanded = false
+                    onScanQRCode()
+                },
+                onTextSearch = onTextSearch?.let { {
+                    expanded = false
+                    it()
                 }
+                },
+            )
+            PrimarySpeedDialFab(
+                expanded = expanded,
+                activeFilterCount = activeFilterCount,
+                onToggle = { expanded = !expanded },
+            )
+        }
+    }
+}
+
+@Composable
+private fun PrimarySpeedDialFab(
+    expanded: Boolean,
+    activeFilterCount: Int,
+    onToggle: () -> Unit,
+) {
+    BadgedBox(
+        badge = {
+            if (activeFilterCount > 0 && !expanded) {
+                Badge { Text(activeFilterCount.toString()) }
+            }
+        },
+    ) {
+        FloatingActionButton(
+            onClick = onToggle,
+            containerColor = if (expanded) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerHigh
+            },
+            contentColor = if (expanded) {
+                MaterialTheme.colorScheme.onPrimary
+            } else {
+                MaterialTheme.colorScheme.primary
             },
         ) {
-            FloatingActionButton(
+            Icon(
+                if (expanded) Icons.Default.Close else Icons.Outlined.FilterList,
+                contentDescription = stringResource(R.string.cd_filters),
+            )
+        }
+    }
+}
+
+@Suppress("LongParameterList")
+@Composable
+private fun SpeedDialItems(
+    expanded: Boolean,
+    onFilterClick: () -> Unit,
+    activeFilterCount: Int,
+    onDiscoverClick: () -> Unit,
+    onScanQRCode: () -> Unit,
+    onTextSearch: (() -> Unit)?,
+) {
+    val enterAnim = scaleIn(animationSpec = tween(Duration.fast, easing = Easing.standard)) +
+        fadeIn(animationSpec = tween(Duration.fast, easing = Easing.standard))
+    val exitAnim = scaleOut(animationSpec = tween(Duration.fast, easing = Easing.standard)) +
+        fadeOut(animationSpec = tween(Duration.fast, easing = Easing.standard))
+
+    if (onTextSearch != null) {
+        SpeedDialItem(
+            visible = expanded,
+            label = "AI Search",
+            icon = { Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Search") },
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            onClick = onTextSearch,
+            enter = enterAnim,
+            exit = exitAnim,
+        )
+    }
+    SpeedDialItem(
+        visible = expanded,
+        label = stringResource(R.string.cd_scan_qr_code),
+        icon = { Icon(Icons.Filled.QrCodeScanner, contentDescription = stringResource(R.string.cd_scan_qr_code)) },
+        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        onClick = onScanQRCode,
+        enter = enterAnim,
+        exit = exitAnim,
+    )
+    SpeedDialItem(
+        visible = expanded,
+        label = stringResource(R.string.cd_discover),
+        icon = { Icon(Icons.Filled.Style, contentDescription = stringResource(R.string.cd_discover)) },
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        onClick = onDiscoverClick,
+        enter = enterAnim,
+        exit = exitAnim,
+    )
+    SpeedDialItem(
+        visible = expanded,
+        label = stringResource(R.string.cd_filters) +
+            if (activeFilterCount > 0) " ($activeFilterCount)" else "",
+        icon = { Icon(Icons.Outlined.FilterList, contentDescription = stringResource(R.string.cd_filters)) },
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        onClick = onFilterClick,
+        enter = enterAnim,
+        exit = exitAnim,
+    )
+}
+
+@Composable
+private fun SpeedDialItem(
+    visible: Boolean,
+    label: String,
+    icon: @Composable () -> Unit,
+    containerColor: androidx.compose.ui.graphics.Color,
+    onClick: () -> Unit,
+    enter: androidx.compose.animation.EnterTransition,
+    exit: androidx.compose.animation.ExitTransition,
+) {
+    AnimatedVisibility(visible = visible, enter = enter, exit = exit) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            SmallFloatingActionButton(
                 onClick = onClick,
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                contentColor = MaterialTheme.colorScheme.primary,
+                containerColor = containerColor,
             ) {
-                Icon(Icons.Outlined.FilterList, contentDescription = stringResource(R.string.cd_filters))
+                icon()
             }
         }
     }
 }
-
-private val DISCOVER_FAB_BOTTOM_PADDING = 80.dp
-private val QR_FAB_BOTTOM_PADDING = 136.dp
-private val AI_SEARCH_FAB_BOTTOM_PADDING = 192.dp

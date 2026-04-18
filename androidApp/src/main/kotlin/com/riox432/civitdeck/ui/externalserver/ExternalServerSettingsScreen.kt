@@ -36,7 +36,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ExternalServerConfig
 import com.riox432.civitdeck.domain.model.ExternalServerConnectionStatus
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsUiState
@@ -58,7 +60,10 @@ fun ExternalServerSettingsScreen(
                 title = { Text("Custom Server") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_navigate_back)
+                        )
                     }
                 },
             )
@@ -69,38 +74,7 @@ fun ExternalServerSettingsScreen(
             }
         },
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier.padding(padding),
-            contentPadding = PaddingValues(Spacing.lg),
-            verticalArrangement = Arrangement.spacedBy(Spacing.md),
-        ) {
-            item {
-                ExternalServerStatusCard(
-                    state = state,
-                    onTest = viewModel::onTestConnection,
-                    onNavigateToGallery = onNavigateToGallery,
-                )
-            }
-
-            if (state.configs.isNotEmpty()) {
-                item {
-                    Text(
-                        text = "Servers",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-                items(state.configs, key = { it.id }) { config ->
-                    ExternalServerConfigRow(
-                        config = config,
-                        isActive = config.id == state.activeConfig?.id,
-                        onActivate = { viewModel.onActivateConfig(config.id) },
-                        onEdit = { viewModel.onEditConfig(config) },
-                        onDelete = { viewModel.onDeleteConfig(config.id) },
-                    )
-                }
-            }
-        }
+        ServerSettingsContent(padding, state, viewModel, onNavigateToGallery)
     }
 
     if (state.showAddDialog) {
@@ -109,6 +83,46 @@ fun ExternalServerSettingsScreen(
             onSave = viewModel::onSaveConfig,
             onDismiss = viewModel::onDismissDialog,
         )
+    }
+}
+
+@Composable
+private fun ServerSettingsContent(
+    padding: PaddingValues,
+    state: ExternalServerSettingsUiState,
+    viewModel: ExternalServerSettingsViewModel,
+    onNavigateToGallery: () -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.padding(padding),
+        contentPadding = PaddingValues(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md),
+    ) {
+        item {
+            ExternalServerStatusCard(
+                state = state,
+                onTest = viewModel::onTestConnection,
+                onNavigateToGallery = onNavigateToGallery,
+            )
+        }
+        if (state.configs.isNotEmpty()) {
+            item {
+                Text(
+                    text = "Servers",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            items(state.configs, key = { it.id }) { config ->
+                ExternalServerConfigRow(
+                    config = config,
+                    isActive = config.id == state.activeConfig?.id,
+                    onActivate = { viewModel.onActivateConfig(config.id) },
+                    onEdit = { viewModel.onEditConfig(config) },
+                    onDelete = { viewModel.onDeleteConfig(config.id) },
+                )
+            }
+        }
     }
 }
 

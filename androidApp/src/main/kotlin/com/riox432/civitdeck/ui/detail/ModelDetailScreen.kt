@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.ui.detail
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -12,8 +13,11 @@ import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.ImageSearch
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -299,20 +303,7 @@ private fun ModelDetailTopBar(
             }
         },
         actions = {
-            if (onFindSimilar != null) {
-                IconButton(onClick = onFindSimilar) {
-                    Icon(Icons.Default.ImageSearch, contentDescription = "Find similar models")
-                }
-            }
-            IconButton(onClick = onAddToCollection) {
-                Icon(Icons.Default.CreateNewFolder, contentDescription = stringResource(R.string.cd_add_to_collection))
-            }
-            IconButton(onClick = onShowQRCode) {
-                Icon(Icons.Default.QrCode2, contentDescription = stringResource(R.string.cd_share_qr_code))
-            }
-            IconButton(onClick = onShareClick) {
-                Icon(Icons.Default.Share, contentDescription = stringResource(R.string.cd_share))
-            }
+            // Primary actions: Favorite and Share
             IconButton(onClick = onFavoriteToggle) {
                 Icon(
                     imageVector = if (uiState.isFavorite) {
@@ -328,8 +319,59 @@ private fun ModelDetailTopBar(
                     },
                 )
             }
+            IconButton(onClick = onShareClick) {
+                Icon(Icons.Default.Share, contentDescription = stringResource(R.string.cd_share))
+            }
+            // Secondary actions in overflow menu
+            DetailOverflowMenu(
+                onFindSimilar = onFindSimilar,
+                onAddToCollection = onAddToCollection,
+                onShowQRCode = onShowQRCode,
+            )
         },
     )
+}
+
+@Composable
+private fun DetailOverflowMenu(
+    onFindSimilar: (() -> Unit)?,
+    onAddToCollection: () -> Unit,
+    onShowQRCode: () -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(Icons.Default.MoreVert, contentDescription = "More options")
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            if (onFindSimilar != null) {
+                DropdownMenuItem(
+                    text = { Text("Find similar") },
+                    leadingIcon = { Icon(Icons.Default.ImageSearch, contentDescription = null) },
+                    onClick = {
+                        expanded = false
+                        onFindSimilar()
+                    },
+                )
+            }
+            DropdownMenuItem(
+                text = { Text("Add to collection") },
+                leadingIcon = { Icon(Icons.Default.CreateNewFolder, contentDescription = null) },
+                onClick = {
+                    expanded = false
+                    onAddToCollection()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("QR code") },
+                leadingIcon = { Icon(Icons.Default.QrCode2, contentDescription = null) },
+                onClick = {
+                    expanded = false
+                    onShowQRCode()
+                },
+            )
+        }
+    }
 }
 
 private fun prepareImages(

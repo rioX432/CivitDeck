@@ -1,9 +1,10 @@
 import SwiftUI
 import Shared
 
-private let cardStackOffset: CGFloat = 12
-private let undoButtonSize: CGFloat = 48
-private let actionButtonSize: CGFloat = 56
+private let cardStackOffset: CGFloat = Spacing.md
+// TODO: Unify with shared design token
+private let undoButtonSize: CGFloat = 48   // Maps to IconSize.large
+private let actionButtonSize: CGFloat = 56 // Maps to IconSize.xlarge
 
 struct SwipeDiscoveryView: View {
     @StateObject private var viewModel = SwipeDiscoveryViewModelOwner()
@@ -119,6 +120,23 @@ struct SwipeDiscoveryView: View {
                     .clipShape(Circle())
             }
             .accessibilityLabel("Add to favorites")
+            .disabled(viewModel.cards.isEmpty)
+
+            // Open details button
+            Button(action: {
+                if let top = viewModel.cards.first {
+                    let modelId = viewModel.onSwipeUp(top)
+                    onModelDetail?(modelId)
+                }
+            }) {
+                Image(systemName: "info.circle")
+                    .font(.title3)
+                    .frame(width: undoButtonSize, height: undoButtonSize)
+                    .foregroundColor(.civitOnSurface)
+                    .background(Color.civitSurfaceContainerHigh)
+                    .clipShape(Circle())
+            }
+            .accessibilityLabel("Open details")
             .disabled(viewModel.cards.isEmpty)
         }
         .padding(.vertical, Spacing.md)

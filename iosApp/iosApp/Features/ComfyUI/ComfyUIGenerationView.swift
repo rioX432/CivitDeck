@@ -32,6 +32,11 @@ struct ComfyUIGenerationView: View {
         .navigationTitle("txt2img")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            if isGenerating {
+                ToolbarItem(placement: .principal) {
+                    topBarProgress
+                }
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     showTemplatePicker = true
@@ -60,6 +65,24 @@ struct ComfyUIGenerationView: View {
         }
         .onChange(of: viewModel.imageSaveSuccess) { newValue in
             if newValue != nil { showSaveAlert = true }
+        }
+    }
+
+    private var isGenerating: Bool {
+        viewModel.generationStatus == .submitting
+            || viewModel.generationStatus == .running
+    }
+
+    @ViewBuilder
+    private var topBarProgress: some View {
+        if viewModel.totalSteps > 0 {
+            ProgressView(value: viewModel.progressFraction)
+                .progressViewStyle(.linear)
+                .frame(maxWidth: .infinity)
+        } else {
+            ProgressView()
+                .progressViewStyle(.linear)
+                .frame(maxWidth: .infinity)
         }
     }
 

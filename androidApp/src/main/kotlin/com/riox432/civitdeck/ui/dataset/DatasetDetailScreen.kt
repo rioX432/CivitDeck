@@ -29,11 +29,10 @@ import com.riox432.civitdeck.domain.model.ExportProgress
 import com.riox432.civitdeck.domain.model.ImageSource
 import com.riox432.civitdeck.feature.collections.presentation.DatasetDetailViewModel
 import com.riox432.civitdeck.plugin.PluginExportFormat
+import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.FilterChipRow
 import com.riox432.civitdeck.ui.theme.Spacing
-
-private const val GRID_COLUMNS = 2
 
 internal data class DatasetGridCallbacks(
     val onToggleSelection: (Long) -> Unit,
@@ -320,8 +319,9 @@ private fun DatasetImageGrid(
     modifier: Modifier = Modifier,
 ) {
     val sourceOptions: List<ImageSource?> = listOf(null) + ImageSource.entries
+    val gridColumns = adaptiveGridColumns()
     LazyVerticalGrid(
-        columns = GridCells.Fixed(GRID_COLUMNS),
+        columns = GridCells.Fixed(gridColumns),
         contentPadding = PaddingValues(
             start = Spacing.md,
             end = Spacing.md,

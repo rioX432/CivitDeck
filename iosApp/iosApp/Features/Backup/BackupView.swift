@@ -28,10 +28,20 @@ struct BackupView: View {
                 ShareSheet(items: [url])
             }
         }
-        .alert("Restore Backup", isPresented: $viewModel.showImportConfirmation) {
-            importConfirmationActions
+        .confirmationDialog("Restore Backup", isPresented: $viewModel.showImportConfirmation) {
+            Button("Restore (Merge)") {
+                viewModel.restoreStrategy = .merge
+                viewModel.confirmImport()
+            }
+            Button("Restore (Overwrite)") {
+                viewModel.restoreStrategy = .overwrite
+                viewModel.confirmImport()
+            }
+            Button("Cancel", role: .cancel) {
+                viewModel.dismissImportConfirmation()
+            }
         } message: {
-            Text("Found \(viewModel.importCategories.count) categories. Tap Restore to import with \(viewModel.restoreStrategy == .merge ? "merge" : "overwrite") strategy.")
+            Text("Found \(viewModel.importCategories.count) categories. Choose a restore strategy.")
         }
         .onChange(of: viewModel.message) { newValue in
             if let msg = newValue {
@@ -106,19 +116,8 @@ struct BackupView: View {
                 .frame(maxWidth: .infinity, alignment: .center)
             }
             .disabled(viewModel.isImporting)
-
-            Picker("Restore Strategy", selection: $viewModel.restoreStrategy) {
-                Text("Merge").tag(RestoreStrategy.merge)
-                Text("Overwrite").tag(RestoreStrategy.overwrite)
-            }
         } header: {
             Text("Actions")
         }
-    }
-
-    @ViewBuilder
-    private var importConfirmationActions: some View {
-        Button("Restore") { viewModel.confirmImport() }
-        Button("Cancel", role: .cancel) { viewModel.dismissImportConfirmation() }
     }
 }

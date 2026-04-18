@@ -6,28 +6,26 @@ struct FeedView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if viewModel.isLoading && viewModel.feedItems.isEmpty {
-                    LoadingStateView()
-                } else if let error = viewModel.errorMessage, viewModel.feedItems.isEmpty {
-                    ErrorStateView(message: error) {
-                        Task { viewModel.refresh() }
-                    }
-                } else if viewModel.feedItems.isEmpty {
-                    emptyState
-                } else {
-                    feedGrid
+        Group {
+            if viewModel.isLoading && viewModel.feedItems.isEmpty {
+                LoadingStateView()
+            } else if let error = viewModel.errorMessage, viewModel.feedItems.isEmpty {
+                ErrorStateView(message: error) {
+                    Task { viewModel.refresh() }
                 }
+            } else if viewModel.feedItems.isEmpty {
+                emptyState
+            } else {
+                feedGrid
             }
-            .navigationTitle("Feed")
-            .task { await viewModel.observeUiState() }
-            .navigationDestination(for: Int64.self) { modelId in
-                ModelDetailScreen(modelId: modelId)
-            }
-            .navigationDestination(for: String.self) { username in
-                CreatorProfileScreen(username: username)
-            }
+        }
+        .navigationTitle("Feed")
+        .task { await viewModel.observeUiState() }
+        .navigationDestination(for: Int64.self) { modelId in
+            ModelDetailScreen(modelId: modelId)
+        }
+        .navigationDestination(for: String.self) { username in
+            CreatorProfileScreen(username: username)
         }
     }
 

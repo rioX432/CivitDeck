@@ -314,6 +314,8 @@ private fun CivitDeckNavDisplay(
                 val storageVm: StorageSettingsViewModel = koinViewModel()
                 val behaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
                 val updateVm: UpdateViewModel = koinViewModel()
+                val gestureTutorialVm: com.riox432.civitdeck.feature.gallery.presentation.GestureTutorialViewModel =
+                    koinViewModel()
                 val context = androidx.compose.ui.platform.LocalContext.current
                 SettingsScreen(
                     authViewModel = authVm,
@@ -329,6 +331,7 @@ private fun CivitDeckNavDisplay(
                     onNavigateToBrowsingHistory = { backStack.add(BrowsingHistoryRoute) },
                     onNavigateToDownloadQueue = { backStack.add(DownloadQueueRoute) },
                     onNavigateToLicenses = { backStack.add(LicensesRoute) },
+                    onReplayGestureTutorial = gestureTutorialVm::resetTutorial,
                     onOpenUrl = { url ->
                         val intent = android.content.Intent(
                             android.content.Intent.ACTION_VIEW,

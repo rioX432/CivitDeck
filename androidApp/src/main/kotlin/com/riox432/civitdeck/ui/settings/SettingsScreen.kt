@@ -49,6 +49,7 @@ fun SettingsScreen(
     onNavigateToBrowsingHistory: () -> Unit = {},
     onNavigateToDownloadQueue: () -> Unit = {},
     onNavigateToLicenses: () -> Unit = {},
+    onReplayGestureTutorial: () -> Unit = {},
     onOpenUrl: (String) -> Unit = {},
     scrollToTopTrigger: Int = 0,
 ) {
@@ -95,6 +96,7 @@ fun SettingsScreen(
                 updateState,
                 updateViewModel,
                 onNavigateToLicenses,
+                onReplayGestureTutorial,
             )
         }
         if (isEmpty) {
@@ -147,6 +149,7 @@ private fun LazyListScope.settingsAboutItems(
     updateState: UpdateUiState,
     updateViewModel: UpdateViewModel,
     onNavigateToLicenses: () -> Unit,
+    onReplayGestureTutorial: () -> Unit,
 ) {
     item { SectionHeader(stringResource(R.string.settings_section_about)) }
     item { InfoRow(stringResource(R.string.settings_app_version), BuildConfig.VERSION_NAME) }
@@ -159,6 +162,7 @@ private fun LazyListScope.settingsAboutItems(
         )
     }
     item { NavigationRow(stringResource(R.string.settings_open_source_licenses), onNavigateToLicenses) }
+    item { NavigationRow(stringResource(R.string.settings_replay_gesture_tutorial), onReplayGestureTutorial) }
     if (!powerUserMode) {
         item {
             Text(
