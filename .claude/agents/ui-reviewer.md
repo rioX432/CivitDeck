@@ -43,6 +43,15 @@ You review changed files for mobile UI/UX quality issues. Only flag issues in **
 - Different patterns for same interaction type
 - Mixed Compose and legacy View usage in same screen
 
+### 6. Design Personality (see design-personality.md)
+- Using Roboto as display/body font (should use project font)
+- M3 default ripple effect instead of subtle alpha fade
+- M3 default `tonalElevation` instead of custom soft shadows
+- Arbitrary spacing values not on the 8pt grid (no 10.dp, 14.dp, 20.dp)
+- Multiple accent colors on surfaces (should be single accent + neutrals)
+- Inconsistent corner radius (should be unified 12.dp)
+- M3 `FastOutSlowInEasing` in custom animations (should use smooth easing)
+
 ## Output Format
 
 For each finding: `[file:line] severity — description`
