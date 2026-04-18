@@ -26,7 +26,22 @@ Create a pull request for the current branch.
 3. `git log` and `git diff <base>...HEAD` to understand ALL commits
 4. Look up the related GitHub Issue from branch name or commit messages
 5. Read `.github/pull_request_template.md` if it exists
-6. Create PR with `gh pr create`
+6. Generate changelog entry from commits (see below)
+7. Create PR with `gh pr create`, include changelog entry in body
+
+## Changelog Generation
+
+From step 3 commits, generate a changelog entry categorized by type:
+
+```
+### Changelog
+- **Added**: {new features}
+- **Changed**: {modifications to existing features}
+- **Fixed**: {bug fixes}
+- **Removed**: {removed features}
+```
+
+Include this in the PR body after the description. If a `CHANGELOG.md` exists in the project root, prepend the entry under the `## [Unreleased]` section.
 
 ## Rules
 

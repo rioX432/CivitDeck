@@ -101,6 +101,13 @@ Detect the issue source from "$ARGUMENTS":
 
 Read `CLAUDE.md` for project architecture and conventions.
 
+### Migration Detection
+
+If the issue involves library/framework updates, version bumps, or API deprecations:
+1. Check labels for `migration`, `upgrade`, `dependency`, or `breaking-change`
+2. If Android/KMP project and `android` CLI is available: run `android docs search "{migration topic}"` to get latest official migration guidance
+3. Note migration-specific risks (breaking changes, deprecated APIs) for Phase 3 (/dig)
+
 Mark task 1 `completed`.
 
 ---
@@ -181,6 +188,20 @@ git checkout -b {branch-name}
 
 ### 5b. Implement
 
+**TDD mode** (when issue has `tdd` label, or test changes are the primary goal):
+```
+LOOP for each subtask:
+  1. TaskUpdate → in_progress
+  2. Read target code
+  3. Write/update tests FIRST (use test-writer agent if needed)
+  4. Run tests — confirm they FAIL (red)
+  5. Implement the minimal code to pass
+  6. Run tests — confirm they PASS (green)
+  7. Refactor if needed (keep tests passing)
+  8. TaskUpdate → completed
+```
+
+**Standard mode** (default):
 ```
 LOOP for each subtask (in dependency order):
   1. TaskUpdate → in_progress
