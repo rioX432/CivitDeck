@@ -8,8 +8,20 @@ data class ComfyUIConnection(
     val isActive: Boolean = false,
     val lastTestedAt: Long? = null,
     val lastTestSuccess: Boolean? = null,
+    val useHttps: Boolean = false,
+    val acceptSelfSigned: Boolean = false,
 ) {
-    val baseUrl: String get() = "http://$hostname:$port"
+    /** HTTP base URL with the correct scheme. */
+    val baseUrl: String get() {
+        val scheme = if (useHttps) "https" else "http"
+        return "$scheme://$hostname:$port"
+    }
+
+    /** WebSocket scheme matching the HTTP scheme. */
+    val wsScheme: String get() = if (useHttps) "wss" else "ws"
+
+    /** Whether this connection uses a secure transport (HTTPS/WSS). */
+    val isSecure: Boolean get() = useHttps
 
     companion object {
         const val DEFAULT_COMFYUI_PORT = 8188
@@ -22,6 +34,21 @@ enum class ComfyUIConnectionStatus {
     Testing,
     Error,
     NotConfigured,
+}
+
+/** Security level indicator for the connection badge. */
+enum class ConnectionSecurityLevel {
+    /** HTTPS with a trusted certificate. */
+    Secure,
+
+    /** HTTPS but accepting self-signed certificates. */
+    SelfSigned,
+
+    /** Plaintext HTTP on a LAN address (10.x, 192.168.x, 172.16-31.x, localhost). */
+    LocalInsecure,
+
+    /** Plaintext HTTP on a non-LAN address (internet-facing, risky). */
+    RemoteInsecure,
 }
 
 data class LoraSelection(

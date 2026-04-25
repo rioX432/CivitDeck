@@ -96,7 +96,7 @@ internal class GenerationExecutionDelegate(
 
     private fun startWebSocketProgress(promptId: String, connection: ComfyUIConnection) {
         progressJob = scope.launch {
-            observeProgress(promptId, connection.hostname, connection.port)
+            observeProgress(promptId, connection.baseUrl, connection.wsScheme)
                 .catch { pollForResult(promptId) }
                 .collect { progress ->
                     uiState.update { state ->

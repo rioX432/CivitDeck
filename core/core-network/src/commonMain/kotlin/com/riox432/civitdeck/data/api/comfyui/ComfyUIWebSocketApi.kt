@@ -3,6 +3,7 @@ package com.riox432.civitdeck.data.api.comfyui
 import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocket
+import io.ktor.client.plugins.websocket.wss
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
 import kotlinx.coroutines.delay
@@ -16,6 +17,8 @@ private const val MAX_RETRIES = 5
 private const val BASE_DELAY_MS = 1_000L
 private const val MAX_DELAY_MS = 16_000L
 private const val BINARY_HEADER_SIZE = 8
+private const val DEFAULT_WS_PORT = 80
+private const val DEFAULT_WSS_PORT = 443
 
 /**
  * Manages a ComfyUI WebSocket connection and emits typed [ComfyUIWebSocketMessage] events.
@@ -30,13 +33,14 @@ class ComfyUIWebSocketApi(
     private val json: Json,
 ) {
     /**
-     * Opens `ws://{host}:{port}/ws?clientId={clientId}` and emits messages for [promptId].
+     * Opens a WebSocket connection using the provided [baseUrl] scheme (ws/wss).
+     * Falls back to plain ws:// when using host+port overload.
      * Completes when [ComfyUIWebSocketMessage.ExecutionSuccess] or [ComfyUIWebSocketMessage.ExecutionError]
      * is received for [promptId].
      */
     fun observeProgress(
-        host: String,
-        port: Int,
+        baseUrl: String,
+        wsScheme: String,
         clientId: String,
         promptId: String,
     ): Flow<ComfyUIWebSocketMessage> = flow {
@@ -45,8 +49,7 @@ class ComfyUIWebSocketApi(
         while (attempt <= MAX_RETRIES) {
             lastError = null
             try {
-                runWebSocketSession(host, port, clientId, promptId)
-                // Session ended normally — return without retrying
+                runWebSocketSession(baseUrl, wsScheme, clientId, promptId)
                 attempt = MAX_RETRIES + 1
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 Logger.w(TAG, "WebSocket connection failed (attempt $attempt): ${e.message}")
@@ -61,19 +64,54 @@ class ComfyUIWebSocketApi(
         lastError?.let { throw it }
     }
 
-    private suspend fun FlowCollector<ComfyUIWebSocketMessage>.runWebSocketSession(
+    /** Legacy overload using host + port (plain ws://). */
+    fun observeProgress(
         host: String,
         port: Int,
         clientId: String,
         promptId: String,
+    ): Flow<ComfyUIWebSocketMessage> = observeProgress(
+        baseUrl = "http://$host:$port",
+        wsScheme = "ws",
+        clientId = clientId,
+        promptId = promptId,
+    )
+
+    @Suppress("CyclomaticComplexity")
+    private suspend fun FlowCollector<ComfyUIWebSocketMessage>.runWebSocketSession(
+        baseUrl: String,
+        wsScheme: String,
+        clientId: String,
+        promptId: String,
     ) {
-        client.webSocket(host = host, port = port, path = "/ws?clientId=$clientId") {
-            var done = false
-            while (!done) {
-                val msg = incoming.receive().toRelevantMessage(promptId)
-                if (msg != null) {
-                    emit(msg)
-                    done = isTerminal(msg)
+        // Parse host and port from baseUrl (e.g. "https://myserver:8188")
+        val stripped = baseUrl.substringAfter("://")
+        val hostPart = stripped.substringBefore("/").substringBefore(":")
+        val portPart = stripped.substringBefore("/").substringAfter(":", "")
+        val port = portPart.toIntOrNull()
+            ?: if (wsScheme == "wss") DEFAULT_WSS_PORT else DEFAULT_WS_PORT
+        val wsPath = "/ws?clientId=$clientId"
+        val collector = this
+        if (wsScheme == "wss") {
+            client.wss(host = hostPart, port = port, path = wsPath) {
+                var done = false
+                while (!done) {
+                    val msg = incoming.receive().toRelevantMessage(promptId)
+                    if (msg != null) {
+                        collector.emit(msg)
+                        done = isTerminal(msg)
+                    }
+                }
+            }
+        } else {
+            client.webSocket(host = hostPart, port = port, path = wsPath) {
+                var done = false
+                while (!done) {
+                    val msg = incoming.receive().toRelevantMessage(promptId)
+                    if (msg != null) {
+                        collector.emit(msg)
+                        done = isTerminal(msg)
+                    }
                 }
             }
         }

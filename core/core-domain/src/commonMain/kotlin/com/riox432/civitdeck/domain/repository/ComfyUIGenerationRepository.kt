@@ -12,6 +12,7 @@ interface ComfyUIGenerationRepository {
     suspend fun submitGeneration(params: ComfyUIGenerationParams): String
     suspend fun pollGenerationResult(promptId: String): GenerationResult
     fun observeGenerationProgress(promptId: String, host: String, port: Int): Flow<GenerationProgress>
+    fun observeGenerationProgress(promptId: String, baseUrl: String, wsScheme: String): Flow<GenerationProgress>
     fun getImageUrl(filename: String, subfolder: String = "", type: String = "output"): String
     suspend fun interruptGeneration()
 }

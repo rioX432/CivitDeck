@@ -26,6 +26,17 @@ class ComfyUIApi(
     @Volatile
     private var baseUrl: String = ""
 
+    /**
+     * Sets the API base URL. Accepts a full URL (e.g. "https://myserver:8188")
+     * or falls back to constructing one from hostname + port.
+     */
+    fun setBaseUrl(url: String) {
+        baseUrl = url.trimEnd('/')
+    }
+
+    /**
+     * Legacy overload: constructs http:// URL from hostname and port.
+     */
     fun setBaseUrl(hostname: String, port: Int) {
         baseUrl = "http://$hostname:$port"
     }

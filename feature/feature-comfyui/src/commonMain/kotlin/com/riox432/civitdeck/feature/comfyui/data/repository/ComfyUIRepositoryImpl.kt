@@ -76,7 +76,7 @@ class ComfyUIRepositoryImpl(
     }
 
     override suspend fun testConnection(connection: ComfyUIConnection): Boolean {
-        api.setBaseUrl(connection.hostname, connection.port)
+        api.setBaseUrl(connection.baseUrl)
         return try {
             api.getQueue()
             true
@@ -137,9 +137,15 @@ class ComfyUIRepositoryImpl(
         promptId: String,
         host: String,
         port: Int,
+    ): Flow<GenerationProgress> = observeGenerationProgress(promptId, "http://$host:$port", "ws")
+
+    override fun observeGenerationProgress(
+        promptId: String,
+        baseUrl: String,
+        wsScheme: String,
     ): Flow<GenerationProgress> {
         val clientId = "civitdeck-${currentTimeMillis()}"
-        return webSocketApi.observeProgress(host, port, clientId, promptId).mapNotNull { msg ->
+        return webSocketApi.observeProgress(baseUrl, wsScheme, clientId, promptId).mapNotNull { msg ->
             when (msg) {
                 is ComfyUIWebSocketMessage.Progress -> GenerationProgress(
                     promptId = msg.promptId,
@@ -212,7 +218,12 @@ class ComfyUIRepositoryImpl(
 
     private suspend fun ensureApiConfigured() {
         val active = dao.getActive() ?: error("No active ComfyUI connection")
-        api.setBaseUrl(active.hostname, active.port)
+        api.setBaseUrl(buildBaseUrl(active))
+    }
+
+    private fun buildBaseUrl(entity: ComfyUIConnectionEntity): String {
+        val scheme = if (entity.useHttps) "https" else "http"
+        return "$scheme://${entity.hostname}:${entity.port}"
     }
 
     private fun buildWorkflow(params: ComfyUIGenerationParams): JsonObject {
@@ -382,6 +393,8 @@ class ComfyUIRepositoryImpl(
         isActive = isActive,
         lastTestedAt = lastTestedAt,
         lastTestSuccess = lastTestSuccess,
+        useHttps = useHttps,
+        acceptSelfSigned = acceptSelfSigned,
     )
 
     private fun ComfyUIConnection.toEntity() = ComfyUIConnectionEntity(
@@ -393,5 +406,7 @@ class ComfyUIRepositoryImpl(
         lastTestedAt = lastTestedAt,
         lastTestSuccess = lastTestSuccess,
         createdAt = currentTimeMillis(),
+        useHttps = useHttps,
+        acceptSelfSigned = acceptSelfSigned,
     )
 }

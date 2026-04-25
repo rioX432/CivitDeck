@@ -13,6 +13,8 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
     @Published var testError: String?
     @Published var showAddSheet = false
     @Published var editingConnection: ComfyUIConnection?
+    @Published var isScanning = false
+    @Published var discoveredServers: [DiscoveredServer] = []
 
     init() {
         vm = KoinHelper.shared.createComfyUISettingsViewModel()
@@ -30,15 +32,30 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
             testError = state.testError
             showAddSheet = state.showAddDialog
             editingConnection = state.editingConnection
+            isScanning = state.isScanning
+            discoveredServers = state.discoveredServers as? [DiscoveredServer] ?? []
         }
     }
 
-    func onSave(name: String, hostname: String, port: Int32) {
-        vm.onSaveConnection(name: name, hostname: hostname, port: port)
+    func onSave(name: String, hostname: String, port: Int32, useHttps: Bool, acceptSelfSigned: Bool) {
+        vm.onSaveConnection(
+            name: name,
+            hostname: hostname,
+            port: port,
+            useHttps: useHttps,
+            acceptSelfSigned: acceptSelfSigned
+        )
     }
+
     func onDelete(id: Int64) { vm.onDeleteConnection(id: id) }
     func onActivate(id: Int64) { vm.onActivateConnection(id: id) }
     func onTest() { vm.onTestConnection() }
+    func onScanLan() { vm.onScanLan() }
+
+    func onSelectDiscoveredServer(server: DiscoveredServer) {
+        vm.onSelectDiscoveredServer(server: server)
+    }
+
     func onShowAddDialog() {
         showAddSheet = true
         vm.onShowAddDialog()

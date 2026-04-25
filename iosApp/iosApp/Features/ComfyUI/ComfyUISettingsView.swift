@@ -8,6 +8,7 @@ struct ComfyUISettingsView: View {
     var body: some View {
         List {
             statusSection
+            scanLanSection
             if viewModel.isConnected {
                 NavigationLink("Open txt2img Generator") {
                     ComfyUIGenerationView()
@@ -48,10 +49,13 @@ struct ComfyUISettingsView: View {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(statusLabel)
-                            .font(.civitTitleMedium)
+                        HStack(spacing: Spacing.xs) {
+                            Text(statusLabel)
+                                .font(.civitTitleMedium)
+                            securityBadge
+                        }
                         if let active = viewModel.activeConnection {
-                            Text("\(active.hostname):\(active.port)")
+                            Text(active.baseUrl)
                                 .font(.civitBodySmall)
                                 .foregroundColor(.civitOnSurfaceVariant)
                         }
@@ -72,6 +76,44 @@ struct ComfyUISettingsView: View {
         }
     }
 
+    @ViewBuilder
+    private var securityBadge: some View {
+        if let active = viewModel.activeConnection {
+            if active.useHttps {
+                if active.acceptSelfSigned {
+                    Label("Self-signed", systemImage: "lock.trianglebadge.exclamationmark")
+                        .font(.civitLabelSmall)
+                        .foregroundColor(.orange)
+                } else {
+                    Label("HTTPS", systemImage: "lock.fill")
+                        .font(.civitLabelSmall)
+                        .foregroundColor(theme.primary)
+                }
+            } else {
+                let isLan = isLanAddress(active.hostname)
+                if isLan {
+                    Label("LAN", systemImage: "wifi")
+                        .font(.civitLabelSmall)
+                        .foregroundColor(.civitOnSurfaceVariant)
+                } else {
+                    Label("HTTP", systemImage: "exclamationmark.triangle")
+                        .font(.civitLabelSmall)
+                        .foregroundColor(.civitError)
+                }
+            }
+        }
+    }
+
+    private func isLanAddress(_ hostname: String) -> Bool {
+        hostname.hasPrefix("192.168.") ||
+        hostname.hasPrefix("10.") ||
+        hostname.hasPrefix("172.16.") || hostname.hasPrefix("172.17.") ||
+        hostname.hasPrefix("172.18.") || hostname.hasPrefix("172.19.") ||
+        hostname.hasPrefix("172.2") || hostname.hasPrefix("172.3") ||
+        hostname.hasPrefix("127.") ||
+        hostname.lowercased() == "localhost"
+    }
+
     private var statusLabel: String {
         if viewModel.activeConnection == nil { return "No server configured" }
         if viewModel.isTesting { return "Testing..." }
@@ -80,6 +122,41 @@ struct ComfyUISettingsView: View {
             return "Connection Error"
         }
         return "Disconnected"
+    }
+
+    private var scanLanSection: some View {
+        Section("LAN Discovery") {
+            HStack {
+                Text("Scan your local network for ComfyUI servers")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+                Spacer()
+                if viewModel.isScanning {
+                    ProgressView()
+                } else {
+                    Button("Scan LAN", action: viewModel.onScanLan)
+                }
+            }
+            ForEach(viewModel.discoveredServers, id: \.ip) { server in
+                Button {
+                    viewModel.onSelectDiscoveredServer(server: server)
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(server.displayName)
+                                .font(.civitBodyMedium)
+                            Text("\(server.ip):\(server.port)")
+                                .font(.civitBodySmall)
+                                .foregroundColor(.civitOnSurfaceVariant)
+                        }
+                        Spacer()
+                        Text("Add")
+                            .foregroundColor(theme.primary)
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+        }
     }
 
     private var connectionsSection: some View {
@@ -101,8 +178,15 @@ struct ComfyUISettingsView: View {
                     : "Select connection: \(conn.name)")
                 .accessibilityAddTraits(.isButton)
             VStack(alignment: .leading) {
-                Text(conn.name).font(.civitBodyMedium)
-                Text("\(conn.hostname):\(conn.port)")
+                HStack(spacing: Spacing.xs) {
+                    Text(conn.name).font(.civitBodyMedium)
+                    if conn.isSecure {
+                        Image(systemName: "lock.fill")
+                            .font(.civitLabelSmall)
+                            .foregroundColor(theme.primary)
+                    }
+                }
+                Text(conn.baseUrl)
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
             }
@@ -128,29 +212,44 @@ struct ComfyUISettingsView: View {
 
 struct AddConnectionSheet: View {
     let editing: ComfyUIConnection?
-    let onSave: (String, String, Int32) -> Void
+    let onSave: (String, String, Int32, Bool, Bool) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var name: String
     @State private var hostname: String
     @State private var portText: String
+    @State private var useHttps: Bool
+    @State private var acceptSelfSigned: Bool
 
-    init(editing: ComfyUIConnection?, onSave: @escaping (String, String, Int32) -> Void) {
+    init(
+        editing: ComfyUIConnection?,
+        onSave: @escaping (String, String, Int32, Bool, Bool) -> Void
+    ) {
         self.editing = editing
         self.onSave = onSave
         _name = State(initialValue: editing?.name ?? "")
         _hostname = State(initialValue: editing?.hostname ?? "")
         _portText = State(initialValue: editing.map { String($0.port) } ?? "8188")
+        _useHttps = State(initialValue: editing?.useHttps ?? false)
+        _acceptSelfSigned = State(initialValue: editing?.acceptSelfSigned ?? false)
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Name (e.g. Home PC)", text: $name)
-                TextField("Hostname / IP", text: $hostname)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                TextField("Port", text: $portText)
-                    .keyboardType(.numberPad)
+                Section {
+                    TextField("Name (e.g. Home PC)", text: $name)
+                    TextField("Hostname / IP", text: $hostname)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                    TextField("Port", text: $portText)
+                        .keyboardType(.numberPad)
+                }
+                Section("Security") {
+                    Toggle("Use HTTPS", isOn: $useHttps)
+                    if useHttps {
+                        Toggle("Accept self-signed certificates", isOn: $acceptSelfSigned)
+                    }
+                }
             }
             .navigationTitle(editing != nil ? "Edit Connection" : "Add Connection")
             .navigationBarTitleDisplayMode(.inline)
@@ -161,7 +260,13 @@ struct AddConnectionSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         let port = Int32(portText) ?? 8188
-                        onSave(name.isEmpty ? hostname : name, hostname, port)
+                        onSave(
+                            name.isEmpty ? hostname : name,
+                            hostname,
+                            port,
+                            useHttps,
+                            acceptSelfSigned
+                        )
                         dismiss()
                     }
                     .disabled(hostname.isEmpty)

@@ -113,6 +113,7 @@ class ComfyUIHistoryRepositoryImpl(
 
     private suspend fun ensureApiConfigured() {
         val active = dao.getActive() ?: error("No active ComfyUI connection")
-        api.setBaseUrl(active.hostname, active.port)
+        val scheme = if (active.useHttps) "https" else "http"
+        api.setBaseUrl("$scheme://${active.hostname}:${active.port}")
     }
 }

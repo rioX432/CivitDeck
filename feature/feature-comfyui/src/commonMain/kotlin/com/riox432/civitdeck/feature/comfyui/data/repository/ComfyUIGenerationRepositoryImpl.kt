@@ -75,9 +75,15 @@ class ComfyUIGenerationRepositoryImpl(
         promptId: String,
         host: String,
         port: Int,
+    ): Flow<GenerationProgress> = observeGenerationProgress(promptId, "http://$host:$port", "ws")
+
+    override fun observeGenerationProgress(
+        promptId: String,
+        baseUrl: String,
+        wsScheme: String,
     ): Flow<GenerationProgress> {
         val clientId = "civitdeck-${currentTimeMillis()}"
-        return webSocketApi.observeProgress(host, port, clientId, promptId).mapNotNull { msg ->
+        return webSocketApi.observeProgress(baseUrl, wsScheme, clientId, promptId).mapNotNull { msg ->
             when (msg) {
                 is ComfyUIWebSocketMessage.Progress -> GenerationProgress(
                     promptId = msg.promptId,
@@ -107,7 +113,8 @@ class ComfyUIGenerationRepositoryImpl(
 
     private suspend fun ensureApiConfigured() {
         val active = dao.getActive() ?: error("No active ComfyUI connection")
-        api.setBaseUrl(active.hostname, active.port)
+        val scheme = if (active.useHttps) "https" else "http"
+        api.setBaseUrl("$scheme://${active.hostname}:${active.port}")
     }
 
     @Suppress("LongMethod")
