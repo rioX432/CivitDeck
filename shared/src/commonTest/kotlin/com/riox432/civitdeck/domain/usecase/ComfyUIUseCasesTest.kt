@@ -65,6 +65,8 @@ class ComfyUIUseCasesTest {
         override suspend fun pollGenerationResult(promptId: String): GenerationResult = pollResult
         override fun observeGenerationProgress(promptId: String, host: String, port: Int): Flow<GenerationProgress> =
             kotlinx.coroutines.flow.emptyFlow()
+        override fun observeGenerationProgress(promptId: String, baseUrl: String, wsScheme: String): Flow<GenerationProgress> =
+            kotlinx.coroutines.flow.emptyFlow()
         override fun getImageUrl(filename: String, subfolder: String, type: String): String =
             "http://localhost:8188/view?filename=$filename"
         override fun observeQueue(intervalMs: Long): Flow<List<QueueJob>> =

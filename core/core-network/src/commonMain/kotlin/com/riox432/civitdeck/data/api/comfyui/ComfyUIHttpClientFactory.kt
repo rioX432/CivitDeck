@@ -42,3 +42,9 @@ fun createComfyUIHttpClient(): HttpClient {
         }
     }
 }
+
+/**
+ * Creates an HttpClient with TLS trust configuration for self-signed certificates.
+ * Platform-specific engines configure certificate trust via expect/actual [configureSelfSignedTls].
+ */
+expect fun createComfyUIHttpClientWithSelfSignedTls(): HttpClient

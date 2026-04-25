@@ -36,6 +36,7 @@ fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
     var nameInput by remember { mutableStateOf("") }
     var hostInput by remember { mutableStateOf("127.0.0.1") }
     var portInput by remember { mutableStateOf(ComfyUIConnection.DEFAULT_COMFYUI_PORT.toString()) }
+    var useHttpsInput by remember { mutableStateOf(false) }
 
     SettingsCard(title = "ComfyUI Server") {
         ConnectionStatusBadge(
@@ -43,12 +44,61 @@ fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
             status = state.connectionStatus.name,
             isConnected = state.connectionStatus == ComfyUIConnectionStatus.Connected,
         )
+        // Security level indicator
+        state.securityLevel?.let { level ->
+            Text(
+                text = when (level) {
+                    com.riox432.civitdeck.domain.model.ConnectionSecurityLevel.Secure -> "Secure (HTTPS)"
+                    com.riox432.civitdeck.domain.model.ConnectionSecurityLevel.SelfSigned -> "Self-signed certificate"
+                    com.riox432.civitdeck.domain.model.ConnectionSecurityLevel.LocalInsecure -> "LAN (HTTP)"
+                    com.riox432.civitdeck.domain.model.ConnectionSecurityLevel.RemoteInsecure -> "Warning: HTTP over internet"
+                },
+                style = MaterialTheme.typography.labelSmall,
+                color = when (level) {
+                    com.riox432.civitdeck.domain.model.ConnectionSecurityLevel.Secure ->
+                        MaterialTheme.colorScheme.primary
+                    com.riox432.civitdeck.domain.model.ConnectionSecurityLevel.RemoteInsecure ->
+                        MaterialTheme.colorScheme.error
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
+        }
+        Spacer(modifier = Modifier.height(Spacing.sm))
+
+        // Scan LAN
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            OutlinedButton(
+                onClick = viewModel::onScanLan,
+                enabled = !state.isScanning,
+            ) {
+                Text(if (state.isScanning) "Scanning..." else "Scan LAN")
+            }
+        }
+        if (state.discoveredServers.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(Spacing.xs))
+            state.discoveredServers.forEach { server ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "${server.displayName} (${server.ip}:${server.port})",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(onClick = { viewModel.onSelectDiscoveredServer(server) }) {
+                        Text("Add")
+                    }
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(Spacing.sm))
 
         // Active connection
         state.activeConnection?.let { active ->
             Text(
-                text = "Active: ${active.name} (${active.hostname}:${active.port})",
+                text = "Active: ${active.name} (${active.baseUrl})",
                 style = MaterialTheme.typography.bodySmall,
             )
             Spacer(modifier = Modifier.height(Spacing.sm))
@@ -76,7 +126,7 @@ fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "${conn.name} (${conn.hostname}:${conn.port})",
+                        text = "${conn.name} (${conn.baseUrl})",
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.weight(1f),
                     )
@@ -121,14 +171,25 @@ fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
                 modifier = Modifier.width(Spacing.xxl * 3),
             )
         }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            androidx.compose.material3.Checkbox(
+                checked = useHttpsInput,
+                onCheckedChange = { useHttpsInput = it },
+            )
+            Text("Use HTTPS", style = MaterialTheme.typography.bodySmall)
+        }
         Spacer(modifier = Modifier.height(Spacing.sm))
         Button(
             onClick = {
                 val port = portInput.toIntOrNull() ?: return@Button
-                viewModel.onSaveConnection(nameInput, hostInput, port)
+                viewModel.onSaveConnection(nameInput, hostInput, port, useHttpsInput, false)
                 nameInput = ""
                 hostInput = "127.0.0.1"
                 portInput = ComfyUIConnection.DEFAULT_COMFYUI_PORT.toString()
+                useHttpsInput = false
             },
             enabled = nameInput.isNotBlank() && hostInput.isNotBlank(),
         ) {

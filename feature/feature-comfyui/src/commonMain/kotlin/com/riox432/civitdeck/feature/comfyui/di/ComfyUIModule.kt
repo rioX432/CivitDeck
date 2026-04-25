@@ -10,13 +10,16 @@ import com.riox432.civitdeck.domain.repository.ComfyUIQueueRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIAssetRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIGenerationRepository
+import com.riox432.civitdeck.domain.repository.ServerDiscoveryRepository
 import com.riox432.civitdeck.feature.comfyui.data.repository.CivitaiLinkRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyHubRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIConnectionRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIGenerationRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIHistoryRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIQueueRepositoryImpl
+import com.riox432.civitdeck.feature.comfyui.data.repository.LocalIpProvider
 import com.riox432.civitdeck.feature.comfyui.data.repository.SDWebUIRepositoryImpl
+import com.riox432.civitdeck.feature.comfyui.data.repository.ServerDiscoveryRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ApplyWorkflowTemplateUseCase
@@ -58,6 +61,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.PopulateGenerationFr
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveWorkflowTemplateUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ScanForServersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SearchComfyHubWorkflowsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SendResourceToPCUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
@@ -81,6 +85,9 @@ import org.koin.dsl.module
 
 val comfyuiModule = module {
     single<ComfyUIConnectionRepository> { ComfyUIConnectionRepositoryImpl(get(), get()) }
+    single { LocalIpProvider() }
+    single<ServerDiscoveryRepository> { ServerDiscoveryRepositoryImpl(get(), get()) }
+    factory { ScanForServersUseCase(get()) }
     single<ComfyUIGenerationRepository> { ComfyUIGenerationRepositoryImpl(get(), get(), get(), get()) }
     single<ComfyUIQueueRepository> { ComfyUIQueueRepositoryImpl(get(), get()) }
     single<ComfyUIHistoryRepository> { ComfyUIHistoryRepositoryImpl(get(), get()) }
@@ -150,7 +157,7 @@ val comfyuiModule = module {
     single { ComfyUIWorkflowPlugin(get()) }
 
     // ViewModels
-    viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { ComfyUIHistoryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { ComfyUIQueueViewModel(get(), get()) }

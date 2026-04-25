@@ -13,6 +13,8 @@ data class ComfyUIConnectionEntity(
     val lastTestedAt: Long? = null,
     val lastTestSuccess: Boolean? = null,
     val createdAt: Long,
+    val useHttps: Boolean = false,
+    val acceptSelfSigned: Boolean = false,
 ) {
     companion object {
         const val DEFAULT_PORT = 8188

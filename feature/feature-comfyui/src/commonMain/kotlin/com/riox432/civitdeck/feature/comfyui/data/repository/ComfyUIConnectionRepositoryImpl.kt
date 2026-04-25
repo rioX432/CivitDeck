@@ -49,7 +49,7 @@ class ComfyUIConnectionRepositoryImpl(
     }
 
     override suspend fun testConnection(connection: ComfyUIConnection): Boolean {
-        api.setBaseUrl(connection.hostname, connection.port)
+        api.setBaseUrl(connection.baseUrl)
         return try {
             api.getQueue()
             true
@@ -71,6 +71,8 @@ class ComfyUIConnectionRepositoryImpl(
         isActive = isActive,
         lastTestedAt = lastTestedAt,
         lastTestSuccess = lastTestSuccess,
+        useHttps = useHttps,
+        acceptSelfSigned = acceptSelfSigned,
     )
 
     private fun ComfyUIConnection.toEntity() = ComfyUIConnectionEntity(
@@ -82,5 +84,7 @@ class ComfyUIConnectionRepositoryImpl(
         lastTestedAt = lastTestedAt,
         lastTestSuccess = lastTestSuccess,
         createdAt = currentTimeMillis(),
+        useHttps = useHttps,
+        acceptSelfSigned = acceptSelfSigned,
     )
 }
