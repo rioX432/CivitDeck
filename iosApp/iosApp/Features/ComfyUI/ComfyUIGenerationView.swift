@@ -14,6 +14,7 @@ struct ComfyUIGenerationView: View {
     @State private var showSaveAlert = false
     @State private var showTemplatePicker = false
     @State private var showMaskEditor = false
+    @State private var showParameterEditor = false
 
     var body: some View {
         ScrollView {
@@ -58,6 +59,19 @@ struct ComfyUIGenerationView: View {
         }
         .sheet(isPresented: $showWorkflowImport) {
             workflowImportSheet
+        }
+        .sheet(isPresented: $showParameterEditor) {
+            WorkflowParameterView(
+                parameters: viewModel.extractedParameters,
+                onParameterChanged: { nodeId, paramName, newValue in
+                    viewModel.onParameterValueChanged(
+                        nodeId: nodeId,
+                        paramName: paramName,
+                        newValue: newValue
+                    )
+                },
+                onRefresh: viewModel.onRefreshParameters
+            )
         }
         .sheet(isPresented: $showMaskEditor) {
             NavigationStack {
@@ -240,6 +254,19 @@ struct ComfyUIGenerationView: View {
                                 .accessibilityLabel("Clear")
                         }
                         .buttonStyle(.plain)
+                    }
+                    if !viewModel.extractedParameters.isEmpty {
+                        Button("Edit Parameters (\(viewModel.extractedParameters.count))") {
+                            showParameterEditor = true
+                        }
+                        .buttonStyle(.bordered)
+                    } else if viewModel.isLoadingParameters {
+                        HStack(spacing: Spacing.xs) {
+                            ProgressView().controlSize(.small)
+                            Text("Loading parameters...")
+                                .font(.civitBodySmall)
+                                .foregroundColor(.civitOnSurfaceVariant)
+                        }
                     }
                 } else {
                     Button("Import Workflow JSON") { showWorkflowImport = true }

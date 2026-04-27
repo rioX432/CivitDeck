@@ -117,6 +117,24 @@ class ComfyUIApi(
     }
 
     /**
+     * Fetch the full /object_info response containing schemas for all node types.
+     * Used for dynamic parameter extraction (dropdown options, min/max ranges, etc.).
+     * @throws CancellationException if coroutine is cancelled
+     * @throws Exception on network or deserialization failure
+     */
+    suspend fun getFullObjectInfo(): String {
+        val url = baseUrl
+        return try {
+            client.get("$url/object_info").bodyAsText()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.e(TAG, "getFullObjectInfo failed: ${e.message}", e)
+            throw e
+        }
+    }
+
+    /**
      * Submit workflow: POST /prompt
      * @throws CancellationException if coroutine is cancelled
      * @throws Exception on network or deserialization failure

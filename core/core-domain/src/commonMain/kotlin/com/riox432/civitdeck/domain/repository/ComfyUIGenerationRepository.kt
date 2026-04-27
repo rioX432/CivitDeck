@@ -5,6 +5,7 @@ import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
 import kotlinx.coroutines.flow.Flow
 
+@Suppress("TooManyFunctions")
 interface ComfyUIGenerationRepository {
     suspend fun fetchCheckpoints(): List<String>
     suspend fun fetchLoras(): List<String>
@@ -22,4 +23,10 @@ interface ComfyUIGenerationRepository {
      * @return the filename on the server (e.g. "mask_12345.png")
      */
     suspend fun uploadMaskImage(maskPngBytes: ByteArray): String
+
+    /**
+     * Fetch the full /object_info response from the ComfyUI server.
+     * Returns the raw JSON string containing schema definitions for all node types.
+     */
+    suspend fun fetchObjectInfo(): String
 }
