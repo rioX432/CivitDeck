@@ -15,4 +15,11 @@ interface ComfyUIGenerationRepository {
     fun observeGenerationProgress(promptId: String, baseUrl: String, wsScheme: String): Flow<GenerationProgress>
     fun getImageUrl(filename: String, subfolder: String = "", type: String = "output"): String
     suspend fun interruptGeneration()
+
+    /**
+     * Upload a mask PNG image to the ComfyUI server.
+     * @param maskPngBytes raw PNG bytes of the mask image
+     * @return the filename on the server (e.g. "mask_12345.png")
+     */
+    suspend fun uploadMaskImage(maskPngBytes: ByteArray): String
 }

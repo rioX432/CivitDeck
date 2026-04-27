@@ -3,11 +3,15 @@ package com.riox432.civitdeck.data.api.comfyui
 import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
 import io.ktor.http.contentType
 import io.ktor.http.path
@@ -212,6 +216,46 @@ class ComfyUIApi(
             throw e
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Logger.e(TAG, "getHistory failed (promptId=$promptId): ${e.message}", e)
+            throw e
+        }
+    }
+
+    /**
+     * Upload an image to the ComfyUI server: POST /upload/image (multipart form data).
+     * Returns the uploaded filename from the server response.
+     * @throws CancellationException if coroutine is cancelled
+     * @throws Exception on network or deserialization failure
+     */
+    suspend fun uploadImage(
+        imageBytes: ByteArray,
+        filename: String,
+        subfolder: String = "",
+        imageType: String = "input",
+    ): UploadImageResponse {
+        val url = baseUrl
+        return try {
+            client.submitFormWithBinaryData(
+                url = "$url/upload/image",
+                formData = formData {
+                    append(
+                        "image",
+                        imageBytes,
+                        Headers.build {
+                            append(HttpHeaders.ContentType, "image/png")
+                            append(
+                                HttpHeaders.ContentDisposition,
+                                "filename=\"$filename\"",
+                            )
+                        }
+                    )
+                    append("subfolder", subfolder)
+                    append("type", imageType)
+                },
+            ).body()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Logger.e(TAG, "uploadImage failed: ${e.message}", e)
             throw e
         }
     }

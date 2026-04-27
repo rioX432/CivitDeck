@@ -119,6 +119,9 @@
 		CD00CU032D8CC001000CD001 /* ComfyUISettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */; };
 		CD00CU052D8CC001000CD001 /* ComfyUIGenerationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */; };
 		CD00CU072D8CC001000CD001 /* ComfyUIGenerationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */; };
+		CDME01012F930001000CD001 /* MaskEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDME01002F930001000CD001 /* MaskEditorView.swift */; };
+		CDME02012F930002000CD001 /* MaskEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDME02002F930002000CD001 /* MaskEditorViewModel.swift */; };
+		CDME03012F930003000CD001 /* MaskPaintCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDME03002F930003000CD001 /* MaskPaintCanvasView.swift */; };
 		CDQV01012F100001000CD001 /* ComfyUIQueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDQV01002F100001000CD001 /* ComfyUIQueueView.swift */; };
 		CDQM01012F100002000CD001 /* ComfyUIQueueViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDQM01002F100002000CD001 /* ComfyUIQueueViewModel.swift */; };
 		CDWT01012F200001000CD001 /* WorkflowTemplateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDWT01002F200001000CD001 /* WorkflowTemplateView.swift */; };
@@ -299,6 +302,9 @@
 		CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUISettingsViewModel.swift; sourceTree = "<group>"; };
 		CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIGenerationView.swift; sourceTree = "<group>"; };
 		CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIGenerationViewModel.swift; sourceTree = "<group>"; };
+		CDME01002F930001000CD001 /* MaskEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskEditorView.swift; sourceTree = "<group>"; };
+		CDME02002F930002000CD001 /* MaskEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskEditorViewModel.swift; sourceTree = "<group>"; };
+		CDME03002F930003000CD001 /* MaskPaintCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskPaintCanvasView.swift; sourceTree = "<group>"; };
 		CDQV01002F100001000CD001 /* ComfyUIQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIQueueView.swift; sourceTree = "<group>"; };
 		CDQM01002F100002000CD001 /* ComfyUIQueueViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIQueueViewModel.swift; sourceTree = "<group>"; };
 		CDWT01002F200001000CD001 /* WorkflowTemplateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowTemplateView.swift; sourceTree = "<group>"; };
@@ -833,6 +839,9 @@
 				CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */,
 				CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */,
 				CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */,
+				CDME01002F930001000CD001 /* MaskEditorView.swift */,
+				CDME02002F930002000CD001 /* MaskEditorViewModel.swift */,
+				CDME03002F930003000CD001 /* MaskPaintCanvasView.swift */,
 				CDQV01002F100001000CD001 /* ComfyUIQueueView.swift */,
 				CDQM01002F100002000CD001 /* ComfyUIQueueViewModel.swift */,
 				CDWT01002F200001000CD001 /* WorkflowTemplateView.swift */,
@@ -1090,6 +1099,9 @@
 				CD00CU032D8CC001000CD001 /* ComfyUISettingsViewModel.swift in Sources */,
 				CD00CU052D8CC001000CD001 /* ComfyUIGenerationView.swift in Sources */,
 				CD00CU072D8CC001000CD001 /* ComfyUIGenerationViewModel.swift in Sources */,
+				CDME01012F930001000CD001 /* MaskEditorView.swift in Sources */,
+				CDME02012F930002000CD001 /* MaskEditorViewModel.swift in Sources */,
+				CDME03012F930003000CD001 /* MaskPaintCanvasView.swift in Sources */,
 				CDQV01012F100001000CD001 /* ComfyUIQueueView.swift in Sources */,
 				CDQM01012F100002000CD001 /* ComfyUIQueueViewModel.swift in Sources */,
 				CDWT01012F200001000CD001 /* WorkflowTemplateView.swift in Sources */,

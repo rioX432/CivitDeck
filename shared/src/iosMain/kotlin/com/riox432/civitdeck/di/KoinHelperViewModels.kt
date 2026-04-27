@@ -10,6 +10,7 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewM
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.MaskEditorViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
@@ -89,6 +90,7 @@ fun KoinHelper.createDownloadQueueViewModel(): DownloadQueueViewModel = getKoin(
 
 // Phase 4 ViewModels
 fun KoinHelper.createComfyUIGenerationViewModel(): ComfyUIGenerationViewModel = getKoin().get()
+fun KoinHelper.createMaskEditorViewModel(): MaskEditorViewModel = getKoin().get()
 fun KoinHelper.createComfyUIQueueViewModel(): ComfyUIQueueViewModel = getKoin().get()
 fun KoinHelper.createComfyUIHistoryViewModel(): ComfyUIHistoryViewModel = getKoin().get()
 fun KoinHelper.createComfyUISettingsViewModel(): ComfyUISettingsViewModel = getKoin().get()

@@ -121,4 +121,10 @@ data object DownloadQueueRoute
 
 data object CreateHubRoute
 
+data class MaskEditorRoute(
+    val sourceImageUrl: String,
+    val imageWidth: Int,
+    val imageHeight: Int,
+)
+
 data object LibraryRoute

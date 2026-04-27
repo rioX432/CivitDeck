@@ -49,6 +49,10 @@ data class GenerationUiState(
     // Custom workflow
     val customWorkflowJson: String? = null,
     val workflowImportError: String? = null,
+    // Inpainting mask
+    val initImageFilename: String? = null,
+    val maskImageFilename: String? = null,
+    val denoiseStrength: Double = 0.75,
     // Generation
     val generationStatus: GenerationStatus = GenerationStatus.Idle,
     val currentStep: Int = 0,
@@ -227,6 +231,26 @@ class ComfyUIGenerationViewModel(
         _uiState.update { it.copy(customWorkflowJson = null, workflowImportError = null) }
     }
 
+    // -- Inpainting mask --
+
+    fun onInitImageUploaded(filename: String) {
+        _uiState.update { it.copy(initImageFilename = filename) }
+    }
+
+    fun onMaskUploaded(filename: String) {
+        _uiState.update { it.copy(maskImageFilename = filename) }
+    }
+
+    fun onClearMask() {
+        _uiState.update {
+            it.copy(initImageFilename = null, maskImageFilename = null)
+        }
+    }
+
+    fun onDenoiseStrengthChanged(strength: Double) {
+        _uiState.update { it.copy(denoiseStrength = strength) }
+    }
+
     // -- Generation (delegated) --
 
     fun onGenerate() {
@@ -258,6 +282,9 @@ class ComfyUIGenerationViewModel(
         controlNetModel = state.selectedControlNet,
         controlNetStrength = state.controlNetStrength,
         customWorkflowJson = state.customWorkflowJson,
+        initImageFilename = state.initImageFilename,
+        maskImageFilename = state.maskImageFilename,
+        denoiseStrength = state.denoiseStrength,
     )
 
     private inline fun launchWithErrorHandling(

@@ -76,6 +76,12 @@ data class ComfyUIGenerationParams(
     val controlNetStrength: Float = 1.0f,
     // Custom workflow JSON (bypasses built-in workflow builder when non-null)
     val customWorkflowJson: String? = null,
+    // Inpainting: init image filename (uploaded to ComfyUI input folder)
+    val initImageFilename: String? = null,
+    // Inpainting: mask image filename (uploaded to ComfyUI input folder)
+    val maskImageFilename: String? = null,
+    // Inpainting: denoise strength (lower = more of original image preserved)
+    val denoiseStrength: Double = DEFAULT_DENOISE,
 ) {
     companion object {
         const val DEFAULT_STEPS = 20
@@ -83,6 +89,7 @@ data class ComfyUIGenerationParams(
         const val DEFAULT_DIMENSION = 512
         const val DEFAULT_SAMPLER = "euler"
         const val DEFAULT_SCHEDULER = "normal"
+        const val DEFAULT_DENOISE = 0.75
     }
 }
 

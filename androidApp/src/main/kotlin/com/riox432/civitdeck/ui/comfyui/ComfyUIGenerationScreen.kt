@@ -54,6 +54,7 @@ fun ComfyUIGenerationScreen(
     viewModel: ComfyUIGenerationViewModel,
     onBack: () -> Unit,
     onLoadTemplate: (() -> Unit)? = null,
+    onNavigateToMaskEditor: ((String, Int, Int) -> Unit)? = null,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -68,7 +69,7 @@ fun ComfyUIGenerationScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        GenerationContent(padding, state, viewModel)
+        GenerationContent(padding, state, viewModel, onNavigateToMaskEditor)
     }
 }
 
@@ -134,6 +135,7 @@ private fun GenerationContent(
     padding: PaddingValues,
     state: GenerationUiState,
     viewModel: ComfyUIGenerationViewModel,
+    onNavigateToMaskEditor: ((String, Int, Int) -> Unit)?,
 ) {
     LazyColumn(
         modifier = Modifier.padding(padding),
@@ -145,6 +147,9 @@ private fun GenerationContent(
         item { ParameterControls(state, viewModel) }
         item { LoraSection(state, viewModel) }
         item { ControlNetSection(state, viewModel) }
+        item {
+            InpaintingSection(state, viewModel, onNavigateToMaskEditor)
+        }
         item { CustomWorkflowSection(state, viewModel) }
         item { GenerateButton(state, viewModel::onGenerate, viewModel::onInterrupt) }
         item { GenerationStatusSection(state) }
@@ -319,6 +324,68 @@ private fun WorkflowImportDialog(
         confirmButton = { Button(onClick = onConfirm) { Text("Import") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
+}
+
+@Composable
+private fun InpaintingSection(
+    state: GenerationUiState,
+    viewModel: ComfyUIGenerationViewModel,
+    onNavigateToMaskEditor: ((String, Int, Int) -> Unit)?,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            Text(
+                "Inpainting Mask",
+                style = MaterialTheme.typography.labelLarge,
+            )
+            InpaintingMaskContent(state, viewModel, onNavigateToMaskEditor)
+        }
+    }
+}
+
+@Composable
+private fun InpaintingMaskContent(
+    state: GenerationUiState,
+    viewModel: ComfyUIGenerationViewModel,
+    onNavigateToMaskEditor: ((String, Int, Int) -> Unit)?,
+) {
+    val hasMask = state.maskImageFilename != null
+    if (hasMask) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "Mask: ${state.maskImageFilename}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = viewModel::onClearMask) {
+                Text("Clear")
+            }
+        }
+        SliderRow(
+            "Denoise",
+            state.denoiseStrength,
+            0.0,
+            1.0,
+        ) { viewModel.onDenoiseStrengthChanged(it) }
+    } else {
+        Button(
+            onClick = {
+                // Use current generation dimensions as mask size
+                onNavigateToMaskEditor?.invoke(
+                    "",
+                    state.width,
+                    state.height,
+                )
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Add Mask")
+        }
+    }
 }
 
 @Composable

@@ -173,6 +173,17 @@ class ComfyUIRepositoryImpl(
         api.interrupt()
     }
 
+    override suspend fun uploadMaskImage(maskPngBytes: ByteArray): String {
+        ensureApiConfigured()
+        val filename = "mask_${currentTimeMillis()}.png"
+        val response = api.uploadImage(
+            imageBytes = maskPngBytes,
+            filename = filename,
+            imageType = "input",
+        )
+        return response.name
+    }
+
     override fun observeQueue(intervalMs: Long): Flow<List<QueueJob>> = flow {
         while (true) {
             try {
