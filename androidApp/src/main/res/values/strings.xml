@@ -90,6 +90,9 @@
     <string name="cd_redo">Redo</string>
     <string name="cd_invert_mask">Invert mask</string>
     <string name="cd_apply_mask">Apply mask</string>
+    <string name="cd_edit_parameters">Edit parameters</string>
+    <string name="cd_randomize_seed">Randomize seed</string>
+    <string name="cd_refresh_parameters">Refresh parameters</string>
     <string name="cd_open_details">Open details</string>
     <string name="cd_enable_plugin">Enable %1$s</string>
     <string name="cd_plugin_active">Active</string>

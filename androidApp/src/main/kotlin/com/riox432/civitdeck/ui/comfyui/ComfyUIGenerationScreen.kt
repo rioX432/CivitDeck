@@ -255,7 +255,38 @@ private fun ControlNetSection(state: GenerationUiState, viewModel: ComfyUIGenera
 private fun CustomWorkflowSection(state: GenerationUiState, viewModel: ComfyUIGenerationViewModel) {
     var showDialog by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf("") }
+    var showParameterSheet by remember { mutableStateOf(false) }
 
+    CustomWorkflowCard(state, viewModel, onImport = { showDialog = true }, onEditParams = { showParameterSheet = true })
+
+    if (showDialog) {
+        WorkflowImportDialog(
+            text = inputText,
+            onTextChange = { inputText = it },
+            onConfirm = {
+                viewModel.onImportWorkflow(inputText)
+                showDialog = false
+            },
+            onDismiss = { showDialog = false },
+        )
+    }
+    if (showParameterSheet) {
+        WorkflowParameterSheet(
+            parameters = state.extractedParameters,
+            onParameterChanged = viewModel::onParameterValueChanged,
+            onRefresh = viewModel::onRefreshParameters,
+            onDismiss = { showParameterSheet = false },
+        )
+    }
+}
+
+@Composable
+private fun CustomWorkflowCard(
+    state: GenerationUiState,
+    viewModel: ComfyUIGenerationViewModel,
+    onImport: () -> Unit,
+    onEditParams: () -> Unit,
+) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(Spacing.md), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -270,34 +301,36 @@ private fun CustomWorkflowSection(state: GenerationUiState, viewModel: ComfyUIGe
                     }
                 }
             }
-            val customJson = state.customWorkflowJson
-            if (customJson != null) {
-                Text(
-                    "Custom workflow loaded (${customJson.length} chars)",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            } else {
-                Button(onClick = { showDialog = true }, modifier = Modifier.fillMaxWidth()) {
-                    Text("Import Workflow JSON")
-                }
-            }
+            CustomWorkflowContent(state, onImport, onEditParams)
             state.workflowImportError?.let { err ->
                 Text(err, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             }
         }
     }
+}
 
-    if (showDialog) {
-        WorkflowImportDialog(
-            text = inputText,
-            onTextChange = { inputText = it },
-            onConfirm = {
-                viewModel.onImportWorkflow(inputText)
-                showDialog = false
-            },
-            onDismiss = { showDialog = false },
+@Composable
+private fun CustomWorkflowContent(state: GenerationUiState, onImport: () -> Unit, onEditParams: () -> Unit) {
+    val customJson = state.customWorkflowJson
+    if (customJson != null) {
+        Text(
+            "Custom workflow loaded (${customJson.length} chars)",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary
         )
+        if (state.extractedParameters.isNotEmpty()) {
+            Button(onClick = onEditParams, modifier = Modifier.fillMaxWidth()) {
+                Text("Edit Parameters (${state.extractedParameters.size})")
+            }
+        } else if (state.isLoadingParameters) {
+            Text(
+                "Loading parameters...",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    } else {
+        Button(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Text("Import Workflow JSON") }
     }
 }
 

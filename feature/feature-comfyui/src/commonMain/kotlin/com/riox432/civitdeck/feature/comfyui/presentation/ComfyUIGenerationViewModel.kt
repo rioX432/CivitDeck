@@ -8,10 +8,14 @@ import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
+import com.riox432.civitdeck.feature.comfyui.domain.model.ExtractedParameter
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExtractWorkflowParametersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchObjectInfoUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.InjectWorkflowParametersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
@@ -49,6 +53,9 @@ data class GenerationUiState(
     // Custom workflow
     val customWorkflowJson: String? = null,
     val workflowImportError: String? = null,
+    // Dynamic workflow parameters
+    val extractedParameters: List<ExtractedParameter> = emptyList(),
+    val isLoadingParameters: Boolean = false,
     // Inpainting mask
     val initImageFilename: String? = null,
     val maskImageFilename: String? = null,
@@ -69,11 +76,15 @@ data class GenerationUiState(
         get() = if (totalSteps > 0) currentStep.toFloat() / totalSteps.toFloat() else 0f
 }
 
+@Suppress("LongParameterList", "TooManyFunctions")
 class ComfyUIGenerationViewModel(
     private val fetchCheckpoints: FetchComfyUICheckpointsUseCase,
     private val fetchLoras: FetchComfyUILorasUseCase,
     private val fetchControlNets: FetchComfyUIControlNetsUseCase,
     private val importWorkflow: ImportWorkflowUseCase,
+    private val extractParameters: ExtractWorkflowParametersUseCase,
+    private val injectParameters: InjectWorkflowParametersUseCase,
+    private val fetchObjectInfo: FetchObjectInfoUseCase,
     submitGeneration: SubmitComfyUIGenerationUseCase,
     pollResult: PollComfyUIResultUseCase,
     observeProgress: ObserveGenerationProgressUseCase,
@@ -222,13 +233,53 @@ class ComfyUIGenerationViewModel(
         try {
             val validated = importWorkflow(jsonInput)
             _uiState.update { it.copy(customWorkflowJson = validated, workflowImportError = null) }
+            extractWorkflowParameters(validated)
         } catch (e: IllegalStateException) {
             _uiState.update { it.copy(workflowImportError = e.message) }
         }
     }
 
     fun onClearCustomWorkflow() {
-        _uiState.update { it.copy(customWorkflowJson = null, workflowImportError = null) }
+        _uiState.update {
+            it.copy(
+                customWorkflowJson = null,
+                workflowImportError = null,
+                extractedParameters = emptyList(),
+            )
+        }
+    }
+
+    // -- Dynamic workflow parameters --
+
+    fun onParameterValueChanged(nodeId: String, paramName: String, newValue: String) {
+        _uiState.update { state ->
+            state.copy(
+                extractedParameters = state.extractedParameters.map { param ->
+                    if (param.nodeId == nodeId && param.paramName == paramName) {
+                        param.copy(currentValue = newValue)
+                    } else {
+                        param
+                    }
+                }
+            )
+        }
+    }
+
+    fun onRefreshParameters() {
+        val json = _uiState.value.customWorkflowJson ?: return
+        extractWorkflowParameters(json)
+    }
+
+    private fun extractWorkflowParameters(workflowJson: String) {
+        _uiState.update { it.copy(isLoadingParameters = true) }
+        launchWithErrorHandling(
+            tag = "Failed to extract workflow parameters",
+            onError = { _uiState.update { it.copy(isLoadingParameters = false) } },
+        ) {
+            val objectInfoJson = fetchObjectInfo()
+            val params = extractParameters(workflowJson, objectInfoJson)
+            _uiState.update { it.copy(extractedParameters = params, isLoadingParameters = false) }
+        }
     }
 
     // -- Inpainting mask --
@@ -266,26 +317,35 @@ class ComfyUIGenerationViewModel(
 
     fun onInterrupt() = generationDelegate.onInterrupt()
 
-    private fun buildParams(state: GenerationUiState) = ComfyUIGenerationParams(
-        checkpoint = state.selectedCheckpoint,
-        prompt = state.prompt,
-        negativePrompt = state.negativePrompt,
-        steps = state.steps,
-        cfgScale = state.cfgScale,
-        seed = state.seed,
-        width = state.width,
-        height = state.height,
-        samplerName = state.samplerName,
-        scheduler = state.scheduler,
-        loraSelections = state.loraSelections,
-        controlNetEnabled = state.controlNetEnabled,
-        controlNetModel = state.selectedControlNet,
-        controlNetStrength = state.controlNetStrength,
-        customWorkflowJson = state.customWorkflowJson,
-        initImageFilename = state.initImageFilename,
-        maskImageFilename = state.maskImageFilename,
-        denoiseStrength = state.denoiseStrength,
-    )
+    private fun buildParams(state: GenerationUiState): ComfyUIGenerationParams {
+        // If custom workflow has extracted parameters, inject modified values before submission
+        val finalWorkflowJson = if (state.customWorkflowJson != null && state.extractedParameters.isNotEmpty()) {
+            injectParameters(state.customWorkflowJson, state.extractedParameters)
+        } else {
+            state.customWorkflowJson
+        }
+
+        return ComfyUIGenerationParams(
+            checkpoint = state.selectedCheckpoint,
+            prompt = state.prompt,
+            negativePrompt = state.negativePrompt,
+            steps = state.steps,
+            cfgScale = state.cfgScale,
+            seed = state.seed,
+            width = state.width,
+            height = state.height,
+            samplerName = state.samplerName,
+            scheduler = state.scheduler,
+            loraSelections = state.loraSelections,
+            controlNetEnabled = state.controlNetEnabled,
+            controlNetModel = state.selectedControlNet,
+            controlNetStrength = state.controlNetStrength,
+            customWorkflowJson = finalWorkflowJson,
+            initImageFilename = state.initImageFilename,
+            maskImageFilename = state.maskImageFilename,
+            denoiseStrength = state.denoiseStrength,
+        )
+    }
 
     private inline fun launchWithErrorHandling(
         tag: String,

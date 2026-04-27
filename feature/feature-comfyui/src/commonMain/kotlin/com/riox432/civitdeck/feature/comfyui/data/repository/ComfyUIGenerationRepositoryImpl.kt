@@ -122,6 +122,11 @@ class ComfyUIGenerationRepositoryImpl(
         return api.getImageUrl(ComfyUIOutputImage(filename, subfolder, type))
     }
 
+    override suspend fun fetchObjectInfo(): String {
+        ensureApiConfigured()
+        return api.getFullObjectInfo()
+    }
+
     private suspend fun ensureApiConfigured() {
         val active = dao.getActive() ?: error("No active ComfyUI connection")
         val scheme = if (active.useHttps) "https" else "http"

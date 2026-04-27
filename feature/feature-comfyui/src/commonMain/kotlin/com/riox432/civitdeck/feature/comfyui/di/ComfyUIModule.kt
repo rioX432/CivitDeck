@@ -32,11 +32,13 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteSDWebUIConnect
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DisconnectCivitaiLinkUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExportWorkflowTemplateUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExtractWorkflowParametersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryItemUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchObjectInfoUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIModelsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUISamplersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIVaesUseCase
@@ -47,6 +49,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.GetWorkflowTemplates
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportComfyHubWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.InjectWorkflowParametersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptSDWebUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveComfyUIConnectionUseCase
@@ -106,6 +109,9 @@ val comfyuiModule = module {
     factory { FetchComfyUILorasUseCase(get()) }
     factory { FetchComfyUIControlNetsUseCase(get()) }
     factory { ImportWorkflowUseCase() }
+    factory { ExtractWorkflowParametersUseCase() }
+    factory { InjectWorkflowParametersUseCase() }
+    factory { FetchObjectInfoUseCase(get(), get()) }
     factory { SubmitComfyUIGenerationUseCase(get()) }
     factory { PollComfyUIResultUseCase(get()) }
     factory { ObserveGenerationProgressUseCase(get()) }
@@ -163,7 +169,11 @@ val comfyuiModule = module {
 
     // ViewModels
     viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
-    viewModel { ComfyUIGenerationViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel {
+        ComfyUIGenerationViewModel(
+            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
+        )
+    }
     viewModel { ComfyUIHistoryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { ComfyUIQueueViewModel(get(), get()) }
     viewModel { WorkflowTemplateViewModel(get(), get(), get(), get(), get()) }

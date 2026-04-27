@@ -29,6 +29,9 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
     // Custom workflow
     @Published var customWorkflowJson: String?
     @Published var workflowImportError: String?
+    // Dynamic workflow parameters
+    @Published var extractedParameters: [Feature_comfyuiExtractedParameter] = []
+    @Published var isLoadingParameters = false
     // Inpainting mask
     @Published var initImageFilename: String?
     @Published var maskImageFilename: String?
@@ -68,6 +71,8 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
             controlNetStrength = Double(state.controlNetStrength)
             customWorkflowJson = state.customWorkflowJson
             workflowImportError = state.workflowImportError
+            extractedParameters = state.extractedParameters as? [Feature_comfyuiExtractedParameter] ?? []
+            isLoadingParameters = state.isLoadingParameters
             initImageFilename = state.initImageFilename
             maskImageFilename = state.maskImageFilename
             denoiseStrength = state.denoiseStrength
@@ -126,6 +131,10 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
     func onControlNetStrengthChanged(_ strength: Float) { vm.onControlNetStrengthChanged(strength: strength) }
     func onImportWorkflow(_ json: String) { vm.onImportWorkflow(jsonInput: json) }
     func onClearCustomWorkflow() { vm.onClearCustomWorkflow() }
+    func onParameterValueChanged(nodeId: String, paramName: String, newValue: String) {
+        vm.onParameterValueChanged(nodeId: nodeId, paramName: paramName, newValue: newValue)
+    }
+    func onRefreshParameters() { vm.onRefreshParameters() }
     func onMaskUploaded(_ filename: String) { vm.onMaskUploaded(filename: filename) }
     func onClearMask() { vm.onClearMask() }
     func onDenoiseStrengthChanged(_ strength: Double) {

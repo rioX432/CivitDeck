@@ -184,6 +184,11 @@ class ComfyUIRepositoryImpl(
         return response.name
     }
 
+    override suspend fun fetchObjectInfo(): String {
+        ensureApiConfigured()
+        return api.getFullObjectInfo()
+    }
+
     override fun observeQueue(intervalMs: Long): Flow<List<QueueJob>> = flow {
         while (true) {
             try {
