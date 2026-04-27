@@ -13,6 +13,7 @@ struct ComfyUIGenerationView: View {
     @State private var workflowInputText = ""
     @State private var showSaveAlert = false
     @State private var showTemplatePicker = false
+    @State private var showMaskEditor = false
 
     var body: some View {
         ScrollView {
@@ -22,6 +23,7 @@ struct ComfyUIGenerationView: View {
                 parameterControls
                 loraSection
                 controlNetSection
+                inpaintingSection
                 customWorkflowSection
                 generateButton
                 statusSection
@@ -56,6 +58,19 @@ struct ComfyUIGenerationView: View {
         }
         .sheet(isPresented: $showWorkflowImport) {
             workflowImportSheet
+        }
+        .sheet(isPresented: $showMaskEditor) {
+            NavigationStack {
+                MaskEditorView(
+                    sourceImageUrl: "",
+                    imageWidth: Int(viewModel.width) ?? 512,
+                    imageHeight: Int(viewModel.height) ?? 512,
+                    onMaskReady: { filename in
+                        viewModel.onMaskUploaded(filename)
+                        showMaskEditor = false
+                    }
+                )
+            }
         }
         .alert(
             viewModel.imageSaveSuccess == true ? "Saved to gallery" : "Save failed",
@@ -181,6 +196,32 @@ struct ComfyUIGenerationView: View {
                     }
                     .pickerStyle(.menu)
                     paramSlider(label: "Strength", value: $viewModel.controlNetStrength, range: 0...2, format: "%.2f")
+                }
+            }
+        }
+    }
+
+    private var inpaintingSection: some View {
+        GroupBox(label: Label("Inpainting Mask", systemImage: "paintbrush.pointed")) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                if let maskFilename = viewModel.maskImageFilename {
+                    HStack {
+                        Text("Mask: \(maskFilename)")
+                            .font(.civitBodySmall)
+                            .foregroundColor(theme.primary)
+                        Spacer()
+                        Button("Clear") { viewModel.onClearMask() }
+                            .font(.civitBodySmall)
+                    }
+                    paramSlider(
+                        label: "Denoise",
+                        value: $viewModel.denoiseStrength,
+                        range: 0...1,
+                        format: "%.2f"
+                    )
+                } else {
+                    Button("Add Mask") { showMaskEditor = true }
+                        .buttonStyle(.bordered)
                 }
             }
         }

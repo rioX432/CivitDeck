@@ -107,6 +107,17 @@ class ComfyUIGenerationRepositoryImpl(
         api.interrupt()
     }
 
+    override suspend fun uploadMaskImage(maskPngBytes: ByteArray): String {
+        ensureApiConfigured()
+        val filename = "mask_${com.riox432.civitdeck.data.local.currentTimeMillis()}.png"
+        val response = api.uploadImage(
+            imageBytes = maskPngBytes,
+            filename = filename,
+            imageType = "input",
+        )
+        return response.name
+    }
+
     override fun getImageUrl(filename: String, subfolder: String, type: String): String {
         return api.getImageUrl(ComfyUIOutputImage(filename, subfolder, type))
     }
@@ -125,141 +136,225 @@ class ComfyUIGenerationRepositoryImpl(
             return json.decodeFromString(customJson)
         }
 
+        // Use inpainting workflow when both init image and mask are provided
+        val isInpainting = params.initImageFilename != null &&
+            params.maskImageFilename != null
+        if (isInpainting) {
+            return buildInpaintingWorkflow(params)
+        }
+
         val loraChain = buildLoraChain(params.loraSelections)
         val finalModelNodeId = loraChain.lastOrNull()?.nodeId ?: "3"
         val finalClipNodeId = loraChain.lastOrNull()?.nodeId ?: "3"
-        val finalModelOutput = 0 // MODEL output index (same for CheckpointLoader and LoraLoader)
-        val finalClipOutput = 1 // CLIP output index (same for CheckpointLoader and LoraLoader)
+        val finalModelOutput = 0 // MODEL output index
+        val finalClipOutput = 1 // CLIP output index
 
         // Positive conditioning source
         val positiveCondId = if (params.controlNetEnabled && params.controlNetModel.isNotBlank()) "21" else "6"
 
         return buildJsonObject {
-            put(
-                "3",
-                buildJsonObject {
-                    put("class_type", "CheckpointLoaderSimple")
-                    put("inputs", buildJsonObject { put("ckpt_name", params.checkpoint) })
-                }
-            )
+            put("3", buildCheckpointNode(params.checkpoint))
             loraChain.forEach { loraNode ->
                 put(loraNode.nodeId, loraNode.jsonNode)
             }
-            put(
-                "6",
-                buildJsonObject {
-                    put("class_type", "CLIPTextEncode")
-                    put(
-                        "inputs",
-                        buildJsonObject {
-                            put("text", params.prompt)
-                            put("clip", nodeLink(finalClipNodeId, finalClipOutput))
-                        }
-                    )
-                }
-            )
-            put(
-                "7",
-                buildJsonObject {
-                    put("class_type", "CLIPTextEncode")
-                    put(
-                        "inputs",
-                        buildJsonObject {
-                            put("text", params.negativePrompt)
-                            put("clip", nodeLink(finalClipNodeId, finalClipOutput))
-                        }
-                    )
-                }
-            )
+            put("6", buildClipEncode(params.prompt, finalClipNodeId, finalClipOutput))
+            put("7", buildClipEncode(params.negativePrompt, finalClipNodeId, finalClipOutput))
             if (params.controlNetEnabled && params.controlNetModel.isNotBlank()) {
-                put(
-                    "20",
-                    buildJsonObject {
-                        put("class_type", "ControlNetLoader")
-                        put(
-                            "inputs",
-                            buildJsonObject { put("control_net_name", params.controlNetModel) }
-                        )
-                    }
-                )
-                put(
-                    "21",
-                    buildJsonObject {
-                        put("class_type", "ControlNetApply")
-                        put(
-                            "inputs",
-                            buildJsonObject {
-                                put("conditioning", nodeLink("6", 0))
-                                put("control_net", nodeLink("20", 0))
-                                put("image", buildJsonArray { })
-                                put("strength", params.controlNetStrength.toDouble())
-                            }
-                        )
-                    }
-                )
+                put("20", buildControlNetLoader(params.controlNetModel))
+                put("21", buildControlNetApply(params.controlNetStrength))
             }
-            put(
-                "5",
-                buildJsonObject {
-                    put("class_type", "EmptyLatentImage")
-                    put(
-                        "inputs",
-                        buildJsonObject {
-                            put("width", params.width)
-                            put("height", params.height)
-                            put("batch_size", 1)
-                        }
-                    )
-                }
-            )
+            put("5", buildEmptyLatent(params.width, params.height))
             put(
                 "4",
+                buildKSampler(
+                    params = params,
+                    modelNodeId = finalModelNodeId,
+                    modelOutput = finalModelOutput,
+                    positiveCondId = positiveCondId,
+                    latentNodeId = "5",
+                    denoise = 1.0,
+                ),
+            )
+            put("8", buildVaeDecode(samplerNodeId = "4", vaeSourceId = "3"))
+            put("9", buildSaveImage(imageNodeId = "8"))
+        }
+    }
+
+    @Suppress("LongMethod")
+    private fun buildInpaintingWorkflow(params: ComfyUIGenerationParams): JsonObject {
+        val loraChain = buildLoraChain(params.loraSelections)
+        val finalModelNodeId = loraChain.lastOrNull()?.nodeId ?: "3"
+        val finalClipNodeId = loraChain.lastOrNull()?.nodeId ?: "3"
+        val finalModelOutput = 0
+        val finalClipOutput = 1
+
+        return buildJsonObject {
+            // Checkpoint loader
+            put("3", buildCheckpointNode(params.checkpoint))
+            loraChain.forEach { loraNode ->
+                put(loraNode.nodeId, loraNode.jsonNode)
+            }
+            // Load init image
+            put(
+                "30",
                 buildJsonObject {
-                    put("class_type", "KSampler")
+                    put("class_type", "LoadImage")
                     put(
                         "inputs",
                         buildJsonObject {
-                            put("seed", params.seed)
-                            put("steps", params.steps)
-                            put("cfg", params.cfgScale)
-                            put("sampler_name", params.samplerName)
-                            put("scheduler", params.scheduler)
-                            put("denoise", 1.0)
-                            put("model", nodeLink(finalModelNodeId, finalModelOutput))
-                            put("positive", nodeLink(positiveCondId, 0))
-                            put("negative", nodeLink("7", 0))
-                            put("latent_image", nodeLink("5", 0))
+                            put("image", requireNotNull(params.initImageFilename))
                         }
                     )
-                }
+                },
             )
+            // Load mask image
             put(
-                "8",
+                "31",
                 buildJsonObject {
-                    put("class_type", "VAEDecode")
+                    put("class_type", "LoadImage")
                     put(
                         "inputs",
                         buildJsonObject {
-                            put("samples", nodeLink("4", 0))
+                            put("image", requireNotNull(params.maskImageFilename))
+                        }
+                    )
+                },
+            )
+            // Set latent via VAEEncode with mask
+            put(
+                "32",
+                buildJsonObject {
+                    put("class_type", "VAEEncodeForInpaint")
+                    put(
+                        "inputs",
+                        buildJsonObject {
+                            put("pixels", nodeLink("30", 0))
                             put("vae", nodeLink("3", 2))
+                            put("mask", nodeLink("31", 0))
+                            put("grow_mask_by", 6)
                         }
                     )
-                }
+                },
             )
+            // Conditioning
+            put("6", buildClipEncode(params.prompt, finalClipNodeId, finalClipOutput))
+            put("7", buildClipEncode(params.negativePrompt, finalClipNodeId, finalClipOutput))
+            // KSampler with lower denoise for inpainting
             put(
-                "9",
+                "4",
+                buildKSampler(
+                    params = params,
+                    modelNodeId = finalModelNodeId,
+                    modelOutput = finalModelOutput,
+                    positiveCondId = "6",
+                    latentNodeId = "32",
+                    denoise = params.denoiseStrength,
+                ),
+            )
+            // VAE Decode
+            put("8", buildVaeDecode(samplerNodeId = "4", vaeSourceId = "3"))
+            // Save
+            put("9", buildSaveImage(imageNodeId = "8"))
+        }
+    }
+
+    // -- Workflow node builder helpers --
+
+    private fun buildCheckpointNode(checkpoint: String) = buildJsonObject {
+        put("class_type", "CheckpointLoaderSimple")
+        put("inputs", buildJsonObject { put("ckpt_name", checkpoint) })
+    }
+
+    private fun buildClipEncode(text: String, clipNodeId: String, clipOutput: Int) =
+        buildJsonObject {
+            put("class_type", "CLIPTextEncode")
+            put(
+                "inputs",
                 buildJsonObject {
-                    put("class_type", "SaveImage")
-                    put(
-                        "inputs",
-                        buildJsonObject {
-                            put("filename_prefix", "CivitDeck")
-                            put("images", nodeLink("8", 0))
-                        }
-                    )
+                    put("text", text)
+                    put("clip", nodeLink(clipNodeId, clipOutput))
                 }
             )
         }
+
+    private fun buildControlNetLoader(model: String) = buildJsonObject {
+        put("class_type", "ControlNetLoader")
+        put("inputs", buildJsonObject { put("control_net_name", model) })
+    }
+
+    private fun buildControlNetApply(strength: Float) = buildJsonObject {
+        put("class_type", "ControlNetApply")
+        put(
+            "inputs",
+            buildJsonObject {
+                put("conditioning", nodeLink("6", 0))
+                put("control_net", nodeLink("20", 0))
+                put("image", buildJsonArray { })
+                put("strength", strength.toDouble())
+            }
+        )
+    }
+
+    private fun buildEmptyLatent(width: Int, height: Int) = buildJsonObject {
+        put("class_type", "EmptyLatentImage")
+        put(
+            "inputs",
+            buildJsonObject {
+                put("width", width)
+                put("height", height)
+                put("batch_size", 1)
+            }
+        )
+    }
+
+    @Suppress("LongParameterList")
+    private fun buildKSampler(
+        params: ComfyUIGenerationParams,
+        modelNodeId: String,
+        modelOutput: Int,
+        positiveCondId: String,
+        latentNodeId: String,
+        denoise: Double,
+    ) = buildJsonObject {
+        put("class_type", "KSampler")
+        put(
+            "inputs",
+            buildJsonObject {
+                put("seed", params.seed)
+                put("steps", params.steps)
+                put("cfg", params.cfgScale)
+                put("sampler_name", params.samplerName)
+                put("scheduler", params.scheduler)
+                put("denoise", denoise)
+                put("model", nodeLink(modelNodeId, modelOutput))
+                put("positive", nodeLink(positiveCondId, 0))
+                put("negative", nodeLink("7", 0))
+                put("latent_image", nodeLink(latentNodeId, 0))
+            }
+        )
+    }
+
+    private fun buildVaeDecode(samplerNodeId: String, vaeSourceId: String) =
+        buildJsonObject {
+            put("class_type", "VAEDecode")
+            put(
+                "inputs",
+                buildJsonObject {
+                    put("samples", nodeLink(samplerNodeId, 0))
+                    put("vae", nodeLink(vaeSourceId, 2))
+                }
+            )
+        }
+
+    private fun buildSaveImage(imageNodeId: String) = buildJsonObject {
+        put("class_type", "SaveImage")
+        put(
+            "inputs",
+            buildJsonObject {
+                put("filename_prefix", "CivitDeck")
+                put("images", nodeLink(imageNodeId, 0))
+            }
+        )
     }
 
     private data class LoraNodeEntry(val nodeId: String, val jsonNode: JsonObject)

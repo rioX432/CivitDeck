@@ -11,6 +11,7 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewM
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.MaskEditorViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
@@ -25,6 +26,7 @@ import com.riox432.civitdeck.ui.comfyui.ComfyUIHistoryScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIOutputDetailScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIQueueScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsScreen
+import com.riox432.civitdeck.ui.comfyui.MaskEditorScreen
 import com.riox432.civitdeck.ui.comfyui.SDWebUIGenerationScreen
 import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsScreen
 import com.riox432.civitdeck.ui.comfyui.TemplateParameterScreen
@@ -69,6 +71,42 @@ internal fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>)
             onNavigateToHistory = { backStack.add(ComfyUIHistoryRoute) },
         )
     }
+    sdWebUIEntries(backStack)
+    entry<ComfyUIGenerationRoute> {
+        val viewModel: ComfyUIGenerationViewModel = koinViewModel()
+        ComfyUIGenerationScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onLoadTemplate = { backStack.add(WorkflowTemplatePickerRoute) },
+            onNavigateToMaskEditor = { url, w, h ->
+                backStack.add(MaskEditorRoute(url, w, h))
+            },
+        )
+    }
+    entry<ComfyUIQueueRoute> {
+        val viewModel: ComfyUIQueueViewModel = koinViewModel()
+        ComfyUIQueueScreen(viewModel = viewModel, onBack = { backStack.removeLastOrNull() })
+    }
+    entry<ComfyUIBridgeRoute> { key ->
+        val viewModel: ComfyUIGenerationViewModel = koinViewModel(
+            key = "bridge_${key.modelId}_${key.versionId}",
+        )
+        ComfyUIGenerationScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onLoadTemplate = { backStack.add(WorkflowTemplatePickerRoute) },
+            onNavigateToMaskEditor = { url, w, h ->
+                backStack.add(MaskEditorRoute(url, w, h))
+            },
+        )
+    }
+    maskEditorEntry(backStack)
+    workflowTemplateEntries(backStack)
+    comfyHubEntries(backStack)
+    comfyUIHistoryEntries(backStack)
+}
+
+private fun EntryProviderScope<Any>.sdWebUIEntries(backStack: MutableList<Any>) {
     entry<SDWebUISettingsRoute> {
         val viewModel: SDWebUISettingsViewModel = koinViewModel()
         SDWebUISettingsScreen(
@@ -84,31 +122,23 @@ internal fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>)
             onBack = { backStack.removeLastOrNull() },
         )
     }
-    entry<ComfyUIGenerationRoute> {
-        val viewModel: ComfyUIGenerationViewModel = koinViewModel()
-        ComfyUIGenerationScreen(
+}
+
+private fun EntryProviderScope<Any>.maskEditorEntry(backStack: MutableList<Any>) {
+    entry<MaskEditorRoute> { key ->
+        val viewModel: MaskEditorViewModel = koinViewModel()
+        MaskEditorScreen(
             viewModel = viewModel,
+            sourceImageUrl = key.sourceImageUrl,
+            imageWidth = key.imageWidth,
+            imageHeight = key.imageHeight,
             onBack = { backStack.removeLastOrNull() },
-            onLoadTemplate = { backStack.add(WorkflowTemplatePickerRoute) },
+            onMaskReady = { filename ->
+                // Pop back and let the generation screen know
+                backStack.removeLastOrNull()
+            },
         )
     }
-    entry<ComfyUIQueueRoute> {
-        val viewModel: ComfyUIQueueViewModel = koinViewModel()
-        ComfyUIQueueScreen(viewModel = viewModel, onBack = { backStack.removeLastOrNull() })
-    }
-    entry<ComfyUIBridgeRoute> { key ->
-        val viewModel: ComfyUIGenerationViewModel = koinViewModel(
-            key = "bridge_${key.modelId}_${key.versionId}",
-        )
-        ComfyUIGenerationScreen(
-            viewModel = viewModel,
-            onBack = { backStack.removeLastOrNull() },
-            onLoadTemplate = { backStack.add(WorkflowTemplatePickerRoute) },
-        )
-    }
-    workflowTemplateEntries(backStack)
-    comfyHubEntries(backStack)
-    comfyUIHistoryEntries(backStack)
 }
 
 private fun EntryProviderScope<Any>.workflowTemplateEntries(backStack: MutableList<Any>) {

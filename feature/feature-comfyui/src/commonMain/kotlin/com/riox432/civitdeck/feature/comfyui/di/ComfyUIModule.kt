@@ -11,6 +11,7 @@ import com.riox432.civitdeck.domain.repository.SDWebUIAssetRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIGenerationRepository
 import com.riox432.civitdeck.domain.repository.ServerDiscoveryRepository
+import com.riox432.civitdeck.feature.comfyui.data.encoder.MaskPngEncoder
 import com.riox432.civitdeck.feature.comfyui.data.repository.CivitaiLinkRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyHubRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIConnectionRepositoryImpl
@@ -67,6 +68,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.SendResourceToPCUseC
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.UploadMaskUseCase
 import com.riox432.civitdeck.feature.comfyui.plugin.ComfyUIWorkflowPlugin
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
@@ -74,6 +76,7 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewM
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.MaskEditorViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
@@ -109,6 +112,8 @@ val comfyuiModule = module {
     factory { ObserveComfyUIQueueUseCase(get()) }
     factory { CancelComfyUIJobUseCase(get()) }
     factory { InterruptComfyUIGenerationUseCase(get()) }
+    factory { UploadMaskUseCase(get()) }
+    single { MaskPngEncoder() }
     factory { FindMatchingLocalModelUseCase(get()) }
     factory { PopulateGenerationFromModelUseCase() }
     factory { SaveGeneratedImageUseCase(get(named("comfyui")), get()) }
@@ -166,4 +171,5 @@ val comfyuiModule = module {
     viewModel { SDWebUIGenerationViewModel(get(), get(), get(), get(), get()) }
     viewModel { CivitaiLinkSettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { CivitaiLinkSendViewModel(get(), get()) }
+    viewModel { MaskEditorViewModel(get()) }
 }

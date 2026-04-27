@@ -86,6 +86,10 @@
     <string name="cd_remove_lora">Remove LoRA</string>
     <string name="cd_clear_workflow">Clear workflow</string>
     <string name="cd_stop_generation">Stop generation</string>
+    <string name="cd_toggle_eraser">Toggle eraser</string>
+    <string name="cd_redo">Redo</string>
+    <string name="cd_invert_mask">Invert mask</string>
+    <string name="cd_apply_mask">Apply mask</string>
     <string name="cd_open_details">Open details</string>
     <string name="cd_enable_plugin">Enable %1$s</string>
     <string name="cd_plugin_active">Active</string>

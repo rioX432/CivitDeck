@@ -31,4 +31,8 @@ sealed class DesktopRoute {
     data class TemplateParameter(
         val templateId: Long,
     ) : DesktopRoute()
+    data class MaskEditor(
+        val imageWidth: Int,
+        val imageHeight: Int,
+    ) : DesktopRoute()
 }

@@ -29,6 +29,10 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
     // Custom workflow
     @Published var customWorkflowJson: String?
     @Published var workflowImportError: String?
+    // Inpainting mask
+    @Published var initImageFilename: String?
+    @Published var maskImageFilename: String?
+    @Published var denoiseStrength: Double = 0.75
     // Generation
     @Published var generationStatus: GenerationStatus = .idle
     @Published var currentStep: Int32 = 0
@@ -64,6 +68,9 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
             controlNetStrength = Double(state.controlNetStrength)
             customWorkflowJson = state.customWorkflowJson
             workflowImportError = state.workflowImportError
+            initImageFilename = state.initImageFilename
+            maskImageFilename = state.maskImageFilename
+            denoiseStrength = state.denoiseStrength
             generationStatus = state.generationStatus
             currentStep = state.currentStep
             totalSteps = state.totalSteps
@@ -119,6 +126,12 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
     func onControlNetStrengthChanged(_ strength: Float) { vm.onControlNetStrengthChanged(strength: strength) }
     func onImportWorkflow(_ json: String) { vm.onImportWorkflow(jsonInput: json) }
     func onClearCustomWorkflow() { vm.onClearCustomWorkflow() }
+    func onMaskUploaded(_ filename: String) { vm.onMaskUploaded(filename: filename) }
+    func onClearMask() { vm.onClearMask() }
+    func onDenoiseStrengthChanged(_ strength: Double) {
+        denoiseStrength = strength
+        vm.onDenoiseStrengthChanged(strength: strength)
+    }
     func onGenerate() { vm.onGenerate() }
     func onSaveImage(url: String) { vm.onSaveImage(imageUrl: url) }
     func onDismissSaveResult() { vm.onDismissSaveResult() }

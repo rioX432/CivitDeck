@@ -84,3 +84,13 @@ data class CheckpointInput(
 data class CheckpointRequired(
     @SerialName("ckpt_name") val ckptName: List<List<String>>? = null,
 )
+
+/**
+ * Response from POST /upload/image
+ */
+@Serializable
+data class UploadImageResponse(
+    val name: String,
+    val subfolder: String = "",
+    val type: String = "input",
+)
