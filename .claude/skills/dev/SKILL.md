@@ -307,6 +307,19 @@ Mark task 8 `completed`.
 
 ---
 
+## Autonomous Mode (/goal)
+
+When the user invokes `/dev` with `/goal`, the workflow runs autonomously:
+
+```
+/goal "Issue $ARGUMENTS is resolved: tests pass, review has no Critical findings, and PR is created"
+```
+
+In autonomous mode:
+- Skip `AskUserQuestion` confirmations — proceed with best judgment
+- Stop on Critical review findings or 3 consecutive failures (these still require human input)
+- The `/goal` evaluator checks the completion condition after each phase
+
 ## Error Handling
 
 | Situation | Action |

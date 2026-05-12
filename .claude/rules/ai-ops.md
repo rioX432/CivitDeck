@@ -69,6 +69,18 @@ Next features are decided by **two axes: "User Requests" and "Metrics"**. No fea
 
 **Additional filter:** Even if both axes align, the feature must pass the Core Value one-step test. A popular request outside Core Value scope goes to `## Won't Do`, not the backlog.
 
+## Effort Level Selection
+
+Match effort level to task complexity:
+
+| Level | Use When |
+|---|---|
+| `high` (default) | Standard development, bug fixes, small features |
+| `xhigh` | Complex refactoring, cross-module changes, architecture decisions |
+| `max` | Critical debugging, security-sensitive code, unfamiliar large codebase |
+
+Set via `/effort xhigh` or per-agent with model selection.
+
 ## Agent Teams (Parallel Development)
 
 Use Claude Code Agent Teams for parallel development when tasks are independent:
@@ -79,3 +91,18 @@ Use Claude Code Agent Teams for parallel development when tasks are independent:
 
 - **No file conflicts**: each teammate edits only their assigned directories
 - Shared API changes require Lead coordination
+- Cost: 4-15x token consumption — use for high-value tasks only
+
+## /goal for Autonomous Execution
+
+Use `/goal` to set a completion condition for unattended task execution:
+
+```
+/goal "All tests pass and PR is created for issue #42"
+/goal --tokens 250K "Lint errors are zero and build succeeds"
+```
+
+- A separate evaluator model checks the condition after each turn
+- Write conditions as measurable end states (not process descriptions)
+- Include constraints on what must NOT change
+- Use `/goal pause` / `/goal clear` to interrupt
