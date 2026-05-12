@@ -137,7 +137,7 @@ The sub-agent:
 
 #### 4c. Enable auto-merge
 ```bash
-gh pr merge {PR_URL} --auto --squash --delete-branch
+gh pr merge {PR_URL} --auto --merge --delete-branch
 ```
 
 #### 4d. Wait for merge
@@ -171,6 +171,19 @@ Completed: N / M issues
 Mark all tasks `completed`.
 
 ---
+
+## Autonomous Mode (/goal)
+
+When the user invokes `/dev-all` with `/goal`, the entire batch runs autonomously:
+
+```
+/goal "All issues in $ARGUMENTS are resolved: each has a merged PR or a documented skip reason"
+```
+
+In autonomous mode:
+- Skip `AskUserQuestion` confirmations — proceed with best judgment
+- On CI failure: skip the issue and continue (don't stop)
+- Stop only on 3 consecutive failures
 
 ## Error Handling
 
