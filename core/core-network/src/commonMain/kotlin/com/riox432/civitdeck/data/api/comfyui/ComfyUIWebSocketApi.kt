@@ -8,6 +8,7 @@ import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.websocket.WebSocketException
 import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.client.plugins.websocket.wss
+import io.ktor.websocket.DefaultWebSocketSession
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
 import kotlinx.coroutines.delay
@@ -86,42 +87,47 @@ class ComfyUIWebSocketApi(
         promptId = promptId,
     )
 
-    @Suppress("CyclomaticComplexity")
     private suspend fun FlowCollector<ComfyUIWebSocketMessage>.runWebSocketSession(
         baseUrl: String,
         wsScheme: String,
         clientId: String,
         promptId: String,
     ) {
-        // Parse host and port from baseUrl (e.g. "https://myserver:8188")
+        val (hostPart, port) = parseHostAndPort(baseUrl, wsScheme)
+        val wsPath = "/ws?clientId=$clientId"
+        val collector = this
+        if (wsScheme == "wss") {
+            client.wss(host = hostPart, port = port, path = wsPath) {
+                receiveUntilTerminal(promptId, collector)
+            }
+        } else {
+            client.webSocket(host = hostPart, port = port, path = wsPath) {
+                receiveUntilTerminal(promptId, collector)
+            }
+        }
+    }
+
+    /** Parses host and port from a base URL like "https://myserver:8188". */
+    private fun parseHostAndPort(baseUrl: String, wsScheme: String): Pair<String, Int> {
         val stripped = baseUrl.substringAfter("://")
         val hostPart = stripped.substringBefore("/").substringBefore(":")
         val portPart = stripped.substringBefore("/").substringAfter(":", "")
         val port = portPart.toIntOrNull()
             ?: if (wsScheme == "wss") DEFAULT_WSS_PORT else DEFAULT_WS_PORT
-        val wsPath = "/ws?clientId=$clientId"
-        val collector = this
-        if (wsScheme == "wss") {
-            client.wss(host = hostPart, port = port, path = wsPath) {
-                var done = false
-                while (!done) {
-                    val msg = incoming.receive().toRelevantMessage(promptId)
-                    if (msg != null) {
-                        collector.emit(msg)
-                        done = isTerminal(msg)
-                    }
-                }
-            }
-        } else {
-            client.webSocket(host = hostPart, port = port, path = wsPath) {
-                var done = false
-                while (!done) {
-                    val msg = incoming.receive().toRelevantMessage(promptId)
-                    if (msg != null) {
-                        collector.emit(msg)
-                        done = isTerminal(msg)
-                    }
-                }
+        return hostPart to port
+    }
+
+    /** Receives frames until a terminal message is emitted. */
+    private suspend fun DefaultWebSocketSession.receiveUntilTerminal(
+        promptId: String,
+        collector: FlowCollector<ComfyUIWebSocketMessage>,
+    ) {
+        var done = false
+        while (!done) {
+            val msg = incoming.receive().toRelevantMessage(promptId)
+            if (msg != null) {
+                collector.emit(msg)
+                done = isTerminal(msg)
             }
         }
     }
@@ -151,42 +157,10 @@ class ComfyUIWebSocketApi(
         msg is ComfyUIWebSocketMessage.ExecutionSuccess ||
             msg is ComfyUIWebSocketMessage.ExecutionError
 
-    @Suppress("CyclomaticComplexMethod")
     private fun parseMessage(text: String): ComfyUIWebSocketMessage? {
         return try {
             val envelope = json.decodeFromString<ComfyUIWsEnvelope>(text)
-            when (envelope.type) {
-                "status" -> {
-                    val data = json.decodeFromJsonElement<WsStatusData>(envelope.data)
-                    val remaining = data.status?.execInfo?.queueRemaining ?: 0
-                    ComfyUIWebSocketMessage.Status(remaining)
-                }
-                "execution_start" -> {
-                    val data = json.decodeFromJsonElement<WsExecutionStartData>(envelope.data)
-                    ComfyUIWebSocketMessage.ExecutionStart(data.promptId)
-                }
-                "executing" -> {
-                    val data = json.decodeFromJsonElement<WsExecutingData>(envelope.data)
-                    ComfyUIWebSocketMessage.Executing(data.promptId, data.node)
-                }
-                "progress" -> {
-                    val data = json.decodeFromJsonElement<WsProgressData>(envelope.data)
-                    ComfyUIWebSocketMessage.Progress(data.promptId, data.value, data.max, data.node)
-                }
-                "executed" -> {
-                    val data = json.decodeFromJsonElement<WsExecutedData>(envelope.data)
-                    ComfyUIWebSocketMessage.Executed(data.promptId, data.node)
-                }
-                "execution_success" -> {
-                    val data = json.decodeFromJsonElement<WsExecutionSuccessData>(envelope.data)
-                    ComfyUIWebSocketMessage.ExecutionSuccess(data.promptId)
-                }
-                "execution_error" -> {
-                    val data = json.decodeFromJsonElement<WsExecutionErrorData>(envelope.data)
-                    ComfyUIWebSocketMessage.ExecutionError(data.promptId, data.exceptionMessage)
-                }
-                else -> ComfyUIWebSocketMessage.Unknown(envelope.type)
-            }
+            parseEnvelope(envelope)
         } catch (e: SerializationException) {
             Logger.w(TAG, "Failed to parse WebSocket message: ${e.message}")
             null
@@ -194,6 +168,54 @@ class ComfyUIWebSocketApi(
             Logger.w(TAG, "Failed to parse WebSocket message: ${e.message}")
             null
         }
+    }
+
+    private fun parseEnvelope(envelope: ComfyUIWsEnvelope): ComfyUIWebSocketMessage =
+        when (envelope.type) {
+            "status" -> parseStatus(envelope)
+            "execution_start" -> parseExecutionStart(envelope)
+            "executing" -> parseExecuting(envelope)
+            "progress" -> parseProgress(envelope)
+            "executed" -> parseExecuted(envelope)
+            "execution_success" -> parseExecutionSuccess(envelope)
+            "execution_error" -> parseExecutionError(envelope)
+            else -> ComfyUIWebSocketMessage.Unknown(envelope.type)
+        }
+
+    private fun parseStatus(envelope: ComfyUIWsEnvelope): ComfyUIWebSocketMessage {
+        val data = json.decodeFromJsonElement<WsStatusData>(envelope.data)
+        val remaining = data.status?.execInfo?.queueRemaining ?: 0
+        return ComfyUIWebSocketMessage.Status(remaining)
+    }
+
+    private fun parseExecutionStart(envelope: ComfyUIWsEnvelope): ComfyUIWebSocketMessage {
+        val data = json.decodeFromJsonElement<WsExecutionStartData>(envelope.data)
+        return ComfyUIWebSocketMessage.ExecutionStart(data.promptId)
+    }
+
+    private fun parseExecuting(envelope: ComfyUIWsEnvelope): ComfyUIWebSocketMessage {
+        val data = json.decodeFromJsonElement<WsExecutingData>(envelope.data)
+        return ComfyUIWebSocketMessage.Executing(data.promptId, data.node)
+    }
+
+    private fun parseProgress(envelope: ComfyUIWsEnvelope): ComfyUIWebSocketMessage {
+        val data = json.decodeFromJsonElement<WsProgressData>(envelope.data)
+        return ComfyUIWebSocketMessage.Progress(data.promptId, data.value, data.max, data.node)
+    }
+
+    private fun parseExecuted(envelope: ComfyUIWsEnvelope): ComfyUIWebSocketMessage {
+        val data = json.decodeFromJsonElement<WsExecutedData>(envelope.data)
+        return ComfyUIWebSocketMessage.Executed(data.promptId, data.node)
+    }
+
+    private fun parseExecutionSuccess(envelope: ComfyUIWsEnvelope): ComfyUIWebSocketMessage {
+        val data = json.decodeFromJsonElement<WsExecutionSuccessData>(envelope.data)
+        return ComfyUIWebSocketMessage.ExecutionSuccess(data.promptId)
+    }
+
+    private fun parseExecutionError(envelope: ComfyUIWsEnvelope): ComfyUIWebSocketMessage {
+        val data = json.decodeFromJsonElement<WsExecutionErrorData>(envelope.data)
+        return ComfyUIWebSocketMessage.ExecutionError(data.promptId, data.exceptionMessage)
     }
 
     /**
