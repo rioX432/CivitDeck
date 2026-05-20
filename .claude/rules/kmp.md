@@ -9,7 +9,8 @@ globs: shared/**/*.kt
 - All shared logic goes in `commonMain` — platform-specific code only when necessary
 - DTOs in `data/api/` are separate from domain entities in `domain/model/`
 - Use cases: single-responsibility, one public function, returns `Flow`
-- ViewModels live in platform modules (`androidApp/`, `desktopApp/`, `iosApp/`), NOT in shared
+- ViewModels live in feature modules (`:feature:feature-*`), NOT in shared
+- **Exception**: `PluginManagementViewModel` stays in `shared/src/commonMain/presentation/plugin/` — plugin management crosses all feature boundaries, and no single feature module owns it
 - Convention plugin includes `jvm()` target — `expect/actual` may be needed for JVM alongside Android/iOS
 
 ## Dependencies
