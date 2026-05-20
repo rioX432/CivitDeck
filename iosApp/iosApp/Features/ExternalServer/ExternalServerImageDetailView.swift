@@ -260,7 +260,7 @@ private struct ServerImageViewer: View {
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundColor(.white)
-                .padding(Spacing.smPlus)
+                .padding(Spacing.md)
                 .background(.ultraThinMaterial, in: Circle())
         }
         .accessibilityLabel(label)
@@ -309,7 +309,7 @@ private struct ServerImageViewer: View {
                 .fontWeight(.medium)
                 .foregroundColor(.white)
                 .padding(.horizontal, Spacing.lg)
-                .padding(.vertical, Spacing.smPlus)
+                .padding(.vertical, Spacing.md)
                 .background(.ultraThinMaterial, in: Capsule())
                 .padding(.bottom, Spacing.floatingOffset)
         }

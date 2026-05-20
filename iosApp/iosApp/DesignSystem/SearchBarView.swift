@@ -22,7 +22,7 @@ struct SearchBarView: View {
                 }
             }
         }
-        .padding(Spacing.smPlus)
+        .padding(Spacing.md)
         .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.searchBar)
                 .stroke(Color.civitOutlineVariant, lineWidth: 1)

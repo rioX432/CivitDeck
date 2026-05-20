@@ -27,7 +27,7 @@ struct ModelCardView: View {
                 HStack(spacing: Spacing.xs) {
                     Text(model.type.name)
                         .font(.civitLabelSmall)
-                        .padding(.horizontal, Spacing.xsPlus)
+                        .padding(.horizontal, Spacing.sm)
                         .padding(.vertical, Spacing.xxs)
                         .background(Color.civitSurfaceVariant)
                         .clipShape(Capsule())
@@ -67,7 +67,7 @@ struct SourceBadgeView: View {
             Text(badgeLabel)
                 .font(.civitLabelXSmall)
                 .foregroundColor(.white)
-                .padding(.horizontal, Spacing.xsPlus)
+                .padding(.horizontal, Spacing.sm)
                 .padding(.vertical, Spacing.xxs)
                 .background(badgeColor)
                 .clipShape(Capsule())

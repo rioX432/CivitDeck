@@ -223,7 +223,7 @@ struct ImageViewerScreen: View {
                 .fontWeight(.medium)
                 .foregroundColor(.civitInverseOnSurface)
                 .padding(.horizontal, Spacing.lg)
-                .padding(.vertical, Spacing.smPlus)
+                .padding(.vertical, Spacing.md)
                 .background(.ultraThinMaterial, in: Capsule())
                 .padding(.bottom, Spacing.floatingOffset)
         }
@@ -280,7 +280,7 @@ private struct ControlCircleButton: View {
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundColor(.civitInverseOnSurface)
-                .padding(Spacing.smPlus)
+                .padding(Spacing.md)
                 .background(.ultraThinMaterial, in: Circle())
         }
         .accessibilityLabel(label ?? systemName)

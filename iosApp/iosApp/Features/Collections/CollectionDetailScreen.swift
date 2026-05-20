@@ -263,7 +263,7 @@ private struct CollectionModelCard: View {
                 .lineLimit(1)
             Text(model.type.name)
                 .font(.civitLabelSmall)
-                .padding(.horizontal, Spacing.xsPlus)
+                .padding(.horizontal, Spacing.sm)
                 .padding(.vertical, Spacing.xxs)
                 .background(Color.civitSurfaceVariant)
                 .clipShape(Capsule())

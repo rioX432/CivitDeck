@@ -114,7 +114,7 @@ struct SocialShareSheet: View {
                 }
             }
             .padding(.horizontal, Spacing.md)
-            .padding(.vertical, Spacing.xsPlus)
+            .padding(.vertical, Spacing.sm)
             .background(hashtag.isEnabled ? theme.primary.opacity(0.2) : Color.civitSurfaceVariant)
             .foregroundColor(hashtag.isEnabled ? theme.primary : .civitOnSurface)
             .clipShape(Capsule())

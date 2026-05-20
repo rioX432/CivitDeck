@@ -371,7 +371,7 @@ struct ModelDetailScreen: View {
                                     .font(.civitLabelMedium)
                                     .fontWeight(selected ? .semibold : .regular)
                                     .padding(.horizontal, Spacing.md)
-                                    .padding(.vertical, Spacing.xsPlus)
+                                    .padding(.vertical, Spacing.sm)
                                     .background(
                                         selected
                                             ? theme.primary.opacity(0.2)

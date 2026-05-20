@@ -162,7 +162,7 @@ struct PersonalTagsSection: View {
                     .font(.civitLabelXSmallSemibold)
             }
         }
-        .padding(.horizontal, Spacing.smPlus)
+        .padding(.horizontal, Spacing.md)
         .padding(.vertical, Spacing.xs)
         .background(theme.primary.opacity(0.15))
         .foregroundColor(theme.primary)
