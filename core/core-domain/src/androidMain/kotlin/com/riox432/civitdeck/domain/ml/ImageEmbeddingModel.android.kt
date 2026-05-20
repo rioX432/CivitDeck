@@ -88,6 +88,7 @@ actual class ImageEmbeddingModel actual constructor() {
     private companion object {
         private const val ASSET_PATH = "ml/siglip2_vision_q4f16.onnx"
         private const val IMAGE_SIZE = 224
+        private const val BATCH_SIZE = 1
         private const val CHANNELS = 3
         private const val INPUT_NAME = "pixel_values"
         private const val OUTPUT_NAME = "pooler_output"
@@ -101,13 +102,17 @@ actual class ImageEmbeddingModel actual constructor() {
      * Decodes JPEG/PNG bytes into a 224x224 bitmap, then packs pixels into an
      * NCHW float32 [OnnxTensor] with SigLIP normalization.
      */
-    @Suppress("MagicNumber")
     private fun preprocessImage(imageBytes: ByteArray): OnnxTensor {
         val bitmap = decodeBitmap(imageBytes)
         val floatBuf = bitmapToNchwBuffer(bitmap)
         bitmap.recycle()
 
-        val shape = longArrayOf(1, CHANNELS.toLong(), IMAGE_SIZE.toLong(), IMAGE_SIZE.toLong())
+        val shape = longArrayOf(
+            BATCH_SIZE.toLong(),
+            CHANNELS.toLong(),
+            IMAGE_SIZE.toLong(),
+            IMAGE_SIZE.toLong(),
+        )
         return OnnxTensor.createTensor(ortEnv, floatBuf, shape)
     }
 
@@ -128,12 +133,12 @@ actual class ImageEmbeddingModel actual constructor() {
      * Packs a 224x224 bitmap into a direct [java.nio.FloatBuffer] in NCHW
      * layout with SigLIP normalization (mean=0.5, std=0.5 per channel).
      */
-    @Suppress("MagicNumber")
+    @Suppress("MagicNumber") // ARGB bit-shift constants (0xFF, shr 16/8) — standard pixel extraction
     private fun bitmapToNchwBuffer(bitmap: Bitmap): java.nio.FloatBuffer {
         val pixels = IntArray(IMAGE_SIZE * IMAGE_SIZE)
         bitmap.getPixels(pixels, 0, IMAGE_SIZE, 0, 0, IMAGE_SIZE, IMAGE_SIZE)
 
-        val floatCount = 1 * CHANNELS * IMAGE_SIZE * IMAGE_SIZE
+        val floatCount = BATCH_SIZE * CHANNELS * IMAGE_SIZE * IMAGE_SIZE
         val buffer = ByteBuffer
             .allocateDirect(floatCount * Float.SIZE_BYTES)
             .order(ByteOrder.nativeOrder())

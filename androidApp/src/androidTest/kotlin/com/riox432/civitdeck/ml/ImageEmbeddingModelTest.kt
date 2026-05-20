@@ -91,9 +91,9 @@ class ImageEmbeddingModelTest {
      * Creates a synthetic 224x224 JPEG test image (gradient pattern).
      * Using a deterministic pattern ensures reproducible embeddings.
      */
-    @Suppress("MagicNumber")
+    @Suppress("MagicNumber") // RGB gradient calculation (255, 2) — standard 8-bit color range
     private fun createTestImage(): ByteArray {
-        val size = 224
+        val size = SIGLIP_INPUT_SIZE
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         for (y in 0 until size) {
             for (x in 0 until size) {
@@ -104,13 +104,15 @@ class ImageEmbeddingModelTest {
             }
         }
         val stream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 95, stream)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, stream)
         bitmap.recycle()
         return stream.toByteArray()
     }
 
     private companion object {
         private const val EMBEDDING_DIM = 768
+        private const val SIGLIP_INPUT_SIZE = 224
+        private const val JPEG_QUALITY = 95
         private const val NORM_TOLERANCE = 0.01f
         private const val DETERMINISM_TOLERANCE = 1e-6f
     }
