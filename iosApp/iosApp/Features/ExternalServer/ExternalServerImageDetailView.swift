@@ -88,7 +88,7 @@ private struct ServerImageDetailPage: View {
                     showShareSheet = true
                 } label: {
                     Image(systemName: "square.and.arrow.up")
-                        .accessibilityLabel("Share")
+                        .accessibilityLabel("Share image")
                 }
             }
         }
@@ -123,7 +123,7 @@ private struct PromptSection: View {
                     UIPasteboard.general.string = prompt
                 } label: {
                     Image(systemName: "doc.on.doc")
-                        .accessibilityLabel("Copy")
+                        .accessibilityLabel("Copy prompt")
                         .font(.civitBodySmall)
                 }
             }
