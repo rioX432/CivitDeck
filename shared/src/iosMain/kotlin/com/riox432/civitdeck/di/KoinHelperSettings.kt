@@ -68,10 +68,10 @@ import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveSavedPromptsU
 import com.riox432.civitdeck.feature.prompts.domain.usecase.ObserveTemplatesUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.SearchSavedPromptsUseCase
 import com.riox432.civitdeck.feature.prompts.domain.usecase.ToggleTemplateUseCase
-import com.riox432.civitdeck.usecase.ActivateThemePluginUseCase
-import com.riox432.civitdeck.usecase.GetActiveThemeUseCase
-import com.riox432.civitdeck.usecase.ImportThemeUseCase
-import com.riox432.civitdeck.usecase.ObserveThemePluginsUseCase
+import com.riox432.civitdeck.plugin.usecase.ActivateThemePluginUseCase
+import com.riox432.civitdeck.plugin.usecase.GetActiveThemeUseCase
+import com.riox432.civitdeck.plugin.usecase.ImportThemeUseCase
+import com.riox432.civitdeck.plugin.usecase.ObserveThemePluginsUseCase
 import org.koin.mp.KoinPlatform.getKoin
 
 // Theme & Display Settings

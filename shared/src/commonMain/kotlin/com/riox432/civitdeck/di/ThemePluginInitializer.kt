@@ -1,11 +1,11 @@
 package com.riox432.civitdeck.di
 
-import com.riox432.civitdeck.data.theme.JsonThemePlugin
-import com.riox432.civitdeck.data.theme.ThemeDefinition
 import com.riox432.civitdeck.domain.model.InstalledPluginState
 import com.riox432.civitdeck.domain.model.InstalledPluginType
 import com.riox432.civitdeck.domain.repository.PluginRepository
 import com.riox432.civitdeck.plugin.PluginRegistry
+import com.riox432.civitdeck.plugin.theme.JsonThemePlugin
+import com.riox432.civitdeck.plugin.theme.ThemeDefinition
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 

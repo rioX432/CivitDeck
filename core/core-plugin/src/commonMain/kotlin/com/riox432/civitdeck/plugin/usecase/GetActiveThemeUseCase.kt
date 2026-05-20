@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.usecase
+package com.riox432.civitdeck.plugin.usecase
 
 import com.riox432.civitdeck.plugin.PluginRegistry
 import com.riox432.civitdeck.plugin.ThemeColorScheme
