@@ -3,13 +3,16 @@ package com.riox432.civitdeck.data.api.webui
 import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.ResponseException
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import kotlinx.serialization.SerializationException
 import kotlin.concurrent.Volatile
-import kotlin.coroutines.cancellation.CancellationException
 
 class SDWebUIApi(private val client: HttpClient) {
     @Volatile
@@ -20,121 +23,101 @@ class SDWebUIApi(private val client: HttpClient) {
     }
 
     /**
-     * @throws CancellationException if coroutine is cancelled
-     * @throws Exception on network or deserialization failure
+     * @throws ResponseException on HTTP error response
+     * @throws SerializationException on deserialization failure
+     * @throws HttpRequestTimeoutException on request timeout
+     * @throws ConnectTimeoutException on connection timeout
      */
-    suspend fun getModels(): List<SDWebUIModelInfo> {
-        val url = baseUrl
-        return try {
-            client.get("$url/sdapi/v1/sd-models").body()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            Logger.e(TAG, "getModels failed: ${e.message}", e)
-            throw e
-        }
-    }
+    suspend fun getModels(): List<SDWebUIModelInfo> =
+        logAndRethrow("getModels") { client.get("$baseUrl/sdapi/v1/sd-models").body() }
 
     /**
-     * @throws CancellationException if coroutine is cancelled
-     * @throws Exception on network or deserialization failure
+     * @throws ResponseException on HTTP error response
+     * @throws SerializationException on deserialization failure
+     * @throws HttpRequestTimeoutException on request timeout
+     * @throws ConnectTimeoutException on connection timeout
      */
-    suspend fun getSamplers(): List<SDWebUISamplerInfo> {
-        val url = baseUrl
-        return try {
-            client.get("$url/sdapi/v1/samplers").body()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            Logger.e(TAG, "getSamplers failed: ${e.message}", e)
-            throw e
-        }
-    }
+    suspend fun getSamplers(): List<SDWebUISamplerInfo> =
+        logAndRethrow("getSamplers") { client.get("$baseUrl/sdapi/v1/samplers").body() }
 
     /**
-     * @throws CancellationException if coroutine is cancelled
-     * @throws Exception on network or deserialization failure
+     * @throws ResponseException on HTTP error response
+     * @throws SerializationException on deserialization failure
+     * @throws HttpRequestTimeoutException on request timeout
+     * @throws ConnectTimeoutException on connection timeout
      */
-    suspend fun getVaes(): List<SDWebUIVaeInfo> {
-        val url = baseUrl
-        return try {
-            client.get("$url/sdapi/v1/vae").body()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            Logger.e(TAG, "getVaes failed: ${e.message}", e)
-            throw e
-        }
-    }
+    suspend fun getVaes(): List<SDWebUIVaeInfo> =
+        logAndRethrow("getVaes") { client.get("$baseUrl/sdapi/v1/vae").body() }
 
     /**
-     * @throws CancellationException if coroutine is cancelled
-     * @throws Exception on network or deserialization failure
+     * @throws ResponseException on HTTP error response
+     * @throws SerializationException on deserialization failure
+     * @throws HttpRequestTimeoutException on request timeout
+     * @throws ConnectTimeoutException on connection timeout
      */
-    suspend fun txt2img(request: SDWebUITxt2ImgRequest): SDWebUIGenerationResponse {
-        val url = baseUrl
-        return try {
-            client.post("$url/sdapi/v1/txt2img") {
+    suspend fun txt2img(request: SDWebUITxt2ImgRequest): SDWebUIGenerationResponse =
+        logAndRethrow("txt2img") {
+            client.post("$baseUrl/sdapi/v1/txt2img") {
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }.body()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            Logger.e(TAG, "txt2img failed: ${e.message}", e)
-            throw e
         }
-    }
 
     /**
-     * @throws CancellationException if coroutine is cancelled
-     * @throws Exception on network or deserialization failure
+     * @throws ResponseException on HTTP error response
+     * @throws SerializationException on deserialization failure
+     * @throws HttpRequestTimeoutException on request timeout
+     * @throws ConnectTimeoutException on connection timeout
      */
-    suspend fun img2img(request: SDWebUIImg2ImgRequest): SDWebUIGenerationResponse {
-        val url = baseUrl
-        return try {
-            client.post("$url/sdapi/v1/img2img") {
+    suspend fun img2img(request: SDWebUIImg2ImgRequest): SDWebUIGenerationResponse =
+        logAndRethrow("img2img") {
+            client.post("$baseUrl/sdapi/v1/img2img") {
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }.body()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            Logger.e(TAG, "img2img failed: ${e.message}", e)
-            throw e
         }
-    }
 
     /**
-     * @throws CancellationException if coroutine is cancelled
-     * @throws Exception on network or deserialization failure
+     * @throws ResponseException on HTTP error response
+     * @throws SerializationException on deserialization failure
+     * @throws HttpRequestTimeoutException on request timeout
+     * @throws ConnectTimeoutException on connection timeout
      */
-    suspend fun getProgress(): SDWebUIProgressResponse {
-        val url = baseUrl
-        return try {
-            client.get("$url/sdapi/v1/progress?skip_current_image=true").body()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            Logger.e(TAG, "getProgress failed: ${e.message}", e)
-            throw e
+    suspend fun getProgress(): SDWebUIProgressResponse =
+        logAndRethrow("getProgress") {
+            client.get("$baseUrl/sdapi/v1/progress?skip_current_image=true").body()
         }
-    }
 
     /**
-     * @throws CancellationException if coroutine is cancelled
-     * @throws Exception on network failure
+     * @throws ResponseException on HTTP error response
+     * @throws HttpRequestTimeoutException on request timeout
+     * @throws ConnectTimeoutException on connection timeout
      */
-    suspend fun interrupt() {
-        val url = baseUrl
+    suspend fun interrupt(): Unit =
+        logAndRethrow("interrupt") { client.post("$baseUrl/sdapi/v1/interrupt") }
+
+    /**
+     * Executes [block], catching known Ktor / serialization exceptions,
+     * logging them, and rethrowing. Unknown exceptions propagate without logging.
+     */
+    private suspend inline fun <T> logAndRethrow(operation: String, block: () -> T): T {
         try {
-            client.post("$url/sdapi/v1/interrupt")
-        } catch (e: CancellationException) {
-            throw e
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            Logger.e(TAG, "interrupt failed: ${e.message}", e)
-            throw e
+            return block()
+        } catch (e: ResponseException) {
+            logApiError(operation, e)
+        } catch (e: SerializationException) {
+            logApiError(operation, e)
+        } catch (e: HttpRequestTimeoutException) {
+            logApiError(operation, e)
+        } catch (e: ConnectTimeoutException) {
+            logApiError(operation, e)
         }
+    }
+
+    /** Logs an API error and rethrows the exception. */
+    private fun logApiError(operation: String, cause: Throwable): Nothing {
+        Logger.e(TAG, "$operation failed: ${cause.message}", cause)
+        throw cause
     }
 
     private companion object {
