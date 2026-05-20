@@ -10,6 +10,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
+import java.io.IOException
 
 object ImageDownloader {
 
@@ -21,7 +22,9 @@ object ImageDownloader {
                 val bytes = downloadBytes(imageUrl) ?: return@withContext false
                 val fileName = extractFileName(imageUrl)
                 saveToGallery(context, fileName, bytes)
-            } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+            } catch (_: IOException) {
+                false
+            } catch (_: SecurityException) {
                 false
             }
         }
@@ -79,7 +82,10 @@ object ImageDownloader {
             values.put(MediaStore.MediaColumns.IS_PENDING, 0)
             resolver.update(uri, values, null, null)
             true
-        } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+        } catch (_: IOException) {
+            resolver.delete(uri, null, null)
+            false
+        } catch (_: SecurityException) {
             resolver.delete(uri, null, null)
             false
         }
@@ -98,7 +104,9 @@ object ImageDownloader {
             dir.mkdirs()
             File(dir, fileName).writeBytes(bytes)
             true
-        } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+        } catch (_: IOException) {
+            false
+        } catch (_: SecurityException) {
             false
         }
     }
