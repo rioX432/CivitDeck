@@ -91,6 +91,8 @@ struct SDWebUISettingsView: View {
                 .foregroundColor(theme.primary)
                 .accessibilityLabel(conn.id == viewModel.activeConnection?.id
                     ? "Active connection" : "Inactive connection")
+                .accessibilityHint("Activate this connection")
+                .accessibilityAddTraits(.isButton)
                 .onTapGesture { viewModel.onActivate(id: conn.id) }
             VStack(alignment: .leading) {
                 Text(conn.name).font(.civitBodyMedium)
