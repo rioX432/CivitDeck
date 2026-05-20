@@ -47,7 +47,18 @@ object IconSize {
 
 /** Sizes for small indicator dots (unread badges, status indicators). */
 object DotSize {
+    val pagination = 6.dp
     val indicator = 8.dp
+}
+
+/** Sizes for floating action buttons. */
+object FabSize {
+    val standard = 56.dp
+}
+
+/** Sizes for badge counters (e.g. filter count overlay). */
+object BadgeSize {
+    val small = 18.dp
 }
 
 /** Sizes for content thumbnails (collection covers, history items). */

@@ -142,7 +142,7 @@ struct BatchTagEditorView: View {
     private func selectionIndicator(isSelected: Bool) -> some View {
         Circle()
             .fill(isSelected ? Color.accentColor : Color.civitSurface.opacity(0.7))
-            .frame(width: 24, height: 24)
+            .frame(width: Spacing.xl, height: Spacing.xl)
             .overlay {
                 if isSelected {
                     Image(systemName: "checkmark")

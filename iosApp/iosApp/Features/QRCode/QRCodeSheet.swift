@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct QRCodeSheet: View {
+    private static let qrImageSize: CGFloat = 240
+
     let modelId: Int64
     let modelName: String
     @Environment(\.dismiss) private var dismiss
@@ -47,7 +49,7 @@ struct QRCodeSheet: View {
                     .interpolation(.none)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 240, height: 240)
+                    .frame(width: Self.qrImageSize, height: Self.qrImageSize)
                     .clipShape(RoundedRectangle(cornerRadius: Spacing.sm))
             }
 

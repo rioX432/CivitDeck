@@ -20,7 +20,18 @@ enum IconSize {
 
 /// Sizes for small indicator dots (unread badges, status indicators).
 enum DotSize {
+    static let pagination: CGFloat = 6
     static let indicator: CGFloat = 8
+}
+
+/// Sizes for floating action buttons.
+enum FabSize {
+    static let standard: CGFloat = 56
+}
+
+/// Sizes for badge counters (e.g. filter count overlay).
+enum BadgeSize {
+    static let small: CGFloat = 18
 }
 
 /// Sizes for content thumbnails (collection covers, history items).
