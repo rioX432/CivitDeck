@@ -6,14 +6,16 @@ import com.riox432.civitdeck.domain.model.ModelUpdateNotification
 import com.riox432.civitdeck.domain.usecase.GetModelUpdateNotificationsUseCase
 import com.riox432.civitdeck.domain.usecase.MarkAllNotificationsReadUseCase
 import com.riox432.civitdeck.domain.usecase.MarkNotificationReadUseCase
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 data class NotificationCenterUiState(
     val notifications: List<ModelUpdateNotification> = emptyList(),
-    val isLoading: Boolean = true,
-)
+    override val isLoading: Boolean = true,
+    override val error: String? = null,
+) : UiLoadingState
 
 class NotificationCenterViewModel(
     private val getNotificationsUseCase: GetModelUpdateNotificationsUseCase,

@@ -11,6 +11,7 @@ import com.riox432.civitdeck.domain.usecase.DeleteDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDownloadsUseCase
 import com.riox432.civitdeck.domain.usecase.PauseDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.ResumeDownloadUseCase
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,9 +24,10 @@ data class DownloadQueueUiState(
     val activeDownloads: List<ModelDownload> = emptyList(),
     val completedDownloads: List<ModelDownload> = emptyList(),
     val failedDownloads: List<ModelDownload> = emptyList(),
-    val isLoading: Boolean = true,
+    override val isLoading: Boolean = true,
+    override val error: String? = null,
     val totalStorageBytes: Long = 0,
-)
+) : UiLoadingState
 
 class DownloadQueueViewModel(
     observeDownloadsUseCase: ObserveDownloadsUseCase,
