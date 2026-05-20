@@ -24,7 +24,6 @@ class ModelDownloadWorker(
     private val repository: ModelDownloadRepository by inject()
     private val apiKeyProvider: ApiKeyProvider by inject()
 
-    @Suppress("LongMethod")
     override suspend fun doWork(): Result {
         val downloadId = inputData.getLong(KEY_DOWNLOAD_ID, -1)
         if (downloadId == -1L) return Result.failure()
@@ -81,7 +80,6 @@ class ModelDownloadWorker(
         return Result.success()
     }
 
-    @Suppress("NestedBlockDepth")
     private suspend fun streamToFile(
         downloadId: Long,
         fileName: String,
@@ -89,30 +87,37 @@ class ModelDownloadWorker(
         destFile: File,
     ): Long {
         val totalBytes = body.contentLength()
+        return body.byteStream().use { input ->
+            destFile.outputStream().use { output ->
+                copyWithProgress(input, output, downloadId, fileName, totalBytes)
+            }
+        }
+    }
+
+    private suspend fun copyWithProgress(
+        input: java.io.InputStream,
+        output: java.io.OutputStream,
+        downloadId: Long,
+        fileName: String,
+        totalBytes: Long,
+    ): Long {
         var downloadedBytes = 0L
         var lastProgress = 0
-        val input = body.byteStream()
-        val output = destFile.outputStream()
-        try {
-            val buffer = ByteArray(BUFFER_SIZE)
-            var read: Int
-            while (input.read(buffer).also { read = it } != -1) {
-                if (isStopped) {
-                    handleStopped(downloadId)
-                    return -1
-                }
-                output.write(buffer, 0, read)
-                downloadedBytes += read
-                val progress = calculateProgress(downloadedBytes, totalBytes)
-                if (progress != lastProgress) {
-                    lastProgress = progress
-                    repository.updateProgress(downloadId, downloadedBytes)
-                    setForeground(createForegroundInfo(downloadId, fileName, progress))
-                }
+        val buffer = ByteArray(BUFFER_SIZE)
+        var read: Int
+        while (input.read(buffer).also { read = it } != -1) {
+            if (isStopped) {
+                handleStopped(downloadId)
+                return -1
             }
-        } finally {
-            input.close()
-            output.close()
+            output.write(buffer, 0, read)
+            downloadedBytes += read
+            val progress = calculateProgress(downloadedBytes, totalBytes)
+            if (progress != lastProgress) {
+                lastProgress = progress
+                repository.updateProgress(downloadId, downloadedBytes)
+                setForeground(createForegroundInfo(downloadId, fileName, progress))
+            }
         }
         return downloadedBytes
     }
