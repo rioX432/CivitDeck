@@ -2,6 +2,10 @@ package com.riox432.civitdeck.data.api.comfyui
 
 import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.ResponseException
+import io.ktor.client.plugins.websocket.WebSocketException
 import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.client.plugins.websocket.wss
 import io.ktor.websocket.Frame
@@ -10,6 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 
@@ -51,14 +56,18 @@ class ComfyUIWebSocketApi(
             try {
                 runWebSocketSession(baseUrl, wsScheme, clientId, promptId)
                 attempt = MAX_RETRIES + 1
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                Logger.w(TAG, "WebSocket connection failed (attempt $attempt): ${e.message}")
-                lastError = e
+            } catch (e: WebSocketException) {
+                lastError = logAndRetry(e, attempt)
                 attempt++
-                if (attempt <= MAX_RETRIES) {
-                    val backoff = minOf(BASE_DELAY_MS * (1L shl (attempt - 1)), MAX_DELAY_MS)
-                    delay(backoff)
-                }
+            } catch (e: ResponseException) {
+                lastError = logAndRetry(e, attempt)
+                attempt++
+            } catch (e: HttpRequestTimeoutException) {
+                lastError = logAndRetry(e, attempt)
+                attempt++
+            } catch (e: ConnectTimeoutException) {
+                lastError = logAndRetry(e, attempt)
+                attempt++
             }
         }
         lastError?.let { throw it }
@@ -178,10 +187,26 @@ class ComfyUIWebSocketApi(
                 }
                 else -> ComfyUIWebSocketMessage.Unknown(envelope.type)
             }
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+        } catch (e: SerializationException) {
+            Logger.w(TAG, "Failed to parse WebSocket message: ${e.message}")
+            null
+        } catch (e: IllegalArgumentException) {
             Logger.w(TAG, "Failed to parse WebSocket message: ${e.message}")
             null
         }
+    }
+
+    /**
+     * Logs a WebSocket connection failure, waits with exponential backoff if retries remain,
+     * and returns the exception so the caller can store it as [lastError].
+     */
+    private suspend fun logAndRetry(e: Exception, attempt: Int): Exception {
+        Logger.w(TAG, "WebSocket connection failed (attempt $attempt): ${e.message}")
+        if (attempt + 1 <= MAX_RETRIES) {
+            val backoff = minOf(BASE_DELAY_MS * (1L shl attempt), MAX_DELAY_MS)
+            delay(backoff)
+        }
+        return e
     }
 
     /** Returns true for messages that carry a promptId matching the active job, or status messages. */
