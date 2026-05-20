@@ -8,7 +8,6 @@ import androidx.room.Update
 import com.riox432.civitdeck.data.local.entity.ExternalServerConfigEntity
 import kotlinx.coroutines.flow.Flow
 
-@Suppress("TooManyFunctions")
 @Dao
 interface ExternalServerConfigDao {
     @Query("SELECT * FROM external_server_configs ORDER BY createdAt DESC")

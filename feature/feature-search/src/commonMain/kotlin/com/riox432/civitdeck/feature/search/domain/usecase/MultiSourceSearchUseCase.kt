@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.search.domain.usecase
 
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelSearchQuery
 import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.repository.HuggingFaceRepository
@@ -18,7 +19,6 @@ class MultiSourceSearchUseCase(
     private val huggingFaceRepository: HuggingFaceRepository,
     private val tensorArtRepository: TensorArtRepository,
 ) {
-    @Suppress("LongParameterList")
     suspend operator fun invoke(
         query: String? = null,
         selectedSources: Set<ModelSource> = setOf(ModelSource.CIVITAI),
@@ -73,9 +73,7 @@ class MultiSourceSearchUseCase(
         cursor: String?,
         limit: Int,
     ): PaginatedResult<Model> = modelRepository.getModels(
-        query = query,
-        cursor = cursor,
-        limit = limit,
+        ModelSearchQuery(query = query, cursor = cursor, limit = limit),
     )
 
     private suspend fun fetchHuggingFace(

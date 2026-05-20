@@ -59,7 +59,6 @@ data class ExternalServerGalleryUiState(
 private const val TAG = "ExternalServerGalleryViewModel"
 private const val PAGE_SIZE = 96
 
-@Suppress("TooManyFunctions")
 class ExternalServerGalleryViewModel(
     private val getImages: GetExternalServerImagesUseCase,
     private val getCapabilities: GetExternalServerCapabilitiesUseCase,

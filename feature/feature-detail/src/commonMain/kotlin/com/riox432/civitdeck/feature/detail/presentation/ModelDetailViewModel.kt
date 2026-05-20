@@ -51,7 +51,6 @@ data class ModelDetailUiState(
     val reviewSubmitSuccess: Boolean = false,
 ) : UiLoadingState
 
-@Suppress("TooManyFunctions")
 class ModelDetailViewModel(
     private val modelId: Long,
     private val modelUseCases: ModelUseCases,

@@ -8,7 +8,6 @@ import com.riox432.civitdeck.data.local.entity.LocalModelFileEntity
 import com.riox432.civitdeck.data.local.entity.ModelDirectoryEntity
 import kotlinx.coroutines.flow.Flow
 
-@Suppress("TooManyFunctions")
 @Dao
 interface LocalModelFileDao {
     // --- Directory CRUD ---
@@ -48,7 +47,6 @@ interface LocalModelFileDao {
     @Query("SELECT sha256Hash FROM local_model_files WHERE matchedModelId IS NOT NULL")
     suspend fun getOwnedHashes(): List<String>
 
-    @Suppress("LongParameterList")
     @Query(
         "UPDATE local_model_files SET matchedModelId = :modelId, matchedModelName = :modelName, " +
             "matchedVersionId = :versionId, matchedVersionName = :versionName, " +

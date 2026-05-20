@@ -1,7 +1,6 @@
 package com.riox432.civitdeck.ui.detail
 
 import com.riox432.civitdeck.domain.ml.ImageEmbeddingModel
-import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Creator
 import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.Model
@@ -9,6 +8,7 @@ import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.domain.model.ModelDownload
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelNote
+import com.riox432.civitdeck.domain.model.ModelSearchQuery
 import com.riox432.civitdeck.domain.model.ModelStats
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.ModelVersion
@@ -17,8 +17,6 @@ import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.PersonalTag
 import com.riox432.civitdeck.domain.model.RatingTotals
-import com.riox432.civitdeck.domain.model.SortOrder
-import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
@@ -129,18 +127,8 @@ class ModelDetailViewModelTest {
     private class FakeModelRepo(val model: Model) : ModelRepository {
         var getModelCalled = false
 
-        override suspend fun getModels(
-            query: String?,
-            tag: String?,
-            type: ModelType?,
-            sort: SortOrder?,
-            period: TimePeriod?,
-            baseModels: List<BaseModel>?,
-            cursor: String?,
-            limit: Int?,
-            username: String?,
-            nsfw: Boolean?,
-        ): PaginatedResult<Model> = error("not used")
+        override suspend fun getModels(query: ModelSearchQuery): PaginatedResult<Model> =
+            error("not used")
 
         override suspend fun getModel(id: Long): Model {
             getModelCalled = true
@@ -270,7 +258,6 @@ class ModelDetailViewModelTest {
         ) = Unit
     }
 
-    @Suppress("TooManyFunctions")
     private class FakeDownloadRepo : ModelDownloadRepository {
         override suspend fun enqueueDownload(download: ModelDownload) = 1L
         override fun observeAllDownloads() = flowOf(emptyList<ModelDownload>())

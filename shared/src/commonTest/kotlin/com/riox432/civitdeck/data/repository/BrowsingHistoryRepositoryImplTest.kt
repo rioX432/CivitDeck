@@ -11,7 +11,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@Suppress("TooManyFunctions")
 class BrowsingHistoryRepositoryImplTest {
 
     private class FakeDao : BrowsingHistoryDao {

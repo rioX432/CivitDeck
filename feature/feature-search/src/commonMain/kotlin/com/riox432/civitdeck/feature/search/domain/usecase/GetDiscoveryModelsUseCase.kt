@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.search.domain.usecase
 
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelSearchQuery
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.repository.ModelRepository
 
@@ -13,8 +14,6 @@ class GetDiscoveryModelsUseCase(private val repository: ModelRepository) {
         cursor: String? = null,
         limit: Int = 20,
     ): List<Model> = repository.getModels(
-        sort = SortOrder.Newest,
-        cursor = cursor,
-        limit = limit,
+        ModelSearchQuery(sort = SortOrder.Newest, cursor = cursor, limit = limit),
     ).items
 }

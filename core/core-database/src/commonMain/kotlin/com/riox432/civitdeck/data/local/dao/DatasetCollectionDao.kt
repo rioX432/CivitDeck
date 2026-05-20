@@ -17,7 +17,6 @@ data class DatasetCollectionWithCount(
     val imageCount: Int,
 )
 
-@Suppress("TooManyFunctions")
 @Dao
 interface DatasetCollectionDao {
 

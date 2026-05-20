@@ -1,14 +1,14 @@
 package com.riox432.civitdeck.domain.usecase
 
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
-import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
 import com.riox432.civitdeck.domain.model.InteractionType
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelSearchQuery
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.ModelVersion
-import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
+import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
@@ -36,21 +36,10 @@ class GetRecommendationsUseCaseTest {
         var lastTag: String? = null
         var lastSort: SortOrder? = null
 
-        override suspend fun getModels(
-            query: String?,
-            tag: String?,
-            type: ModelType?,
-            sort: SortOrder?,
-            period: TimePeriod?,
-            baseModels: List<BaseModel>?,
-            cursor: String?,
-            limit: Int?,
-            username: String?,
-            nsfw: Boolean?,
-        ): PaginatedResult<Model> {
-            lastType = type
-            lastTag = tag
-            lastSort = sort
+        override suspend fun getModels(query: ModelSearchQuery): PaginatedResult<Model> {
+            lastType = query.type
+            lastTag = query.tag
+            lastSort = query.sort
             return modelsResult
         }
 

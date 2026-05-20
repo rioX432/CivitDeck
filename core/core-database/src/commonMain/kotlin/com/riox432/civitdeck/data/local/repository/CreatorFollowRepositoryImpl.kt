@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.data.local.repository
 
 import com.riox432.civitdeck.data.api.CivitAiApi
+import com.riox432.civitdeck.data.api.ModelListQuery
 import com.riox432.civitdeck.data.api.dto.toDomain
 import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.FeedCacheDao
@@ -129,9 +130,11 @@ class CreatorFollowRepositoryImpl(
         for (creator in creators) {
             try {
                 val response = api.getModels(
-                    username = creator.username,
-                    sort = "Newest",
-                    limit = FEED_PAGE_SIZE,
+                    ModelListQuery(
+                        username = creator.username,
+                        sort = "Newest",
+                        limit = FEED_PAGE_SIZE,
+                    ),
                 )
                 val entities = response.items.map { model ->
                     val domain = model.toDomain()

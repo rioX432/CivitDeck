@@ -5,7 +5,6 @@ import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
 import kotlinx.coroutines.flow.Flow
 
-@Suppress("TooManyFunctions")
 interface ComfyUIGenerationRepository {
     suspend fun fetchCheckpoints(): List<String>
     suspend fun fetchLoras(): List<String>

@@ -8,7 +8,6 @@ import androidx.room.Upsert
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import kotlinx.coroutines.flow.Flow
 
-@Suppress("TooManyFunctions")
 @Dao
 interface SavedPromptDao {
     @Query("SELECT * FROM saved_prompts ORDER BY savedAt DESC")

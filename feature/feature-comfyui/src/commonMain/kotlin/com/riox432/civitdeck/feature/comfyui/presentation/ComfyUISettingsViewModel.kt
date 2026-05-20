@@ -37,7 +37,6 @@ data class ComfyUISettingsUiState(
     val discoveredServers: List<DiscoveredServer> = emptyList(),
 )
 
-@Suppress("TooManyFunctions")
 class ComfyUISettingsViewModel(
     observeConnections: ObserveComfyUIConnectionsUseCase,
     observeActive: ObserveActiveComfyUIConnectionUseCase,

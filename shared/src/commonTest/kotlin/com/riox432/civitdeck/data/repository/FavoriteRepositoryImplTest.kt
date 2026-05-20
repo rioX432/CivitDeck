@@ -16,7 +16,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-@Suppress("TooManyFunctions")
 class FavoriteRepositoryImplTest {
 
     private class FakeCollectionDao : CollectionDao {

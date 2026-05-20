@@ -2,15 +2,15 @@ package com.riox432.civitdeck.data.local.repository
 
 import com.riox432.civitdeck.data.api.CivitAiApi
 import com.riox432.civitdeck.data.api.DataParseException
+import com.riox432.civitdeck.data.api.ModelListQuery
 import com.riox432.civitdeck.data.api.dto.ModelListResponse
 import com.riox432.civitdeck.data.api.dto.ModelResponse
 import com.riox432.civitdeck.data.api.dto.ModelVersionResponse
 import com.riox432.civitdeck.data.api.dto.toDomain
 import com.riox432.civitdeck.data.local.LocalCacheDataSource
-import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelLicenseInfo
-import com.riox432.civitdeck.domain.model.ModelType
+import com.riox432.civitdeck.domain.model.ModelSearchQuery
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.PageMetadata
 import com.riox432.civitdeck.domain.model.PaginatedResult
@@ -37,43 +37,34 @@ class ModelRepositoryImpl(
     private suspend fun getCachedWithFallback(key: String): String? =
         localCache.getCached(key) ?: localCache.getCachedIgnoringTtl(key)
 
-    override suspend fun getModels(
-        query: String?,
-        tag: String?,
-        type: ModelType?,
-        sort: SortOrder?,
-        period: TimePeriod?,
-        baseModels: List<BaseModel>?,
-        cursor: String?,
-        limit: Int?,
-        username: String?,
-        nsfw: Boolean?,
-    ): PaginatedResult<Model> {
+    override suspend fun getModels(query: ModelSearchQuery): PaginatedResult<Model> {
         val cacheKey = buildCacheKey(
             "models",
-            query,
-            tag,
-            type?.name,
-            sort?.toApiParam(),
-            period?.toApiParam(),
-            baseModels?.joinToString(",") { it.apiValue },
-            cursor,
-            limit?.toString(),
-            username,
-            nsfw?.toString(),
+            query.query,
+            query.tag,
+            query.type?.name,
+            query.sort?.toApiParam(),
+            query.period?.toApiParam(),
+            query.baseModels?.joinToString(",") { it.apiValue },
+            query.cursor,
+            query.limit?.toString(),
+            query.username,
+            query.nsfw?.toString(),
         )
         return try {
             val response = api.getModels(
-                query = query,
-                tag = tag,
-                type = type?.name,
-                sort = sort?.toApiParam(),
-                period = period?.toApiParam(),
-                baseModels = baseModels?.map { it.apiValue },
-                cursor = cursor,
-                limit = limit,
-                username = username,
-                nsfw = nsfw,
+                ModelListQuery(
+                    query = query.query,
+                    tag = query.tag,
+                    type = query.type?.name,
+                    sort = query.sort?.toApiParam(),
+                    period = query.period?.toApiParam(),
+                    baseModels = query.baseModels?.map { it.apiValue },
+                    cursor = query.cursor,
+                    limit = query.limit,
+                    username = query.username,
+                    nsfw = query.nsfw,
+                ),
             )
             localCache.putCache(cacheKey, json.encodeToString(ModelListResponse.serializer(), response))
             PaginatedResult(

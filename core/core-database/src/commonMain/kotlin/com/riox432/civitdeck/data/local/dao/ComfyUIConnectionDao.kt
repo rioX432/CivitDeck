@@ -8,7 +8,6 @@ import androidx.room.Update
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import kotlinx.coroutines.flow.Flow
 
-@Suppress("TooManyFunctions")
 @Dao
 interface ComfyUIConnectionDao {
     @Query("SELECT * FROM comfyui_connections ORDER BY createdAt DESC")
