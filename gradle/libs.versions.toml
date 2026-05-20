@@ -22,7 +22,7 @@ glance = "1.1.1"
 detekt = "1.23.8"
 skie = "0.10.11"
 aboutlibraries = "12.1.2"
-onnxruntime-android = "1.20.0"
+onnxruntime-android = "1.25.0"
 
 [libraries]
 # QR Code
