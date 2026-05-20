@@ -14,31 +14,6 @@ import com.riox432.civitdeck.domain.model.PersonalTag
 import com.riox432.civitdeck.domain.model.RatingTotals
 import com.riox432.civitdeck.domain.model.ResourceReview
 import com.riox432.civitdeck.domain.model.ReviewSortOrder
-import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
-import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
-import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
-import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
-import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
-import com.riox432.civitdeck.domain.usecase.EmbedOnBrowseUseCase
-import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
-import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
-import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
-import com.riox432.civitdeck.domain.usecase.GetModelReviewsUseCase
-import com.riox432.civitdeck.domain.usecase.GetRatingTotalsUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveModelDownloadsUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveModelNoteUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
-import com.riox432.civitdeck.domain.usecase.ObservePersonalTagsUseCase
-import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
-import com.riox432.civitdeck.domain.usecase.RemoveModelFromCollectionUseCase
-import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
-import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
-import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
-import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
-import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.domain.util.currentTimeMillis
 import com.riox432.civitdeck.domain.util.suspendRunCatching
@@ -76,34 +51,14 @@ data class ModelDetailUiState(
     val reviewSubmitSuccess: Boolean = false,
 ) : UiLoadingState
 
-@Suppress("LongParameterList", "TooManyFunctions")
+@Suppress("TooManyFunctions")
 class ModelDetailViewModel(
     private val modelId: Long,
-    private val getModelDetailUseCase: GetModelDetailUseCase,
-    private val observeIsFavoriteUseCase: ObserveIsFavoriteUseCase,
-    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
-    private val trackModelViewUseCase: TrackModelViewUseCase,
-    private val observeNsfwFilterUseCase: ObserveNsfwFilterUseCase,
-    private val enrichModelImagesUseCase: EnrichModelImagesUseCase,
-    observeCollectionsUseCase: ObserveCollectionsUseCase,
-    private val observeModelCollectionsUseCase: ObserveModelCollectionsUseCase,
-    private val addModelToCollectionUseCase: AddModelToCollectionUseCase,
-    private val removeModelFromCollectionUseCase: RemoveModelFromCollectionUseCase,
-    private val createCollectionUseCase: CreateCollectionUseCase,
-    private val observePowerUserModeUseCase: ObservePowerUserModeUseCase,
-    private val observeModelNoteUseCase: ObserveModelNoteUseCase,
-    private val saveModelNoteUseCase: SaveModelNoteUseCase,
-    private val deleteModelNoteUseCase: DeleteModelNoteUseCase,
-    private val observePersonalTagsUseCase: ObservePersonalTagsUseCase,
-    private val addPersonalTagUseCase: AddPersonalTagUseCase,
-    private val removePersonalTagUseCase: RemovePersonalTagUseCase,
-    private val observeModelDownloadsUseCase: ObserveModelDownloadsUseCase,
-    private val enqueueDownloadUseCase: EnqueueDownloadUseCase,
-    private val cancelDownloadUseCase: CancelDownloadUseCase,
-    private val getModelReviewsUseCase: GetModelReviewsUseCase,
-    private val getRatingTotalsUseCase: GetRatingTotalsUseCase,
-    private val submitReviewUseCase: SubmitReviewUseCase,
-    private val embedOnBrowseUseCase: EmbedOnBrowseUseCase,
+    private val modelUseCases: ModelUseCases,
+    private val collectionUseCases: CollectionUseCases,
+    private val notesTagsUseCases: NotesTagsUseCases,
+    private val downloadUseCases: DownloadUseCases,
+    private val reviewUseCases: ReviewUseCases,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelDetailUiState())
@@ -115,45 +70,45 @@ class ModelDetailViewModel(
         modelId = modelId,
         scope = viewModelScope,
         uiState = _uiState,
-        getModelReviewsUseCase = getModelReviewsUseCase,
-        getRatingTotalsUseCase = getRatingTotalsUseCase,
-        submitReviewUseCase = submitReviewUseCase,
+        getModelReviewsUseCase = reviewUseCases.getModelReviews,
+        getRatingTotalsUseCase = reviewUseCases.getRatingTotals,
+        submitReviewUseCase = reviewUseCases.submitReview,
     )
 
     private val notesTagsDelegate = DetailNotesTagsDelegate(
         modelId = modelId,
         scope = viewModelScope,
-        saveModelNoteUseCase = saveModelNoteUseCase,
-        deleteModelNoteUseCase = deleteModelNoteUseCase,
-        addPersonalTagUseCase = addPersonalTagUseCase,
-        removePersonalTagUseCase = removePersonalTagUseCase,
+        saveModelNoteUseCase = notesTagsUseCases.saveModelNote,
+        deleteModelNoteUseCase = notesTagsUseCases.deleteModelNote,
+        addPersonalTagUseCase = notesTagsUseCases.addPersonalTag,
+        removePersonalTagUseCase = notesTagsUseCases.removePersonalTag,
     )
 
     private val _downloadEnqueuedEvent = MutableSharedFlow<Long>(extraBufferCapacity = 1)
     val downloadEnqueuedEvent: SharedFlow<Long> = _downloadEnqueuedEvent
 
     val collections: StateFlow<List<ModelCollection>> =
-        observeCollectionsUseCase()
+        collectionUseCases.observeCollections()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
     val modelCollectionIds: StateFlow<List<Long>> =
-        observeModelCollectionsUseCase(modelId)
+        collectionUseCases.observeModelCollections(modelId)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
     private val collectionDelegate = DetailCollectionDelegate(
         scope = viewModelScope,
         modelCollectionIds = modelCollectionIds,
-        addModelToCollectionUseCase = addModelToCollectionUseCase,
-        removeModelFromCollectionUseCase = removeModelFromCollectionUseCase,
-        createCollectionUseCase = createCollectionUseCase,
+        addModelToCollectionUseCase = collectionUseCases.addModelToCollection,
+        removeModelFromCollectionUseCase = collectionUseCases.removeModelFromCollection,
+        createCollectionUseCase = collectionUseCases.createCollection,
     )
 
     private val downloadDelegate = DetailDownloadDelegate(
         modelId = modelId,
         scope = viewModelScope,
-        enqueueDownloadUseCase = enqueueDownloadUseCase,
-        cancelDownloadUseCase = cancelDownloadUseCase,
-        trackModelViewUseCase = trackModelViewUseCase,
+        enqueueDownloadUseCase = downloadUseCases.enqueueDownload,
+        cancelDownloadUseCase = downloadUseCases.cancelDownload,
+        trackModelViewUseCase = modelUseCases.trackModelView,
         downloadEnqueuedEvent = _downloadEnqueuedEvent,
     )
 
@@ -177,8 +132,8 @@ class ModelDetailViewModel(
     fun onFavoriteToggle() {
         val model = _uiState.value.model ?: return
         launchCatching("Favorite toggle") {
-            toggleFavoriteUseCase(model)
-            trackModelViewUseCase.trackInteraction(modelId, InteractionType.FAVORITE)
+            modelUseCases.toggleFavorite(model)
+            modelUseCases.trackModelView.trackInteraction(modelId, InteractionType.FAVORITE)
         }
         triggerBackgroundEmbed(model)
     }
@@ -238,7 +193,7 @@ class ModelDetailViewModel(
     private fun loadModel() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            suspendRunCatching { getModelDetailUseCase(modelId) }
+            suspendRunCatching { modelUseCases.getModelDetail(modelId) }
                 .onSuccess { model ->
                     _uiState.update { it.copy(model = model, isLoading = false) }
                     enrichCurrentVersion()
@@ -260,7 +215,7 @@ class ModelDetailViewModel(
         val version = model.modelVersions.getOrNull(state.selectedVersionIndex) ?: return
         if (!markVersionForEnrichment(version.id)) return
         viewModelScope.launch {
-            suspendRunCatching { enrichModelImagesUseCase(version.id, version.images) }
+            suspendRunCatching { modelUseCases.enrichModelImages(version.id, version.images) }
                 .onSuccess { enriched -> applyEnrichedImages(version.id, enriched) }
                 .onFailure { e ->
                     Logger.w(TAG, "Enrich version images failed: ${e.message}")
@@ -310,7 +265,7 @@ class ModelDetailViewModel(
 
     private fun observeFavorite() {
         viewModelScope.launch {
-            observeIsFavoriteUseCase(modelId).collect { isFavorite ->
+            modelUseCases.observeIsFavorite(modelId).collect { isFavorite ->
                 _uiState.update { it.copy(isFavorite = isFavorite) }
             }
         }
@@ -318,7 +273,7 @@ class ModelDetailViewModel(
 
     private fun observeNsfwFilter() {
         viewModelScope.launch {
-            observeNsfwFilterUseCase().collect { level ->
+            modelUseCases.observeNsfwFilter().collect { level ->
                 _uiState.update { it.copy(nsfwFilterLevel = level) }
             }
         }
@@ -326,7 +281,7 @@ class ModelDetailViewModel(
 
     private fun observePowerUserMode() {
         viewModelScope.launch {
-            observePowerUserModeUseCase().collect { enabled ->
+            modelUseCases.observePowerUserMode().collect { enabled ->
                 _uiState.update { it.copy(powerUserMode = enabled) }
             }
         }
@@ -334,7 +289,7 @@ class ModelDetailViewModel(
 
     private fun observeNote() {
         viewModelScope.launch {
-            observeModelNoteUseCase(modelId).collect { note ->
+            notesTagsUseCases.observeModelNote(modelId).collect { note ->
                 _uiState.update { it.copy(note = note) }
             }
         }
@@ -342,7 +297,7 @@ class ModelDetailViewModel(
 
     private fun observePersonalTags() {
         viewModelScope.launch {
-            observePersonalTagsUseCase(modelId).collect { tags ->
+            notesTagsUseCases.observePersonalTags(modelId).collect { tags ->
                 _uiState.update { it.copy(personalTags = tags) }
             }
         }
@@ -350,7 +305,7 @@ class ModelDetailViewModel(
 
     private fun observeDownloads() {
         viewModelScope.launch {
-            observeModelDownloadsUseCase(modelId).collect { downloads ->
+            downloadUseCases.observeModelDownloads(modelId).collect { downloads ->
                 _uiState.update { it.copy(downloads = downloads) }
             }
         }
@@ -379,7 +334,7 @@ class ModelDetailViewModel(
         val url = model.modelVersions.firstOrNull()
             ?.images?.firstOrNull()?.url ?: return
         viewModelScope.launch {
-            suspendRunCatching { embedOnBrowseUseCase(model.id, url) }
+            suspendRunCatching { modelUseCases.embedOnBrowse(model.id, url) }
                 .onFailure { e -> Logger.d(TAG, "Background embed skipped: ${e.message}") }
         }
     }
@@ -392,7 +347,7 @@ class ModelDetailViewModel(
             withContext(NonCancellable) {
                 try {
                     withTimeoutOrNull(END_VIEW_TIMEOUT) {
-                        trackModelViewUseCase.endView(modelId, durationMs)
+                        modelUseCases.trackModelView.endView(modelId, durationMs)
                     }
                 } catch (e: Exception) {
                     Logger.w(TAG, "End view tracking failed: ${e.message}")
@@ -402,7 +357,7 @@ class ModelDetailViewModel(
     }
 
     private suspend fun trackModelView(model: Model) {
-        trackModelViewUseCase(
+        modelUseCases.trackModelView(
             modelId = model.id,
             modelName = model.name,
             modelType = model.type.name,

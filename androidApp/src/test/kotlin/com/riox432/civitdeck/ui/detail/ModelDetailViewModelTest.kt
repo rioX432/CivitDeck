@@ -1,9 +1,12 @@
 package com.riox432.civitdeck.ui.detail
 
+import com.riox432.civitdeck.domain.ml.ImageEmbeddingModel
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Creator
+import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelCollection
+import com.riox432.civitdeck.domain.model.ModelDownload
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelNote
 import com.riox432.civitdeck.domain.model.ModelStats
@@ -13,31 +16,51 @@ import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.PersonalTag
+import com.riox432.civitdeck.domain.model.RatingTotals
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
+import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
+import com.riox432.civitdeck.domain.repository.ModelEmbeddingRepository
 import com.riox432.civitdeck.domain.repository.ModelNoteRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
+import com.riox432.civitdeck.domain.repository.ReviewPage
+import com.riox432.civitdeck.domain.repository.ReviewRepository
+import com.riox432.civitdeck.domain.repository.ThumbnailDownloader
 import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
+import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteModelNoteUseCase
+import com.riox432.civitdeck.domain.usecase.EmbedImageUseCase
+import com.riox432.civitdeck.domain.usecase.EmbedOnBrowseUseCase
+import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
+import com.riox432.civitdeck.domain.usecase.GetModelReviewsUseCase
+import com.riox432.civitdeck.domain.usecase.GetRatingTotalsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveModelDownloadsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePersonalTagsUseCase
+import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
+import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.feature.detail.presentation.CollectionUseCases
+import com.riox432.civitdeck.feature.detail.presentation.DownloadUseCases
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
+import com.riox432.civitdeck.feature.detail.presentation.ModelUseCases
+import com.riox432.civitdeck.feature.detail.presentation.NotesTagsUseCases
+import com.riox432.civitdeck.feature.detail.presentation.ReviewUseCases
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -100,6 +123,8 @@ class ModelDetailViewModelTest {
             ),
         ),
     )
+
+    // region Fake repositories
 
     private class FakeModelRepo(val model: Model) : ModelRepository {
         var getModelCalled = false
@@ -245,15 +270,66 @@ class ModelDetailViewModelTest {
         ) = Unit
     }
 
+    @Suppress("TooManyFunctions")
+    private class FakeDownloadRepo : ModelDownloadRepository {
+        override suspend fun enqueueDownload(download: ModelDownload) = 1L
+        override fun observeAllDownloads() = flowOf(emptyList<ModelDownload>())
+        override fun observeDownloadsForModel(modelId: Long) = flowOf(emptyList<ModelDownload>())
+        override suspend fun getDownloadById(id: Long): ModelDownload? = null
+        override suspend fun getDownloadByFileId(fileId: Long): ModelDownload? = null
+        override suspend fun updateStatus(id: Long, status: DownloadStatus, errorMessage: String?) = Unit
+        override suspend fun updateProgress(id: Long, downloadedBytes: Long) = Unit
+        override suspend fun updateDestinationPath(id: Long, path: String) = Unit
+        override suspend fun deleteDownload(id: Long) = Unit
+        override suspend fun updateHashVerified(id: Long, verified: Boolean) = Unit
+        override suspend fun clearCompletedDownloads() = Unit
+    }
+
+    private class FakeReviewRepo : ReviewRepository {
+        override suspend fun getReviews(
+            modelId: Long,
+            modelVersionId: Long?,
+            limit: Int,
+            cursor: Int?,
+        ) = ReviewPage(emptyList(), null)
+
+        override suspend fun getRatingTotals(modelId: Long, modelVersionId: Long?) =
+            RatingTotals(0, 0, 0, 0, 0, 0, 0)
+
+        override suspend fun submitReview(
+            modelId: Long,
+            modelVersionId: Long,
+            rating: Int,
+            recommended: Boolean,
+            details: String?,
+        ) = Unit
+    }
+
+    private class NoOpEmbeddingRepo : ModelEmbeddingRepository {
+        override suspend fun get(modelId: Long) = null
+        override suspend fun count(embeddingModel: String) = 0
+        override suspend fun cache(embedding: com.riox432.civitdeck.domain.model.ModelEmbedding) = Unit
+        override suspend fun findSimilar(
+            query: FloatArray,
+            embeddingModel: String,
+            limit: Int,
+            excludeModelId: Long?,
+        ) = emptyList<com.riox432.civitdeck.domain.model.SimilarModelHit>()
+        override suspend fun deleteStale(keepModel: String) = 0
+        override suspend fun clear() = Unit
+    }
+
+    private class NoOpDownloader : ThumbnailDownloader {
+        override suspend fun download(url: String) = byteArrayOf()
+    }
+
+    // endregion
+
     @Suppress("LongMethod")
     private fun createViewModel(
         model: Model = testModel(),
         isFavorite: Boolean = false,
-    ): Triple<
-        com.riox432.civitdeck.ui.detail.ModelDetailViewModel,
-        FakeModelRepo,
-        FakeFavoriteRepo,
-        > {
+    ): Triple<ModelDetailViewModel, FakeModelRepo, FakeFavoriteRepo> {
         val modelRepo = FakeModelRepo(model)
         val favRepo = FakeFavoriteRepo(MutableStateFlow(isFavorite))
         val browsingRepo = FakeBrowsingRepo()
@@ -261,29 +337,56 @@ class ModelDetailViewModelTest {
         val collectionRepo = FakeCollectionRepo()
         val noteRepo = FakeNoteRepo()
         val powerUserRepo = FakePowerUserRepo()
+        val downloadRepo = FakeDownloadRepo()
+        val reviewRepo = FakeReviewRepo()
 
-        val vm = com.riox432.civitdeck.ui.detail.ModelDetailViewModel(
-            modelId = model.id,
-            getModelDetailUseCase = GetModelDetailUseCase(modelRepo),
-            observeIsFavoriteUseCase = ObserveIsFavoriteUseCase(favRepo),
-            toggleFavoriteUseCase = ToggleFavoriteUseCase(favRepo),
-            trackModelViewUseCase = TrackModelViewUseCase(browsingRepo),
-            observeNsfwFilterUseCase = ObserveNsfwFilterUseCase(prefsRepo),
-            enrichModelImagesUseCase = EnrichModelImagesUseCase(modelRepo),
-            observeCollectionsUseCase = ObserveCollectionsUseCase(collectionRepo),
-            observeModelCollectionsUseCase = ObserveModelCollectionsUseCase(collectionRepo),
-            addModelToCollectionUseCase = AddModelToCollectionUseCase(collectionRepo),
-            removeModelFromCollectionUseCase = RemoveModelFromCollectionUseCase(collectionRepo),
-            createCollectionUseCase = CreateCollectionUseCase(collectionRepo),
-            observePowerUserModeUseCase = com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase(
-                powerUserRepo
+        val modelUseCases = ModelUseCases(
+            getModelDetail = GetModelDetailUseCase(modelRepo),
+            observeIsFavorite = ObserveIsFavoriteUseCase(favRepo),
+            toggleFavorite = ToggleFavoriteUseCase(favRepo),
+            trackModelView = TrackModelViewUseCase(browsingRepo),
+            enrichModelImages = EnrichModelImagesUseCase(modelRepo),
+            embedOnBrowse = EmbedOnBrowseUseCase(
+                NoOpEmbeddingRepo(),
+                EmbedImageUseCase(ImageEmbeddingModel()),
+                NoOpDownloader(),
             ),
-            observeModelNoteUseCase = ObserveModelNoteUseCase(noteRepo),
-            saveModelNoteUseCase = SaveModelNoteUseCase(noteRepo),
-            deleteModelNoteUseCase = DeleteModelNoteUseCase(noteRepo),
-            observePersonalTagsUseCase = ObservePersonalTagsUseCase(noteRepo),
-            addPersonalTagUseCase = AddPersonalTagUseCase(noteRepo),
-            removePersonalTagUseCase = RemovePersonalTagUseCase(noteRepo),
+            observeNsfwFilter = ObserveNsfwFilterUseCase(prefsRepo),
+            observePowerUserMode = ObservePowerUserModeUseCase(powerUserRepo),
+        )
+        val collectionUseCases = CollectionUseCases(
+            observeCollections = ObserveCollectionsUseCase(collectionRepo),
+            observeModelCollections = ObserveModelCollectionsUseCase(collectionRepo),
+            addModelToCollection = AddModelToCollectionUseCase(collectionRepo),
+            removeModelFromCollection = RemoveModelFromCollectionUseCase(collectionRepo),
+            createCollection = CreateCollectionUseCase(collectionRepo),
+        )
+        val notesTagsUseCases = NotesTagsUseCases(
+            observeModelNote = ObserveModelNoteUseCase(noteRepo),
+            saveModelNote = SaveModelNoteUseCase(noteRepo),
+            deleteModelNote = DeleteModelNoteUseCase(noteRepo),
+            observePersonalTags = ObservePersonalTagsUseCase(noteRepo),
+            addPersonalTag = AddPersonalTagUseCase(noteRepo),
+            removePersonalTag = RemovePersonalTagUseCase(noteRepo),
+        )
+        val downloadUseCases = DownloadUseCases(
+            observeModelDownloads = ObserveModelDownloadsUseCase(downloadRepo),
+            enqueueDownload = EnqueueDownloadUseCase(downloadRepo),
+            cancelDownload = CancelDownloadUseCase(downloadRepo),
+        )
+        val reviewUseCases = ReviewUseCases(
+            getModelReviews = GetModelReviewsUseCase(reviewRepo),
+            getRatingTotals = GetRatingTotalsUseCase(reviewRepo),
+            submitReview = SubmitReviewUseCase(reviewRepo),
+        )
+
+        val vm = ModelDetailViewModel(
+            modelId = model.id,
+            modelUseCases = modelUseCases,
+            collectionUseCases = collectionUseCases,
+            notesTagsUseCases = notesTagsUseCases,
+            downloadUseCases = downloadUseCases,
+            reviewUseCases = reviewUseCases,
         )
         return Triple(vm, modelRepo, favRepo)
     }
