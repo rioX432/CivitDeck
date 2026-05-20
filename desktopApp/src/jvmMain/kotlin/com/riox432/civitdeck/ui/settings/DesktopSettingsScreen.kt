@@ -315,27 +315,28 @@ private fun UpdateSection(viewModel: DesktopUpdateViewModel) {
     val state by viewModel.uiState.collectAsState()
 
     SettingsCard(title = "Updates") {
-        if (state.showBanner && state.updateResult != null) {
-            val result = state.updateResult!!
-            Text(
-                text = "Update available: v${result.currentVersion} \u2192 v${result.latestVersion}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                Button(onClick = {
-                    if (AwtDesktop.isDesktopSupported()) {
-                        AwtDesktop.getDesktop().browse(URI(result.htmlUrl))
+        if (state.showBanner) {
+            state.updateResult?.let { result ->
+                Text(
+                    text = "Update available: v${result.currentVersion} \u2192 v${result.latestVersion}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(modifier = Modifier.height(Spacing.sm))
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                    Button(onClick = {
+                        if (AwtDesktop.isDesktopSupported()) {
+                            AwtDesktop.getDesktop().browse(URI(result.htmlUrl))
+                        }
+                    }) {
+                        Text("Download")
                     }
-                }) {
-                    Text("Download")
+                    OutlinedButton(onClick = viewModel::dismissBanner) {
+                        Text("Dismiss")
+                    }
                 }
-                OutlinedButton(onClick = viewModel::dismissBanner) {
-                    Text("Dismiss")
-                }
+                Spacer(modifier = Modifier.height(Spacing.md))
             }
-            Spacer(modifier = Modifier.height(Spacing.md))
         }
         SwitchSetting(
             label = "Auto-check for updates",

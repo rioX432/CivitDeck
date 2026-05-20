@@ -57,13 +57,15 @@ fun DesktopDetailScreen(
                 message = uiState.error ?: "Unknown error",
                 onRetry = viewModel::retry,
             )
-            uiState.model != null -> DetailBody(
-                model = uiState.model!!,
-                uiState = uiState,
-                onVersionSelected = viewModel::onVersionSelected,
-                onImageClick = onImageClick,
-                onCreatorClick = onCreatorClick,
-            )
+            uiState.model != null -> uiState.model?.let { model ->
+                DetailBody(
+                    model = model,
+                    uiState = uiState,
+                    onVersionSelected = viewModel::onVersionSelected,
+                    onImageClick = onImageClick,
+                    onCreatorClick = onCreatorClick,
+                )
+            }
         }
     }
 }
