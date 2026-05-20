@@ -36,8 +36,8 @@ struct CivitaiLinkSettingsView: View {
             HStack {
                 Circle()
                     .fill(statusColor)
-                    // Status indicator dot — intentionally small, one-off size
-                    .frame(width: Spacing.smPlus, height: Spacing.smPlus)
+                    // Status indicator dot — small circle, snapped to 8pt grid
+                    .frame(width: Spacing.sm, height: Spacing.sm)
                 Text(statusLabel)
                     .font(.civitBodyMedium)
                 Spacer()

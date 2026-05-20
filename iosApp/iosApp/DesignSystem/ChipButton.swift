@@ -13,7 +13,7 @@ struct ChipButton: View {
                 .font(.civitLabelMedium)
                 .fontWeight(isSelected ? .semibold : .regular)
                 .padding(.horizontal, Spacing.md)
-                .padding(.vertical, Spacing.xsPlus)
+                .padding(.vertical, Spacing.sm)
                 .background(isSelected ? theme.primary.opacity(0.2) : Color.civitSurfaceVariant)
                 .foregroundColor(isSelected ? theme.primary : .civitOnSurface)
                 .clipShape(Capsule())

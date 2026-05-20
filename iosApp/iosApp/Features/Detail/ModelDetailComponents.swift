@@ -136,7 +136,7 @@ struct CarouselViewer: View {
                 .font(.civitTitleSmall)
                 .foregroundColor(.white)
                 .padding(.horizontal, Spacing.lg)
-                .padding(.vertical, Spacing.smPlus)
+                .padding(.vertical, Spacing.md)
                 .background(.ultraThinMaterial, in: Capsule())
                 .padding(.bottom, Spacing.floatingOffset)
         }
@@ -273,7 +273,7 @@ struct GridImageViewer: View {
                         .font(.civitTitleSmall)
                         .foregroundColor(.white)
                         .padding(.horizontal, Spacing.lg)
-                        .padding(.vertical, Spacing.smPlus)
+                        .padding(.vertical, Spacing.md)
                         .background(.ultraThinMaterial, in: Capsule())
                         .padding(.bottom, Spacing.floatingOffset)
                 }
@@ -365,7 +365,7 @@ struct ViewerCircleButton: View {
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundColor(.white)
-                .padding(Spacing.smPlus)
+                .padding(Spacing.md)
                 .background(.ultraThinMaterial, in: Circle())
         }
         .accessibilityLabel(label ?? systemName)
@@ -432,7 +432,7 @@ struct WrappingHStack: View {
             ForEach(tags, id: \.self) { tag in
                 Text(tag)
                     .font(.civitLabelMedium)
-                    .padding(.horizontal, Spacing.smPlus)
+                    .padding(.horizontal, Spacing.md)
                     .padding(.vertical, Spacing.xs)
                     .background(Color.civitSurfaceVariant)
                     .clipShape(Capsule())
