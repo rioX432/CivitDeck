@@ -12,10 +12,7 @@ val desktopModule = module {
     single<AppVersionProvider> { DesktopAppVersionProvider() }
     viewModel { DesktopUpdateViewModel(get(), get(), get()) }
     viewModel { params ->
-        ModelDetailViewModel(
-            params.get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-        )
+        ModelDetailViewModel(params.get(), get(), get(), get(), get(), get())
     }
     viewModel {
         DesktopDiscoveryViewModel(get(), get())
