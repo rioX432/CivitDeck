@@ -103,7 +103,7 @@ private struct FeedGridCard: View {
                         if item.isUnread {
                             Circle()
                                 .fill(theme.primary)
-                                .frame(width: 6, height: 6)
+                                .frame(width: DotSize.pagination, height: DotSize.pagination)
                         }
                     }
                 }

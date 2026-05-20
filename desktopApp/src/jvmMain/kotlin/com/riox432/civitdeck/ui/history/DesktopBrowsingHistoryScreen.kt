@@ -219,7 +219,7 @@ private fun HistoryItemRow(
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+        IconButton(onClick = onDelete, modifier = Modifier.size(48.dp)) {
             Icon(
                 Icons.Default.Delete,
                 contentDescription = "Delete",

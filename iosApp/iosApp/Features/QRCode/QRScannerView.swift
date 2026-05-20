@@ -2,6 +2,8 @@ import AVFoundation
 import SwiftUI
 
 struct QRScannerView: View {
+    private static let scannerFrameSize: CGFloat = 250
+
     @Environment(\.dismiss) private var dismiss
     let onModelScanned: (Int64) -> Void
 
@@ -34,7 +36,7 @@ struct QRScannerView: View {
             Spacer()
             RoundedRectangle(cornerRadius: Spacing.md)
                 .stroke(Color.civitOnSurface.opacity(0.8), lineWidth: 2)
-                .frame(width: 250, height: 250)
+                .frame(width: Self.scannerFrameSize, height: Self.scannerFrameSize)
             Spacer().frame(height: Spacing.lg)
             Text("Point at a CivitAI model QR code")
                 .font(.civitBodyMedium)

@@ -65,7 +65,7 @@ struct LibraryView: View {
             Image(systemName: icon)
                 .font(.title3)
                 .foregroundColor(.civitPrimary)
-                .frame(width: 32, height: 32)
+                .frame(width: Spacing.xxl, height: Spacing.xxl)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: Spacing.xs) {

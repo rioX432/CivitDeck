@@ -40,6 +40,7 @@ struct SettingsScreen: View {
                         Text("Enable Power User Mode in Advanced & Integrations for more features")
                             .font(.civitBodySmall)
                             .foregroundColor(.civitOnSurfaceVariant)
+                            .lineLimit(3)
                     }
                 }
             }

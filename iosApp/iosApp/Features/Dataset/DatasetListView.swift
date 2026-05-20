@@ -162,7 +162,7 @@ private struct DatasetRow: View {
         HStack(spacing: Spacing.md) {
             RoundedRectangle(cornerRadius: CornerRadius.image)
                 .fill(Color.civitSurfaceVariant)
-                .frame(width: 56, height: 56)
+                .frame(width: ThumbnailSize.collection, height: ThumbnailSize.collection)
                 .overlay {
                     Image(systemName: "photo.on.rectangle.angled")
                         .foregroundColor(.civitOnSurfaceVariant)

@@ -26,7 +26,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -200,7 +199,7 @@ private fun SourceBadge(source: ModelSource) {
     Text(
         text = label,
         style = MaterialTheme.typography.labelSmall,
-        color = Color.White,
+        color = MaterialTheme.colorScheme.onPrimary,
         modifier = Modifier
             .background(
                 color = color,
