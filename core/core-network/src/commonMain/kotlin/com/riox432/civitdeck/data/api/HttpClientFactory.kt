@@ -12,13 +12,11 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-private const val CONNECT_TIMEOUT_MS = 15_000L
-private const val REQUEST_TIMEOUT_MS = 30_000L
-private const val SOCKET_TIMEOUT_MS = 30_000L
-private const val MAX_RETRIES = 2
-private const val RETRY_BASE_DELAY_MS = 1000L
-
-fun createHttpClient(apiKeyProvider: ApiKeyProvider): HttpClient {
+fun createHttpClient(
+    apiKeyProvider: ApiKeyProvider,
+    timeoutConfig: TimeoutConfig = TimeoutConfig.PublicApi,
+    retryConfig: RetryConfig = RetryConfig.Default,
+): HttpClient {
     return HttpClient {
         install(ContentNegotiation) {
             json(
@@ -31,14 +29,14 @@ fun createHttpClient(apiKeyProvider: ApiKeyProvider): HttpClient {
             )
         }
         install(HttpTimeout) {
-            connectTimeoutMillis = CONNECT_TIMEOUT_MS
-            requestTimeoutMillis = REQUEST_TIMEOUT_MS
-            socketTimeoutMillis = SOCKET_TIMEOUT_MS
+            connectTimeoutMillis = timeoutConfig.connectTimeoutMs
+            requestTimeoutMillis = timeoutConfig.requestTimeoutMs
+            socketTimeoutMillis = timeoutConfig.socketTimeoutMs
         }
         install(HttpRequestRetry) {
-            retryOnServerErrors(maxRetries = MAX_RETRIES)
-            retryOnException(maxRetries = MAX_RETRIES, retryOnTimeout = true)
-            exponentialDelay(baseDelayMs = RETRY_BASE_DELAY_MS)
+            retryOnServerErrors(maxRetries = retryConfig.maxRetries)
+            retryOnException(maxRetries = retryConfig.maxRetries, retryOnTimeout = true)
+            exponentialDelay(baseDelayMs = retryConfig.baseDelayMs)
         }
         install(Logging) {
             level = LogLevel.NONE

@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.data.api.comfyui
 
+import com.riox432.civitdeck.data.api.RetryConfig
 import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.network.sockets.ConnectTimeoutException
@@ -19,9 +20,6 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 
-private const val MAX_RETRIES = 5
-private const val BASE_DELAY_MS = 1_000L
-private const val MAX_DELAY_MS = 16_000L
 private const val BINARY_HEADER_SIZE = 8
 private const val DEFAULT_WS_PORT = 80
 private const val DEFAULT_WSS_PORT = 443
@@ -37,6 +35,7 @@ private const val TAG = "ComfyUIWebSocketApi"
 class ComfyUIWebSocketApi(
     private val client: HttpClient,
     private val json: Json,
+    private val retryConfig: RetryConfig = RetryConfig.WebSocket,
 ) {
     /**
      * Opens a WebSocket connection using the provided [baseUrl] scheme (ws/wss).
@@ -51,12 +50,13 @@ class ComfyUIWebSocketApi(
         promptId: String,
     ): Flow<ComfyUIWebSocketMessage> = flow {
         var attempt = 0
+        val maxRetries = retryConfig.maxRetries
         var lastError: Exception? = null
-        while (attempt <= MAX_RETRIES) {
+        while (attempt <= maxRetries) {
             lastError = null
             try {
                 runWebSocketSession(baseUrl, wsScheme, clientId, promptId)
-                attempt = MAX_RETRIES + 1
+                attempt = maxRetries + 1
             } catch (e: WebSocketException) {
                 lastError = logAndRetry(e, attempt)
                 attempt++
@@ -224,8 +224,11 @@ class ComfyUIWebSocketApi(
      */
     private suspend fun logAndRetry(e: Exception, attempt: Int): Exception {
         Logger.w(TAG, "WebSocket connection failed (attempt $attempt): ${e.message}")
-        if (attempt + 1 <= MAX_RETRIES) {
-            val backoff = minOf(BASE_DELAY_MS * (1L shl attempt), MAX_DELAY_MS)
+        if (attempt + 1 <= retryConfig.maxRetries) {
+            val backoff = minOf(
+                retryConfig.baseDelayMs * (1L shl attempt),
+                retryConfig.maxDelayMs,
+            )
             delay(backoff)
         }
         return e

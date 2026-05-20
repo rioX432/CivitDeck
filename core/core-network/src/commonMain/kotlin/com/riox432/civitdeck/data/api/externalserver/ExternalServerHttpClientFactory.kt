@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.data.api.externalserver
 
+import com.riox432.civitdeck.data.api.TimeoutConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -11,11 +12,9 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-private const val CONNECT_TIMEOUT_MS = 5_000L
-private const val REQUEST_TIMEOUT_MS = 60_000L
-private const val SOCKET_TIMEOUT_MS = 60_000L
-
-fun createExternalServerHttpClient(): HttpClient {
+fun createExternalServerHttpClient(
+    timeoutConfig: TimeoutConfig = TimeoutConfig.ExternalServer,
+): HttpClient {
     return HttpClient {
         install(ContentNegotiation) {
             json(
@@ -27,9 +26,9 @@ fun createExternalServerHttpClient(): HttpClient {
             )
         }
         install(HttpTimeout) {
-            connectTimeoutMillis = CONNECT_TIMEOUT_MS
-            requestTimeoutMillis = REQUEST_TIMEOUT_MS
-            socketTimeoutMillis = SOCKET_TIMEOUT_MS
+            connectTimeoutMillis = timeoutConfig.connectTimeoutMs
+            requestTimeoutMillis = timeoutConfig.requestTimeoutMs
+            socketTimeoutMillis = timeoutConfig.socketTimeoutMs
         }
         install(Logging) { level = LogLevel.NONE }
         defaultRequest { header(HttpHeaders.Accept, "application/json") }
