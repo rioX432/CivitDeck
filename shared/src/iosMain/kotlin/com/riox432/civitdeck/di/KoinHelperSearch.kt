@@ -22,23 +22,22 @@ import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFil
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.TrackRecommendationClickUseCase
-import org.koin.mp.KoinPlatform.getKoin
 import com.riox432.civitdeck.domain.ml.registerSigLIP2Bridge as registerSigLIP2BridgeImpl
 
 // Search & Discovery
-fun KoinHelper.getModelsUseCase(): GetModelsUseCase = getKoin().get()
-fun KoinHelper.getMultiSourceSearchUseCase(): MultiSourceSearchUseCase = getKoin().get()
-fun KoinHelper.getDiscoveryModelsUseCase(): GetDiscoveryModelsUseCase = getKoin().get()
-fun KoinHelper.getRecommendationsUseCase(): GetRecommendationsUseCase = getKoin().get()
-fun KoinHelper.getTrackRecommendationClickUseCase(): TrackRecommendationClickUseCase = getKoin().get()
-fun KoinHelper.getEnrichModelImagesUseCase(): EnrichModelImagesUseCase = getKoin().get()
+fun KoinHelper.getModelsUseCase(): GetModelsUseCase = resolve()
+fun KoinHelper.getMultiSourceSearchUseCase(): MultiSourceSearchUseCase = resolve()
+fun KoinHelper.getDiscoveryModelsUseCase(): GetDiscoveryModelsUseCase = resolve()
+fun KoinHelper.getRecommendationsUseCase(): GetRecommendationsUseCase = resolve()
+fun KoinHelper.getTrackRecommendationClickUseCase(): TrackRecommendationClickUseCase = resolve()
+fun KoinHelper.getEnrichModelImagesUseCase(): EnrichModelImagesUseCase = resolve()
 
 // Image Embedding (#700)
-fun KoinHelper.getImageEmbeddingModel(): ImageEmbeddingModel = getKoin().get()
-fun KoinHelper.getEmbedImageUseCase(): EmbedImageUseCase = getKoin().get()
-fun KoinHelper.getEmbedOnBrowseUseCase(): EmbedOnBrowseUseCase = getKoin().get()
-fun KoinHelper.getFindSimilarModelsByEmbeddingUseCase(): FindSimilarModelsByEmbeddingUseCase = getKoin().get()
-fun KoinHelper.getModelEmbeddingRepository(): ModelEmbeddingRepository = getKoin().get()
+fun KoinHelper.getImageEmbeddingModel(): ImageEmbeddingModel = resolve()
+fun KoinHelper.getEmbedImageUseCase(): EmbedImageUseCase = resolve()
+fun KoinHelper.getEmbedOnBrowseUseCase(): EmbedOnBrowseUseCase = resolve()
+fun KoinHelper.getFindSimilarModelsByEmbeddingUseCase(): FindSimilarModelsByEmbeddingUseCase = resolve()
+fun KoinHelper.getModelEmbeddingRepository(): ModelEmbeddingRepository = resolve()
 
 /**
  * Registers the Swift Core ML bridge so the iOS [ImageEmbeddingModel] actual can use it.
@@ -49,13 +48,13 @@ fun KoinHelper.registerSigLIP2Bridge(bridge: SigLIP2Bridge) {
 }
 
 // Search History & Filters
-fun KoinHelper.getObserveSearchHistoryUseCase(): ObserveSearchHistoryUseCase = getKoin().get()
-fun KoinHelper.getAddSearchHistoryUseCase(): AddSearchHistoryUseCase = getKoin().get()
-fun KoinHelper.getClearSearchHistoryUseCase(): ClearSearchHistoryUseCase = getKoin().get()
-fun KoinHelper.getDeleteSearchHistoryItemUseCase(): DeleteSearchHistoryItemUseCase = getKoin().get()
-fun KoinHelper.getObserveSavedSearchFiltersUseCase(): ObserveSavedSearchFiltersUseCase = getKoin().get()
-fun KoinHelper.getSaveSearchFilterUseCase(): SaveSearchFilterUseCase = getKoin().get()
-fun KoinHelper.getDeleteSavedSearchFilterUseCase(): DeleteSavedSearchFilterUseCase = getKoin().get()
-fun KoinHelper.getExcludedTagsUseCase(): GetExcludedTagsUseCase = getKoin().get()
-fun KoinHelper.getAddExcludedTagUseCase(): AddExcludedTagUseCase = getKoin().get()
-fun KoinHelper.getRemoveExcludedTagUseCase(): RemoveExcludedTagUseCase = getKoin().get()
+fun KoinHelper.getObserveSearchHistoryUseCase(): ObserveSearchHistoryUseCase = resolve()
+fun KoinHelper.getAddSearchHistoryUseCase(): AddSearchHistoryUseCase = resolve()
+fun KoinHelper.getClearSearchHistoryUseCase(): ClearSearchHistoryUseCase = resolve()
+fun KoinHelper.getDeleteSearchHistoryItemUseCase(): DeleteSearchHistoryItemUseCase = resolve()
+fun KoinHelper.getObserveSavedSearchFiltersUseCase(): ObserveSavedSearchFiltersUseCase = resolve()
+fun KoinHelper.getSaveSearchFilterUseCase(): SaveSearchFilterUseCase = resolve()
+fun KoinHelper.getDeleteSavedSearchFilterUseCase(): DeleteSavedSearchFilterUseCase = resolve()
+fun KoinHelper.getExcludedTagsUseCase(): GetExcludedTagsUseCase = resolve()
+fun KoinHelper.getAddExcludedTagUseCase(): AddExcludedTagUseCase = resolve()
+fun KoinHelper.getRemoveExcludedTagUseCase(): RemoveExcludedTagUseCase = resolve()
