@@ -16,10 +16,12 @@ class DetectDuplicatesUseCase(private val repository: DatasetCollectionRepositor
         val visited = mutableSetOf<Long>()
         for (i in hashableImages.indices) {
             if (hashableImages[i].id in visited) continue
+            val hashI = requireNotNull(hashableImages[i].pHash) { "pHash must be non-null after filtering" }
             val group = mutableListOf(hashableImages[i])
             for (j in i + 1 until hashableImages.size) {
                 if (hashableImages[j].id in visited) continue
-                if (hammingDistance(hashableImages[i].pHash!!, hashableImages[j].pHash!!) <= threshold) {
+                val hashJ = requireNotNull(hashableImages[j].pHash) { "pHash must be non-null after filtering" }
+                if (hammingDistance(hashI, hashJ) <= threshold) {
                     group.add(hashableImages[j])
                     visited.add(hashableImages[j].id)
                 }
