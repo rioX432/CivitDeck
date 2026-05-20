@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.data.repository
+package com.riox432.civitdeck.data.local.repository
 
 import com.riox432.civitdeck.data.local.LocalCacheDataSource
 import com.riox432.civitdeck.domain.model.CacheInfo

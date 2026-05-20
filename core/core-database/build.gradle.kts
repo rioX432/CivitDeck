@@ -2,15 +2,19 @@ plugins {
     id("civitdeck.kmp.library")
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.room)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":core:core-domain"))
+            implementation(project(":core:core-network"))
             api(libs.room.runtime)
             api(libs.sqlite.bundled)
             implementation(libs.koin.core)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.ktor.client.core)
         }
 
         commonTest.dependencies {
