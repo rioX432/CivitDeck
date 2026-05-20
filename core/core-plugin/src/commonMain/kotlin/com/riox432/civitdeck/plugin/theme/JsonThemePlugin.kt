@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.data.theme
+package com.riox432.civitdeck.plugin.theme
 
 import com.riox432.civitdeck.plugin.ThemeColorScheme
 import com.riox432.civitdeck.plugin.ThemePlugin

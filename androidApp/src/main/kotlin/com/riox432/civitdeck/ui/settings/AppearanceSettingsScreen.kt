@@ -39,9 +39,9 @@ import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewMo
 import com.riox432.civitdeck.plugin.ThemePlugin
 import com.riox432.civitdeck.plugin.model.PluginState
 import com.riox432.civitdeck.ui.theme.Spacing
-import com.riox432.civitdeck.usecase.ActivateThemePluginUseCase
-import com.riox432.civitdeck.usecase.ImportThemeUseCase
-import com.riox432.civitdeck.usecase.ObserveThemePluginsUseCase
+import com.riox432.civitdeck.plugin.usecase.ActivateThemePluginUseCase
+import com.riox432.civitdeck.plugin.usecase.ImportThemeUseCase
+import com.riox432.civitdeck.plugin.usecase.ObserveThemePluginsUseCase
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 

@@ -1,12 +1,15 @@
 plugins {
     id("civitdeck.kmp.library")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":core:core-domain"))
             implementation(libs.koin.core)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.serialization.json)
         }
 
         commonTest.dependencies {
