@@ -45,6 +45,7 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubBrowserViewMod
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -192,7 +193,7 @@ private fun WorkflowStats(workflow: ComfyHubWorkflow) {
             Icon(
                 Icons.Outlined.Download,
                 contentDescription = null,
-                modifier = Modifier.size(14.dp),
+                modifier = Modifier.size(IconSize.small),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
@@ -208,7 +209,7 @@ private fun WorkflowStats(workflow: ComfyHubWorkflow) {
             Icon(
                 Icons.Outlined.Star,
                 contentDescription = null,
-                modifier = Modifier.size(14.dp),
+                modifier = Modifier.size(IconSize.small),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(

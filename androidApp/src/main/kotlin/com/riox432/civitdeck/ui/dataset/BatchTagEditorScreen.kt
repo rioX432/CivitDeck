@@ -55,6 +55,7 @@ import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 private const val BATCH_GRID_BASE_COLUMNS = 3
@@ -317,7 +318,7 @@ private fun BatchSelectionOverlay(isSelected: Boolean) {
     Box(
         modifier = Modifier
             .padding(Spacing.xs)
-            .size(22.dp)
+            .size(IconSize.medium)
             .clip(CircleShape)
             .background(
                 if (isSelected) {
@@ -333,7 +334,7 @@ private fun BatchSelectionOverlay(isSelected: Boolean) {
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = stringResource(R.string.cd_selected),
                 tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(18.dp),
+                modifier = Modifier.size(IconSize.small),
             )
         }
     }

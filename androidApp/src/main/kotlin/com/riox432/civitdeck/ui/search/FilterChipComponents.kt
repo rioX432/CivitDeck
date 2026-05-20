@@ -51,6 +51,7 @@ import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 internal val filterTypes = listOf(null) + listOf(
@@ -276,7 +277,7 @@ private fun TagChip(
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = stringResource(R.string.cd_remove_tag, tag),
-                modifier = Modifier.size(14.dp),
+                modifier = Modifier.size(IconSize.small),
                 tint = foreground,
             )
         }
