@@ -1,8 +1,7 @@
 import SwiftUI
 import Shared
 
-/// Collection thumbnail size. TODO: Unify with shared design token
-private let collectionThumbnailSize: CGFloat = 56
+private let collectionThumbnailSize: CGFloat = ThumbnailSize.collection
 
 private enum CollectionsScreenTab {
     case collections, prompts

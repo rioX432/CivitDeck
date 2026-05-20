@@ -44,3 +44,13 @@ object IconSize {
     val xlarge = 56.dp
     val navBar = 24.dp
 }
+
+/** Sizes for small indicator dots (unread badges, status indicators). */
+object DotSize {
+    val indicator = 8.dp
+}
+
+/** Sizes for content thumbnails (collection covers, history items). */
+object ThumbnailSize {
+    val collection = IconSize.xlarge
+}

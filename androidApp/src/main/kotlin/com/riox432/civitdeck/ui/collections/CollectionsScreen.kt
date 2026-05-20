@@ -57,8 +57,8 @@ import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.prompts.SavedPromptsScreen
 import com.riox432.civitdeck.ui.theme.CornerRadius
-import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.ui.theme.ThumbnailSize
 
 private enum class CollectionsScreenTab { Collections, Prompts, Datasets }
 
@@ -318,7 +318,7 @@ private fun CollectionOverflowMenu(
 
 @Composable
 private fun CollectionThumbnail(thumbnailUrl: String?) {
-    val thumbnailSize = IconSize.xlarge // TODO: Unify with shared design token
+    val thumbnailSize = ThumbnailSize.collection
     if (thumbnailUrl != null) {
         CivitAsyncImage(
             imageUrl = thumbnailUrl,

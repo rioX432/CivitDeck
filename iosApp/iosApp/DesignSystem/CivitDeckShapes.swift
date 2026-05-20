@@ -9,6 +9,21 @@ enum CornerRadius {
     static let searchBar: CGFloat = 8
 }
 
+/// Frame dimension tokens for icon containers and interactive areas.
+/// Font-based icon sizes remain in CivitDeckFonts.swift.
 enum IconSize {
-    // Icon sizes now defined as Font tokens in CivitDeckFonts.swift
+    static let small: CGFloat = 16
+    static let medium: CGFloat = 24
+    static let large: CGFloat = 48
+    static let xlarge: CGFloat = 56
+}
+
+/// Sizes for small indicator dots (unread badges, status indicators).
+enum DotSize {
+    static let indicator: CGFloat = 8
+}
+
+/// Sizes for content thumbnails (collection covers, history items).
+enum ThumbnailSize {
+    static let collection: CGFloat = IconSize.xlarge
 }
