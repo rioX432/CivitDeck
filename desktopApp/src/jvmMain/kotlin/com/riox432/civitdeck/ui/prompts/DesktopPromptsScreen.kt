@@ -15,9 +15,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TextSnippet
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.automirrored.filled.TextSnippet
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -40,8 +40,8 @@ import com.riox432.civitdeck.domain.model.SavedPrompt
 import com.riox432.civitdeck.feature.prompts.presentation.PromptTab
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
-import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
+import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
 fun DesktopPromptsScreen(
@@ -165,6 +165,7 @@ private fun PromptsList(
     }
 }
 
+@Suppress("UnusedParameter")
 @Composable
 private fun PromptCard(
     prompt: SavedPrompt,

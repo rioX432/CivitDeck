@@ -44,6 +44,7 @@ import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 
+@Suppress("LongMethod")
 @Composable
 fun DesktopBrowsingHistoryScreen(
     viewModel: BrowsingHistoryViewModel,

@@ -1,4 +1,4 @@
-package com.riox432.civitdeck
+package com.riox432.civitdeck.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,15 +21,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
+import com.riox432.civitdeck.feature.collections.presentation.DatasetDetailViewModel
+import com.riox432.civitdeck.feature.collections.presentation.DatasetListViewModel
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
-import com.riox432.civitdeck.ui.DesktopRoute
 import com.riox432.civitdeck.ui.collections.DesktopCollectionDetailScreen
 import com.riox432.civitdeck.ui.collections.DesktopCollectionsScreen
 import com.riox432.civitdeck.ui.creator.DesktopCreatorScreen
-import com.riox432.civitdeck.feature.collections.presentation.DatasetDetailViewModel
-import com.riox432.civitdeck.feature.collections.presentation.DatasetListViewModel
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetDetailScreen
 import com.riox432.civitdeck.ui.dataset.DesktopDatasetListScreen
 import com.riox432.civitdeck.ui.detail.DesktopDetailScreen
@@ -137,7 +136,7 @@ private fun LibraryBaseContent(
 }
 
 @Composable
-@Suppress("CyclomaticComplexMethod")
+@Suppress("CyclomaticComplexMethod", "LongMethod")
 private fun LibraryOverlayContent(
     backstack: SnapshotStateList<DesktopRoute>,
     currentRoute: DesktopRoute?,

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,12 +34,12 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.SubcomposeAsyncImage
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.theme.Spacing
 
+@Suppress("LongMethod")
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DesktopImageViewer(
@@ -94,7 +95,10 @@ fun DesktopImageViewer(
             .onKeyEvent { keyEvent ->
                 if (keyEvent.type == KeyEventType.KeyDown) {
                     when (keyEvent.key) {
-                        Key.Escape -> { onClose(); true }
+                        Key.Escape -> {
+                            onClose()
+                            true
+                        }
                         Key.DirectionLeft -> {
                             if (currentIndex > 0) currentIndex--
                             true
@@ -105,7 +109,9 @@ fun DesktopImageViewer(
                         }
                         else -> false
                     }
-                } else false
+                } else {
+                    false
+                }
             }
             .onPointerEvent(PointerEventType.Scroll) { event ->
                 val scrollDelta = event.changes.firstOrNull()?.scrollDelta?.y ?: 0f

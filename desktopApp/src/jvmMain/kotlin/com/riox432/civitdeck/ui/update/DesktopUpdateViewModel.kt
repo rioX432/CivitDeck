@@ -7,12 +7,12 @@ import com.riox432.civitdeck.domain.usecase.CheckForUpdateUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveAutoUpdateCheckUseCase
 import com.riox432.civitdeck.domain.usecase.SetAutoUpdateCheckUseCase
 import com.riox432.civitdeck.util.Logger
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 data class DesktopUpdateUiState(
     val updateResult: UpdateResult? = null,

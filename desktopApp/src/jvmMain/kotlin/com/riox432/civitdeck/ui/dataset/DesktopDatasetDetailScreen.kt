@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -64,14 +63,15 @@ import com.riox432.civitdeck.feature.collections.presentation.DatasetDetailViewM
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.CornerRadius
-import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
+import com.riox432.civitdeck.ui.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
 
 private const val DEFAULT_GRID_COLUMNS = 4
 private const val IMAGE_ASPECT_RATIO = 1f
 private const val DATASET_IMAGE_SIZE = 300
 
+@Suppress("LongMethod")
 @Composable
 fun DesktopDatasetDetailScreen(
     datasetName: String,
@@ -289,6 +289,7 @@ private fun DatasetImageGridContent(
     }
 }
 
+@Suppress("LongMethod")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DesktopDatasetImageItem(

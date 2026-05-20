@@ -35,8 +35,8 @@ import com.riox432.civitdeck.domain.model.InstalledPluginState
 import com.riox432.civitdeck.domain.model.InstalledPluginType
 import com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel
 import com.riox432.civitdeck.ui.desktopFocusRing
-import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
+import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
 fun DesktopPluginListScreen(

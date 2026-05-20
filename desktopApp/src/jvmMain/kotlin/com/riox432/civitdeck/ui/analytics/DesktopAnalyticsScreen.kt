@@ -27,12 +27,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
-import com.riox432.civitdeck.feature.gallery.presentation.AnalyticsViewModel
+import androidx.compose.ui.text.style.TextOverflow
 import com.riox432.civitdeck.feature.gallery.presentation.AnalyticsUiState
-import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.feature.gallery.presentation.AnalyticsViewModel
 import com.riox432.civitdeck.ui.theme.Elevation
+import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
 fun DesktopAnalyticsScreen(

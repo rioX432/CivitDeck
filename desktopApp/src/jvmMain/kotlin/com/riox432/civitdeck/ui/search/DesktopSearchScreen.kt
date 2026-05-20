@@ -39,6 +39,7 @@ import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
 
+@Suppress("LongMethod", "CyclomaticComplexMethod", "UnusedParameter")
 @Composable
 fun DesktopSearchScreen(
     viewModel: ModelSearchViewModel,
@@ -144,7 +145,13 @@ fun DesktopSearchScreen(
                 val nsfwBlurSettings = contentFilterState.nsfwBlurSettings
 
                 LazyVerticalGrid(
-                    columns = if (columns > 0) GridCells.Fixed(columns) else GridCells.Adaptive(minSize = CARD_MIN_WIDTH),
+                    columns = if (columns > 0) {
+                        GridCells.Fixed(
+                            columns
+                        )
+                    } else {
+                        GridCells.Adaptive(minSize = CARD_MIN_WIDTH)
+                    },
                     state = gridState,
                     contentPadding = PaddingValues(Spacing.md),
                     horizontalArrangement = Arrangement.spacedBy(Spacing.sm),

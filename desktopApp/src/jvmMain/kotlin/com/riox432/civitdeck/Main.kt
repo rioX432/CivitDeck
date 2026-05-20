@@ -6,7 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.delay
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.unit.DpSize
@@ -29,13 +28,15 @@ import com.riox432.civitdeck.di.registerThemePlugins
 import com.riox432.civitdeck.di.registerWorkflowPlugins
 import com.riox432.civitdeck.domain.usecase.CleanupBrowsingHistoryUseCase
 import kotlinx.coroutines.CoroutineScope
-import org.koin.mp.KoinPlatform
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okio.Path.Companion.toPath
+import org.koin.mp.KoinPlatform
 import java.util.prefs.Preferences
 
+@Suppress("LongMethod")
 fun main() {
     initKoin {
         modules(desktopModule)

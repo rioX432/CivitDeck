@@ -36,11 +36,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.BackupCategory
 import com.riox432.civitdeck.domain.model.RestoreStrategy
-import com.riox432.civitdeck.feature.settings.presentation.BackupViewModel
 import com.riox432.civitdeck.feature.settings.presentation.BackupUiState
+import com.riox432.civitdeck.feature.settings.presentation.BackupViewModel
 import com.riox432.civitdeck.ui.desktopFocusRing
-import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
+import com.riox432.civitdeck.ui.theme.Spacing
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -120,6 +120,7 @@ private fun BackupToolbar(onBack: () -> Unit) {
     }
 }
 
+@Suppress("LongMethod")
 @Composable
 private fun BackupBody(
     state: BackupUiState,
@@ -201,6 +202,7 @@ private fun BackupBody(
     }
 }
 
+@Suppress("LongMethod")
 @Composable
 private fun ImportConfirmationDialog(
     state: BackupUiState,

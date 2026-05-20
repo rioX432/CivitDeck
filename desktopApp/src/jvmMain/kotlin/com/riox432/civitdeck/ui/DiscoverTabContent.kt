@@ -1,5 +1,6 @@
-package com.riox432.civitdeck
+package com.riox432.civitdeck.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,24 +21,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
+import com.riox432.civitdeck.feature.creator.presentation.FeedViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
-import com.riox432.civitdeck.ui.DesktopRoute
+import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.ui.compare.DesktopCompareScreen
 import com.riox432.civitdeck.ui.creator.DesktopCreatorScreen
 import com.riox432.civitdeck.ui.detail.DesktopDetailScreen
 import com.riox432.civitdeck.ui.discovery.DesktopDiscoveryScreen
 import com.riox432.civitdeck.ui.discovery.DesktopDiscoveryViewModel
-import com.riox432.civitdeck.feature.creator.presentation.FeedViewModel
 import com.riox432.civitdeck.ui.feed.DesktopFeedScreen
 import com.riox432.civitdeck.ui.qrcode.DesktopQRCodeScreen
 import com.riox432.civitdeck.ui.search.DesktopSearchScreen
-import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.ui.search.DesktopUrlImportDialog
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.viewer.DesktopImageViewer
 import com.riox432.civitdeck.util.removeLastOrNull
-import androidx.compose.foundation.layout.Arrangement
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -154,7 +153,7 @@ private fun DiscoverBaseContent(
 }
 
 @Composable
-@Suppress("CyclomaticComplexMethod")
+@Suppress("CyclomaticComplexMethod", "LongMethod")
 private fun DiscoverOverlayContent(
     backstack: SnapshotStateList<DesktopRoute>,
     currentRoute: DesktopRoute?,

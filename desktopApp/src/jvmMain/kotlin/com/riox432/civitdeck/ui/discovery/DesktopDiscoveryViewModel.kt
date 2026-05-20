@@ -1,11 +1,11 @@
 package com.riox432.civitdeck.ui.discovery
 
-import com.riox432.civitdeck.domain.model.RecommendationSection
-import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.TrackRecommendationClickUseCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.util.suspendRunCatching
+import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.TrackRecommendationClickUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

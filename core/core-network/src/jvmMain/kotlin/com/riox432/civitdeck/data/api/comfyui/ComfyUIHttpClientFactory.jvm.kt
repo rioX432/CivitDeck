@@ -50,7 +50,13 @@ actual fun createPlatformComfyUIHttpClient(
             }
         }
         install(ContentNegotiation) {
-            json(Json { ignoreUnknownKeys = true; isLenient = true; coerceInputValues = true })
+            json(
+                Json {
+                    ignoreUnknownKeys = true
+                    isLenient = true
+                    coerceInputValues = true
+                }
+            )
         }
         install(HttpTimeout) {
             connectTimeoutMillis = timeoutConfig.connectTimeoutMs

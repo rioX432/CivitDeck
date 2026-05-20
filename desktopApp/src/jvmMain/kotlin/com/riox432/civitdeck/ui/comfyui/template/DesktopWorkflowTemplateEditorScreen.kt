@@ -2,8 +2,6 @@
 
 package com.riox432.civitdeck.ui.comfyui.template
 
-import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,6 +37,7 @@ import com.riox432.civitdeck.domain.model.TemplateVariableType
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
 import com.riox432.civitdeck.domain.model.WorkflowTemplateCategory
 import com.riox432.civitdeck.domain.model.WorkflowTemplateType
+import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -121,7 +120,7 @@ private fun EditorToolbar(
 }
 
 @Composable
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "LongMethod")
 private fun EditorContent(
     name: String,
     description: String,
@@ -217,7 +216,10 @@ private fun TypeSelector(
             WorkflowTemplateType.entries.forEach { t ->
                 DropdownMenuItem(
                     text = { Text(typeLabel(t)) },
-                    onClick = { onTypeChange(t); expanded = false },
+                    onClick = {
+                        onTypeChange(t)
+                        expanded = false
+                    },
                 )
             }
         }
@@ -237,7 +239,10 @@ private fun CategorySelector(
             WorkflowTemplateCategory.entries.forEach { c ->
                 DropdownMenuItem(
                     text = { Text(categoryLabel(c)) },
-                    onClick = { onCategoryChange(c); expanded = false },
+                    onClick = {
+                        onCategoryChange(c)
+                        expanded = false
+                    },
                 )
             }
         }
@@ -265,7 +270,8 @@ private fun VariableEditor(
                 )
                 IconButton(onClick = onDelete) {
                     Icon(
-                        Icons.Default.Delete, "Remove",
+                        Icons.Default.Delete,
+                        "Remove",
                         tint = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -316,7 +322,10 @@ private fun VariableTypeAndDefault(
                 TemplateVariableType.entries.forEach { t ->
                     DropdownMenuItem(
                         text = { Text(t.name) },
-                        onClick = { onUpdate(variable.copy(type = t)); typeMenuExpanded = false },
+                        onClick = {
+                            onUpdate(variable.copy(type = t))
+                            typeMenuExpanded = false
+                        },
                     )
                 }
             }
