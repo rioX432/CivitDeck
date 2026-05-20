@@ -13,8 +13,13 @@ import com.riox432.civitdeck.domain.model.ModelStats
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.repository.CreatorFollowRepository
 import com.riox432.civitdeck.util.Logger
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.io.IOException
+import kotlinx.serialization.SerializationException
 
 class CreatorFollowRepositoryImpl(
     private val followedCreatorDao: FollowedCreatorDao,
@@ -114,7 +119,6 @@ class CreatorFollowRepositoryImpl(
         }
     }
 
-    @Suppress("TooGenericExceptionCaught")
     private suspend fun refreshFeedCache(
         creators: List<FollowedCreatorEntity>,
         now: Long,
@@ -148,8 +152,16 @@ class CreatorFollowRepositoryImpl(
                     )
                 }
                 feedCacheDao.insertAll(entities)
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                // Skip this creator on network error, use cached data
+            } catch (e: IOException) {
+                // Skip this creator on network/IO error, use cached data
+                Logger.w(TAG, "Failed to refresh feed for ${creator.username}: ${e.message}")
+            } catch (e: HttpRequestTimeoutException) {
+                Logger.w(TAG, "Failed to refresh feed for ${creator.username}: ${e.message}")
+            } catch (e: ConnectTimeoutException) {
+                Logger.w(TAG, "Failed to refresh feed for ${creator.username}: ${e.message}")
+            } catch (e: ResponseException) {
+                Logger.w(TAG, "Failed to refresh feed for ${creator.username}: ${e.message}")
+            } catch (e: SerializationException) {
                 Logger.w(TAG, "Failed to refresh feed for ${creator.username}: ${e.message}")
             }
         }
