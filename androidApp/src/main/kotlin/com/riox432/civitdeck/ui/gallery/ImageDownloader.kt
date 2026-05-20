@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -14,6 +15,7 @@ import java.io.IOException
 
 object ImageDownloader {
 
+    private const val TAG = "ImageDownloader"
     private val httpClient = OkHttpClient()
 
     suspend fun download(context: Context, imageUrl: String): Boolean =
@@ -22,9 +24,11 @@ object ImageDownloader {
                 val bytes = downloadBytes(imageUrl) ?: return@withContext false
                 val fileName = extractFileName(imageUrl)
                 saveToGallery(context, fileName, bytes)
-            } catch (_: IOException) {
+            } catch (e: IOException) {
+                Log.w(TAG, "Failed to download image: $imageUrl", e)
                 false
-            } catch (_: SecurityException) {
+            } catch (e: SecurityException) {
+                Log.w(TAG, "Permission denied during image download: $imageUrl", e)
                 false
             }
         }
@@ -82,10 +86,12 @@ object ImageDownloader {
             values.put(MediaStore.MediaColumns.IS_PENDING, 0)
             resolver.update(uri, values, null, null)
             true
-        } catch (_: IOException) {
+        } catch (e: IOException) {
+            Log.w(TAG, "Failed to write image via MediaStore: $fileName", e)
             resolver.delete(uri, null, null)
             false
-        } catch (_: SecurityException) {
+        } catch (e: SecurityException) {
+            Log.w(TAG, "Permission denied writing to MediaStore: $fileName", e)
             resolver.delete(uri, null, null)
             false
         }
@@ -104,9 +110,11 @@ object ImageDownloader {
             dir.mkdirs()
             File(dir, fileName).writeBytes(bytes)
             true
-        } catch (_: IOException) {
+        } catch (e: IOException) {
+            Log.w(TAG, "Failed to save image to external storage: $fileName", e)
             false
-        } catch (_: SecurityException) {
+        } catch (e: SecurityException) {
+            Log.w(TAG, "Permission denied saving to external storage: $fileName", e)
             false
         }
     }
