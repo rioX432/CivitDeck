@@ -179,9 +179,9 @@ private fun PromptCard(
         elevation = CardDefaults.cardElevation(defaultElevation = Elevation.xs),
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
-            if (prompt.templateName != null) {
+            prompt.templateName?.let { templateName ->
                 Text(
-                    text = prompt.templateName!!,
+                    text = templateName,
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.primary,
                 )

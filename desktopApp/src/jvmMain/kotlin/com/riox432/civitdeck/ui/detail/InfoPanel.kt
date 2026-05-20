@@ -88,8 +88,8 @@ internal fun InfoPanel(
         if (selectedVersion != null && selectedVersion.files.isNotEmpty()) {
             item { FilesSection(files = selectedVersion.files) }
         }
-        if (!model.description.isNullOrBlank()) {
-            item { DescriptionSection(description = model.description!!) }
+        model.description?.takeIf { it.isNotBlank() }?.let { description ->
+            item { DescriptionSection(description = description) }
         }
     }
 }
