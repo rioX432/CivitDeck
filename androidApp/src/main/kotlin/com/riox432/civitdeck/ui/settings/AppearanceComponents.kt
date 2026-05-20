@@ -31,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.AccentColor
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -68,7 +69,7 @@ internal fun AccentColorSwatch(
     val swatchColor = Color(color.seedHex)
     Box(
         modifier = Modifier
-            .size(40.dp)
+            .size(IconSize.large)
             .clip(CircleShape)
             .background(swatchColor)
             .then(
@@ -86,7 +87,7 @@ internal fun AccentColorSwatch(
                 imageVector = Icons.Default.Check,
                 contentDescription = stringResource(R.string.cd_selected),
                 tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(IconSize.small),
             )
         }
     }

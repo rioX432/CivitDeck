@@ -37,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.CivitaiLinkActivity
@@ -45,6 +44,7 @@ import com.riox432.civitdeck.domain.model.CivitaiLinkStatus
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsUiState
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
 import com.riox432.civitdeck.ui.theme.CivitDeckColors
+import com.riox432.civitdeck.ui.theme.DotSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -137,7 +137,7 @@ private fun StatusCard(
 private fun StatusDot(status: CivitaiLinkStatus) {
     Box(
         modifier = Modifier
-            .size(10.dp)
+            .size(DotSize.indicator)
             .background(color = status.dotColor(), shape = CircleShape),
     )
 }

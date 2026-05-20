@@ -59,6 +59,7 @@ import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.ModelStatsRow
 import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Suppress("LongParameterList")
@@ -373,7 +374,7 @@ private fun SelectionOverlay(isSelected: Boolean) {
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = stringResource(R.string.cd_selected),
                 tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(IconSize.small),
             )
         }
     }
@@ -433,7 +434,7 @@ private fun ModelCardInfo(model: FavoriteModelSummary) {
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = RoundedCornerShape(CornerRadius.chip),
                 )
-                .padding(horizontal = 6.dp, vertical = 2.dp),
+                .padding(horizontal = Spacing.sm, vertical = Spacing.xxs),
         )
         ModelStatsRow(
             downloadCount = model.downloadCount,

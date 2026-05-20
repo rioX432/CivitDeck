@@ -34,6 +34,7 @@ import com.riox432.civitdeck.domain.model.DatasetImage
 import com.riox432.civitdeck.domain.model.ImageSource
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 private const val IMAGE_ASPECT_RATIO = 1f
@@ -181,7 +182,7 @@ internal fun DatasetImageSelectionOverlay(isSelected: Boolean) {
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = stringResource(R.string.cd_selected),
                 tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(IconSize.small),
             )
         }
     }

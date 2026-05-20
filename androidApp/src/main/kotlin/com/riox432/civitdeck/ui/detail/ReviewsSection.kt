@@ -40,6 +40,7 @@ import com.riox432.civitdeck.domain.model.RatingTotals
 import com.riox432.civitdeck.domain.model.ResourceReview
 import com.riox432.civitdeck.domain.model.ReviewSortOrder
 import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -156,7 +157,7 @@ private fun ThumbsSummary(up: Int, down: Int) {
             Icon(
                 Icons.Outlined.ThumbUp,
                 contentDescription = stringResource(R.string.cd_recommended),
-                modifier = Modifier.size(14.dp),
+                modifier = Modifier.size(IconSize.small),
                 tint = MaterialTheme.colorScheme.primary,
             )
             Spacer(Modifier.width(Spacing.xs))
@@ -166,7 +167,7 @@ private fun ThumbsSummary(up: Int, down: Int) {
             Icon(
                 Icons.Outlined.ThumbDown,
                 contentDescription = stringResource(R.string.cd_not_recommended),
-                modifier = Modifier.size(14.dp),
+                modifier = Modifier.size(IconSize.small),
                 tint = MaterialTheme.colorScheme.error,
             )
             Spacer(Modifier.width(Spacing.xs))
@@ -195,7 +196,7 @@ private fun ReviewCardHeader(review: ResourceReview) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
-                .size(28.dp)
+                .size(Spacing.xxl)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center,
@@ -215,7 +216,7 @@ private fun ReviewCardHeader(review: ResourceReview) {
         Icon(
             imageVector = if (review.recommended) Icons.Outlined.ThumbUp else Icons.Outlined.ThumbDown,
             contentDescription = if (review.recommended) "Recommended" else "Not recommended",
-            modifier = Modifier.size(14.dp),
+            modifier = Modifier.size(IconSize.small),
             tint = if (review.recommended) {
                 MaterialTheme.colorScheme.primary
             } else {
@@ -232,7 +233,7 @@ private fun ReviewCardRecommendation(recommended: Boolean) {
         Icon(
             imageVector = if (recommended) Icons.Outlined.ThumbUp else Icons.Outlined.ThumbDown,
             contentDescription = if (recommended) "Recommended" else "Not recommended",
-            modifier = Modifier.size(12.dp),
+            modifier = Modifier.size(IconSize.small),
             tint = if (recommended) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
         )
         Spacer(Modifier.width(Spacing.xs))
