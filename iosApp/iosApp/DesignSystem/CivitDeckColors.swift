@@ -50,6 +50,20 @@ extension Color {
     // MARK: - Scrim
     static let civitScrim = hex(0x000000)
 
+    // MARK: - Status Indicators
+    // Fixed semantic colors for connection/download/queue state dots.
+    // Values match Android CivitDeckColors for cross-platform consistency.
+    static let civitStatusSuccess = hex(0x4CAF50)
+    static let civitStatusWarning = hex(0xFFC107)
+    static let civitStatusError = hex(0xF44336)
+    static let civitStatusNeutral = hex(0x9E9E9E)
+
+    // MARK: - Mask Editor
+    // Intentionally vivid, fixed colors for visibility on any image background.
+    // Apply .opacity(0.5) at usage site for mask overlay.
+    static let civitMaskOverlay = hex(0xFF0000)
+    static let civitEraserActiveIcon = hex(0xFF9800)
+
     // MARK: - External Source Badges
     static let huggingFaceBadge = hex(0xFF9D00)
     static let tensorArtBadge = hex(0x9C27B0)

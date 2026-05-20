@@ -89,7 +89,7 @@ private struct QueueJobRow: View {
         switch job.status {
         case .running: return theme.primary
         case .error: return .civitError
-        case .completed: return .green
+        case .completed: return .civitStatusSuccess
         default: return .civitOnSurfaceVariant
         }
     }

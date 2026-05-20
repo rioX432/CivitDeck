@@ -1,7 +1,7 @@
 import SwiftUI
 import Shared
 
-private let eraserActiveColor = Color.orange
+private let eraserActiveColor = Color.civitEraserActiveIcon
 
 struct MaskEditorView: View {
     @StateObject private var viewModel = MaskEditorViewModelOwner()
