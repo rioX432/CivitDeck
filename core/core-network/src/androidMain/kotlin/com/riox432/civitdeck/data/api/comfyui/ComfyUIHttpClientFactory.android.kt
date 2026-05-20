@@ -23,28 +23,37 @@ private const val REQUEST_TIMEOUT_MS = 120_000L
 private const val SOCKET_TIMEOUT_MS = 120_000L
 
 /**
- * Creates an OkHttp-backed Ktor client that trusts all certificates.
- * WARNING: Only for self-signed cert scenarios (local dev servers).
+ * Creates an OkHttp-backed Ktor client with configurable TLS trust.
+ * When [trustSelfSignedCerts] is `true`, bypasses certificate validation for self-signed setups.
+ * When `false`, uses the platform default trust manager (standard CA validation).
  */
 @Suppress("EmptyFunctionBlock", "TrustAllX509TrustManager", "CustomX509TrustManager")
-actual fun createComfyUIHttpClientWithSelfSignedTls(): HttpClient {
-    val trustAllManager = object : X509TrustManager {
-        override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-            // Intentionally empty — trust all client certificates
-        }
-        override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-            // Intentionally empty — trust all server certificates for self-signed setups
-        }
-        override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
-    }
-    val sslContext = SSLContext.getInstance("TLS").apply {
-        init(null, arrayOf<TrustManager>(trustAllManager), SecureRandom())
-    }
+actual fun createPlatformComfyUIHttpClient(trustSelfSignedCerts: Boolean): HttpClient {
     return HttpClient(OkHttp) {
         engine {
-            config {
-                sslSocketFactory(sslContext.socketFactory, trustAllManager)
-                hostnameVerifier { _, _ -> true }
+            if (trustSelfSignedCerts) {
+                val trustAllManager = object : X509TrustManager {
+                    override fun checkClientTrusted(
+                        chain: Array<out X509Certificate>?,
+                        authType: String?,
+                    ) {
+                        // Intentionally empty — trust all client certificates
+                    }
+                    override fun checkServerTrusted(
+                        chain: Array<out X509Certificate>?,
+                        authType: String?,
+                    ) {
+                        // Intentionally empty — trust all server certificates for self-signed setups
+                    }
+                    override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+                }
+                val sslContext = SSLContext.getInstance("TLS").apply {
+                    init(null, arrayOf<TrustManager>(trustAllManager), SecureRandom())
+                }
+                config {
+                    sslSocketFactory(sslContext.socketFactory, trustAllManager)
+                    hostnameVerifier { _, _ -> true }
+                }
             }
         }
         install(ContentNegotiation) {
@@ -53,7 +62,7 @@ actual fun createComfyUIHttpClientWithSelfSignedTls(): HttpClient {
                     ignoreUnknownKeys = true
                     isLenient = true
                     coerceInputValues = true
-                }
+                },
             )
         }
         install(HttpTimeout) {

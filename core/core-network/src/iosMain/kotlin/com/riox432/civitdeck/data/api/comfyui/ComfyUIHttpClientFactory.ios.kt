@@ -18,13 +18,14 @@ private const val REQUEST_TIMEOUT_MS = 120_000L
 private const val SOCKET_TIMEOUT_MS = 120_000L
 
 /**
- * Creates a Darwin-backed Ktor client for self-signed certificate scenarios.
+ * Creates a Darwin-backed Ktor client with configurable TLS trust.
  * On iOS, full self-signed TLS bypass requires NSURLSessionDelegate configuration
- * which is complex to implement via K/N cinterop. This returns a standard client
- * for now — users should add the self-signed cert to the iOS trust store via
- * Settings > General > About > Certificate Trust Settings, or use a tunnel (Cloudflare/Tailscale).
+ * which is complex to implement via K/N cinterop. This returns a standard Darwin client
+ * regardless of [trustSelfSignedCerts] — users should add the self-signed cert to the iOS
+ * trust store via Settings > General > About > Certificate Trust Settings, or use a tunnel
+ * (Cloudflare/Tailscale).
  */
-actual fun createComfyUIHttpClientWithSelfSignedTls(): HttpClient {
+actual fun createPlatformComfyUIHttpClient(trustSelfSignedCerts: Boolean): HttpClient {
     return HttpClient(Darwin) {
         install(ContentNegotiation) {
             json(
@@ -32,7 +33,7 @@ actual fun createComfyUIHttpClientWithSelfSignedTls(): HttpClient {
                     ignoreUnknownKeys = true
                     isLenient = true
                     coerceInputValues = true
-                }
+                },
             )
         }
         install(HttpTimeout) {
