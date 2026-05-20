@@ -7,6 +7,7 @@ import com.riox432.civitdeck.plugin.PluginRegistry
 import com.riox432.civitdeck.plugin.theme.JsonThemePlugin
 import com.riox432.civitdeck.plugin.theme.ThemeDefinition
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
 private val json = Json { ignoreUnknownKeys = true }
@@ -26,9 +27,11 @@ suspend fun registerThemePlugins() {
     }
 
     for (installed in themePlugins) {
-        val definition = runCatching {
+        val definition = try {
             json.decodeFromString<ThemeDefinition>(installed.configJson)
-        }.getOrNull() ?: continue
+        } catch (_: SerializationException) {
+            continue
+        }
 
         val plugin = JsonThemePlugin(definition)
         registry.register(plugin)

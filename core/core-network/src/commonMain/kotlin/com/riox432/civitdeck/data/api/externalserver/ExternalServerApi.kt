@@ -3,6 +3,9 @@ package com.riox432.civitdeck.data.api.externalserver
 import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.ResponseException
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -11,6 +14,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.URLBuilder
 import io.ktor.http.Url
 import io.ktor.http.contentType
+import kotlinx.io.IOException
 import kotlin.concurrent.Volatile
 
 /**
@@ -121,7 +125,16 @@ class ExternalServerApi(
             if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
         }
         true
-    } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+    } catch (e: IOException) {
+        Logger.w(TAG, "Connection test failed: ${e.message}")
+        false
+    } catch (e: HttpRequestTimeoutException) {
+        Logger.w(TAG, "Connection test failed: ${e.message}")
+        false
+    } catch (e: ConnectTimeoutException) {
+        Logger.w(TAG, "Connection test failed: ${e.message}")
+        false
+    } catch (e: ResponseException) {
         Logger.w(TAG, "Connection test failed: ${e.message}")
         false
     }
