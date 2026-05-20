@@ -1,4 +1,4 @@
-import com.android.build.gradle.LibraryExtension
+import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -10,6 +10,8 @@ class CivitDeckKmpLibraryPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
+                // kotlin.multiplatform + com.android.library combo works via android.newDsl=false
+                // Migrate to com.android.kotlin.multiplatform.library when removing compat flags
                 apply("org.jetbrains.kotlin.multiplatform")
                 apply("com.android.library")
             }

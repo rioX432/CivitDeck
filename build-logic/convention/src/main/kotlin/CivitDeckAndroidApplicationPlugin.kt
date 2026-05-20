@@ -1,4 +1,4 @@
-import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
+import com.android.build.api.dsl.ApplicationExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -11,10 +11,12 @@ class CivitDeckAndroidApplicationPlugin : Plugin<Project> {
         with(target) {
             with(pluginManager) {
                 apply("com.android.application")
+                // kotlin-android is still required while android.builtInKotlin=false
+                // Remove this line when migrating to built-in Kotlin (AGP 10)
                 apply("org.jetbrains.kotlin.android")
             }
 
-            extensions.configure<BaseAppModuleExtension> {
+            extensions.configure<ApplicationExtension> {
                 compileSdk = 36
                 defaultConfig {
                     minSdk = 24
