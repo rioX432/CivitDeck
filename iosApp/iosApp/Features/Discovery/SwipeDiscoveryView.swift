@@ -2,9 +2,8 @@ import SwiftUI
 import Shared
 
 private let cardStackOffset: CGFloat = Spacing.md
-// TODO: Unify with shared design token
-private let undoButtonSize: CGFloat = 48   // Maps to IconSize.large
-private let actionButtonSize: CGFloat = 56 // Maps to IconSize.xlarge
+private let undoButtonSize: CGFloat = IconSize.large
+private let actionButtonSize: CGFloat = IconSize.xlarge
 
 struct SwipeDiscoveryView: View {
     @StateObject private var viewModel = SwipeDiscoveryViewModelOwner()

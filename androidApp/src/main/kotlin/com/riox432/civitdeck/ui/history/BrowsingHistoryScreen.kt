@@ -52,8 +52,8 @@ import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryUiState
 import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
-import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.ui.theme.ThumbnailSize
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -249,9 +249,8 @@ private fun HistoryItemContent(item: RecentlyViewedModel, onClick: () -> Unit) {
         CivitAsyncImage(
             imageUrl = item.thumbnailUrl,
             contentDescription = item.modelName,
-            modifier = Modifier.size(
-                IconSize.xlarge
-            ).clip(MaterialTheme.shapes.small), // TODO: Unify with shared design token
+            modifier = Modifier.size(ThumbnailSize.collection)
+                .clip(MaterialTheme.shapes.small),
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(

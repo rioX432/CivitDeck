@@ -163,7 +163,7 @@ private fun PluginRow(
 private fun PluginIcon() {
     Box(
         modifier = Modifier
-            .size(IconSize.large) // 48.dp — TODO: Unify with shared design token
+            .size(IconSize.large)
             .clip(RoundedCornerShape(CornerRadius.image))
             .background(MaterialTheme.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center,

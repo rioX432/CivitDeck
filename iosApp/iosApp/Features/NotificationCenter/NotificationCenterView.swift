@@ -1,9 +1,7 @@
 import SwiftUI
 import Shared
 
-/// Size of the unread indicator dot.
-// TODO: Unify with shared design token
-private let unreadDotSize: CGFloat = 8
+private let unreadDotSize: CGFloat = DotSize.indicator
 
 struct NotificationCenterView: View {
     @StateObject private var viewModel = NotificationCenterViewModelOwner()

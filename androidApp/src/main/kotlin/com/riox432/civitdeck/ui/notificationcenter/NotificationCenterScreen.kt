@@ -39,12 +39,11 @@ import com.riox432.civitdeck.domain.model.ModelUpdateNotification
 import com.riox432.civitdeck.domain.model.UpdateSource
 import com.riox432.civitdeck.feature.gallery.presentation.NotificationCenterViewModel
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
+import com.riox432.civitdeck.ui.theme.DotSize
 import com.riox432.civitdeck.ui.theme.Spacing
 import java.util.concurrent.TimeUnit
 
-/** Size of the unread indicator dot. */
-// TODO: Unify with shared design token
-private val UnreadDotSize = Spacing.sm
+private val UnreadDotSize = DotSize.indicator
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
