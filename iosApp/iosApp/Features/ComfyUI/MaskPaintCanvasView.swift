@@ -1,7 +1,7 @@
 import SwiftUI
 import Shared
 
-private let maskColor = Color.red.opacity(0.5)
+private let maskColor = Color.civitMaskOverlay.opacity(0.5)
 private let referenceCanvasSize: CGFloat = 400
 
 /// A canvas view that renders mask paint strokes and captures new drawing input

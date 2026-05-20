@@ -83,10 +83,10 @@ struct CivitaiLinkSettingsView: View {
 
     private var statusColor: Color {
         switch viewModel.status {
-        case .connected: return .green
-        case .connecting: return .yellow
-        case .error: return .red
-        default: return .gray
+        case .connected: return .civitStatusSuccess
+        case .connecting: return .civitStatusWarning
+        case .error: return .civitStatusError
+        default: return .civitStatusNeutral
         }
     }
 
