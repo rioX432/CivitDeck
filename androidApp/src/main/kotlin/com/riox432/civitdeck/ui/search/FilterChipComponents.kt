@@ -142,7 +142,7 @@ internal fun FilterChipItem(
     )
     Row(
         modifier = Modifier
-            .defaultMinSize(minHeight = 40.dp)
+            .defaultMinSize(minHeight = 48.dp)
             .clip(RoundedCornerShape(CornerRadius.chip))
             .background(backgroundColor)
             .clickable(
