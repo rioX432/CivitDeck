@@ -6,7 +6,6 @@ import com.riox432.civitdeck.domain.model.ThemeMode
 import com.riox432.civitdeck.domain.model.TimePeriod
 import kotlinx.coroutines.flow.Flow
 
-@Suppress("TooManyFunctions")
 interface DisplayPreferencesRepository {
     fun observeDefaultSortOrder(): Flow<SortOrder>
     suspend fun setDefaultSortOrder(sort: SortOrder)

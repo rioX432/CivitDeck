@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.search.domain.usecase
 
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelSearchQuery
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -20,14 +21,16 @@ class GetModelsUseCase(private val repository: ModelRepository) {
         limit: Int? = null,
         nsfw: Boolean? = null,
     ): PaginatedResult<Model> = repository.getModels(
-        query = query,
-        tag = tag,
-        type = type,
-        sort = sort,
-        period = period,
-        baseModels = baseModels,
-        cursor = cursor,
-        limit = limit,
-        nsfw = nsfw,
+        ModelSearchQuery(
+            query = query,
+            tag = tag,
+            type = type,
+            sort = sort,
+            period = period,
+            baseModels = baseModels,
+            cursor = cursor,
+            limit = limit,
+            nsfw = nsfw,
+        ),
     )
 }

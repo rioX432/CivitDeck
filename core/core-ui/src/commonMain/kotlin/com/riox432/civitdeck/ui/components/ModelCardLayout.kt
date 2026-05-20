@@ -50,7 +50,6 @@ import com.riox432.civitdeck.ui.theme.Spacing
  *   for multi-image fallback.
  */
 @Composable
-@Suppress("LongParameterList")
 fun ModelCardLayout(
     model: Model,
     onClick: (() -> Unit)? = null,

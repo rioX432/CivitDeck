@@ -12,7 +12,6 @@ data class DayCount(val day: Long, val cnt: Int)
 data class NameCount(val name: String, val cnt: Int)
 
 @Dao
-@Suppress("TooManyFunctions")
 interface BrowsingHistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: BrowsingHistoryEntity)

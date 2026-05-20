@@ -4,7 +4,6 @@ import com.riox432.civitdeck.domain.model.InteractionType
 import com.riox432.civitdeck.domain.model.RecentlyViewedModel
 import kotlinx.coroutines.flow.Flow
 
-@Suppress("TooManyFunctions")
 interface BrowsingHistoryRepository {
     suspend fun trackView(
         modelId: Long,

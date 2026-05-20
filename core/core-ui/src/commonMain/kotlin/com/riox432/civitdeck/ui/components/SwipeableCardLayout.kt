@@ -50,7 +50,6 @@ private const val DEFAULT_SWIPE_THRESHOLD = 0.3f
  * Pure Compose — no Android-specific APIs.
  */
 @Composable
-@Suppress("LongParameterList")
 fun SwipeableCardLayout(
     isFavorite: Boolean,
     onFavoriteToggle: () -> Unit,

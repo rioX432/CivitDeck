@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.search.domain.usecase
 
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelSearchQuery
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.RecommendationSection
@@ -186,10 +187,12 @@ class GetRecommendationsUseCase(
     ): RecommendationSection? {
         val nsfw = if (nsfwLevel == NsfwFilterLevel.Off) false else null
         val result = modelRepository.getModels(
-            sort = SortOrder.MostDownloaded,
-            period = TimePeriod.Day,
-            limit = SECTION_SIZE + seenIds.size.coerceAtMost(BUFFER),
-            nsfw = nsfw,
+            ModelSearchQuery(
+                sort = SortOrder.MostDownloaded,
+                period = TimePeriod.Day,
+                limit = SECTION_SIZE + seenIds.size.coerceAtMost(BUFFER),
+                nsfw = nsfw,
+            ),
         )
         val filtered = result.items
             .filterNot { it.id in seenIds }
@@ -257,13 +260,15 @@ class GetRecommendationsUseCase(
     ): RecommendationSection? {
         val nsfw = if (nsfwLevel == NsfwFilterLevel.Off) false else null
         val result = modelRepository.getModels(
-            type = type,
-            tag = tag,
-            username = username,
-            sort = sort,
-            period = period,
-            limit = SECTION_SIZE + seenIds.size.coerceAtMost(BUFFER),
-            nsfw = nsfw,
+            ModelSearchQuery(
+                type = type,
+                tag = tag,
+                username = username,
+                sort = sort,
+                period = period,
+                limit = SECTION_SIZE + seenIds.size.coerceAtMost(BUFFER),
+                nsfw = nsfw,
+            ),
         )
         val filtered = result.items
             .filterNot { it.id in seenIds }
@@ -287,10 +292,12 @@ class GetRecommendationsUseCase(
     ): RecommendationSection? {
         val nsfw = if (nsfwLevel == NsfwFilterLevel.Off) false else null
         val result = modelRepository.getModels(
-            sort = SortOrder.MostDownloaded,
-            period = TimePeriod.Week,
-            limit = SECTION_SIZE + seenIds.size.coerceAtMost(BUFFER),
-            nsfw = nsfw,
+            ModelSearchQuery(
+                sort = SortOrder.MostDownloaded,
+                period = TimePeriod.Week,
+                limit = SECTION_SIZE + seenIds.size.coerceAtMost(BUFFER),
+                nsfw = nsfw,
+            ),
         )
         val filtered = result.items
             .filterNot { it.id in seenIds }

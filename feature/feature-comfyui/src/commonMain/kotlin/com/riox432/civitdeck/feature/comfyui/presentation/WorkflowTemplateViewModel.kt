@@ -127,7 +127,6 @@ class WorkflowTemplateViewModel(
         _uiState.update { it.copy(error = null) }
     }
 
-    @Suppress("TooManyFunctions")
     companion object {
         private const val TAG = "WorkflowTemplateVM"
 

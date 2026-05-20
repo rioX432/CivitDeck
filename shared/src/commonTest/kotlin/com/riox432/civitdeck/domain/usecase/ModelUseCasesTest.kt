@@ -1,7 +1,7 @@
 package com.riox432.civitdeck.domain.usecase
 
-import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelSearchQuery
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.PaginatedResult
@@ -25,26 +25,10 @@ class ModelUseCasesTest {
         modelsResult: PaginatedResult<Model> = sampleResult,
         modelDetail: Model = sampleModel,
     ) = object : ModelRepository {
-        var lastGetModelsArgs: Map<String, Any?> = emptyMap()
+        var lastQuery: ModelSearchQuery? = null
 
-        override suspend fun getModels(
-            query: String?,
-            tag: String?,
-            type: ModelType?,
-            sort: SortOrder?,
-            period: TimePeriod?,
-            baseModels: List<BaseModel>?,
-            cursor: String?,
-            limit: Int?,
-            username: String?,
-            nsfw: Boolean?,
-        ): PaginatedResult<Model> {
-            lastGetModelsArgs = mapOf(
-                "query" to query, "tag" to tag, "type" to type,
-                "sort" to sort, "period" to period, "baseModels" to baseModels,
-                "cursor" to cursor, "limit" to limit, "username" to username,
-                "nsfw" to nsfw,
-            )
+        override suspend fun getModels(query: ModelSearchQuery): PaginatedResult<Model> {
+            lastQuery = query
             return modelsResult
         }
 
@@ -78,14 +62,15 @@ class ModelUseCasesTest {
             limit = 20,
             nsfw = false,
         )
-        assertEquals("test", repo.lastGetModelsArgs["query"])
-        assertEquals("anime", repo.lastGetModelsArgs["tag"])
-        assertEquals(ModelType.LORA, repo.lastGetModelsArgs["type"])
-        assertEquals(SortOrder.Newest, repo.lastGetModelsArgs["sort"])
-        assertEquals(TimePeriod.Week, repo.lastGetModelsArgs["period"])
-        assertEquals("cursor123", repo.lastGetModelsArgs["cursor"])
-        assertEquals(20, repo.lastGetModelsArgs["limit"])
-        assertEquals(false, repo.lastGetModelsArgs["nsfw"])
+        val q = repo.lastQuery!!
+        assertEquals("test", q.query)
+        assertEquals("anime", q.tag)
+        assertEquals(ModelType.LORA, q.type)
+        assertEquals(SortOrder.Newest, q.sort)
+        assertEquals(TimePeriod.Week, q.period)
+        assertEquals("cursor123", q.cursor)
+        assertEquals(20, q.limit)
+        assertEquals(false, q.nsfw)
     }
 
     // --- GetModelDetailUseCase ---
@@ -107,8 +92,9 @@ class ModelUseCasesTest {
         val repo = fakeRepository()
         val useCase = GetCreatorModelsUseCase(repo)
         useCase(username = "creator1", cursor = "cur", limit = 10)
-        assertEquals("creator1", repo.lastGetModelsArgs["username"])
-        assertEquals("cur", repo.lastGetModelsArgs["cursor"])
-        assertEquals(10, repo.lastGetModelsArgs["limit"])
+        val q = repo.lastQuery!!
+        assertEquals("creator1", q.username)
+        assertEquals("cur", q.cursor)
+        assertEquals(10, q.limit)
     }
 }

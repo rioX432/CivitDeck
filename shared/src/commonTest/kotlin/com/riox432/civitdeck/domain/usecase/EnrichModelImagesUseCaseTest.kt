@@ -1,15 +1,12 @@
 package com.riox432.civitdeck.domain.usecase
 
-import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelImage
-import com.riox432.civitdeck.domain.model.ModelType
+import com.riox432.civitdeck.domain.model.ModelSearchQuery
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.domain.model.PaginatedResult
-import com.riox432.civitdeck.domain.model.SortOrder
-import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -55,18 +52,8 @@ class EnrichModelImagesUseCaseTest {
             stats = null,
         )
 
-        override suspend fun getModels(
-            query: String?,
-            tag: String?,
-            type: ModelType?,
-            sort: SortOrder?,
-            period: TimePeriod?,
-            baseModels: List<BaseModel>?,
-            cursor: String?,
-            limit: Int?,
-            username: String?,
-            nsfw: Boolean?,
-        ): PaginatedResult<Model> = error("not used")
+        override suspend fun getModels(query: ModelSearchQuery): PaginatedResult<Model> =
+            error("not used")
 
         override suspend fun getModel(id: Long): Model = error("not used")
         override suspend fun getModelVersionByHash(hash: String): ModelVersion = error("not used")

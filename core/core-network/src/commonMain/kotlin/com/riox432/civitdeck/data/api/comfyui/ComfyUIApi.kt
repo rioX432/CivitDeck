@@ -25,7 +25,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-@Suppress("TooManyFunctions")
 class ComfyUIApi(
     private val client: HttpClient,
     private val json: Json,

@@ -8,7 +8,6 @@ import androidx.room.Update
 import com.riox432.civitdeck.data.local.entity.SDWebUIConnectionEntity
 import kotlinx.coroutines.flow.Flow
 
-@Suppress("TooManyFunctions")
 @Dao
 interface SDWebUIConnectionDao {
     @Query("SELECT * FROM sdwebui_connections ORDER BY createdAt DESC")

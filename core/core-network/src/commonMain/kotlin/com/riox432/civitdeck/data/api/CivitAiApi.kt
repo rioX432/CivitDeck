@@ -28,33 +28,38 @@ import io.ktor.serialization.ContentConvertException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+/**
+ * Raw query parameters for the CivitAI /models endpoint.
+ * All values are strings matching the API specification.
+ */
+data class ModelListQuery(
+    val query: String? = null,
+    val tag: String? = null,
+    val type: String? = null,
+    val sort: String? = null,
+    val period: String? = null,
+    val baseModels: List<String>? = null,
+    val cursor: String? = null,
+    val limit: Int? = null,
+    val username: String? = null,
+    val nsfw: Boolean? = null,
+)
+
 class CivitAiApi(private val client: HttpClient) {
 
-    @Suppress("LongParameterList")
-    suspend fun getModels(
-        query: String? = null,
-        tag: String? = null,
-        type: String? = null,
-        sort: String? = null,
-        period: String? = null,
-        baseModels: List<String>? = null,
-        cursor: String? = null,
-        limit: Int? = null,
-        username: String? = null,
-        nsfw: Boolean? = null,
-    ): ModelListResponse {
+    suspend fun getModels(params: ModelListQuery = ModelListQuery()): ModelListResponse {
         return try {
             client.get("$BASE_URL/models") {
-                query?.let { parameter("query", it) }
-                tag?.let { parameter("tag", it) }
-                type?.let { parameter("types", it) }
-                sort?.let { parameter("sort", it) }
-                period?.let { parameter("period", it) }
-                baseModels?.forEach { parameter("baseModels", it) }
-                cursor?.let { parameter("cursor", it) }
-                limit?.let { parameter("limit", it) }
-                username?.let { parameter("username", it) }
-                nsfw?.let { parameter("nsfw", it) }
+                params.query?.let { parameter("query", it) }
+                params.tag?.let { parameter("tag", it) }
+                params.type?.let { parameter("types", it) }
+                params.sort?.let { parameter("sort", it) }
+                params.period?.let { parameter("period", it) }
+                params.baseModels?.forEach { parameter("baseModels", it) }
+                params.cursor?.let { parameter("cursor", it) }
+                params.limit?.let { parameter("limit", it) }
+                params.username?.let { parameter("username", it) }
+                params.nsfw?.let { parameter("nsfw", it) }
             }.body()
         } catch (e: ContentConvertException) {
             throw DataParseException(e.message, e)

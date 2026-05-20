@@ -1,14 +1,12 @@
 package com.riox432.civitdeck.ui.creator
 
-import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Creator
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelSearchQuery
 import com.riox432.civitdeck.domain.model.ModelStats
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.PageMetadata
 import com.riox432.civitdeck.domain.model.PaginatedResult
-import com.riox432.civitdeck.domain.model.SortOrder
-import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
 import kotlinx.coroutines.Dispatchers
@@ -51,18 +49,7 @@ class CreatorProfileViewModelTest {
     ) : ModelRepository {
         var callCount = 0
 
-        override suspend fun getModels(
-            query: String?,
-            tag: String?,
-            type: ModelType?,
-            sort: SortOrder?,
-            period: TimePeriod?,
-            baseModels: List<BaseModel>?,
-            cursor: String?,
-            limit: Int?,
-            username: String?,
-            nsfw: Boolean?,
-        ): PaginatedResult<Model> {
+        override suspend fun getModels(query: ModelSearchQuery): PaginatedResult<Model> {
             val result = pages.getOrElse(callCount) { pages.last() }
             callCount++
             return result
@@ -110,18 +97,8 @@ class CreatorProfileViewModelTest {
     @Test
     fun error_state_on_failure() {
         val failingRepo = object : ModelRepository {
-            override suspend fun getModels(
-                query: String?,
-                tag: String?,
-                type: ModelType?,
-                sort: SortOrder?,
-                period: TimePeriod?,
-                baseModels: List<BaseModel>?,
-                cursor: String?,
-                limit: Int?,
-                username: String?,
-                nsfw: Boolean?,
-            ): PaginatedResult<Model> = error("Network error")
+            override suspend fun getModels(query: ModelSearchQuery): PaginatedResult<Model> =
+                error("Network error")
             override suspend fun getModel(id: Long) = error("not used")
             override suspend fun getModelVersion(id: Long) = error("not used")
             override suspend fun getModelVersionByHash(hash: String) = error("not used")

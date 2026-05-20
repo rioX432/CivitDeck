@@ -4,7 +4,6 @@ import com.riox432.civitdeck.domain.model.NavShortcut
 import com.riox432.civitdeck.domain.model.PollingInterval
 import kotlinx.coroutines.flow.Flow
 
-@Suppress("TooManyFunctions")
 interface AppBehaviorPreferencesRepository {
     fun observePowerUserMode(): Flow<Boolean>
     suspend fun setPowerUserMode(enabled: Boolean)

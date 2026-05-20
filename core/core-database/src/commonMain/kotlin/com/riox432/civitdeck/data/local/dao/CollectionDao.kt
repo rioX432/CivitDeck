@@ -20,7 +20,6 @@ data class CollectionWithCount(
     val thumbnailUrl: String?,
 )
 
-@Suppress("TooManyFunctions")
 @Dao
 interface CollectionDao {
     // --- Collection CRUD ---

@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.creator.domain.usecase
 
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelSearchQuery
 import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.repository.ModelRepository
 
@@ -9,5 +10,7 @@ class GetCreatorModelsUseCase(private val repository: ModelRepository) {
         username: String,
         cursor: String? = null,
         limit: Int? = null,
-    ): PaginatedResult<Model> = repository.getModels(username = username, cursor = cursor, limit = limit)
+    ): PaginatedResult<Model> = repository.getModels(
+        ModelSearchQuery(username = username, cursor = cursor, limit = limit),
+    )
 }
