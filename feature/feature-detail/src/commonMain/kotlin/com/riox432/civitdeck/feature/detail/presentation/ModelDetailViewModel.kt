@@ -39,6 +39,7 @@ import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.domain.util.currentTimeMillis
 import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.util.Logger
@@ -58,8 +59,8 @@ import kotlinx.coroutines.withTimeoutOrNull
 data class ModelDetailUiState(
     val model: Model? = null,
     val isFavorite: Boolean = false,
-    val isLoading: Boolean = true,
-    val error: String? = null,
+    override val isLoading: Boolean = true,
+    override val error: String? = null,
     val selectedVersionIndex: Int = 0,
     val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
     val powerUserMode: Boolean = false,
@@ -73,7 +74,7 @@ data class ModelDetailUiState(
     val reviewsError: String? = null,
     val isSubmittingReview: Boolean = false,
     val reviewSubmitSuccess: Boolean = false,
-)
+) : UiLoadingState
 
 @Suppress("LongParameterList", "TooManyFunctions")
 class ModelDetailViewModel(
