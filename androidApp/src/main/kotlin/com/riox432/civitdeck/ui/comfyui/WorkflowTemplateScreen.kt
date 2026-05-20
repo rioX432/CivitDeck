@@ -151,7 +151,13 @@ private fun TemplateScaffold(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isPicker) "Pick Template" else "Workflow Templates") },
+                title = {
+                    Text(
+                        stringResource(
+                            if (isPicker) R.string.template_picker_title else R.string.template_list_title
+                        )
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -237,7 +243,7 @@ private fun LazyListScope.templateListItems(
 ) {
     when {
         state.isLoading -> item {
-            Text("Loading...", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.label_loading), style = MaterialTheme.typography.bodyMedium)
         }
         state.filteredTemplates.isEmpty() -> item {
             Text(
@@ -277,7 +283,7 @@ private fun TemplateSearchBar(
                 onSearch = {},
                 expanded = false,
                 onExpandedChange = {},
-                placeholder = { Text("Search templates...") },
+                placeholder = { Text(stringResource(R.string.template_search_placeholder)) },
                 leadingIcon = { Icon(Icons.Default.Search, "Search") },
                 trailingIcon = if (query.isNotEmpty()) {
                     { IconButton(onClick = { onQueryChanged("") }) { Icon(Icons.Default.Close, "Clear") } }
@@ -306,7 +312,7 @@ private fun CategoryFilterRow(
         FilterChip(
             selected = selectedCategory == null,
             onClick = { onCategorySelected(null) },
-            label = { Text("All") },
+            label = { Text(stringResource(R.string.template_all_filter)) },
         )
         WorkflowTemplateCategory.entries.forEach { category ->
             FilterChip(
@@ -336,7 +342,7 @@ private fun TypeFilterRow(
         FilterChip(
             selected = selectedType == null,
             onClick = { onTypeSelected(null) },
-            label = { Text("All Types") },
+            label = { Text(stringResource(R.string.template_all_types_filter)) },
         )
         WorkflowTemplateType.entries.forEach { type ->
             FilterChip(
@@ -359,19 +365,19 @@ private fun ImportDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Import Template JSON") },
+        title = { Text(stringResource(R.string.template_import_json)) },
         text = {
             OutlinedTextField(
                 value = text,
                 onValueChange = onTextChange,
-                label = { Text("Paste template JSON") },
+                label = { Text(stringResource(R.string.template_paste_json)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 5,
                 maxLines = 10,
             )
         },
-        confirmButton = { Button(onClick = onConfirm) { Text("Import") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        confirmButton = { Button(onClick = onConfirm) { Text(stringResource(R.string.action_import)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }
 
@@ -379,7 +385,7 @@ private fun ImportDialog(
 private fun ExportDialog(json: String, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Template JSON") },
+        title = { Text(stringResource(R.string.template_json_title)) },
         text = {
             OutlinedTextField(
                 value = json,
@@ -390,7 +396,7 @@ private fun ExportDialog(json: String, onDismiss: () -> Unit) {
                 maxLines = 12,
             )
         },
-        confirmButton = { Button(onClick = onDismiss) { Text("Done") } },
+        confirmButton = { Button(onClick = onDismiss) { Text(stringResource(R.string.action_done)) } },
     )
 }
 

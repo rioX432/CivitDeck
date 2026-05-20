@@ -25,7 +25,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,7 +40,7 @@ fun CreateHubScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Create") })
+            TopAppBar(title = { Text(stringResource(R.string.create_hub_title)) })
         },
     ) { innerPadding ->
         LazyColumn(

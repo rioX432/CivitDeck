@@ -56,7 +56,7 @@ fun NotificationCenterScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notifications") },
+                title = { Text(stringResource(R.string.notification_center_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(

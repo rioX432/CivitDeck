@@ -22,7 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.export.WorkflowExportService
 import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
@@ -94,10 +96,10 @@ private fun PromptSection(
                     copyToClipboard(context, "Prompt", prompt)
                 },
             ) {
-                Text("Copy Prompt")
+                Text(stringResource(R.string.gallery_copy_prompt))
             }
             OutlinedButton(onClick = onSavePrompt) {
-                Text("Save Prompt")
+                Text(stringResource(R.string.gallery_save_prompt))
             }
         }
         Spacer(modifier = Modifier.height(Spacing.sm))
@@ -181,13 +183,13 @@ private fun ExportSection(meta: ImageGenerationMeta, context: Context) {
             val text = WorkflowExportService.generateComfyUIWorkflow(meta)
             shareText(context, text, "Export ComfyUI Workflow")
         }) {
-            Text("ComfyUI Workflow")
+            Text(stringResource(R.string.gallery_comfyui_workflow))
         }
         OutlinedButton(onClick = {
             val text = WorkflowExportService.generateA1111Params(meta)
             shareText(context, text, "Export A1111 Params")
         }) {
-            Text("A1111 Params")
+            Text(stringResource(R.string.gallery_a1111_params))
         }
     }
 }

@@ -49,7 +49,7 @@ fun ComfyUIQueueScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Queue") },
+                title = { Text(stringResource(R.string.comfyui_queue_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(

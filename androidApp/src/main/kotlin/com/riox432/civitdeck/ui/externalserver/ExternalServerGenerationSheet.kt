@@ -31,6 +31,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationChoice
 import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationJob
 import com.riox432.civitdeck.feature.externalserver.domain.model.GenerationJobStatus
@@ -97,7 +99,7 @@ fun ExternalServerGenerationSheet(
                     if (state.isSubmittingGeneration) {
                         CircularProgressIndicator()
                     } else {
-                        Text("Start Generation")
+                        Text(stringResource(R.string.external_server_start_generation))
                     }
                 }
             }

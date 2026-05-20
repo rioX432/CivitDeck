@@ -60,7 +60,7 @@ fun ComfyHubBrowserScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("ComfyHub Workflows") },
+                title = { Text(stringResource(R.string.comfyhub_workflows_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -91,7 +91,7 @@ private fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Spacing.md, vertical = Spacing.sm),
-        placeholder = { Text("Search workflows...") },
+        placeholder = { Text(stringResource(R.string.comfyhub_search_placeholder)) },
         singleLine = true,
     )
 }

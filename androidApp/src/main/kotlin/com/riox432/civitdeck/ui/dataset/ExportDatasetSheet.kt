@@ -25,7 +25,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.FileProvider
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ExportProgress
 import com.riox432.civitdeck.plugin.PluginExportFormat
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -105,8 +107,11 @@ private fun ExportSheetContent(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(Spacing.sm, androidx.compose.ui.Alignment.End),
         ) {
-            OutlinedButton(onClick = onDismiss) { Text("Cancel") }
-            Button(onClick = onExport, enabled = selectedFormatId != null) { Text("Export") }
+            OutlinedButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+            Button(
+                onClick = onExport,
+                enabled = selectedFormatId != null
+            ) { Text(stringResource(R.string.action_export)) }
         }
     }
 }
@@ -210,12 +215,12 @@ private fun ExportCompletedDialog(
             Button(onClick = {
                 onShare()
                 onDismiss()
-            }) { Text("Share") }
+            }) { Text(stringResource(R.string.action_share)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) }
         },
-        title = { Text("Export Complete") },
+        title = { Text(stringResource(R.string.dataset_export_complete)) },
         text = {
             Column {
                 Text("File ready: ${File(outputPath).name}")
@@ -235,8 +240,8 @@ private fun ExportCompletedDialog(
 private fun ExportFailedDialog(message: String, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton = { TextButton(onClick = onDismiss) { Text("OK") } },
-        title = { Text("Export Failed") },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_ok)) } },
+        title = { Text(stringResource(R.string.dataset_export_failed)) },
         text = { Text(message) },
     )
 }
@@ -246,14 +251,14 @@ private fun LicenseWarningDialog(count: Int, onConfirm: () -> Unit, onDismiss: (
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            Button(onClick = onConfirm) { Text("Export Anyway") }
+            Button(onClick = onConfirm) { Text(stringResource(R.string.dataset_export_anyway)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
-        title = { Text("License Warning") },
+        title = { Text(stringResource(R.string.dataset_license_warning)) },
         text = {
-            Text("$count images are non-trainable or have license restrictions. They will be excluded from the export.")
+            Text(stringResource(R.string.dataset_license_warning_message, count))
         },
     )
 }

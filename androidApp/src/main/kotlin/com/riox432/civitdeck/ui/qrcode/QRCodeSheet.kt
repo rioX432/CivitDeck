@@ -150,7 +150,7 @@ private fun ShareButton(onShare: () -> Unit) {
         ) {
             Icon(Icons.Default.Share, contentDescription = stringResource(R.string.cd_share))
             Spacer(modifier = Modifier.width(Spacing.sm))
-            Text("Share QR Code")
+            Text(stringResource(R.string.qr_share))
         }
     }
 }

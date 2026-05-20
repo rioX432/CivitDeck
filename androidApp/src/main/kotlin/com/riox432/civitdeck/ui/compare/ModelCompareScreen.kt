@@ -75,7 +75,7 @@ fun ModelCompareScreen(
         topBar = {
             TopAppBar(
                 windowInsets = WindowInsets(0, 0, 0, 0),
-                title = { Text("Compare Models") },
+                title = { Text(stringResource(R.string.detail_compare_models_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -201,7 +201,7 @@ private fun CompareImagesButton(onClick: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         Button(onClick = onClick) {
-            Text("Compare Images")
+            Text(stringResource(R.string.detail_compare_images))
         }
     }
 }

@@ -227,10 +227,10 @@ private fun ImportButton(isImporting: Boolean, onImport: () -> Unit) {
                 modifier = Modifier.size(16.dp),
                 strokeWidth = 2.dp,
             )
-            Text("Importing...", modifier = Modifier.padding(start = Spacing.sm))
+            Text(stringResource(R.string.label_importing), modifier = Modifier.padding(start = Spacing.sm))
         } else {
             Icon(Icons.Outlined.Download, contentDescription = "Import workflow")
-            Text("Import to ComfyUI", modifier = Modifier.padding(start = Spacing.sm))
+            Text(stringResource(R.string.comfyhub_import_to_comfyui), modifier = Modifier.padding(start = Spacing.sm))
         }
     }
 }

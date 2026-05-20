@@ -69,7 +69,7 @@ fun AddToCollectionSheet(
                 modifier = Modifier.padding(horizontal = Spacing.md),
             ) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_create_new_collection))
-                Text("Create New Collection", modifier = Modifier.padding(start = Spacing.sm))
+                Text(stringResource(R.string.collection_create_new), modifier = Modifier.padding(start = Spacing.sm))
             }
         }
     }

@@ -110,7 +110,7 @@ private fun GenerationProgressSection(state: GenerationUiState) {
             )
         } else {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            Text("Generating...", style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(R.string.comfyui_result_generating), style = MaterialTheme.typography.bodySmall)
         }
         if (state.currentNodeName.isNotEmpty()) {
             Text(

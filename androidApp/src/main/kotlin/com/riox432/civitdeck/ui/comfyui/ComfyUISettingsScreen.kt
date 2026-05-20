@@ -69,7 +69,7 @@ fun ComfyUISettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("ComfyUI") },
+                title = { Text(stringResource(R.string.comfyui_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -134,12 +134,12 @@ private fun LazyListScope.settingsItems(
     if (state.connectionStatus == ComfyUIConnectionStatus.Connected) {
         item {
             TextButton(onClick = onNavigateToGeneration, modifier = Modifier.fillMaxWidth()) {
-                Text("Open txt2img Generator")
+                Text(stringResource(R.string.comfyui_open_txt2img))
             }
         }
         item {
             TextButton(onClick = onNavigateToHistory, modifier = Modifier.fillMaxWidth()) {
-                Text("View Output Gallery")
+                Text(stringResource(R.string.comfyui_view_gallery))
             }
         }
     }
@@ -202,7 +202,7 @@ private fun StatusHeader(state: ComfyUISettingsUiState, onTest: () -> Unit) {
         if (state.isTesting) {
             CircularProgressIndicator(modifier = Modifier.size(24.dp))
         } else if (state.activeConnection != null) {
-            TextButton(onClick = onTest) { Text("Test") }
+            TextButton(onClick = onTest) { Text(stringResource(R.string.action_test)) }
         }
     }
 }
@@ -236,11 +236,11 @@ private fun ScanLanSection(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("LAN Discovery", style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.comfyui_lan_discovery), style = MaterialTheme.typography.titleSmall)
                 if (state.isScanning) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp))
                 } else {
-                    OutlinedButton(onClick = onScan) { Text("Scan LAN") }
+                    OutlinedButton(onClick = onScan) { Text(stringResource(R.string.comfyui_scan_lan)) }
                 }
             }
             if (state.discoveredServers.isNotEmpty()) {
@@ -250,7 +250,7 @@ private fun ScanLanSection(
                 }
             } else if (!state.isScanning) {
                 Text(
-                    "Scan your local network for ComfyUI servers",
+                    stringResource(R.string.comfyui_lan_scan_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -272,7 +272,7 @@ private fun DiscoveredServerRow(server: DiscoveredServer, onSelect: (DiscoveredS
             Text(server.displayName, style = MaterialTheme.typography.bodyMedium)
             Text("${server.ip}:${server.port}", style = MaterialTheme.typography.bodySmall)
         }
-        TextButton(onClick = { onSelect(server) }) { Text("Add") }
+        TextButton(onClick = { onSelect(server) }) { Text(stringResource(R.string.action_add)) }
     }
 }
 
@@ -330,7 +330,13 @@ private fun AddConnectionDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (editing != null) "Edit Connection" else "Add Connection") },
+        title = {
+            Text(
+                stringResource(
+                    if (editing != null) R.string.comfyui_edit_connection else R.string.comfyui_add_connection
+                )
+            )
+        },
         text = {
             AddConnectionDialogContent(
                 name = name,
@@ -352,9 +358,9 @@ private fun AddConnectionDialog(
                     onSave(name.ifBlank { hostname }, hostname, port, useHttps, acceptSelfSigned)
                 },
                 enabled = hostname.isNotBlank(),
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.action_save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }
 
@@ -376,23 +382,23 @@ private fun AddConnectionDialogContent(
         OutlinedTextField(
             value = name,
             onValueChange = onNameChange,
-            label = { Text("Name") },
-            placeholder = { Text("e.g. Home PC") },
+            label = { Text(stringResource(R.string.label_name)) },
+            placeholder = { Text(stringResource(R.string.comfyui_name_placeholder)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
         OutlinedTextField(
             value = hostname,
             onValueChange = onHostnameChange,
-            label = { Text("Hostname / IP") },
-            placeholder = { Text("192.168.1.100") },
+            label = { Text(stringResource(R.string.comfyui_hostname_label)) },
+            placeholder = { Text(stringResource(R.string.comfyui_hostname_placeholder)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
         OutlinedTextField(
             value = portText,
             onValueChange = onPortChange,
-            label = { Text("Port") },
+            label = { Text(stringResource(R.string.label_port)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -401,7 +407,7 @@ private fun AddConnectionDialogContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Use HTTPS", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.comfyui_use_https), style = MaterialTheme.typography.bodyMedium)
             Switch(checked = useHttps, onCheckedChange = onHttpsChange)
         }
         if (useHttps) {
@@ -410,17 +416,18 @@ private fun AddConnectionDialogContent(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Accept self-signed certificates", style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.comfyui_accept_self_signed), style = MaterialTheme.typography.bodySmall)
                 Switch(checked = acceptSelfSigned, onCheckedChange = onSelfSignedChange)
             }
         }
     }
 }
 
+@Composable
 private fun statusLabel(status: ComfyUIConnectionStatus): String = when (status) {
-    ComfyUIConnectionStatus.Connected -> "Connected"
-    ComfyUIConnectionStatus.Disconnected -> "Disconnected"
-    ComfyUIConnectionStatus.Testing -> "Testing..."
-    ComfyUIConnectionStatus.Error -> "Connection Error"
-    ComfyUIConnectionStatus.NotConfigured -> "No server configured"
+    ComfyUIConnectionStatus.Connected -> stringResource(R.string.comfyui_status_connected)
+    ComfyUIConnectionStatus.Disconnected -> stringResource(R.string.comfyui_status_disconnected)
+    ComfyUIConnectionStatus.Testing -> stringResource(R.string.comfyui_status_testing)
+    ComfyUIConnectionStatus.Error -> stringResource(R.string.comfyui_status_error)
+    ComfyUIConnectionStatus.NotConfigured -> stringResource(R.string.comfyui_status_not_configured)
 }

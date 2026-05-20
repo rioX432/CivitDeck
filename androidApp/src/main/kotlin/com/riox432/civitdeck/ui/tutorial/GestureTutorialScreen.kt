@@ -24,7 +24,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.ui.theme.Spacing
 import kotlinx.coroutines.launch
 
@@ -59,7 +61,7 @@ fun GestureTutorialScreen(onDismiss: () -> Unit) {
 private fun SkipButton(onDismiss: () -> Unit) {
     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
         TextButton(onClick = onDismiss) {
-            Text("Skip")
+            Text(stringResource(R.string.tutorial_skip))
         }
     }
 }

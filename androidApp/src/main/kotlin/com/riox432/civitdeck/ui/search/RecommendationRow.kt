@@ -111,7 +111,7 @@ internal fun ComparisonBottomBar(
                     )
                 }
                 TextButton(onClick = onCancel) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         }

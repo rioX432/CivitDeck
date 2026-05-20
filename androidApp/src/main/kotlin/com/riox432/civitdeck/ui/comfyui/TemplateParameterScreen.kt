@@ -98,7 +98,7 @@ fun TemplateParameterScreen(
                         .filter { it.required }
                         .all { (values[it.name] ?: "").isNotBlank() },
                 ) {
-                    Text("Generate")
+                    Text(stringResource(R.string.action_generate))
                 }
             }
         }
@@ -232,7 +232,13 @@ private fun TextInput(
         minLines = if (variable.name.contains("prompt")) 3 else 1,
         maxLines = if (variable.name.contains("prompt")) 6 else 1,
         placeholder = {
-            if (variable.required) Text("Required") else Text("Optional")
+            if (variable.required) {
+                Text(
+                    stringResource(R.string.label_required)
+                )
+            } else {
+                Text(stringResource(R.string.label_optional))
+            }
         },
     )
 }

@@ -56,7 +56,7 @@ fun DuplicateReviewScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Review Duplicates") },
+                title = { Text(stringResource(R.string.dataset_review_duplicates)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(

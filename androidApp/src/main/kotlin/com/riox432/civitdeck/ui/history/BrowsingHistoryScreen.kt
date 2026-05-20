@@ -120,7 +120,7 @@ private fun HistoryTopAppBar(
     onClear: () -> Unit,
 ) {
     TopAppBar(
-        title = { Text("Browsing History") },
+        title = { Text(stringResource(R.string.history_title)) },
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(
@@ -131,7 +131,7 @@ private fun HistoryTopAppBar(
         },
         actions = {
             if (!isEmpty) {
-                TextButton(onClick = onClear) { Text("Clear All") }
+                TextButton(onClick = onClear) { Text(stringResource(R.string.action_clear_all)) }
             }
         },
     )
@@ -187,10 +187,10 @@ private fun GroupHeader(label: String) {
 private fun ClearHistoryDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Clear All History") },
-        text = { Text("Are you sure? This cannot be undone.") },
-        confirmButton = { TextButton(onClick = onConfirm) { Text("Clear") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        title = { Text(stringResource(R.string.history_clear_all_title)) },
+        text = { Text(stringResource(R.string.history_clear_all_confirm)) },
+        confirmButton = { TextButton(onClick = onConfirm) { Text(stringResource(R.string.action_clear)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }
 

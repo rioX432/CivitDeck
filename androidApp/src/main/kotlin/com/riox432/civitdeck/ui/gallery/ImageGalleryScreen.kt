@@ -112,7 +112,7 @@ fun ImageGalleryScreen(
 @Composable
 private fun ImageGalleryTopBar(onBack: () -> Unit) {
     TopAppBar(
-        title = { Text("Images") },
+        title = { Text(stringResource(R.string.gallery_title)) },
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(

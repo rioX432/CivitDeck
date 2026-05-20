@@ -65,7 +65,7 @@ fun AddToDatasetSheet(
                 modifier = Modifier.padding(horizontal = Spacing.md),
             ) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_create_new_dataset))
-                Text("Create New Dataset", modifier = Modifier.padding(start = Spacing.sm))
+                Text(stringResource(R.string.dataset_create_new), modifier = Modifier.padding(start = Spacing.sm))
             }
         }
     }

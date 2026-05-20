@@ -346,7 +346,7 @@ private fun DetailOverflowMenu(
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             if (onFindSimilar != null) {
                 DropdownMenuItem(
-                    text = { Text("Find similar") },
+                    text = { Text(stringResource(R.string.detail_find_similar)) },
                     leadingIcon = { Icon(Icons.Default.ImageSearch, contentDescription = null) },
                     onClick = {
                         expanded = false
@@ -355,7 +355,7 @@ private fun DetailOverflowMenu(
                 )
             }
             DropdownMenuItem(
-                text = { Text("Add to collection") },
+                text = { Text(stringResource(R.string.detail_add_to_collection)) },
                 leadingIcon = { Icon(Icons.Default.CreateNewFolder, contentDescription = null) },
                 onClick = {
                     expanded = false
@@ -363,7 +363,7 @@ private fun DetailOverflowMenu(
                 },
             )
             DropdownMenuItem(
-                text = { Text("QR code") },
+                text = { Text(stringResource(R.string.detail_qr_code)) },
                 leadingIcon = { Icon(Icons.Default.QrCode2, contentDescription = null) },
                 onClick = {
                     expanded = false

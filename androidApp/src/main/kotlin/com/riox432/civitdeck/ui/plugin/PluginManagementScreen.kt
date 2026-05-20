@@ -58,7 +58,7 @@ fun PluginManagementScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Plugins") },
+                title = { Text(stringResource(R.string.plugin_list_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(

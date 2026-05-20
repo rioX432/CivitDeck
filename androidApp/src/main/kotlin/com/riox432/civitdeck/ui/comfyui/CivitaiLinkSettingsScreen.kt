@@ -58,7 +58,7 @@ fun CivitaiLinkSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Civitai Link") },
+                title = { Text(stringResource(R.string.civitai_link_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -126,7 +126,7 @@ private fun StatusCard(
             }
             if (state.status == CivitaiLinkStatus.Connected) {
                 TextButton(onClick = onDisconnect) {
-                    Text("Disconnect", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.action_disconnect), color = MaterialTheme.colorScheme.error)
                 }
             }
         }
@@ -164,8 +164,8 @@ private fun ConfigCard(
             OutlinedTextField(
                 value = state.linkKey,
                 onValueChange = onKeyChanged,
-                label = { Text("Link Key") },
-                placeholder = { Text("Paste your Civitai Link key here") },
+                label = { Text(stringResource(R.string.civitai_link_key_label)) },
+                placeholder = { Text(stringResource(R.string.civitai_link_key_placeholder)) },
                 visualTransformation = PasswordVisualTransformation(),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -256,7 +256,7 @@ private fun ActivityCard(
                         contentColor = MaterialTheme.colorScheme.error,
                     ),
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         }

@@ -55,7 +55,7 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel, onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Usage Stats") },
+                title = { Text(stringResource(R.string.analytics_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(

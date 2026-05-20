@@ -71,7 +71,7 @@ fun SDWebUIGenerationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("SD WebUI Generation") },
+                title = { Text(stringResource(R.string.sdwebui_generation_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -171,7 +171,7 @@ private fun LazyListScope.sdwebuiFormItems(
         OutlinedTextField(
             value = state.prompt,
             onValueChange = onPromptChanged,
-            label = { Text("Prompt") },
+            label = { Text(stringResource(R.string.label_prompt)) },
             minLines = 3,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -180,7 +180,7 @@ private fun LazyListScope.sdwebuiFormItems(
         OutlinedTextField(
             value = state.negativePrompt,
             onValueChange = onNegativePromptChanged,
-            label = { Text("Negative Prompt") },
+            label = { Text(stringResource(R.string.label_negative_prompt)) },
             minLines = 2,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -234,7 +234,7 @@ private fun SDWebUIDropdownRow(
 private fun SDWebUIStepsSection(steps: Int, onChanged: (Int) -> Unit) {
     Column {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Steps", style = MaterialTheme.typography.labelMedium)
+            Text(stringResource(R.string.sdwebui_steps_label), style = MaterialTheme.typography.labelMedium)
             Text("$steps", style = MaterialTheme.typography.bodySmall)
         }
         Slider(
@@ -250,7 +250,7 @@ private fun SDWebUIStepsSection(steps: Int, onChanged: (Int) -> Unit) {
 private fun SDWebUICfgSection(cfg: Double, onChanged: (Double) -> Unit) {
     Column {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("CFG Scale", style = MaterialTheme.typography.labelMedium)
+            Text(stringResource(R.string.sdwebui_cfg_scale_label), style = MaterialTheme.typography.labelMedium)
             Text(String.format(java.util.Locale.US, "%.1f", cfg), style = MaterialTheme.typography.bodySmall)
         }
         Slider(
@@ -293,7 +293,7 @@ private fun SDWebUISeedRow(seed: Long, onChanged: (Long) -> Unit) {
             text = v
             v.toLongOrNull()?.let { onChanged(it) }
         },
-        label = { Text("Seed (-1 = random)") },
+        label = { Text(stringResource(R.string.comfyui_seed_label)) },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
     )
@@ -320,7 +320,7 @@ private fun SDWebUIGenerateButton(
                 modifier = Modifier.fillMaxWidth(),
             )
             OutlinedButton(onClick = onInterrupt, modifier = Modifier.fillMaxWidth()) {
-                Text("Interrupt")
+                Text(stringResource(R.string.action_interrupt))
             }
         } else {
             Button(
@@ -328,7 +328,7 @@ private fun SDWebUIGenerateButton(
                 enabled = !promptBlank,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Generate")
+                Text(stringResource(R.string.action_generate))
             }
         }
     }
@@ -337,7 +337,7 @@ private fun SDWebUIGenerateButton(
 @Composable
 private fun SDWebUIResultGrid(base64Images: List<String>) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        Text("Generated Images", style = MaterialTheme.typography.titleSmall)
+        Text(stringResource(R.string.sdwebui_generated_images), style = MaterialTheme.typography.titleSmall)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
@@ -371,7 +371,7 @@ private fun SDWebUIBase64Image(base64: String) {
             modifier = Modifier.fillMaxWidth().aspectRatio(1f),
             contentAlignment = Alignment.Center,
         ) {
-            Text("Image error", style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(R.string.sdwebui_image_error), style = MaterialTheme.typography.bodySmall)
         }
     }
 }

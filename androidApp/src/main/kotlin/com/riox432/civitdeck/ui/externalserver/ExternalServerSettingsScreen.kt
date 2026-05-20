@@ -57,7 +57,7 @@ fun ExternalServerSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Custom Server") },
+                title = { Text(stringResource(R.string.external_server_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -181,11 +181,13 @@ private fun ExternalServerStatusCard(
                     if (state.isTesting) {
                         CircularProgressIndicator(modifier = Modifier.padding(Spacing.xs))
                     } else {
-                        TextButton(onClick = onTest) { Text("Test Connection") }
+                        TextButton(onClick = onTest) { Text(stringResource(R.string.external_server_test_connection)) }
                     }
                 }
                 if (state.connectionStatus == ExternalServerConnectionStatus.Connected) {
-                    TextButton(onClick = onNavigateToGallery) { Text("Open Gallery") }
+                    TextButton(
+                        onClick = onNavigateToGallery
+                    ) { Text(stringResource(R.string.external_server_open_gallery)) }
                 }
             }
         }
@@ -241,14 +243,14 @@ private fun AddServerDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Display Name") },
+                    label = { Text(stringResource(R.string.external_server_display_name_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 OutlinedTextField(
                     value = baseUrl,
                     onValueChange = { baseUrl = it },
-                    label = { Text("Server URL") },
+                    label = { Text(stringResource(R.string.external_server_url_label)) },
                     placeholder = { Text("http://192.168.1.100:8000/civitdeck") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -256,7 +258,7 @@ private fun AddServerDialog(
                 OutlinedTextField(
                     value = apiKey,
                     onValueChange = { apiKey = it },
-                    label = { Text("API Key (optional)") },
+                    label = { Text(stringResource(R.string.external_server_api_key_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -266,8 +268,8 @@ private fun AddServerDialog(
             TextButton(
                 onClick = { onSave(name.trim(), baseUrl.trim(), apiKey.trim()) },
                 enabled = name.isNotBlank() && baseUrl.isNotBlank(),
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.action_save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }

@@ -49,7 +49,7 @@ fun SwipeDiscoveryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Discover") },
+                title = { Text(stringResource(R.string.discovery_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(

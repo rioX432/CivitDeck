@@ -21,6 +21,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.feature.externalserver.domain.model.ExternalServerImageFilters
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -83,7 +85,7 @@ private fun FilterSheetHeader(onReset: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text("Filters", style = MaterialTheme.typography.titleMedium)
-        TextButton(onClick = onReset) { Text("Reset") }
+        TextButton(onClick = onReset) { Text(stringResource(R.string.action_reset)) }
     }
 }
 
@@ -99,21 +101,21 @@ private fun FilterTextFields(
     OutlinedTextField(
         value = search,
         onValueChange = onSearchChange,
-        label = { Text("Search") },
+        label = { Text(stringResource(R.string.external_server_search_label)) },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
     )
     OutlinedTextField(
         value = character,
         onValueChange = onCharacterChange,
-        label = { Text("Character") },
+        label = { Text(stringResource(R.string.external_server_character_label)) },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
     )
     OutlinedTextField(
         value = scenario,
         onValueChange = onScenarioChange,
-        label = { Text("Scenario") },
+        label = { Text(stringResource(R.string.external_server_scenario_label)) },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
     )
@@ -144,7 +146,7 @@ private fun FilterApplyButton(onApply: () -> Unit) {
         modifier = Modifier.fillMaxWidth().padding(bottom = Spacing.lg),
         horizontalArrangement = Arrangement.End,
     ) {
-        Button(onClick = onApply) { Text("Apply") }
+        Button(onClick = onApply) { Text(stringResource(R.string.action_apply)) }
     }
 }
 

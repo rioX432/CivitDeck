@@ -87,7 +87,7 @@ fun ComfyUIHistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Output Gallery") },
+                title = { Text(stringResource(R.string.comfyui_output_gallery_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -265,7 +265,7 @@ private fun HistoryImageItem(
             onDismissRequest = { showMenu = false },
         ) {
             DropdownMenuItem(
-                text = { Text("Add to Dataset") },
+                text = { Text(stringResource(R.string.comfyui_add_to_dataset)) },
                 onClick = {
                     showMenu = false
                     onAddToDataset()

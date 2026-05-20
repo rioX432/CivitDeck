@@ -198,7 +198,7 @@ private fun SearchTextField(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier.onFocusChanged { onFocusChanged(it.isFocused) },
-        placeholder = { Text("Search models...") },
+        placeholder = { Text(stringResource(R.string.search_placeholder)) },
         trailingIcon = {
             if (query.isNotEmpty()) {
                 IconButton(onClick = onClear) {

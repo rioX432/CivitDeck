@@ -20,6 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.GenerationUiState
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
@@ -32,7 +34,7 @@ internal fun CheckpointSelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
     Column {
-        Text("Checkpoint", style = MaterialTheme.typography.labelMedium)
+        Text(stringResource(R.string.comfyui_checkpoint_label), style = MaterialTheme.typography.labelMedium)
         if (state.isLoadingCheckpoints) {
             LoadingStateOverlay()
         } else {
@@ -62,7 +64,7 @@ internal fun PromptInputs(state: GenerationUiState, viewModel: ComfyUIGeneration
     OutlinedTextField(
         value = state.prompt,
         onValueChange = viewModel::onPromptChanged,
-        label = { Text("Prompt") },
+        label = { Text(stringResource(R.string.label_prompt)) },
         modifier = Modifier.fillMaxWidth(),
         minLines = 3,
         maxLines = 6,
@@ -70,7 +72,7 @@ internal fun PromptInputs(state: GenerationUiState, viewModel: ComfyUIGeneration
     OutlinedTextField(
         value = state.negativePrompt,
         onValueChange = viewModel::onNegativePromptChanged,
-        label = { Text("Negative Prompt") },
+        label = { Text(stringResource(R.string.label_negative_prompt)) },
         modifier = Modifier.fillMaxWidth(),
         minLines = 2,
         maxLines = 4,
@@ -143,14 +145,14 @@ private fun ResolutionRow(
         OutlinedTextField(
             value = width.toString(),
             onValueChange = { it.toIntOrNull()?.let(viewModel::onWidthChanged) },
-            label = { Text("Width") },
+            label = { Text(stringResource(R.string.comfyui_width_label)) },
             modifier = Modifier.weight(1f),
             singleLine = true,
         )
         OutlinedTextField(
             value = height.toString(),
             onValueChange = { it.toIntOrNull()?.let(viewModel::onHeightChanged) },
-            label = { Text("Height") },
+            label = { Text(stringResource(R.string.comfyui_height_label)) },
             modifier = Modifier.weight(1f),
             singleLine = true,
         )
@@ -165,7 +167,7 @@ private fun SeedInput(seed: Long, onChanged: (Long) -> Unit) {
             val parsed = it.toLongOrNull() ?: -1L
             onChanged(parsed)
         },
-        label = { Text("Seed (-1 = random)") },
+        label = { Text(stringResource(R.string.comfyui_seed_label)) },
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
     )

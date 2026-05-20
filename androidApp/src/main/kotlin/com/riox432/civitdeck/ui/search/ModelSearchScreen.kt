@@ -276,20 +276,20 @@ private fun SaveFilterDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Save Filter") },
+        title = { Text(stringResource(R.string.search_save_filter_title)) },
         text = {
             OutlinedTextField(
                 value = filterName,
                 onValueChange = onFilterNameChange,
-                label = { Text("Filter name") },
+                label = { Text(stringResource(R.string.search_filter_name_label)) },
                 singleLine = true,
             )
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) { Text("Save") }
+            TextButton(onClick = onConfirm) { Text(stringResource(R.string.action_save)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
     )
 }

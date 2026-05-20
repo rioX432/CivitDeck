@@ -65,7 +65,7 @@ fun FeedScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Feed") },
+                title = { Text(stringResource(R.string.feed_title)) },
                 navigationIcon = {
                     if (onBack != null) {
                         androidx.compose.material3.IconButton(onClick = onBack) {

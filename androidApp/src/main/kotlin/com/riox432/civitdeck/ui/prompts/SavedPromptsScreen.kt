@@ -120,7 +120,7 @@ private fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
-        placeholder = { Text("Search prompts...") },
+        placeholder = { Text(stringResource(R.string.prompts_search_placeholder)) },
         singleLine = true,
     )
 }
@@ -264,21 +264,21 @@ private fun TemplateNameDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Save as Template") },
+        title = { Text(stringResource(R.string.prompts_save_as_template)) },
         text = {
             OutlinedTextField(
                 value = name,
                 onValueChange = onNameChange,
-                label = { Text("Template name (optional)") },
+                label = { Text(stringResource(R.string.prompts_template_name_label)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) { Text("Save") }
+            TextButton(onClick = onConfirm) { Text(stringResource(R.string.action_save)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
     )
 }
@@ -385,14 +385,14 @@ private fun PromptActions(
     ) {
         if (onApply != null) {
             OutlinedButton(onClick = onApply) {
-                Text("Apply")
+                Text(stringResource(R.string.action_apply))
             }
         }
         OutlinedButton(onClick = onCopy) {
-            Text("Copy")
+            Text(stringResource(R.string.action_copy))
         }
         OutlinedButton(onClick = onExport) {
-            Text("Export")
+            Text(stringResource(R.string.action_export))
         }
         Spacer(modifier = Modifier.weight(1f))
         IconButton(onClick = onDelete) {
@@ -460,10 +460,10 @@ private fun ApplyTemplateDialog(
             TextButton(onClick = {
                 val result = PromptTemplateEngine.substitute(prompt.prompt, values.value)
                 onGenerate(result)
-            }) { Text("Generate") }
+            }) { Text(stringResource(R.string.action_generate)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
     )
 }

@@ -28,8 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -112,7 +114,7 @@ private fun ShareHashtagAddRow(
         OutlinedTextField(
             value = input,
             onValueChange = onInputChange,
-            label = { Text("Add hashtag") },
+            label = { Text(stringResource(R.string.share_add_hashtag_label)) },
             modifier = Modifier.weight(1f),
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),

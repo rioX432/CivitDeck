@@ -115,7 +115,7 @@ private fun MaskEditorTopBar(
     hasContent: Boolean,
 ) {
     TopAppBar(
-        title = { Text("Mask Editor") },
+        title = { Text(stringResource(R.string.comfyui_mask_editor_title)) },
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(
