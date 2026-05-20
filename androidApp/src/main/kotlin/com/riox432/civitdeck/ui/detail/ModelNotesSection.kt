@@ -129,7 +129,7 @@ private fun NoteEditor(
         value = text,
         onValueChange = onTextChange,
         modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text("e.g. Works great with X LoRA") },
+        placeholder = { Text(stringResource(R.string.detail_note_placeholder)) },
         minLines = 2,
         maxLines = 5,
     )
@@ -137,8 +137,8 @@ private fun NoteEditor(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End,
     ) {
-        TextButton(onClick = onCancel) { Text("Cancel") }
-        TextButton(onClick = onSave) { Text("Save") }
+        TextButton(onClick = onCancel) { Text(stringResource(R.string.action_cancel)) }
+        TextButton(onClick = onSave) { Text(stringResource(R.string.action_save)) }
     }
 }
 
@@ -235,14 +235,14 @@ private fun TagInput(
             value = text,
             onValueChange = onTextChange,
             modifier = Modifier.weight(1f),
-            placeholder = { Text("Tag name") },
+            placeholder = { Text(stringResource(R.string.detail_tag_placeholder)) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { if (text.isNotBlank()) onSubmit() }),
         )
         AssistChip(
             onClick = { if (text.isNotBlank()) onSubmit() },
-            label = { Text("Add") },
+            label = { Text(stringResource(R.string.action_add)) },
         )
     }
 }

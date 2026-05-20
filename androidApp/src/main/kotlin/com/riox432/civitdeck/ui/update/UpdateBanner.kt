@@ -13,6 +13,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.UpdateResult
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -51,10 +53,10 @@ fun UpdateBanner(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 TextButton(onClick = onDismiss) {
-                    Text("Dismiss")
+                    Text(stringResource(R.string.update_dismiss))
                 }
                 TextButton(onClick = onDownload) {
-                    Text("Download")
+                    Text(stringResource(R.string.update_download))
                 }
             }
         }

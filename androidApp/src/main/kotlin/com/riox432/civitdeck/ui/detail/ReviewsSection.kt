@@ -117,7 +117,7 @@ private fun ReviewsSectionHeader(
         Row {
             SortDropdown(sortOrder = sortOrder, onSortChanged = onSortChanged)
             TextButton(onClick = onWriteReview) {
-                Text("Write", style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(R.string.action_write), style = MaterialTheme.typography.labelMedium)
             }
         }
     }

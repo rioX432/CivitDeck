@@ -68,7 +68,7 @@ fun DatasetListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Datasets") },
+                title = { Text(stringResource(R.string.dataset_list_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -246,7 +246,7 @@ private fun DatasetOverflowMenu(
             onDismissRequest = { onToggleMenu(false) },
         ) {
             DropdownMenuItem(
-                text = { Text("Rename") },
+                text = { Text(stringResource(R.string.action_rename)) },
                 leadingIcon = { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.cd_rename)) },
                 onClick = {
                     onToggleMenu(false)
@@ -254,7 +254,7 @@ private fun DatasetOverflowMenu(
                 },
             )
             DropdownMenuItem(
-                text = { Text("Delete") },
+                text = { Text(stringResource(R.string.action_delete)) },
                 leadingIcon = { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.cd_delete)) },
                 onClick = {
                     onToggleMenu(false)
@@ -282,7 +282,7 @@ internal fun DatasetNameDialog(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Dataset name") },
+                label = { Text(stringResource(R.string.dataset_name_label)) },
                 singleLine = true,
             )
         },
@@ -296,7 +296,7 @@ internal fun DatasetNameDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
     )

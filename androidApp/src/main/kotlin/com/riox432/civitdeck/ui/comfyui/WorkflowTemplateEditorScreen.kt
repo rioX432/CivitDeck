@@ -107,7 +107,13 @@ private fun EditorTopBar(
     onSave: () -> Unit,
 ) {
     TopAppBar(
-        title = { Text(if (isNew) "Create Template" else "Edit Template") },
+        title = {
+            Text(
+                stringResource(
+                    if (isNew) R.string.template_editor_create else R.string.template_editor_edit
+                )
+            )
+        },
         navigationIcon = {
             IconButton(
                 onClick = onBack
@@ -119,7 +125,7 @@ private fun EditorTopBar(
             }
         },
         actions = {
-            TextButton(onClick = onSave, enabled = canSave) { Text("Save") }
+            TextButton(onClick = onSave, enabled = canSave) { Text(stringResource(R.string.action_save)) }
         },
     )
 }
@@ -148,7 +154,7 @@ private fun EditorContent(
             OutlinedTextField(
                 value = name,
                 onValueChange = onNameChange,
-                label = { Text("Template Name") },
+                label = { Text(stringResource(R.string.template_name_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
@@ -157,7 +163,7 @@ private fun EditorContent(
             OutlinedTextField(
                 value = description,
                 onValueChange = onDescriptionChange,
-                label = { Text("Description") },
+                label = { Text(stringResource(R.string.label_description)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 2,
                 maxLines = 4,
@@ -197,7 +203,11 @@ private fun newVariable(size: Int) = TemplateVariable(
 @Composable
 private fun VariablesHeader(onAdd: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text("Variables", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+        Text(
+            stringResource(R.string.template_variables),
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.weight(1f)
+        )
         IconButton(onClick = onAdd) { Icon(Icons.Default.Add, "Add variable") }
     }
 }
@@ -206,7 +216,7 @@ private fun VariablesHeader(onAdd: () -> Unit) {
 private fun TypeSelector(type: WorkflowTemplateType, onTypeChange: (WorkflowTemplateType) -> Unit) {
     var typeMenuExpanded by remember { mutableStateOf(false) }
     Column {
-        Text("Type", style = MaterialTheme.typography.labelMedium)
+        Text(stringResource(R.string.label_type), style = MaterialTheme.typography.labelMedium)
         TextButton(onClick = { typeMenuExpanded = true }) { Text(typeLabel(type)) }
         DropdownMenu(expanded = typeMenuExpanded, onDismissRequest = { typeMenuExpanded = false }) {
             WorkflowTemplateType.entries.forEach { t ->
@@ -229,7 +239,7 @@ private fun CategorySelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
     Column {
-        Text("Category", style = MaterialTheme.typography.labelMedium)
+        Text(stringResource(R.string.label_category), style = MaterialTheme.typography.labelMedium)
         TextButton(onClick = { expanded = true }) { Text(categoryLabel(category)) }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             WorkflowTemplateCategory.entries.forEach { c ->
@@ -263,7 +273,11 @@ private fun VariableEditor(
                 SliderRangeRow(variable = variable, onUpdate = onUpdate)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Required", style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                Text(
+                    stringResource(R.string.label_required),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f)
+                )
                 Switch(checked = variable.required, onCheckedChange = { onUpdate(variable.copy(required = it)) })
             }
         }
@@ -280,7 +294,7 @@ private fun VariableNameRow(
         OutlinedTextField(
             value = variable.name,
             onValueChange = { onUpdate(variable.copy(name = it)) },
-            label = { Text("Name") },
+            label = { Text(stringResource(R.string.label_name)) },
             modifier = Modifier.weight(1f),
             singleLine = true,
         )
@@ -298,7 +312,7 @@ private fun VariableLabelRow(
     OutlinedTextField(
         value = variable.label,
         onValueChange = { onUpdate(variable.copy(label = it)) },
-        label = { Text("Display Label") },
+        label = { Text(stringResource(R.string.template_display_label)) },
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
     )
@@ -315,7 +329,7 @@ private fun VariableTypeAndDefault(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column {
-            Text("Type", style = MaterialTheme.typography.labelSmall)
+            Text(stringResource(R.string.label_type), style = MaterialTheme.typography.labelSmall)
             TextButton(onClick = { typeMenuExpanded = true }) { Text(variable.type.name) }
             DropdownMenu(expanded = typeMenuExpanded, onDismissRequest = { typeMenuExpanded = false }) {
                 TemplateVariableType.entries.forEach { t ->
@@ -332,7 +346,7 @@ private fun VariableTypeAndDefault(
         OutlinedTextField(
             value = variable.defaultValue,
             onValueChange = { onUpdate(variable.copy(defaultValue = it)) },
-            label = { Text("Default") },
+            label = { Text(stringResource(R.string.template_default_label)) },
             modifier = Modifier.weight(1f),
             singleLine = true,
         )
@@ -351,21 +365,21 @@ private fun SliderRangeRow(
         OutlinedTextField(
             value = variable.min?.toString() ?: "",
             onValueChange = { onUpdate(variable.copy(min = it.toDoubleOrNull())) },
-            label = { Text("Min") },
+            label = { Text(stringResource(R.string.template_min_label)) },
             modifier = Modifier.weight(1f),
             singleLine = true,
         )
         OutlinedTextField(
             value = variable.max?.toString() ?: "",
             onValueChange = { onUpdate(variable.copy(max = it.toDoubleOrNull())) },
-            label = { Text("Max") },
+            label = { Text(stringResource(R.string.template_max_label)) },
             modifier = Modifier.weight(1f),
             singleLine = true,
         )
         OutlinedTextField(
             value = variable.step?.toString() ?: "",
             onValueChange = { onUpdate(variable.copy(step = it.toDoubleOrNull())) },
-            label = { Text("Step") },
+            label = { Text(stringResource(R.string.template_step_label)) },
             modifier = Modifier.weight(1f),
             singleLine = true,
         )

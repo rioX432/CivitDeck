@@ -61,7 +61,7 @@ fun SDWebUISettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("SD WebUI") },
+                title = { Text(stringResource(R.string.sdwebui_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -121,7 +121,7 @@ private fun SDWebUISettingsContent(
                     onClick = onNavigateToGeneration,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Open Generator")
+                    Text(stringResource(R.string.sdwebui_open_generator))
                 }
             }
         }
@@ -165,7 +165,7 @@ private fun SDWebUIStatusSection(state: SDWebUISettingsUiState, onTest: () -> Un
                 if (state.isTesting) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp))
                 } else if (state.activeConnection != null) {
-                    TextButton(onClick = onTest) { Text("Test") }
+                    TextButton(onClick = onTest) { Text(stringResource(R.string.action_test)) }
                 }
             }
             state.testError?.let {
@@ -216,30 +216,36 @@ private fun SDWebUIAddConnectionDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (editing != null) "Edit Connection" else "Add Connection") },
+        title = {
+            Text(
+                stringResource(
+                    if (editing != null) R.string.comfyui_edit_connection else R.string.comfyui_add_connection
+                )
+            )
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") },
-                    placeholder = { Text("e.g. Home PC") },
+                    label = { Text(stringResource(R.string.label_name)) },
+                    placeholder = { Text(stringResource(R.string.comfyui_name_placeholder)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 OutlinedTextField(
                     value = hostname,
                     onValueChange = { hostname = it },
-                    label = { Text("Hostname / IP") },
-                    placeholder = { Text("192.168.1.100") },
+                    label = { Text(stringResource(R.string.comfyui_hostname_label)) },
+                    placeholder = { Text(stringResource(R.string.comfyui_hostname_placeholder)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 OutlinedTextField(
                     value = portText,
                     onValueChange = { portText = it },
-                    label = { Text("Port") },
-                    placeholder = { Text("7860") },
+                    label = { Text(stringResource(R.string.label_port)) },
+                    placeholder = { Text(stringResource(R.string.sdwebui_port_placeholder)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -252,16 +258,17 @@ private fun SDWebUIAddConnectionDialog(
                     onSave(name.ifBlank { hostname }, hostname, port)
                 },
                 enabled = hostname.isNotBlank(),
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.action_save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }
 
+@Composable
 private fun sdwebuiStatusLabel(status: SDWebUIConnectionStatus): String = when (status) {
-    SDWebUIConnectionStatus.Connected -> "Connected"
-    SDWebUIConnectionStatus.Disconnected -> "Disconnected"
-    SDWebUIConnectionStatus.Testing -> "Testing..."
-    SDWebUIConnectionStatus.Error -> "Connection Error"
-    SDWebUIConnectionStatus.NotConfigured -> "No server configured"
+    SDWebUIConnectionStatus.Connected -> stringResource(R.string.comfyui_status_connected)
+    SDWebUIConnectionStatus.Disconnected -> stringResource(R.string.comfyui_status_disconnected)
+    SDWebUIConnectionStatus.Testing -> stringResource(R.string.comfyui_status_testing)
+    SDWebUIConnectionStatus.Error -> stringResource(R.string.comfyui_status_error)
+    SDWebUIConnectionStatus.NotConfigured -> stringResource(R.string.comfyui_status_not_configured)
 }

@@ -21,6 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.ui.components.ExpandableTextSection
 import com.riox432.civitdeck.ui.components.SectionHeader
@@ -123,10 +125,10 @@ internal fun ImageActionsRow(
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
             ),
         ) {
-            Text("View Community Images")
+            Text(stringResource(R.string.detail_view_community_images))
         }
         OutlinedButton(onClick = onSendToPC) {
-            Text("Send to PC")
+            Text(stringResource(R.string.detail_send_to_pc))
         }
         if (showTryInComfyUI) {
             Button(
@@ -136,7 +138,7 @@ internal fun ImageActionsRow(
                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                 ),
             ) {
-                Text("Try in ComfyUI")
+                Text(stringResource(R.string.detail_try_in_comfyui))
             }
         }
     }

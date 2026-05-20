@@ -79,14 +79,16 @@ private fun SaveResultSnackbar(
     snackbarHostState: SnackbarHostState,
     onDismiss: () -> Unit,
 ) {
+    val savedMessage = stringResource(R.string.comfyui_image_saved)
+    val failedMessage = stringResource(R.string.comfyui_image_save_failed)
     LaunchedEffect(imageSaveSuccess) {
         when (imageSaveSuccess) {
             true -> {
-                snackbarHostState.showSnackbar("Image saved to gallery")
+                snackbarHostState.showSnackbar(savedMessage)
                 onDismiss()
             }
             false -> {
-                snackbarHostState.showSnackbar("Failed to save image")
+                snackbarHostState.showSnackbar(failedMessage)
                 onDismiss()
             }
             null -> {}
@@ -104,7 +106,7 @@ private fun GenerationTopBar(
 ) {
     Column {
         TopAppBar(
-            title = { Text("txt2img") },
+            title = { Text(stringResource(R.string.comfyui_txt2img_title)) },
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(
@@ -166,7 +168,11 @@ private fun LoraSection(state: GenerationUiState, viewModel: ComfyUIGenerationVi
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(Spacing.md), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("LoRA", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+                Text(
+                    stringResource(R.string.comfyui_lora_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.weight(1f)
+                )
                 IconButton(onClick = { expanded = true }, enabled = state.availableLoras.isNotEmpty()) {
                     Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add_lora))
                 }
@@ -187,7 +193,7 @@ private fun LoraSection(state: GenerationUiState, viewModel: ComfyUIGenerationVi
             }
             if (state.availableLoras.isEmpty() && !state.isLoadingLoras) {
                 Text(
-                    "No LoRAs found on server",
+                    stringResource(R.string.comfyui_no_loras),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -225,7 +231,11 @@ private fun ControlNetSection(state: GenerationUiState, viewModel: ComfyUIGenera
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(Spacing.md), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("ControlNet", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+                Text(
+                    stringResource(R.string.comfyui_controlnet_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.weight(1f)
+                )
                 Switch(checked = state.controlNetEnabled, onCheckedChange = viewModel::onControlNetToggled)
             }
             if (state.controlNetEnabled) {
@@ -320,17 +330,20 @@ private fun CustomWorkflowContent(state: GenerationUiState, onImport: () -> Unit
         )
         if (state.extractedParameters.isNotEmpty()) {
             Button(onClick = onEditParams, modifier = Modifier.fillMaxWidth()) {
-                Text("Edit Parameters (${state.extractedParameters.size})")
+                Text(stringResource(R.string.comfyui_edit_parameters_count, state.extractedParameters.size))
             }
         } else if (state.isLoadingParameters) {
             Text(
-                "Loading parameters...",
+                stringResource(R.string.comfyui_loading_parameters),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     } else {
-        Button(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Text("Import Workflow JSON") }
+        Button(
+            onClick = onImport,
+            modifier = Modifier.fillMaxWidth()
+        ) { Text(stringResource(R.string.comfyui_import_workflow_json)) }
     }
 }
 
@@ -343,19 +356,19 @@ private fun WorkflowImportDialog(
 ) {
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Paste ComfyUI Workflow JSON") },
+        title = { Text(stringResource(R.string.comfyui_paste_workflow_json)) },
         text = {
             OutlinedTextField(
                 value = text,
                 onValueChange = onTextChange,
-                label = { Text("Workflow JSON") },
+                label = { Text(stringResource(R.string.comfyui_workflow_json_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 6,
                 maxLines = 12,
             )
         },
-        confirmButton = { Button(onClick = onConfirm) { Text("Import") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        confirmButton = { Button(onClick = onConfirm) { Text(stringResource(R.string.action_import)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }
 
@@ -395,7 +408,7 @@ private fun InpaintingMaskContent(
                 modifier = Modifier.weight(1f),
             )
             TextButton(onClick = viewModel::onClearMask) {
-                Text("Clear")
+                Text(stringResource(R.string.action_clear))
             }
         }
         SliderRow(
@@ -416,7 +429,7 @@ private fun InpaintingMaskContent(
             },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Add Mask")
+            Text(stringResource(R.string.comfyui_add_mask))
         }
     }
 }

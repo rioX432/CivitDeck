@@ -233,7 +233,7 @@ private fun TypeDropdown(
 ) {
     DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
         DropdownMenuItem(
-            text = { Text("All Types") },
+            text = { Text(stringResource(R.string.collection_all_types)) },
             onClick = {
                 onTypeFilterChange(null)
                 onDismiss()

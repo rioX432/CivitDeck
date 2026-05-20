@@ -280,7 +280,7 @@ private fun FilterSheetHeader(
                 Icon(Icons.Default.BookmarkAdd, contentDescription = stringResource(R.string.cd_save_current_filter))
             }
             TextButton(onClick = onReset) {
-                Text("Reset")
+                Text(stringResource(R.string.search_filter_reset))
             }
         }
     }

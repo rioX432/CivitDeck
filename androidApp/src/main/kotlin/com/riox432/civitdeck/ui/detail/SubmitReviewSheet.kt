@@ -93,7 +93,7 @@ private fun SubmitReviewContent(
         OutlinedTextField(
             value = details,
             onValueChange = onDetailsChange,
-            label = { Text("Details (optional)") },
+            label = { Text(stringResource(R.string.detail_review_details_label)) },
             modifier = Modifier.fillMaxWidth(),
             minLines = MIN_TEXT_LINES,
             maxLines = MAX_TEXT_LINES,
@@ -110,7 +110,7 @@ private fun SubmitReviewContent(
 
 @Composable
 private fun StarRatingSelector(rating: Int, onRatingChange: (Int) -> Unit) {
-    Text("Rating", style = MaterialTheme.typography.labelMedium)
+    Text(stringResource(R.string.label_rating), style = MaterialTheme.typography.labelMedium)
     Spacer(Modifier.height(Spacing.xs))
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         for (i in 1..MAX_STARS) {
@@ -135,19 +135,19 @@ private fun StarRatingSelector(rating: Int, onRatingChange: (Int) -> Unit) {
 
 @Composable
 private fun RecommendationSelector(recommended: Boolean, onChanged: (Boolean) -> Unit) {
-    Text("Recommendation", style = MaterialTheme.typography.labelMedium)
+    Text(stringResource(R.string.label_recommendation), style = MaterialTheme.typography.labelMedium)
     Spacer(Modifier.height(Spacing.xs))
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         FilterChip(
             selected = recommended,
             onClick = { onChanged(true) },
-            label = { Text("Recommend") },
+            label = { Text(stringResource(R.string.detail_recommend)) },
             leadingIcon = { Icon(Icons.Outlined.ThumbUp, null, Modifier.size(16.dp)) },
         )
         FilterChip(
             selected = !recommended,
             onClick = { onChanged(false) },
-            label = { Text("Not recommended") },
+            label = { Text(stringResource(R.string.detail_not_recommended)) },
             leadingIcon = { Icon(Icons.Outlined.ThumbDown, null, Modifier.size(16.dp)) },
         )
     }
@@ -164,7 +164,7 @@ private fun SubmitButton(
         if (isSubmitting) {
             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
         } else {
-            Text("Submit")
+            Text(stringResource(R.string.action_submit))
         }
     }
 }

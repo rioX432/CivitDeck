@@ -61,7 +61,7 @@ internal fun ModelContextMenu(
     DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
         if (showCompare) {
             DropdownMenuItem(
-                text = { Text("Compare") },
+                text = { Text(stringResource(R.string.search_compare)) },
                 onClick = {
                     onCompare()
                     onDismiss()
@@ -72,7 +72,7 @@ internal fun ModelContextMenu(
             )
         }
         DropdownMenuItem(
-            text = { Text("Hide model") },
+            text = { Text(stringResource(R.string.search_hide_model)) },
             onClick = {
                 onHide()
                 onDismiss()

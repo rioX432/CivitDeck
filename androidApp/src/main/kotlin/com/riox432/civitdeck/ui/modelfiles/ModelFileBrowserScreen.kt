@@ -63,7 +63,7 @@ fun ModelFileBrowserScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Model Files") },
+                title = { Text(stringResource(R.string.model_files_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -105,9 +105,13 @@ fun ModelFileBrowserScreen(
     state.errorMessage?.let { error ->
         AlertDialog(
             onDismissRequest = viewModel::onDismissError,
-            title = { Text("Scan Error") },
+            title = { Text(stringResource(R.string.model_files_scan_error)) },
             text = { Text(error) },
-            confirmButton = { TextButton(onClick = viewModel::onDismissError) { Text("OK") } },
+            confirmButton = {
+                TextButton(onClick = viewModel::onDismissError) {
+                    Text(stringResource(R.string.action_ok))
+                }
+            },
         )
     }
 }
@@ -228,16 +232,16 @@ private fun DirectoryItem(directory: ModelDirectory, onRemove: (Long) -> Unit) {
     if (showConfirm) {
         AlertDialog(
             onDismissRequest = { showConfirm = false },
-            title = { Text("Remove Directory") },
-            text = { Text("Remove this directory and all its scanned data?") },
+            title = { Text(stringResource(R.string.model_files_remove_directory)) },
+            text = { Text(stringResource(R.string.model_files_remove_confirm)) },
             confirmButton = {
                 TextButton(onClick = {
                     onRemove(directory.id)
                     showConfirm = false
-                }) { Text("Remove") }
+                }) { Text(stringResource(R.string.action_remove)) }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirm = false }) { Text("Cancel") }
+                TextButton(onClick = { showConfirm = false }) { Text(stringResource(R.string.action_cancel)) }
             },
         )
     }
@@ -317,12 +321,12 @@ private fun AddDirectoryDialog(onAdd: (String) -> Unit, onDismiss: () -> Unit) {
     var path by rememberSaveable { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Model Directory") },
+        title = { Text(stringResource(R.string.model_files_add_directory)) },
         text = {
             OutlinedTextField(
                 value = path,
                 onValueChange = { path = it },
-                placeholder = { Text("/path/to/models") },
+                placeholder = { Text(stringResource(R.string.model_files_path_placeholder)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -334,10 +338,10 @@ private fun AddDirectoryDialog(onAdd: (String) -> Unit, onDismiss: () -> Unit) {
                     onDismiss()
                 },
                 enabled = path.isNotBlank(),
-            ) { Text("Add") }
+            ) { Text(stringResource(R.string.action_add)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
     )
 }

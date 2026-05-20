@@ -96,7 +96,7 @@ fun BackupScreen(
 @Composable
 private fun BackupTopBar(onBack: () -> Unit) {
     TopAppBar(
-        title = { Text("Backup & Restore") },
+        title = { Text(stringResource(R.string.backup_title)) },
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(
@@ -145,7 +145,7 @@ private fun BackupContent(
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(padding),
     ) {
-        item { SectionTitle("Select Data") }
+        item { SectionTitle(stringResource(R.string.backup_select_data)) }
         item { SelectionControls(viewModel) }
         items(BackupCategory.entries.toList(), key = { it.name }) { category ->
             CategoryRow(
@@ -178,8 +178,8 @@ private fun SelectionControls(viewModel: BackupViewModel) {
             .padding(horizontal = Spacing.lg),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
-        TextButton(onClick = viewModel::onSelectAll) { Text("Select All") }
-        TextButton(onClick = viewModel::onDeselectAll) { Text("Deselect All") }
+        TextButton(onClick = viewModel::onSelectAll) { Text(stringResource(R.string.action_select_all)) }
+        TextButton(onClick = viewModel::onDeselectAll) { Text(stringResource(R.string.action_deselect_all)) }
     }
 }
 
@@ -228,7 +228,7 @@ private fun ActionButtons(
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             }
-            Text("Export Backup")
+            Text(stringResource(R.string.backup_export))
         }
         OutlinedButton(
             onClick = { importLauncher.launch(arrayOf("application/json", "application/octet-stream", "*/*")) },
@@ -238,7 +238,7 @@ private fun ActionButtons(
             if (state.isImporting) {
                 CircularProgressIndicator(modifier = Modifier.padding(end = Spacing.sm))
             }
-            Text("Import from File")
+            Text(stringResource(R.string.backup_import))
         }
         Spacer(Modifier.height(Spacing.lg))
     }
@@ -254,16 +254,16 @@ private fun ImportConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Restore Backup") },
+        title = { Text(stringResource(R.string.backup_restore_title)) },
         text = { ImportDialogContent(state, onStrategyChanged, onToggleCategory) },
         confirmButton = {
             TextButton(
                 onClick = onConfirm,
                 enabled = state.selectedCategories.isNotEmpty(),
-            ) { Text("Restore") }
+            ) { Text(stringResource(R.string.action_restore)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
     )
 }
@@ -276,11 +276,11 @@ private fun ImportDialogContent(
 ) {
     Column {
         Text(
-            "Found data for ${state.importCategories.size} categories.",
+            stringResource(R.string.backup_found_categories, state.importCategories.size),
             style = MaterialTheme.typography.bodyMedium,
         )
         Spacer(Modifier.height(Spacing.md))
-        Text("Restore Strategy:", style = MaterialTheme.typography.titleSmall)
+        Text(stringResource(R.string.backup_restore_strategy), style = MaterialTheme.typography.titleSmall)
         RestoreStrategy.entries.forEach { strategy ->
             key(strategy.name) {
                 Row(
@@ -299,7 +299,7 @@ private fun ImportDialogContent(
             }
         }
         Spacer(Modifier.height(Spacing.sm))
-        Text("Categories to restore:", style = MaterialTheme.typography.titleSmall)
+        Text(stringResource(R.string.backup_categories_to_restore), style = MaterialTheme.typography.titleSmall)
         state.importCategories.forEach { category ->
             key(category.name) {
                 Row(

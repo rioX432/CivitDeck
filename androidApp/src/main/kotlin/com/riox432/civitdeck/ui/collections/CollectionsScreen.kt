@@ -297,7 +297,7 @@ private fun CollectionOverflowMenu(
             onDismissRequest = { onToggleMenu(false) },
         ) {
             DropdownMenuItem(
-                text = { Text("Rename") },
+                text = { Text(stringResource(R.string.action_rename)) },
                 leadingIcon = { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.cd_rename)) },
                 onClick = {
                     onToggleMenu(false)
@@ -305,7 +305,7 @@ private fun CollectionOverflowMenu(
                 },
             )
             DropdownMenuItem(
-                text = { Text("Delete") },
+                text = { Text(stringResource(R.string.action_delete)) },
                 leadingIcon = { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.cd_delete)) },
                 onClick = {
                     onToggleMenu(false)
@@ -356,12 +356,12 @@ internal fun CreateCollectionDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("New Collection") },
+        title = { Text(stringResource(R.string.collection_new_title)) },
         text = {
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Collection name") },
+                label = { Text(stringResource(R.string.collection_name_label)) },
                 singleLine = true,
             )
         },
@@ -370,12 +370,12 @@ internal fun CreateCollectionDialog(
                 onClick = { onConfirm(name.trim()) },
                 enabled = name.isNotBlank(),
             ) {
-                Text("Create")
+                Text(stringResource(R.string.action_create))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
     )
@@ -389,13 +389,13 @@ private fun DeleteCollectionDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Delete Collection") },
-        text = { Text("Are you sure you want to delete \"$collectionName\"? This cannot be undone.") },
+        title = { Text(stringResource(R.string.collection_delete_title)) },
+        text = { Text(stringResource(R.string.collection_delete_confirm, collectionName)) },
         confirmButton = {
-            TextButton(onClick = onConfirm) { Text("Delete") }
+            TextButton(onClick = onConfirm) { Text(stringResource(R.string.action_delete)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
     )
 }
@@ -410,12 +410,12 @@ private fun RenameCollectionDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Rename Collection") },
+        title = { Text(stringResource(R.string.collection_rename_title)) },
         text = {
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Collection name") },
+                label = { Text(stringResource(R.string.collection_name_label)) },
                 singleLine = true,
             )
         },
@@ -424,12 +424,12 @@ private fun RenameCollectionDialog(
                 onClick = { onConfirm(name.trim()) },
                 enabled = name.isNotBlank(),
             ) {
-                Text("Rename")
+                Text(stringResource(R.string.action_rename))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
     )

@@ -246,4 +246,280 @@
     <string name="dataset_edit_caption">Edit caption</string>
     <string name="dataset_batch_edit_tags">Batch edit tags</string>
     <string name="dataset_select">Select</string>
+
+    <!-- Common actions -->
+    <string name="action_skip">Skip</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_create">Create</string>
+    <string name="action_import">Import</string>
+    <string name="action_export">Export</string>
+    <string name="action_apply">Apply</string>
+    <string name="action_done">Done</string>
+    <string name="action_close">Close</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="action_download">Download</string>
+    <string name="action_test">Test</string>
+    <string name="action_add">Add</string>
+    <string name="action_generate">Generate</string>
+    <string name="action_submit">Submit</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_share">Share</string>
+    <string name="action_ok">OK</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_restore">Restore</string>
+    <string name="action_select_all">Select All</string>
+    <string name="action_deselect_all">Deselect All</string>
+    <string name="action_clear_all">Clear All</string>
+    <string name="action_write">Write</string>
+    <string name="action_disconnect">Disconnect</string>
+    <string name="action_interrupt">Interrupt</string>
+    <string name="action_uninstall">Uninstall</string>
+
+    <!-- Common labels -->
+    <string name="label_loading">Loading…</string>
+    <string name="label_generating">Generating…</string>
+    <string name="label_importing">Importing…</string>
+    <string name="label_required">Required</string>
+    <string name="label_optional">Optional</string>
+    <string name="label_enabled">Enabled</string>
+    <string name="label_name">Name</string>
+    <string name="label_description">Description</string>
+    <string name="label_type">Type</string>
+    <string name="label_category">Category</string>
+    <string name="label_prompt">Prompt</string>
+    <string name="label_negative_prompt">Negative Prompt</string>
+    <string name="label_port">Port</string>
+    <string name="label_caption">Caption</string>
+    <string name="label_hashtags">Hashtags</string>
+    <string name="label_rating">Rating</string>
+    <string name="label_recommendation">Recommendation</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_skip">Skip</string>
+
+    <!-- Text search -->
+    <string name="text_search_title">AI Search</string>
+    <string name="text_search_placeholder">Describe what you\'re looking for…</string>
+
+    <!-- ComfyHub -->
+    <string name="comfyhub_workflows_title">ComfyHub Workflows</string>
+    <string name="comfyhub_search_placeholder">Search workflows…</string>
+    <string name="comfyhub_import_to_comfyui">Import to ComfyUI</string>
+
+    <!-- Update banner -->
+    <string name="update_dismiss">Dismiss</string>
+    <string name="update_download">Download</string>
+
+    <!-- ComfyUI -->
+    <string name="comfyui_title">ComfyUI</string>
+    <string name="comfyui_open_txt2img">Open txt2img Generator</string>
+    <string name="comfyui_view_gallery">View Output Gallery</string>
+    <string name="comfyui_scan_lan">Scan LAN</string>
+    <string name="comfyui_lan_discovery">LAN Discovery</string>
+    <string name="comfyui_lan_scan_hint">Scan your local network for ComfyUI servers</string>
+    <string name="comfyui_use_https">Use HTTPS</string>
+    <string name="comfyui_accept_self_signed">Accept self-signed certificates</string>
+    <string name="comfyui_hostname_label">Hostname / IP</string>
+    <string name="comfyui_hostname_placeholder">192.168.1.100</string>
+    <string name="comfyui_name_placeholder">e.g. Home PC</string>
+    <string name="comfyui_edit_connection">Edit Connection</string>
+    <string name="comfyui_add_connection">Add Connection</string>
+    <string name="comfyui_queue_title">Queue</string>
+    <string name="comfyui_txt2img_title">txt2img</string>
+    <string name="comfyui_lora_label">LoRA</string>
+    <string name="comfyui_controlnet_label">ControlNet</string>
+    <string name="comfyui_select_controlnet">Select ControlNet model…</string>
+    <string name="comfyui_edit_parameters_count">Edit Parameters (%1$d)</string>
+    <string name="comfyui_import_workflow_json">Import Workflow JSON</string>
+    <string name="comfyui_paste_workflow_json">Paste ComfyUI Workflow JSON</string>
+    <string name="comfyui_workflow_json_label">Workflow JSON</string>
+    <string name="comfyui_custom_workflow_json">Custom Workflow JSON</string>
+    <string name="comfyui_add_mask">Add Mask</string>
+    <string name="comfyui_inpainting_mask">Inpainting Mask</string>
+    <string name="comfyui_checkpoint_label">Checkpoint</string>
+    <string name="comfyui_seed_label">Seed (-1 = random)</string>
+    <string name="comfyui_width_label">Width</string>
+    <string name="comfyui_height_label">Height</string>
+    <string name="comfyui_result_generating">Generating…</string>
+    <string name="comfyui_output_gallery_title">Output Gallery</string>
+    <string name="comfyui_add_to_dataset">Add to Dataset</string>
+    <string name="comfyui_mask_editor_title">Mask Editor</string>
+    <string name="comfyui_no_loras">No LoRAs found on server</string>
+    <string name="comfyui_loading_parameters">Loading parameters…</string>
+    <string name="comfyui_image_saved">Image saved to gallery</string>
+    <string name="comfyui_image_save_failed">Failed to save image</string>
+    <string name="comfyui_status_connected">Connected</string>
+    <string name="comfyui_status_disconnected">Disconnected</string>
+    <string name="comfyui_status_testing">Testing…</string>
+    <string name="comfyui_status_error">Connection Error</string>
+    <string name="comfyui_status_not_configured">No server configured</string>
+
+    <!-- SD WebUI -->
+    <string name="sdwebui_title">SD WebUI</string>
+    <string name="sdwebui_open_generator">Open Generator</string>
+    <string name="sdwebui_generation_title">SD WebUI Generation</string>
+    <string name="sdwebui_steps_label">Steps</string>
+    <string name="sdwebui_cfg_scale_label">CFG Scale</string>
+    <string name="sdwebui_image_error">Image error</string>
+    <string name="sdwebui_generated_images">Generated Images</string>
+    <string name="sdwebui_port_placeholder">7860</string>
+
+    <!-- Civitai Link -->
+    <string name="civitai_link_title">Civitai Link</string>
+    <string name="civitai_link_key_label">Link Key</string>
+    <string name="civitai_link_key_placeholder">Paste your Civitai Link key here</string>
+
+    <!-- Workflow templates -->
+    <string name="template_editor_create">Create Template</string>
+    <string name="template_editor_edit">Edit Template</string>
+    <string name="template_name_label">Template Name</string>
+    <string name="template_display_label">Display Label</string>
+    <string name="template_default_label">Default</string>
+    <string name="template_min_label">Min</string>
+    <string name="template_max_label">Max</string>
+    <string name="template_step_label">Step</string>
+    <string name="template_variables">Variables</string>
+    <string name="template_picker_title">Pick Template</string>
+    <string name="template_list_title">Workflow Templates</string>
+    <string name="template_search_placeholder">Search templates…</string>
+    <string name="template_all_filter">All</string>
+    <string name="template_all_types_filter">All Types</string>
+    <string name="template_import_json">Import Template JSON</string>
+    <string name="template_paste_json">Paste template JSON</string>
+    <string name="template_json_title">Template JSON</string>
+    <string name="template_import_failed">Import failed: %1$s</string>
+    <string name="template_no_templates">No templates yet. Create one with the + button.</string>
+    <string name="template_no_match">No templates match your filters.</string>
+
+    <!-- Model files -->
+    <string name="model_files_title">Model Files</string>
+    <string name="model_files_scan_error">Scan Error</string>
+    <string name="model_files_remove_directory">Remove Directory</string>
+    <string name="model_files_remove_confirm">Remove this directory and all its scanned data?</string>
+    <string name="model_files_add_directory">Add Model Directory</string>
+    <string name="model_files_path_placeholder">/path/to/models</string>
+
+    <!-- Dataset -->
+    <string name="dataset_create_new">Create New Dataset</string>
+    <string name="dataset_caption_label">Caption</string>
+    <string name="dataset_caption_placeholder">Describe this image for training…</string>
+    <string name="dataset_list_title">Datasets</string>
+    <string name="dataset_name_label">Dataset name</string>
+    <string name="dataset_review_duplicates">Review Duplicates</string>
+    <string name="dataset_selected_count_label">%1$d selected</string>
+    <string name="dataset_export_cancel">Cancel</string>
+    <string name="dataset_export_complete">Export Complete</string>
+    <string name="dataset_export_failed">Export Failed</string>
+    <string name="dataset_export_anyway">Export Anyway</string>
+    <string name="dataset_license_warning">License Warning</string>
+    <string name="dataset_license_warning_message">%1$d images are non-trainable or have license restrictions. They will be excluded from the export.</string>
+
+    <!-- Gallery -->
+    <string name="gallery_title">Images</string>
+    <string name="gallery_copy_prompt">Copy Prompt</string>
+    <string name="gallery_save_prompt">Save Prompt</string>
+    <string name="gallery_comfyui_workflow">ComfyUI Workflow</string>
+    <string name="gallery_a1111_params">A1111 Params</string>
+
+    <!-- Discovery -->
+    <string name="discovery_title">Discover</string>
+
+    <!-- Plugin -->
+    <string name="plugin_enabled_label">Enabled</string>
+    <string name="plugin_json_config_label">JSON Config</string>
+    <string name="plugin_save_config">Save Config</string>
+    <string name="plugin_uninstall">Uninstall Plugin</string>
+    <string name="plugin_uninstall_confirm_title">Uninstall Plugin</string>
+    <string name="plugin_uninstall_confirm_message">Are you sure? This will remove the plugin and its data.</string>
+    <string name="plugin_uninstall_action">Uninstall</string>
+    <string name="plugin_list_title">Plugins</string>
+
+    <!-- QR Code -->
+    <string name="qr_scanner_title">Scan QR Code</string>
+    <string name="qr_share">Share QR Code</string>
+
+    <!-- Search -->
+    <string name="search_filter_reset">Reset</string>
+    <string name="search_save_filter_title">Save Filter</string>
+    <string name="search_filter_name_label">Filter name</string>
+    <string name="search_compare">Compare</string>
+    <string name="search_hide_model">Hide model</string>
+    <string name="search_placeholder">Search models…</string>
+
+    <!-- Detail -->
+    <string name="detail_find_similar">Find similar</string>
+    <string name="detail_add_to_collection">Add to collection</string>
+    <string name="detail_qr_code">QR code</string>
+    <string name="detail_view_community_images">View Community Images</string>
+    <string name="detail_send_to_pc">Send to PC</string>
+    <string name="detail_try_in_comfyui">Try in ComfyUI</string>
+    <string name="detail_note_placeholder">e.g. Works great with X LoRA</string>
+    <string name="detail_tag_placeholder">Tag name</string>
+    <string name="detail_review_details_label">Details (optional)</string>
+    <string name="detail_recommend">Recommend</string>
+    <string name="detail_not_recommended">Not recommended</string>
+    <string name="detail_compare_images">Compare Images</string>
+    <string name="detail_compare_models_title">Compare Models</string>
+
+    <!-- Notifications -->
+    <string name="notification_center_title">Notifications</string>
+
+    <!-- Feed -->
+    <string name="feed_title">Feed</string>
+
+    <!-- Browsing history -->
+    <string name="history_title">Browsing History</string>
+    <string name="history_clear_all_title">Clear All History</string>
+    <string name="history_clear_all_confirm">Are you sure? This cannot be undone.</string>
+
+    <!-- Prompts -->
+    <string name="prompts_search_placeholder">Search prompts…</string>
+    <string name="prompts_save_as_template">Save as Template</string>
+    <string name="prompts_template_name_label">Template name (optional)</string>
+
+    <!-- Backup -->
+    <string name="backup_title">Backup &amp; Restore</string>
+    <string name="backup_export">Export Backup</string>
+    <string name="backup_import">Import from File</string>
+    <string name="backup_restore_title">Restore Backup</string>
+    <string name="backup_restore_strategy">Restore Strategy:</string>
+    <string name="backup_categories_to_restore">Categories to restore:</string>
+    <string name="backup_found_categories">Found data for %1$d categories.</string>
+    <string name="backup_select_data">Select Data</string>
+
+    <!-- Collections -->
+    <string name="collection_all_types">All Types</string>
+    <string name="collection_new_title">New Collection</string>
+    <string name="collection_name_label">Collection name</string>
+    <string name="collection_delete_title">Delete Collection</string>
+    <string name="collection_delete_confirm">Are you sure you want to delete \"%1$s\"? This cannot be undone.</string>
+    <string name="collection_rename_title">Rename Collection</string>
+    <string name="collection_create_new">Create New Collection</string>
+
+    <!-- Create -->
+    <string name="create_hub_title">Create</string>
+
+    <!-- External server -->
+    <string name="external_server_title">Custom Server</string>
+    <string name="external_server_test_connection">Test Connection</string>
+    <string name="external_server_open_gallery">Open Gallery</string>
+    <string name="external_server_display_name_label">Display Name</string>
+    <string name="external_server_url_label">Server URL</string>
+    <string name="external_server_api_key_label">API Key (optional)</string>
+    <string name="external_server_search_label">Search</string>
+    <string name="external_server_character_label">Character</string>
+    <string name="external_server_scenario_label">Scenario</string>
+    <string name="external_server_start_generation">Start Generation</string>
+
+    <!-- Analytics -->
+    <string name="analytics_title">Usage Stats</string>
+
+    <!-- Share -->
+    <string name="share_add_hashtag_label">Add hashtag</string>
+    <string name="share_add_tag_label">Add tag</string>
 </resources>

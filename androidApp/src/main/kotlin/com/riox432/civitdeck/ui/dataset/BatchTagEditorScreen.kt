@@ -245,7 +245,7 @@ private fun TagInputRow(
             onClick = { onApplyTag(tagInput.trim()) },
             enabled = canApply,
         ) {
-            Text("Apply")
+            Text(stringResource(R.string.action_apply))
         }
     }
 }

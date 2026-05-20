@@ -15,7 +15,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.ui.theme.Spacing
 
 private const val MAX_CAPTION_LENGTH = 2000
@@ -65,10 +67,10 @@ private fun CaptionEditorContent(
             value = captionText,
             onValueChange = onTextChange,
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Caption") },
+            label = { Text(stringResource(R.string.dataset_caption_label)) },
             minLines = 4,
             maxLines = 8,
-            placeholder = { Text("Describe this image for training…") },
+            placeholder = { Text(stringResource(R.string.dataset_caption_placeholder)) },
         )
         Text(
             text = "${captionText.length} / $MAX_CAPTION_LENGTH",

@@ -154,7 +154,7 @@ private fun EnableToggleRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("Enabled", style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.plugin_enabled_label), style = MaterialTheme.typography.bodyLarge)
         Switch(
             checked = viewModel.isPluginActive(plugin),
             onCheckedChange = { viewModel.togglePlugin(plugin.id, it) },
@@ -197,7 +197,7 @@ private fun ConfigSection(
             value = editedConfig,
             onValueChange = { editedConfig = it },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("JSON Config") },
+            label = { Text(stringResource(R.string.plugin_json_config_label)) },
             minLines = 3,
             maxLines = 8,
         )
@@ -205,7 +205,7 @@ private fun ConfigSection(
             onClick = { viewModel.saveConfig(pluginId, editedConfig) },
             enabled = editedConfig != configJson,
         ) {
-            Text("Save Config")
+            Text(stringResource(R.string.plugin_save_config))
         }
     }
 }
@@ -224,7 +224,7 @@ private fun UninstallSection(
         ),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Text("Uninstall Plugin")
+        Text(stringResource(R.string.plugin_uninstall))
     }
     if (showConfirm) {
         UninstallConfirmDialog(
@@ -245,15 +245,15 @@ private fun UninstallConfirmDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Uninstall Plugin") },
-        text = { Text("Are you sure? This will remove the plugin and its data.") },
+        title = { Text(stringResource(R.string.plugin_uninstall_confirm_title)) },
+        text = { Text(stringResource(R.string.plugin_uninstall_confirm_message)) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Uninstall", color = MaterialTheme.colorScheme.error)
+                Text(stringResource(R.string.plugin_uninstall_action), color = MaterialTheme.colorScheme.error)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
     )
 }

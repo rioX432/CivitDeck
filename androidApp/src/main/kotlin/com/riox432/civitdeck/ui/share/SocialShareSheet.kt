@@ -43,8 +43,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -112,7 +114,7 @@ private fun CaptionField(caption: String, onCaptionChange: (String) -> Unit) {
     OutlinedTextField(
         value = caption,
         onValueChange = onCaptionChange,
-        label = { Text("Caption") },
+        label = { Text(stringResource(R.string.label_caption)) },
         modifier = Modifier.fillMaxWidth(),
         minLines = 2,
         maxLines = 5,
@@ -141,7 +143,7 @@ private fun HashtagSection(
     onToggle: (String, Boolean) -> Unit,
     onRemove: (String) -> Unit,
 ) {
-    Text("Hashtags", style = MaterialTheme.typography.labelMedium)
+    Text(stringResource(R.string.label_hashtags), style = MaterialTheme.typography.labelMedium)
     Spacer(modifier = Modifier.height(Spacing.xs))
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
@@ -185,7 +187,7 @@ private fun AddTagRow(
         OutlinedTextField(
             value = input,
             onValueChange = onInputChange,
-            label = { Text("Add tag") },
+            label = { Text(stringResource(R.string.share_add_tag_label)) },
             modifier = Modifier.weight(1f),
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -217,7 +219,7 @@ private fun ActionButtons(
         ) {
             Icon(Icons.Default.ContentCopy, contentDescription = "Copy to clipboard", modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(Spacing.xs))
-            Text("Copy")
+            Text(stringResource(R.string.action_copy))
         }
         Button(
             onClick = {
@@ -228,7 +230,7 @@ private fun ActionButtons(
         ) {
             Icon(Icons.Default.Share, contentDescription = "Share", modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(Spacing.xs))
-            Text("Share")
+            Text(stringResource(R.string.action_share))
         }
     }
 }

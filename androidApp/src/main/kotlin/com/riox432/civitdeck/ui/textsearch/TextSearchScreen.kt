@@ -49,7 +49,7 @@ fun TextSearchScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("AI Search") },
+                title = { Text(stringResource(R.string.text_search_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -101,7 +101,7 @@ private fun SearchInput(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Spacing.md, vertical = Spacing.sm),
-        placeholder = { Text("Describe what you're looking for...") },
+        placeholder = { Text(stringResource(R.string.text_search_placeholder)) },
         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
