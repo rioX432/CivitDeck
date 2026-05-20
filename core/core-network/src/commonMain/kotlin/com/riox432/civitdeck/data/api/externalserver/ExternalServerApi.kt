@@ -14,8 +14,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.URLBuilder
 import io.ktor.http.Url
 import io.ktor.http.contentType
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.io.IOException
-import kotlin.concurrent.Volatile
 
 /**
  * Holds the server configuration as an immutable snapshot so that
@@ -26,15 +26,14 @@ private data class ServerConfig(val baseUrl: String = "", val apiKey: String = "
 class ExternalServerApi(
     private val client: HttpClient,
 ) {
-    @Volatile
-    private var config: ServerConfig = ServerConfig()
+    private val _config = MutableStateFlow(ServerConfig())
 
     fun configure(baseUrl: String, apiKey: String) {
-        config = ServerConfig(baseUrl.trimEnd('/'), apiKey)
+        _config.value = ServerConfig(baseUrl.trimEnd('/'), apiKey)
     }
 
     suspend fun getCapabilities(): CapabilitiesResponseDto {
-        val cfg = config
+        val cfg = _config.value
         return client.get("${cfg.baseUrl}/capabilities") {
             if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
         }.body()
@@ -45,7 +44,7 @@ class ExternalServerApi(
         perPage: Int,
         filters: Map<String, String>,
     ): PaginatedImagesResponseDto {
-        val cfg = config
+        val cfg = _config.value
         val url = URLBuilder("${cfg.baseUrl}/images").apply {
             parameters.append("page", page.toString())
             parameters.append("per_page", perPage.toString())
@@ -59,14 +58,14 @@ class ExternalServerApi(
     }
 
     suspend fun getGenerationOptions(): GenerationOptionsResponseDto {
-        val cfg = config
+        val cfg = _config.value
         return client.get("${cfg.baseUrl}/generation/options") {
             if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
         }.body()
     }
 
     suspend fun getDependentChoices(endpoint: String): List<GenerationChoiceDto> {
-        val cfg = config
+        val cfg = _config.value
         // Absolute paths (starting with /) are resolved against the server origin,
         // not baseUrl, because servers may return full paths including their prefix.
         val url = when {
@@ -82,7 +81,7 @@ class ExternalServerApi(
     suspend fun executeGeneration(
         params: Map<String, String>,
     ): GenerationExecuteResponseDto {
-        val cfg = config
+        val cfg = _config.value
         return client.post("${cfg.baseUrl}/generation/execute") {
             if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
             contentType(ContentType.Application.Json)
@@ -91,7 +90,7 @@ class ExternalServerApi(
     }
 
     suspend fun getGenerationStatus(jobId: String): GenerationStatusResponseDto {
-        val cfg = config
+        val cfg = _config.value
         return client.get("${cfg.baseUrl}/generation/status") {
             if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
             url { parameters.append("job_id", jobId) }
@@ -99,7 +98,7 @@ class ExternalServerApi(
     }
 
     suspend fun deleteImage(cloudKey: String): DeleteResponseDto {
-        val cfg = config
+        val cfg = _config.value
         return client.post("${cfg.baseUrl}/images/delete") {
             if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
             contentType(ContentType.Application.Json)
@@ -108,7 +107,7 @@ class ExternalServerApi(
     }
 
     suspend fun deleteImages(cloudKeys: List<String>): DeleteResponseDto {
-        val cfg = config
+        val cfg = _config.value
         return client.post("${cfg.baseUrl}/images/delete-bulk") {
             if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
             contentType(ContentType.Application.Json)
@@ -120,7 +119,7 @@ class ExternalServerApi(
      * Health check: tries GET /capabilities and returns true if reachable.
      */
     suspend fun testConnection(): Boolean = try {
-        val cfg = config
+        val cfg = _config.value
         client.get("${cfg.baseUrl}/capabilities") {
             if (cfg.apiKey.isNotBlank()) header("X-API-Key", cfg.apiKey)
         }

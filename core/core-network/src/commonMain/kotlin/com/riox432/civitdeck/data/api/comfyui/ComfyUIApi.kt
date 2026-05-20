@@ -18,34 +18,33 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
 import io.ktor.http.contentType
 import io.ktor.http.path
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import kotlin.concurrent.Volatile
 
 @Suppress("TooManyFunctions")
 class ComfyUIApi(
     private val client: HttpClient,
     private val json: Json,
 ) {
-    @Volatile
-    private var baseUrl: String = ""
+    private val _baseUrl = MutableStateFlow("")
 
     /**
      * Sets the API base URL. Accepts a full URL (e.g. "https://myserver:8188")
      * or falls back to constructing one from hostname + port.
      */
     fun setBaseUrl(url: String) {
-        baseUrl = url.trimEnd('/')
+        _baseUrl.value = url.trimEnd('/')
     }
 
     /**
      * Legacy overload: constructs http:// URL from hostname and port.
      */
     fun setBaseUrl(hostname: String, port: Int) {
-        baseUrl = "http://$hostname:$port"
+        _baseUrl.value = "http://$hostname:$port"
     }
 
     /**
@@ -56,7 +55,7 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun getQueue(): QueueResponse =
-        logAndRethrow("getQueue") { client.get("$baseUrl/queue").body() }
+        logAndRethrow("getQueue") { client.get("${_baseUrl.value}/queue").body() }
 
     /**
      * Fetch available checkpoints: GET /object_info/CheckpointLoaderSimple
@@ -66,7 +65,7 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun getCheckpoints(): List<String> = logAndRethrow("getCheckpoints") {
-        val text = client.get("$baseUrl/object_info/CheckpointLoaderSimple").bodyAsText()
+        val text = client.get("${_baseUrl.value}/object_info/CheckpointLoaderSimple").bodyAsText()
         parseCheckpointNames(text)
     }
 
@@ -78,7 +77,7 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun getLoras(): List<String> = logAndRethrow("getLoras") {
-        val text = client.get("$baseUrl/object_info/LoraLoader").bodyAsText()
+        val text = client.get("${_baseUrl.value}/object_info/LoraLoader").bodyAsText()
         parseNodeInputList(text, "LoraLoader", "lora_name")
     }
 
@@ -90,7 +89,7 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun getControlNets(): List<String> = logAndRethrow("getControlNets") {
-        val text = client.get("$baseUrl/object_info/ControlNetLoader").bodyAsText()
+        val text = client.get("${_baseUrl.value}/object_info/ControlNetLoader").bodyAsText()
         parseNodeInputList(text, "ControlNetLoader", "control_net_name")
     }
 
@@ -102,7 +101,7 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun getFullObjectInfo(): String =
-        logAndRethrow("getFullObjectInfo") { client.get("$baseUrl/object_info").bodyAsText() }
+        logAndRethrow("getFullObjectInfo") { client.get("${_baseUrl.value}/object_info").bodyAsText() }
 
     /**
      * Submit workflow: POST /prompt
@@ -113,7 +112,7 @@ class ComfyUIApi(
      */
     suspend fun submitPrompt(workflow: JsonObject): PromptResponse = logAndRethrow("submitPrompt") {
         val body = buildJsonObject { put("prompt", workflow) }
-        client.post("$baseUrl/prompt") {
+        client.post("${_baseUrl.value}/prompt") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }.body()
@@ -126,7 +125,7 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun interrupt(): Unit =
-        logAndRethrow("interrupt") { client.post("$baseUrl/interrupt") }
+        logAndRethrow("interrupt") { client.post("${_baseUrl.value}/interrupt") }
 
     /**
      * Delete (cancel) queued prompts: POST /queue with {"delete": [...promptIds]}
@@ -143,7 +142,7 @@ class ComfyUIApi(
                 }
             )
         }
-        client.post("$baseUrl/queue") {
+        client.post("${_baseUrl.value}/queue") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }
@@ -158,7 +157,7 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun getAllHistory(): Map<String, HistoryEntry> = logAndRethrow("getAllHistory") {
-        val text = client.get("$baseUrl/history").bodyAsText()
+        val text = client.get("${_baseUrl.value}/history").bodyAsText()
         json.decodeFromString(text)
     }
 
@@ -171,7 +170,7 @@ class ComfyUIApi(
      */
     suspend fun getHistory(promptId: String): HistoryEntry? =
         logAndRethrow("getHistory (promptId=$promptId)") {
-            val text = client.get("$baseUrl/history/$promptId").bodyAsText()
+            val text = client.get("${_baseUrl.value}/history/$promptId").bodyAsText()
             val root = json.decodeFromString<Map<String, HistoryEntry>>(text)
             root[promptId]
         }
@@ -191,7 +190,7 @@ class ComfyUIApi(
         imageType: String = "input",
     ): UploadImageResponse = logAndRethrow("uploadImage") {
         client.submitFormWithBinaryData(
-            url = "$baseUrl/upload/image",
+            url = "${_baseUrl.value}/upload/image",
             formData = formData {
                 append(
                     "image",
@@ -215,7 +214,7 @@ class ComfyUIApi(
      * Omits subfolder when empty to avoid ComfyUI rejecting the request.
      */
     fun getImageUrl(image: ComfyUIOutputImage): String {
-        val url = baseUrl
+        val url = _baseUrl.value
         return URLBuilder(url).apply {
             path("view")
             parameters.append("filename", image.filename)
