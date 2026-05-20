@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.data.api.comfyui
 
+import com.riox432.civitdeck.data.api.TimeoutConfig
 import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
@@ -13,11 +14,9 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-private const val CONNECT_TIMEOUT_MS = 5_000L
-private const val REQUEST_TIMEOUT_MS = 120_000L
-private const val SOCKET_TIMEOUT_MS = 120_000L
-
-fun createComfyUIHttpClient(): HttpClient {
+fun createComfyUIHttpClient(
+    timeoutConfig: TimeoutConfig = TimeoutConfig.ComfyUI,
+): HttpClient {
     return HttpClient {
         install(ContentNegotiation) {
             json(
@@ -30,9 +29,9 @@ fun createComfyUIHttpClient(): HttpClient {
             )
         }
         install(HttpTimeout) {
-            connectTimeoutMillis = CONNECT_TIMEOUT_MS
-            requestTimeoutMillis = REQUEST_TIMEOUT_MS
-            socketTimeoutMillis = SOCKET_TIMEOUT_MS
+            connectTimeoutMillis = timeoutConfig.connectTimeoutMs
+            requestTimeoutMillis = timeoutConfig.requestTimeoutMs
+            socketTimeoutMillis = timeoutConfig.socketTimeoutMs
         }
         install(Logging) {
             level = LogLevel.NONE
@@ -54,8 +53,12 @@ private const val TAG = "ComfyUIHttpClientFactory"
  *   self-signed certificates commonly used by local ComfyUI servers. When `false`, uses
  *   standard SSL validation requiring valid CA-signed certificates. Defaults to `true`
  *   for backward compatibility with local network setups.
+ * @param timeoutConfig Timeout configuration. Defaults to [TimeoutConfig.ComfyUI].
  */
-fun createComfyUIHttpClientWithSelfSignedTls(trustSelfSignedCerts: Boolean = true): HttpClient {
+fun createComfyUIHttpClientWithSelfSignedTls(
+    trustSelfSignedCerts: Boolean = true,
+    timeoutConfig: TimeoutConfig = TimeoutConfig.ComfyUI,
+): HttpClient {
     if (trustSelfSignedCerts) {
         Logger.w(
             TAG,
@@ -63,7 +66,7 @@ fun createComfyUIHttpClientWithSelfSignedTls(trustSelfSignedCerts: Boolean = tru
                 "This is intended for local ComfyUI servers with self-signed certificates only.",
         )
     }
-    return createPlatformComfyUIHttpClient(trustSelfSignedCerts)
+    return createPlatformComfyUIHttpClient(trustSelfSignedCerts, timeoutConfig)
 }
 
 /**
@@ -71,4 +74,7 @@ fun createComfyUIHttpClientWithSelfSignedTls(trustSelfSignedCerts: Boolean = tru
  * When [trustSelfSignedCerts] is `true`, the platform engine skips certificate validation.
  * When `false`, standard SSL validation is used.
  */
-expect fun createPlatformComfyUIHttpClient(trustSelfSignedCerts: Boolean): HttpClient
+expect fun createPlatformComfyUIHttpClient(
+    trustSelfSignedCerts: Boolean,
+    timeoutConfig: TimeoutConfig,
+): HttpClient
