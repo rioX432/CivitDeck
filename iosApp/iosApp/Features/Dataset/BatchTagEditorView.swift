@@ -134,6 +134,8 @@ struct BatchTagEditorView: View {
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
         .overlay(alignment: .topLeading) { selectionIndicator(isSelected: isSelected) }
         .overlay(alignment: .bottomTrailing) { tagCountBadge(image: image) }
+        .accessibilityLabel(isSelected ? "Deselect image" : "Select image")
+        .accessibilityAddTraits(.isButton)
         .onTapGesture { viewModel.toggleSelection(image.id) }
     }
 

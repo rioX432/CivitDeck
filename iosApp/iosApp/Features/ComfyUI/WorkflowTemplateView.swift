@@ -294,6 +294,8 @@ private struct TemplateRow: View {
             }
         }
         .contentShape(Rectangle())
+        .accessibilityLabel("Select workflow: \(template.name)")
+        .accessibilityAddTraits(.isButton)
         .onTapGesture {
             if isPicker { onSelect?() } else { onSelect?() }
         }
