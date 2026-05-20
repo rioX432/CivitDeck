@@ -2,9 +2,6 @@
 
 package com.riox432.civitdeck.ui.comfyui.template
 
-import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
-import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateUiState
-
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,9 +48,12 @@ import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
 import com.riox432.civitdeck.domain.model.WorkflowTemplateCategory
 import com.riox432.civitdeck.domain.model.WorkflowTemplateType
+import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateUiState
+import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 
+@Suppress("LongMethod")
 @Composable
 fun DesktopWorkflowTemplateScreen(
     viewModel: WorkflowTemplateViewModel,
@@ -354,7 +354,8 @@ private fun TemplateCard(
                     onDelete?.let {
                         IconButton(onClick = it) {
                             Icon(
-                                Icons.Default.Delete, "Delete",
+                                Icons.Default.Delete,
+                                "Delete",
                                 tint = MaterialTheme.colorScheme.error,
                             )
                         }

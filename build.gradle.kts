@@ -31,6 +31,7 @@ allprojects {
             "src/commonMain/kotlin",
             "src/androidMain/kotlin",
             "src/iosMain/kotlin",
+            "src/jvmMain/kotlin",
         ).map { file(it) }.filter { it.exists() }
 
         if (kmpSourceDirs.isNotEmpty()) {

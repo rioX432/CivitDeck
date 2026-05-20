@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.ui.collections
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,13 +37,12 @@ import coil3.size.Size
 import com.riox432.civitdeck.domain.model.FavoriteModelSummary
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
+import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
-import com.riox432.civitdeck.ui.theme.Elevation
 import org.koin.compose.viewmodel.koinViewModel
-import androidx.compose.foundation.clickable
-import com.riox432.civitdeck.ui.desktopFocusRing
 
 @Composable
 fun DesktopCollectionDetailScreen(

@@ -6,11 +6,9 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.ModelSource
@@ -20,6 +18,7 @@ import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState
 import com.riox432.civitdeck.ui.theme.Spacing
 
+@Suppress("UnusedParameter")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DesktopFilterBar(

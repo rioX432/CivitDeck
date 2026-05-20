@@ -15,8 +15,8 @@ import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.UpdateResult
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.update.DesktopUpdateViewModel
-import java.awt.Desktop as AwtDesktop
 import java.net.URI
+import java.awt.Desktop as AwtDesktop
 
 @Composable
 internal fun UpdateSection(viewModel: DesktopUpdateViewModel) {

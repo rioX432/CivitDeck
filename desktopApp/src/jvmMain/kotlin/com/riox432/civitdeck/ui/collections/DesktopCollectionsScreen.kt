@@ -50,8 +50,8 @@ import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
 import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.CornerRadius
-import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
+import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
 fun DesktopCollectionsScreen(

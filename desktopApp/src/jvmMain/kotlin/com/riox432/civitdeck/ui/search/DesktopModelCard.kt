@@ -3,12 +3,12 @@ package com.riox432.civitdeck.ui.search
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.layout.ContentScale
 import coil3.PlatformContext
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.size.Size
-import androidx.compose.ui.focus.focusTarget
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwLevel

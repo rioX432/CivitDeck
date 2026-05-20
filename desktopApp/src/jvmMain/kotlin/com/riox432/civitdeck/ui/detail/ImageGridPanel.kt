@@ -29,6 +29,7 @@ import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.shimmer
 
+@Suppress("UnusedParameter")
 @Composable
 internal fun ImageGridPanel(
     images: List<ModelImage>,
@@ -37,7 +38,6 @@ internal fun ImageGridPanel(
     onImageFullscreen: (List<String>, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val urls = images.map { it.url }
     LazyVerticalGrid(
         columns = GridCells.Adaptive(IMAGE_GRID_MIN_SIZE),
         modifier = modifier.padding(Spacing.md),

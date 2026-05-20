@@ -36,8 +36,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.InstalledPlugin
 import com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel
-import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.Elevation
+import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
 fun DesktopPluginDetailScreen(

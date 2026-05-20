@@ -1,5 +1,6 @@
 package com.riox432.civitdeck
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,11 +38,14 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
 import com.riox432.civitdeck.domain.model.ThemeMode
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
+import com.riox432.civitdeck.ui.CreateTabContent
 import com.riox432.civitdeck.ui.DesktopRoute
+import com.riox432.civitdeck.ui.DiscoverTabContent
+import com.riox432.civitdeck.ui.LibraryTabContent
+import com.riox432.civitdeck.ui.SettingsTabContent
 import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.CivitDeckTheme
 import com.riox432.civitdeck.util.removeLastOrNull
-import androidx.compose.foundation.isSystemInDarkTheme
 import org.koin.compose.viewmodel.koinViewModel
 
 enum class DesktopTab(
@@ -54,6 +58,7 @@ enum class DesktopTab(
     Settings("Settings", Icons.Default.Settings),
 }
 
+@Suppress("LongMethod")
 @Composable
 fun DesktopApp(
     onScreenChanged: (String) -> Unit = {},
@@ -105,7 +110,10 @@ fun DesktopApp(
                 handleKeyboardShortcut(
                     key = event.key,
                     hasModifier = hasModifier,
-                    onTabSelected = { selectedTab = it; backstack.clear() },
+                    onTabSelected = {
+                        selectedTab = it
+                        backstack.clear()
+                    },
                     onBack = { backstack.removeLastOrNull() },
                     onFocusSearch = {
                         selectedTab = DesktopTab.Discover
@@ -156,13 +164,34 @@ private fun handleKeyboardShortcut(
     if (!hasModifier) return false
 
     return when (key) {
-        Key.F -> { onFocusSearch(); true }
-        Key.R -> { onFocusSearch(); true }
-        Key.Comma -> { onTabSelected(DesktopTab.Settings); true }
-        Key.One -> { onTabSelected(DesktopTab.Discover); true }
-        Key.Two -> { onTabSelected(DesktopTab.Create); true }
-        Key.Three -> { onTabSelected(DesktopTab.Library); true }
-        Key.Four -> { onTabSelected(DesktopTab.Settings); true }
+        Key.F -> {
+            onFocusSearch()
+            true
+        }
+        Key.R -> {
+            onFocusSearch()
+            true
+        }
+        Key.Comma -> {
+            onTabSelected(DesktopTab.Settings)
+            true
+        }
+        Key.One -> {
+            onTabSelected(DesktopTab.Discover)
+            true
+        }
+        Key.Two -> {
+            onTabSelected(DesktopTab.Create)
+            true
+        }
+        Key.Three -> {
+            onTabSelected(DesktopTab.Library)
+            true
+        }
+        Key.Four -> {
+            onTabSelected(DesktopTab.Settings)
+            true
+        }
         else -> false
     }
 }

@@ -1,4 +1,4 @@
-package com.riox432.civitdeck
+package com.riox432.civitdeck.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,22 +10,21 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import com.riox432.civitdeck.feature.gallery.presentation.AnalyticsViewModel
+import com.riox432.civitdeck.feature.gallery.presentation.DownloadQueueViewModel
+import com.riox432.civitdeck.feature.gallery.presentation.NotificationCenterViewModel
+import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
 import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.BackupViewModel
 import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
-import com.riox432.civitdeck.ui.DesktopRoute
-import com.riox432.civitdeck.feature.gallery.presentation.AnalyticsViewModel
-import com.riox432.civitdeck.feature.settings.presentation.BackupViewModel
-import com.riox432.civitdeck.feature.gallery.presentation.NotificationCenterViewModel
 import com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel
 import com.riox432.civitdeck.ui.analytics.DesktopAnalyticsScreen
 import com.riox432.civitdeck.ui.backup.DesktopBackupScreen
 import com.riox432.civitdeck.ui.downloadqueue.DesktopDownloadQueueScreen
-import com.riox432.civitdeck.feature.gallery.presentation.DownloadQueueViewModel
 import com.riox432.civitdeck.ui.history.DesktopBrowsingHistoryScreen
-import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.notificationcenter.DesktopNotificationCenterScreen
 import com.riox432.civitdeck.ui.plugin.DesktopPluginDetailScreen
 import com.riox432.civitdeck.ui.plugin.DesktopPluginListScreen
@@ -98,7 +97,7 @@ private fun SettingsMainContent(
 }
 
 @Composable
-@Suppress("CyclomaticComplexMethod")
+@Suppress("CyclomaticComplexMethod", "LongMethod")
 private fun SettingsOverlayContent(
     backstack: SnapshotStateList<DesktopRoute>,
     currentRoute: DesktopRoute?,

@@ -1,4 +1,4 @@
-package com.riox432.civitdeck
+package com.riox432.civitdeck.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +15,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,12 +26,12 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewMode
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
-import com.riox432.civitdeck.ui.comfyui.template.DesktopTemplateParameterScreen
-import com.riox432.civitdeck.ui.comfyui.template.DesktopWorkflowTemplateEditorScreen
-import com.riox432.civitdeck.ui.comfyui.template.DesktopWorkflowTemplateScreen
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
+import com.riox432.civitdeck.ui.comfyui.template.DesktopTemplateParameterScreen
+import com.riox432.civitdeck.ui.comfyui.template.DesktopWorkflowTemplateEditorScreen
+import com.riox432.civitdeck.ui.comfyui.template.DesktopWorkflowTemplateScreen
 import com.riox432.civitdeck.ui.create.DesktopCreateHubScreen
 import com.riox432.civitdeck.ui.settings.ComfyUIGenerationSection
 import com.riox432.civitdeck.ui.settings.ComfyUIHistorySection

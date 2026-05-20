@@ -5,7 +5,6 @@ package com.riox432.civitdeck.ui.comfyui.mask
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -189,7 +188,8 @@ private fun DrawScope.drawSegments(state: MaskEditorState, maskColor: Color) {
         val col = if (seg.isEraser) Color.Transparent else maskColor
         val bm = if (seg.isEraser) BlendMode.Clear else BlendMode.SrcOver
         drawPath(
-            buildSmoothPath(pts), col,
+            buildSmoothPath(pts),
+            col,
             style = Stroke(sw, cap = StrokeCap.Round, join = StrokeJoin.Round),
             blendMode = bm,
         )
@@ -206,7 +206,8 @@ private fun DrawScope.drawCurrentStroke(
     val col = if (state.isEraserMode) Color.Transparent else maskColor
     val bm = if (state.isEraserMode) BlendMode.Clear else BlendMode.SrcOver
     drawPath(
-        buildSmoothPath(currentPoints), col,
+        buildSmoothPath(currentPoints),
+        col,
         style = Stroke(sw, cap = StrokeCap.Round, join = StrokeJoin.Round),
         blendMode = bm,
     )
@@ -221,7 +222,8 @@ private fun buildSmoothPath(pts: List<Offset>): Path {
         return path
     }
     for (i in 1 until pts.size) {
-        val p = pts[i - 1]; val c = pts[i]
+        val p = pts[i - 1]
+        val c = pts[i]
         path.quadraticBezierTo(p.x, p.y, (p.x + c.x) / 2f, (p.y + c.y) / 2f)
     }
     path.lineTo(pts.last().x, pts.last().y)
@@ -237,9 +239,13 @@ private fun DesktopMaskToolbar(state: MaskEditorState, vm: MaskEditorViewModel) 
     ) {
         IconButton(onClick = vm::onToggleEraser) {
             Icon(
-                Icons.Default.Brush, "Toggle eraser",
-                tint = if (state.isEraserMode) ERASER_ICON_COLOR
-                else MaterialTheme.colorScheme.onSurface,
+                Icons.Default.Brush,
+                "Toggle eraser",
+                tint = if (state.isEraserMode) {
+                    ERASER_ICON_COLOR
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
             )
         }
         IconButton(onClick = vm::onUndo, enabled = state.canUndo) {
