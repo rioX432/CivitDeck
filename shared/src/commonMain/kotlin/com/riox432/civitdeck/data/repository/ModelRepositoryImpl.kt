@@ -31,6 +31,12 @@ class ModelRepositoryImpl(
         const val TAG = "ModelRepositoryImpl"
     }
 
+    /**
+     * Try fresh cache first, then fall back to stale (TTL-expired) cache for offline mode.
+     */
+    private suspend fun getCachedWithFallback(key: String): String? =
+        localCache.getCached(key) ?: localCache.getCachedIgnoringTtl(key)
+
     override suspend fun getModels(
         query: String?,
         tag: String?,
@@ -81,8 +87,7 @@ class ModelRepositoryImpl(
             Logger.w(TAG, "Serialization error fetching models, falling back to cache: ${e.message}")
             getModelsFromCacheOrEmpty(cacheKey)
         } catch (e: Exception) {
-            val cached = localCache.getCached(cacheKey)
-                ?: localCache.getCachedIgnoringTtl(cacheKey)
+            val cached = getCachedWithFallback(cacheKey)
             if (cached != null) {
                 val response = json.decodeFromString(ModelListResponse.serializer(), cached)
                 PaginatedResult(
@@ -102,9 +107,7 @@ class ModelRepositoryImpl(
             localCache.putCache(cacheKey, json.encodeToString(ModelResponse.serializer(), response))
             response.toDomain()
         } catch (e: Exception) {
-            // Try fresh cache first, then stale cache for offline mode
-            val cached = localCache.getCached(cacheKey)
-                ?: localCache.getCachedIgnoringTtl(cacheKey)
+            val cached = getCachedWithFallback(cacheKey)
             if (cached != null) {
                 json.decodeFromString(ModelResponse.serializer(), cached).toDomain()
             } else {
@@ -123,8 +126,7 @@ class ModelRepositoryImpl(
             )
             response.toDomain()
         } catch (e: Exception) {
-            val cached = localCache.getCached(cacheKey)
-                ?: localCache.getCachedIgnoringTtl(cacheKey)
+            val cached = getCachedWithFallback(cacheKey)
             if (cached != null) {
                 json.decodeFromString(ModelVersionResponse.serializer(), cached).toDomain()
             } else {
@@ -143,8 +145,7 @@ class ModelRepositoryImpl(
             )
             response.toDomain()
         } catch (e: Exception) {
-            val cached = localCache.getCached(cacheKey)
-                ?: localCache.getCachedIgnoringTtl(cacheKey)
+            val cached = getCachedWithFallback(cacheKey)
             if (cached != null) {
                 json.decodeFromString(ModelVersionResponse.serializer(), cached).toDomain()
             } else {
