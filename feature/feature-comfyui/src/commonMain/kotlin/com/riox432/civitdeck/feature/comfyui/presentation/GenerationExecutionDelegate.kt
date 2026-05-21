@@ -6,6 +6,7 @@ import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.service.AppLifecycleTracker
+import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter
 import com.riox432.civitdeck.domain.service.GenerationNotificationService
 import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptComfyUIGenerationUseCase
@@ -41,6 +42,7 @@ internal class GenerationExecutionDelegate(
     private val repository: ComfyUIConnectionRepository,
     private val notificationService: GenerationNotificationService,
     private val lifecycleTracker: AppLifecycleTracker,
+    private val backgroundMonitorStarter: BackgroundMonitorStarter,
     observeGenNotifEnabled: ObserveGenerationNotificationsEnabledUseCase,
 ) {
     private var progressJob: Job? = null
@@ -77,6 +79,11 @@ internal class GenerationExecutionDelegate(
             uiState.update { it.copy(generationStatus = GenerationStatus.Running) }
             val connection = repository.getActiveConnection()
             if (connection != null) {
+                backgroundMonitorStarter.startMonitoring(
+                    promptId,
+                    connection.baseUrl,
+                    connection.wsScheme,
+                )
                 startWebSocketProgress(promptId, connection)
             } else {
                 pollForResult(promptId)
@@ -86,6 +93,7 @@ internal class GenerationExecutionDelegate(
 
     fun onInterrupt() {
         progressJob?.cancel()
+        backgroundMonitorStarter.stopMonitoring()
         launchWithErrorHandling(
             tag = "Interrupt failed",
             onError = { e -> uiState.update { it.copy(error = e.message) } },
@@ -144,6 +152,7 @@ internal class GenerationExecutionDelegate(
     }
 
     private suspend fun fetchFinalResult(promptId: String) {
+        backgroundMonitorStarter.stopMonitoring()
         val onError = { e: Exception ->
             notifyErrorIfNeeded(promptId, e.message ?: "Unknown error")
             uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }

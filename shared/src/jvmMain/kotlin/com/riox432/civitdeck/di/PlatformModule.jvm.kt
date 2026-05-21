@@ -5,6 +5,7 @@ import com.riox432.civitdeck.data.local.getDatabaseBuilder
 import com.riox432.civitdeck.domain.download.DownloadScheduler
 import com.riox432.civitdeck.domain.repository.NetworkRepository
 import com.riox432.civitdeck.domain.service.AppLifecycleTracker
+import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter
 import com.riox432.civitdeck.domain.service.GenerationNotificationService
 import com.riox432.civitdeck.download.DesktopDownloadScheduler
 import org.koin.core.module.Module
@@ -16,4 +17,5 @@ actual val platformModule: Module = module {
     single<DownloadScheduler> { DesktopDownloadScheduler() }
     single { GenerationNotificationService() }
     single { AppLifecycleTracker() }
+    single { BackgroundMonitorStarter() }
 }
