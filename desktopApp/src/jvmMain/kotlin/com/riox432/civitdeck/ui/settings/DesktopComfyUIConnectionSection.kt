@@ -36,6 +36,8 @@ fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
     var hostInput by remember { mutableStateOf("127.0.0.1") }
     var portInput by remember { mutableStateOf(ComfyUIConnection.DEFAULT_COMFYUI_PORT.toString()) }
     var useHttpsInput by remember { mutableStateOf(false) }
+    var ntfyServerUrlInput by remember { mutableStateOf("") }
+    var ntfyTopicInput by remember { mutableStateOf("") }
 
     SettingsCard(title = "ComfyUI Server") {
         ConnectionStatusBadge(
@@ -48,6 +50,8 @@ fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
             Spacer(modifier = Modifier.height(Spacing.sm))
             DesktopServerHardwareSection(stats)
         }
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        DesktopNtfySection(state = state, onTestNtfy = viewModel::onTestNtfy)
         Spacer(modifier = Modifier.height(Spacing.sm))
         LanScanSection(
             isScanning = state.isScanning,
@@ -72,16 +76,22 @@ fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
             hostInput = hostInput,
             portInput = portInput,
             useHttpsInput = useHttpsInput,
+            ntfyServerUrlInput = ntfyServerUrlInput,
+            ntfyTopicInput = ntfyTopicInput,
             onNameChanged = { nameInput = it },
             onHostChanged = { hostInput = it },
             onPortChanged = { portInput = it },
             onHttpsChanged = { useHttpsInput = it },
-            onSave = { name, host, port, https ->
-                viewModel.onSaveConnection(name, host, port, https, false)
+            onNtfyServerUrlChanged = { ntfyServerUrlInput = it },
+            onNtfyTopicChanged = { ntfyTopicInput = it },
+            onSave = { name, host, port, https, ntfyUrl, ntfyTopic ->
+                viewModel.onSaveConnection(name, host, port, https, false, ntfyUrl, ntfyTopic)
                 nameInput = ""
                 hostInput = "127.0.0.1"
                 portInput = ComfyUIConnection.DEFAULT_COMFYUI_PORT.toString()
                 useHttpsInput = false
+                ntfyServerUrlInput = ""
+                ntfyTopicInput = ""
             },
         )
     }
@@ -259,16 +269,83 @@ private fun DesktopHardwareRow(label: String, value: String) {
 }
 
 @Composable
+private fun DesktopNtfySection(
+    state: com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsUiState,
+    onTestNtfy: () -> Unit,
+) {
+    Text("Push Notifications (ntfy)", style = MaterialTheme.typography.labelMedium)
+    Spacer(modifier = Modifier.height(Spacing.xs))
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("Status", style = MaterialTheme.typography.labelSmall)
+        Text(
+            if (state.isNtfySubscribed) "Subscribed" else "Not configured",
+            style = MaterialTheme.typography.bodySmall,
+            color = if (state.isNtfySubscribed) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+        )
+    }
+    val active = state.activeConnection
+    if (active?.isNtfyConfigured == true) {
+        Text(
+            "${active.resolvedNtfyServerUrl}/${active.ntfyTopic}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.height(Spacing.xs))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            OutlinedButton(
+                onClick = onTestNtfy,
+                enabled = !state.isNtfyTestSending,
+            ) {
+                Text(if (state.isNtfyTestSending) "Sending..." else "Test Notification")
+            }
+            state.ntfyTestResult?.let { success ->
+                Text(
+                    if (success) "Sent successfully" else "Failed to send",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (success) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
+                )
+            }
+        }
+    } else {
+        Text(
+            "Configure ntfy topic in your connection to receive push notifications.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+@Suppress("LongParameterList")
 private fun AddConnectionForm(
     nameInput: String,
     hostInput: String,
     portInput: String,
     useHttpsInput: Boolean,
+    ntfyServerUrlInput: String,
+    ntfyTopicInput: String,
     onNameChanged: (String) -> Unit,
     onHostChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
     onHttpsChanged: (Boolean) -> Unit,
-    onSave: (String, String, Int, Boolean) -> Unit,
+    onNtfyServerUrlChanged: (String) -> Unit,
+    onNtfyTopicChanged: (String) -> Unit,
+    onSave: (String, String, Int, Boolean, String?, String?) -> Unit,
 ) {
     Spacer(modifier = Modifier.height(Spacing.sm))
     Text("Add Connection:", style = MaterialTheme.typography.labelMedium)
@@ -308,14 +385,69 @@ private fun AddConnectionForm(
         )
         Text("Use HTTPS", style = MaterialTheme.typography.bodySmall)
     }
+    DesktopNtfyFormFields(
+        ntfyServerUrlInput = ntfyServerUrlInput,
+        ntfyTopicInput = ntfyTopicInput,
+        onNtfyServerUrlChanged = onNtfyServerUrlChanged,
+        onNtfyTopicChanged = onNtfyTopicChanged,
+    )
     Spacer(modifier = Modifier.height(Spacing.sm))
     Button(
         onClick = {
             val port = portInput.toIntOrNull() ?: return@Button
-            onSave(nameInput, hostInput, port, useHttpsInput)
+            onSave(
+                nameInput, hostInput, port, useHttpsInput,
+                ntfyServerUrlInput.ifBlank { null },
+                ntfyTopicInput.ifBlank { null },
+            )
         },
         enabled = nameInput.isNotBlank() && hostInput.isNotBlank(),
     ) {
         Text("Save Connection")
     }
 }
+
+@Composable
+private fun DesktopNtfyFormFields(
+    ntfyServerUrlInput: String,
+    ntfyTopicInput: String,
+    onNtfyServerUrlChanged: (String) -> Unit,
+    onNtfyTopicChanged: (String) -> Unit,
+) {
+    Spacer(modifier = Modifier.height(Spacing.sm))
+    Text("ntfy Push Notifications:", style = MaterialTheme.typography.labelMedium)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        OutlinedTextField(
+            value = ntfyServerUrlInput,
+            onValueChange = onNtfyServerUrlChanged,
+            label = { Text("ntfy Server URL") },
+            placeholder = { Text("https://ntfy.sh") },
+            singleLine = true,
+            modifier = Modifier.weight(1f),
+        )
+        OutlinedTextField(
+            value = ntfyTopicInput,
+            onValueChange = onNtfyTopicChanged,
+            label = { Text("Topic") },
+            placeholder = { Text("my-comfyui-topic") },
+            singleLine = true,
+            modifier = Modifier.weight(1f),
+        )
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        TextButton(
+            onClick = {
+                onNtfyTopicChanged(
+                    "civitdeck-${java.util.UUID.randomUUID().toString().take(TOPIC_ID_LENGTH)}",
+                )
+            },
+        ) {
+            Text("Generate Random Topic")
+        }
+    }
+}
+
+private const val TOPIC_ID_LENGTH = 8

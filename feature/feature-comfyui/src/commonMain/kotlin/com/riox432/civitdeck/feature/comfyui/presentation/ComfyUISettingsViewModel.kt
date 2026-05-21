@@ -10,6 +10,7 @@ import com.riox432.civitdeck.domain.model.SecurityLevelHelper
 import com.riox432.civitdeck.domain.model.SystemStats
 import com.riox432.civitdeck.domain.util.OptimizationSuggestion
 import com.riox432.civitdeck.domain.util.generateOptimizationSuggestions
+import com.riox432.civitdeck.feature.comfyui.data.NtfySubscriptionService
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSystemStatsUseCase
@@ -42,6 +43,9 @@ data class ComfyUISettingsUiState(
     val systemStats: SystemStats? = null,
     val optimizationSuggestions: List<OptimizationSuggestion> = emptyList(),
     val dismissedSuggestionIds: Set<String> = emptySet(),
+    val isNtfySubscribed: Boolean = false,
+    val isNtfyTestSending: Boolean = false,
+    val ntfyTestResult: Boolean? = null,
 )
 
 class ComfyUISettingsViewModel(
@@ -53,6 +57,7 @@ class ComfyUISettingsViewModel(
     private val testConnection: TestComfyUIConnectionUseCase,
     private val scanForServers: ScanForServersUseCase,
     private val fetchSystemStats: FetchSystemStatsUseCase,
+    private val ntfyService: NtfySubscriptionService,
 ) : ViewModel() {
 
     private val _mutableState = MutableStateFlow(ComfyUISettingsUiState())
@@ -71,20 +76,28 @@ class ComfyUISettingsViewModel(
             else -> ComfyUIConnectionStatus.Disconnected
         }
         val security = active?.let { SecurityLevelHelper.getSecurityLevel(it) }
+
+        // Manage ntfy subscription lifecycle based on active connection
+        manageNtfySubscription(active, status)
+
         mutable.copy(
             connections = connections,
             activeConnection = active,
             connectionStatus = status,
             securityLevel = security,
+            isNtfySubscribed = ntfyService.isSubscribed,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(SUBSCRIBE_TIMEOUT), ComfyUISettingsUiState())
 
+    @Suppress("LongParameterList")
     fun onSaveConnection(
         name: String,
         hostname: String,
         port: Int,
         useHttps: Boolean = false,
         acceptSelfSigned: Boolean = false,
+        ntfyServerUrl: String? = null,
+        ntfyTopic: String? = null,
     ) {
         viewModelScope.launch {
             val editing = _mutableState.value.editingConnection
@@ -95,6 +108,8 @@ class ComfyUISettingsViewModel(
                 port = port,
                 useHttps = useHttps,
                 acceptSelfSigned = acceptSelfSigned,
+                ntfyServerUrl = ntfyServerUrl?.takeIf { it.isNotBlank() },
+                ntfyTopic = ntfyTopic?.takeIf { it.isNotBlank() },
             )
             saveConnection(connection)
             _mutableState.update { it.copy(showAddDialog = false, editingConnection = null) }
@@ -169,6 +184,40 @@ class ComfyUISettingsViewModel(
 
     fun dismissSuggestion(id: String) {
         _mutableState.update { it.copy(dismissedSuggestionIds = it.dismissedSuggestionIds + id) }
+    }
+
+    fun onTestNtfy() {
+        val active = uiState.value.activeConnection ?: return
+        val topic = active.ntfyTopic ?: return
+        _mutableState.update { it.copy(isNtfyTestSending = true, ntfyTestResult = null) }
+        viewModelScope.launch {
+            val success = ntfyService.sendTestNotification(
+                active.resolvedNtfyServerUrl,
+                topic,
+            )
+            _mutableState.update { it.copy(isNtfyTestSending = false, ntfyTestResult = success) }
+        }
+    }
+
+    fun clearNtfyTestResult() {
+        _mutableState.update { it.copy(ntfyTestResult = null) }
+    }
+
+    private fun manageNtfySubscription(
+        active: ComfyUIConnection?,
+        status: ComfyUIConnectionStatus,
+    ) {
+        if (active != null &&
+            active.isNtfyConfigured &&
+            status == ComfyUIConnectionStatus.Connected
+        ) {
+            ntfyService.subscribe(
+                active.resolvedNtfyServerUrl,
+                active.ntfyTopic.orEmpty(),
+            )
+        } else {
+            ntfyService.unsubscribe()
+        }
     }
 
     private companion object {

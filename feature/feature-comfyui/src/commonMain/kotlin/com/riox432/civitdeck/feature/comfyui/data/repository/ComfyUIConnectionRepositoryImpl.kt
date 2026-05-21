@@ -73,6 +73,8 @@ class ComfyUIConnectionRepositoryImpl(
         lastTestSuccess = lastTestSuccess,
         useHttps = useHttps,
         acceptSelfSigned = acceptSelfSigned,
+        ntfyServerUrl = ntfyServerUrl,
+        ntfyTopic = ntfyTopic,
     )
 
     private fun ComfyUIConnection.toEntity() = ComfyUIConnectionEntity(
@@ -86,5 +88,7 @@ class ComfyUIConnectionRepositoryImpl(
         createdAt = currentTimeMillis(),
         useHttps = useHttps,
         acceptSelfSigned = acceptSelfSigned,
+        ntfyServerUrl = ntfyServerUrl,
+        ntfyTopic = ntfyTopic,
     )
 }

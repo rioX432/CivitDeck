@@ -15,6 +15,8 @@ data class ComfyUIConnectionEntity(
     val createdAt: Long,
     val useHttps: Boolean = false,
     val acceptSelfSigned: Boolean = false,
+    val ntfyServerUrl: String? = null,
+    val ntfyTopic: String? = null,
 ) {
     companion object {
         const val DEFAULT_PORT = 8188

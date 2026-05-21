@@ -14,6 +14,7 @@ struct ComfyUISettingsView: View {
             if !viewModel.visibleSuggestions.isEmpty {
                 optimizationSuggestionsSection
             }
+            ntfySection
             scanLanSection
             if viewModel.isConnected {
                 NavigationLink("Open txt2img Generator") {
@@ -201,6 +202,45 @@ struct ComfyUISettingsView: View {
         }
     }
 
+    private var ntfySection: some View {
+        Section("Push Notifications (ntfy)") {
+            HStack {
+                Text("Status")
+                    .font(.civitBodyMedium)
+                Spacer()
+                Text(viewModel.isNtfySubscribed ? "Subscribed" : "Not configured")
+                    .font(.civitLabelSmall)
+                    .foregroundColor(viewModel.isNtfySubscribed ? theme.primary : .civitOnSurfaceVariant)
+            }
+            if let active = viewModel.activeConnection, active.isNtfyConfigured {
+                Text("\(active.resolvedNtfyServerUrl)/\(active.ntfyTopic ?? "")")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+                HStack(spacing: Spacing.sm) {
+                    Button {
+                        viewModel.onTestNtfy()
+                    } label: {
+                        if viewModel.isNtfyTestSending {
+                            ProgressView()
+                        } else {
+                            Text("Test Notification")
+                        }
+                    }
+                    .disabled(viewModel.isNtfyTestSending)
+                    if let result = viewModel.ntfyTestResult {
+                        Text(result ? "Sent successfully" : "Failed to send")
+                            .font(.civitBodySmall)
+                            .foregroundColor(result ? theme.primary : .civitError)
+                    }
+                }
+            } else {
+                Text("Install ComfyUI-ntfy custom node on your server and set the same topic there. Notifications will be received even when the app is closed.")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+            }
+        }
+    }
+
     private var scanLanSection: some View {
         Section("LAN Discovery") {
             HStack {
@@ -289,17 +329,19 @@ struct ComfyUISettingsView: View {
 
 struct AddConnectionSheet: View {
     let editing: ComfyUIConnection?
-    let onSave: (String, String, Int32, Bool, Bool) -> Void
+    let onSave: (String, String, Int32, Bool, Bool, String?, String?) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var name: String
     @State private var hostname: String
     @State private var portText: String
     @State private var useHttps: Bool
     @State private var acceptSelfSigned: Bool
+    @State private var ntfyServerUrl: String
+    @State private var ntfyTopic: String
 
     init(
         editing: ComfyUIConnection?,
-        onSave: @escaping (String, String, Int32, Bool, Bool) -> Void
+        onSave: @escaping (String, String, Int32, Bool, Bool, String?, String?) -> Void
     ) {
         self.editing = editing
         self.onSave = onSave
@@ -308,25 +350,16 @@ struct AddConnectionSheet: View {
         _portText = State(initialValue: editing.map { String($0.port) } ?? "8188")
         _useHttps = State(initialValue: editing?.useHttps ?? false)
         _acceptSelfSigned = State(initialValue: editing?.acceptSelfSigned ?? false)
+        _ntfyServerUrl = State(initialValue: editing?.ntfyServerUrl ?? "")
+        _ntfyTopic = State(initialValue: editing?.ntfyTopic ?? "")
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section {
-                    TextField("Name (e.g. Home PC)", text: $name)
-                    TextField("Hostname / IP", text: $hostname)
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
-                    TextField("Port", text: $portText)
-                        .keyboardType(.numberPad)
-                }
-                Section("Security") {
-                    Toggle("Use HTTPS", isOn: $useHttps)
-                    if useHttps {
-                        Toggle("Accept self-signed certificates", isOn: $acceptSelfSigned)
-                    }
-                }
+                connectionSection
+                securitySection
+                ntfySection
             }
             .navigationTitle(editing != nil ? "Edit Connection" : "Add Connection")
             .navigationBarTitleDisplayMode(.inline)
@@ -339,16 +372,53 @@ struct AddConnectionSheet: View {
                         let port = Int32(portText) ?? 8188
                         onSave(
                             name.isEmpty ? hostname : name,
-                            hostname,
-                            port,
-                            useHttps,
-                            acceptSelfSigned
+                            hostname, port, useHttps, acceptSelfSigned,
+                            ntfyServerUrl.isEmpty ? nil : ntfyServerUrl,
+                            ntfyTopic.isEmpty ? nil : ntfyTopic
                         )
                         dismiss()
                     }
                     .disabled(hostname.isEmpty)
                 }
             }
+        }
+    }
+
+    private var connectionSection: some View {
+        Section {
+            TextField("Name (e.g. Home PC)", text: $name)
+            TextField("Hostname / IP", text: $hostname)
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
+            TextField("Port", text: $portText)
+                .keyboardType(.numberPad)
+        }
+    }
+
+    private var securitySection: some View {
+        Section("Security") {
+            Toggle("Use HTTPS", isOn: $useHttps)
+            if useHttps {
+                Toggle("Accept self-signed certificates", isOn: $acceptSelfSigned)
+            }
+        }
+    }
+
+    private var ntfySection: some View {
+        Section("Push Notifications (ntfy)") {
+            TextField("Server URL (default: https://ntfy.sh)", text: $ntfyServerUrl)
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
+                .keyboardType(.URL)
+            TextField("Topic (e.g. my-comfyui-topic)", text: $ntfyTopic)
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
+            Button("Generate Random Topic") {
+                ntfyTopic = "civitdeck-\(UUID().uuidString.prefix(8).lowercased())"
+            }
+            Text("Install ComfyUI-ntfy custom node on your server and set the same topic there.")
+                .font(.civitBodySmall)
+                .foregroundColor(.civitOnSurfaceVariant)
         }
     }
 }

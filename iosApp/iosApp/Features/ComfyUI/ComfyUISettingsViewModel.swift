@@ -18,6 +18,9 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
     @Published var systemStats: Core_domainSystemStats?
     @Published var optimizationSuggestions: [OptimizationSuggestion] = []
     @Published var dismissedSuggestionIds: Set<String> = []
+    @Published var isNtfySubscribed = false
+    @Published var isNtfyTestSending = false
+    @Published var ntfyTestResult: Bool?
 
     init() {
         vm = KoinHelper.shared.createComfyUISettingsViewModel()
@@ -42,16 +45,25 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
             dismissedSuggestionIds = Set(
                 (state.dismissedSuggestionIds as? Set<String>) ?? []
             )
+            isNtfySubscribed = state.isNtfySubscribed
+            isNtfyTestSending = state.isNtfyTestSending
+            ntfyTestResult = state.ntfyTestResult?.boolValue
         }
     }
 
-    func onSave(name: String, hostname: String, port: Int32, useHttps: Bool, acceptSelfSigned: Bool) {
+    func onSave(
+        name: String, hostname: String, port: Int32,
+        useHttps: Bool, acceptSelfSigned: Bool,
+        ntfyServerUrl: String?, ntfyTopic: String?
+    ) {
         vm.onSaveConnection(
             name: name,
             hostname: hostname,
             port: port,
             useHttps: useHttps,
-            acceptSelfSigned: acceptSelfSigned
+            acceptSelfSigned: acceptSelfSigned,
+            ntfyServerUrl: ntfyServerUrl,
+            ntfyTopic: ntfyTopic
         )
     }
 
@@ -81,6 +93,14 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
 
     func dismissSuggestion(id: String) {
         vm.dismissSuggestion(id: id)
+    }
+
+    func onTestNtfy() {
+        vm.onTestNtfy()
+    }
+
+    func clearNtfyTestResult() {
+        vm.clearNtfyTestResult()
     }
 
     var visibleSuggestions: [OptimizationSuggestion] {
