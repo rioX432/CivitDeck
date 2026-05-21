@@ -12,6 +12,7 @@ import com.riox432.civitdeck.domain.repository.SDWebUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIGenerationRepository
 import com.riox432.civitdeck.domain.repository.ServerDiscoveryRepository
 import com.riox432.civitdeck.domain.util.SystemStatsProvider
+import com.riox432.civitdeck.feature.comfyui.data.NtfySubscriptionService
 import com.riox432.civitdeck.feature.comfyui.data.encoder.MaskPngEncoder
 import com.riox432.civitdeck.feature.comfyui.data.repository.CivitaiLinkRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyHubRepositoryImpl
@@ -75,6 +76,9 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectio
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.UploadMaskUseCase
 import com.riox432.civitdeck.feature.comfyui.plugin.ComfyUIWorkflowPlugin
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
@@ -171,11 +175,20 @@ val comfyuiModule = module {
     factory { SendResourceToPCUseCase(get()) }
     factory { CancelLinkActivityUseCase(get()) }
 
+    // ntfy.sh subscription service (uses the standard ComfyUI HttpClient)
+    single {
+        NtfySubscriptionService(
+            httpClient = get(named("comfyui")),
+            notificationService = get(),
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        )
+    }
+
     // Plugin adapter
     single { ComfyUIWorkflowPlugin(get()) }
 
     // ViewModels
-    viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel {
         ComfyUIGenerationViewModel(
             get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),

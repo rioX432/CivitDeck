@@ -10,6 +10,8 @@ data class ComfyUIConnection(
     val lastTestSuccess: Boolean? = null,
     val useHttps: Boolean = false,
     val acceptSelfSigned: Boolean = false,
+    val ntfyServerUrl: String? = null,
+    val ntfyTopic: String? = null,
 ) {
     /** HTTP base URL with the correct scheme. */
     val baseUrl: String get() {
@@ -23,8 +25,16 @@ data class ComfyUIConnection(
     /** Whether this connection uses a secure transport (HTTPS/WSS). */
     val isSecure: Boolean get() = useHttps
 
+    /** Whether ntfy push notifications are configured for this connection. */
+    val isNtfyConfigured: Boolean get() = !ntfyTopic.isNullOrBlank()
+
+    /** Resolved ntfy server URL, defaulting to the public ntfy.sh instance. */
+    val resolvedNtfyServerUrl: String get() =
+        ntfyServerUrl?.takeIf { it.isNotBlank() } ?: DEFAULT_NTFY_SERVER_URL
+
     companion object {
         const val DEFAULT_COMFYUI_PORT = 8188
+        const val DEFAULT_NTFY_SERVER_URL = "https://ntfy.sh"
     }
 }
 

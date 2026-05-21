@@ -370,6 +370,21 @@
     <string name="comfyui_pytorch_version">PyTorch Version</string>
     <string name="comfyui_os">OS</string>
 
+    <!-- ntfy.sh notifications -->
+    <string name="ntfy_section_title">Push Notifications (ntfy)</string>
+    <string name="ntfy_server_url_label">ntfy Server URL</string>
+    <string name="ntfy_server_url_placeholder">https://ntfy.sh</string>
+    <string name="ntfy_topic_label">Topic</string>
+    <string name="ntfy_topic_placeholder">my-comfyui-topic</string>
+    <string name="ntfy_generate_topic">Generate Random Topic</string>
+    <string name="ntfy_test_notification">Test Notification</string>
+    <string name="ntfy_test_sending">Sending…</string>
+    <string name="ntfy_test_success">Test notification sent successfully</string>
+    <string name="ntfy_test_failed">Failed to send test notification</string>
+    <string name="ntfy_status_subscribed">Subscribed</string>
+    <string name="ntfy_status_not_configured">Not configured</string>
+    <string name="ntfy_setup_guide">Install ComfyUI-ntfy custom node on your server and set the same topic there. Notifications will be received even when the app is closed.</string>
+
     <!-- SD WebUI -->
     <string name="sdwebui_title">SD WebUI</string>
     <string name="sdwebui_open_generator">Open Generator</string>
