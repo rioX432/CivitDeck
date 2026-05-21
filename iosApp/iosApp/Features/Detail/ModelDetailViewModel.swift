@@ -24,6 +24,7 @@ final class ModelDetailViewModelOwner: ObservableObject {
     @Published var isReviewsLoading: Bool = false
     @Published var isSubmittingReview: Bool = false
     @Published var reviewSubmitSuccess: Bool = false
+    @Published var fileVramCompatibility: [Int64: VramCompatibility] = [:]
 
     let modelId: Int64
 
@@ -62,6 +63,7 @@ final class ModelDetailViewModelOwner: ObservableObject {
             isReviewsLoading = state.isReviewsLoading
             isSubmittingReview = state.isSubmittingReview
             reviewSubmitSuccess = state.reviewSubmitSuccess
+            fileVramCompatibility = Self.mapVramCompatibility(state.fileVramCompatibility)
         }
     }
 
@@ -120,5 +122,17 @@ final class ModelDetailViewModelOwner: ObservableObject {
 
     func onDisappear() {
         // View cleanup is handled by shared VM's onCleared via ViewModelStore
+    }
+
+    // MARK: - Private Helpers
+
+    private static func mapVramCompatibility(
+        _ map: [KotlinLong: VramCompatibility]
+    ) -> [Int64: VramCompatibility] {
+        var result: [Int64: VramCompatibility] = [:]
+        for (key, value) in map {
+            result[key.int64Value] = value
+        }
+        return result
     }
 }

@@ -230,3 +230,25 @@ object CivitDeckColors {
     val scrim = Color.Black
     val onScrim = Color.White
 }
+
+/** Semantic colors for VRAM compatibility badges. */
+object VramColors {
+    // FITS — green
+    val fitsBackground = Color(0xFFDCFCE7)
+    val fitsContent = Color(0xFF166534)
+    val fitsDarkBackground = Color(0xFF14532D)
+    val fitsDarkContent = Color(0xFF86EFAC)
+
+    // TIGHT — amber/warning
+    val tightBackground = Color(0xFFFEF9C3)
+    val tightContent = Color(0xFF854D0E)
+    val tightDarkBackground = Color(0xFF713F12)
+    val tightDarkContent = Color(0xFFFDE68A)
+
+    // NEEDS_OFFLOADING — red
+    val offloadBackground = Color(0xFFFEE2E2)
+    val offloadContent = Color(0xFF991B1B)
+    val offloadDarkBackground = Color(0xFF7F1D1D)
+    val offloadDarkContent = Color(0xFFFECACA)
+}
+

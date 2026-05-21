@@ -1,11 +1,14 @@
 package com.riox432.civitdeck.ui.detail
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
@@ -20,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -28,7 +32,10 @@ import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.ModelDownload
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.util.FormatUtils
+import com.riox432.civitdeck.domain.util.VramCompatibility
+import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.ui.theme.VramColors
 
 @Composable
 fun FileDownloadRow(
@@ -37,6 +44,7 @@ fun FileDownloadRow(
     onDownload: (ModelFile) -> Unit,
     onCancel: (Long) -> Unit,
     onPause: (Long) -> Unit = {},
+    vramCompatibility: VramCompatibility = VramCompatibility.UNKNOWN,
 ) {
     Row(
         modifier = Modifier
@@ -51,7 +59,10 @@ fun FileDownloadRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
                     text = FormatUtils.formatFileSize(file.sizeKB),
                     style = MaterialTheme.typography.labelSmall,
@@ -79,6 +90,7 @@ fun FileDownloadRow(
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
+                VramBadge(compatibility = vramCompatibility)
             }
         }
         DownloadAction(
@@ -89,6 +101,46 @@ fun FileDownloadRow(
             onPause = onPause,
         )
     }
+}
+
+@Composable
+private fun VramBadge(compatibility: VramCompatibility) {
+    if (compatibility == VramCompatibility.UNKNOWN) return
+    val isDark = isSystemInDarkTheme()
+    val (bg, content, label) = vramBadgeColors(compatibility, isDark)
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall,
+        color = content,
+        modifier = Modifier
+            .background(bg, RoundedCornerShape(CornerRadius.card))
+            .padding(horizontal = Spacing.sm, vertical = Spacing.xxs),
+    )
+}
+
+private data class BadgeStyle(val bg: Color, val content: Color, val label: String)
+
+@Composable
+private fun vramBadgeColors(
+    compatibility: VramCompatibility,
+    isDark: Boolean,
+): BadgeStyle = when (compatibility) {
+    VramCompatibility.FITS -> BadgeStyle(
+        bg = if (isDark) VramColors.fitsDarkBackground else VramColors.fitsBackground,
+        content = if (isDark) VramColors.fitsDarkContent else VramColors.fitsContent,
+        label = stringResource(R.string.vram_fits_gpu),
+    )
+    VramCompatibility.TIGHT -> BadgeStyle(
+        bg = if (isDark) VramColors.tightDarkBackground else VramColors.tightBackground,
+        content = if (isDark) VramColors.tightDarkContent else VramColors.tightContent,
+        label = stringResource(R.string.vram_tight_fit),
+    )
+    VramCompatibility.NEEDS_OFFLOADING -> BadgeStyle(
+        bg = if (isDark) VramColors.offloadDarkBackground else VramColors.offloadBackground,
+        content = if (isDark) VramColors.offloadDarkContent else VramColors.offloadContent,
+        label = stringResource(R.string.vram_needs_offloading),
+    )
+    VramCompatibility.UNKNOWN -> BadgeStyle(Color.Transparent, Color.Transparent, "")
 }
 
 @Composable

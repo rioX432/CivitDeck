@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import coil3.PlatformContext
@@ -40,12 +41,14 @@ import coil3.size.Size
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.util.FormatUtils
+import com.riox432.civitdeck.domain.util.VramCompatibility
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailUiState
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.components.ModelStatsRow
 import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
+import com.riox432.civitdeck.ui.theme.VramColors
 import com.riox432.civitdeck.ui.theme.shimmer
 
 @Composable
@@ -86,7 +89,12 @@ internal fun InfoPanel(
             item { TagsSection(tags = model.tags) }
         }
         if (selectedVersion != null && selectedVersion.files.isNotEmpty()) {
-            item { FilesSection(files = selectedVersion.files) }
+            item {
+                FilesSection(
+                    files = selectedVersion.files,
+                    fileVramCompatibility = uiState.fileVramCompatibility,
+                )
+            }
         }
         model.description?.takeIf { it.isNotBlank() }?.let { description ->
             item { DescriptionSection(description = description) }
@@ -230,6 +238,7 @@ private fun TagsSection(tags: List<String>) {
 @Composable
 private fun FilesSection(
     files: List<com.riox432.civitdeck.domain.model.ModelFile>,
+    fileVramCompatibility: Map<Long, VramCompatibility> = emptyMap(),
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         Text("Files", style = MaterialTheme.typography.titleSmall)
@@ -237,6 +246,7 @@ private fun FilesSection(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = file.name,
@@ -245,6 +255,9 @@ private fun FilesSection(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                val compat = fileVramCompatibility[file.id] ?: VramCompatibility.UNKNOWN
+                DesktopVramBadge(compat)
+                Spacer(modifier = Modifier.width(Spacing.sm))
                 Text(
                     text = FormatUtils.formatFileSize(file.sizeKB),
                     style = MaterialTheme.typography.labelSmall,
@@ -253,6 +266,48 @@ private fun FilesSection(
             }
         }
     }
+}
+
+@Composable
+private fun DesktopVramBadge(compatibility: VramCompatibility) {
+    if (compatibility == VramCompatibility.UNKNOWN) return
+    val (bg, content, label) = desktopVramStyle(compatibility)
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall,
+        color = content,
+        modifier = Modifier
+            .background(bg, RoundedCornerShape(CornerRadius.card))
+            .padding(horizontal = Spacing.sm, vertical = Spacing.xxs),
+    )
+}
+
+private data class VramBadgeStyle(
+    val bg: Color,
+    val content: Color,
+    val label: String,
+)
+
+@Composable
+private fun desktopVramStyle(
+    compatibility: VramCompatibility,
+): VramBadgeStyle = when (compatibility) {
+    VramCompatibility.FITS -> VramBadgeStyle(
+        bg = VramColors.fitsBackground,
+        content = VramColors.fitsContent,
+        label = "Fits your GPU",
+    )
+    VramCompatibility.TIGHT -> VramBadgeStyle(
+        bg = VramColors.tightBackground,
+        content = VramColors.tightContent,
+        label = "Tight fit",
+    )
+    VramCompatibility.NEEDS_OFFLOADING -> VramBadgeStyle(
+        bg = VramColors.offloadBackground,
+        content = VramColors.offloadContent,
+        label = "Needs offloading",
+    )
+    VramCompatibility.UNKNOWN -> VramBadgeStyle(Color.Transparent, Color.Transparent, "")
 }
 
 @Composable

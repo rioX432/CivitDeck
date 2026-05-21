@@ -5,6 +5,7 @@ struct VersionDetailSection: View {
     let version: ModelVersion
     let powerUserMode: Bool
     var downloads: [Int64: ModelDownload] = [:]
+    var fileVramCompatibility: [Int64: VramCompatibility] = [:]
     var onDownload: ((ModelFile) -> Void)?
     var onCancelDownload: ((Int64) -> Void)?
     @Environment(\.civitTheme) private var theme
@@ -97,12 +98,28 @@ struct VersionDetailSection: View {
                             .font(.civitLabelSmall)
                             .foregroundColor(theme.primary)
                     }
+                    vramBadge(for: file)
                 }
             }
             Spacer()
             downloadButton(for: file)
         }
         .padding(.vertical, Spacing.xs)
+    }
+
+    @ViewBuilder
+    private func vramBadge(for file: ModelFile) -> some View {
+        let compat = fileVramCompatibility[file.id]
+        if let compat, compat != .unknown {
+            let style = VramBadgeStyle.from(compat)
+            Text(style.label)
+                .font(.civitLabelSmall)
+                .foregroundColor(style.contentColor)
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.xxs)
+                .background(style.backgroundColor)
+                .clipShape(Capsule())
+        }
     }
 
     @ViewBuilder

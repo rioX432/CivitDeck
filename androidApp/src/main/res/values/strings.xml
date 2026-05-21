@@ -531,4 +531,11 @@
     <!-- Share -->
     <string name="share_add_hashtag_label">Add hashtag</string>
     <string name="share_add_tag_label">Add tag</string>
+
+    <!-- VRAM Compatibility -->
+    <string name="cd_dismiss">Dismiss</string>
+    <string name="vram_fits_gpu">Fits your GPU</string>
+    <string name="vram_tight_fit">Tight fit</string>
+    <string name="vram_needs_offloading">Needs offloading</string>
+    <string name="vram_optimization_suggestions">Optimization Suggestions</string>
 </resources>

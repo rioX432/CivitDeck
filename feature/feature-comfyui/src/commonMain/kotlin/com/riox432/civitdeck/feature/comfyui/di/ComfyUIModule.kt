@@ -11,6 +11,7 @@ import com.riox432.civitdeck.domain.repository.SDWebUIAssetRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIGenerationRepository
 import com.riox432.civitdeck.domain.repository.ServerDiscoveryRepository
+import com.riox432.civitdeck.domain.util.SystemStatsProvider
 import com.riox432.civitdeck.feature.comfyui.data.encoder.MaskPngEncoder
 import com.riox432.civitdeck.feature.comfyui.data.repository.CivitaiLinkRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyHubRepositoryImpl
@@ -107,6 +108,10 @@ val comfyuiModule = module {
     factory { ActivateComfyUIConnectionUseCase(get()) }
     factory { TestComfyUIConnectionUseCase(get()) }
     factory { FetchSystemStatsUseCase(get()) }
+    factory<SystemStatsProvider> {
+        val useCase: FetchSystemStatsUseCase = get()
+        SystemStatsProvider { useCase() }
+    }
     factory { FetchComfyUICheckpointsUseCase(get()) }
     factory { FetchComfyUILorasUseCase(get()) }
     factory { FetchComfyUIControlNetsUseCase(get()) }

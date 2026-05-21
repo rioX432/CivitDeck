@@ -223,6 +223,7 @@ private fun LazyListScope.modelDetailActionItems(
             version = selectedVersion,
             powerUserMode = uiState.powerUserMode,
             downloads = uiState.downloads.associateBy { it.fileId },
+            fileVramCompatibility = uiState.fileVramCompatibility,
             onDownloadFile = callbacks.onDownloadFile,
             onCancelDownload = callbacks.onCancelDownload,
         )
