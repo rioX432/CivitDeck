@@ -2,14 +2,19 @@ package com.riox432.civitdeck.ml
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.os.Environment
 import androidx.test.platform.app.InstrumentationRegistry
 import com.riox432.civitdeck.domain.ml.ImageEmbeddingModel
 import kotlinx.coroutines.test.runTest
+import org.junit.Assume.assumeTrue
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlin.math.abs
 import kotlin.math.sqrt
 import kotlin.test.AfterTest
@@ -83,9 +88,70 @@ class ImageEmbeddingModelTest {
         )
     }
 
-    // TODO(#707): Add reference vector comparison once a known-good embedding
-    // is generated from the HuggingFace Python pipeline and checked into
-    // androidApp/src/androidTest/assets/ml/reference_embedding.bin
+    // TODO(#707): Current reference vector was generated from the Android ONNX
+    // model (siglip2_vision_q4f16.onnx). Cross-validation against the HuggingFace
+    // Python pipeline is still pending — update reference_embedding.bin once the
+    // Python-generated vector is available.
+
+    /**
+     * Compares the model output against a known-good reference embedding.
+     *
+     * The reference was generated from the same Android ONNX model and checked
+     * into `androidTest/assets/ml/reference_embedding.bin`. If the file is
+     * missing, the test is skipped — run [generateReferenceEmbedding] first
+     * to produce it.
+     */
+    @Test
+    fun embeddingMatchesReferenceVector() = runTest {
+        val referenceBytes = loadReferenceEmbedding()
+        assumeTrue(
+            "Reference embedding not found — run generateReferenceEmbedding " +
+                "on a device and copy the output to " +
+                "androidApp/src/androidTest/assets/ml/reference_embedding.bin",
+            referenceBytes != null,
+        )
+        val reference = bytesToFloatArray(referenceBytes!!)
+        assertTrue(
+            reference.size == EMBEDDING_DIM,
+            "Reference has ${reference.size} dims, expected $EMBEDDING_DIM",
+        )
+
+        val model = ImageEmbeddingModel()
+        val embedding = model.embed(createTestImage())
+        val similarity = cosineSimilarity(embedding, reference)
+        assertTrue(
+            similarity >= REFERENCE_SIMILARITY_THRESHOLD,
+            "Cosine similarity vs reference should be >= $REFERENCE_SIMILARITY_THRESHOLD, " +
+                "got $similarity",
+        )
+    }
+
+    /**
+     * One-shot helper: generates a reference embedding from the synthetic test
+     * image and writes it to the device's Downloads folder.
+     *
+     * Run manually on a device, then extract with:
+     * ```
+     * adb pull /sdcard/Download/reference_embedding.bin \
+     *     androidApp/src/androidTest/assets/ml/reference_embedding.bin
+     * ```
+     */
+    @Test
+    fun generateReferenceEmbedding() = runTest {
+        val model = ImageEmbeddingModel()
+        val embedding = model.embed(createTestImage())
+        val bytes = floatArrayToBytes(embedding)
+        val outDir = Environment.getExternalStoragePublicDirectory(
+            Environment.DIRECTORY_DOWNLOADS,
+        )
+        val outFile = File(outDir, REFERENCE_FILE_NAME)
+        outFile.writeBytes(bytes)
+        assertTrue(
+            outFile.exists() && outFile.length() == EXPECTED_REFERENCE_SIZE,
+            "Reference written to ${outFile.absolutePath} " +
+                "(${outFile.length()} bytes)",
+        )
+    }
 
     /**
      * Creates a synthetic 224x224 JPEG test image (gradient pattern).
@@ -109,11 +175,61 @@ class ImageEmbeddingModelTest {
         return stream.toByteArray()
     }
 
+    /**
+     * Loads the reference embedding from androidTest assets.
+     * Returns null if the file is not found.
+     */
+    @Suppress("SwallowedException")
+    private fun loadReferenceEmbedding(): ByteArray? {
+        val ctx = InstrumentationRegistry.getInstrumentation().context
+        return try {
+            ctx.assets.open(REFERENCE_ASSET_PATH).use { it.readBytes() }
+        } catch (_: java.io.IOException) {
+            null
+        }
+    }
+
     private companion object {
         private const val EMBEDDING_DIM = 768
         private const val SIGLIP_INPUT_SIZE = 224
         private const val JPEG_QUALITY = 95
         private const val NORM_TOLERANCE = 0.01f
         private const val DETERMINISM_TOLERANCE = 1e-6f
+        private const val REFERENCE_SIMILARITY_THRESHOLD = 0.999f
+        private const val REFERENCE_FILE_NAME = "reference_embedding.bin"
+        private const val REFERENCE_ASSET_PATH = "ml/$REFERENCE_FILE_NAME"
+
+        /** 768 floats * 4 bytes each = 3072 bytes */
+        private const val EXPECTED_REFERENCE_SIZE = EMBEDDING_DIM * Float.SIZE_BYTES.toLong()
+
+        /** Converts a [FloatArray] to raw little-endian bytes. */
+        private fun floatArrayToBytes(array: FloatArray): ByteArray {
+            val buffer = ByteBuffer
+                .allocate(array.size * Float.SIZE_BYTES)
+                .order(ByteOrder.LITTLE_ENDIAN)
+            for (v in array) buffer.putFloat(v)
+            return buffer.array()
+        }
+
+        /** Converts raw little-endian bytes back to a [FloatArray]. */
+        private fun bytesToFloatArray(bytes: ByteArray): FloatArray {
+            val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+            val result = FloatArray(bytes.size / Float.SIZE_BYTES)
+            buffer.asFloatBuffer().get(result)
+            return result
+        }
+
+        /** Cosine similarity between two vectors. */
+        private fun cosineSimilarity(a: FloatArray, b: FloatArray): Float {
+            var dot = 0.0f
+            var normA = 0.0f
+            var normB = 0.0f
+            for (i in a.indices) {
+                dot += a[i] * b[i]
+                normA += a[i] * a[i]
+                normB += b[i] * b[i]
+            }
+            return dot / (sqrt(normA) * sqrt(normB))
+        }
     }
 }
