@@ -358,6 +358,15 @@
     <string name="comfyui_status_testing">Testing…</string>
     <string name="comfyui_status_error">Connection Error</string>
     <string name="comfyui_status_not_configured">No server configured</string>
+    <string name="comfyui_server_hardware">Server Hardware</string>
+    <string name="comfyui_gpu">GPU</string>
+    <string name="comfyui_vram_usage">VRAM Usage</string>
+    <string name="comfyui_vram_format">%1$d / %2$d MB</string>
+    <string name="comfyui_ram">RAM</string>
+    <string name="comfyui_ram_format">%1$d MB total</string>
+    <string name="comfyui_comfyui_version">ComfyUI Version</string>
+    <string name="comfyui_pytorch_version">PyTorch Version</string>
+    <string name="comfyui_os">OS</string>
 
     <!-- SD WebUI -->
     <string name="sdwebui_title">SD WebUI</string>

@@ -15,6 +15,7 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
     @Published var editingConnection: ComfyUIConnection?
     @Published var isScanning = false
     @Published var discoveredServers: [DiscoveredServer] = []
+    @Published var systemStats: Core_domainSystemStats?
 
     init() {
         vm = KoinHelper.shared.createComfyUISettingsViewModel()
@@ -34,6 +35,7 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
             editingConnection = state.editingConnection
             isScanning = state.isScanning
             discoveredServers = state.discoveredServers as? [DiscoveredServer] ?? []
+            systemStats = state.systemStats
         }
     }
 

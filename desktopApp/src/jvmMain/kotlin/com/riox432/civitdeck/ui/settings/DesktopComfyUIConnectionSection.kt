@@ -1,12 +1,14 @@
 package com.riox432.civitdeck.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -23,6 +25,7 @@ import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIConnectionStatus
 import com.riox432.civitdeck.domain.model.ConnectionSecurityLevel
+import com.riox432.civitdeck.domain.model.SystemStats
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -41,6 +44,10 @@ fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
             isConnected = state.connectionStatus == ComfyUIConnectionStatus.Connected,
         )
         SecurityLevelIndicator(securityLevel = state.securityLevel)
+        state.systemStats?.let { stats ->
+            Spacer(modifier = Modifier.height(Spacing.sm))
+            DesktopServerHardwareSection(stats)
+        }
         Spacer(modifier = Modifier.height(Spacing.sm))
         LanScanSection(
             isScanning = state.isScanning,
@@ -205,6 +212,49 @@ private fun SavedConnectionsList(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun DesktopServerHardwareSection(stats: SystemStats) {
+    Text("Server Hardware", style = MaterialTheme.typography.labelMedium)
+    Spacer(modifier = Modifier.height(Spacing.xs))
+    DesktopHardwareRow("GPU", stats.gpuName)
+    DesktopVramProgressRow(stats)
+    DesktopHardwareRow("RAM", "${stats.ramTotalMB} MB total")
+    stats.comfyuiVersion?.let { DesktopHardwareRow("ComfyUI", it) }
+    stats.pytorchVersion?.let { DesktopHardwareRow("PyTorch", it) }
+    DesktopHardwareRow("OS", stats.os)
+}
+
+@Composable
+private fun DesktopVramProgressRow(stats: SystemStats) {
+    val vramUsed = stats.vramTotalMB - stats.vramFreeMB
+    val progress = if (stats.vramTotalMB > 0) vramUsed.toFloat() / stats.vramTotalMB else 0f
+    Column {
+        Text("VRAM Usage", style = MaterialTheme.typography.labelSmall)
+        Spacer(modifier = Modifier.height(Spacing.xs))
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = Modifier.fillMaxWidth().height(Spacing.sm),
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+        )
+        Text(
+            "$vramUsed / ${stats.vramTotalMB} MB",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun DesktopHardwareRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(label, style = MaterialTheme.typography.labelSmall)
+        Text(value, style = MaterialTheme.typography.bodySmall)
     }
 }
 

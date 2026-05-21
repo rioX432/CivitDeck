@@ -27,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -51,6 +52,7 @@ import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIConnectionStatus
 import com.riox432.civitdeck.domain.model.ConnectionSecurityLevel
 import com.riox432.civitdeck.domain.model.DiscoveredServer
+import com.riox432.civitdeck.domain.model.SystemStats
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsUiState
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
@@ -127,6 +129,11 @@ private fun LazyListScope.settingsItems(
     onSelectDiscovered: (DiscoveredServer) -> Unit,
 ) {
     item { StatusSection(state, onTestConnection) }
+
+    // Hardware info section
+    state.systemStats?.let { stats ->
+        item { ServerHardwareSection(stats) }
+    }
 
     // Scan LAN section
     item { ScanLanSection(state, onScanLan, onSelectDiscovered) }
@@ -221,6 +228,72 @@ private fun SecurityBadge(level: ConnectionSecurityLevel, modifier: Modifier = M
         color = color,
         modifier = modifier,
     )
+}
+
+@Composable
+private fun ServerHardwareSection(stats: SystemStats) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(Spacing.md)) {
+            Text(
+                stringResource(R.string.comfyui_server_hardware),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Spacer(modifier = Modifier.height(Spacing.sm))
+            HardwareGpuRow(stats)
+            VramProgressRow(stats)
+            HardwareInfoRows(stats)
+        }
+    }
+}
+
+@Composable
+private fun HardwareGpuRow(stats: SystemStats) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(stringResource(R.string.comfyui_gpu), style = MaterialTheme.typography.labelMedium)
+        Text(stats.gpuName, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
+private fun VramProgressRow(stats: SystemStats) {
+    val vramUsed = stats.vramTotalMB - stats.vramFreeMB
+    val progress = if (stats.vramTotalMB > 0) vramUsed.toFloat() / stats.vramTotalMB else 0f
+    Spacer(modifier = Modifier.height(Spacing.xs))
+    Text(stringResource(R.string.comfyui_vram_usage), style = MaterialTheme.typography.labelMedium)
+    Spacer(modifier = Modifier.height(Spacing.xs))
+    LinearProgressIndicator(
+        progress = { progress },
+        modifier = Modifier.fillMaxWidth().height(Spacing.sm),
+        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+    )
+    Text(
+        stringResource(R.string.comfyui_vram_format, vramUsed, stats.vramTotalMB),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+@Composable
+private fun HardwareInfoRows(stats: SystemStats) {
+    Spacer(modifier = Modifier.height(Spacing.xs))
+    HardwareInfoRow(stringResource(R.string.comfyui_ram), stringResource(R.string.comfyui_ram_format, stats.ramTotalMB))
+    stats.comfyuiVersion?.let { HardwareInfoRow(stringResource(R.string.comfyui_comfyui_version), it) }
+    stats.pytorchVersion?.let { HardwareInfoRow(stringResource(R.string.comfyui_pytorch_version), it) }
+    HardwareInfoRow(stringResource(R.string.comfyui_os), stats.os)
+}
+
+@Composable
+private fun HardwareInfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.xs),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(label, style = MaterialTheme.typography.labelMedium)
+        Text(value, style = MaterialTheme.typography.bodySmall)
+    }
 }
 
 @Composable

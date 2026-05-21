@@ -34,6 +34,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.DisconnectCivitaiLin
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExportWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExtractWorkflowParametersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSystemStatsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryItemUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
@@ -105,6 +106,7 @@ val comfyuiModule = module {
     factory { DeleteComfyUIConnectionUseCase(get()) }
     factory { ActivateComfyUIConnectionUseCase(get()) }
     factory { TestComfyUIConnectionUseCase(get()) }
+    factory { FetchSystemStatsUseCase(get()) }
     factory { FetchComfyUICheckpointsUseCase(get()) }
     factory { FetchComfyUILorasUseCase(get()) }
     factory { FetchComfyUIControlNetsUseCase(get()) }
@@ -168,7 +170,7 @@ val comfyuiModule = module {
     single { ComfyUIWorkflowPlugin(get()) }
 
     // ViewModels
-    viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel {
         ComfyUIGenerationViewModel(
             get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
