@@ -38,6 +38,10 @@ Thumbs.db
 *.jks
 *.keystore
 
+## ML models (too large for git — generate via scripts/)
+androidApp/src/main/assets/ml/siglip2_text_int8.onnx
+androidApp/src/main/assets/ml/siglip2_vocab.json
+
 ## Misc
 *.log
 *.tmp
