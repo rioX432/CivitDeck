@@ -17,4 +17,6 @@ interface AppBehaviorPreferencesRepository {
     suspend fun setCustomNavShortcuts(items: List<NavShortcut>)
     fun observeFeedQualityThreshold(): Flow<Int>
     suspend fun setFeedQualityThreshold(threshold: Int)
+    fun observeGenerationNotificationsEnabled(): Flow<Boolean>
+    suspend fun setGenerationNotificationsEnabled(enabled: Boolean)
 }

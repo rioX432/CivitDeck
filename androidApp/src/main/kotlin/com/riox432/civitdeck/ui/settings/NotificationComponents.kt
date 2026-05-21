@@ -55,6 +55,30 @@ internal fun NotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Uni
 }
 
 @Composable
+internal fun GenerationNotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                stringResource(R.string.settings_generation_notifications),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            Text(
+                stringResource(R.string.settings_generation_notifications_description),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(checked = enabled, onCheckedChange = onToggle)
+    }
+}
+
+@Composable
 internal fun PollingIntervalRow(selected: PollingInterval, onChanged: (PollingInterval) -> Unit) {
     val options = PollingInterval.entries.filter { it != PollingInterval.Off }
     DropdownSettingRow(

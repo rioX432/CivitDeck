@@ -98,6 +98,12 @@ internal fun LazyListScope.notificationItems(
     if (state.notificationsEnabled) {
         item { PollingIntervalRow(state.pollingInterval, viewModel::onPollingIntervalChanged) }
     }
+    item {
+        GenerationNotificationsToggleRow(
+            enabled = state.generationNotificationsEnabled,
+            onToggle = viewModel::onGenerationNotificationsEnabledChanged,
+        )
+    }
 }
 
 internal fun LazyListScope.feedQualityItems(
