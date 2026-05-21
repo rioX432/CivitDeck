@@ -46,6 +46,7 @@ import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.GenerationUiState
+import com.riox432.civitdeck.ui.components.comfyui.ParameterSliderRow
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -216,12 +217,13 @@ private fun LoraRow(lora: LoraSelection, viewModel: ComfyUIGenerationViewModel) 
                 Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_remove_lora))
             }
         }
-        SliderRow(
-            label = "Strength: ${"%.2f".format(lora.strengthModel)}",
-            value = lora.strengthModel.toDouble(),
-            min = 0.0,
-            max = 2.0,
-        ) { v -> viewModel.onLoraStrengthChanged(lora.name, v.toFloat(), v.toFloat()) }
+        ParameterSliderRow(
+            label = "Strength",
+            valueLabel = "%.2f".format(lora.strengthModel),
+            value = lora.strengthModel,
+            valueRange = 0f..2f,
+            onValueChange = { v -> viewModel.onLoraStrengthChanged(lora.name, v, v) },
+        )
     }
 }
 
@@ -253,9 +255,13 @@ private fun ControlNetSection(state: GenerationUiState, viewModel: ComfyUIGenera
                         )
                     }
                 }
-                SliderRow("Strength", state.controlNetStrength.toDouble(), 0.0, 2.0) { v ->
-                    viewModel.onControlNetStrengthChanged(v.toFloat())
-                }
+                ParameterSliderRow(
+                    label = "Strength",
+                    valueLabel = "%.2f".format(state.controlNetStrength),
+                    value = state.controlNetStrength,
+                    valueRange = 0f..2f,
+                    onValueChange = { viewModel.onControlNetStrengthChanged(it) },
+                )
             }
         }
     }
@@ -411,12 +417,13 @@ private fun InpaintingMaskContent(
                 Text(stringResource(R.string.action_clear))
             }
         }
-        SliderRow(
-            "Denoise",
-            state.denoiseStrength,
-            0.0,
-            1.0,
-        ) { viewModel.onDenoiseStrengthChanged(it) }
+        ParameterSliderRow(
+            label = "Denoise",
+            valueLabel = "%.2f".format(state.denoiseStrength),
+            value = state.denoiseStrength.toFloat(),
+            valueRange = 0f..1f,
+            onValueChange = { viewModel.onDenoiseStrengthChanged(it.toDouble()) },
+        )
     } else {
         Button(
             onClick = {

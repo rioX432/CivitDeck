@@ -1,20 +1,19 @@
 package com.riox432.civitdeck.ui.settings
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.ui.components.comfyui.DimensionInputRow
+import com.riox432.civitdeck.ui.components.comfyui.ParameterSliderRow
+import com.riox432.civitdeck.ui.components.comfyui.PromptInputFields
+import com.riox432.civitdeck.ui.components.comfyui.SeedInputField
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -30,7 +29,7 @@ fun ComfyUIGenerationSection(viewModel: ComfyUIGenerationViewModel) {
                 selectedCheckpoint = state.selectedCheckpoint,
                 onCheckpointSelected = viewModel::onCheckpointSelected,
             )
-            PromptInputs(
+            PromptInputFields(
                 prompt = state.prompt,
                 negativePrompt = state.negativePrompt,
                 onPromptChanged = viewModel::onPromptChanged,
@@ -93,60 +92,26 @@ private fun CheckpointSelector(
 }
 
 @Composable
-private fun PromptInputs(
-    prompt: String,
-    negativePrompt: String,
-    onPromptChanged: (String) -> Unit,
-    onNegativePromptChanged: (String) -> Unit,
-) {
-    OutlinedTextField(
-        value = prompt,
-        onValueChange = onPromptChanged,
-        label = { Text("Prompt") },
-        modifier = Modifier.fillMaxWidth(),
-        minLines = 3,
-        maxLines = 5,
-    )
-    Spacer(modifier = Modifier.height(Spacing.sm))
-    OutlinedTextField(
-        value = negativePrompt,
-        onValueChange = onNegativePromptChanged,
-        label = { Text("Negative Prompt") },
-        modifier = Modifier.fillMaxWidth(),
-        minLines = 2,
-        maxLines = 3,
-    )
-}
-
-@Composable
 private fun GenerationSliders(
     steps: Int,
     cfgScale: Double,
     onStepsChanged: (Float) -> Unit,
     onCfgScaleChanged: (Float) -> Unit,
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
-        Column(modifier = Modifier.weight(1f)) {
-            SliderSetting(
-                label = "Steps",
-                value = steps.toFloat(),
-                valueRange = 1f..150f,
-                steps = 148,
-                valueLabel = steps.toString(),
-                onValueChange = onStepsChanged,
-            )
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            SliderSetting(
-                label = "CFG Scale",
-                value = cfgScale.toFloat(),
-                valueRange = 1f..30f,
-                steps = 28,
-                valueLabel = "%.1f".format(cfgScale),
-                onValueChange = onCfgScaleChanged,
-            )
-        }
-    }
+    ParameterSliderRow(
+        label = "Steps",
+        valueLabel = steps.toString(),
+        value = steps.toFloat(),
+        valueRange = STEPS_MIN..STEPS_MAX,
+        onValueChange = onStepsChanged,
+    )
+    ParameterSliderRow(
+        label = "CFG Scale",
+        valueLabel = "%.1f".format(cfgScale),
+        value = cfgScale.toFloat(),
+        valueRange = CFG_MIN..CFG_MAX,
+        onValueChange = onCfgScaleChanged,
+    )
 }
 
 @Composable
@@ -158,29 +123,16 @@ private fun DimensionInputs(
     onHeightChanged: (Int) -> Unit,
     onSeedChanged: (Long) -> Unit,
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
-        OutlinedTextField(
-            value = width.toString(),
-            onValueChange = { it.toIntOrNull()?.let(onWidthChanged) },
-            label = { Text("Width") },
-            singleLine = true,
-            modifier = Modifier.weight(1f),
-        )
-        OutlinedTextField(
-            value = height.toString(),
-            onValueChange = { it.toIntOrNull()?.let(onHeightChanged) },
-            label = { Text("Height") },
-            singleLine = true,
-            modifier = Modifier.weight(1f),
-        )
-        OutlinedTextField(
-            value = if (seed == -1L) "" else seed.toString(),
-            onValueChange = { onSeedChanged(it.toLongOrNull() ?: -1L) },
-            label = { Text("Seed (-1 = random)") },
-            singleLine = true,
-            modifier = Modifier.weight(1f),
-        )
-    }
+    DimensionInputRow(
+        width = width,
+        height = height,
+        onWidthChanged = onWidthChanged,
+        onHeightChanged = onHeightChanged,
+    )
+    SeedInputField(
+        seed = seed,
+        onSeedChanged = onSeedChanged,
+    )
 }
 
 @Composable
@@ -201,3 +153,8 @@ private fun GenerationResult(
         )
     }
 }
+
+private const val STEPS_MIN = 1f
+private const val STEPS_MAX = 150f
+private const val CFG_MIN = 1f
+private const val CFG_MAX = 30f
