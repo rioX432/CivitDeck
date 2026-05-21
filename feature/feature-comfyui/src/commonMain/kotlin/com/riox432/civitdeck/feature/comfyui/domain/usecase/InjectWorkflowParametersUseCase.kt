@@ -96,7 +96,13 @@ class InjectWorkflowParametersUseCase {
                     JsonPrimitive(doubleVal)
                 }
             }
-            ParameterType.TEXT, ParameterType.SELECT -> JsonPrimitive(value)
+            ParameterType.BOOLEAN -> {
+                val boolVal = value.equals("true", ignoreCase = true) || value == "1"
+                JsonPrimitive(boolVal)
+            }
+            ParameterType.IMAGE, ParameterType.TEXT, ParameterType.SELECT -> {
+                JsonPrimitive(value)
+            }
         }
     }
 
