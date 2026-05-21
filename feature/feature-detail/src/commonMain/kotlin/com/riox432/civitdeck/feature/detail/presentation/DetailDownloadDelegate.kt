@@ -9,11 +9,9 @@ import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
-import com.riox432.civitdeck.domain.util.suspendRunCatching
-import com.riox432.civitdeck.util.Logger
+import com.riox432.civitdeck.domain.util.launchSafe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.launch
 
 private const val TAG = "DetailDownloadDelegate"
 private const val KB_TO_BYTES = 1024.0
@@ -30,21 +28,16 @@ internal class DetailDownloadDelegate(
     fun downloadFile(file: ModelFile, model: Model?, version: ModelVersion?) {
         model ?: return
         version ?: return
-        scope.launch {
-            suspendRunCatching {
-                val download = buildModelDownload(model, version, file)
-                val id = enqueueDownloadUseCase(download)
-                downloadEnqueuedEvent.tryEmit(id)
-                trackModelViewUseCase.trackInteraction(modelId, InteractionType.DOWNLOAD)
-            }.onFailure { e -> Logger.w(TAG, "Download enqueue failed: ${e.message}") }
+        scope.launchSafe(TAG, "Download enqueue") {
+            val download = buildModelDownload(model, version, file)
+            val id = enqueueDownloadUseCase(download)
+            downloadEnqueuedEvent.tryEmit(id)
+            trackModelViewUseCase.trackInteraction(modelId, InteractionType.DOWNLOAD)
         }
     }
 
     fun cancelDownload(downloadId: Long) {
-        scope.launch {
-            suspendRunCatching { cancelDownloadUseCase(downloadId) }
-                .onFailure { e -> Logger.w(TAG, "Cancel download failed: ${e.message}") }
-        }
+        scope.launchSafe(TAG, "Cancel download") { cancelDownloadUseCase(downloadId) }
     }
 
     companion object {
