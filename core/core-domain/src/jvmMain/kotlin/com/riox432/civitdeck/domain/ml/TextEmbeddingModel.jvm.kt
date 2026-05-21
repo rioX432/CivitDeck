@@ -3,6 +3,10 @@ package com.riox432.civitdeck.domain.ml
 /**
  * Desktop / JVM target ships a no-op implementation by design — the text-to-image
  * search feature is hidden on Desktop (same as the image embedding feature).
+ *
+ * If Desktop text search is desired in the future, ONNX Runtime has a JVM artifact
+ * (`com.microsoft.onnxruntime:onnxruntime`) that can load the same INT8 model and
+ * tokenizer used by the Android implementation.
  */
 actual class TextEmbeddingModel actual constructor() {
 

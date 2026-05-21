@@ -7,16 +7,23 @@ package com.riox432.civitdeck.domain.ml
  * similarity between a text embedding and cached image embeddings enables cross-modal
  * "describe what you want" search.
  *
- * The text encoder requires SentencePiece tokenization before inference, which adds
- * non-trivial complexity (vocab file bundling, BPE encoding). Until tokenization is
- * implemented, all platforms return [isAvailable] = false.
+ * Platform implementations:
+ *  - **Android**: ONNX Runtime + SentencePiece tokenizer. Requires model files in
+ *    `assets/ml/` — generate via `scripts/export_siglip2_text_onnx.py`. Returns
+ *    [isAvailable] = true only when both the ONNX model and tokenizer vocab are present.
+ *  - **iOS**: Stub (TODO #805). Needs Core ML conversion + Swift tokenizer.
+ *  - **Desktop / JVM**: No-op by design.
+ *
+ * Returned vectors are L2-normalized so cosine similarity reduces to a dot product.
+ * Vector dimension is 768, matching [ImageEmbeddingModel].
  *
  * See also: [ImageEmbeddingModel] for the image-side counterpart.
  */
 expect class TextEmbeddingModel() {
     /**
      * Returns true when the platform can produce real text embeddings.
-     * Currently false on all platforms — tokenizer bundling is TODO.
+     * Android: true when both the ONNX model and tokenizer vocab are loaded.
+     * iOS/Desktop: false (not yet implemented).
      */
     val isAvailable: Boolean
 
