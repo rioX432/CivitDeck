@@ -209,6 +209,18 @@ class ComfyUIApi(
     }
 
     /**
+     * Fetch system stats: GET /system_stats
+     * Returns hardware info (GPU, VRAM, RAM) and software versions.
+     * Available in ComfyUI 0.1.0+.
+     * @throws ResponseException on HTTP error response
+     * @throws SerializationException on deserialization failure
+     * @throws HttpRequestTimeoutException on request timeout
+     * @throws ConnectTimeoutException on connection timeout
+     */
+    suspend fun getSystemStats(): SystemStatsResponse =
+        logAndRethrow("getSystemStats") { client.get("${_baseUrl.value}/system_stats").body() }
+
+    /**
      * Build image URL for viewing: GET /view?filename=...&type=output[&subfolder=...]
      * Omits subfolder when empty to avoid ComfyUI rejecting the request.
      */

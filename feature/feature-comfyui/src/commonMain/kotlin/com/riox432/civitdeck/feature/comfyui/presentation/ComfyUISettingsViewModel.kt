@@ -7,8 +7,10 @@ import com.riox432.civitdeck.domain.model.ComfyUIConnectionStatus
 import com.riox432.civitdeck.domain.model.ConnectionSecurityLevel
 import com.riox432.civitdeck.domain.model.DiscoveredServer
 import com.riox432.civitdeck.domain.model.SecurityLevelHelper
+import com.riox432.civitdeck.domain.model.SystemStats
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnectionUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSystemStatsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIConnectionsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
@@ -35,6 +37,7 @@ data class ComfyUISettingsUiState(
     val editingConnection: ComfyUIConnection? = null,
     val isScanning: Boolean = false,
     val discoveredServers: List<DiscoveredServer> = emptyList(),
+    val systemStats: SystemStats? = null,
 )
 
 class ComfyUISettingsViewModel(
@@ -45,6 +48,7 @@ class ComfyUISettingsViewModel(
     private val activateConnection: ActivateComfyUIConnectionUseCase,
     private val testConnection: TestComfyUIConnectionUseCase,
     private val scanForServers: ScanForServersUseCase,
+    private val fetchSystemStats: FetchSystemStatsUseCase,
 ) : ViewModel() {
 
     private val _mutableState = MutableStateFlow(ComfyUISettingsUiState())
@@ -103,14 +107,18 @@ class ComfyUISettingsViewModel(
 
     fun onTestConnection() {
         val active = uiState.value.activeConnection ?: return
-        _mutableState.update { it.copy(isTesting = true, testError = null) }
+        _mutableState.update { it.copy(isTesting = true, testError = null, systemStats = null) }
         viewModelScope.launch {
             val success = testConnection(active)
-            _mutableState.update {
-                it.copy(
-                    isTesting = false,
-                    testError = if (success) null else "Connection failed",
-                )
+            if (success) {
+                val stats = fetchSystemStats()
+                _mutableState.update {
+                    it.copy(isTesting = false, testError = null, systemStats = stats)
+                }
+            } else {
+                _mutableState.update {
+                    it.copy(isTesting = false, testError = "Connection failed", systemStats = null)
+                }
             }
         }
     }

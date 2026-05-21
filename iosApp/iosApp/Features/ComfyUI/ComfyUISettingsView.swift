@@ -8,6 +8,9 @@ struct ComfyUISettingsView: View {
     var body: some View {
         List {
             statusSection
+            if let stats = viewModel.systemStats {
+                serverHardwareSection(stats)
+            }
             scanLanSection
             if viewModel.isConnected {
                 NavigationLink("Open txt2img Generator") {
@@ -122,6 +125,52 @@ struct ComfyUISettingsView: View {
             return "Connection Error"
         }
         return "Disconnected"
+    }
+
+    private func serverHardwareSection(_ stats: Core_domainSystemStats) -> some View {
+        Section("Server Hardware") {
+            LabeledContent("GPU") {
+                Text(stats.gpuName)
+                    .font(.civitBodySmall)
+            }
+            vramProgressRow(stats)
+            LabeledContent("RAM") {
+                Text("\(stats.ramTotalMB) MB total")
+                    .font(.civitBodySmall)
+            }
+            if let version = stats.comfyuiVersion {
+                LabeledContent("ComfyUI") {
+                    Text(version)
+                        .font(.civitBodySmall)
+                }
+            }
+            if let pytorch = stats.pytorchVersion {
+                LabeledContent("PyTorch") {
+                    Text(pytorch)
+                        .font(.civitBodySmall)
+                }
+            }
+            LabeledContent("OS") {
+                Text(stats.os)
+                    .font(.civitBodySmall)
+            }
+        }
+    }
+
+    private func vramProgressRow(_ stats: Core_domainSystemStats) -> some View {
+        let vramUsed = stats.vramTotalMB - stats.vramFreeMB
+        let progress = stats.vramTotalMB > 0
+            ? Double(vramUsed) / Double(stats.vramTotalMB)
+            : 0.0
+        return VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text("VRAM Usage")
+                .font(.civitLabelMedium)
+            ProgressView(value: progress) {
+                Text("\(vramUsed) / \(stats.vramTotalMB) MB")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+            }
+        }
     }
 
     private var scanLanSection: some View {
