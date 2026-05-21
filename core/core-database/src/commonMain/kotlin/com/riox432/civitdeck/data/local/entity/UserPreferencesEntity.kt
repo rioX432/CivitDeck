@@ -26,6 +26,7 @@ data class UserPreferencesEntity(
     val themeMode: String = "SYSTEM",
     val customNavShortcuts: String = "",
     val feedQualityThreshold: Int = DEFAULT_FEED_QUALITY_THRESHOLD,
+    val generationNotificationsEnabled: Boolean = true,
     val autoUpdateCheckEnabled: Boolean = true,
     val lastUpdateCheckTimestamp: Long = 0L,
 ) {

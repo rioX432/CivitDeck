@@ -179,6 +179,7 @@ val comfyuiModule = module {
     viewModel {
         ComfyUIGenerationViewModel(
             get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
+            get(), get(), get(),
         )
     }
     viewModel { ComfyUIHistoryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }

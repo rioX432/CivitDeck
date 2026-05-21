@@ -183,6 +183,8 @@
     <string name="settings_quality_threshold_description">Filter low-quality models from your creator feed</string>
     <string name="settings_model_update_alerts">Model Update Alerts</string>
     <string name="settings_model_update_alerts_description">Notify when favorited models get new versions</string>
+    <string name="settings_generation_notifications">Generation Complete Alerts</string>
+    <string name="settings_generation_notifications_description">Notify when ComfyUI generation finishes while app is in background</string>
     <string name="settings_check_frequency">Check Frequency</string>
     <string name="settings_color_scheme">Color Scheme</string>
     <string name="settings_theme_light">Light</string>

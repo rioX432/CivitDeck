@@ -3,10 +3,12 @@ package com.riox432.civitdeck.feature.settings.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.PollingInterval
+import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
+import com.riox432.civitdeck.domain.usecase.SetGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetPollingIntervalUseCase
 import com.riox432.civitdeck.domain.usecase.SetPowerUserModeUseCase
@@ -22,6 +24,7 @@ data class AppBehaviorSettingsUiState(
     val notificationsEnabled: Boolean = false,
     val pollingInterval: PollingInterval = PollingInterval.Off,
     val feedQualityThreshold: Int = 30,
+    val generationNotificationsEnabled: Boolean = true,
 )
 
 @Suppress("LongParameterList")
@@ -34,6 +37,8 @@ class AppBehaviorSettingsViewModel(
     private val setPollingIntervalUseCase: SetPollingIntervalUseCase,
     observeQualityThresholdUseCase: ObserveQualityThresholdUseCase,
     private val setQualityThresholdUseCase: SetQualityThresholdUseCase,
+    observeGenNotifUseCase: ObserveGenerationNotificationsEnabledUseCase,
+    private val setGenNotifUseCase: SetGenerationNotificationsEnabledUseCase,
 ) : ViewModel() {
 
     val uiState: StateFlow<AppBehaviorSettingsUiState> = combine(
@@ -41,12 +46,14 @@ class AppBehaviorSettingsViewModel(
         observeNotificationsEnabledUseCase(),
         observePollingIntervalUseCase(),
         observeQualityThresholdUseCase(),
-    ) { powerUser, notifications, polling, qualityThreshold ->
+        observeGenNotifUseCase(),
+    ) { powerUser, notifications, polling, qualityThreshold, genNotif ->
         AppBehaviorSettingsUiState(
             powerUserMode = powerUser,
             notificationsEnabled = notifications,
             pollingInterval = polling,
             feedQualityThreshold = qualityThreshold,
+            generationNotificationsEnabled = genNotif,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppBehaviorSettingsUiState())
 
@@ -69,5 +76,9 @@ class AppBehaviorSettingsViewModel(
 
     fun onFeedQualityThresholdChanged(threshold: Int) {
         viewModelScope.launch { setQualityThresholdUseCase(threshold) }
+    }
+
+    fun onGenerationNotificationsEnabledChanged(enabled: Boolean) {
+        viewModelScope.launch { setGenNotifUseCase(enabled) }
     }
 }

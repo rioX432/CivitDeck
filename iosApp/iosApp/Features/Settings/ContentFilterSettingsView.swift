@@ -123,6 +123,7 @@ struct ContentFilterSettingsView: View {
             if state.notificationsEnabled {
                 pollingIntervalPicker(state: state)
             }
+            generationNotificationsToggle(state: state)
         }
     }
 
@@ -135,6 +136,21 @@ struct ContentFilterSettingsView: View {
                 Text("Model Update Alerts")
                     .font(.civitBodyMedium)
                 Text("Notify when favorited models get new versions")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+            }
+        }
+    }
+
+    private func generationNotificationsToggle(state: AppBehaviorSettingsUiState) -> some View {
+        Toggle(isOn: Binding(
+            get: { state.generationNotificationsEnabled },
+            set: { appBehaviorViewModel.onGenerationNotificationsEnabledChanged(enabled: $0) }
+        )) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("Generation Complete Alerts")
+                    .font(.civitBodyMedium)
+                Text("Notify when ComfyUI generation finishes while app is in background")
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
             }

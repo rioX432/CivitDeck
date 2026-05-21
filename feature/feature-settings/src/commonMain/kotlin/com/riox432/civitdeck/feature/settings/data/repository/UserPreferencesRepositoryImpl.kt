@@ -216,4 +216,12 @@ class UserPreferencesRepositoryImpl(
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(feedQualityThreshold = threshold.coerceIn(0, 100)))
     }
+
+    override fun observeGenerationNotificationsEnabled(): Flow<Boolean> =
+        dao.observePreferences().map { it?.generationNotificationsEnabled ?: true }
+
+    override suspend fun setGenerationNotificationsEnabled(enabled: Boolean) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(generationNotificationsEnabled = enabled))
+    }
 }

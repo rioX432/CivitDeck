@@ -13,6 +13,8 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.onnxruntime.android)
+            implementation(libs.androidx.lifecycle.process)
+            implementation(libs.androidx.core.ktx)
         }
 
         commonTest.dependencies {

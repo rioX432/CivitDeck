@@ -8,6 +8,9 @@ import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
+import com.riox432.civitdeck.domain.service.AppLifecycleTracker
+import com.riox432.civitdeck.domain.service.GenerationNotificationService
+import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.model.ExtractedParameter
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExtractWorkflowParametersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
@@ -91,6 +94,9 @@ class ComfyUIGenerationViewModel(
     interruptGeneration: InterruptComfyUIGenerationUseCase,
     saveImage: SaveGeneratedImageUseCase,
     repository: ComfyUIConnectionRepository,
+    notificationService: GenerationNotificationService,
+    lifecycleTracker: AppLifecycleTracker,
+    observeGenNotifEnabled: ObserveGenerationNotificationsEnabledUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GenerationUiState())
@@ -105,6 +111,9 @@ class ComfyUIGenerationViewModel(
         interruptGeneration = interruptGeneration,
         saveImage = saveImage,
         repository = repository,
+        notificationService = notificationService,
+        lifecycleTracker = lifecycleTracker,
+        observeGenNotifEnabled = observeGenNotifEnabled,
     )
 
     init {

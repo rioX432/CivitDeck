@@ -5,10 +5,14 @@ import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
+import com.riox432.civitdeck.domain.service.AppLifecycleTracker
+import com.riox432.civitdeck.domain.service.GenerationNotificationService
+import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
+import com.riox432.civitdeck.domain.util.currentTimeMillis
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +20,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -23,6 +29,7 @@ import kotlinx.coroutines.launch
  * Handles generation submission, progress tracking (WebSocket + polling), interruption, and
  * image saving. Extracted from [ComfyUIGenerationViewModel] to reduce function count.
  */
+@Suppress("LongParameterList")
 internal class GenerationExecutionDelegate(
     private val scope: CoroutineScope,
     private val uiState: MutableStateFlow<GenerationUiState>,
@@ -32,11 +39,23 @@ internal class GenerationExecutionDelegate(
     private val interruptGeneration: InterruptComfyUIGenerationUseCase,
     private val saveImage: SaveGeneratedImageUseCase,
     private val repository: ComfyUIConnectionRepository,
+    private val notificationService: GenerationNotificationService,
+    private val lifecycleTracker: AppLifecycleTracker,
+    observeGenNotifEnabled: ObserveGenerationNotificationsEnabledUseCase,
 ) {
     private var progressJob: Job? = null
+    private var generationStartTimeMs: Long = 0L
+    private var notificationsEnabled: Boolean = true
+
+    init {
+        observeGenNotifEnabled()
+            .onEach { notificationsEnabled = it }
+            .launchIn(scope)
+    }
 
     fun onGenerate(params: ComfyUIGenerationParams) {
         progressJob?.cancel()
+        generationStartTimeMs = currentTimeMs()
         uiState.update {
             it.copy(
                 generationStatus = GenerationStatus.Submitting,
@@ -126,14 +145,19 @@ internal class GenerationExecutionDelegate(
 
     private suspend fun fetchFinalResult(promptId: String) {
         val onError = { e: Exception ->
+            notifyErrorIfNeeded(promptId, e.message ?: "Unknown error")
             uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
         }
         runCatchingLogged("Failed to fetch final result", onError) {
             val result = pollResult(promptId)
-            uiState.update {
-                if (result.status == GenerationStatus.Completed) {
+            if (result.status == GenerationStatus.Completed) {
+                notifyCompleteIfNeeded(promptId, result.imageUrls.size)
+                uiState.update {
                     it.copy(generationStatus = GenerationStatus.Completed, result = result)
-                } else {
+                }
+            } else {
+                notifyErrorIfNeeded(promptId, result.error ?: "Unknown error")
+                uiState.update {
                     it.copy(generationStatus = GenerationStatus.Error, error = result.error)
                 }
             }
@@ -142,6 +166,7 @@ internal class GenerationExecutionDelegate(
 
     private suspend fun pollForResult(promptId: String) {
         val onError = { e: Exception ->
+            notifyErrorIfNeeded(promptId, e.message ?: "Unknown error")
             uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
         }
         var attempts = 0
@@ -152,12 +177,14 @@ internal class GenerationExecutionDelegate(
                 val result = pollResult(promptId)
                 when (result.status) {
                     GenerationStatus.Completed -> {
+                        notifyCompleteIfNeeded(promptId, result.imageUrls.size)
                         uiState.update {
                             it.copy(generationStatus = GenerationStatus.Completed, result = result)
                         }
                         done = true
                     }
                     GenerationStatus.Error -> {
+                        notifyErrorIfNeeded(promptId, result.error ?: "Unknown error")
                         uiState.update {
                             it.copy(generationStatus = GenerationStatus.Error, error = result.error)
                         }
@@ -168,10 +195,28 @@ internal class GenerationExecutionDelegate(
             }
             if (!success || done) return
         }
+        notifyErrorIfNeeded(promptId, "Generation timed out")
         uiState.update {
             it.copy(generationStatus = GenerationStatus.Error, error = "Generation timed out")
         }
     }
+
+    // region Notification helpers
+
+    private fun notifyCompleteIfNeeded(promptId: String, imageCount: Int) {
+        if (!notificationsEnabled || lifecycleTracker.isInForeground) return
+        val elapsed = currentTimeMs() - generationStartTimeMs
+        notificationService.notifyGenerationComplete(promptId, imageCount, elapsed)
+    }
+
+    private fun notifyErrorIfNeeded(promptId: String, errorMessage: String) {
+        if (!notificationsEnabled || lifecycleTracker.isInForeground) return
+        notificationService.notifyGenerationError(promptId, errorMessage)
+    }
+
+    private fun currentTimeMs(): Long = currentTimeMillis()
+
+    // endregion
 
     private inline fun launchWithErrorHandling(
         tag: String,
