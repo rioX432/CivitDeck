@@ -76,6 +76,10 @@ struct TemplateParameterView: View {
                 selectInput(variable: variable)
             case .number:
                 numberInput(variable: variable)
+            case .boolean_:
+                booleanInput(variable: variable)
+            case .seed:
+                seedInput(variable: variable)
             default:
                 textInput(variable: variable)
             }
@@ -165,6 +169,43 @@ struct TemplateParameterView: View {
         )
         .lineLimit(isPrompt ? 3...6 : 1...1)
         .textFieldStyle(.roundedBorder)
+    }
+
+    private func booleanInput(variable: TemplateVariable) -> some View {
+        let isOn = (values[variable.name] ?? variable.defaultValue).lowercased() == "true"
+            || (values[variable.name] ?? variable.defaultValue) == "1"
+        return Toggle(
+            variable.label.isEmpty ? variable.name : variable.label,
+            isOn: Binding(
+                get: { isOn },
+                set: { newValue in
+                    values[variable.name] = "\(newValue)"
+                }
+            )
+        )
+        .font(.civitBodyMedium)
+    }
+
+    private func seedInput(variable: TemplateVariable) -> some View {
+        HStack(spacing: Spacing.sm) {
+            TextField(
+                variable.required ? "Required" : "Optional",
+                text: Binding(
+                    get: { values[variable.name] ?? "" },
+                    set: { values[variable.name] = $0 }
+                )
+            )
+            .keyboardType(.numberPad)
+            .textFieldStyle(.roundedBorder)
+            Button {
+                let randomSeed = Int64.random(in: 0..<Int64.max)
+                values[variable.name] = "\(randomSeed)"
+            } label: {
+                Image(systemName: "dice")
+                    .accessibilityLabel("Randomize seed")
+            }
+            .buttonStyle(.bordered)
+        }
     }
 
     private func formatSliderValue(_ value: Double, step: Double) -> String {

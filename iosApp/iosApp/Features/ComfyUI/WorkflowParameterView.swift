@@ -1,20 +1,26 @@
 import SwiftUI
 import Shared
+import PhotosUI
 
 private let sliderLabelWidth: CGFloat = 130
 
-/// Renders extracted workflow parameters as a SwiftUI Form grouped by node.
+/// Renders extracted workflow parameters as a SwiftUI Form grouped by APP mode groups or nodes.
 struct WorkflowParameterView: View {
     let parameters: [Feature_comfyuiExtractedParameter]
     let onParameterChanged: (String, String, String) -> Void
     let onRefresh: () -> Void
+    var onImagePickRequested: ((String, String) -> Void)?
     @Environment(\.dismiss) private var dismiss
+    @State private var showAdvanced = false
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(groupedParameters, id: \.nodeId) { group in
-                    nodeSection(group)
+                ForEach(groupedSections, id: \.title) { section in
+                    sectionView(section)
+                }
+                if !advancedParameters.isEmpty {
+                    advancedSection
                 }
             }
             .navigationTitle("Workflow Parameters")
@@ -35,15 +41,47 @@ struct WorkflowParameterView: View {
         }
     }
 
-    private var groupedParameters: [NodeGroup] {
-        var groups: [String: NodeGroup] = [:]
+    // MARK: - Grouped sections
+
+    private var groupedSections: [ParameterSection] {
+        let hasGroups = parameters.contains { $0.group != nil }
+        if hasGroups {
+            return buildAppModeGroups()
+        }
+        return buildNodeGroups()
+    }
+
+    private var advancedParameters: [Feature_comfyuiExtractedParameter] {
+        let hasGroups = parameters.contains { $0.group != nil }
+        guard hasGroups else { return [] }
+        return parameters.filter { $0.group == nil }
+    }
+
+    private func buildAppModeGroups() -> [ParameterSection] {
+        var groups: [String: [Feature_comfyuiExtractedParameter]] = [:]
+        var order: [String] = []
+        for param in parameters where param.group != nil {
+            let group = param.group!
+            if groups[group] == nil {
+                order.append(group)
+                groups[group] = []
+            }
+            groups[group]?.append(param)
+        }
+        return order.compactMap { key in
+            guard let params = groups[key] else { return nil }
+            let sorted = params.sorted { $0.order < $1.order }
+            return ParameterSection(title: key, parameters: sorted)
+        }
+    }
+
+    private func buildNodeGroups() -> [ParameterSection] {
+        var groups: [String: ParameterSection] = [:]
         var order: [String] = []
         for param in parameters {
             if groups[param.nodeId] == nil {
-                groups[param.nodeId] = NodeGroup(
-                    nodeId: param.nodeId,
-                    nodeTitle: param.nodeTitle,
-                    classType: param.nodeClassType,
+                groups[param.nodeId] = ParameterSection(
+                    title: param.nodeTitle,
                     parameters: []
                 )
                 order.append(param.nodeId)
@@ -53,20 +91,38 @@ struct WorkflowParameterView: View {
         return order.compactMap { groups[$0] }
     }
 
+    // MARK: - Section views
+
     @ViewBuilder
-    private func nodeSection(_ group: NodeGroup) -> some View {
+    private func sectionView(_ section: ParameterSection) -> some View {
         Section {
-            ForEach(group.parameters, id: \.paramKey) { param in
+            ForEach(section.parameters, id: \.paramKey) { param in
                 parameterWidget(param)
             }
         } header: {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(group.nodeTitle).font(.civitLabelMedium)
-                Text(group.classType).font(.civitBodySmall)
-                    .foregroundColor(.civitOnSurfaceVariant)
-            }
+            Text(section.title).font(.civitLabelMedium)
         }
     }
+
+    @ViewBuilder
+    private var advancedSection: some View {
+        Section {
+            DisclosureGroup(
+                isExpanded: $showAdvanced,
+                content: {
+                    ForEach(advancedParameters, id: \.paramKey) { param in
+                        parameterWidget(param)
+                    }
+                },
+                label: {
+                    Text("Advanced Parameters")
+                        .font(.civitBodyMedium)
+                }
+            )
+        }
+    }
+
+    // MARK: - Parameter widgets
 
     @ViewBuilder
     private func parameterWidget(_ param: Feature_comfyuiExtractedParameter) -> some View {
@@ -79,8 +135,50 @@ struct WorkflowParameterView: View {
             selectWidget(param)
         case .seed:
             seedWidget(param)
+        case .boolean_:
+            booleanWidget(param)
+        case .image:
+            imageWidget(param)
         default:
             textWidget(param)
+        }
+    }
+
+    private func booleanWidget(_ param: Feature_comfyuiExtractedParameter) -> some View {
+        let isOn = param.currentValue.lowercased() == "true" || param.currentValue == "1"
+        return Toggle(param.paramName, isOn: Binding(
+            get: { isOn },
+            set: { newValue in
+                // Update immediately to prevent visual revert
+                onParameterChanged(param.nodeId, param.paramName, "\(newValue)")
+            }
+        ))
+        .font(.civitBodyMedium)
+    }
+
+    private func imageWidget(_ param: Feature_comfyuiExtractedParameter) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(param.paramName).font(.civitBodySmall)
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "photo")
+                    .font(.title2)
+                    .frame(width: 48, height: 48)
+                    .foregroundColor(.civitOnSurfaceVariant)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.civitOutline, lineWidth: 1)
+                    )
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(param.currentValue.isEmpty ? "No image selected" : param.currentValue)
+                        .font(.civitBodySmall)
+                        .lineLimit(1)
+                    Button("Gallery") {
+                        onImagePickRequested?(param.nodeId, param.paramName)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+            }
         }
     }
 
@@ -168,6 +266,8 @@ struct WorkflowParameterView: View {
         }
     }
 
+    // MARK: - Helpers
+
     private func bindingFor(_ param: Feature_comfyuiExtractedParameter) -> Binding<String> {
         Binding(
             get: { param.currentValue },
@@ -186,16 +286,14 @@ struct WorkflowParameterView: View {
     }
 }
 
-private class NodeGroup {
-    let nodeId: String
-    let nodeTitle: String
-    let classType: String
+// MARK: - Supporting types
+
+private class ParameterSection {
+    let title: String
     var parameters: [Feature_comfyuiExtractedParameter]
 
-    init(nodeId: String, nodeTitle: String, classType: String, parameters: [Feature_comfyuiExtractedParameter]) {
-        self.nodeId = nodeId
-        self.nodeTitle = nodeTitle
-        self.classType = classType
+    init(title: String, parameters: [Feature_comfyuiExtractedParameter]) {
+        self.title = title
         self.parameters = parameters
     }
 }

@@ -47,4 +47,7 @@ enum class TemplateVariableType {
     NUMBER,
     SELECT,
     SLIDER,
+    IMAGE,
+    BOOLEAN,
+    SEED,
 }

@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -22,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,12 +35,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import com.riox432.civitdeck.domain.model.TemplateVariable
 import com.riox432.civitdeck.domain.model.TemplateVariableType
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 @Composable
 fun DesktopTemplateParameterScreen(
@@ -139,7 +144,11 @@ private fun ParameterInput(
                 TemplateVariableType.SLIDER -> SliderInput(variable, value, onValueChange)
                 TemplateVariableType.SELECT -> SelectInput(variable, value, onValueChange)
                 TemplateVariableType.NUMBER -> NumberInput(variable, value, onValueChange)
-                TemplateVariableType.TEXT -> TextInput(variable, value, onValueChange)
+                TemplateVariableType.BOOLEAN -> BooleanInput(variable, value, onValueChange)
+                TemplateVariableType.SEED -> SeedInput(variable, value, onValueChange)
+                TemplateVariableType.TEXT, TemplateVariableType.IMAGE -> {
+                    TextInput(variable, value, onValueChange)
+                }
             }
         }
     }
@@ -242,6 +251,55 @@ private fun TextInput(
             if (variable.required) Text("Required") else Text("Optional")
         },
     )
+}
+
+@Composable
+private fun BooleanInput(
+    variable: TemplateVariable,
+    value: String,
+    onValueChange: (String) -> Unit,
+) {
+    val isChecked = value.equals("true", ignoreCase = true) || value == "1"
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            variable.label.ifBlank { variable.name },
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Switch(
+            checked = isChecked,
+            onCheckedChange = { onValueChange(it.toString()) },
+        )
+    }
+}
+
+@Composable
+private fun SeedInput(
+    variable: TemplateVariable,
+    value: String,
+    onValueChange: (String) -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.weight(1f),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        )
+        IconButton(onClick = {
+            val randomSeed = Random.nextLong(0, Long.MAX_VALUE)
+            onValueChange(randomSeed.toString())
+        }) {
+            Icon(Icons.Default.Casino, contentDescription = "Randomize seed")
+        }
+    }
 }
 
 private fun formatSliderValue(value: Float, step: Float): String {

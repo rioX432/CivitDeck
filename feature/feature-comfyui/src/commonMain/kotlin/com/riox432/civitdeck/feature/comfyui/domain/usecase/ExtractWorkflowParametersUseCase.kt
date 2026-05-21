@@ -206,6 +206,14 @@ class ExtractWorkflowParametersUseCase(
         // Seed fields are always SEED type
         if (paramName == "seed" || paramName == "noise_seed") return ParameterType.SEED
 
+        // Image upload fields
+        if (paramName == "image" || paramName in KNOWN_IMAGE_PARAMS) return ParameterType.IMAGE
+
+        // Boolean fields (schema type or known names)
+        if (schema?.isBoolean == true || paramName in KNOWN_BOOLEAN_PARAMS) {
+            return ParameterType.BOOLEAN
+        }
+
         // If schema has options, it's a SELECT
         if (schema != null && schema.options.isNotEmpty()) return ParameterType.SELECT
 
@@ -225,6 +233,7 @@ class ExtractWorkflowParametersUseCase(
         val max: Double? = null,
         val step: Double? = null,
         val options: List<String> = emptyList(),
+        val isBoolean: Boolean = false,
     )
 
     /**
@@ -260,11 +269,14 @@ class ExtractWorkflowParametersUseCase(
 
         // If first element is a string type descriptor, check for constraints in second element
         if (first is JsonPrimitive) {
+            val typeStr = first.content
+            val isBoolean = typeStr.equals("BOOLEAN", ignoreCase = true)
             val constraints = if (paramDef.size > 1) paramDef[1] as? JsonObject else null
             return SchemaInfo(
                 min = constraints?.get("min")?.jsonPrimitive?.doubleOrNull,
                 max = constraints?.get("max")?.jsonPrimitive?.doubleOrNull,
                 step = constraints?.get("step")?.jsonPrimitive?.doubleOrNull,
+                isBoolean = isBoolean,
             )
         }
 
@@ -305,6 +317,15 @@ class ExtractWorkflowParametersUseCase(
         private val KNOWN_NUMERIC_PARAMS = setOf(
             "steps", "cfg", "denoise", "strength_model", "strength_clip",
             "width", "height", "batch_size", "start_at_step", "end_at_step",
+        )
+
+        private val KNOWN_IMAGE_PARAMS = setOf(
+            "image", "input_image", "source_image", "mask",
+        )
+
+        private val KNOWN_BOOLEAN_PARAMS = setOf(
+            "add_noise", "return_with_leftover_noise", "tiling",
+            "disable_noise", "force_inpaint",
         )
     }
 }

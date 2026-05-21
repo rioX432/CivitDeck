@@ -37,4 +37,10 @@ enum class ParameterType {
 
     /** Seed value with randomize button. */
     SEED,
+
+    /** Image upload input (gallery picker or recent generations). */
+    IMAGE,
+
+    /** Boolean toggle switch. */
+    BOOLEAN,
 }

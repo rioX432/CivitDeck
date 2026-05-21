@@ -93,6 +93,10 @@
     <string name="cd_edit_parameters">Edit parameters</string>
     <string name="cd_randomize_seed">Randomize seed</string>
     <string name="cd_refresh_parameters">Refresh parameters</string>
+    <string name="cd_select_image">Select image</string>
+    <string name="cd_toggle_parameter">Toggle %1$s</string>
+    <string name="cd_expand_section">Expand section</string>
+    <string name="cd_collapse_section">Collapse section</string>
     <string name="cd_open_details">Open details</string>
     <string name="cd_enable_plugin">Enable %1$s</string>
     <string name="cd_plugin_active">Active</string>
@@ -288,6 +292,10 @@
     <string name="label_importing">Importing…</string>
     <string name="label_required">Required</string>
     <string name="label_optional">Optional</string>
+    <string name="label_advanced_parameters">Advanced Parameters</string>
+    <string name="label_select_from_gallery">Gallery</string>
+    <string name="label_recent_generations">Recent</string>
+    <string name="label_no_image_selected">No image selected</string>
     <string name="label_enabled">Enabled</string>
     <string name="label_name">Name</string>
     <string name="label_description">Description</string>

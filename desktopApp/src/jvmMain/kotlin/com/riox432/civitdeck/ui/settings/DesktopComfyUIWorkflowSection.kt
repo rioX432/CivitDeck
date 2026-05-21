@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -181,10 +182,11 @@ private fun DesktopParamWidget(
     onChanged: (String, String, String) -> Unit,
 ) {
     when (param.paramType) {
-        ParameterType.TEXT -> ParamTextInput(param, onChanged)
+        ParameterType.TEXT, ParameterType.IMAGE -> ParamTextInput(param, onChanged)
         ParameterType.NUMBER -> ParamNumberInput(param, onChanged)
         ParameterType.SELECT -> DesktopParamDropdown(param, onChanged)
         ParameterType.SEED -> ParamSeedInput(param, onChanged)
+        ParameterType.BOOLEAN -> ParamBooleanInput(param, onChanged)
     }
 }
 
@@ -304,5 +306,27 @@ private fun DesktopParamDropdown(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ParamBooleanInput(
+    param: ExtractedParameter,
+    onChanged: (String, String, String) -> Unit,
+) {
+    val isChecked = param.currentValue.equals("true", ignoreCase = true) ||
+        param.currentValue == "1"
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(param.paramName, style = MaterialTheme.typography.bodyMedium)
+        Switch(
+            checked = isChecked,
+            onCheckedChange = { newValue ->
+                onChanged(param.nodeId, param.paramName, newValue.toString())
+            },
+        )
     }
 }
