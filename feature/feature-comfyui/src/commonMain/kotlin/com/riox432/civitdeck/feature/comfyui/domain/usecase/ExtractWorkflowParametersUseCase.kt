@@ -1,5 +1,7 @@
 package com.riox432.civitdeck.feature.comfyui.domain.usecase
 
+import com.riox432.civitdeck.domain.model.AppModeInput
+import com.riox432.civitdeck.domain.model.AppModeMetadata
 import com.riox432.civitdeck.feature.comfyui.domain.model.ExtractedParameter
 import com.riox432.civitdeck.feature.comfyui.domain.model.ParameterType
 import com.riox432.civitdeck.util.Logger
@@ -12,15 +14,22 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /**
- * Parses a ComfyUI workflow JSON and extracts editable parameters from priority node types.
- * Optionally uses /object_info data to enrich parameter metadata (options, ranges).
+ * Parses a ComfyUI workflow JSON and extracts editable parameters.
+ *
+ * Extraction strategy:
+ * 1. Try APP mode: parse `extra.linearData` for designated inputs (official ComfyUI standard).
+ * 2. Fallback: extract from hardcoded PRIORITY_NODES when no APP mode metadata is present.
+ *
+ * Both paths are optionally enriched with /object_info schema data.
  */
-class ExtractWorkflowParametersUseCase {
+class ExtractWorkflowParametersUseCase(
+    private val parseAppModeMetadata: ParseAppModeMetadataUseCase,
+) {
 
     /**
      * @param workflowJson The raw workflow JSON string.
      * @param objectInfoJson Optional /object_info response JSON for enriching param metadata.
-     * @return List of extracted parameters sorted by node priority then param order.
+     * @return List of extracted parameters sorted by APP mode order or node priority.
      */
     operator fun invoke(
         workflowJson: String,
@@ -33,15 +42,76 @@ class ExtractWorkflowParametersUseCase {
             return emptyList()
         }
 
-        val objectInfo = objectInfoJson?.let {
-            try {
-                Json.parseToJsonElement(it).jsonObject
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                Logger.w(TAG, "Failed to parse object_info JSON: ${e.message}")
-                null
-            }
+        val objectInfo = parseObjectInfo(objectInfoJson)
+        val appMode = parseAppModeMetadata(workflowJson)
+
+        return if (appMode != null) {
+            Logger.d(TAG, "APP mode detected: ${appMode.inputs.size} inputs")
+            extractAppModeParameters(appMode, workflow, objectInfo)
+        } else {
+            extractLegacyParameters(workflow, objectInfo)
+        }
+    }
+
+    /**
+     * Extract parameters designated by APP mode metadata.
+     * Only inputs explicitly listed in linearData.inputs are extracted.
+     */
+    private fun extractAppModeParameters(
+        appMode: AppModeMetadata,
+        workflow: JsonObject,
+        objectInfo: JsonObject?,
+    ): List<ExtractedParameter> {
+        return appMode.inputs.mapNotNull { input ->
+            extractAppModeInput(input, workflow, objectInfo)
+        }
+    }
+
+    private fun extractAppModeInput(
+        input: AppModeInput,
+        workflow: JsonObject,
+        objectInfo: JsonObject?,
+    ): ExtractedParameter? {
+        val node = workflow[input.nodeId] as? JsonObject ?: return null
+        val classType = (node["class_type"] as? JsonPrimitive)?.content ?: return null
+        val inputs = node["inputs"] as? JsonObject ?: return null
+
+        val rawValue = inputs[input.paramName] ?: return null
+        // Skip node link references (arrays like ["3", 0])
+        if (rawValue is JsonArray) return null
+
+        val currentValue = when (rawValue) {
+            is JsonPrimitive -> rawValue.content
+            else -> rawValue.toString()
         }
 
+        val title = input.label ?: extractNodeTitle(node, classType, input.nodeId)
+        val nodeSchema = objectInfo?.get(classType) as? JsonObject
+        val schemaInfo = resolveSchemaInfo(input.paramName, nodeSchema)
+        val paramType = resolveParameterType(input.paramName, schemaInfo)
+
+        return ExtractedParameter(
+            nodeId = input.nodeId,
+            nodeTitle = title,
+            nodeClassType = classType,
+            paramName = input.paramName,
+            paramType = paramType,
+            currentValue = currentValue,
+            min = schemaInfo?.min,
+            max = schemaInfo?.max,
+            step = schemaInfo?.step,
+            options = schemaInfo?.options ?: emptyList(),
+            group = input.group,
+            order = input.order,
+        )
+    }
+
+    // region Legacy extraction (PRIORITY_NODES fallback)
+
+    private fun extractLegacyParameters(
+        workflow: JsonObject,
+        objectInfo: JsonObject?,
+    ): List<ExtractedParameter> {
         return workflow.entries
             .mapNotNull { (nodeId, nodeElement) ->
                 val node = nodeElement as? JsonObject ?: return@mapNotNull null
@@ -106,6 +176,21 @@ class ExtractWorkflowParametersUseCase {
         )
     }
 
+    // endregion
+
+    // region Shared helpers
+
+    private fun parseObjectInfo(objectInfoJson: String?): JsonObject? {
+        return objectInfoJson?.let {
+            try {
+                Json.parseToJsonElement(it).jsonObject
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.w(TAG, "Failed to parse object_info JSON: ${e.message}")
+                null
+            }
+        }
+    }
+
     private fun extractNodeTitle(node: JsonObject, classType: String, nodeId: String): String {
         // ComfyUI workflows may have _meta.title
         val meta = node["_meta"] as? JsonObject
@@ -135,7 +220,7 @@ class ExtractWorkflowParametersUseCase {
         return ParameterType.TEXT
     }
 
-    private data class SchemaInfo(
+    internal data class SchemaInfo(
         val min: Double? = null,
         val max: Double? = null,
         val step: Double? = null,
@@ -147,7 +232,7 @@ class ExtractWorkflowParametersUseCase {
      * Object info structure: { NodeType: { input: { required: { paramName: [...] } } } }
      */
     @Suppress("ReturnCount")
-    private fun resolveSchemaInfo(paramName: String, nodeSchema: JsonObject?): SchemaInfo? {
+    internal fun resolveSchemaInfo(paramName: String, nodeSchema: JsonObject?): SchemaInfo? {
         if (nodeSchema == null) return null
 
         val inputObj = nodeSchema["input"] as? JsonObject ?: return null
@@ -194,6 +279,8 @@ class ExtractWorkflowParametersUseCase {
         "EmptyLatentImage" -> 4
         else -> 5
     }
+
+    // endregion
 
     companion object {
         private const val TAG = "ExtractWorkflowParams"

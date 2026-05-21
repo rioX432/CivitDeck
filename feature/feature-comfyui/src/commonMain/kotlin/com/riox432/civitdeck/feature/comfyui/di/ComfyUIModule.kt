@@ -35,6 +35,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteWorkflowTempla
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DisconnectCivitaiLinkUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExportWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExtractWorkflowParametersUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ParseAppModeMetadataUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSystemStatsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
@@ -120,7 +121,8 @@ val comfyuiModule = module {
     factory { FetchComfyUILorasUseCase(get()) }
     factory { FetchComfyUIControlNetsUseCase(get()) }
     factory { ImportWorkflowUseCase() }
-    factory { ExtractWorkflowParametersUseCase() }
+    factory { ParseAppModeMetadataUseCase() }
+    factory { ExtractWorkflowParametersUseCase(get()) }
     factory { InjectWorkflowParametersUseCase() }
     factory { FetchObjectInfoUseCase(get(), get()) }
     factory { SubmitComfyUIGenerationUseCase(get()) }
