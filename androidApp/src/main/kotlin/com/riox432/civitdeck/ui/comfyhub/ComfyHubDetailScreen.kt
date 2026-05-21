@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.ui.comfyhub
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -23,6 +25,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -34,11 +37,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ComfyHubWorkflow
+import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubDetailUiState
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubDetailViewModel
 import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
@@ -53,6 +58,35 @@ fun ComfyHubDetailScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    DetailScreenEffects(state, snackbarHostState, viewModel)
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(state.workflow?.name ?: "Workflow Detail") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_navigate_back),
+                        )
+                    }
+                },
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { padding ->
+        DetailContentSwitch(state, viewModel, Modifier.padding(padding))
+    }
+}
+
+@Composable
+private fun DetailScreenEffects(
+    state: ComfyHubDetailUiState,
+    snackbarHostState: SnackbarHostState,
+    viewModel: ComfyHubDetailViewModel,
+) {
+    val context = LocalContext.current
     LaunchedEffect(state.importSuccess, state.importError) {
         if (state.importSuccess) {
             snackbarHostState.showSnackbar("Workflow imported successfully!")
@@ -63,48 +97,53 @@ fun ComfyHubDetailScreen(
             viewModel.dismissImportResult()
         }
     }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(state.workflow?.name ?: "Workflow Detail")
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.cd_navigate_back)
-                        )
-                    }
-                },
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-    ) { padding ->
-        when {
-            state.isLoading -> LoadingStateOverlay()
-            state.error != null -> ErrorStateView(
-                message = requireNotNull(state.error) { "error must not be null" },
-                onRetry = viewModel::retry,
-            )
-            state.workflow != null -> DetailContent(
-                workflow = requireNotNull(state.workflow) { "workflow must not be null" },
-                nodeNames = state.nodeNames,
-                isImporting = state.isImporting,
-                onImport = viewModel::onImport,
-                modifier = Modifier.padding(padding),
-            )
+    LaunchedEffect(state.saveTemplateSuccess, state.saveTemplateError) {
+        if (state.saveTemplateSuccess) {
+            snackbarHostState.showSnackbar(context.getString(R.string.comfyhub_template_saved))
+            viewModel.dismissSaveTemplateResult()
+        }
+        state.saveTemplateError?.let {
+            snackbarHostState.showSnackbar(context.getString(R.string.comfyhub_save_template_failed, it))
+            viewModel.dismissSaveTemplateResult()
         }
     }
 }
 
 @Composable
+private fun DetailContentSwitch(
+    state: ComfyHubDetailUiState,
+    viewModel: ComfyHubDetailViewModel,
+    modifier: Modifier,
+) {
+    when {
+        state.isLoading -> LoadingStateOverlay()
+        state.error != null -> ErrorStateView(
+            message = requireNotNull(state.error) { "error must not be null" },
+            onRetry = viewModel::retry,
+        )
+        state.workflow != null -> DetailContent(
+            workflow = requireNotNull(state.workflow) { "workflow must not be null" },
+            nodeNames = state.nodeNames,
+            isImporting = state.isImporting,
+            hasAppMode = state.hasAppMode,
+            isSavingTemplate = state.isSavingTemplate,
+            onImport = viewModel::onImport,
+            onSaveAsTemplate = viewModel::onSaveAsTemplate,
+            modifier = modifier,
+        )
+    }
+}
+
+@Suppress("LongParameterList")
+@Composable
 private fun DetailContent(
     workflow: ComfyHubWorkflow,
     nodeNames: List<String>,
     isImporting: Boolean,
+    hasAppMode: Boolean,
+    isSavingTemplate: Boolean,
     onImport: () -> Unit,
+    onSaveAsTemplate: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -114,7 +153,7 @@ private fun DetailContent(
             .padding(Spacing.md),
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
-        WorkflowHeader(workflow)
+        WorkflowHeader(workflow, hasAppMode)
         HorizontalDivider()
         DescriptionSection(workflow.description)
         TagsSection(workflow.tags)
@@ -122,13 +161,26 @@ private fun DetailContent(
         NodeGraphSection(nodeNames)
         HorizontalDivider()
         ImportButton(isImporting, onImport)
+        SaveAsTemplateButton(isSavingTemplate, onSaveAsTemplate)
     }
 }
 
 @Composable
-private fun WorkflowHeader(workflow: ComfyHubWorkflow) {
+private fun WorkflowHeader(workflow: ComfyHubWorkflow, hasAppMode: Boolean = false) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        Text(workflow.name, style = MaterialTheme.typography.headlineSmall)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            Text(
+                workflow.name,
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.weight(1f),
+            )
+            if (hasAppMode) {
+                AppModeBadge()
+            }
+        }
         Text(
             text = "by ${workflow.author}",
             style = MaterialTheme.typography.bodyMedium,
@@ -231,6 +283,47 @@ private fun ImportButton(isImporting: Boolean, onImport: () -> Unit) {
         } else {
             Icon(Icons.Outlined.Download, contentDescription = "Import workflow")
             Text(stringResource(R.string.comfyhub_import_to_comfyui), modifier = Modifier.padding(start = Spacing.sm))
+        }
+    }
+}
+
+@Composable
+private fun AppModeBadge() {
+    Text(
+        text = stringResource(R.string.template_app_mode_badge),
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .background(
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(Spacing.xs),
+            )
+            .padding(horizontal = Spacing.sm, vertical = Spacing.xs),
+    )
+}
+
+@Composable
+private fun SaveAsTemplateButton(isSaving: Boolean, onSave: () -> Unit) {
+    OutlinedButton(
+        onClick = onSave,
+        enabled = !isSaving,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        if (isSaving) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(16.dp),
+                strokeWidth = 2.dp,
+            )
+            Text(
+                stringResource(R.string.comfyhub_saving_template),
+                modifier = Modifier.padding(start = Spacing.sm),
+            )
+        } else {
+            Icon(Icons.Outlined.Star, contentDescription = null)
+            Text(
+                stringResource(R.string.comfyhub_save_as_template),
+                modifier = Modifier.padding(start = Spacing.sm),
+            )
         }
     }
 }

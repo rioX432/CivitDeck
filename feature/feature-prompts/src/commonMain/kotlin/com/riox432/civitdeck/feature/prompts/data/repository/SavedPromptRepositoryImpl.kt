@@ -64,6 +64,8 @@ class SavedPromptRepositoryImpl(
         templateVariables = templateVariables,
         templateType = templateType,
         templateMetadata = templateMetadata,
+        isAppMode = isAppMode,
+        rawWorkflowJson = rawWorkflowJson,
     )
 
     private fun ImageGenerationMeta.toEntity(
@@ -101,5 +103,7 @@ class SavedPromptRepositoryImpl(
         templateVariables = templateVariables,
         templateType = templateType,
         templateMetadata = templateMetadata,
+        isAppMode = isAppMode,
+        rawWorkflowJson = rawWorkflowJson,
     )
 }

@@ -100,6 +100,7 @@ import com.riox432.civitdeck.data.local.migrations.MIGRATION_42_43
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_43_44
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_44_45
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_45_46
+import com.riox432.civitdeck.data.local.migrations.MIGRATION_46_47
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_4_5
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_5_6
 import com.riox432.civitdeck.data.local.migrations.MIGRATION_6_7
@@ -143,7 +144,7 @@ import kotlinx.coroutines.IO
         QualityScoreCacheEntity::class,
         ModelEmbeddingEntity::class,
     ],
-    version = 46,
+    version = 47,
 )
 @ConstructedBy(CivitDeckDatabaseConstructor::class)
 abstract class CivitDeckDatabase : RoomDatabase() {
@@ -226,6 +227,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<CivitDeckDatabase>): CivitDeck
             MIGRATION_43_44,
             MIGRATION_44_45,
             MIGRATION_45_46,
+            MIGRATION_46_47,
         )
         .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
         .addCallback(defaultCollectionCallback)

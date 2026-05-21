@@ -13,6 +13,10 @@ final class ComfyHubDetailViewModelOwner: ObservableObject {
     @Published var importSuccess: Bool = false
     @Published var importError: String?
     @Published var nodeNames: [String] = []
+    @Published var hasAppMode: Bool = false
+    @Published var isSavingTemplate: Bool = false
+    @Published var saveTemplateSuccess: Bool = false
+    @Published var saveTemplateError: String?
 
     init(workflowId: String) {
         vm = KoinHelper.shared.createComfyHubDetailViewModel(workflowId: workflowId)
@@ -30,10 +34,16 @@ final class ComfyHubDetailViewModelOwner: ObservableObject {
             importSuccess = state.importSuccess
             importError = state.importError
             nodeNames = state.nodeNames as? [String] ?? []
+            hasAppMode = state.hasAppMode
+            isSavingTemplate = state.isSavingTemplate
+            saveTemplateSuccess = state.saveTemplateSuccess
+            saveTemplateError = state.saveTemplateError
         }
     }
 
     func retry() { vm.retry() }
     func onImport() { vm.onImport() }
+    func onSaveAsTemplate() { vm.onSaveAsTemplate() }
     func dismissImportResult() { vm.dismissImportResult() }
+    func dismissSaveTemplateResult() { vm.dismissSaveTemplateResult() }
 }

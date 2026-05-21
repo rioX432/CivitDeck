@@ -6,6 +6,8 @@ import com.riox432.civitdeck.domain.model.ComfyHubWorkflow
 import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.GetComfyHubWorkflowDetailUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportComfyHubWorkflowUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowTemplateUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ParseAppModeMetadataUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,12 +26,18 @@ data class ComfyHubDetailUiState(
     val importSuccess: Boolean = false,
     val importError: String? = null,
     val nodeNames: List<String> = emptyList(),
+    val hasAppMode: Boolean = false,
+    val isSavingTemplate: Boolean = false,
+    val saveTemplateSuccess: Boolean = false,
+    val saveTemplateError: String? = null,
 ) : UiLoadingState
 
 class ComfyHubDetailViewModel(
     private val workflowId: String,
     private val getWorkflowDetail: GetComfyHubWorkflowDetailUseCase,
     private val importWorkflow: ImportComfyHubWorkflowUseCase,
+    private val parseAppModeMetadata: ParseAppModeMetadataUseCase,
+    private val importWorkflowTemplate: ImportWorkflowTemplateUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ComfyHubDetailUiState())
@@ -61,8 +69,32 @@ class ComfyHubDetailViewModel(
         }
     }
 
+    fun onSaveAsTemplate() {
+        val workflow = _uiState.value.workflow ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSavingTemplate = true, saveTemplateError = null) }
+            try {
+                importWorkflowTemplate(workflow.workflowJson)
+                _uiState.update {
+                    it.copy(isSavingTemplate = false, saveTemplateSuccess = true)
+                }
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isSavingTemplate = false,
+                        saveTemplateError = e.message ?: "Save failed",
+                    )
+                }
+            }
+        }
+    }
+
     fun dismissImportResult() {
         _uiState.update { it.copy(importSuccess = false, importError = null) }
+    }
+
+    fun dismissSaveTemplateResult() {
+        _uiState.update { it.copy(saveTemplateSuccess = false, saveTemplateError = null) }
     }
 
     @Suppress("TooGenericExceptionCaught")
@@ -72,8 +104,14 @@ class ComfyHubDetailViewModel(
             try {
                 val workflow = getWorkflowDetail(workflowId)
                 val nodes = parseNodeNames(workflow.workflowJson)
+                val hasAppMode = parseAppModeMetadata(workflow.workflowJson) != null
                 _uiState.update {
-                    it.copy(workflow = workflow, nodeNames = nodes, isLoading = false)
+                    it.copy(
+                        workflow = workflow,
+                        nodeNames = nodes,
+                        hasAppMode = hasAppMode,
+                        isLoading = false,
+                    )
                 }
             } catch (e: Exception) {
                 _uiState.update {

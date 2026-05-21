@@ -41,6 +41,20 @@ struct ComfyHubDetailView: View {
                 showImportAlert = true
             }
         }
+        .onChange(of: viewModel.saveTemplateSuccess) { success in
+            if success {
+                alertMessage = "Workflow saved as template!"
+                showImportAlert = true
+                viewModel.dismissSaveTemplateResult()
+            }
+        }
+        .onChange(of: viewModel.saveTemplateError) { error in
+            if let msg = error {
+                alertMessage = "Save failed: \(msg)"
+                showImportAlert = true
+                viewModel.dismissSaveTemplateResult()
+            }
+        }
     }
 
     private func detailContent(_ workflow: ComfyHubWorkflow) -> some View {
@@ -54,6 +68,7 @@ struct ComfyHubDetailView: View {
                 nodeGraphSection
                 Divider()
                 importButton
+                saveAsTemplateButton
             }
             .padding(Spacing.md)
         }
@@ -61,8 +76,19 @@ struct ComfyHubDetailView: View {
 
     private func headerSection(_ workflow: ComfyHubWorkflow) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
-            Text(workflow.name)
-                .font(.civitHeadlineSmall)
+            HStack(spacing: Spacing.sm) {
+                Text(workflow.name)
+                    .font(.civitHeadlineSmall)
+                if viewModel.hasAppMode {
+                    Text("APP")
+                        .font(.civitLabelSmall)
+                        .foregroundColor(.civitPrimary)
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, Spacing.xs)
+                        .background(Color.civitPrimary.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
+                }
+            }
             Text("by \(workflow.author)")
                 .font(.civitBodyMedium)
                 .foregroundColor(.civitOnSurfaceVariant)
@@ -137,6 +163,28 @@ struct ComfyHubDetailView: View {
         }
         .buttonStyle(.borderedProminent)
         .disabled(viewModel.isImporting)
+    }
+
+    private var saveAsTemplateButton: some View {
+        Button {
+            viewModel.onSaveAsTemplate()
+        } label: {
+            HStack {
+                if viewModel.isSavingTemplate {
+                    ProgressView()
+                        .tint(.civitPrimary)
+                    Text("Saving...")
+                } else {
+                    Image(systemName: "star")
+                        .accessibilityHidden(true)
+                    Text("Save as Template")
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Spacing.sm)
+        }
+        .buttonStyle(.bordered)
+        .disabled(viewModel.isSavingTemplate)
     }
 
     private func formatCount(_ count: Int) -> String {
