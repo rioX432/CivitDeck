@@ -8,6 +8,8 @@ import com.riox432.civitdeck.domain.model.ConnectionSecurityLevel
 import com.riox432.civitdeck.domain.model.DiscoveredServer
 import com.riox432.civitdeck.domain.model.SecurityLevelHelper
 import com.riox432.civitdeck.domain.model.SystemStats
+import com.riox432.civitdeck.domain.util.OptimizationSuggestion
+import com.riox432.civitdeck.domain.util.generateOptimizationSuggestions
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSystemStatsUseCase
@@ -38,6 +40,8 @@ data class ComfyUISettingsUiState(
     val isScanning: Boolean = false,
     val discoveredServers: List<DiscoveredServer> = emptyList(),
     val systemStats: SystemStats? = null,
+    val optimizationSuggestions: List<OptimizationSuggestion> = emptyList(),
+    val dismissedSuggestionIds: Set<String> = emptySet(),
 )
 
 class ComfyUISettingsViewModel(
@@ -112,8 +116,14 @@ class ComfyUISettingsViewModel(
             val success = testConnection(active)
             if (success) {
                 val stats = fetchSystemStats()
+                val suggestions = stats?.let { generateOptimizationSuggestions(it) } ?: emptyList()
                 _mutableState.update {
-                    it.copy(isTesting = false, testError = null, systemStats = stats)
+                    it.copy(
+                        isTesting = false,
+                        testError = null,
+                        systemStats = stats,
+                        optimizationSuggestions = suggestions,
+                    )
                 }
             } else {
                 _mutableState.update {
@@ -155,6 +165,10 @@ class ComfyUISettingsViewModel(
 
     fun onDismissDialog() {
         _mutableState.update { it.copy(showAddDialog = false, editingConnection = null) }
+    }
+
+    fun dismissSuggestion(id: String) {
+        _mutableState.update { it.copy(dismissedSuggestionIds = it.dismissedSuggestionIds + id) }
     }
 
     private companion object {

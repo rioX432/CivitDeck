@@ -53,6 +53,7 @@ import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.domain.util.SystemStatsProvider
 import com.riox432.civitdeck.feature.detail.presentation.CollectionUseCases
 import com.riox432.civitdeck.feature.detail.presentation.DownloadUseCases
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
@@ -374,6 +375,7 @@ class ModelDetailViewModelTest {
             notesTagsUseCases = notesTagsUseCases,
             downloadUseCases = downloadUseCases,
             reviewUseCases = reviewUseCases,
+            systemStatsProvider = SystemStatsProvider { null },
         )
         return Triple(vm, modelRepo, favRepo)
     }

@@ -14,7 +14,11 @@ import com.riox432.civitdeck.domain.model.PersonalTag
 import com.riox432.civitdeck.domain.model.RatingTotals
 import com.riox432.civitdeck.domain.model.ResourceReview
 import com.riox432.civitdeck.domain.model.ReviewSortOrder
+import com.riox432.civitdeck.domain.model.SystemStats
+import com.riox432.civitdeck.domain.util.SystemStatsProvider
 import com.riox432.civitdeck.domain.util.UiLoadingState
+import com.riox432.civitdeck.domain.util.VramCompatibility
+import com.riox432.civitdeck.domain.util.calculateVramCompatibility
 import com.riox432.civitdeck.domain.util.currentTimeMillis
 import com.riox432.civitdeck.domain.util.launchSafe
 import com.riox432.civitdeck.domain.util.suspendRunCatching
@@ -50,6 +54,8 @@ data class ModelDetailUiState(
     val reviewsError: String? = null,
     val isSubmittingReview: Boolean = false,
     val reviewSubmitSuccess: Boolean = false,
+    val systemStats: SystemStats? = null,
+    val fileVramCompatibility: Map<Long, VramCompatibility> = emptyMap(),
 ) : UiLoadingState
 
 class ModelDetailViewModel(
@@ -59,6 +65,7 @@ class ModelDetailViewModel(
     private val notesTagsUseCases: NotesTagsUseCases,
     private val downloadUseCases: DownloadUseCases,
     private val reviewUseCases: ReviewUseCases,
+    private val systemStatsProvider: SystemStatsProvider,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelDetailUiState())
@@ -117,11 +124,13 @@ class ModelDetailViewModel(
         observeFavorite()
         startObservers()
         reviewDelegate.loadReviews()
+        fetchSystemStats()
     }
 
     fun onVersionSelected(index: Int) {
         _uiState.update { it.copy(selectedVersionIndex = index) }
         enrichCurrentVersion()
+        updateVramCompatibility()
     }
 
     override fun onCleared() {
@@ -197,6 +206,7 @@ class ModelDetailViewModel(
                 .onSuccess { model ->
                     _uiState.update { it.copy(model = model, isLoading = false) }
                     enrichCurrentVersion()
+                    updateVramCompatibility()
                     trackModelView(model)
                     triggerBackgroundEmbed(model)
                     viewStartTimeMs = currentTimeMillis()
@@ -309,6 +319,29 @@ class ModelDetailViewModel(
                 _uiState.update { it.copy(downloads = downloads) }
             }
         }
+    }
+
+    // endregion
+
+    // region Private — System Stats
+
+    private fun fetchSystemStats() {
+        viewModelScope.launch {
+            val stats = systemStatsProvider.fetch() ?: return@launch
+            _uiState.update { it.copy(systemStats = stats) }
+            updateVramCompatibility()
+        }
+    }
+
+    private fun updateVramCompatibility() {
+        val state = _uiState.value
+        val stats = state.systemStats ?: return
+        val model = state.model ?: return
+        val version = model.modelVersions.getOrNull(state.selectedVersionIndex) ?: return
+        val compatMap = version.files.associate { file ->
+            file.id to calculateVramCompatibility(file.sizeKB, stats.vramTotalMB)
+        }
+        _uiState.update { it.copy(fileVramCompatibility = compatMap) }
     }
 
     // endregion

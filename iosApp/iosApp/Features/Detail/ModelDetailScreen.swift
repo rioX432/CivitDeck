@@ -401,6 +401,7 @@ struct ModelDetailScreen: View {
                 downloads: Dictionary(
                     uniqueKeysWithValues: viewModel.downloads.map { ($0.fileId, $0) }
                 ),
+                fileVramCompatibility: viewModel.fileVramCompatibility,
                 onDownload: { viewModel.downloadFile($0) },
                 onCancelDownload: { viewModel.cancelDownload($0) }
             )

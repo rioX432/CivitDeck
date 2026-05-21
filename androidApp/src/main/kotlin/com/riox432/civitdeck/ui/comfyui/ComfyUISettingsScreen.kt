@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
@@ -53,6 +54,7 @@ import com.riox432.civitdeck.domain.model.ComfyUIConnectionStatus
 import com.riox432.civitdeck.domain.model.ConnectionSecurityLevel
 import com.riox432.civitdeck.domain.model.DiscoveredServer
 import com.riox432.civitdeck.domain.model.SystemStats
+import com.riox432.civitdeck.domain.util.OptimizationSuggestion
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsUiState
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
 import com.riox432.civitdeck.ui.theme.CornerRadius
@@ -103,6 +105,7 @@ fun ComfyUISettingsScreen(
                 onDelete = viewModel::onDeleteConnection,
                 onScanLan = viewModel::onScanLan,
                 onSelectDiscovered = viewModel::onSelectDiscoveredServer,
+                onDismissSuggestion = viewModel::dismissSuggestion,
             )
         }
     }
@@ -127,12 +130,25 @@ private fun LazyListScope.settingsItems(
     onDelete: (Long) -> Unit,
     onScanLan: () -> Unit,
     onSelectDiscovered: (DiscoveredServer) -> Unit,
+    onDismissSuggestion: (String) -> Unit,
 ) {
     item { StatusSection(state, onTestConnection) }
 
     // Hardware info section
     state.systemStats?.let { stats ->
         item { ServerHardwareSection(stats) }
+    }
+
+    // Optimization suggestions
+    val visibleSuggestions = state.optimizationSuggestions
+        .filter { it.id !in state.dismissedSuggestionIds }
+    if (visibleSuggestions.isNotEmpty()) {
+        item {
+            OptimizationSuggestionsSection(
+                suggestions = visibleSuggestions,
+                onDismiss = onDismissSuggestion,
+            )
+        }
     }
 
     // Scan LAN section
@@ -293,6 +309,65 @@ private fun HardwareInfoRow(label: String, value: String) {
     ) {
         Text(label, style = MaterialTheme.typography.labelMedium)
         Text(value, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
+private fun OptimizationSuggestionsSection(
+    suggestions: List<OptimizationSuggestion>,
+    onDismiss: (String) -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(Spacing.md)) {
+            Text(
+                stringResource(R.string.vram_optimization_suggestions),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Spacer(modifier = Modifier.height(Spacing.sm))
+            suggestions.forEach { suggestion ->
+                SuggestionCard(suggestion = suggestion, onDismiss = onDismiss)
+                Spacer(modifier = Modifier.height(Spacing.xs))
+            }
+        }
+    }
+}
+
+@Composable
+private fun SuggestionCard(
+    suggestion: OptimizationSuggestion,
+    onDismiss: (String) -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ),
+        shape = RoundedCornerShape(CornerRadius.card),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(Spacing.md),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    suggestion.title,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                Text(
+                    suggestion.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            IconButton(onClick = { onDismiss(suggestion.id) }) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = stringResource(R.string.cd_dismiss),
+                    modifier = Modifier.size(Spacing.lg),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 

@@ -16,6 +16,8 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
     @Published var isScanning = false
     @Published var discoveredServers: [DiscoveredServer] = []
     @Published var systemStats: Core_domainSystemStats?
+    @Published var optimizationSuggestions: [OptimizationSuggestion] = []
+    @Published var dismissedSuggestionIds: Set<String> = []
 
     init() {
         vm = KoinHelper.shared.createComfyUISettingsViewModel()
@@ -36,6 +38,10 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
             isScanning = state.isScanning
             discoveredServers = state.discoveredServers as? [DiscoveredServer] ?? []
             systemStats = state.systemStats
+            optimizationSuggestions = state.optimizationSuggestions as? [OptimizationSuggestion] ?? []
+            dismissedSuggestionIds = Set(
+                (state.dismissedSuggestionIds as? Set<String>) ?? []
+            )
         }
     }
 
@@ -71,6 +77,14 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
         showAddSheet = false
         editingConnection = nil
         vm.onDismissDialog()
+    }
+
+    func dismissSuggestion(id: String) {
+        vm.dismissSuggestion(id: id)
+    }
+
+    var visibleSuggestions: [OptimizationSuggestion] {
+        optimizationSuggestions.filter { !dismissedSuggestionIds.contains($0.id) }
     }
 
     var isConnected: Bool {

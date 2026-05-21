@@ -248,4 +248,53 @@ extension Color {
             blue: Double(value & 0xFF) / 255.0
         )
     }
+
+    // MARK: - VRAM Compatibility Badge Colors
+
+    static let vramFits = Color(light: .hex(0xDCFCE7), dark: .hex(0x14532D))
+    static let vramFitsContent = Color(light: .hex(0x166534), dark: .hex(0x86EFAC))
+    static let vramTight = Color(light: .hex(0xFEF9C3), dark: .hex(0x713F12))
+    static let vramTightContent = Color(light: .hex(0x854D0E), dark: .hex(0xFDE68A))
+    static let vramOffload = Color(light: .hex(0xFEE2E2), dark: .hex(0x7F1D1D))
+    static let vramOffloadContent = Color(light: .hex(0x991B1B), dark: .hex(0xFECACA))
+}
+
+// MARK: - VRAM Badge Style
+
+import Shared
+
+/// Visual style for VRAM compatibility badges (color + label).
+struct VramBadgeStyle {
+    let backgroundColor: Color
+    let contentColor: Color
+    let label: String
+
+    static func from(_ compatibility: VramCompatibility) -> VramBadgeStyle {
+        switch compatibility {
+        case .fits:
+            return VramBadgeStyle(
+                backgroundColor: .vramFits,
+                contentColor: .vramFitsContent,
+                label: "Fits your GPU"
+            )
+        case .tight:
+            return VramBadgeStyle(
+                backgroundColor: .vramTight,
+                contentColor: .vramTightContent,
+                label: "Tight fit"
+            )
+        case .needsOffloading:
+            return VramBadgeStyle(
+                backgroundColor: .vramOffload,
+                contentColor: .vramOffloadContent,
+                label: "Needs offloading"
+            )
+        case .unknown:
+            return VramBadgeStyle(
+                backgroundColor: .clear,
+                contentColor: .clear,
+                label: ""
+            )
+        }
+    }
 }

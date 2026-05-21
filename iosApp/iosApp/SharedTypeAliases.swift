@@ -237,6 +237,8 @@ typealias PluginState = Core_pluginPluginState
 typealias PluginManifest = Core_pluginPluginManifest
 
 typealias ReviewSortOrder = Core_domainReviewSortOrder
+typealias VramCompatibility = Core_domainVramCompatibility
+typealias OptimizationSuggestion = Core_domainOptimizationSuggestion
 
 // MARK: - Feature: Collections (shared use cases in core-domain)
 

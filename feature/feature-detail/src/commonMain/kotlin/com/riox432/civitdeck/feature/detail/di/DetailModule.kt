@@ -44,6 +44,6 @@ val detailModule = module {
     factory { DownloadUseCases(observeModelDownloads = get(), enqueueDownload = get(), cancelDownload = get()) }
     factory { ReviewUseCases(getModelReviews = get(), getRatingTotals = get(), submitReview = get()) }
     viewModel { params ->
-        ModelDetailViewModel(params.get(), get(), get(), get(), get(), get())
+        ModelDetailViewModel(params.get(), get(), get(), get(), get(), get(), get())
     }
 }

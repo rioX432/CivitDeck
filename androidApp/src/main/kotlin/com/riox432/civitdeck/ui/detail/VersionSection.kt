@@ -26,6 +26,7 @@ import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.ModelDownload
 import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelVersion
+import com.riox432.civitdeck.domain.util.VramCompatibility
 import com.riox432.civitdeck.ui.components.FilterChipRow
 import com.riox432.civitdeck.ui.components.SectionHeader
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
@@ -65,6 +66,7 @@ internal fun VersionDetail(
     version: ModelVersion,
     powerUserMode: Boolean = false,
     downloads: Map<Long, ModelDownload> = emptyMap(),
+    fileVramCompatibility: Map<Long, VramCompatibility> = emptyMap(),
     onDownloadFile: (ModelFile) -> Unit = {},
     onCancelDownload: (Long) -> Unit = {},
 ) {
@@ -94,6 +96,8 @@ internal fun VersionDetail(
                     downloadState = downloads[file.id],
                     onDownload = onDownloadFile,
                     onCancel = onCancelDownload,
+                    vramCompatibility = fileVramCompatibility[file.id]
+                        ?: VramCompatibility.UNKNOWN,
                 )
                 if (powerUserMode) {
                     AdvancedFileInfo(file = file)

@@ -11,6 +11,9 @@ struct ComfyUISettingsView: View {
             if let stats = viewModel.systemStats {
                 serverHardwareSection(stats)
             }
+            if !viewModel.visibleSuggestions.isEmpty {
+                optimizationSuggestionsSection
+            }
             scanLanSection
             if viewModel.isConnected {
                 NavigationLink("Open txt2img Generator") {
@@ -169,6 +172,31 @@ struct ComfyUISettingsView: View {
                 Text("\(vramUsed) / \(stats.vramTotalMB) MB")
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
+            }
+        }
+    }
+
+    private var optimizationSuggestionsSection: some View {
+        Section("Optimization Suggestions") {
+            ForEach(viewModel.visibleSuggestions, id: \.id) { suggestion in
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(suggestion.title)
+                            .font(.civitTitleSmall)
+                        Text(suggestion.description_)
+                            .font(.civitBodySmall)
+                            .foregroundColor(.civitOnSurfaceVariant)
+                    }
+                    Spacer()
+                    Button {
+                        viewModel.dismissSuggestion(id: suggestion.id)
+                    } label: {
+                        Image(systemName: "xmark.circle")
+                            .foregroundColor(.civitOnSurfaceVariant)
+                            .accessibilityLabel("Dismiss")
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
     }
