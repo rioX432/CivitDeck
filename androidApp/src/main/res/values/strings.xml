@@ -320,6 +320,11 @@
     <string name="comfyhub_workflows_title">ComfyHub Workflows</string>
     <string name="comfyhub_search_placeholder">Search workflows…</string>
     <string name="comfyhub_import_to_comfyui">Import to ComfyUI</string>
+    <string name="comfyhub_save_as_template">Save as Template</string>
+    <string name="comfyhub_saving_template">Saving…</string>
+    <string name="comfyhub_template_saved">Workflow saved as template!</string>
+    <string name="comfyhub_save_template_failed">Save failed: %1$s</string>
+    <string name="template_app_mode_badge">APP</string>
 
     <!-- Update banner -->
     <string name="update_dismiss">Dismiss</string>

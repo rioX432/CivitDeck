@@ -11,6 +11,8 @@ data class WorkflowTemplate(
     val version: Int = 1,
     val author: String = "",
     val createdAt: Long,
+    val isAppMode: Boolean = false,
+    val rawWorkflowJson: String? = null,
 )
 
 enum class WorkflowTemplateType {

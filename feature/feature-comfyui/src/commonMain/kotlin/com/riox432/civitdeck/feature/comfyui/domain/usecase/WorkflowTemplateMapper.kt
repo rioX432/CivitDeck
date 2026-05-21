@@ -46,6 +46,7 @@ internal data class TemplateMetadataDto(
     val category: String = "GENERAL",
     val version: Int = 1,
     val author: String = "",
+    val isAppMode: Boolean = false,
 )
 
 // -- Mappers --
@@ -86,6 +87,7 @@ internal fun WorkflowTemplate.toSavedPrompt(): SavedPrompt {
             category = category.name,
             version = version,
             author = author,
+            isAppMode = isAppMode,
         ),
     )
     return SavedPrompt(
@@ -106,6 +108,8 @@ internal fun WorkflowTemplate.toSavedPrompt(): SavedPrompt {
         templateVariables = variablesJson,
         templateType = type.name,
         templateMetadata = metadataJson,
+        isAppMode = isAppMode,
+        rawWorkflowJson = rawWorkflowJson,
     )
 }
 
@@ -143,5 +147,7 @@ internal fun SavedPrompt.toWorkflowTemplate(): WorkflowTemplate? {
         version = metadata.version,
         author = metadata.author,
         createdAt = savedAt,
+        isAppMode = isAppMode || metadata.isAppMode,
+        rawWorkflowJson = rawWorkflowJson,
     )
 }

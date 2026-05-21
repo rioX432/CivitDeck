@@ -18,4 +18,6 @@ data class SavedPrompt(
     val templateVariables: String? = null,
     val templateType: String? = null,
     val templateMetadata: String? = null,
+    val isAppMode: Boolean = false,
+    val rawWorkflowJson: String? = null,
 )

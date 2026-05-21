@@ -147,7 +147,7 @@ val comfyuiModule = module {
     factory { SaveWorkflowTemplateUseCase(get()) }
     factory { DeleteWorkflowTemplateUseCase(get()) }
     factory { ExportWorkflowTemplateUseCase() }
-    factory { ImportWorkflowTemplateUseCase(get()) }
+    factory { ImportWorkflowTemplateUseCase(get(), get(), get()) }
     factory { ApplyWorkflowTemplateUseCase() }
 
     // SD WebUI

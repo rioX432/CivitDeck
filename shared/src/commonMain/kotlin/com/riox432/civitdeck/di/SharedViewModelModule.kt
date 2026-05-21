@@ -8,6 +8,6 @@ import org.koin.dsl.module
 
 val sharedViewModelModule = module {
     viewModel { ComfyHubBrowserViewModel(get()) }
-    viewModel { params -> ComfyHubDetailViewModel(params.get(), get(), get()) }
+    viewModel { params -> ComfyHubDetailViewModel(params.get(), get(), get(), get(), get()) }
     viewModel { ModelFileBrowserViewModel(get(), get(), get(), get(), get(), get()) }
 }

@@ -248,8 +248,19 @@ private struct TemplateRow: View {
     var body: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(template.name)
-                    .font(.civitBodyMedium)
+                HStack(spacing: Spacing.sm) {
+                    Text(template.name)
+                        .font(.civitBodyMedium)
+                    if template.isAppMode {
+                        Text("APP")
+                            .font(.civitLabelSmall)
+                            .foregroundColor(.civitPrimary)
+                            .padding(.horizontal, Spacing.xs)
+                            .padding(.vertical, 2)
+                            .background(Color.civitPrimary.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
+                    }
+                }
                 if !template.description_.isEmpty {
                     Text(template.description_)
                         .font(.civitBodySmall)
