@@ -16,6 +16,7 @@ import com.riox432.civitdeck.domain.model.ResourceReview
 import com.riox432.civitdeck.domain.model.ReviewSortOrder
 import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.domain.util.currentTimeMillis
+import com.riox432.civitdeck.domain.util.launchSafe
 import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.NonCancellable
@@ -130,7 +131,7 @@ class ModelDetailViewModel(
 
     fun onFavoriteToggle() {
         val model = _uiState.value.model ?: return
-        launchCatching("Favorite toggle") {
+        viewModelScope.launchSafe(TAG, "Favorite toggle") {
             modelUseCases.toggleFavorite(model)
             modelUseCases.trackModelView.trackInteraction(modelId, InteractionType.FAVORITE)
         }
@@ -313,17 +314,6 @@ class ModelDetailViewModel(
     // endregion
 
     // region Private — Helpers
-
-    /**
-     * Common pattern: launch a coroutine, run [block] inside suspendRunCatching,
-     * and log failures with [operationName].
-     */
-    private fun launchCatching(operationName: String, block: suspend () -> Unit) {
-        viewModelScope.launch {
-            suspendRunCatching { block() }
-                .onFailure { e -> Logger.w(TAG, "$operationName failed: ${e.message}") }
-        }
-    }
 
     /**
      * Fire-and-forget background embed of the model's first thumbnail.

@@ -4,11 +4,9 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.CreateCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelFromCollectionUseCase
-import com.riox432.civitdeck.domain.util.suspendRunCatching
-import com.riox432.civitdeck.util.Logger
+import com.riox432.civitdeck.domain.util.launchSafe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
 private const val TAG = "DetailCollectionDelegate"
 
@@ -22,24 +20,20 @@ internal class DetailCollectionDelegate(
 
     fun toggleCollection(collectionId: Long, model: Model?) {
         model ?: return
-        scope.launch {
-            suspendRunCatching {
-                if (collectionId in modelCollectionIds.value) {
-                    removeModelFromCollectionUseCase(collectionId, model.id)
-                } else {
-                    addModelToCollectionUseCase(collectionId, model)
-                }
-            }.onFailure { e -> Logger.w(TAG, "Collection toggle failed: ${e.message}") }
+        scope.launchSafe(TAG, "Collection toggle") {
+            if (collectionId in modelCollectionIds.value) {
+                removeModelFromCollectionUseCase(collectionId, model.id)
+            } else {
+                addModelToCollectionUseCase(collectionId, model)
+            }
         }
     }
 
     fun createCollectionAndAdd(name: String, model: Model?) {
         model ?: return
-        scope.launch {
-            suspendRunCatching {
-                val newId = createCollectionUseCase(name)
-                addModelToCollectionUseCase(newId, model)
-            }.onFailure { e -> Logger.w(TAG, "Create collection and add failed: ${e.message}") }
+        scope.launchSafe(TAG, "Create collection and add") {
+            val newId = createCollectionUseCase(name)
+            addModelToCollectionUseCase(newId, model)
         }
     }
 }
