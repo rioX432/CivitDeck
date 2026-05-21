@@ -540,4 +540,11 @@
     <string name="vram_tight_fit">Tight fit</string>
     <string name="vram_needs_offloading">Needs offloading</string>
     <string name="vram_optimization_suggestions">Optimization Suggestions</string>
+
+    <!-- Generation Monitor Service -->
+    <string name="generation_monitor_channel_name">Generation Monitor</string>
+    <string name="generation_monitor_channel_description">Persistent notification while monitoring ComfyUI generation progress</string>
+    <string name="generation_monitor_title">Monitoring ComfyUI generation</string>
+    <string name="generation_monitor_progress">Step %1$d/%2$d</string>
+    <string name="generation_monitor_waiting">Waiting for progress…</string>
 </resources>

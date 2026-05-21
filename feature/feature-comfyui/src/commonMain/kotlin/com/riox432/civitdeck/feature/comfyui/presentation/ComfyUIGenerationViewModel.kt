@@ -9,6 +9,7 @@ import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.service.AppLifecycleTracker
+import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter
 import com.riox432.civitdeck.domain.service.GenerationNotificationService
 import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.model.ExtractedParameter
@@ -96,6 +97,7 @@ class ComfyUIGenerationViewModel(
     repository: ComfyUIConnectionRepository,
     notificationService: GenerationNotificationService,
     lifecycleTracker: AppLifecycleTracker,
+    backgroundMonitorStarter: BackgroundMonitorStarter,
     observeGenNotifEnabled: ObserveGenerationNotificationsEnabledUseCase,
 ) : ViewModel() {
 
@@ -113,6 +115,7 @@ class ComfyUIGenerationViewModel(
         repository = repository,
         notificationService = notificationService,
         lifecycleTracker = lifecycleTracker,
+        backgroundMonitorStarter = backgroundMonitorStarter,
         observeGenNotifEnabled = observeGenNotifEnabled,
     )
 
