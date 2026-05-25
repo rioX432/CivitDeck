@@ -29,7 +29,11 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -305,8 +309,21 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.modelItems(
             .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
         val isOwned = ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
 
-        val staggerAnimatable = remember { Animatable(0f) }
-        LaunchStaggerAnimation(index = index, animatable = staggerAnimatable, reducedMotion = reducedMotion)
+        // Track whether this item has already played its entrance animation.
+        // rememberSaveable survives back-navigation recomposition (Navigation 3
+        // decomposes non-top entries), so returning from DetailRoute skips the
+        // stagger replay and avoids a false "API reload" appearance.
+        var hasAnimated by rememberSaveable { mutableStateOf(false) }
+        val staggerAnimatable = remember { Animatable(if (hasAnimated) 1f else 0f) }
+        LaunchStaggerAnimation(
+            index = index,
+            animatable = staggerAnimatable,
+            reducedMotion = reducedMotion,
+            skipAnimation = hasAnimated,
+        )
+        if (!hasAnimated) {
+            hasAnimated = true
+        }
         ModelGridItem(
             model = model,
             isFavorite = model.id in favoriteIds,
