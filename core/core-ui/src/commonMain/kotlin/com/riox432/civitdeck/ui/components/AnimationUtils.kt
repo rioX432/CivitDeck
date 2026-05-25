@@ -41,15 +41,19 @@ fun Modifier.staggeredEntrance(
 
 /**
  * Launches the stagger entrance animation for a single item.
+ *
+ * @param skipAnimation When true (e.g. back navigation restores the list), snaps to
+ *   the final state immediately instead of playing the entrance animation.
  */
 @Composable
 fun LaunchStaggerAnimation(
     index: Int,
     animatable: Animatable<Float, AnimationVector1D>,
     reducedMotion: Boolean,
+    skipAnimation: Boolean = false,
 ) {
     LaunchedEffect(Unit) {
-        if (reducedMotion) {
+        if (reducedMotion || skipAnimation) {
             animatable.snapTo(1f)
             return@LaunchedEffect
         }
