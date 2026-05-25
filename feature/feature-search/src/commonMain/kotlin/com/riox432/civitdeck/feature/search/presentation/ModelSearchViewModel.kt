@@ -364,14 +364,16 @@ class ModelSearchViewModel(
 
     private fun observeNsfwFilter() {
         viewModelScope.launch {
+            var initialized = false
             observeNsfwFilterUseCase().collect { level ->
                 val prev = _uiState.value.nsfwFilterLevel
                 _uiState.update { it.copy(nsfwFilterLevel = level) }
-                if (prev != level) {
-                    _filterState.update { it.copy(nsfwFilterLevel = level) }
+                _filterState.update { it.copy(nsfwFilterLevel = level) }
+                if (initialized && prev != level) {
                     loadRecommendations()
                     refresh()
                 }
+                initialized = true
             }
         }
     }
