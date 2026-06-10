@@ -2,6 +2,8 @@
 name: dig
 description: "Clarify ambiguities in plans with structured questions and auto-decide rules"
 user-invocable: true
+allowed-tools:
+  - ToolSearch
 ---
 
 # Dig — Structured Ambiguity Resolution
@@ -48,6 +50,45 @@ For non-auto-decidable ambiguities:
 1. Use Explore agent to find existing patterns in the codebase
 2. Check if similar features already exist and how they handle the same decision
 3. Read relevant documentation or ADRs
+
+### Step 3.5: Codex Design Review (Optional)
+
+For non-auto-decidable ambiguities in the **architecture**, **api-design**, or **concurrency** categories, consult Codex for alternative approaches before asking the user.
+
+**Skip this step for**: naming, testing, error-handling, data-flow categories (these are resolved by codebase patterns or user preference).
+
+#### Load Codex
+
+```
+ToolSearch("select:mcp__codex__codex")
+```
+
+#### Call Codex (if available)
+
+```
+mcp__codex__codex(
+  prompt: "Given these unresolved design decisions, explore alternatives:
+
+  ## Ambiguities
+  {list of non-auto-decidable architecture/api-design/concurrency ambiguities with their options}
+
+  ## Codebase Context
+  {relevant patterns from Step 2, existing conventions}
+
+  For each ambiguity:
+  1. Evaluate the proposed options
+  2. Suggest any additional alternatives not yet considered
+  3. Recommend the best option with reasoning
+  4. Flag any risks or trade-offs"
+)
+```
+
+Incorporate Codex recommendations into the options presented to the user in Step 4.
+
+#### Fallback (Codex unavailable)
+
+If `ToolSearch` fails to find Codex or the call errors:
+- Skip this step — proceed to Step 4 with Step 3 results only (traditional flow)
 
 ### Step 4: Ask User (max 3 rounds, max 4 questions per round)
 

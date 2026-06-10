@@ -2,6 +2,8 @@
 name: decompose
 description: "Break a task into ordered subtasks with dependencies"
 user-invocable: true
+allowed-tools:
+  - ToolSearch
 ---
 
 # Task Decomposition
@@ -112,3 +114,47 @@ After creating all tasks, show the full task list with dependencies:
 ```
 
 Ask user to confirm before starting implementation.
+
+---
+
+## Codex Architecture Validation (Optional)
+
+After generating the full task list, use Codex to validate the decomposition.
+
+### Load Codex
+
+```
+ToolSearch("select:mcp__codex__codex")
+```
+
+### Call Codex (if available)
+
+```
+mcp__codex__codex(
+  prompt: "Validate this task decomposition for correctness and completeness:
+
+  ## Task List
+  {full task table with dependencies}
+
+  ## Project Architecture
+  {architecture layers from CLAUDE.md}
+
+  ## Validation Checklist
+  1. **Layer ordering**: Are tasks ordered inner-to-outer (core → logic → infra → presentation → tests → cross-cutting)?
+  2. **Missing tasks**: Are there any steps that should exist between tasks? Any gaps?
+  3. **Dependency correctness**: Are all dependency edges correct? Any missing or unnecessary dependencies?
+  4. **Parallelization**: Which tasks could safely run in parallel (no shared state, no dependency)?
+  5. **Risk assessment**: Which tasks are highest-risk and might need extra verification?
+
+  Output: validated task list with any corrections, plus a list of parallelizable task groups."
+)
+```
+
+If Codex suggests corrections:
+1. Apply the corrections to the task list
+2. Note what was changed and why
+
+### Fallback (Codex unavailable)
+
+If `ToolSearch` fails to find Codex or the call errors:
+- Skip validation — output the task list as-is (traditional flow)
