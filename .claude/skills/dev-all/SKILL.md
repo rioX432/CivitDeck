@@ -120,10 +120,10 @@ TaskCreate for each issue: "#{number}: {title}"
 git checkout main && git pull origin main
 ```
 
-#### 4b. Run /dev in isolated sub-agent
+#### 4b. Run /dev in isolated sub-agent (autonomous via /goal)
 ```
 Agent(
-  prompt: "/dev #{issue_number}",
+  prompt: "/goal 'Issue #{issue_number} is resolved: tests pass, review has no Critical findings, and PR is created' /dev #{issue_number}",
   model: "opus",
   isolation: "worktree"
 )
@@ -132,8 +132,25 @@ Agent(
 The sub-agent:
 - Gets a fresh context (no pollution from previous issues)
 - Works in an isolated git worktree (no file conflicts)
-- Runs the full /dev workflow autonomously
-- Returns: PR URL (or error report)
+- Runs the full /dev workflow autonomously via /goal
+- Skips AskUserQuestion confirmations (proceeds with best judgment)
+- Returns: structured result with PR URL, review status, and counts
+
+#### 4b-result. Review Validation
+
+After the sub-agent completes, validate the result before proceeding to merge:
+
+1. Read `workspace/{issue}/review.json` to get the structured review output
+2. Parse the sub-agent's return value for review status
+
+**Decision logic:**
+
+| Review Status | Action |
+|---------------|--------|
+| `critical` (critical_count > 0) | **Skip this issue.** Report to user: "#{issue} has {N} critical findings — skipping." Mark task as failed. Proceed to next issue. |
+| `warnings` (warning_count > 0) | **Report to user.** `AskUserQuestion`: "#{issue} PR has {N} unresolved warnings. Merge anyway?" If yes → proceed. If no → skip. |
+| `clean` | **Proceed to auto-merge.** |
+| Sub-agent failed (`status: "failed"`) | **Skip this issue.** Report failure reason. Proceed to next issue. |
 
 #### 4c. Enable auto-merge
 ```bash

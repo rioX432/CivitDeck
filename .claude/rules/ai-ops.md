@@ -29,7 +29,11 @@ Research flow:
 2. **Skip issues labeled `won't`**
 3. Read the issue, understand requirements, plan implementation
 4. **Verify Core Value alignment** — if the issue lacks a "Core Value Alignment" section, ask the user before proceeding
-5. Confirm design/plan with **Codex MCP** before starting
+5. Confirm design/plan with **Codex MCP** (see rules/behavior.md for usage):
+   - **Required**: architecture changes, new patterns, migrations, security-sensitive design
+   - **Optional**: complex trade-offs where existing patterns don't clearly apply
+   - **Skip**: existing-pattern implementations, small bug fixes, naming, test strategy (auto-decide from codebase)
+   - **Codex unavailable?** Use WebSearch to verify against official docs, document rationale in PR
 6. Implement according to plan
 7. Verify build and lint pass
 8. Run `/ai-dev:review` for self-review
