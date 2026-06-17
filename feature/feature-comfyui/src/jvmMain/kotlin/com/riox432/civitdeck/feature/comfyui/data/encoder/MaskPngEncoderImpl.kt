@@ -9,9 +9,9 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
-actual class MaskPngEncoder actual constructor() {
+class MaskPngEncoderImpl : MaskPngEncoder {
 
-    actual fun encode(
+    override fun encode(
         segments: List<PathSegment>,
         width: Int,
         height: Int,

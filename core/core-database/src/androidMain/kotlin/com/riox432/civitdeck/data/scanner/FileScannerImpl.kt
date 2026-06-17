@@ -2,15 +2,16 @@ package com.riox432.civitdeck.data.scanner
 
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.security.MessageDigest
 import kotlin.coroutines.coroutineContext
 
-actual class FileScanner actual constructor() {
+class FileScannerImpl : FileScanner {
 
-    actual suspend fun scanDirectory(
+    override suspend fun scanDirectory(
         path: String,
         onProgress: (current: Int, total: Int) -> Unit,
     ): List<ScannedFile> = withContext(Dispatchers.IO) {

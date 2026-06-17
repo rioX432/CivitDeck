@@ -5,7 +5,7 @@ package com.riox432.civitdeck.data.image
  * Android: uses MediaStore (Pictures/CivitDeck).
  * iOS: uses PHPhotoLibrary.
  */
-expect class ImageSaver() {
+interface ImageSaver {
     /**
      * Saves the given [imageBytes] (JPEG/PNG raw bytes) to the device photo gallery.
      * @param imageBytes raw image data

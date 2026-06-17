@@ -7,9 +7,9 @@ import java.io.File
 
 private const val TAG = "ImageSaver"
 
-actual class ImageSaver actual constructor() {
+class ImageSaverImpl : ImageSaver {
 
-    actual suspend fun saveToGallery(imageBytes: ByteArray, filename: String): Boolean =
+    override suspend fun saveToGallery(imageBytes: ByteArray, filename: String): Boolean =
         withContext(Dispatchers.IO) {
             try {
                 val picturesDir = File(System.getProperty("user.home"), "Pictures/CivitDeck")

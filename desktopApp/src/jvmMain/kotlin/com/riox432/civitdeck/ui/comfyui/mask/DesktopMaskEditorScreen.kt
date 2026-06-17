@@ -51,7 +51,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
-import com.riox432.civitdeck.feature.comfyui.data.encoder.MaskPngEncoder
 import com.riox432.civitdeck.feature.comfyui.domain.model.MaskEditorState
 import com.riox432.civitdeck.feature.comfyui.domain.model.PathSegment
 import com.riox432.civitdeck.feature.comfyui.presentation.MaskEditorViewModel
@@ -71,7 +70,6 @@ fun DesktopMaskEditorScreen(
     onMaskReady: (String) -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
-    val encoder = MaskPngEncoder()
 
     val filename = state.uploadedMaskFilename
     LaunchedEffect(filename) {
@@ -83,12 +81,7 @@ fun DesktopMaskEditorScreen(
             DesktopMaskTopBar(
                 onBack = onBack,
                 onDone = {
-                    val bytes = encoder.encode(
-                        segments = state.pathSegments,
-                        width = imageWidth,
-                        height = imageHeight,
-                        inverted = state.isInverted,
-                    )
+                    val bytes = viewModel.encodeMask(imageWidth, imageHeight)
                     viewModel.onUploadMask(bytes)
                 },
                 isUploading = state.isUploading,

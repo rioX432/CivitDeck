@@ -76,6 +76,6 @@ class ServerDiscoveryRepositoryImpl(
  * Platform-specific provider for the local device IP subnet.
  * Returns the first 3 octets (e.g. "192.168.1") or null.
  */
-expect class LocalIpProvider() {
+interface LocalIpProvider {
     fun getLocalSubnet(): String?
 }

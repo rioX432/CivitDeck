@@ -39,7 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
-import com.riox432.civitdeck.feature.comfyui.data.encoder.MaskPngEncoder
 import com.riox432.civitdeck.feature.comfyui.domain.model.MaskEditorState
 import com.riox432.civitdeck.feature.comfyui.domain.model.PathSegment
 import com.riox432.civitdeck.feature.comfyui.presentation.MaskEditorViewModel
@@ -59,7 +58,6 @@ fun MaskEditorScreen(
     onMaskReady: (String) -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val encoder = MaskPngEncoder()
 
     MaskUploadEffect(state, onMaskReady)
 
@@ -68,12 +66,7 @@ fun MaskEditorScreen(
             MaskEditorTopBar(
                 onBack = onBack,
                 onDone = {
-                    val bytes = encoder.encode(
-                        segments = state.pathSegments,
-                        width = imageWidth,
-                        height = imageHeight,
-                        inverted = state.isInverted,
-                    )
+                    val bytes = viewModel.encodeMask(imageWidth, imageHeight)
                     viewModel.onUploadMask(bytes)
                 },
                 isUploading = state.isUploading,

@@ -7,6 +7,7 @@ import com.riox432.civitdeck.domain.util.ApplicationScope
 import com.riox432.civitdeck.domain.util.CivitAiFrontDoor
 import com.riox432.civitdeck.feature.collections.di.collectionsModule
 import com.riox432.civitdeck.feature.comfyui.di.comfyuiModule
+import com.riox432.civitdeck.feature.comfyui.di.comfyuiPlatformModule
 import com.riox432.civitdeck.feature.creator.di.creatorModule
 import com.riox432.civitdeck.feature.detail.di.detailModule
 import com.riox432.civitdeck.feature.externalserver.di.externalServerModule
@@ -24,9 +25,11 @@ val sharedModules: List<Module>
     get() = listOf(
         platformModule,
         networkModule,
+        databasePlatformModule,
         databaseModule,
         coreDataModule,
         dataModule,
+        comfyuiPlatformModule,
         domainModule,
         settingsModule,
         settingsViewModelModule,

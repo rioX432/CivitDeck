@@ -14,10 +14,10 @@ import platform.UIKit.UIImageWriteToSavedPhotosAlbum
 
 private const val TAG = "ImageSaver"
 
-actual class ImageSaver actual constructor() {
+class ImageSaverImpl : ImageSaver {
 
     @OptIn(ExperimentalForeignApi::class)
-    actual suspend fun saveToGallery(imageBytes: ByteArray, filename: String): Boolean =
+    override suspend fun saveToGallery(imageBytes: ByteArray, filename: String): Boolean =
         withContext(Dispatchers.IO) {
             try {
                 val nsData = imageBytes.toNSData()

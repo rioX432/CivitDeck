@@ -22,7 +22,6 @@ import com.riox432.civitdeck.data.local.repository.ModelUpdateNotificationReposi
 import com.riox432.civitdeck.data.local.repository.ModelVersionCheckpointRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.PluginRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ShareHashtagRepositoryImpl
-import com.riox432.civitdeck.data.scanner.FileScanner
 import com.riox432.civitdeck.domain.repository.AnalyticsRepository
 import com.riox432.civitdeck.domain.repository.BackupRepository
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
@@ -73,8 +72,7 @@ val databaseModule = module {
     // Data Sources
     single { LocalCacheDataSource(get()) }
 
-    // File Scanner
-    factory { FileScanner() }
+    // FileScanner is registered in databasePlatformModule (interface + platform impl)
 
     // Repositories (DB-only)
     single<CacheRepository> { CacheRepositoryImpl(get()) }
