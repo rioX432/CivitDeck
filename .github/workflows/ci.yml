@@ -74,19 +74,21 @@ jobs:
       needs.changes.outputs.ci == 'true'
     # Apple Silicon runner: the KMP shared framework only configures the
     # iosSimulatorArm64 target, so xcodebuild must run on an arm64 host to
-    # find the matching Shared.framework slice (macos-latest may be Intel).
-    runs-on: macos-14
+    # find the matching Shared.framework slice. macos-26 (Tahoe) is arm64 and
+    # ships Xcode 26 (Swift 6.2) to match the local dev toolchain — the app
+    # code uses Swift 6.1+ syntax (trailing commas, @retroactive), which
+    # macos-14 (capped at Xcode 16.2 / Swift 6.0) cannot compile.
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
 
-      # macos-14's default Xcode (15.4 / Swift 5.10) is borderline for the
-      # @retroactive attribute; pin Xcode 16.2 (Swift 6.0) so the Swift app
-      # code (Identifiable retroactive conformances, actor-isolation rules)
-      # compiles reliably. 16.2 is available on the macos-14 image.
-      - name: Select Xcode 16.2
+      # Select the newest stable Xcode on the image (Xcode 26.x / Swift 6.2).
+      # Required for Swift 6.1+ features used across the iOS app: trailing
+      # commas in argument lists (SE-0439) and the @retroactive attribute.
+      - name: Select Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.2'
+          xcode-version: latest-stable
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
