@@ -72,7 +72,10 @@ jobs:
       needs.changes.outputs.ios == 'true' ||
       needs.changes.outputs.shared == 'true' ||
       needs.changes.outputs.ci == 'true'
-    runs-on: macos-latest
+    # Apple Silicon runner: the KMP shared framework only configures the
+    # iosSimulatorArm64 target, so xcodebuild must run on an arm64 host to
+    # find the matching Shared.framework slice (macos-latest may be Intel).
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
 
