@@ -4,11 +4,13 @@ import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.domain.model.DiscoveredServer
 import com.riox432.civitdeck.domain.repository.ServerDiscoveryRepository
 import com.riox432.civitdeck.util.Logger
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.json.Json
 
 private const val TAG = "ServerDiscovery"
 private const val DEFAULT_PORT = 8188
@@ -16,10 +18,12 @@ private const val SCAN_BATCH_SIZE = 20
 
 /**
  * Scans LAN for ComfyUI servers by probing port 8188 on common subnet ranges.
- * Uses the ComfyUI API to verify each candidate by calling GET /queue.
+ * Each probe uses a transient [ComfyUIApi] (wrapping the shared client) so concurrent
+ * probes do not race on a shared mutable base URL.
  */
 class ServerDiscoveryRepositoryImpl(
-    private val api: ComfyUIApi,
+    private val client: HttpClient,
+    private val json: Json,
     private val localIpProvider: LocalIpProvider,
 ) : ServerDiscoveryRepository {
 
@@ -52,6 +56,7 @@ class ServerDiscoveryRepositoryImpl(
 
     private suspend fun probeServer(ip: String): DiscoveredServer? {
         return try {
+            val api = ComfyUIApi(client, json)
             api.setBaseUrl("http://$ip:$DEFAULT_PORT")
             api.getQueue()
             DiscoveredServer(

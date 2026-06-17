@@ -11,6 +11,7 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewM
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ConnectionOnboardingViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.MaskEditorViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
@@ -26,6 +27,7 @@ import com.riox432.civitdeck.ui.comfyui.ComfyUIHistoryScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIOutputDetailScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUIQueueScreen
 import com.riox432.civitdeck.ui.comfyui.ComfyUISettingsScreen
+import com.riox432.civitdeck.ui.comfyui.ConnectionOnboardingScreen
 import com.riox432.civitdeck.ui.comfyui.MaskEditorScreen
 import com.riox432.civitdeck.ui.comfyui.SDWebUIGenerationScreen
 import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsScreen
@@ -69,8 +71,10 @@ internal fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>)
             onBack = { backStack.removeLastOrNull() },
             onNavigateToGeneration = { backStack.add(ComfyUIGenerationRoute) },
             onNavigateToHistory = { backStack.add(ComfyUIHistoryRoute) },
+            onNavigateToOnboarding = { backStack.add(ConnectionOnboardingRoute) },
         )
     }
+    connectionOnboardingEntry(backStack)
     sdWebUIEntries(backStack)
     entry<ComfyUIGenerationRoute> {
         val viewModel: ComfyUIGenerationViewModel = koinViewModel()
@@ -104,6 +108,17 @@ internal fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>)
     workflowTemplateEntries(backStack)
     comfyHubEntries(backStack)
     comfyUIHistoryEntries(backStack)
+}
+
+private fun EntryProviderScope<Any>.connectionOnboardingEntry(backStack: MutableList<Any>) {
+    entry<ConnectionOnboardingRoute> {
+        val viewModel: ConnectionOnboardingViewModel = koinViewModel()
+        ConnectionOnboardingScreen(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onConnected = { backStack.removeLastOrNull() },
+        )
+    }
 }
 
 private fun EntryProviderScope<Any>.sdWebUIEntries(backStack: MutableList<Any>) {

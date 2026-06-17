@@ -25,6 +25,7 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewM
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ConnectionOnboardingViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.MaskEditorViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
@@ -102,6 +103,7 @@ fun KoinHelper.createMaskEditorViewModel(): MaskEditorViewModel = resolve()
 fun KoinHelper.createComfyUIQueueViewModel(): ComfyUIQueueViewModel = resolve()
 fun KoinHelper.createComfyUIHistoryViewModel(): ComfyUIHistoryViewModel = resolve()
 fun KoinHelper.createComfyUISettingsViewModel(): ComfyUISettingsViewModel = resolve()
+fun KoinHelper.createConnectionOnboardingViewModel(): ConnectionOnboardingViewModel = resolve()
 fun KoinHelper.createSDWebUIGenerationViewModel(): SDWebUIGenerationViewModel = resolve()
 fun KoinHelper.createSDWebUISettingsViewModel(): SDWebUISettingsViewModel = resolve()
 fun KoinHelper.createCivitaiLinkSettingsViewModel(): CivitaiLinkSettingsViewModel = resolve()

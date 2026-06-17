@@ -4,6 +4,7 @@ import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.repository.CivitaiLinkRepository
 import com.riox432.civitdeck.domain.repository.ComfyHubRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
+import com.riox432.civitdeck.domain.repository.ComfyUIConnectionTester
 import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIHistoryRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIQueueRepository
@@ -17,12 +18,14 @@ import com.riox432.civitdeck.feature.comfyui.data.encoder.MaskPngEncoder
 import com.riox432.civitdeck.feature.comfyui.data.repository.CivitaiLinkRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyHubRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIConnectionRepositoryImpl
+import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIConnectionTesterImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIGenerationRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIHistoryRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIQueueRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.LocalIpProvider
 import com.riox432.civitdeck.feature.comfyui.data.repository.SDWebUIRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ServerDiscoveryRepositoryImpl
+import com.riox432.civitdeck.feature.comfyui.data.repository.lanScanSupported
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ApplyWorkflowTemplateUseCase
@@ -64,6 +67,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIQueueU
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveSDWebUIConnectionsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ParseAppModeMetadataUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ParseConnectionUrlUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PopulateGenerationFromModelUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
@@ -83,6 +87,7 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewM
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ConnectionOnboardingViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.MaskEditorViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
@@ -98,9 +103,19 @@ import org.koin.dsl.module
 
 val comfyuiModule = module {
     single<ComfyUIConnectionRepository> { ComfyUIConnectionRepositoryImpl(get(), get()) }
+    single<ComfyUIConnectionTester> {
+        ComfyUIConnectionTesterImpl(
+            normalClient = get(named("comfyui")),
+            selfSignedClient = get(named("comfyui-selfsigned")),
+            json = get(),
+        )
+    }
     single { LocalIpProvider() }
-    single<ServerDiscoveryRepository> { ServerDiscoveryRepositoryImpl(get(), get()) }
+    single<ServerDiscoveryRepository> {
+        ServerDiscoveryRepositoryImpl(get(named("comfyui")), get(), get())
+    }
     factory { ScanForServersUseCase(get()) }
+    factory { ParseConnectionUrlUseCase() }
     single<ComfyUIGenerationRepository> { ComfyUIGenerationRepositoryImpl(get(), get(), get(), get()) }
     single<ComfyUIQueueRepository> { ComfyUIQueueRepositoryImpl(get(), get()) }
     single<ComfyUIHistoryRepository> { ComfyUIHistoryRepositoryImpl(get(), get()) }
@@ -191,6 +206,16 @@ val comfyuiModule = module {
 
     // ViewModels
     viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel {
+        ConnectionOnboardingViewModel(
+            scanForServers = get(),
+            connectionTester = get(),
+            parseConnectionUrl = get(),
+            saveConnection = get(),
+            activateConnection = get(),
+            lanScanSupported = lanScanSupported,
+        )
+    }
     viewModel {
         ComfyUIGenerationViewModel(
             get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),

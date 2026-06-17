@@ -117,6 +117,8 @@
 		CD00HF012D6CC001000CD001 /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00HF002D6CC001000CD001 /* HapticFeedback.swift */; };
 		CD00CU012D8CC001000CD001 /* ComfyUISettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU002D8CC001000CD001 /* ComfyUISettingsView.swift */; };
 		CD00CU032D8CC001000CD001 /* ComfyUISettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */; };
+		CD00ON012D8CC001000CD001 /* ConnectionOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00ON002D8CC001000CD001 /* ConnectionOnboardingView.swift */; };
+		CD00ON032D8CC001000CD001 /* ConnectionOnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00ON022D8CC001000CD001 /* ConnectionOnboardingViewModel.swift */; };
 		CD00CU052D8CC001000CD001 /* ComfyUIGenerationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */; };
 		CD00CU072D8CC001000CD001 /* ComfyUIGenerationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */; };
 		CDME01012F930001000CD001 /* MaskEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDME01002F930001000CD001 /* MaskEditorView.swift */; };
@@ -302,6 +304,8 @@
 		CD00HF002D6CC001000CD001 /* HapticFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedback.swift; sourceTree = "<group>"; };
 		CD00CU002D8CC001000CD001 /* ComfyUISettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUISettingsView.swift; sourceTree = "<group>"; };
 		CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUISettingsViewModel.swift; sourceTree = "<group>"; };
+		CD00ON002D8CC001000CD001 /* ConnectionOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionOnboardingView.swift; sourceTree = "<group>"; };
+		CD00ON022D8CC001000CD001 /* ConnectionOnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionOnboardingViewModel.swift; sourceTree = "<group>"; };
 		CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIGenerationView.swift; sourceTree = "<group>"; };
 		CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIGenerationViewModel.swift; sourceTree = "<group>"; };
 		CDME01002F930001000CD001 /* MaskEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskEditorView.swift; sourceTree = "<group>"; };
@@ -842,6 +846,8 @@
 			children = (
 				CD00CU002D8CC001000CD001 /* ComfyUISettingsView.swift */,
 				CD00CU022D8CC001000CD001 /* ComfyUISettingsViewModel.swift */,
+				CD00ON002D8CC001000CD001 /* ConnectionOnboardingView.swift */,
+				CD00ON022D8CC001000CD001 /* ConnectionOnboardingViewModel.swift */,
 				CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */,
 				CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */,
 				CDME01002F930001000CD001 /* MaskEditorView.swift */,
@@ -1103,6 +1109,8 @@
 				CD00HF012D6CC001000CD001 /* HapticFeedback.swift in Sources */,
 				CD00CU012D8CC001000CD001 /* ComfyUISettingsView.swift in Sources */,
 				CD00CU032D8CC001000CD001 /* ComfyUISettingsViewModel.swift in Sources */,
+				CD00ON012D8CC001000CD001 /* ConnectionOnboardingView.swift in Sources */,
+				CD00ON032D8CC001000CD001 /* ConnectionOnboardingViewModel.swift in Sources */,
 				CD00CU052D8CC001000CD001 /* ComfyUIGenerationView.swift in Sources */,
 				CD00CU072D8CC001000CD001 /* ComfyUIGenerationViewModel.swift in Sources */,
 				CDME01012F930001000CD001 /* MaskEditorView.swift in Sources */,

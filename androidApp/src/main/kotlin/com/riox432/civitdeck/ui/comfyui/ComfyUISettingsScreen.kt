@@ -67,6 +67,7 @@ fun ComfyUISettingsScreen(
     onBack: () -> Unit,
     onNavigateToGeneration: () -> Unit,
     onNavigateToHistory: () -> Unit = {},
+    onNavigateToOnboarding: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -95,6 +96,7 @@ fun ComfyUISettingsScreen(
             contentPadding = PaddingValues(Spacing.lg),
             verticalArrangement = Arrangement.spacedBy(Spacing.md),
         ) {
+            guidedSetupItem(onNavigateToOnboarding)
             settingsItems(
                 state = state,
                 onTestConnection = viewModel::onTestConnection,
@@ -119,6 +121,17 @@ fun ComfyUISettingsScreen(
             },
             onDismiss = viewModel::onDismissDialog,
         )
+    }
+}
+
+private fun LazyListScope.guidedSetupItem(onNavigateToOnboarding: () -> Unit) {
+    item {
+        androidx.compose.material3.Button(
+            onClick = onNavigateToOnboarding,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.comfyui_onboarding_guided_setup))
+        }
     }
 }
 
