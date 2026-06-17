@@ -135,7 +135,7 @@ struct WorkflowParameterView: View {
             selectWidget(param)
         case .seed:
             seedWidget(param)
-        case .boolean_:
+        case .boolean:
             booleanWidget(param)
         case .image:
             imageWidget(param)
