@@ -17,6 +17,8 @@ private const val TAG = "ExportRepositoryImpl"
 class ExportRepositoryImpl(
     private val datasetRepo: DatasetCollectionRepository,
     private val httpClient: HttpClient,
+    private val zipWriterFactory: DatasetZipWriterFactory,
+    private val exportPathProvider: ExportPathProvider,
 ) : ExportRepository {
 
     override fun exportDataset(datasetId: Long, format: ExportFormat): Flow<ExportProgress> = flow {
@@ -38,10 +40,10 @@ class ExportRepositoryImpl(
         }
 
         val datasetDir = sanitizeName(collection.name)
-        val outputDir = getExportCacheDirectory()
+        val outputDir = exportPathProvider.getExportCacheDirectory()
         val outputPath = "$outputDir/$datasetDir.zip"
 
-        val zipWriter = DatasetZipWriter(outputPath)
+        val zipWriter = zipWriterFactory.create(outputPath)
         try {
             exportable.forEachIndexed { index, image ->
                 emit(ExportProgress.Downloading(index + 1, exportable.size))

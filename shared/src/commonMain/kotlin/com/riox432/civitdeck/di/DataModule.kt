@@ -11,7 +11,7 @@ val dataModule = module {
     // ImageSaver is registered in comfyuiPlatformModule (interface + platform impl)
 
     // Export
-    single<ExportRepository> { ExportRepositoryImpl(get(), get()) }
+    single<ExportRepository> { ExportRepositoryImpl(get(), get(), get(), get()) }
     single { KohyaZipExportPlugin(get()) }
     factory { GetAvailableExportFormatsUseCase(get()) }
     factory { ExportWithPluginUseCase(get()) }

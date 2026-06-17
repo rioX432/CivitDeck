@@ -11,13 +11,13 @@ import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.create
 import platform.Foundation.writeToFile
 
-actual class DatasetZipWriter actual constructor(outputPath: String) {
+class DatasetZipWriterImpl(outputPath: String) : DatasetZipWriter {
     private val chunks = mutableListOf<ByteArray>()
     private val entries = mutableListOf<ZipEntryRecord>()
     private val filePath = outputPath
     private var offset: Long = 0
 
-    actual fun addEntry(name: String, data: ByteArray) {
+    override fun addEntry(name: String, data: ByteArray) {
         val nameBytes = name.encodeToByteArray()
         val crc = Crc32.compute(data)
 
@@ -35,7 +35,7 @@ actual class DatasetZipWriter actual constructor(outputPath: String) {
         appendBytes(data)
     }
 
-    actual fun close() {
+    override fun close() {
         val centralDirOffset = offset
         for (entry in entries) {
             appendCentralDirectoryEntry(entry)
@@ -173,14 +173,20 @@ private object Crc32 {
 private const val CRC_TABLE_SIZE = 256
 private const val CRC_POLYNOMIAL = 0xEDB88320.toInt()
 
-actual fun getExportCacheDirectory(): String {
-    val tmp = NSTemporaryDirectory()
-    val dir = "${tmp}dataset_exports"
-    NSFileManager.defaultManager.createDirectoryAtPath(
-        dir,
-        withIntermediateDirectories = true,
-        attributes = null,
-        error = null,
-    )
-    return dir
+class DatasetZipWriterFactoryImpl : DatasetZipWriterFactory {
+    override fun create(outputPath: String): DatasetZipWriter = DatasetZipWriterImpl(outputPath)
+}
+
+class ExportPathProviderImpl : ExportPathProvider {
+    override fun getExportCacheDirectory(): String {
+        val tmp = NSTemporaryDirectory()
+        val dir = "${tmp}dataset_exports"
+        NSFileManager.defaultManager.createDirectoryAtPath(
+            dir,
+            withIntermediateDirectories = true,
+            attributes = null,
+            error = null,
+        )
+        return dir
+    }
 }
