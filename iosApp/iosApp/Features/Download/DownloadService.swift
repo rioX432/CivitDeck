@@ -97,62 +97,65 @@ final class DownloadService: NSObject, ObservableObject {
             return
         }
         guard let location else { return }
-        Task {
-            let download: ModelDownload
-            do {
-                guard let fetched = try await repository.getDownloadById(id: downloadId) else {
-                    print("DownloadService: download record not found for id \(downloadId)")
-                    try? FileManager.default.removeItem(at: location)
-                    return
-                }
-                download = fetched
-            } catch {
-                print("DownloadService: failed to fetch download record: \(error)")
+        Task { await moveCompletedDownload(downloadId: downloadId, location: location) }
+    }
+
+    private func moveCompletedDownload(downloadId: Int64, location: URL) async {
+        let download: ModelDownload
+        do {
+            guard let fetched = try await repository.getDownloadById(id: downloadId) else {
+                print("DownloadService: download record not found for id \(downloadId)")
                 try? FileManager.default.removeItem(at: location)
                 return
             }
-            let documentsDir = FileManager.default.urls(
-                for: .documentDirectory, in: .userDomainMask
-            ).first!
-            let typeDir = documentsDir
-                .appendingPathComponent("Downloads")
-                .appendingPathComponent(download.modelType)
+            download = fetched
+        } catch {
+            print("DownloadService: failed to fetch download record: \(error)")
+            try? FileManager.default.removeItem(at: location)
+            return
+        }
+        let documentsDir = FileManager.default.urls(
+            for: .documentDirectory, in: .userDomainMask
+        ).first!
+        let typeDir = documentsDir
+            .appendingPathComponent("Downloads")
+            .appendingPathComponent(download.modelType)
+        do {
+            try FileManager.default.createDirectory(
+                at: typeDir, withIntermediateDirectories: true
+            )
+        } catch {
+            print("DownloadService: failed to create directory: \(error)")
+        }
+        let destFile = typeDir.appendingPathComponent(download.fileName)
+        try? FileManager.default.removeItem(at: destFile)
+        do {
+            try FileManager.default.moveItem(at: location, to: destFile)
             do {
-                try FileManager.default.createDirectory(
-                    at: typeDir, withIntermediateDirectories: true
+                try await repository.updateDestinationPath(id: downloadId, path: destFile.path)
+            } catch {
+                print("DownloadService: failed to update destination path: \(error)")
+            }
+            await verifyHash(downloadId: downloadId, filePath: destFile, expectedSha256: download.expectedSha256)
+            do {
+                try await repository.updateStatus(
+                    id: downloadId, status: .completed, errorMessage: nil
                 )
             } catch {
-                print("DownloadService: failed to create directory: \(error)")
+                print("DownloadService: failed to update completed status: \(error)")
             }
-            let destFile = typeDir.appendingPathComponent(download.fileName)
-            try? FileManager.default.removeItem(at: destFile)
+        } catch {
             do {
-                try FileManager.default.moveItem(at: location, to: destFile)
-                do {
-                    try await repository.updateDestinationPath(id: downloadId, path: destFile.path)
-                } catch {
-                    print("DownloadService: failed to update destination path: \(error)")
-                }
-                await verifyHash(downloadId: downloadId, filePath: destFile, expectedSha256: download.expectedSha256)
-                do {
-                    try await repository.updateStatus(
-                        id: downloadId, status: .completed, errorMessage: nil
-                    )
-                } catch {
-                    print("DownloadService: failed to update completed status: \(error)")
-                }
+                try await repository.updateStatus(
+                    id: downloadId, status: .failed,
+                    errorMessage: "Failed to move file: \(error.localizedDescription)"
+                )
             } catch {
-                do {
-                    try await repository.updateStatus(
-                        id: downloadId, status: .failed,
-                        errorMessage: "Failed to move file: \(error.localizedDescription)"
-                    )
-                } catch {
-                    print("DownloadService: failed to update failed status: \(error)")
-                }
+                print("DownloadService: failed to update failed status: \(error)")
             }
         }
     }
+
     private func verifyHash(downloadId: Int64, filePath: URL, expectedSha256: String?) async {
         guard let expectedHash = expectedSha256, !expectedHash.isEmpty else { return }
         let fileData: Data

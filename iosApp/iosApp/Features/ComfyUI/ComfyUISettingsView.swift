@@ -234,7 +234,10 @@ struct ComfyUISettingsView: View {
                     }
                 }
             } else {
-                Text("Install ComfyUI-ntfy custom node on your server and set the same topic there. Notifications will be received even when the app is closed.")
+                Text(
+                    "Install ComfyUI-ntfy custom node on your server and set the same topic there. " +
+                        "Notifications will be received even when the app is closed."
+                )
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
             }

@@ -73,6 +73,8 @@ class ComfyUIUseCasesTest {
             kotlinx.coroutines.flow.flowOf(emptyList())
         override suspend fun cancelJob(promptId: String) {}
         override suspend fun interruptGeneration() {}
+        override suspend fun uploadMaskImage(maskPngBytes: ByteArray): String = "mask.png"
+        override suspend fun fetchObjectInfo(): String = "{}"
     }
 
     private val repo = FakeComfyUIRepository()

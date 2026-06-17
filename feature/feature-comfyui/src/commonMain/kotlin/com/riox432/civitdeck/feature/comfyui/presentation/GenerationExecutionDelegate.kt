@@ -9,11 +9,11 @@ import com.riox432.civitdeck.domain.service.AppLifecycleTracker
 import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter
 import com.riox432.civitdeck.domain.service.GenerationNotificationService
 import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
+import com.riox432.civitdeck.domain.util.currentTimeMillis
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
-import com.riox432.civitdeck.domain.util.currentTimeMillis
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope

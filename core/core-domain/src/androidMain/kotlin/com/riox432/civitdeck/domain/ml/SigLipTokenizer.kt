@@ -65,6 +65,7 @@ internal class SigLipTokenizer private constructor(
      * For each position i in the string, compute the best score for the
      * substring ending at i by checking all possible pieces that end at i.
      */
+    @Suppress("NestedBlockDepth")
     private fun segment(text: String): List<Int> {
         val n = text.length
         if (n == 0) return emptyList()
@@ -202,11 +203,11 @@ internal class SigLipTokenizer private constructor(
 private data class VocabData(
     val pieces: List<JsonArray>,
     val special: Map<String, Int>,
-    @Suppress("PropertyName")
+    @Suppress("PropertyName", "ConstructorParameterNaming")
     val max_seq_len: Int = 64,
-    @Suppress("PropertyName")
+    @Suppress("PropertyName", "ConstructorParameterNaming")
     val add_eos: Boolean = true,
-    @Suppress("PropertyName")
+    @Suppress("PropertyName", "ConstructorParameterNaming")
     val add_bos: Boolean = false,
 ) {
     // Kotlin naming convention accessors

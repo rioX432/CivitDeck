@@ -72,9 +72,23 @@ jobs:
       needs.changes.outputs.ios == 'true' ||
       needs.changes.outputs.shared == 'true' ||
       needs.changes.outputs.ci == 'true'
-    runs-on: macos-latest
+    # Apple Silicon runner: the KMP shared framework only configures the
+    # iosSimulatorArm64 target, so xcodebuild must run on an arm64 host to
+    # find the matching Shared.framework slice. macos-26 (Tahoe) is arm64 and
+    # ships Xcode 26 (Swift 6.2) to match the local dev toolchain — the app
+    # code uses Swift 6.1+ syntax (trailing commas, @retroactive), which
+    # macos-14 (capped at Xcode 16.2 / Swift 6.0) cannot compile.
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
+
+      # Select the newest stable Xcode on the image (Xcode 26.x / Swift 6.2).
+      # Required for Swift 6.1+ features used across the iOS app: trailing
+      # commas in argument lists (SE-0439) and the @retroactive attribute.
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -99,11 +113,17 @@ jobs:
         run: cd iosApp && swiftlint --strict
 
       - name: Build iOS app
+        # ARCHS=arm64 (+ ONLY_ACTIVE_ARCH=NO) constrains the build to arm64 only.
+        # A 'generic/platform=iOS Simulator' destination otherwise builds both
+        # arm64 and x86_64 slices, but the KMP shared framework only configures
+        # iosSimulatorArm64, so the missing x86_64 slice breaks module resolution.
         run: |
           xcodebuild build \
             -project iosApp/iosApp.xcodeproj \
             -scheme iosApp \
             -destination 'generic/platform=iOS Simulator' \
+            ARCHS=arm64 \
+            ONLY_ACTIVE_ARCH=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=YES \
             EXPANDED_CODE_SIGN_IDENTITY=""
