@@ -15,6 +15,7 @@ import com.riox432.civitdeck.domain.model.RatingTotals
 import com.riox432.civitdeck.domain.model.ResourceReview
 import com.riox432.civitdeck.domain.model.ReviewSortOrder
 import com.riox432.civitdeck.domain.model.SystemStats
+import com.riox432.civitdeck.domain.util.ApplicationScope
 import com.riox432.civitdeck.domain.util.SystemStatsProvider
 import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.domain.util.VramCompatibility
@@ -23,7 +24,6 @@ import com.riox432.civitdeck.domain.util.currentTimeMillis
 import com.riox432.civitdeck.domain.util.launchSafe
 import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.util.Logger
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
 data class ModelDetailUiState(
@@ -66,6 +65,7 @@ class ModelDetailViewModel(
     private val downloadUseCases: DownloadUseCases,
     private val reviewUseCases: ReviewUseCases,
     private val systemStatsProvider: SystemStatsProvider,
+    private val appScope: ApplicationScope,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelDetailUiState())
@@ -365,15 +365,11 @@ class ModelDetailViewModel(
         if (viewStartTimeMs <= 0L) return
         val durationMs = currentTimeMillis() - viewStartTimeMs
         viewStartTimeMs = 0L
-        viewModelScope.launch {
-            withContext(NonCancellable) {
-                try {
-                    withTimeoutOrNull(END_VIEW_TIMEOUT) {
-                        modelUseCases.trackModelView.endView(modelId, durationMs)
-                    }
-                } catch (e: Exception) {
-                    Logger.w(TAG, "End view tracking failed: ${e.message}")
-                }
+        // Use the application-lifetime scope: viewModelScope is already cancelled
+        // by the time onCleared() runs, so a launch into it would be dropped.
+        appScope.launchSafe(TAG, "End view tracking") {
+            withTimeoutOrNull(END_VIEW_TIMEOUT) {
+                modelUseCases.trackModelView.endView(modelId, durationMs)
             }
         }
     }

@@ -53,6 +53,7 @@ import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
+import com.riox432.civitdeck.domain.util.ApplicationScope
 import com.riox432.civitdeck.domain.util.SystemStatsProvider
 import com.riox432.civitdeck.feature.detail.presentation.CollectionUseCases
 import com.riox432.civitdeck.feature.detail.presentation.DownloadUseCases
@@ -60,6 +61,7 @@ import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelUseCases
 import com.riox432.civitdeck.feature.detail.presentation.NotesTagsUseCases
 import com.riox432.civitdeck.feature.detail.presentation.ReviewUseCases
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -73,6 +75,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -159,6 +162,8 @@ class ModelDetailViewModelTest {
 
     private class FakeBrowsingRepo : BrowsingHistoryRepository {
         var trackCalled = false
+        var endViewModelId: Long? = null
+        var endViewDurationMs: Long? = null
         override suspend fun trackView(
             modelId: Long,
             modelName: String,
@@ -179,7 +184,10 @@ class ModelDetailViewModelTest {
         override suspend fun getWeightedTypes(limit: Int) = error("not used")
         override suspend fun getWeightedTags(limit: Int) = error("not used")
         override suspend fun getWeightedCreators(limit: Int) = error("not used")
-        override suspend fun updateViewDuration(modelId: Long, durationMs: Long) = Unit
+        override suspend fun updateViewDuration(modelId: Long, durationMs: Long) {
+            endViewModelId = modelId
+            endViewDurationMs = durationMs
+        }
         override suspend fun trackInteraction(
             modelId: Long,
             interactionType: com.riox432.civitdeck.domain.model.InteractionType,
@@ -317,10 +325,11 @@ class ModelDetailViewModelTest {
     private fun createViewModel(
         model: Model = testModel(),
         isFavorite: Boolean = false,
+        browsingRepo: FakeBrowsingRepo = FakeBrowsingRepo(),
+        appScope: ApplicationScope = ApplicationScope(CoroutineScope(testDispatcher)),
     ): Triple<ModelDetailViewModel, FakeModelRepo, FakeFavoriteRepo> {
         val modelRepo = FakeModelRepo(model)
         val favRepo = FakeFavoriteRepo(MutableStateFlow(isFavorite))
-        val browsingRepo = FakeBrowsingRepo()
         val prefsRepo = FakePrefsRepo()
         val collectionRepo = FakeCollectionRepo()
         val noteRepo = FakeNoteRepo()
@@ -376,6 +385,7 @@ class ModelDetailViewModelTest {
             downloadUseCases = downloadUseCases,
             reviewUseCases = reviewUseCases,
             systemStatsProvider = SystemStatsProvider { null },
+            appScope = appScope,
         )
         return Triple(vm, modelRepo, favRepo)
     }
@@ -401,6 +411,17 @@ class ModelDetailViewModelTest {
         val (vm, _, favRepo) = createViewModel()
         vm.onFavoriteToggle()
         assertTrue(favRepo.toggleCalled)
+    }
+
+    @Test
+    fun on_cleared_tracks_end_view_via_application_scope() {
+        val browsingRepo = FakeBrowsingRepo()
+        val (vm, _, _) = createViewModel(browsingRepo = browsingRepo)
+        // loadModel() sets viewStartTimeMs on init; clearing triggers onCleared -> trackEndView.
+        vm.clear()
+        assertEquals(1L, browsingRepo.endViewModelId)
+        assertNotNull(browsingRepo.endViewDurationMs)
+        assertTrue(requireNotNull(browsingRepo.endViewDurationMs) >= 0L)
     }
 
     @Test
