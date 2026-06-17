@@ -22,13 +22,11 @@ import com.riox432.civitdeck.domain.repository.AppVersionProvider
 import com.riox432.civitdeck.domain.usecase.CleanupBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
+import com.riox432.civitdeck.domain.util.ApplicationScope
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
 import com.riox432.civitdeck.widget.WidgetRefreshWorker
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -41,7 +39,7 @@ import java.util.concurrent.TimeUnit
 
 class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinComponent {
 
-    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val applicationScope: ApplicationScope by inject()
     private val observeNotificationsEnabled: ObserveNotificationsEnabledUseCase by inject()
     private val observePollingInterval: ObservePollingIntervalUseCase by inject()
     private val cleanupBrowsingHistory: CleanupBrowsingHistoryUseCase by inject()
@@ -114,7 +112,7 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
 val androidModule = module {
     single<AppVersionProvider> { AndroidAppVersionProvider() }
     viewModel { params ->
-        ModelDetailViewModel(params.get(), get(), get(), get(), get(), get(), get())
+        ModelDetailViewModel(params.get(), get(), get(), get(), get(), get(), get(), get())
     }
     viewModel { params -> DuplicateReviewViewModel(params.get(), get(), get()) }
     // DownloadQueueViewModel now registered in shared Phase3ViewModelModule
