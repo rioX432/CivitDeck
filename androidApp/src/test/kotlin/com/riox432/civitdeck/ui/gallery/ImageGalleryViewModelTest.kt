@@ -101,6 +101,10 @@ class ImageGalleryViewModelTest {
         override fun observeNsfwBlurSettings() = flowOf(NsfwBlurSettings())
         override suspend fun setNsfwFilterLevel(level: NsfwFilterLevel) = Unit
         override suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings) = Unit
+        override fun observeFrontDoorMode() = flowOf(com.riox432.civitdeck.domain.model.FrontDoorMode.Sfw)
+        override suspend fun setFrontDoorMode(
+            mode: com.riox432.civitdeck.domain.model.FrontDoorMode,
+        ) = Unit
     }
 
     private fun createVm(

@@ -21,10 +21,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.riox432.civitdeck.R
+import com.riox432.civitdeck.domain.model.FrontDoorMode
 import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.ui.theme.Spacing
+
+@Composable
+internal fun FrontDoorRow(mode: FrontDoorMode, onChange: (FrontDoorMode) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(stringResource(R.string.settings_front_door_full), style = MaterialTheme.typography.bodyLarge)
+            Text(
+                stringResource(R.string.settings_front_door_description),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(
+            checked = mode == FrontDoorMode.Full,
+            onCheckedChange = {
+                onChange(if (it) FrontDoorMode.Full else FrontDoorMode.Sfw)
+            },
+        )
+    }
+}
 
 @Composable
 internal fun NsfwToggleRow(level: NsfwFilterLevel, onToggle: (NsfwFilterLevel) -> Unit) {

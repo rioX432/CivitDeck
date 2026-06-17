@@ -2,6 +2,9 @@ package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.domain.repository.AuthPreferencesRepository
+import com.riox432.civitdeck.domain.usecase.ObserveFrontDoorModeUseCase
+import com.riox432.civitdeck.domain.util.ApplicationScope
+import com.riox432.civitdeck.domain.util.CivitAiFrontDoor
 import com.riox432.civitdeck.feature.collections.di.collectionsModule
 import com.riox432.civitdeck.feature.comfyui.di.comfyuiModule
 import com.riox432.civitdeck.feature.creator.di.creatorModule
@@ -50,4 +53,17 @@ suspend fun initializeAuth() {
     val repository: AuthPreferencesRepository = KoinPlatform.getKoin().get()
     val provider: ApiKeyProvider = KoinPlatform.getKoin().get()
     provider.apiKey = repository.getApiKey()
+}
+
+/**
+ * Starts syncing the persisted front-door choice into [CivitAiFrontDoor] so
+ * web/share links reflect the user's civitai.com / civitai.red selection.
+ * Called once at app startup on both platforms.
+ */
+fun initializeFrontDoor() {
+    val koin = KoinPlatform.getKoin()
+    val frontDoor: CivitAiFrontDoor = koin.get()
+    val observeFrontDoorMode: ObserveFrontDoorModeUseCase = koin.get()
+    val applicationScope: ApplicationScope = koin.get()
+    frontDoor.start(observeFrontDoorMode(), applicationScope)
 }

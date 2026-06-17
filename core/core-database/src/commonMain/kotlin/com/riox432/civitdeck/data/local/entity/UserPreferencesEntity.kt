@@ -29,6 +29,7 @@ data class UserPreferencesEntity(
     val generationNotificationsEnabled: Boolean = true,
     val autoUpdateCheckEnabled: Boolean = true,
     val lastUpdateCheckTimestamp: Long = 0L,
+    val frontDoorMode: String = "Sfw",
 ) {
     companion object {
         const val DEFAULT_CACHE_SIZE_LIMIT_MB = 200

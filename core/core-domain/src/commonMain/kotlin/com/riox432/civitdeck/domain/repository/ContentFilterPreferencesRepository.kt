@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.domain.repository
 
+import com.riox432.civitdeck.domain.model.FrontDoorMode
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import kotlinx.coroutines.flow.Flow
@@ -9,4 +10,6 @@ interface ContentFilterPreferencesRepository {
     suspend fun setNsfwFilterLevel(level: NsfwFilterLevel)
     fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings>
     suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings)
+    fun observeFrontDoorMode(): Flow<FrontDoorMode>
+    suspend fun setFrontDoorMode(mode: FrontDoorMode)
 }

@@ -14,6 +14,7 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import com.riox432.civitdeck.di.initKoin
 import com.riox432.civitdeck.di.initializeAuth
+import com.riox432.civitdeck.di.initializeFrontDoor
 import com.riox432.civitdeck.di.registerExportPlugins
 import com.riox432.civitdeck.di.registerThemePlugins
 import com.riox432.civitdeck.di.registerWorkflowPlugins
@@ -56,6 +57,7 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
             registerThemePlugins()
         }
         applicationScope.launch { initializeAuth() }
+        initializeFrontDoor()
         applicationScope.launch { cleanupBrowsingHistory(System.currentTimeMillis()) }
         observeAndScheduleNotifications()
         scheduleWidgetRefresh()

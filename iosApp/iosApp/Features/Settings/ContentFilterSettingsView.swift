@@ -24,6 +24,9 @@ struct ContentFilterSettingsView: View {
                         )
                     }
                 }
+                Section("CivitAI Site") {
+                    frontDoorToggle(state: filterState)
+                }
                 Section("Defaults") {
                     sortOrderPicker(state: displayState)
                     timePeriodPicker(state: displayState)
@@ -63,6 +66,22 @@ struct ContentFilterSettingsView: View {
                 Text("NSFW Content")
                     .font(.civitBodyMedium)
                 Text("Show NSFW content in search results")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitOnSurfaceVariant)
+            }
+        }
+    }
+
+    private func frontDoorToggle(state: ContentFilterSettingsUiState) -> some View {
+        Toggle(isOn: Binding(
+            get: { state.frontDoorMode == .full },
+            set: { viewModel.onFrontDoorModeChanged(mode: $0 ? .full : .sfw) }
+        )) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("Open links on civitai.red")
+                    .font(.civitBodyMedium)
+                // swiftlint:disable:next line_length
+                Text("Choose which CivitAI site \"Open in browser\", share, and QR links use. civitai.red shows the full catalog; civitai.com is the safe-for-work front door. This does not change the NSFW content filter above.")
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
             }

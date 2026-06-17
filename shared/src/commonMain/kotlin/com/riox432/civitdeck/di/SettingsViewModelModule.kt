@@ -14,6 +14,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCustomNavShortcutsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveFrontDoorModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
@@ -33,6 +34,7 @@ import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.SetCustomNavShortcutsUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
+import com.riox432.civitdeck.domain.usecase.SetFrontDoorModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
@@ -62,6 +64,8 @@ val settingsViewModelModule = module {
             setNsfwFilterUseCase = get<SetNsfwFilterUseCase>(),
             observeNsfwBlurSettingsUseCase = get<ObserveNsfwBlurSettingsUseCase>(),
             setNsfwBlurSettingsUseCase = get<SetNsfwBlurSettingsUseCase>(),
+            observeFrontDoorModeUseCase = get<ObserveFrontDoorModeUseCase>(),
+            setFrontDoorModeUseCase = get<SetFrontDoorModeUseCase>(),
             getHiddenModelsUseCase = get<GetHiddenModelsUseCase>(),
             unhideModelUseCase = get<UnhideModelUseCase>(),
             getExcludedTagsUseCase = get<GetExcludedTagsUseCase>(),

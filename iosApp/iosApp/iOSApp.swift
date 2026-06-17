@@ -7,6 +7,7 @@ struct iOSApp: App {
     @StateObject private var themeManager = ThemeManager()
     @StateObject private var spotlightManager = SpotlightIndexManager()
     @StateObject private var router = NavigationRouter()
+    @StateObject private var frontDoorManager = FrontDoorManager()
 
     init() {
         KoinKt.doInitKoin(appDeclaration: { _ in })
@@ -30,6 +31,7 @@ struct iOSApp: App {
                 .onAppear {
                     ShortcutsRouter.shared.navigationRouter = router
                 }
+                .task { await frontDoorManager.observeFrontDoor() }
                 .task { await themeManager.observeAccentColor() }
                 .task { await themeManager.observeAmoledDarkMode() }
                 .task { await themeManager.observeThemeMode() }
