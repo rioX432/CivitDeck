@@ -27,10 +27,10 @@ import platform.posix.memcpy
 // CGLineCap values: butt=0, round=1, square=2
 // CGLineJoin values: miter=0, round=1, bevel=2
 
-actual class MaskPngEncoder actual constructor() {
+class MaskPngEncoderImpl : MaskPngEncoder {
 
     @OptIn(ExperimentalForeignApi::class)
-    actual fun encode(
+    override fun encode(
         segments: List<PathSegment>,
         width: Int,
         height: Int,

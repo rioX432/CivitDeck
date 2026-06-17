@@ -2,8 +2,8 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 
 import java.net.NetworkInterface
 
-actual class LocalIpProvider actual constructor() {
-    actual fun getLocalSubnet(): String? {
+class LocalIpProviderImpl : LocalIpProvider {
+    override fun getLocalSubnet(): String? {
         return try {
             NetworkInterface.getNetworkInterfaces()?.toList()
                 ?.flatMap { it.inetAddresses.toList() }

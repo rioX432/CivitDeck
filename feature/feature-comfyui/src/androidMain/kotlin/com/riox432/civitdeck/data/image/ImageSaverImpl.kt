@@ -8,15 +8,14 @@ import android.provider.MediaStore
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 private const val TAG = "ImageSaver"
 
-actual class ImageSaver actual constructor() : KoinComponent {
-    private val context: Context by inject()
+class ImageSaverImpl(
+    private val context: Context,
+) : ImageSaver {
 
-    actual suspend fun saveToGallery(imageBytes: ByteArray, filename: String): Boolean =
+    override suspend fun saveToGallery(imageBytes: ByteArray, filename: String): Boolean =
         withContext(Dispatchers.IO) {
             try {
                 val values = ContentValues().apply {

@@ -7,7 +7,7 @@ data class ScannedFile(
     val sizeBytes: Long,
 )
 
-expect class FileScanner() {
+interface FileScanner {
     suspend fun scanDirectory(
         path: String,
         onProgress: (current: Int, total: Int) -> Unit,

@@ -16,9 +16,9 @@ import platform.Foundation.NSURL
 import kotlin.coroutines.coroutineContext
 
 @OptIn(ExperimentalForeignApi::class)
-actual class FileScanner actual constructor() {
+class FileScannerImpl : FileScanner {
 
-    actual suspend fun scanDirectory(
+    override suspend fun scanDirectory(
         path: String,
         onProgress: (current: Int, total: Int) -> Unit,
     ): List<ScannedFile> = withContext(Dispatchers.IO) {

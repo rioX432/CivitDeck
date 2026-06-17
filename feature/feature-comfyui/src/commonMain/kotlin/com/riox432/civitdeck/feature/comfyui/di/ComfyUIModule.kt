@@ -14,7 +14,6 @@ import com.riox432.civitdeck.domain.repository.SDWebUIGenerationRepository
 import com.riox432.civitdeck.domain.repository.ServerDiscoveryRepository
 import com.riox432.civitdeck.domain.util.SystemStatsProvider
 import com.riox432.civitdeck.feature.comfyui.data.NtfySubscriptionService
-import com.riox432.civitdeck.feature.comfyui.data.encoder.MaskPngEncoder
 import com.riox432.civitdeck.feature.comfyui.data.repository.CivitaiLinkRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyHubRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIConnectionRepositoryImpl
@@ -22,7 +21,6 @@ import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIConnectionTe
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIGenerationRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIHistoryRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIQueueRepositoryImpl
-import com.riox432.civitdeck.feature.comfyui.data.repository.LocalIpProvider
 import com.riox432.civitdeck.feature.comfyui.data.repository.SDWebUIRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ServerDiscoveryRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.lanScanSupported
@@ -110,7 +108,7 @@ val comfyuiModule = module {
             json = get(),
         )
     }
-    single { LocalIpProvider() }
+    // LocalIpProvider is registered in comfyuiPlatformModule (interface + platform impl)
     single<ServerDiscoveryRepository> {
         ServerDiscoveryRepositoryImpl(get(named("comfyui")), get(), get())
     }
@@ -147,7 +145,7 @@ val comfyuiModule = module {
     factory { CancelComfyUIJobUseCase(get()) }
     factory { InterruptComfyUIGenerationUseCase(get()) }
     factory { UploadMaskUseCase(get()) }
-    single { MaskPngEncoder() }
+    // MaskPngEncoder is registered in comfyuiPlatformModule (interface + platform impl)
     factory { FindMatchingLocalModelUseCase(get()) }
     factory { PopulateGenerationFromModelUseCase() }
     factory { SaveGeneratedImageUseCase(get(named("comfyui")), get()) }
@@ -229,5 +227,5 @@ val comfyuiModule = module {
     viewModel { SDWebUIGenerationViewModel(get(), get(), get(), get(), get()) }
     viewModel { CivitaiLinkSettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { CivitaiLinkSendViewModel(get(), get()) }
-    viewModel { MaskEditorViewModel(get()) }
+    viewModel { MaskEditorViewModel(get(), get()) }
 }

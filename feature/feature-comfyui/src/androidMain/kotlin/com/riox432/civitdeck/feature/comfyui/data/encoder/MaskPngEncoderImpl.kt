@@ -8,9 +8,9 @@ import android.graphics.Path
 import com.riox432.civitdeck.feature.comfyui.domain.model.PathSegment
 import java.io.ByteArrayOutputStream
 
-actual class MaskPngEncoder actual constructor() {
+class MaskPngEncoderImpl : MaskPngEncoder {
 
-    actual fun encode(
+    override fun encode(
         segments: List<PathSegment>,
         width: Int,
         height: Int,

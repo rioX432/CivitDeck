@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.comfyui.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.riox432.civitdeck.feature.comfyui.data.encoder.MaskPngEncoder
 import com.riox432.civitdeck.feature.comfyui.domain.model.MaskEditorState
 import com.riox432.civitdeck.feature.comfyui.domain.model.PathSegment
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.UploadMaskUseCase
@@ -18,10 +19,23 @@ import kotlinx.coroutines.launch
  */
 class MaskEditorViewModel(
     private val uploadMask: UploadMaskUseCase,
+    private val maskPngEncoder: MaskPngEncoder,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MaskEditorState())
     val uiState: StateFlow<MaskEditorState> = _uiState
+
+    /**
+     * Encodes the current mask path segments into PNG bytes using the
+     * platform-specific [MaskPngEncoder].
+     */
+    fun encodeMask(width: Int, height: Int): ByteArray =
+        maskPngEncoder.encode(
+            segments = _uiState.value.pathSegments,
+            width = width,
+            height = height,
+            inverted = _uiState.value.isInverted,
+        )
 
     fun setSourceImageUrl(url: String) {
         _uiState.update { it.copy(sourceImageUrl = url) }

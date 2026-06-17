@@ -8,7 +8,7 @@ package com.riox432.civitdeck.feature.comfyui.data.encoder
  *
  * When [inverted] is true, the colors are swapped.
  */
-expect class MaskPngEncoder() {
+interface MaskPngEncoder {
     /**
      * Renders the given path segments into a PNG mask image.
      *
