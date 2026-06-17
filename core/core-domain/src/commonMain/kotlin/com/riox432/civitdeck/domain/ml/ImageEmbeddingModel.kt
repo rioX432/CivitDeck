@@ -15,7 +15,7 @@ package com.riox432.civitdeck.domain.ml
  * Vector dimension is fixed by the chosen model — currently 768 for SigLIP-2 base
  * (see docs/research/siglip2-feasibility.md).
  */
-expect class ImageEmbeddingModel() {
+interface ImageEmbeddingModel {
     /**
      * Returns true when the platform implementation can produce real embeddings.
      * Stub / no-op implementations return false so callers can short-circuit.

@@ -1,7 +1,6 @@
 package com.riox432.civitdeck.feature.detail.presentation
 
 import app.cash.turbine.test
-import com.riox432.civitdeck.domain.ml.ImageEmbeddingModel
 import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelCollection
@@ -55,6 +54,7 @@ import com.riox432.civitdeck.testing.FakeAppBehaviorPreferencesRepository
 import com.riox432.civitdeck.testing.FakeBrowsingHistoryRepository
 import com.riox432.civitdeck.testing.FakeContentFilterPreferencesRepository
 import com.riox432.civitdeck.testing.FakeFavoriteRepository
+import com.riox432.civitdeck.testing.FakeImageEmbeddingModel
 import com.riox432.civitdeck.testing.clearForTest
 import com.riox432.civitdeck.testing.testApplicationScope
 import com.riox432.civitdeck.testing.testModel
@@ -224,7 +224,7 @@ class ModelDetailViewModelTest {
             enrichModelImages = EnrichModelImagesUseCase(modelRepo),
             embedOnBrowse = EmbedOnBrowseUseCase(
                 NoOpEmbeddingRepo(),
-                EmbedImageUseCase(ImageEmbeddingModel()),
+                EmbedImageUseCase(FakeImageEmbeddingModel()),
                 NoOpDownloader(),
             ),
             observeNsfwFilter = ObserveNsfwFilterUseCase(prefsRepo),

@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.domain.usecase
 
+import com.riox432.civitdeck.domain.ml.ImageEmbeddingModel
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -10,14 +11,20 @@ import kotlin.test.assertTrue
 
 class EmbedImageUseCaseTest {
 
+    /** Test embedder mirroring the platform stubs: unavailable, [embed] throws. */
+    private class StubImageEmbeddingModel : ImageEmbeddingModel {
+        override val isAvailable: Boolean = false
+        override suspend fun embed(imageBytes: ByteArray): FloatArray =
+            throw NotImplementedError("stub")
+    }
+
     @Test
     fun delegates_to_underlying_embedder_when_available() = runTest {
-        // The default expect/actual stub throws — we cannot construct it in commonTest because
-        // that would resolve to the JVM actual at test time. Instead, exercise the use case via
-        // dependency on a test-local subclass implemented at the JVM source set boundary.
-        // Here, we just verify the JVM stub reports unavailable and throws on embed().
+        // Verify the use case mirrors the embedder's availability and propagates the
+        // NotImplementedError thrown by an unavailable embedder. Now that the embedder is a
+        // commonMain interface, the test uses a local stub instead of the platform actual.
         // (#700 / #701 will replace these with real implementations and richer tests.)
-        val useCase = EmbedImageUseCase(com.riox432.civitdeck.domain.ml.ImageEmbeddingModel())
+        val useCase = EmbedImageUseCase(StubImageEmbeddingModel())
 
         assertFalse(useCase.isAvailable)
         assertFailsWith<NotImplementedError> {

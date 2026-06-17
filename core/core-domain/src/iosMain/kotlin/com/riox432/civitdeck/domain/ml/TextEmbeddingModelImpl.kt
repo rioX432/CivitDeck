@@ -17,13 +17,13 @@ package com.riox432.civitdeck.domain.ml
  *   implementation (using ONNX Runtime + [SigLipTokenizer]) can serve as a
  *   reference for the tokenization logic and input/output tensor format.
  */
-actual class TextEmbeddingModel actual constructor() {
+class TextEmbeddingModelImpl : TextEmbeddingModel {
 
-    actual val isAvailable: Boolean = false
+    override val isAvailable: Boolean = false
 
-    actual val embeddingModelId: String = EMBEDDING_MODEL_ID
+    override val embeddingModelId: String = EMBEDDING_MODEL_ID
 
-    actual suspend fun embed(text: String): FloatArray {
+    override suspend fun embed(text: String): FloatArray {
         throw NotImplementedError(
             "SigLIP-2 text encoder not yet available on iOS — Core ML conversion + tokenizer needed",
         )

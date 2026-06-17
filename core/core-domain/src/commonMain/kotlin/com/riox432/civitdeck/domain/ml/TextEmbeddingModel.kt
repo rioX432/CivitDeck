@@ -19,7 +19,7 @@ package com.riox432.civitdeck.domain.ml
  *
  * See also: [ImageEmbeddingModel] for the image-side counterpart.
  */
-expect class TextEmbeddingModel() {
+interface TextEmbeddingModel {
     /**
      * Returns true when the platform can produce real text embeddings.
      * Android: true when both the ONNX model and tokenizer vocab are loaded.
