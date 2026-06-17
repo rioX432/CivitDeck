@@ -12,44 +12,32 @@ import com.riox432.civitdeck.data.local.repository.AnalyticsRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.BrowsingHistoryRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.CacheRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.CaptionRepositoryImpl
-import com.riox432.civitdeck.data.local.repository.CreatorFollowRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.DatasetCollectionRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.FavoriteRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ImageTagRepositoryImpl
-import com.riox432.civitdeck.data.local.repository.LocalModelFileRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ModelDownloadRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ModelEmbeddingRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ModelNoteRepositoryImpl
-import com.riox432.civitdeck.data.local.repository.ModelRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ModelUpdateNotificationRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ModelVersionCheckpointRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.PluginRepositoryImpl
 import com.riox432.civitdeck.data.local.repository.ShareHashtagRepositoryImpl
-import com.riox432.civitdeck.data.local.repository.UpdateRepositoryImpl
 import com.riox432.civitdeck.data.scanner.FileScanner
 import com.riox432.civitdeck.domain.repository.AnalyticsRepository
 import com.riox432.civitdeck.domain.repository.BackupRepository
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.CacheRepository
 import com.riox432.civitdeck.domain.repository.CaptionRepository
-import com.riox432.civitdeck.domain.repository.CreatorFollowRepository
 import com.riox432.civitdeck.domain.repository.DatasetCollectionRepository
 import com.riox432.civitdeck.domain.repository.FavoriteRepository
 import com.riox432.civitdeck.domain.repository.ImageTagRepository
-import com.riox432.civitdeck.domain.repository.ModelDirectoryRepository
 import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
 import com.riox432.civitdeck.domain.repository.ModelEmbeddingRepository
-import com.riox432.civitdeck.domain.repository.ModelFileHashRepository
 import com.riox432.civitdeck.domain.repository.ModelNoteRepository
-import com.riox432.civitdeck.domain.repository.ModelRepository
-import com.riox432.civitdeck.domain.repository.ModelScanRepository
 import com.riox432.civitdeck.domain.repository.ModelUpdateNotificationRepository
 import com.riox432.civitdeck.domain.repository.ModelVersionCheckpointRepository
 import com.riox432.civitdeck.domain.repository.PluginRepository
 import com.riox432.civitdeck.domain.repository.ShareHashtagRepository
-import com.riox432.civitdeck.domain.repository.UpdateRepository
-import org.koin.core.module.dsl.bind
-import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 val databaseModule = module {
@@ -94,15 +82,8 @@ val databaseModule = module {
     single<BrowsingHistoryRepository> { BrowsingHistoryRepositoryImpl(get()) }
     single<ModelVersionCheckpointRepository> { ModelVersionCheckpointRepositoryImpl(get()) }
 
-    // Repositories (mixed: DB + network)
-    single<ModelRepository> { ModelRepositoryImpl(get(), get(), get()) }
-    singleOf(::LocalModelFileRepositoryImpl) {
-        bind<ModelDirectoryRepository>()
-        bind<ModelScanRepository>()
-        bind<ModelFileHashRepository>()
-    }
-    single<CreatorFollowRepository> { CreatorFollowRepositoryImpl(get(), get(), get()) }
-    single<UpdateRepository> { UpdateRepositoryImpl(get(), get(), get()) }
+    // Mixed network + cache repositories (ModelRepository, LocalModelFile*,
+    // CreatorFollow, Update) are registered in coreDataModule (core-data).
 
     // Dataset
     single<DatasetCollectionRepository> { DatasetCollectionRepositoryImpl(get(), get()) }

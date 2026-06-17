@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.data.local.repository
+package com.riox432.civitdeck.data.repository
 
 import com.riox432.civitdeck.data.api.GitHubAsset
 import com.riox432.civitdeck.data.api.GitHubReleaseApi
