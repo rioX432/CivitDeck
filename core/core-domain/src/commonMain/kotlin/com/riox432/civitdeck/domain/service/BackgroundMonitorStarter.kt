@@ -8,7 +8,7 @@ package com.riox432.civitdeck.domain.service
  * On iOS and Desktop this is a no-op (iOS cannot maintain background WebSocket
  * reliably, and Desktop apps are always in the foreground).
  */
-expect class BackgroundMonitorStarter {
+interface BackgroundMonitorStarter {
     /**
      * Start monitoring a generation job in the background.
      *

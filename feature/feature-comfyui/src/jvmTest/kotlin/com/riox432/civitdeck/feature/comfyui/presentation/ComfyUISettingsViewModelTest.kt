@@ -6,7 +6,6 @@ import com.riox432.civitdeck.domain.model.ComfyUIConnectionStatus
 import com.riox432.civitdeck.domain.model.DiscoveredServer
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.ServerDiscoveryRepository
-import com.riox432.civitdeck.domain.service.GenerationNotificationService
 import com.riox432.civitdeck.feature.comfyui.data.NtfySubscriptionService
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnectionUseCase
@@ -16,6 +15,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIConnec
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ScanForServersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
+import com.riox432.civitdeck.testing.FakeGenerationNotificationService
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respondError
@@ -43,8 +43,8 @@ import kotlin.test.assertTrue
 /**
  * Covers [ComfyUISettingsViewModel] state transitions for scan / test / save.
  *
- * Lives in jvmTest because [GenerationNotificationService]'s Android `actual`
- * requires a Context; the JVM `actual` is parameterless.
+ * Lives in jvmTest because these use-case tests need `android.util.Log` unmocked
+ * on the JVM target.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ComfyUISettingsViewModelTest {
@@ -110,7 +110,7 @@ class ComfyUISettingsViewModelTest {
         val engine = MockEngine { respondError(HttpStatusCode.NotFound) }
         return NtfySubscriptionService(
             httpClient = HttpClient(engine),
-            notificationService = GenerationNotificationService(),
+            notificationService = FakeGenerationNotificationService(),
             scope = this,
         )
     }

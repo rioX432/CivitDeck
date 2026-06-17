@@ -13,11 +13,11 @@ import androidx.core.app.ServiceCompat
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketMessage
-import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter.Companion.ACTION_START
-import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter.Companion.ACTION_STOP
-import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter.Companion.EXTRA_BASE_URL
-import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter.Companion.EXTRA_PROMPT_ID
-import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter.Companion.EXTRA_WS_SCHEME
+import com.riox432.civitdeck.domain.service.BackgroundMonitorStarterImpl.Companion.ACTION_START
+import com.riox432.civitdeck.domain.service.BackgroundMonitorStarterImpl.Companion.ACTION_STOP
+import com.riox432.civitdeck.domain.service.BackgroundMonitorStarterImpl.Companion.EXTRA_BASE_URL
+import com.riox432.civitdeck.domain.service.BackgroundMonitorStarterImpl.Companion.EXTRA_PROMPT_ID
+import com.riox432.civitdeck.domain.service.BackgroundMonitorStarterImpl.Companion.EXTRA_WS_SCHEME
 import com.riox432.civitdeck.domain.service.GenerationNotificationService
 import com.riox432.civitdeck.domain.util.currentTimeMillis
 import com.riox432.civitdeck.util.Logger

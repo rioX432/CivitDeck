@@ -7,9 +7,9 @@ import platform.UserNotifications.UNNotificationRequest
 import platform.UserNotifications.UNNotificationSound
 import platform.UserNotifications.UNUserNotificationCenter
 
-actual class GenerationNotificationService {
+class GenerationNotificationServiceImpl : GenerationNotificationService {
 
-    actual fun notifyGenerationComplete(promptId: String, imageCount: Int, elapsedMs: Long) {
+    override fun notifyGenerationComplete(promptId: String, imageCount: Int, elapsedMs: Long) {
         val elapsedSec = elapsedMs / MILLIS_PER_SECOND
         val content = UNMutableNotificationContent().apply {
             setTitle("Generation Complete")
@@ -20,7 +20,7 @@ actual class GenerationNotificationService {
         scheduleNotification(promptId, content)
     }
 
-    actual fun notifyGenerationError(promptId: String, errorMessage: String) {
+    override fun notifyGenerationError(promptId: String, errorMessage: String) {
         val content = UNMutableNotificationContent().apply {
             setTitle("Generation Failed")
             setBody(errorMessage)

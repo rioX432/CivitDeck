@@ -5,10 +5,10 @@ import android.content.Intent
 import android.os.Build
 import com.riox432.civitdeck.util.Logger
 
-actual class BackgroundMonitorStarter(
+class BackgroundMonitorStarterImpl(
     private val context: Context,
-) {
-    actual fun startMonitoring(promptId: String, baseUrl: String, wsScheme: String) {
+) : BackgroundMonitorStarter {
+    override fun startMonitoring(promptId: String, baseUrl: String, wsScheme: String) {
         val intent = Intent().apply {
             setClassName(context, SERVICE_CLASS_NAME)
             action = ACTION_START
@@ -27,7 +27,7 @@ actual class BackgroundMonitorStarter(
         }
     }
 
-    actual fun stopMonitoring() {
+    override fun stopMonitoring() {
         val intent = Intent().apply {
             setClassName(context, SERVICE_CLASS_NAME)
             action = ACTION_STOP
