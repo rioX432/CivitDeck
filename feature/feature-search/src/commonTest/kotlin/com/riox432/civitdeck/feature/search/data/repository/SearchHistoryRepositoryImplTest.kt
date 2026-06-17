@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.search.data.repository
 
 import com.riox432.civitdeck.data.local.dao.SearchHistoryDao
+import com.riox432.civitdeck.data.local.dao.SearchQueryCount
 import com.riox432.civitdeck.data.local.entity.SearchHistoryEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,9 +22,11 @@ class SearchHistoryRepositoryImplTest {
         override fun observeRecent(limit: Int): Flow<List<SearchHistoryEntity>> =
             updates.map { entities.sortedByDescending { it.searchedAt }.take(limit) }
 
-        override suspend fun deleteByQuery(query: String) {
+        override suspend fun deleteByQuery(query: String): Int {
+            val removed = entities.count { it.query == query }
             entities.removeAll { it.query == query }
             updates.value++
+            return removed
         }
 
         override suspend fun insert(entity: SearchHistoryEntity) {
@@ -31,15 +34,27 @@ class SearchHistoryRepositoryImplTest {
             updates.value++
         }
 
-        override suspend fun clearAll() {
+        override suspend fun clearAll(): Int {
+            val removed = entities.size
             entities.clear()
             updates.value++
+            return removed
         }
 
-        override suspend fun deleteById(id: Long) {
+        override suspend fun deleteById(id: Long): Int {
+            val removed = entities.count { it.id == id }
             entities.removeAll { it.id == id }
             updates.value++
+            return removed
         }
+
+        override suspend fun count(): Int = entities.size
+
+        override suspend fun getTopQueries(limit: Int): List<SearchQueryCount> =
+            entities.groupingBy { it.query }.eachCount()
+                .map { (name, cnt) -> SearchQueryCount(name, cnt) }
+                .sortedByDescending { it.cnt }
+                .take(limit)
     }
 
     @Test

@@ -13,8 +13,21 @@ kotlin {
         }
 
         commonTest.dependencies {
+            implementation(project(":core:core-testing"))
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.turbine)
+        }
+
+        // ComfyUISettingsViewModel depends on GenerationNotificationService, whose
+        // Android `actual` requires a Context. The JVM `actual` is parameterless, so
+        // this ViewModel test lives in jvmTest and runs via the :jvmTest task in CI.
+        jvmTest.dependencies {
+            implementation(project(":core:core-testing"))
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.turbine)
+            implementation(libs.ktor.client.mock)
         }
     }
 }
