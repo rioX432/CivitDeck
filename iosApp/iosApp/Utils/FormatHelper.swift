@@ -3,14 +3,21 @@ import Foundation
 // MARK: - CivitAI URL Constants
 
 enum CivitAiUrls {
-    static let baseUrl = "https://civitai.com"
+    /// Web/share link host (civitai.com / civitai.red). Reflects the user's
+    /// front-door choice; updated at startup from the shared module's
+    /// `CivitAiFrontDoor` flow. Affects model/share links ONLY.
+    static var webBaseUrl = "https://civitai.com"
+
+    /// Fixed host for downloads. NEVER changes with the front-door setting —
+    /// civitai.com and civitai.red share the same API and file host.
+    static let downloadBaseUrl = "https://civitai.com"
 
     static func modelUrl(modelId: Int64) -> String {
-        "\(baseUrl)/models/\(modelId)"
+        "\(webBaseUrl)/models/\(modelId)"
     }
 
     static func downloadUrl(versionId: Int64) -> String {
-        "\(baseUrl)/api/download/models/\(versionId)"
+        "\(downloadBaseUrl)/api/download/models/\(versionId)"
     }
 }
 

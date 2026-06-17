@@ -25,6 +25,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,10 +37,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.data.api.CivitAiUrls
+import com.riox432.civitdeck.domain.util.CivitAiFrontDoor
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Spacing
+import org.koin.compose.koinInject
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,7 +55,9 @@ fun QRCodeSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val context = LocalContext.current
-    val civitaiUrl = CivitAiUrls.modelUrl(modelId)
+    val frontDoor: CivitAiFrontDoor = koinInject()
+    val webHost by frontDoor.webHost.collectAsStateWithLifecycle()
+    val civitaiUrl = CivitAiUrls.modelUrl(modelId, webHost)
     val qrBitmap = remember(civitaiUrl) { QRCodeGenerator.generate(civitaiUrl) }
 
     ModalBottomSheet(

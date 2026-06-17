@@ -80,6 +80,11 @@ class UserPreferencesUseCasesTest {
         val nsfwBlurSettings = MutableStateFlow(NsfwBlurSettings())
         override fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings> = nsfwBlurSettings
         override suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings) { nsfwBlurSettings.value = settings }
+        val frontDoorMode = MutableStateFlow(com.riox432.civitdeck.domain.model.FrontDoorMode.Sfw)
+        override fun observeFrontDoorMode(): Flow<com.riox432.civitdeck.domain.model.FrontDoorMode> = frontDoorMode
+        override suspend fun setFrontDoorMode(mode: com.riox432.civitdeck.domain.model.FrontDoorMode) {
+            frontDoorMode.value = mode
+        }
 
         val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
         override fun observeThemeMode(): Flow<ThemeMode> = themeMode

@@ -164,6 +164,9 @@
     <string name="settings_api_key_hint">Get your key at civitai.com/user/account</string>
     <string name="settings_nsfw_content">NSFW Content</string>
     <string name="settings_nsfw_content_description">Show NSFW content in search results</string>
+    <string name="settings_section_front_door">CivitAI Site</string>
+    <string name="settings_front_door_full">Open links on civitai.red</string>
+    <string name="settings_front_door_description">Choose which CivitAI site \"Open in browser\", share, and QR links use. civitai.red shows the full catalog; civitai.com is the safe-for-work front door. This does not change the NSFW content filter above.</string>
     <string name="settings_blur_intensity">Blur Intensity</string>
     <string name="settings_blur_description">Controls blur strength for NSFW images in the Image Gallery. Tap any blurred image to reveal it temporarily.</string>
     <string name="settings_blur_soft">Soft</string>

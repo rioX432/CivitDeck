@@ -207,6 +207,10 @@ class ModelDetailViewModelTest {
         override suspend fun setNsfwBlurSettings(
             settings: com.riox432.civitdeck.domain.model.NsfwBlurSettings
         ) = error("not used")
+        override fun observeFrontDoorMode() = flowOf(com.riox432.civitdeck.domain.model.FrontDoorMode.Sfw)
+        override suspend fun setFrontDoorMode(
+            mode: com.riox432.civitdeck.domain.model.FrontDoorMode
+        ) = error("not used")
     }
 
     private class FakeCollectionRepo :

@@ -2,15 +2,18 @@ package com.riox432.civitdeck.feature.settings.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.riox432.civitdeck.domain.model.FrontDoorMode
 import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveFrontDoorModeUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
+import com.riox432.civitdeck.domain.usecase.SetFrontDoorModeUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
@@ -25,6 +28,7 @@ import kotlinx.coroutines.launch
 data class ContentFilterSettingsUiState(
     val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
     val nsfwBlurSettings: NsfwBlurSettings = NsfwBlurSettings(),
+    val frontDoorMode: FrontDoorMode = FrontDoorMode.Sfw,
     val hiddenModels: List<HiddenModel> = emptyList(),
     val excludedTags: List<String> = emptyList(),
 )
@@ -35,6 +39,8 @@ class ContentFilterSettingsViewModel(
     private val setNsfwFilterUseCase: SetNsfwFilterUseCase,
     observeNsfwBlurSettingsUseCase: ObserveNsfwBlurSettingsUseCase,
     private val setNsfwBlurSettingsUseCase: SetNsfwBlurSettingsUseCase,
+    observeFrontDoorModeUseCase: ObserveFrontDoorModeUseCase,
+    private val setFrontDoorModeUseCase: SetFrontDoorModeUseCase,
     private val getHiddenModelsUseCase: GetHiddenModelsUseCase,
     private val unhideModelUseCase: UnhideModelUseCase,
     private val getExcludedTagsUseCase: GetExcludedTagsUseCase,
@@ -47,11 +53,13 @@ class ContentFilterSettingsViewModel(
     val uiState: StateFlow<ContentFilterSettingsUiState> = combine(
         observeNsfwFilterUseCase(),
         observeNsfwBlurSettingsUseCase(),
+        observeFrontDoorModeUseCase(),
         _mutableState,
-    ) { nsfw, blur, mutable ->
+    ) { nsfw, blur, frontDoor, mutable ->
         mutable.copy(
             nsfwFilterLevel = nsfw,
             nsfwBlurSettings = blur,
+            frontDoorMode = frontDoor,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ContentFilterSettingsUiState())
 
@@ -69,6 +77,10 @@ class ContentFilterSettingsViewModel(
 
     fun onNsfwBlurSettingsChanged(settings: NsfwBlurSettings) {
         viewModelScope.launch { setNsfwBlurSettingsUseCase(settings) }
+    }
+
+    fun onFrontDoorModeChanged(mode: FrontDoorMode) {
+        viewModelScope.launch { setFrontDoorModeUseCase(mode) }
     }
 
     fun onUnhideModel(modelId: Long) {

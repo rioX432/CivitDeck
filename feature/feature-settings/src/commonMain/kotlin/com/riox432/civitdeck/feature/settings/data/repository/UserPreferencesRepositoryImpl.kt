@@ -5,6 +5,7 @@ import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
 import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity.Companion.DEFAULT_CACHE_SIZE_LIMIT_MB
 import com.riox432.civitdeck.domain.model.AccentColor
+import com.riox432.civitdeck.domain.model.FrontDoorMode
 import com.riox432.civitdeck.domain.model.NavShortcut
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
@@ -126,6 +127,17 @@ class UserPreferencesRepositoryImpl(
     override suspend fun setAmoledDarkMode(enabled: Boolean) {
         val existing = dao.getPreferences() ?: UserPreferencesEntity()
         dao.upsert(existing.copy(amoledDarkMode = enabled))
+    }
+
+    override fun observeFrontDoorMode(): Flow<FrontDoorMode> =
+        dao.observePreferences().map { entity ->
+            runCatching { FrontDoorMode.valueOf(entity?.frontDoorMode ?: "") }
+                .getOrDefault(FrontDoorMode.Sfw)
+        }
+
+    override suspend fun setFrontDoorMode(mode: FrontDoorMode) {
+        val existing = dao.getPreferences() ?: UserPreferencesEntity()
+        dao.upsert(existing.copy(frontDoorMode = mode.name))
     }
 
     override fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings> =

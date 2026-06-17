@@ -76,6 +76,8 @@ internal fun LazyListScope.contentFilterItems(
             )
         }
     }
+    item { SectionHeader(stringResource(R.string.settings_section_front_door)) }
+    item { FrontDoorRow(state.frontDoorMode, viewModel::onFrontDoorModeChanged) }
     item { SectionHeader(stringResource(R.string.settings_section_defaults)) }
     item { SortOrderRow(displayState.defaultSortOrder, displayViewModel::onSortOrderChanged) }
     item { TimePeriodRow(displayState.defaultTimePeriod, displayViewModel::onTimePeriodChanged) }

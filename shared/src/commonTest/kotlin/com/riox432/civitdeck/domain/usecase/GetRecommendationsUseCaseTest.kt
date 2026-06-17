@@ -106,6 +106,10 @@ class GetRecommendationsUseCaseTest {
         override suspend fun setNsfwFilterLevel(level: NsfwFilterLevel) = error("not used")
         override fun observeNsfwBlurSettings(): Flow<NsfwBlurSettings> = error("not used")
         override suspend fun setNsfwBlurSettings(settings: NsfwBlurSettings) = error("not used")
+        override fun observeFrontDoorMode() = error("not used")
+        override suspend fun setFrontDoorMode(
+            mode: com.riox432.civitdeck.domain.model.FrontDoorMode,
+        ) = error("not used")
     }
 
     private class FakeAppBehaviorRepository(
