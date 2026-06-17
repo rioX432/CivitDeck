@@ -378,6 +378,18 @@ typealias AppBehaviorSettingsUiState = Feature_settingsAppBehaviorSettingsUiStat
 typealias BackupViewModel = Feature_settingsBackupViewModel
 typealias BackupUiState = Feature_settingsBackupUiState
 
+// MARK: - Connection onboarding (feature-comfyui)
+typealias ConnectionOnboardingViewModel = Feature_comfyuiConnectionOnboardingViewModel
+typealias OnboardingUiState = Feature_comfyuiOnboardingUiState
+typealias OnboardingStep = Feature_comfyuiOnboardingStep
+typealias OnboardingStepChooseMethod = Feature_comfyuiOnboardingStepChooseMethod
+typealias OnboardingStepScanning = Feature_comfyuiOnboardingStepScanning
+typealias OnboardingStepTesting = Feature_comfyuiOnboardingStepTesting
+typealias OnboardingStepSuccess = Feature_comfyuiOnboardingStepSuccess
+typealias OnboardingStepFailure = Feature_comfyuiOnboardingStepFailure
+typealias ConnectionFailureCause = Core_domainConnectionFailureCause
+typealias SystemStats = Core_domainSystemStats
+
 // MARK: - ComfyHub VMs (moved from shared to feature-comfyui)
 typealias ComfyHubBrowserViewModel = Feature_comfyuiComfyHubBrowserViewModel
 typealias ComfyHubBrowserUiState = Feature_comfyuiComfyHubBrowserUiState

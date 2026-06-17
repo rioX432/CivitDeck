@@ -30,6 +30,8 @@ data class CompareRoute(val leftModelId: Long, val rightModelId: Long)
 
 data object ComfyUISettingsRoute
 
+data object ConnectionOnboardingRoute
+
 data object ComfyUIGenerationRoute
 
 data object ComfyUIQueueRoute

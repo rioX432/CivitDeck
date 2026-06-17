@@ -7,6 +7,11 @@ struct ComfyUISettingsView: View {
 
     var body: some View {
         List {
+            Section {
+                NavigationLink(destination: ConnectionOnboardingView()) {
+                    Label("Guided setup", systemImage: "wand.and.stars")
+                }
+            }
             statusSection
             if let stats = viewModel.systemStats {
                 serverHardwareSection(stats)
