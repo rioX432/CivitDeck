@@ -161,4 +161,6 @@ private class FakeExternalServerImagesRepository(
         error("Not implemented")
     override suspend fun getGenerationStatus(jobId: String): GenerationJob =
         error("Not implemented")
+    override suspend fun deleteImage(cloudKey: String) = Unit
+    override suspend fun deleteImages(cloudKeys: List<String>) = Unit
 }

@@ -63,7 +63,23 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Test, Lint & Build
-        run: ./gradlew :shared:testDebugUnitTest detekt :androidApp:assembleDebug
+        # Feature/core ViewModel tests run via testDebugUnitTest (Android target);
+        # comfyui runs via jvmTest because its use-case tests need android.util.Log
+        # unmocked and ComfyUISettingsViewModelTest needs the parameterless JVM
+        # GenerationNotificationService actual (the Android actual requires a Context).
+        run: >-
+          ./gradlew
+          :shared:testDebugUnitTest
+          :core:core-database:testDebugUnitTest
+          :feature:feature-search:testDebugUnitTest
+          :feature:feature-detail:testDebugUnitTest
+          :feature:feature-gallery:testDebugUnitTest
+          :feature:feature-prompts:testDebugUnitTest
+          :feature:feature-creator:testDebugUnitTest
+          :feature:feature-externalserver:testDebugUnitTest
+          :feature:feature-comfyui:jvmTest
+          detekt
+          :androidApp:assembleDebug
 
   ios:
     name: iOS Build

@@ -7,6 +7,12 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.androidx.lifecycle.viewmodel)
         }
+        commonTest.dependencies {
+            implementation(project(":core:core-testing"))
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.turbine)
+        }
     }
 }
 
