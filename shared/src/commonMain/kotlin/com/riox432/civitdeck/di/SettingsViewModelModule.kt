@@ -14,8 +14,8 @@ import com.riox432.civitdeck.domain.usecase.ObserveApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCustomNavShortcutsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
-import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNetworkStatusUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
@@ -33,8 +33,8 @@ import com.riox432.civitdeck.domain.usecase.SetApiKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetCacheSizeLimitUseCase
 import com.riox432.civitdeck.domain.usecase.SetCustomNavShortcutsUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultSortOrderUseCase
-import com.riox432.civitdeck.domain.usecase.SetGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetDefaultTimePeriodUseCase
+import com.riox432.civitdeck.domain.usecase.SetGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetGridColumnsUseCase
 import com.riox432.civitdeck.domain.usecase.SetNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwBlurSettingsUseCase

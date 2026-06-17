@@ -123,6 +123,8 @@ class GetRecommendationsUseCaseTest {
         override suspend fun setCustomNavShortcuts(items: List<NavShortcut>) = Unit
         override fun observeFeedQualityThreshold(): Flow<Int> = flowOf(qualityThreshold)
         override suspend fun setFeedQualityThreshold(threshold: Int) = Unit
+        override fun observeGenerationNotificationsEnabled(): Flow<Boolean> = flowOf(false)
+        override suspend fun setGenerationNotificationsEnabled(enabled: Boolean) = Unit
     }
 
     @Test

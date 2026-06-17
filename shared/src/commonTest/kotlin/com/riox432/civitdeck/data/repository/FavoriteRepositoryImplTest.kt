@@ -5,6 +5,7 @@ import com.riox432.civitdeck.data.local.dao.CollectionWithCount
 import com.riox432.civitdeck.data.local.dao.TypeCount
 import com.riox432.civitdeck.data.local.entity.CollectionEntity
 import com.riox432.civitdeck.data.local.entity.CollectionModelEntity
+import com.riox432.civitdeck.data.local.repository.FavoriteRepositoryImpl
 import com.riox432.civitdeck.testModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

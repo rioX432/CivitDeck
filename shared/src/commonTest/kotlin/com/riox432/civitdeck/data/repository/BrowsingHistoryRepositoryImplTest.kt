@@ -4,6 +4,7 @@ import com.riox432.civitdeck.data.local.dao.BrowsingHistoryDao
 import com.riox432.civitdeck.data.local.dao.DayCount
 import com.riox432.civitdeck.data.local.dao.NameCount
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
+import com.riox432.civitdeck.data.local.repository.BrowsingHistoryRepositoryImpl
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest

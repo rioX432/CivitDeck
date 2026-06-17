@@ -67,6 +67,7 @@ class ExtractWorkflowParametersUseCase(
         }
     }
 
+    @Suppress("ReturnCount")
     private fun extractAppModeInput(
         input: AppModeInput,
         workflow: JsonObject,
@@ -320,12 +321,18 @@ class ExtractWorkflowParametersUseCase(
         )
 
         private val KNOWN_IMAGE_PARAMS = setOf(
-            "image", "input_image", "source_image", "mask",
+            "image",
+            "input_image",
+            "source_image",
+            "mask",
         )
 
         private val KNOWN_BOOLEAN_PARAMS = setOf(
-            "add_noise", "return_with_leftover_noise", "tiling",
-            "disable_noise", "force_inpaint",
+            "add_noise",
+            "return_with_leftover_noise",
+            "tiling",
+            "disable_noise",
+            "force_inpaint",
         )
     }
 }

@@ -57,6 +57,7 @@ data class ModelDetailUiState(
     val fileVramCompatibility: Map<Long, VramCompatibility> = emptyMap(),
 ) : UiLoadingState
 
+@Suppress("TooManyFunctions")
 class ModelDetailViewModel(
     private val modelId: Long,
     private val modelUseCases: ModelUseCases,

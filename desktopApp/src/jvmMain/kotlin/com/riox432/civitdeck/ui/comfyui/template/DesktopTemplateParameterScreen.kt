@@ -145,7 +145,7 @@ private fun ParameterInput(
                 TemplateVariableType.SELECT -> SelectInput(variable, value, onValueChange)
                 TemplateVariableType.NUMBER -> NumberInput(variable, value, onValueChange)
                 TemplateVariableType.BOOLEAN -> BooleanInput(variable, value, onValueChange)
-                TemplateVariableType.SEED -> SeedInput(variable, value, onValueChange)
+                TemplateVariableType.SEED -> SeedInput(value, onValueChange)
                 TemplateVariableType.TEXT, TemplateVariableType.IMAGE -> {
                     TextInput(variable, value, onValueChange)
                 }
@@ -278,7 +278,6 @@ private fun BooleanInput(
 
 @Composable
 private fun SeedInput(
-    variable: TemplateVariable,
     value: String,
     onValueChange: (String) -> Unit,
 ) {

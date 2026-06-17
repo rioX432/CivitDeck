@@ -405,7 +405,6 @@ typealias AnalyticsUiState = Feature_galleryAnalyticsUiState
 typealias NotificationCenterViewModel = Feature_galleryNotificationCenterViewModel
 typealias NotificationCenterUiState = Feature_galleryNotificationCenterUiState
 
-
 // MARK: - Creator VMs (moved from shared to feature-creator)
 typealias FeedViewModel = Feature_creatorFeedViewModel
 typealias FeedUiState = Feature_creatorFeedUiState

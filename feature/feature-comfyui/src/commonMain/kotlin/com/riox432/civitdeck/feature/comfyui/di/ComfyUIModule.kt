@@ -35,9 +35,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteWorkflowTempla
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DisconnectCivitaiLinkUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExportWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExtractWorkflowParametersUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.ParseAppModeMetadataUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSystemStatsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryItemUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
@@ -46,6 +44,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchObjectInfoUseCa
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIModelsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUISamplersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIVaesUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSystemStatsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FindMatchingLocalModelUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.GenerateSDWebUIImageUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.GetComfyHubWorkflowDetailUseCase
@@ -64,6 +63,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIConnec
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIQueueUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveSDWebUIConnectionsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ParseAppModeMetadataUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PopulateGenerationFromModelUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
@@ -77,9 +77,6 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectio
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.UploadMaskUseCase
 import com.riox432.civitdeck.feature.comfyui.plugin.ComfyUIWorkflowPlugin
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
@@ -90,6 +87,9 @@ import com.riox432.civitdeck.feature.comfyui.presentation.MaskEditorViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel

@@ -251,4 +251,3 @@ object VramColors {
     val offloadDarkBackground = Color(0xFF7F1D1D)
     val offloadDarkContent = Color(0xFFFECACA)
 }
-
