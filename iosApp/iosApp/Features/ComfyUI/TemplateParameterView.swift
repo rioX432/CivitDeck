@@ -76,7 +76,7 @@ struct TemplateParameterView: View {
                 selectInput(variable: variable)
             case .number:
                 numberInput(variable: variable)
-            case .boolean_:
+            case .boolean:
                 booleanInput(variable: variable)
             case .seed:
                 seedInput(variable: variable)

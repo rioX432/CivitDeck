@@ -90,7 +90,9 @@ struct WorkflowTemplateEditorView: View {
                         isBuiltIn: false,
                         version: initialTemplate.version,
                         author: initialTemplate.author,
-                        createdAt: initialTemplate.createdAt
+                        createdAt: initialTemplate.createdAt,
+                        isAppMode: initialTemplate.isAppMode,
+                        rawWorkflowJson: initialTemplate.rawWorkflowJson
                     )
                     viewModel.onSaveTemplate(updated)
                     dismiss()

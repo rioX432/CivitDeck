@@ -34,7 +34,7 @@ final class PluginListViewModelOwner: ObservableObject {
         vm.isPluginActive(plugin: plugin)
     }
 
-    func typeLabel(for type: InstalledPluginType) -> String {
+    nonisolated func typeLabel(for type: InstalledPluginType) -> String {
         switch type {
         case .workflowEngine: return "Workflow"
         case .exportFormat: return "Export"

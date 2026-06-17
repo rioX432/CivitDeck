@@ -79,7 +79,6 @@ typealias SDWebUIGenerationProgressGenerating = Core_domainSDWebUIGenerationProg
 typealias SDWebUIGenerationProgressCompleted = Core_domainSDWebUIGenerationProgress.Completed
 typealias SDWebUIGenerationProgressError = Core_domainSDWebUIGenerationProgress.Error
 typealias SortOrder = Core_domainSortOrder
-typealias Tag = Core_domainTag
 typealias TimePeriod = Core_domainTimePeriod
 
 // MARK: - Core Domain Use Cases
@@ -235,6 +234,12 @@ typealias ThemePlugin = Core_pluginThemePlugin
 typealias ThemeColorScheme = Core_pluginThemeColorScheme
 typealias PluginState = Core_pluginPluginState
 typealias PluginManifest = Core_pluginPluginManifest
+
+// Theme plugin use cases (package com.riox432.civitdeck.plugin.usecase → core-plugin module)
+typealias GetActiveThemeUseCase = Core_pluginGetActiveThemeUseCase
+typealias ObserveThemePluginsUseCase = Core_pluginObserveThemePluginsUseCase
+typealias ActivateThemePluginUseCase = Core_pluginActivateThemePluginUseCase
+typealias ImportThemeUseCase = Core_pluginImportThemeUseCase
 
 typealias ReviewSortOrder = Core_domainReviewSortOrder
 typealias VramCompatibility = Core_domainVramCompatibility
