@@ -28,6 +28,8 @@ jobs:
           filters: |
             shared:
               - 'shared/**'
+              - 'core/**'
+              - 'feature/**'
               - 'build.gradle.kts'
               - 'settings.gradle.kts'
               - 'gradle.properties'
@@ -71,6 +73,7 @@ jobs:
           ./gradlew
           :shared:testDebugUnitTest
           :core:core-database:testDebugUnitTest
+          :core:core-data:testDebugUnitTest
           :feature:feature-search:testDebugUnitTest
           :feature:feature-detail:testDebugUnitTest
           :feature:feature-gallery:testDebugUnitTest

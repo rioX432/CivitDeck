@@ -1,23 +1,26 @@
 plugins {
     id("civitdeck.kmp.library")
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.androidx.room)
-    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":core:core-domain"))
-            api(libs.room.runtime)
-            api(libs.sqlite.bundled)
+            implementation(project(":core:core-network"))
+            implementation(project(":core:core-database"))
             implementation(libs.koin.core)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.ktor.client.core)
         }
 
         commonTest.dependencies {
+            implementation(project(":core:core-testing"))
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.turbine)
+            implementation(libs.ktor.client.mock)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
         }
 
         jvmTest.dependencies {
@@ -27,16 +30,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.riox432.civitdeck.core.database"
-}
-
-dependencies {
-    add("kspAndroid", libs.room.compiler)
-    add("kspJvm", libs.room.compiler)
-    add("kspIosArm64", libs.room.compiler)
-    add("kspIosSimulatorArm64", libs.room.compiler)
-}
-
-room {
-    schemaDirectory("$projectDir/schemas")
+    namespace = "com.riox432.civitdeck.core.data"
 }

@@ -25,6 +25,7 @@ val sharedModules: List<Module>
         platformModule,
         networkModule,
         databaseModule,
+        coreDataModule,
         dataModule,
         domainModule,
         settingsModule,
