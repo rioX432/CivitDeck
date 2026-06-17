@@ -60,6 +60,12 @@ class UserPreferencesUseCasesTest {
         override fun observeNotificationsEnabled(): Flow<Boolean> = notificationsEnabled
         override suspend fun setNotificationsEnabled(enabled: Boolean) { notificationsEnabled.value = enabled }
 
+        val generationNotificationsEnabled = MutableStateFlow(false)
+        override fun observeGenerationNotificationsEnabled(): Flow<Boolean> = generationNotificationsEnabled
+        override suspend fun setGenerationNotificationsEnabled(enabled: Boolean) {
+            generationNotificationsEnabled.value = enabled
+        }
+
         val pollingInterval = MutableStateFlow(PollingInterval.Off)
         override fun observePollingInterval(): Flow<PollingInterval> = pollingInterval
         override suspend fun setPollingInterval(interval: PollingInterval) { pollingInterval.value = interval }

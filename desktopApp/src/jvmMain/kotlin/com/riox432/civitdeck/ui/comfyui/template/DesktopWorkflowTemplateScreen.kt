@@ -10,11 +10,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -48,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
 import com.riox432.civitdeck.domain.model.WorkflowTemplateCategory
 import com.riox432.civitdeck.domain.model.WorkflowTemplateType
@@ -319,69 +319,83 @@ private fun TemplateCard(
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-                    ) {
-                        Text(template.name, style = MaterialTheme.typography.titleSmall)
-                        if (template.isAppMode) {
-                            Text(
-                                text = "APP",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier
-                                    .background(
-                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                        shape = RoundedCornerShape(Spacing.xs),
-                                    )
-                                    .padding(horizontal = Spacing.xs, vertical = 2.dp),
-                            )
-                        }
-                    }
-                    if (template.description.isNotBlank()) {
-                        Text(
-                            template.description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2,
+                TemplateCardInfo(template, modifier = Modifier.weight(1f))
+                TemplateCardActions(onEdit = onEdit, onDelete = onDelete, onExport = onExport)
+            }
+        }
+    }
+}
+
+@Composable
+private fun TemplateCardInfo(template: WorkflowTemplate, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            Text(template.name, style = MaterialTheme.typography.titleSmall)
+            if (template.isAppMode) {
+                Text(
+                    text = "APP",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(Spacing.xs),
                         )
-                    }
-                    Text(
-                        buildString {
-                            append(typeLabel(template.type))
-                            if (template.isBuiltIn) append(" \u2022 Built-in")
-                            append(" \u2022 ${categoryLabel(template.category)}")
-                            if (template.version > 1) append(" \u2022 v${template.version}")
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    if (template.variables.isNotEmpty()) {
-                        Text(
-                            "${template.variables.size} parameters",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                Row {
-                    IconButton(onClick = onExport) {
-                        Icon(Icons.Default.ContentCopy, "Export template")
-                    }
-                    onEdit?.let {
-                        IconButton(onClick = it) { Icon(Icons.Default.Edit, "Edit") }
-                    }
-                    onDelete?.let {
-                        IconButton(onClick = it) {
-                            Icon(
-                                Icons.Default.Delete,
-                                "Delete",
-                                tint = MaterialTheme.colorScheme.error,
-                            )
-                        }
-                    }
-                }
+                        .padding(horizontal = Spacing.xs, vertical = 2.dp),
+                )
+            }
+        }
+        if (template.description.isNotBlank()) {
+            Text(
+                template.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+            )
+        }
+        Text(
+            buildString {
+                append(typeLabel(template.type))
+                if (template.isBuiltIn) append(" \u2022 Built-in")
+                append(" \u2022 ${categoryLabel(template.category)}")
+                if (template.version > 1) append(" \u2022 v${template.version}")
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (template.variables.isNotEmpty()) {
+            Text(
+                "${template.variables.size} parameters",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TemplateCardActions(
+    onEdit: (() -> Unit)?,
+    onDelete: (() -> Unit)?,
+    onExport: () -> Unit,
+) {
+    Row {
+        IconButton(onClick = onExport) {
+            Icon(Icons.Default.ContentCopy, "Export template")
+        }
+        onEdit?.let {
+            IconButton(onClick = it) { Icon(Icons.Default.Edit, "Edit") }
+        }
+        onDelete?.let {
+            IconButton(onClick = it) {
+                Icon(
+                    Icons.Default.Delete,
+                    "Delete",
+                    tint = MaterialTheme.colorScheme.error,
+                )
             }
         }
     }

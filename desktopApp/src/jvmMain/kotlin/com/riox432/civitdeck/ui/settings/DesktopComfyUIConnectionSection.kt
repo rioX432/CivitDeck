@@ -32,12 +32,6 @@ import com.riox432.civitdeck.ui.theme.Spacing
 @Composable
 fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
     val state by viewModel.uiState.collectAsState()
-    var nameInput by remember { mutableStateOf("") }
-    var hostInput by remember { mutableStateOf("127.0.0.1") }
-    var portInput by remember { mutableStateOf(ComfyUIConnection.DEFAULT_COMFYUI_PORT.toString()) }
-    var useHttpsInput by remember { mutableStateOf(false) }
-    var ntfyServerUrlInput by remember { mutableStateOf("") }
-    var ntfyTopicInput by remember { mutableStateOf("") }
 
     SettingsCard(title = "ComfyUI Server") {
         ConnectionStatusBadge(
@@ -71,30 +65,42 @@ fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
             onActivate = { viewModel.onActivateConnection(it) },
             onDelete = { viewModel.onDeleteConnection(it) },
         )
-        AddConnectionForm(
-            nameInput = nameInput,
-            hostInput = hostInput,
-            portInput = portInput,
-            useHttpsInput = useHttpsInput,
-            ntfyServerUrlInput = ntfyServerUrlInput,
-            ntfyTopicInput = ntfyTopicInput,
-            onNameChanged = { nameInput = it },
-            onHostChanged = { hostInput = it },
-            onPortChanged = { portInput = it },
-            onHttpsChanged = { useHttpsInput = it },
-            onNtfyServerUrlChanged = { ntfyServerUrlInput = it },
-            onNtfyTopicChanged = { ntfyTopicInput = it },
-            onSave = { name, host, port, https, ntfyUrl, ntfyTopic ->
-                viewModel.onSaveConnection(name, host, port, https, false, ntfyUrl, ntfyTopic)
-                nameInput = ""
-                hostInput = "127.0.0.1"
-                portInput = ComfyUIConnection.DEFAULT_COMFYUI_PORT.toString()
-                useHttpsInput = false
-                ntfyServerUrlInput = ""
-                ntfyTopicInput = ""
-            },
-        )
+        AddConnectionFormSection(viewModel)
     }
+}
+
+@Composable
+private fun AddConnectionFormSection(viewModel: ComfyUISettingsViewModel) {
+    var nameInput by remember { mutableStateOf("") }
+    var hostInput by remember { mutableStateOf("127.0.0.1") }
+    var portInput by remember { mutableStateOf(ComfyUIConnection.DEFAULT_COMFYUI_PORT.toString()) }
+    var useHttpsInput by remember { mutableStateOf(false) }
+    var ntfyServerUrlInput by remember { mutableStateOf("") }
+    var ntfyTopicInput by remember { mutableStateOf("") }
+
+    AddConnectionForm(
+        nameInput = nameInput,
+        hostInput = hostInput,
+        portInput = portInput,
+        useHttpsInput = useHttpsInput,
+        ntfyServerUrlInput = ntfyServerUrlInput,
+        ntfyTopicInput = ntfyTopicInput,
+        onNameChanged = { nameInput = it },
+        onHostChanged = { hostInput = it },
+        onPortChanged = { portInput = it },
+        onHttpsChanged = { useHttpsInput = it },
+        onNtfyServerUrlChanged = { ntfyServerUrlInput = it },
+        onNtfyTopicChanged = { ntfyTopicInput = it },
+        onSave = { name, host, port, https, ntfyUrl, ntfyTopic ->
+            viewModel.onSaveConnection(name, host, port, https, false, ntfyUrl, ntfyTopic)
+            nameInput = ""
+            hostInput = "127.0.0.1"
+            portInput = ComfyUIConnection.DEFAULT_COMFYUI_PORT.toString()
+            useHttpsInput = false
+            ntfyServerUrlInput = ""
+            ntfyTopicInput = ""
+        },
+    )
 }
 
 @Composable
@@ -349,6 +355,58 @@ private fun AddConnectionForm(
 ) {
     Spacer(modifier = Modifier.height(Spacing.sm))
     Text("Add Connection:", style = MaterialTheme.typography.labelMedium)
+    ConnectionInputFields(
+        nameInput = nameInput,
+        hostInput = hostInput,
+        portInput = portInput,
+        onNameChanged = onNameChanged,
+        onHostChanged = onHostChanged,
+        onPortChanged = onPortChanged,
+    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        androidx.compose.material3.Checkbox(
+            checked = useHttpsInput,
+            onCheckedChange = onHttpsChanged,
+        )
+        Text("Use HTTPS", style = MaterialTheme.typography.bodySmall)
+    }
+    DesktopNtfyFormFields(
+        ntfyServerUrlInput = ntfyServerUrlInput,
+        ntfyTopicInput = ntfyTopicInput,
+        onNtfyServerUrlChanged = onNtfyServerUrlChanged,
+        onNtfyTopicChanged = onNtfyTopicChanged,
+    )
+    Spacer(modifier = Modifier.height(Spacing.sm))
+    Button(
+        onClick = {
+            val port = portInput.toIntOrNull() ?: return@Button
+            onSave(
+                nameInput,
+                hostInput,
+                port,
+                useHttpsInput,
+                ntfyServerUrlInput.ifBlank { null },
+                ntfyTopicInput.ifBlank { null },
+            )
+        },
+        enabled = nameInput.isNotBlank() && hostInput.isNotBlank(),
+    ) {
+        Text("Save Connection")
+    }
+}
+
+@Composable
+private fun ConnectionInputFields(
+    nameInput: String,
+    hostInput: String,
+    portInput: String,
+    onNameChanged: (String) -> Unit,
+    onHostChanged: (String) -> Unit,
+    onPortChanged: (String) -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
@@ -374,36 +432,6 @@ private fun AddConnectionForm(
             singleLine = true,
             modifier = Modifier.width(Spacing.xxl * 3),
         )
-    }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-    ) {
-        androidx.compose.material3.Checkbox(
-            checked = useHttpsInput,
-            onCheckedChange = onHttpsChanged,
-        )
-        Text("Use HTTPS", style = MaterialTheme.typography.bodySmall)
-    }
-    DesktopNtfyFormFields(
-        ntfyServerUrlInput = ntfyServerUrlInput,
-        ntfyTopicInput = ntfyTopicInput,
-        onNtfyServerUrlChanged = onNtfyServerUrlChanged,
-        onNtfyTopicChanged = onNtfyTopicChanged,
-    )
-    Spacer(modifier = Modifier.height(Spacing.sm))
-    Button(
-        onClick = {
-            val port = portInput.toIntOrNull() ?: return@Button
-            onSave(
-                nameInput, hostInput, port, useHttpsInput,
-                ntfyServerUrlInput.ifBlank { null },
-                ntfyTopicInput.ifBlank { null },
-            )
-        },
-        enabled = nameInput.isNotBlank() && hostInput.isNotBlank(),
-    ) {
-        Text("Save Connection")
     }
 }
 

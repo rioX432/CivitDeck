@@ -106,6 +106,7 @@ class NtfySubscriptionService(
         }
     }
 
+    @Suppress("LoopWithTooManyJumpStatements")
     private suspend fun connectAndListen(serverUrl: String, topic: String) {
         val url = "${serverUrl.trimEnd('/')}/$topic/json"
         Logger.d(TAG, "Connecting to $url")
