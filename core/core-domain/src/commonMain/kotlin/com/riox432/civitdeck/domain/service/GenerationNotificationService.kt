@@ -5,7 +5,7 @@ package com.riox432.civitdeck.domain.service
  * Fires heads-up / banner notifications when generation completes or fails
  * while the app is in the background.
  */
-expect class GenerationNotificationService {
+interface GenerationNotificationService {
     /**
      * Show a "generation complete" local notification.
      *

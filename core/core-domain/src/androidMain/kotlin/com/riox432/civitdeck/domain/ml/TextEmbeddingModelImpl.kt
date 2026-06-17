@@ -6,7 +6,6 @@ import ai.onnxruntime.OrtSession
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.koin.mp.KoinPlatform
 import java.nio.LongBuffer
 import kotlin.math.sqrt
 
@@ -26,19 +25,16 @@ import kotlin.math.sqrt
  * The text embeddings live in the same 768-d vector space as image embeddings
  * from [ImageEmbeddingModel], enabling cross-modal similarity search.
  */
-actual class TextEmbeddingModel actual constructor() {
-
-    private val context: Context? by lazy {
-        runCatching { KoinPlatform.getKoin().get<Context>() }.getOrNull()
-    }
+class TextEmbeddingModelImpl(
+    private val context: Context,
+) : TextEmbeddingModel {
 
     private val ortEnv: OrtEnvironment by lazy { OrtEnvironment.getEnvironment() }
 
     @Suppress("TooGenericExceptionCaught", "SwallowedException")
     private val session: OrtSession? by lazy {
-        val ctx = context ?: return@lazy null
         try {
-            val bytes = ctx.assets.open(MODEL_ASSET_PATH).use { it.readBytes() }
+            val bytes = context.assets.open(MODEL_ASSET_PATH).use { it.readBytes() }
             ortEnv.createSession(bytes)
         } catch (_: java.io.IOException) {
             null
@@ -48,16 +44,15 @@ actual class TextEmbeddingModel actual constructor() {
     }
 
     private val tokenizer: SigLipTokenizer? by lazy {
-        val ctx = context ?: return@lazy null
-        SigLipTokenizer.load(ctx)
+        SigLipTokenizer.load(context)
     }
 
-    actual val isAvailable: Boolean
+    override val isAvailable: Boolean
         get() = session != null && tokenizer != null
 
-    actual val embeddingModelId: String = EMBEDDING_MODEL_ID
+    override val embeddingModelId: String = EMBEDDING_MODEL_ID
 
-    actual suspend fun embed(text: String): FloatArray {
+    override suspend fun embed(text: String): FloatArray {
         val ortSession = session
             ?: throw NotImplementedError(
                 "SigLIP-2 text ONNX model not available — " +

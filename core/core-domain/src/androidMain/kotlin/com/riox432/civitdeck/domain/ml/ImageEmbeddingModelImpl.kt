@@ -8,7 +8,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.koin.mp.KoinPlatform
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.sqrt
@@ -30,11 +29,9 @@ import kotlin.math.sqrt
  * - NCHW float32 layout
  * - Output L2-normalized 768-d vector
  */
-actual class ImageEmbeddingModel actual constructor() {
-
-    private val context: Context? by lazy {
-        runCatching { KoinPlatform.getKoin().get<Context>() }.getOrNull()
-    }
+class ImageEmbeddingModelImpl(
+    private val context: Context,
+) : ImageEmbeddingModel {
 
     /**
      * ONNX Runtime environment, shared across sessions. Calling
@@ -48,9 +45,8 @@ actual class ImageEmbeddingModel actual constructor() {
      */
     @Suppress("TooGenericExceptionCaught", "SwallowedException")
     private val session: OrtSession? by lazy {
-        val ctx = context ?: return@lazy null
         try {
-            val bytes = ctx.assets.open(ASSET_PATH).use { it.readBytes() }
+            val bytes = context.assets.open(ASSET_PATH).use { it.readBytes() }
             ortEnv.createSession(bytes)
         } catch (_: java.io.IOException) {
             null
@@ -59,10 +55,10 @@ actual class ImageEmbeddingModel actual constructor() {
         }
     }
 
-    actual val isAvailable: Boolean
+    override val isAvailable: Boolean
         get() = session != null
 
-    actual suspend fun embed(imageBytes: ByteArray): FloatArray {
+    override suspend fun embed(imageBytes: ByteArray): FloatArray {
         val ortSession = session
             ?: throw NotImplementedError(
                 "SigLIP-2 ONNX model not available — asset missing or load failed",

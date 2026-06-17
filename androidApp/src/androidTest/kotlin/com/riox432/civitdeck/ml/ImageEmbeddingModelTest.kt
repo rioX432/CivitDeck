@@ -5,20 +5,15 @@ import android.graphics.Color
 import android.os.Environment
 import androidx.test.platform.app.InstrumentationRegistry
 import com.riox432.civitdeck.domain.ml.ImageEmbeddingModel
+import com.riox432.civitdeck.domain.ml.ImageEmbeddingModelImpl
 import kotlinx.coroutines.test.runTest
 import org.junit.Assume.assumeTrue
-import org.koin.android.ext.koin.androidContext
-import org.koin.core.context.GlobalContext
-import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.abs
 import kotlin.math.sqrt
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -33,28 +28,18 @@ import kotlin.test.assertTrue
  */
 class ImageEmbeddingModelTest {
 
-    @BeforeTest
-    fun setUp() {
-        if (GlobalContext.getOrNull() == null) {
-            val ctx = InstrumentationRegistry.getInstrumentation().targetContext
-            startKoin { androidContext(ctx) }
-        }
-    }
-
-    @AfterTest
-    fun tearDown() {
-        runCatching { stopKoin() }
-    }
+    private fun createModel(): ImageEmbeddingModel =
+        ImageEmbeddingModelImpl(InstrumentationRegistry.getInstrumentation().targetContext)
 
     @Test
     fun modelIsAvailable() {
-        val model = ImageEmbeddingModel()
+        val model = createModel()
         assertTrue(model.isAvailable, "ONNX model should load from assets")
     }
 
     @Test
     fun embedReturns768dVector() = runTest {
-        val model = ImageEmbeddingModel()
+        val model = createModel()
         val imageBytes = createTestImage()
         val embedding = model.embed(imageBytes)
         assertTrue(
@@ -65,7 +50,7 @@ class ImageEmbeddingModelTest {
 
     @Test
     fun embeddingIsL2Normalized() = runTest {
-        val model = ImageEmbeddingModel()
+        val model = createModel()
         val embedding = model.embed(createTestImage())
         val norm = sqrt(embedding.fold(0.0f) { acc, v -> acc + v * v })
         assertTrue(
@@ -76,7 +61,7 @@ class ImageEmbeddingModelTest {
 
     @Test
     fun determinism_sameInputProducesSameEmbedding() = runTest {
-        val model = ImageEmbeddingModel()
+        val model = createModel()
         val imageBytes = createTestImage()
         val first = model.embed(imageBytes)
         val second = model.embed(imageBytes)
@@ -116,7 +101,7 @@ class ImageEmbeddingModelTest {
             "Reference has ${reference.size} dims, expected $EMBEDDING_DIM",
         )
 
-        val model = ImageEmbeddingModel()
+        val model = createModel()
         val embedding = model.embed(createTestImage())
         val similarity = cosineSimilarity(embedding, reference)
         assertTrue(
@@ -138,7 +123,7 @@ class ImageEmbeddingModelTest {
      */
     @Test
     fun generateReferenceEmbedding() = runTest {
-        val model = ImageEmbeddingModel()
+        val model = createModel()
         val embedding = model.embed(createTestImage())
         val bytes = floatArrayToBytes(embedding)
         val outDir = Environment.getExternalStoragePublicDirectory(

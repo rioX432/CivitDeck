@@ -8,13 +8,13 @@ package com.riox432.civitdeck.domain.ml
  * (`com.microsoft.onnxruntime:onnxruntime`) that can load the same INT8 model and
  * tokenizer used by the Android implementation.
  */
-actual class TextEmbeddingModel actual constructor() {
+class TextEmbeddingModelImpl : TextEmbeddingModel {
 
-    actual val isAvailable: Boolean = false
+    override val isAvailable: Boolean = false
 
-    actual val embeddingModelId: String = "siglip2-base-p16-224"
+    override val embeddingModelId: String = "siglip2-base-p16-224"
 
-    actual suspend fun embed(text: String): FloatArray {
+    override suspend fun embed(text: String): FloatArray {
         throw NotImplementedError("Desktop has no on-device text embedding model")
     }
 }

@@ -17,13 +17,13 @@ import kotlin.coroutines.resume
  * The repository / use cases short-circuit on `isAvailable`, so the rest of the system
  * keeps working.
  */
-actual class ImageEmbeddingModel actual constructor() {
+class ImageEmbeddingModelImpl : ImageEmbeddingModel {
 
-    actual val isAvailable: Boolean
+    override val isAvailable: Boolean
         get() = sigLIP2Bridge?.isAvailable == true
 
     @Suppress("ThrowsCount")
-    actual suspend fun embed(imageBytes: ByteArray): FloatArray {
+    override suspend fun embed(imageBytes: ByteArray): FloatArray {
         val bridge = sigLIP2Bridge
             ?: throw NotImplementedError(
                 "SigLIP2Bridge not registered — call registerSigLIP2Bridge from Swift",

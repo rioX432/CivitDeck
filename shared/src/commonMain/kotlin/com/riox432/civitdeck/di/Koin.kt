@@ -30,6 +30,7 @@ val sharedModules: List<Module>
         coreDataModule,
         dataModule,
         comfyuiPlatformModule,
+        domainPlatformModule,
         domainModule,
         settingsModule,
         settingsViewModelModule,

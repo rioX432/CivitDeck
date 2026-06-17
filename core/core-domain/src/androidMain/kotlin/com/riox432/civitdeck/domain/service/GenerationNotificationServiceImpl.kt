@@ -11,15 +11,15 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 
-actual class GenerationNotificationService(
+class GenerationNotificationServiceImpl(
     private val context: Context,
-) {
+) : GenerationNotificationService {
 
     init {
         ensureChannel()
     }
 
-    actual fun notifyGenerationComplete(promptId: String, imageCount: Int, elapsedMs: Long) {
+    override fun notifyGenerationComplete(promptId: String, imageCount: Int, elapsedMs: Long) {
         if (!hasNotificationPermission()) return
 
         val elapsedSec = elapsedMs / MILLIS_PER_SECOND
@@ -42,7 +42,7 @@ actual class GenerationNotificationService(
             .notify(promptId.hashCode(), notification)
     }
 
-    actual fun notifyGenerationError(promptId: String, errorMessage: String) {
+    override fun notifyGenerationError(promptId: String, errorMessage: String) {
         if (!hasNotificationPermission()) return
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
