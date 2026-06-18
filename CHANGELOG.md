@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- civitai.red front-door support — choose which CivitAI site web & share links open (SFW `civitai.com` / full `civitai.red`), independent of the NSFW content filter, default SFW (#913)
+- Guided remote ComfyUI connection onboarding — LAN auto-detect (Android/Desktop), QR, and manual entry, each followed by a connection test with actionable failure reasons and self-signed TLS handling (#914)
+
+### Changed
+
+- Extracted `core-data` module so `core-database` no longer depends on `core-network`, restoring Clean Architecture dependency direction (#916)
+- Migrated platform services from `expect class()` to commonMain interfaces + Koin constructor injection, removing Service-Locator (`KoinPlatform.getKoin().get()`) usage — Phase A: FileScanner, LocalIpProvider, ImageSaver, MaskPngEncoder (#917); Phase B: embedding models, notification/monitor/lifecycle services, and DatasetZipWriter (split into factory + path provider) (#928)
+- Established shared `core-testing` module (fake repositories, `TestScope`-based `ApplicationScope`, Turbine) and added commonTest coverage for key ViewModels (#915)
+- Raised `minSdk` from 24 to 29 (Android 10) and removed the deprecated `getExternalStoragePublicDirectory` gallery fallback (#818)
+- Expanded the `Won't Do` scope: cloud generation services, proprietary AI models, on-device model preview
+
+### Fixed
+
+- End-of-view duration tracking now records reliably on screen exit via an injected application scope, instead of being dropped when launched into the already-cancelled `viewModelScope` in `onCleared()` (#912)
+
+### Infrastructure
+
+- Restored green CI: cleared accumulated `detekt` violations across all modules and repaired broken `shared` commonTest compilation (#920)
+- Fixed pre-existing iosApp compile breakage (KMP type exports, actor isolation, `@retroactive`) and SwiftLint violations that went undetected while the iOS CI job was being path-filter-skipped (#922)
+- iOS CI now runs on `macos-26` / Xcode 26 (Swift 6.2) with `ARCHS=arm64` to match the KMP `iosSimulatorArm64`-only framework; SwiftLint runs before the build (#920, #922)
+- Expanded the CI Android job to run feature/core module unit tests in addition to shared tests, and added `core/**` + `feature/**` to the path filter (#915, #916)
+
 ## [2.2.0] - 2026-04-10
 
 ### Added

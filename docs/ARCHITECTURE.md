@@ -24,11 +24,16 @@ CivitDeck/
 │   │   └── src/commonMain/kotlin/.../
 │   │       ├── data/api/             # CivitAI, ComfyUI, SD WebUI, ExternalServer API clients + DTOs
 │   │       └── di/                   # NetworkModule (Koin)
-│   ├── core-database/        # Database layer: Room KMP entities, DAOs, migrations
+│   ├── core-database/        # Local storage only: Room KMP entities, DAOs, migrations
 │   │   └── src/commonMain/kotlin/.../
-│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v43)
-│   │       ├── data/local/migration/ # Sequential migrations (1→2 … 42→43)
-│   │       └── di/                   # DatabaseModule (Koin)
+│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v48)
+│   │       ├── data/local/migration/ # Sequential migrations (1→2 … 47→48)
+│   │       └── di/                   # DatabaseModule (Koin) — no longer depends on core-network
+│   ├── core-data/            # Data aggregation: network+cache repositories (ModelRepositoryImpl,
+│   │   │                     # LocalModelFileRepositoryImpl, UpdateRepositoryImpl, CreatorFollowRepositoryImpl)
+│   │   └── src/commonMain/kotlin/.../
+│   │       ├── data/repository/      # Repo impls combining core-network + core-database + DTO→domain mappers
+│   │       └── di/                   # coreDataModule (Koin) — loaded after network→database
 │   ├── core-ui/              # Shared Compose components + design tokens (KMP: Android + Desktop)
 │   │   └── src/{androidMain,jvmMain}/kotlin/.../
 │   │       ├── ui/components/        # LoadingStateOverlay, ErrorStateView, ModelStatsRow, …
@@ -39,6 +44,8 @@ CivitDeck/
 │           ├── plugin/capability/    # ExportFormatPlugin, ThemePlugin, WorkflowEnginePlugin
 │           ├── plugin/model/         # Plugin data models
 │           └── plugin/di/            # PluginModule (Koin)
+│   └── core-testing/         # Shared test infra (commonMain): fake repositories, ApplicationScope(TestScope)
+│       └── src/commonMain/kotlin/.../ # helper, Turbine — consumed by feature/core commonTest
 ├── feature/                  # Feature modules — each owns its ViewModels + use cases in commonMain
 │   ├── feature-search/       # Search, swipe discovery, text search, similar models, browsing history
 │   ├── feature-detail/       # Model detail view + model comparison
@@ -104,11 +111,11 @@ graph TB
 
 ## Layer Responsibilities
 
-### Data Layer (`core/core-network/` + `core/core-database/`)
+### Data Layer (`core/core-network/` + `core/core-database/` + `core/core-data/`)
 
 - **API** (`core-network`): Ktor HTTP client targeting `https://civitai.com/api/v1`. Endpoints include `/models`, `/models/:id`, `/model-versions/:id`, `/images`, `/creators`, and `/tags`. Pagination is cursor-based for images and page-based for others. Also includes ComfyUI, SD WebUI (Automatic1111/Forge), and custom External Server API clients.
-- **Local** (`core-database`): Room KMP database (version 42) for offline favorites, user collections, saved prompts, saved search filters, SD WebUI/ComfyUI connections, external server configs, dataset collections, model notes, followed creators, feed cache, model downloads, plugin data, quality scores, and response caching with TTL. Migrations tracked sequentially from version 1.
-- **Repository Implementations**: Combine remote API calls with local cache. Return domain models, not DTOs.
+- **Local** (`core-database`): Room KMP database (version 48) for offline favorites, user collections, saved prompts, saved search filters, SD WebUI/ComfyUI connections, external server configs, dataset collections, model notes, followed creators, feed cache, model downloads, plugin data, quality scores, and response caching with TTL. Migrations tracked sequentially from version 1. This module is pure local storage and does **not** depend on `core-network`.
+- **Repository Implementations** (`core-data`): Combine remote API calls with local cache and map DTOs → domain models. `ModelRepositoryImpl` and friends live here (extracted from `core-database`) so the database layer stays network-free; `core-data` depends on both `core-network` and `core-database`.
 
 ### Domain Layer (`core/core-domain/`)
 
@@ -175,10 +182,11 @@ AndroidX Navigation 3 is the latest navigation library with full type-safe route
 Koin is used as the DI framework across all modules:
 
 - **core-network** (`core/core-network/.../di/NetworkModule`): Ktor client, CivitAI, ComfyUI, SD WebUI, and ExternalServer API services
-- **core-database** (`core/core-database/.../di/DatabaseModule`): Room DB instance, all DAOs
-- **core-domain** (`core/core-domain/.../di/DomainModule`): Repository bindings, use case factory
+- **core-database** (`core/core-database/.../di/DatabaseModule`): Room DB instance, all DAOs (loaded before core-data)
+- **core-data** (`core/core-data/.../di/CoreDataModule`): Network+cache repository bindings (`ModelRepositoryImpl`, etc.); load order is network → database → core-data
+- **core-domain** (`core/core-domain/.../di/DomainModule` + `DomainPlatformModule`): Repository bindings, use case factory; `domainPlatformModule` (`expect`/`actual`) provides platform service impls (embedding models, notification/lifecycle/monitor services) via constructor injection
 - **core-plugin** (`core/core-plugin/.../di/PluginModule`): Plugin registry, built-in capability adapters
-- **shared** (`shared/src/commonMain/di/`): Re-exports core modules; `SharedViewModelModule`, `Phase3ViewModelModule`, `SettingsViewModelModule` for shared ViewModels
+- **shared** (`shared/src/commonMain/di/`): Re-exports core modules; `SharedViewModelModule`, `Phase3ViewModelModule`, `SettingsViewModelModule` for shared ViewModels; platform export bindings (`DatasetZipWriterFactory`, `ExportPathProvider`) in `PlatformModule.<platform>`
 - **Android** (`androidApp/CivitDeckApplication.kt`): Platform-specific bindings (DownloadScheduler actual, DuplicateReviewViewModel), platform drivers
 - **Desktop** (`desktopApp/`): 2 Desktop-only ViewModel registrations (`DesktopUpdateViewModel`, `DesktopDiscoveryViewModel`), JVM platform drivers (shared VMs are auto-registered via feature module Koin modules)
 - **iOS** (`shared/src/iosMain/di/KoinHelper.kt`): ViewModel accessors for SwiftUI consumption via `KoinHelper.shared.getXxx()`

@@ -49,11 +49,13 @@ CivitDeck/
 ├── build-logic/              # Convention Plugins (civitdeck.kmp.library, civitdeck.kmp.feature, civitdeck.android.application)
 ├── shared/                   # KMP coordinator — re-exports core modules via api(); shared ViewModels (presentation/); KoinHelper for iOS
 ├── core/
-│   ├── core-domain/          # Domain layer: models, repository interfaces, use cases, DomainModule (Koin)
+│   ├── core-domain/          # Domain layer: models, repository interfaces, use cases, DomainModule + DomainPlatformModule (Koin)
 │   ├── core-network/         # Network layer: Ktor client, DTOs (CivitAI + ComfyUI + WebUI + ExternalServer), NetworkModule (Koin)
-│   ├── core-database/        # Database layer: Room KMP entities/DAOs/migrations (v42), DatabaseModule (Koin)
+│   ├── core-database/        # Local storage only: Room KMP entities/DAOs/migrations (v48), DatabaseModule (Koin); no core-network dep
+│   ├── core-data/            # Network+cache repository impls (ModelRepositoryImpl etc.) + DTO→domain mappers, coreDataModule (Koin)
 │   ├── core-ui/              # Shared Compose components + design tokens (KMP: Android + Desktop)
-│   └── core-plugin/          # Plugin system: interfaces, registry, capability adapters, PluginModule (Koin)
+│   ├── core-plugin/          # Plugin system: interfaces, registry, capability adapters, PluginModule (Koin)
+│   └── core-testing/         # Shared test infra: fake repositories, ApplicationScope(TestScope), Turbine (commonMain)
 ├── feature/                  # Feature modules with shared ViewModels in commonMain/presentation/
 │   ├── feature-search/       # Model search & swipe discovery (shared ViewModels)
 │   ├── feature-detail/       # Model detail + model comparison (shared ViewModels)
@@ -97,7 +99,7 @@ CivitDeck/
 - Room KMP for offline favorites and response caching with TTL
 
 **Dependency Injection**
-- Koin modules per core layer: `NetworkModule` (core-network), `DatabaseModule` (core-database), `DomainModule` (core-domain), `PluginModule` (core-plugin)
+- Koin modules per core layer: `NetworkModule` (core-network), `DatabaseModule` (core-database), `CoreDataModule` (core-data), `DomainModule` + `DomainPlatformModule` (core-domain), `PluginModule` (core-plugin). Platform service impls (embedding/notification/lifecycle) and export factory/path-provider use constructor injection, not Service-Locator. Load order: network → database → core-data.
 - `shared/src/commonMain/di/` re-exports core modules; `SharedViewModelModule`, `Phase3ViewModelModule`, `SettingsViewModelModule` for shared ViewModels
 - Android: `CivitDeckApplication.kt` registers platform-specific bindings (DownloadScheduler actual, DuplicateReviewViewModel)
 - iOS: `KoinHelper.shared.getXxx()` in `shared/src/iosMain/di/KoinHelper.kt` for ViewModel access
