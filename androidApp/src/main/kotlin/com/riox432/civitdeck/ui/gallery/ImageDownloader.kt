@@ -2,7 +2,6 @@ package com.riox432.civitdeck.ui.gallery
 
 import android.content.ContentValues
 import android.content.Context
-import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
@@ -10,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.io.File
 import java.io.IOException
 
 object ImageDownloader {
@@ -45,11 +43,7 @@ object ImageDownloader {
     }
 
     private fun saveToGallery(context: Context, fileName: String, bytes: ByteArray): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            saveWithMediaStore(context, fileName, bytes)
-        } else {
-            saveToExternalStorage(fileName, bytes)
-        }
+        return saveWithMediaStore(context, fileName, bytes)
     }
 
     private fun saveWithMediaStore(
@@ -93,28 +87,6 @@ object ImageDownloader {
         } catch (e: SecurityException) {
             Log.w(TAG, "Permission denied writing to MediaStore: $fileName", e)
             resolver.delete(uri, null, null)
-            false
-        }
-    }
-
-    // Legacy fallback for API 24–28 (pre-Q). Uses the deprecated
-    // getExternalStoragePublicDirectory because MediaStore RELATIVE_PATH/IS_PENDING
-    // requires API 29+. Safe to remove once minSdk is raised to 29.
-    @Suppress("DEPRECATION")
-    private fun saveToExternalStorage(fileName: String, bytes: ByteArray): Boolean {
-        return try {
-            val dir = File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                "CivitDeck",
-            )
-            dir.mkdirs()
-            File(dir, fileName).writeBytes(bytes)
-            true
-        } catch (e: IOException) {
-            Log.w(TAG, "Failed to save image to external storage: $fileName", e)
-            false
-        } catch (e: SecurityException) {
-            Log.w(TAG, "Permission denied saving to external storage: $fileName", e)
             false
         }
     }

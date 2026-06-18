@@ -19,7 +19,7 @@ class CivitDeckAndroidApplicationPlugin : Plugin<Project> {
             extensions.configure<ApplicationExtension> {
                 compileSdk = 36
                 defaultConfig {
-                    minSdk = 24
+                    minSdk = 29
                     targetSdk = 35
                 }
                 compileOptions {
