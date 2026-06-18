@@ -19,7 +19,7 @@ class CivitDeckKmpLibraryPlugin : Plugin<Project> {
             extensions.configure<LibraryExtension> {
                 compileSdk = 36
                 defaultConfig {
-                    minSdk = 24
+                    minSdk = 29
                 }
                 compileOptions {
                     sourceCompatibility = JavaVersion.VERSION_17
