@@ -49,7 +49,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ModelCollection
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
@@ -57,6 +56,7 @@ import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.prompts.SavedPromptsScreen
 import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.theme.ThumbnailSize
 
@@ -209,7 +209,7 @@ private fun CollectionCard(
             .fillMaxWidth()
             .clickable(onClickLabel = stringResource(R.string.cd_open_collection), onClick = onClick),
         shape = RoundedCornerShape(CornerRadius.card),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.sm),
     ) {
         CollectionCardContent(
             collection = collection,

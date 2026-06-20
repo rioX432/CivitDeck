@@ -25,10 +25,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -38,7 +38,7 @@ internal fun ImageMetadataPanel(
     onOpenFullscreen: () -> Unit,
 ) {
     Surface(
-        tonalElevation = 2.dp,
+        tonalElevation = Elevation.sm,
         shape = RoundedCornerShape(topStart = CornerRadius.card, topEnd = CornerRadius.card),
         modifier = Modifier.fillMaxWidth(),
     ) {

@@ -44,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.DatasetCollection
 import com.riox432.civitdeck.feature.collections.presentation.DatasetListViewModel
 import com.riox432.civitdeck.ui.desktopFocusRing
@@ -181,7 +180,7 @@ private fun DesktopDatasetCard(
             .desktopFocusRing()
             .clickable(onClickLabel = "Open dataset", onClick = onClick),
         shape = RoundedCornerShape(CornerRadius.card),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.sm),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(Spacing.md),
