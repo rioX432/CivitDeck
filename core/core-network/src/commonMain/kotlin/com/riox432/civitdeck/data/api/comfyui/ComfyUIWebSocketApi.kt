@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.data.api.comfyui
 
 import com.riox432.civitdeck.data.api.RetryConfig
+import com.riox432.civitdeck.domain.model.ComfyUiConnectionDefaults
 import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.network.sockets.ConnectTimeoutException
@@ -21,8 +22,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 
 private const val BINARY_HEADER_SIZE = 8
-private const val DEFAULT_WS_PORT = 80
-private const val DEFAULT_WSS_PORT = 443
 
 /**
  * Manages a ComfyUI WebSocket connection and emits typed [ComfyUIWebSocketMessage] events.
@@ -113,7 +112,11 @@ class ComfyUIWebSocketApi(
         val hostPart = stripped.substringBefore("/").substringBefore(":")
         val portPart = stripped.substringBefore("/").substringAfter(":", "")
         val port = portPart.toIntOrNull()
-            ?: if (wsScheme == "wss") DEFAULT_WSS_PORT else DEFAULT_WS_PORT
+            ?: if (wsScheme == "wss") {
+                ComfyUiConnectionDefaults.DEFAULT_WSS_PORT
+            } else {
+                ComfyUiConnectionDefaults.DEFAULT_WS_PORT
+            }
         return hostPart to port
     }
 
