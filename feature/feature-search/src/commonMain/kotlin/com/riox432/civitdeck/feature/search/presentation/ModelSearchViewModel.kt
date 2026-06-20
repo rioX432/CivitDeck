@@ -45,7 +45,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -350,8 +350,10 @@ class ModelSearchViewModel(
         observePeriodUseCase: ObserveDefaultTimePeriodUseCase,
     ) {
         viewModelScope.launch {
-            val sort = observeSortUseCase().first()
-            val period = observePeriodUseCase().first()
+            // firstOrNull avoids NoSuchElementException if the preferences flow emits nothing;
+            // fall back to the same defaults used by ModelSearchUiState/FilterState.
+            val sort = observeSortUseCase().firstOrNull() ?: SortOrder.MostDownloaded
+            val period = observePeriodUseCase().firstOrNull() ?: TimePeriod.AllTime
             _uiState.update { it.copy(selectedSort = sort, selectedPeriod = period) }
             val current = _filterState.value
             if (current.selectedSort != sort || current.selectedPeriod != period) {
