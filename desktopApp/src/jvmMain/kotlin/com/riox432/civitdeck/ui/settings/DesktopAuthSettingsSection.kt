@@ -26,9 +26,10 @@ internal fun AuthSettingsSection(viewModel: AuthSettingsViewModel) {
     var apiKeyInput by remember { mutableStateOf("") }
 
     SettingsCard(title = "Authentication") {
-        if (state.connectedUsername != null) {
+        val connectedUsername = state.connectedUsername
+        if (connectedUsername != null) {
             ConnectedState(
-                username = state.connectedUsername!!,
+                username = connectedUsername,
                 onRefresh = viewModel::onRefreshUsername,
                 onDisconnect = viewModel::onClearApiKey,
             )
