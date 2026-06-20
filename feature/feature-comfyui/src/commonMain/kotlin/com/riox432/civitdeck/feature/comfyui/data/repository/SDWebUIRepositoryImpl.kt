@@ -6,6 +6,7 @@ import com.riox432.civitdeck.data.api.webui.SDWebUITxt2ImgRequest
 import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.SDWebUIConnectionDao
 import com.riox432.civitdeck.data.local.entity.SDWebUIConnectionEntity
+import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.SDWebUIConnection
 import com.riox432.civitdeck.domain.model.SDWebUIGenerationParams
 import com.riox432.civitdeck.domain.model.SDWebUIGenerationProgress
@@ -157,7 +158,8 @@ class SDWebUIRepositoryImpl(
         }
 
     private suspend fun ensureApiConfigured() {
-        val active = dao.getActive() ?: error("No active SD WebUI connection")
+        val active = dao.getActive()
+            ?: throw DomainException.ConnectionException("No active SD WebUI connection")
         api.setBaseUrl(active.hostname, active.port)
     }
 

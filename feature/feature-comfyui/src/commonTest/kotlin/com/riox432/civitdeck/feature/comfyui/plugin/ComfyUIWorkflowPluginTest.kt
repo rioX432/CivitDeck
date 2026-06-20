@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.comfyui.plugin
 
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
+import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.plugin.capability.WorkflowCapability
 import com.riox432.civitdeck.plugin.model.PluginState
@@ -69,6 +70,9 @@ class ComfyUIWorkflowPluginTest {
         val plugin = createPlugin(connection = null)
         val result = plugin.connect()
         assertTrue(result.isFailure)
+        // Missing connection must surface as a typed, handled failure (not an uncaught crash).
+        assertTrue(result.exceptionOrNull() is DomainException.ConnectionException)
+        assertEquals(PluginState.INSTALLED, plugin.state)
     }
 
     @Test

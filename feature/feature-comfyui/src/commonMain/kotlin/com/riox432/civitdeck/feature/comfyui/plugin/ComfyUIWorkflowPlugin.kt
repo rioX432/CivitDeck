@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.comfyui.plugin
 
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
+import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.plugin.WorkflowEnginePlugin
@@ -61,10 +62,11 @@ class ComfyUIWorkflowPlugin(
 
     override suspend fun connect(): Result<Unit> = suspendRunCatching {
         refreshActiveConnection()
-        val connection = cachedConnection ?: error("No active ComfyUI connection")
+        val connection = cachedConnection
+            ?: throw DomainException.ConnectionException("No active ComfyUI connection")
         val success = connectionRepository.testConnection(connection)
         connectionRepository.updateTestResult(connection.id, success)
-        if (!success) error("Connection test failed")
+        if (!success) throw DomainException.ConnectionException("Connection test failed")
         state = PluginState.ACTIVE
     }
 

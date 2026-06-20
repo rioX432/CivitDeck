@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
+import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.QueueJob
 import com.riox432.civitdeck.domain.model.QueueJobStatus
 import com.riox432.civitdeck.domain.repository.ComfyUIQueueRepository
@@ -65,7 +66,8 @@ class ComfyUIQueueRepositoryImpl(
     }
 
     private suspend fun ensureApiConfigured() {
-        val active = dao.getActive() ?: error("No active ComfyUI connection")
+        val active = dao.getActive()
+            ?: throw DomainException.ConnectionException("No active ComfyUI connection")
         val scheme = if (active.useHttps) "https" else "http"
         api.setBaseUrl("$scheme://${active.hostname}:${active.port}")
     }
