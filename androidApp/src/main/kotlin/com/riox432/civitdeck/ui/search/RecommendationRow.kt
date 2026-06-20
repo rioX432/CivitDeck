@@ -30,6 +30,7 @@ import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.ui.adaptive.isExpandedWidth
 import com.riox432.civitdeck.ui.components.ModelCard
+import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -82,7 +83,7 @@ internal fun ComparisonBottomBar(
         exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
     ) {
         Surface(
-            tonalElevation = 3.dp,
+            tonalElevation = Elevation.sm,
             modifier = Modifier.fillMaxWidth(),
         ) {
             Row(

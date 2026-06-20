@@ -28,12 +28,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -82,7 +82,7 @@ fun ModelCardLayout(
             )
         }
     val shape = RoundedCornerShape(CornerRadius.card)
-    val elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    val elevation = CardDefaults.cardElevation(defaultElevation = Elevation.sm)
     val colors = CardDefaults.cardColors(
         containerColor = MaterialTheme.colorScheme.surface,
     )
