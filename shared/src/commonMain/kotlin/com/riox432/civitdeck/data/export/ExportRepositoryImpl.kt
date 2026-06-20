@@ -9,7 +9,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 
 private const val TAG = "ExportRepositoryImpl"
@@ -24,13 +24,16 @@ class ExportRepositoryImpl(
     override fun exportDataset(datasetId: Long, format: ExportFormat): Flow<ExportProgress> = flow {
         emit(ExportProgress.Preparing)
 
-        val collection = datasetRepo.observeCollections().first().firstOrNull { it.id == datasetId }
+        // flow firstOrNull() avoids NoSuchElementException if the source flow emits nothing;
+        // an empty/absent emission is treated the same as the dataset not being found.
+        val collection = datasetRepo.observeCollections().firstOrNull()
+            ?.firstOrNull { it.id == datasetId }
             ?: run {
                 emit(ExportProgress.Failed("Dataset not found"))
                 return@flow
             }
 
-        val allImages = datasetRepo.observeImages(datasetId).first()
+        val allImages = datasetRepo.observeImages(datasetId).firstOrNull().orEmpty()
         val exportable = allImages.filter { it.trainable && !it.excluded }
         val warningCount = allImages.count { !it.trainable || it.excluded }
 
