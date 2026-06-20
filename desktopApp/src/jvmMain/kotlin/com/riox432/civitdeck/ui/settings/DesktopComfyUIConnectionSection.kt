@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIConnectionStatus
+import com.riox432.civitdeck.domain.model.ComfyUiConnectionDefaults
 import com.riox432.civitdeck.domain.model.ConnectionSecurityLevel
 import com.riox432.civitdeck.domain.model.SystemStats
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
@@ -72,7 +73,7 @@ fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
 @Composable
 private fun AddConnectionFormSection(viewModel: ComfyUISettingsViewModel) {
     var nameInput by remember { mutableStateOf("") }
-    var hostInput by remember { mutableStateOf("127.0.0.1") }
+    var hostInput by remember { mutableStateOf(ComfyUiConnectionDefaults.DEFAULT_HOST) }
     var portInput by remember { mutableStateOf(ComfyUIConnection.DEFAULT_COMFYUI_PORT.toString()) }
     var useHttpsInput by remember { mutableStateOf(false) }
     var ntfyServerUrlInput by remember { mutableStateOf("") }
@@ -94,7 +95,7 @@ private fun AddConnectionFormSection(viewModel: ComfyUISettingsViewModel) {
         onSave = { name, host, port, https, ntfyUrl, ntfyTopic ->
             viewModel.onSaveConnection(name, host, port, https, false, ntfyUrl, ntfyTopic)
             nameInput = ""
-            hostInput = "127.0.0.1"
+            hostInput = ComfyUiConnectionDefaults.DEFAULT_HOST
             portInput = ComfyUIConnection.DEFAULT_COMFYUI_PORT.toString()
             useHttpsInput = false
             ntfyServerUrlInput = ""
