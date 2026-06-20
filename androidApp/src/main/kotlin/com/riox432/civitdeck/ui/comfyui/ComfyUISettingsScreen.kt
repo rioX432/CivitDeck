@@ -516,11 +516,20 @@ private fun ScanLanSection(
                     DiscoveredServerRow(server, onSelect)
                 }
             } else if (!state.isScanning) {
-                Text(
-                    stringResource(R.string.comfyui_lan_scan_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                val scanError = state.scanError
+                if (scanError != null) {
+                    Text(
+                        stringResource(R.string.comfyui_scan_failed, scanError),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                } else {
+                    Text(
+                        stringResource(R.string.comfyui_lan_scan_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }

@@ -51,6 +51,7 @@ fun ComfyUISettingsSection(viewModel: ComfyUISettingsViewModel) {
         LanScanSection(
             isScanning = state.isScanning,
             discoveredServers = state.discoveredServers,
+            scanError = state.scanError,
             onScanLan = viewModel::onScanLan,
             onSelectServer = viewModel::onSelectDiscoveredServer,
         )
@@ -132,6 +133,7 @@ private fun SecurityLevelIndicator(
 private fun LanScanSection(
     isScanning: Boolean,
     discoveredServers: List<com.riox432.civitdeck.domain.model.DiscoveredServer>,
+    scanError: String?,
     onScanLan: () -> Unit,
     onSelectServer: (com.riox432.civitdeck.domain.model.DiscoveredServer) -> Unit,
 ) {
@@ -148,6 +150,13 @@ private fun LanScanSection(
         discoveredServers.forEach { server ->
             DiscoveredServerRow(server = server, onSelect = { onSelectServer(server) })
         }
+    } else if (!isScanning && scanError != null) {
+        Spacer(modifier = Modifier.height(Spacing.xs))
+        Text(
+            text = "Scan failed: $scanError",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.error,
+        )
     }
 }
 

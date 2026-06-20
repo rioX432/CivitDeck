@@ -341,6 +341,7 @@
     <string name="comfyui_scan_lan">Scan LAN</string>
     <string name="comfyui_lan_discovery">LAN Discovery</string>
     <string name="comfyui_lan_scan_hint">Scan your local network for ComfyUI servers</string>
+    <string name="comfyui_scan_failed">Scan failed: %1$s</string>
     <string name="comfyui_use_https">Use HTTPS</string>
     <string name="comfyui_accept_self_signed">Accept self-signed certificates</string>
     <string name="comfyui_hostname_label">Hostname / IP</string>

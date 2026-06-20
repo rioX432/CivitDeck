@@ -262,6 +262,11 @@ struct ComfyUISettingsView: View {
                     Button("Scan LAN", action: viewModel.onScanLan)
                 }
             }
+            if let scanError = viewModel.scanError, !viewModel.isScanning {
+                Text("Scan failed: \(scanError)")
+                    .font(.civitBodySmall)
+                    .foregroundColor(.civitError)
+            }
             ForEach(viewModel.discoveredServers, id: \.ip) { server in
                 Button {
                     viewModel.onSelectDiscoveredServer(server: server)
