@@ -2,6 +2,7 @@ package com.riox432.civitdeck.data.api.repository
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.api.CivitAiApi
+import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.RatingTotals
 import com.riox432.civitdeck.domain.model.ResourceReview
 import com.riox432.civitdeck.domain.repository.ReviewPage
@@ -61,9 +62,8 @@ class ReviewRepositoryImpl(
         recommended: Boolean,
         details: String?,
     ) {
-        val apiKey = checkNotNull(apiKeyProvider.apiKey) {
-            "API key required to submit reviews"
-        }
+        val apiKey = apiKeyProvider.apiKey
+            ?: throw DomainException.AuthException("API key required to submit reviews")
         api.createReview(apiKey, modelId, modelVersionId, rating, recommended, details)
     }
 }
