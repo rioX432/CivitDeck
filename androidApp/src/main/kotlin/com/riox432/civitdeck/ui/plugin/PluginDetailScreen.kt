@@ -58,7 +58,7 @@ fun PluginDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(plugin?.name ?: "Plugin") },
+                title = { Text(plugin?.name ?: stringResource(R.string.plugin_detail_fallback_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -113,7 +113,7 @@ private fun DetailContent(
 @Composable
 private fun ManifestSection(plugin: InstalledPlugin) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        Text("Plugin Info", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.plugin_info_title), style = MaterialTheme.typography.titleMedium)
         ManifestRow("Name", plugin.name)
         ManifestRow("Version", plugin.version)
         ManifestRow("Author", plugin.author)
@@ -165,7 +165,7 @@ private fun EnableToggleRow(
 @Composable
 private fun CapabilitiesSection(capabilities: List<String>) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        Text("Capabilities", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.plugin_capabilities_title), style = MaterialTheme.typography.titleMedium)
         if (capabilities.isEmpty()) {
             Text(
                 "No capabilities declared",

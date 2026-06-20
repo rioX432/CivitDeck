@@ -315,6 +315,8 @@
 
     <!-- Tutorial -->
     <string name="tutorial_skip">Skip</string>
+    <string name="tutorial_get_started">Get Started</string>
+    <string name="tutorial_next">Next</string>
 
     <!-- Text search -->
     <string name="text_search_title">AI Search</string>
@@ -328,6 +330,8 @@
     <string name="comfyhub_saving_template">Saving…</string>
     <string name="comfyhub_template_saved">Workflow saved as template!</string>
     <string name="comfyhub_save_template_failed">Save failed: %1$s</string>
+    <string name="comfyhub_detail_fallback_title">Workflow Detail</string>
+    <string name="comfyhub_description_title">Description</string>
     <string name="template_app_mode_badge">APP</string>
 
     <!-- Update banner -->
@@ -441,6 +445,9 @@
     <string name="civitai_link_title">Civitai Link</string>
     <string name="civitai_link_key_label">Link Key</string>
     <string name="civitai_link_key_placeholder">Paste your Civitai Link key here</string>
+    <string name="civitai_link_key_hint">Get your link key from civitai.com → Account Settings → Civitai Link</string>
+    <string name="civitai_link_save_and_connect">Save &amp; Connect</string>
+    <string name="civitai_link_connecting">Connecting…</string>
 
     <!-- Workflow templates -->
     <string name="template_editor_create">Create Template</string>
@@ -486,6 +493,15 @@
     <string name="dataset_export_anyway">Export Anyway</string>
     <string name="dataset_license_warning">License Warning</string>
     <string name="dataset_license_warning_message">%1$d images are non-trainable or have license restrictions. They will be excluded from the export.</string>
+    <string name="dataset_resolution_filter_title">Resolution Filter</string>
+    <string name="dataset_resolution_min_width">Min Width: %1$dpx</string>
+    <string name="dataset_resolution_min_height">Min Height: %1$dpx</string>
+    <string name="dataset_export_title">Export Dataset</string>
+    <string name="dataset_export_trainable_count">%1$d trainable images will be exported</string>
+    <string name="dataset_export_excluded_count">%1$d images excluded (non-trainable or flagged)</string>
+    <string name="dataset_export_format_label">Format</string>
+    <string name="dataset_export_format_single">Format: %1$s</string>
+    <string name="dataset_export_format_default">ZIP (kohya-ss compatible)</string>
 
     <!-- Gallery -->
     <string name="gallery_title">Images</string>
@@ -493,6 +509,7 @@
     <string name="gallery_save_prompt">Save Prompt</string>
     <string name="gallery_comfyui_workflow">ComfyUI Workflow</string>
     <string name="gallery_a1111_params">A1111 Params</string>
+    <string name="gallery_copied_to_clipboard">Copied to clipboard</string>
 
     <!-- Discovery -->
     <string name="discovery_title">Discover</string>
@@ -506,6 +523,9 @@
     <string name="plugin_uninstall_confirm_message">Are you sure? This will remove the plugin and its data.</string>
     <string name="plugin_uninstall_action">Uninstall</string>
     <string name="plugin_list_title">Plugins</string>
+    <string name="plugin_detail_fallback_title">Plugin</string>
+    <string name="plugin_info_title">Plugin Info</string>
+    <string name="plugin_capabilities_title">Capabilities</string>
 
     <!-- QR Code -->
     <string name="qr_scanner_title">Scan QR Code</string>
@@ -518,6 +538,10 @@
     <string name="search_compare">Compare</string>
     <string name="search_hide_model">Hide model</string>
     <string name="search_placeholder">Search models…</string>
+    <string name="search_filters_title">Filters</string>
+    <string name="search_fresh_only">Fresh Only</string>
+    <string name="search_quality_filter_title">Quality Filter</string>
+    <string name="search_quality_filter_subtitle">Hide low-quality results</string>
 
     <!-- Detail -->
     <string name="detail_find_similar">Find similar</string>

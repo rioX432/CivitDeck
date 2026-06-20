@@ -171,7 +171,7 @@ private fun ConfigCard(
                 modifier = Modifier.fillMaxWidth(),
             )
             Text(
-                text = "Get your link key from civitai.com \u2192 Account Settings \u2192 Civitai Link",
+                text = stringResource(R.string.civitai_link_key_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -180,7 +180,15 @@ private fun ConfigCard(
                 enabled = state.linkKey.isNotBlank() && !state.isSaving,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(if (state.isSaving) "Connecting..." else "Save & Connect")
+                Text(
+                    stringResource(
+                        if (state.isSaving) {
+                            R.string.civitai_link_connecting
+                        } else {
+                            R.string.civitai_link_save_and_connect
+                        },
+                    ),
+                )
             }
         }
     }
