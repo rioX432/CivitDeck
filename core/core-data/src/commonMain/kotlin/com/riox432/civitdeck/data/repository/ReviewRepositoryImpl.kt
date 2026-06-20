@@ -1,4 +1,4 @@
-package com.riox432.civitdeck.data.api.repository
+package com.riox432.civitdeck.data.repository
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.data.api.CivitAiApi

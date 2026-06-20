@@ -16,18 +16,12 @@ import com.riox432.civitdeck.data.api.externalserver.createExternalServerHttpCli
 import com.riox432.civitdeck.data.api.huggingface.HuggingFaceApi
 import com.riox432.civitdeck.data.api.huggingface.HuggingFaceRepositoryImpl
 import com.riox432.civitdeck.data.api.huggingface.createHuggingFaceHttpClient
-import com.riox432.civitdeck.data.api.repository.AuthRepositoryImpl
-import com.riox432.civitdeck.data.api.repository.ReviewRepositoryImpl
-import com.riox432.civitdeck.data.api.repository.TagRepositoryImpl
 import com.riox432.civitdeck.data.api.tensorart.TensorArtApi
 import com.riox432.civitdeck.data.api.tensorart.TensorArtRepositoryImpl
 import com.riox432.civitdeck.data.api.tensorart.createTensorArtHttpClient
 import com.riox432.civitdeck.data.api.webui.SDWebUIApi
 import com.riox432.civitdeck.data.api.webui.createSDWebUIHttpClient
-import com.riox432.civitdeck.domain.repository.AuthRepository
 import com.riox432.civitdeck.domain.repository.HuggingFaceRepository
-import com.riox432.civitdeck.domain.repository.ReviewRepository
-import com.riox432.civitdeck.domain.repository.TagRepository
 import com.riox432.civitdeck.domain.repository.TensorArtRepository
 import com.riox432.civitdeck.domain.repository.ThumbnailDownloader
 import kotlinx.serialization.json.Json
@@ -81,9 +75,4 @@ val networkModule = module {
     single(named("tensorart")) { createTensorArtHttpClient() }
     single { TensorArtApi(get(named("tensorart"))) }
     single<TensorArtRepository> { TensorArtRepositoryImpl(get()) }
-
-    // CivitAI Repositories (network-only)
-    single<AuthRepository> { AuthRepositoryImpl(get()) }
-    single<TagRepository> { TagRepositoryImpl(get()) }
-    single<ReviewRepository> { ReviewRepositoryImpl(get(), get()) }
 }
