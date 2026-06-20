@@ -1,14 +1,20 @@
 package com.riox432.civitdeck.di
 
+import com.riox432.civitdeck.data.repository.AuthRepositoryImpl
 import com.riox432.civitdeck.data.repository.CreatorFollowRepositoryImpl
 import com.riox432.civitdeck.data.repository.LocalModelFileRepositoryImpl
 import com.riox432.civitdeck.data.repository.ModelRepositoryImpl
+import com.riox432.civitdeck.data.repository.ReviewRepositoryImpl
+import com.riox432.civitdeck.data.repository.TagRepositoryImpl
 import com.riox432.civitdeck.data.repository.UpdateRepositoryImpl
+import com.riox432.civitdeck.domain.repository.AuthRepository
 import com.riox432.civitdeck.domain.repository.CreatorFollowRepository
 import com.riox432.civitdeck.domain.repository.ModelDirectoryRepository
 import com.riox432.civitdeck.domain.repository.ModelFileHashRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.domain.repository.ModelScanRepository
+import com.riox432.civitdeck.domain.repository.ReviewRepository
+import com.riox432.civitdeck.domain.repository.TagRepository
 import com.riox432.civitdeck.domain.repository.UpdateRepository
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
@@ -31,4 +37,9 @@ val coreDataModule = module {
     }
     single<CreatorFollowRepository> { CreatorFollowRepositoryImpl(get(), get(), get()) }
     single<UpdateRepository> { UpdateRepositoryImpl(get(), get(), get()) }
+
+    // CivitAI network-only repositories (moved from networkModule for organizational consistency)
+    single<AuthRepository> { AuthRepositoryImpl(get()) }
+    single<TagRepository> { TagRepositoryImpl(get()) }
+    single<ReviewRepository> { ReviewRepositoryImpl(get(), get()) }
 }
