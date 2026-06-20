@@ -341,7 +341,10 @@ private fun DetailOverflowMenu(
     var expanded by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { expanded = true }) {
-            Icon(Icons.Default.MoreVert, contentDescription = "More options")
+            Icon(
+                Icons.Default.MoreVert,
+                contentDescription = stringResource(R.string.cd_more_options),
+            )
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             if (onFindSimilar != null) {

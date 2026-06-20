@@ -67,7 +67,10 @@ fun DownloadQueueScreen(
                 title = { Text(stringResource(R.string.download_queue_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_navigate_back),
+                        )
                     }
                 },
             )
@@ -360,7 +363,7 @@ private fun FailedDownloadItem(
         IconButton(onClick = { onDelete(download.id) }) {
             Icon(
                 Icons.Default.Delete,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.cd_delete),
                 tint = MaterialTheme.colorScheme.error,
             )
         }
@@ -403,7 +406,7 @@ private fun CompletedDownloadItem(
         IconButton(onClick = { onDelete(download.id) }) {
             Icon(
                 Icons.Default.Delete,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.cd_delete),
                 tint = MaterialTheme.colorScheme.error,
             )
         }
