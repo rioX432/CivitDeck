@@ -63,7 +63,9 @@ fun ComfyHubDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(state.workflow?.name ?: "Workflow Detail") },
+                title = {
+                    Text(state.workflow?.name ?: stringResource(R.string.comfyhub_detail_fallback_title))
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -229,7 +231,7 @@ private fun StatItem(icon: androidx.compose.ui.graphics.vector.ImageVector, valu
 @Composable
 private fun DescriptionSection(description: String) {
     Column {
-        Text("Description", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.comfyhub_description_title), style = MaterialTheme.typography.titleMedium)
         Text(
             text = description,
             style = MaterialTheme.typography.bodyMedium,

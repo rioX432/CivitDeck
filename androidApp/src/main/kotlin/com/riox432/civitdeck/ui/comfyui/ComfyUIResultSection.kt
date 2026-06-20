@@ -59,7 +59,11 @@ internal fun GenerateButton(
             if (isGenerating) {
                 CircularProgressIndicator(modifier = Modifier.padding(end = Spacing.sm))
             }
-            Text(if (isGenerating) "Generating..." else "Generate")
+            Text(
+                stringResource(
+                    if (isGenerating) R.string.label_generating else R.string.action_generate,
+                ),
+            )
         }
         if (isGenerating) {
             Button(

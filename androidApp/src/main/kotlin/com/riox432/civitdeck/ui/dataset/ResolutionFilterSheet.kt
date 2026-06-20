@@ -18,6 +18,8 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.riox432.civitdeck.R
 import com.riox432.civitdeck.ui.theme.Spacing
 import kotlin.math.roundToInt
 
@@ -65,14 +67,14 @@ private fun ResolutionFilterContent(
             .padding(horizontal = Spacing.lg, vertical = Spacing.md),
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
-        Text(text = "Resolution Filter")
+        Text(text = stringResource(R.string.dataset_resolution_filter_title))
         ResolutionSlider(
-            label = "Min Width: ${widthSlider.roundToInt()}px",
+            label = stringResource(R.string.dataset_resolution_min_width, widthSlider.roundToInt()),
             value = widthSlider,
             onValueChange = onWidthChange,
         )
         ResolutionSlider(
-            label = "Min Height: ${heightSlider.roundToInt()}px",
+            label = stringResource(R.string.dataset_resolution_min_height, heightSlider.roundToInt()),
             value = heightSlider,
             onValueChange = onHeightChange,
         )
@@ -113,13 +115,13 @@ private fun ResolutionFilterActions(
             onClick = onClear,
             modifier = Modifier.weight(1f),
         ) {
-            Text(text = "Clear")
+            Text(text = stringResource(R.string.action_clear))
         }
         Button(
             onClick = onApply,
             modifier = Modifier.weight(1f),
         ) {
-            Text(text = "Apply")
+            Text(text = stringResource(R.string.action_apply))
         }
     }
 }

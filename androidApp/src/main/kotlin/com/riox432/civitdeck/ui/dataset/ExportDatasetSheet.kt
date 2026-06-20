@@ -89,16 +89,22 @@ private fun ExportSheetContent(
         modifier = Modifier.padding(start = Spacing.lg, end = Spacing.lg, bottom = Spacing.lg),
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
-        Text(text = "Export Dataset", style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = stringResource(R.string.dataset_export_title),
+            style = MaterialTheme.typography.titleMedium,
+        )
         ExportFormatSelector(
             formats = availableFormats,
             selectedFormatId = selectedFormatId,
             onFormatSelected = onFormatSelected,
         )
-        Text(text = "$imageCount trainable images will be exported", style = MaterialTheme.typography.bodyMedium)
+        Text(
+            text = stringResource(R.string.dataset_export_trainable_count, imageCount),
+            style = MaterialTheme.typography.bodyMedium,
+        )
         if (nonTrainableCount > 0) {
             Text(
-                text = "$nonTrainableCount images excluded (non-trainable or flagged)",
+                text = stringResource(R.string.dataset_export_excluded_count, nonTrainableCount),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
             )
@@ -124,13 +130,17 @@ private fun ExportFormatSelector(
 ) {
     if (formats.size <= 1) {
         val format = formats.firstOrNull()
+        val formatName = format?.name ?: stringResource(R.string.dataset_export_format_default)
         Text(
-            text = "Format: ${format?.name ?: "ZIP (kohya-ss compatible)"}",
+            text = stringResource(R.string.dataset_export_format_single, formatName),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     } else {
-        Text(text = "Format", style = MaterialTheme.typography.labelMedium)
+        Text(
+            text = stringResource(R.string.dataset_export_format_label),
+            style = MaterialTheme.typography.labelMedium,
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             formats.forEach { format ->
                 FilterChip(

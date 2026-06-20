@@ -271,7 +271,7 @@ private fun FilterSheetHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = "Filters", style = MaterialTheme.typography.titleMedium)
+        Text(text = stringResource(R.string.search_filters_title), style = MaterialTheme.typography.titleMedium)
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onShowSavedFilters) {
                 Icon(Icons.Default.Bookmarks, contentDescription = stringResource(R.string.cd_saved_filters))
@@ -395,7 +395,7 @@ private fun FreshOnlyToggleRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = "Fresh Only", style = MaterialTheme.typography.titleSmall)
+        Text(text = stringResource(R.string.search_fresh_only), style = MaterialTheme.typography.titleSmall)
         Switch(checked = isFreshFindEnabled, onCheckedChange = { onFreshFindToggled() })
     }
 }
@@ -413,9 +413,12 @@ private fun QualityFilterToggleRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column {
-            Text(text = "Quality Filter", style = MaterialTheme.typography.titleSmall)
             Text(
-                text = "Hide low-quality results",
+                text = stringResource(R.string.search_quality_filter_title),
+                style = MaterialTheme.typography.titleSmall
+            )
+            Text(
+                text = stringResource(R.string.search_quality_filter_subtitle),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

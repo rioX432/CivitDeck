@@ -137,6 +137,10 @@ private fun NavigationButtons(
         onClick = if (isLastPage) onDismiss else onNext,
         modifier = Modifier.fillMaxWidth(0.6f),
     ) {
-        Text(if (isLastPage) "Get Started" else "Next")
+        Text(
+            stringResource(
+                if (isLastPage) R.string.tutorial_get_started else R.string.tutorial_next,
+            ),
+        )
     }
 }
