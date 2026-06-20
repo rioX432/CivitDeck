@@ -102,6 +102,7 @@
     <string name="cd_plugin_active">Active</string>
     <string name="cd_plugin_inactive">Inactive</string>
     <string name="cd_plugin_error">Error</string>
+    <string name="cd_more_options">More options</string>
     <string name="settings_replay_gesture_tutorial">Replay Gesture Tutorial</string>
 
     <!-- Download Queue -->
