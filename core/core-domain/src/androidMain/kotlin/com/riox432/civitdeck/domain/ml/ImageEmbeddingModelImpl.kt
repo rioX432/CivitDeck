@@ -6,6 +6,7 @@ import ai.onnxruntime.OrtSession
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.nio.ByteBuffer
@@ -43,14 +44,16 @@ class ImageEmbeddingModelImpl(
      * ONNX Runtime session, lazily loaded from the app bundle. Returns `null`
      * when the asset file is missing or unreadable.
      */
-    @Suppress("TooGenericExceptionCaught", "SwallowedException")
+    @Suppress("TooGenericExceptionCaught")
     private val session: OrtSession? by lazy {
         try {
             val bytes = context.assets.open(ASSET_PATH).use { it.readBytes() }
             ortEnv.createSession(bytes)
-        } catch (_: java.io.IOException) {
+        } catch (e: java.io.IOException) {
+            Logger.w(TAG, "SigLIP-2 vision asset '$ASSET_PATH' missing or unreadable: ${e.message}")
             null
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Logger.e(TAG, "Failed to create SigLIP-2 vision ONNX session from '$ASSET_PATH'", e)
             null
         }
     }
@@ -82,6 +85,7 @@ class ImageEmbeddingModelImpl(
     }
 
     private companion object {
+        private const val TAG = "ImageEmbeddingModel"
         private const val ASSET_PATH = "ml/siglip2_vision_q4f16.onnx"
         private const val IMAGE_SIZE = 224
         private const val BATCH_SIZE = 1

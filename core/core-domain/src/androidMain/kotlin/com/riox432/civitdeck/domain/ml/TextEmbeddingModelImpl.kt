@@ -4,6 +4,7 @@ import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
 import android.content.Context
+import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.nio.LongBuffer
@@ -31,14 +32,16 @@ class TextEmbeddingModelImpl(
 
     private val ortEnv: OrtEnvironment by lazy { OrtEnvironment.getEnvironment() }
 
-    @Suppress("TooGenericExceptionCaught", "SwallowedException")
+    @Suppress("TooGenericExceptionCaught")
     private val session: OrtSession? by lazy {
         try {
             val bytes = context.assets.open(MODEL_ASSET_PATH).use { it.readBytes() }
             ortEnv.createSession(bytes)
-        } catch (_: java.io.IOException) {
+        } catch (e: java.io.IOException) {
+            Logger.w(TAG, "SigLIP-2 text asset '$MODEL_ASSET_PATH' missing or unreadable: ${e.message}")
             null
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Logger.e(TAG, "Failed to create SigLIP-2 text ONNX session from '$MODEL_ASSET_PATH'", e)
             null
         }
     }
@@ -116,6 +119,7 @@ class TextEmbeddingModelImpl(
     }
 
     private companion object {
+        private const val TAG = "TextEmbeddingModel"
         private const val MODEL_ASSET_PATH = "ml/siglip2_text_int8.onnx"
         private const val EMBEDDING_MODEL_ID = "siglip2-base-p16-224"
         private const val BATCH_SIZE = 1
