@@ -95,8 +95,12 @@ class ComfyUISettingsViewModelTest {
 
     private class FakeServerDiscoveryRepo(
         private val servers: List<DiscoveredServer> = emptyList(),
+        private val failWith: Throwable? = null,
     ) : ServerDiscoveryRepository {
-        override fun scanForServers(): Flow<List<DiscoveredServer>> = flow { emit(servers) }
+        override fun scanForServers(): Flow<List<DiscoveredServer>> = flow {
+            failWith?.let { throw it }
+            emit(servers)
+        }
     }
 
     private fun mockApi(): ComfyUIApi {
@@ -221,6 +225,26 @@ class ComfyUISettingsViewModelTest {
 
         assertEquals(servers, vm.uiState.value.discoveredServers)
         assertFalse(vm.uiState.value.isScanning)
+        assertNull(vm.uiState.value.scanError)
+        collectJob.cancel()
+    }
+
+    @Test
+    fun scan_lan_failure_surfaces_error_to_ui_state() = runTest {
+        val repo = FakeConnectionRepo()
+        val vm = createViewModel(
+            repo,
+            discoveryRepo = FakeServerDiscoveryRepo(failWith = IllegalStateException("network down")),
+        )
+        val collectJob = backgroundScope.launch { vm.uiState.collect {} }
+        advanceUntilIdle()
+
+        vm.onScanLan()
+        advanceUntilIdle()
+
+        assertFalse(vm.uiState.value.isScanning)
+        assertEquals("network down", vm.uiState.value.scanError)
+        assertTrue(vm.uiState.value.discoveredServers.isEmpty())
         collectJob.cancel()
     }
 }

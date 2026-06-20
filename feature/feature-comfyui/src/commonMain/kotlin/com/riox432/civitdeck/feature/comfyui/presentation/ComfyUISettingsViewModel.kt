@@ -39,6 +39,7 @@ data class ComfyUISettingsUiState(
     val showAddDialog: Boolean = false,
     val editingConnection: ComfyUIConnection? = null,
     val isScanning: Boolean = false,
+    val scanError: String? = null,
     val discoveredServers: List<DiscoveredServer> = emptyList(),
     val systemStats: SystemStats? = null,
     val optimizationSuggestions: List<OptimizationSuggestion> = emptyList(),
@@ -150,10 +151,15 @@ class ComfyUISettingsViewModel(
 
     fun onScanLan() {
         scanJob?.cancel()
-        _mutableState.update { it.copy(isScanning = true, discoveredServers = emptyList()) }
+        _mutableState.update { it.copy(isScanning = true, scanError = null, discoveredServers = emptyList()) }
         scanJob = viewModelScope.launch {
             scanForServers()
-                .catch { _mutableState.update { it.copy(isScanning = false) } }
+                .catch { e ->
+                    // Surface scan failures so the user is not left with a silent empty result.
+                    _mutableState.update {
+                        it.copy(isScanning = false, scanError = e.message ?: e.toString())
+                    }
+                }
                 .collect { servers ->
                     _mutableState.update { it.copy(discoveredServers = servers) }
                 }

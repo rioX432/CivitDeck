@@ -14,6 +14,7 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
     @Published var showAddSheet = false
     @Published var editingConnection: ComfyUIConnection?
     @Published var isScanning = false
+    @Published var scanError: String?
     @Published var discoveredServers: [DiscoveredServer] = []
     @Published var systemStats: Core_domainSystemStats?
     @Published var optimizationSuggestions: [OptimizationSuggestion] = []
@@ -39,6 +40,7 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
             showAddSheet = state.showAddDialog
             editingConnection = state.editingConnection
             isScanning = state.isScanning
+            scanError = state.scanError
             discoveredServers = state.discoveredServers as? [DiscoveredServer] ?? []
             systemStats = state.systemStats
             optimizationSuggestions = state.optimizationSuggestions as? [OptimizationSuggestion] ?? []
