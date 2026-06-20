@@ -17,4 +17,11 @@ sealed class DomainException(message: String?, cause: Throwable? = null) : Excep
 
     /** Authentication failures: invalid/expired API key. */
     class AuthException(message: String?, cause: Throwable? = null) : DomainException(message, cause)
+
+    /**
+     * Generation-server connection failures: no active/configured server
+     * (e.g. ComfyUI or SD WebUI). Surfaced as a "not connected" UI state
+     * rather than crashing.
+     */
+    class ConnectionException(message: String?, cause: Throwable? = null) : DomainException(message, cause)
 }

@@ -9,6 +9,7 @@ import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
@@ -233,7 +234,8 @@ class ComfyUIRepositoryImpl(
     }
 
     private suspend fun ensureApiConfigured() {
-        val active = dao.getActive() ?: error("No active ComfyUI connection")
+        val active = dao.getActive()
+            ?: throw DomainException.ConnectionException("No active ComfyUI connection")
         api.setBaseUrl(buildBaseUrl(active))
     }
 
