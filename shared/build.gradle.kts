@@ -49,14 +49,14 @@ kotlin {
             implementation(libs.turbine)
         }
     }
+
+    android {
+        namespace = "com.riox432.civitdeck.shared"
+    }
 }
 
 skie {
     features {
         enableSwiftUIObservingPreview = true
     }
-}
-
-android {
-    namespace = "com.riox432.civitdeck.shared"
 }

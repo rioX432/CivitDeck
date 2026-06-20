@@ -14,8 +14,8 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
         }
     }
-}
 
-android {
-    namespace = "com.riox432.civitdeck.core.testing"
+    android {
+        namespace = "com.riox432.civitdeck.core.testing"
+    }
 }

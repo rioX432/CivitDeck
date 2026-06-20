@@ -18,8 +18,8 @@ kotlin {
             implementation(libs.turbine)
         }
     }
-}
 
-android {
-    namespace = "com.riox432.civitdeck.core.plugin"
+    android {
+        namespace = "com.riox432.civitdeck.core.plugin"
+    }
 }
