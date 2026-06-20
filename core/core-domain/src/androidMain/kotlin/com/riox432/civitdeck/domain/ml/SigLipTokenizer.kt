@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.domain.ml
 
 import android.content.Context
+import com.riox432.civitdeck.util.Logger
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -121,6 +122,8 @@ internal class SigLipTokenizer private constructor(
     }
 
     companion object {
+        private const val TAG = "SigLipTokenizer"
+
         /** SentencePiece uses U+2581 (LOWER ONE EIGHTH BLOCK) as whitespace marker. */
         private const val WHITESPACE_PREFIX = "▁"
 
@@ -137,16 +140,18 @@ internal class SigLipTokenizer private constructor(
          *
          * @return the tokenizer, or null if the vocab file is missing.
          */
-        @Suppress("TooGenericExceptionCaught", "SwallowedException")
+        @Suppress("TooGenericExceptionCaught")
         fun load(context: Context): SigLipTokenizer? {
             return try {
                 val jsonStr = context.assets.open(VOCAB_ASSET_PATH).use {
                     it.bufferedReader().readText()
                 }
                 parseVocab(jsonStr)
-            } catch (_: java.io.IOException) {
+            } catch (e: java.io.IOException) {
+                Logger.w(TAG, "Vocab asset '$VOCAB_ASSET_PATH' missing or unreadable: ${e.message}")
                 null
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Logger.e(TAG, "Failed to parse vocab from '$VOCAB_ASSET_PATH'", e)
                 null
             }
         }
