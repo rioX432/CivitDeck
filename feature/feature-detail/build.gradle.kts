@@ -14,8 +14,8 @@ kotlin {
             implementation(libs.turbine)
         }
     }
-}
 
-android {
-    namespace = "com.riox432.civitdeck.feature.detail"
+    android {
+        namespace = "com.riox432.civitdeck.feature.detail"
+    }
 }

@@ -27,8 +27,8 @@ kotlin {
             implementation(libs.kotlin.test)
         }
     }
-}
 
-android {
-    namespace = "com.riox432.civitdeck.core.data"
+    android {
+        namespace = "com.riox432.civitdeck.core.data"
+    }
 }

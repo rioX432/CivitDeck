@@ -24,10 +24,10 @@ kotlin {
             implementation(libs.kotlin.test)
         }
     }
-}
 
-android {
-    namespace = "com.riox432.civitdeck.core.database"
+    android {
+        namespace = "com.riox432.civitdeck.core.database"
+    }
 }
 
 dependencies {

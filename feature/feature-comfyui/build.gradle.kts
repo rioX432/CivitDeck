@@ -30,8 +30,8 @@ kotlin {
             implementation(libs.ktor.client.mock)
         }
     }
-}
 
-android {
-    namespace = "com.riox432.civitdeck.feature.comfyui"
+    android {
+        namespace = "com.riox432.civitdeck.feature.comfyui"
+    }
 }

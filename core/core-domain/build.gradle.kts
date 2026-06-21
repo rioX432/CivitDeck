@@ -23,8 +23,8 @@ kotlin {
             implementation(libs.turbine)
         }
     }
-}
 
-android {
-    namespace = "com.riox432.civitdeck.core.domain"
+    android {
+        namespace = "com.riox432.civitdeck.core.domain"
+    }
 }

@@ -24,12 +24,8 @@ kotlin {
             implementation(libs.coil.network.okhttp)
         }
     }
-}
 
-android {
-    namespace = "com.riox432.civitdeck.core.ui"
-
-    buildFeatures {
-        compose = true
+    android {
+        namespace = "com.riox432.civitdeck.core.ui"
     }
 }
