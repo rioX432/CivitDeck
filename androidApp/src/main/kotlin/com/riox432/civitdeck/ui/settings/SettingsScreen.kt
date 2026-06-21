@@ -32,6 +32,9 @@ import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewMo
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.update.UpdateBanner
+import com.riox432.civitdeck.ui.update.UpdateInstallController
+import com.riox432.civitdeck.ui.update.UpdateInstallHost
+import com.riox432.civitdeck.ui.update.rememberUpdateInstallController
 
 @Suppress("LongParameterList")
 @Composable
@@ -50,13 +53,13 @@ fun SettingsScreen(
     onNavigateToDownloadQueue: () -> Unit = {},
     onNavigateToLicenses: () -> Unit = {},
     onReplayGestureTutorial: () -> Unit = {},
-    onOpenUrl: (String) -> Unit = {},
     scrollToTopTrigger: Int = 0,
 ) {
     val authState by authViewModel.uiState.collectAsStateWithLifecycle()
     val storageState by storageViewModel.uiState.collectAsStateWithLifecycle()
     val appBehaviorState by appBehaviorViewModel.uiState.collectAsStateWithLifecycle()
     val updateState by updateViewModel.uiState.collectAsStateWithLifecycle()
+    val installController = rememberUpdateInstallController()
     val listState = rememberLazyListState()
     var lastHandledTrigger by rememberSaveable { mutableIntStateOf(scrollToTopTrigger) }
     LaunchedEffect(scrollToTopTrigger) {
@@ -90,7 +93,7 @@ fun SettingsScreen(
                 item { SectionHeader(stringResource(R.string.settings_section_analytics)) }
                 item { SubScreenRow(stringResource(R.string.settings_usage_stats), onNavigateToAnalytics) }
             }
-            settingsUpdateItems(updateState, updateViewModel, onOpenUrl)
+            settingsUpdateItems(updateState, updateViewModel, installController)
             settingsAboutItems(
                 appBehaviorState.powerUserMode,
                 updateState,
@@ -106,6 +109,7 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxSize(),
             )
         }
+        UpdateInstallHost(installController)
     }
 }
 
@@ -129,14 +133,14 @@ internal fun LazyListScope.settingsAccountItems(
 private fun LazyListScope.settingsUpdateItems(
     updateState: UpdateUiState,
     updateViewModel: UpdateViewModel,
-    onOpenUrl: (String) -> Unit,
+    installController: UpdateInstallController,
 ) {
     val updateResult = updateState.updateResult
     if (updateState.showBanner && updateResult != null) {
         item {
             UpdateBanner(
                 updateResult = updateResult,
-                onDownload = { onOpenUrl(updateResult.htmlUrl) },
+                onDownload = { installController.start(updateResult.downloadUrl) },
                 onDismiss = updateViewModel::dismissBanner,
             )
         }

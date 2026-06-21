@@ -338,6 +338,17 @@
     <string name="update_dismiss">Dismiss</string>
     <string name="update_download">Download</string>
 
+    <!-- In-app update install -->
+    <string name="update_install_title">Updating CivitDeck</string>
+    <string name="update_downloading">Downloading update…</string>
+    <string name="update_verifying">Verifying update…</string>
+    <string name="update_permission_needed">Allow CivitDeck to install apps to continue.</string>
+    <string name="update_installing">Installing…</string>
+    <string name="update_failed_download">Download failed. Check your connection and try again.</string>
+    <string name="update_failed_integrity">The downloaded update could not be verified and was discarded.</string>
+    <string name="update_failed_rejected">Installation was blocked or could not be completed.</string>
+    <string name="update_failed_unknown">Something went wrong during the update.</string>
+
     <!-- ComfyUI -->
     <string name="comfyui_title">ComfyUI</string>
     <string name="comfyui_open_txt2img">Open txt2img Generator</string>
