@@ -23,6 +23,11 @@ import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCa
 import com.riox432.civitdeck.feature.search.domain.usecase.TrackRecommendationClickUseCase
 import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
+import com.riox432.civitdeck.feature.search.presentation.SearchCoreUseCases
+import com.riox432.civitdeck.feature.search.presentation.SearchFavoritesUseCases
+import com.riox432.civitdeck.feature.search.presentation.SearchFilterUseCases
+import com.riox432.civitdeck.feature.search.presentation.SearchHistoryUseCases
+import com.riox432.civitdeck.feature.search.presentation.SearchPreferencesUseCases
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -49,16 +54,55 @@ val searchModule = module {
     factory { DeleteSavedSearchFilterUseCase(get()) }
     factory { TrackRecommendationClickUseCase(get()) }
 
-    // ViewModels
-    viewModel {
-        ModelSearchViewModel(
-            get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(),
-            get(),
+    // Use-case bundles (grouped to keep ModelSearchViewModel constructor small)
+    factory {
+        SearchCoreUseCases(
+            getModels = get(),
+            multiSourceSearch = get(),
+            getRecommendations = get(),
+            getViewedModelIds = get(),
+            trackRecommendationClick = get(),
         )
     }
+    factory {
+        SearchHistoryUseCases(
+            observeSearchHistory = get(),
+            addSearchHistory = get(),
+            deleteSearchHistoryItem = get(),
+            clearSearchHistory = get(),
+        )
+    }
+    factory {
+        SearchFilterUseCases(
+            getExcludedTags = get(),
+            addExcludedTag = get(),
+            removeExcludedTag = get(),
+            getHiddenModelIds = get(),
+            hideModel = get(),
+            observeSavedSearchFilters = get(),
+            saveSearchFilter = get(),
+            deleteSavedSearchFilter = get(),
+        )
+    }
+    factory {
+        SearchPreferencesUseCases(
+            observeNsfwFilter = get(),
+            observeGridColumns = get(),
+            observeDefaultSortOrder = get(),
+            observeDefaultTimePeriod = get(),
+            observeQualityThreshold = get(),
+        )
+    }
+    factory {
+        SearchFavoritesUseCases(
+            toggleFavorite = get(),
+            observeFavorites = get(),
+            observeOwnedModelHashes = get(),
+        )
+    }
+
+    // ViewModels
+    viewModel { ModelSearchViewModel(get(), get(), get(), get(), get()) }
     viewModel { SwipeDiscoveryViewModel(get(), get()) }
     viewModel { BrowsingHistoryViewModel(get(), get(), get()) }
 }
