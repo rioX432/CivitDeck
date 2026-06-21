@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-06-21
+
 ### Added
 
+- Android in-app self-update — the update banner now downloads, integrity-verifies (package name + signing certificate, with key-rotation support and downgrade rejection), and installs the APK in-app via `PackageInstaller`, instead of dead-ending on the GitHub release web page in a browser (#967, #968)
 - civitai.red front-door support — choose which CivitAI site web & share links open (SFW `civitai.com` / full `civitai.red`), independent of the NSFW content filter, default SFW (#913)
 - Guided remote ComfyUI connection onboarding — LAN auto-detect (Android/Desktop), QR, and manual entry, each followed by a connection test with actionable failure reasons and self-signed TLS handling (#914)
 - ComfyUI APP mode support — auto-detect APP-mode metadata on workflow import and in ComfyHub, parse grouped/collapsible parameter sections, and handle IMAGE and BOOLEAN parameter types in the workflow editor (c5240659, 50068699, 2c8a0f75)
@@ -58,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Expanded the CI Android job to run feature/core module unit tests in addition to shared tests, and added `core/**` + `feature/**` to the path filter (#915, #916)
 - Added unit tests for data-layer repositories (#931)
 - Added a reference-vector comparison test for `ImageEmbeddingModel` (574245c1)
+- Release workflow now publishes a SHA-256 checksum (`*.apk.sha256`) for the Android APK (#968)
 
 ## [2.2.0] - 2026-04-10
 
