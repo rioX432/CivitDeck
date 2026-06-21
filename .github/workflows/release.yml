@@ -41,11 +41,18 @@ jobs:
           cp androidApp/build/outputs/apk/release/androidApp-release.apk \
             "CivitDeck-${VERSION}-android.apk"
 
+      - name: Generate SHA-256 checksum
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          sha256sum "CivitDeck-${VERSION}-android.apk" > "CivitDeck-${VERSION}-android.apk.sha256"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: CivitDeck-*-android.apk
+          path: |
+            CivitDeck-*-android.apk
+            CivitDeck-*-android.apk.sha256
 
   # Build macOS DMG
   build-macos:
