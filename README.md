@@ -62,6 +62,11 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Background Downloads** — download model files with pause/resume queue management, hash verification, and notifications
 - **Real-time Generation Preview** — live WebSocket preview of ComfyUI generation progress with interrupt support
 - **ComfyHub** — browse and import community workflows from ComfyHub directly into your workflow library
+- **APP Mode Workflows** — auto-detect ComfyUI APP-mode metadata on import, with grouped/collapsible parameter sections and IMAGE/BOOLEAN parameter types
+- **Guided Connection Setup** — connect to a remote ComfyUI via LAN auto-detect, QR, or manual entry, each with a connection test and actionable failure reasons
+- **Generation Notifications** — get notified when ComfyUI generations finish via local notifications or ntfy.sh push, with background monitoring kept alive by a foreground service
+- **Hardware Monitoring** — view connected ComfyUI server hardware (VRAM/RAM/GPU) with per-model VRAM compatibility badges and optimization suggestions
+- **CivitAI Site Toggle** — choose whether web and share links open `civitai.com` (SFW) or `civitai.red` (full), independent of the content filter
 - **Image Similarity Search** — find visually similar models using on-device SigLIP-2 embeddings
 - **Text-to-Image Search** — describe what you want in natural language, find matching models via SigLIP-2 text encoder
 - **Model Update Notifications** — get notified when followed models receive updates
@@ -72,7 +77,7 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Fresh Find** — discover recently published models before they trend
 - **Quality Filter** — filter models by calculated quality score based on downloads, favorites, and ratings
 - **Integrations Hub** — unified management screen for ComfyUI, SD WebUI, Civitai Link, and external servers
-- **Cross-Platform** — native Android (Jetpack Compose), iOS (SwiftUI) & Desktop (Compose Desktop) with 37 shared ViewModels in KMP commonMain
+- **Cross-Platform** — native Android (Jetpack Compose), iOS (SwiftUI) & Desktop (Compose Desktop) with 49 shared ViewModels in KMP commonMain
 
 See the full [Roadmap](docs/ROADMAP.md) for planned features.
 
