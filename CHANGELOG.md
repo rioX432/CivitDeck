@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - civitai.red front-door support — choose which CivitAI site web & share links open (SFW `civitai.com` / full `civitai.red`), independent of the NSFW content filter, default SFW (#913)
 - Guided remote ComfyUI connection onboarding — LAN auto-detect (Android/Desktop), QR, and manual entry, each followed by a connection test with actionable failure reasons and self-signed TLS handling (#914)
+- ComfyUI APP mode support — auto-detect APP-mode metadata on workflow import and in ComfyHub, parse grouped/collapsible parameter sections, and handle IMAGE and BOOLEAN parameter types in the workflow editor (c5240659, 50068699, 2c8a0f75)
+- Hardware info display via the `/system_stats` endpoint (VRAM/RAM/GPU) for connected ComfyUI servers on all platforms (e3831afb)
+- VRAM compatibility badges and per-model optimization suggestions (418b8de9)
+- Background ComfyUI generation monitoring — an Android foreground service keeps the WebSocket alive and fires a local notification on completion (8b225dc4, e7a1c52a)
+- ntfy.sh push notification integration for ComfyUI generation events (ccbb55fc)
+- SigLIP-2 text encoder for Android cross-modal (text-to-image) search (57847321)
+- iOS haptic feedback via `UIImpactFeedbackGenerator` (#947)
+- Content descriptions on actionable icons for screen-reader accessibility (#939)
 
 ### Changed
 
@@ -19,10 +27,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Established shared `core-testing` module (fake repositories, `TestScope`-based `ApplicationScope`, Turbine) and added commonTest coverage for key ViewModels (#915)
 - Raised `minSdk` from 24 to 29 (Android 10) and removed the deprecated `getExternalStoragePublicDirectory` gallery fallback (#818)
 - Expanded the `Won't Do` scope: cloud generation services, proprietary AI models, on-device model preview
+- Grouped search/detail ViewModel use cases into cohesive bundles to reduce constructor injection sprawl (#936)
+- Split `ComfyUISettingsScreen` into section composables (#933)
+- Migrated KMP library modules to the `com.android.kotlin.multiplatform.library` AGP plugin (#935)
+- Externalized remaining hardcoded user-facing strings to resource files (#932)
+- Extracted built-in workflow JSON into dedicated resource files (#944)
+- Moved Auth/Review/Tag repository implementations to `core-data` (#937)
+- Centralized the default ComfyUI host/port into shared constants (#940)
+- Extracted shared ComfyUI parameter components into `core-ui` (8722e821)
+- Applied design tokens for spacing and elevation across remaining screens (#946)
+- Extracted a `launchSafe` extension to deduplicate ViewModel delegate boilerplate (f1c03c29)
 
 ### Fixed
 
 - End-of-view duration tracking now records reliably on screen exit via an injected application scope, instead of being dropped when launched into the already-cancelled `viewModelScope` in `onCleared()` (#912)
+- Handle a missing ComfyUI connection gracefully instead of crashing (#934)
+- Surface previously-swallowed LAN scan errors to the UI state (#941)
+- Return a typed failure for a missing API key in `ReviewRepositoryImpl` (#948)
+- Use `firstOrNull` to avoid `NoSuchElementException` on empty flows (#943)
+- Log failures before returning null in ML model loaders (#938)
+- Remove a force unwrap in `DesktopAuthSettingsSection` (#945)
+- Prevent an unwanted API reload on back navigation that broke shared element transitions (d525746a)
+- Stop the stagger animation from replaying on back navigation from the detail screen (19a10382)
 
 ### Infrastructure
 
@@ -30,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed pre-existing iosApp compile breakage (KMP type exports, actor isolation, `@retroactive`) and SwiftLint violations that went undetected while the iOS CI job was being path-filter-skipped (#922)
 - iOS CI now runs on `macos-26` / Xcode 26 (Swift 6.2) with `ARCHS=arm64` to match the KMP `iosSimulatorArm64`-only framework; SwiftLint runs before the build (#920, #922)
 - Expanded the CI Android job to run feature/core module unit tests in addition to shared tests, and added `core/**` + `feature/**` to the path filter (#915, #916)
+- Added unit tests for data-layer repositories (#931)
+- Added a reference-vector comparison test for `ImageEmbeddingModel` (574245c1)
 
 ## [2.2.0] - 2026-04-10
 
