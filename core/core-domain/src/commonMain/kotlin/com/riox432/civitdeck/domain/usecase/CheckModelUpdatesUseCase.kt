@@ -59,7 +59,6 @@ class CheckModelUpdatesUseCase(
         )
     }
 
-    @Suppress("LongMethod")
     private suspend fun checkModels(
         modelIds: Set<Long>,
         source: UpdateSource,

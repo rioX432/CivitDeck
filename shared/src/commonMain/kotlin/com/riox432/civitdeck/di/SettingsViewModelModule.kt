@@ -56,7 +56,6 @@ import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewMo
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-@Suppress("LongMethod")
 val settingsViewModelModule = module {
     viewModel {
         ContentFilterSettingsViewModel(

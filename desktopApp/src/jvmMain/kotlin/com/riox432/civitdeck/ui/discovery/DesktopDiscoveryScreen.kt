@@ -34,7 +34,6 @@ import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
 
-@Suppress("LongMethod")
 @Composable
 fun DesktopDiscoveryScreen(
     viewModel: DesktopDiscoveryViewModel,
@@ -79,47 +78,60 @@ fun DesktopDiscoveryScreen(
                 }
             }
             else -> {
-                val columns = displayState.gridColumns
-                val nsfwFilterLevel = contentFilterState.nsfwFilterLevel
-                val nsfwBlurSettings = contentFilterState.nsfwBlurSettings
+                DiscoveryGrid(
+                    sections = uiState.sections,
+                    columns = displayState.gridColumns,
+                    nsfwFilterLevel = contentFilterState.nsfwFilterLevel,
+                    nsfwBlurSettings = contentFilterState.nsfwBlurSettings,
+                    onModelClick = onModelClick,
+                )
+            }
+        }
+    }
+}
 
-                LazyVerticalGrid(
-                    columns = if (columns > 0) {
-                        GridCells.Fixed(columns)
-                    } else {
-                        GridCells.Adaptive(minSize = CARD_MIN_WIDTH)
-                    },
-                    contentPadding = PaddingValues(Spacing.md),
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    uiState.sections.forEach { section ->
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            SectionHeader(
-                                title = section.title,
-                                subtitle = section.reason,
-                            )
-                        }
+@Composable
+private fun DiscoveryGrid(
+    sections: List<com.riox432.civitdeck.domain.model.RecommendationSection>,
+    columns: Int,
+    nsfwFilterLevel: NsfwFilterLevel,
+    nsfwBlurSettings: com.riox432.civitdeck.domain.model.NsfwBlurSettings,
+    onModelClick: (Long) -> Unit,
+) {
+    LazyVerticalGrid(
+        columns = if (columns > 0) {
+            GridCells.Fixed(columns)
+        } else {
+            GridCells.Adaptive(minSize = CARD_MIN_WIDTH)
+        },
+        contentPadding = PaddingValues(Spacing.md),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        sections.forEach { section ->
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                SectionHeader(
+                    title = section.title,
+                    subtitle = section.reason,
+                )
+            }
 
-                        val models = if (nsfwFilterLevel == NsfwFilterLevel.All) {
-                            section.models.filter { !it.nsfw }
-                        } else {
-                            section.models
-                        }
+            val models = if (nsfwFilterLevel == NsfwFilterLevel.All) {
+                section.models.filter { !it.nsfw }
+            } else {
+                section.models
+            }
 
-                        items(
-                            items = models,
-                            key = { model -> "${section.title}_${model.id}" },
-                        ) { model ->
-                            DesktopModelCard(
-                                model = model,
-                                onClick = { onModelClick(model.id) },
-                                nsfwBlurSettings = nsfwBlurSettings,
-                            )
-                        }
-                    }
-                }
+            items(
+                items = models,
+                key = { model -> "${section.title}_${model.id}" },
+            ) { model ->
+                DesktopModelCard(
+                    model = model,
+                    onClick = { onModelClick(model.id) },
+                    nsfwBlurSettings = nsfwBlurSettings,
+                )
             }
         }
     }

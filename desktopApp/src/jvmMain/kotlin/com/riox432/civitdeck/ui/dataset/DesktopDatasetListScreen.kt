@@ -163,7 +163,6 @@ private fun DatasetListBody(
     }
 }
 
-@Suppress("LongMethod")
 @Composable
 private fun DesktopDatasetCard(
     dataset: DatasetCollection,
@@ -186,64 +185,15 @@ private fun DesktopDatasetCard(
             modifier = Modifier.fillMaxWidth().padding(Spacing.md),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            BadgedBox(
-                badge = {
-                    if (dataset.imageCount > 0) {
-                        Badge { Text(dataset.imageCount.toString()) }
-                    }
-                },
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Dataset,
-                    contentDescription = "Dataset",
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-            }
+            DatasetCardIcon(imageCount = dataset.imageCount)
             Spacer(modifier = Modifier.width(Spacing.md))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = dataset.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = "${dataset.imageCount} images",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Box {
-                Text(
-                    text = "...",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.clickable(
-                        role = Role.Button,
-                        onClickLabel = "Open menu",
-                    ) { showMenu = true },
-                )
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false },
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Rename") },
-                        leadingIcon = { Icon(Icons.Default.Edit, contentDescription = "Rename") },
-                        onClick = {
-                            showMenu = false
-                            showRenameDialog = true
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Delete") },
-                        leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete") },
-                        onClick = {
-                            showMenu = false
-                            onDelete()
-                        },
-                    )
-                }
-            }
+            DatasetCardInfo(dataset = dataset, modifier = Modifier.weight(1f))
+            DatasetCardMenu(
+                expanded = showMenu,
+                onExpandedChange = { showMenu = it },
+                onRename = { showRenameDialog = true },
+                onDelete = onDelete,
+            )
         }
     }
 
@@ -258,6 +208,83 @@ private fun DesktopDatasetCard(
                 showRenameDialog = false
             },
         )
+    }
+}
+
+@Composable
+private fun DatasetCardIcon(imageCount: Int) {
+    BadgedBox(
+        badge = {
+            if (imageCount > 0) {
+                Badge { Text(imageCount.toString()) }
+            }
+        },
+    ) {
+        Icon(
+            imageVector = Icons.Default.Dataset,
+            contentDescription = "Dataset",
+            tint = MaterialTheme.colorScheme.primary,
+        )
+    }
+}
+
+@Composable
+private fun DatasetCardInfo(
+    dataset: DatasetCollection,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = dataset.name,
+            style = MaterialTheme.typography.titleMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = "${dataset.imageCount} images",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun DatasetCardMenu(
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onRename: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    Box {
+        Text(
+            text = "...",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.clickable(
+                role = Role.Button,
+                onClickLabel = "Open menu",
+            ) { onExpandedChange(true) },
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { onExpandedChange(false) },
+        ) {
+            DropdownMenuItem(
+                text = { Text("Rename") },
+                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = "Rename") },
+                onClick = {
+                    onExpandedChange(false)
+                    onRename()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("Delete") },
+                leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete") },
+                onClick = {
+                    onExpandedChange(false)
+                    onDelete()
+                },
+            )
+        }
     }
 }
 

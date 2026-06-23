@@ -136,25 +136,13 @@ private fun LibraryBaseContent(
 }
 
 @Composable
-@Suppress("CyclomaticComplexMethod", "LongMethod")
+@Suppress("CyclomaticComplexMethod")
 private fun LibraryOverlayContent(
     backstack: SnapshotStateList<DesktopRoute>,
     currentRoute: DesktopRoute?,
 ) {
     when (currentRoute) {
-        is DesktopRoute.CollectionDetail -> {
-            val detailVm: CollectionDetailViewModel = koinViewModel(
-                key = "collection_${currentRoute.collectionId}",
-            ) { parametersOf(currentRoute.collectionId) }
-            DesktopCollectionDetailScreen(
-                viewModel = detailVm,
-                collectionName = currentRoute.collectionName,
-                onBack = { backstack.removeLastOrNull() },
-                onModelClick = { modelId ->
-                    backstack.add(DesktopRoute.ModelDetail(modelId))
-                },
-            )
-        }
+        is DesktopRoute.CollectionDetail -> LibraryCollectionDetailOverlay(backstack, currentRoute)
         is DesktopRoute.DatasetDetail -> {
             val vm: DatasetDetailViewModel = koinViewModel(
                 key = "dataset_detail_${currentRoute.datasetId}",
@@ -165,21 +153,7 @@ private fun LibraryOverlayContent(
                 onBack = { backstack.removeLastOrNull() },
             )
         }
-        is DesktopRoute.ModelDetail -> {
-            val modelVm: ModelDetailViewModel = koinViewModel(
-                key = "detail_${currentRoute.modelId}",
-            ) { parametersOf(currentRoute.modelId) }
-            DesktopDetailScreen(
-                viewModel = modelVm,
-                onBack = { backstack.removeLastOrNull() },
-                onImageClick = { urls, index ->
-                    backstack.add(DesktopRoute.ImageViewer(urls, index))
-                },
-                onCreatorClick = { username ->
-                    backstack.add(DesktopRoute.CreatorProfile(username))
-                },
-            )
-        }
+        is DesktopRoute.ModelDetail -> LibraryModelDetailOverlay(backstack, currentRoute)
         is DesktopRoute.CreatorProfile -> {
             val creatorVm: CreatorProfileViewModel = koinViewModel(
                 key = "creator_${currentRoute.username}",
@@ -201,4 +175,42 @@ private fun LibraryOverlayContent(
         }
         else -> { /* Base section is shown */ }
     }
+}
+
+@Composable
+private fun LibraryCollectionDetailOverlay(
+    backstack: SnapshotStateList<DesktopRoute>,
+    route: DesktopRoute.CollectionDetail,
+) {
+    val detailVm: CollectionDetailViewModel = koinViewModel(
+        key = "collection_${route.collectionId}",
+    ) { parametersOf(route.collectionId) }
+    DesktopCollectionDetailScreen(
+        viewModel = detailVm,
+        collectionName = route.collectionName,
+        onBack = { backstack.removeLastOrNull() },
+        onModelClick = { modelId ->
+            backstack.add(DesktopRoute.ModelDetail(modelId))
+        },
+    )
+}
+
+@Composable
+private fun LibraryModelDetailOverlay(
+    backstack: SnapshotStateList<DesktopRoute>,
+    route: DesktopRoute.ModelDetail,
+) {
+    val modelVm: ModelDetailViewModel = koinViewModel(
+        key = "detail_${route.modelId}",
+    ) { parametersOf(route.modelId) }
+    DesktopDetailScreen(
+        viewModel = modelVm,
+        onBack = { backstack.removeLastOrNull() },
+        onImageClick = { urls, index ->
+            backstack.add(DesktopRoute.ImageViewer(urls, index))
+        },
+        onCreatorClick = { username ->
+            backstack.add(DesktopRoute.CreatorProfile(username))
+        },
+    )
 }

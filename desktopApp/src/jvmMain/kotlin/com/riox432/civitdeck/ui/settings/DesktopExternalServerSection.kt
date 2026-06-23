@@ -24,7 +24,6 @@ import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerG
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 
-@Suppress("LongMethod")
 @Composable
 fun ExternalServerSettingsSection(viewModel: ExternalServerSettingsViewModel) {
     val state by viewModel.uiState.collectAsState()

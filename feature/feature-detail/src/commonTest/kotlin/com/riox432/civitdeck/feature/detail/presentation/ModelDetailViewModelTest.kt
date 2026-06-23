@@ -199,7 +199,6 @@ class ModelDetailViewModelTest {
         val browsingRepo: FakeBrowsingHistoryRepository,
     )
 
-    @Suppress("LongMethod")
     private fun createViewModel(
         scope: TestScope,
         model: Model = testModel(),

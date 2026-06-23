@@ -39,7 +39,6 @@ import coil3.compose.SubcomposeAsyncImage
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.theme.Spacing
 
-@Suppress("LongMethod")
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DesktopImageViewer(

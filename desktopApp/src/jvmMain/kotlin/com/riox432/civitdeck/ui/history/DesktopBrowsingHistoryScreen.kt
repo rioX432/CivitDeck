@@ -44,7 +44,6 @@ import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 
-@Suppress("LongMethod")
 @Composable
 fun DesktopBrowsingHistoryScreen(
     viewModel: BrowsingHistoryViewModel,
@@ -98,21 +97,32 @@ fun DesktopBrowsingHistoryScreen(
     }
 
     if (showClearDialog) {
-        AlertDialog(
-            onDismissRequest = { showClearDialog = false },
-            title = { Text("Clear All History") },
-            text = { Text("Are you sure? This cannot be undone.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.clearAll()
-                    showClearDialog = false
-                }) { Text("Clear") }
+        ClearHistoryDialog(
+            onConfirm = {
+                viewModel.clearAll()
+                showClearDialog = false
             },
-            dismissButton = {
-                TextButton(onClick = { showClearDialog = false }) { Text("Cancel") }
-            },
+            onDismiss = { showClearDialog = false },
         )
     }
+}
+
+@Composable
+private fun ClearHistoryDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Clear All History") },
+        text = { Text("Are you sure? This cannot be undone.") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) { Text("Clear") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        },
+    )
 }
 
 @Composable

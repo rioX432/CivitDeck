@@ -29,7 +29,6 @@ import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewM
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 
-@Suppress("LongMethod")
 @Composable
 fun SDWebUISettingsSection(viewModel: SDWebUISettingsViewModel) {
     val state by viewModel.uiState.collectAsState()
@@ -132,7 +131,6 @@ fun SDWebUISettingsSection(viewModel: SDWebUISettingsViewModel) {
     }
 }
 
-@Suppress("LongMethod")
 @Composable
 fun SDWebUIGenerationSection(viewModel: SDWebUIGenerationViewModel) {
     val state by viewModel.uiState.collectAsState()

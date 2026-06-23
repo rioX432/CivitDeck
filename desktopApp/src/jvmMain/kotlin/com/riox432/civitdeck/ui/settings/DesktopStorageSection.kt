@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 
-@Suppress("LongMethod")
 @Composable
 internal fun StorageSection(viewModel: StorageSettingsViewModel) {
     val state by viewModel.uiState.collectAsState()

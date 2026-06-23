@@ -52,7 +52,7 @@ import com.riox432.civitdeck.ui.qrcode.QRCodeSheet
 import com.riox432.civitdeck.ui.share.SocialShareSheet
 
 @Composable
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList")
 fun ModelDetailScreen(
     viewModel: ModelDetailViewModel,
     modelId: Long,
@@ -84,31 +84,17 @@ fun ModelDetailScreen(
     var showSubmitReviewSheet by remember { mutableStateOf(false) }
     var showShareSheet by remember { mutableStateOf(false) }
     val haptic = rememberHapticFeedback()
-    val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        viewModel.downloadEnqueuedEvent.collect { downloadId ->
-            DownloadScheduler.enqueue(context, downloadId)
-        }
-    }
+    DownloadEnqueueEffect(viewModel)
 
-    val detailCallbacks = remember(viewModel, onViewImages, onCreatorClick, onTryInComfyUI) {
-        ModelDetailCallbacks(
-            onRetry = viewModel::retry,
-            onVersionSelected = viewModel::onVersionSelected,
-            onViewImages = onViewImages,
-            onCreatorClick = onCreatorClick,
-            onTryInComfyUI = onTryInComfyUI,
-            onSendToPC = { showSendToPCSheet = true },
-            onSaveNote = viewModel::saveNote,
-            onAddTag = viewModel::addTag,
-            onRemoveTag = viewModel::removeTag,
-            onDownloadFile = viewModel::downloadFile,
-            onCancelDownload = viewModel::cancelDownload,
-            onReviewSortChanged = viewModel::onReviewSortChanged,
-            onWriteReview = { showSubmitReviewSheet = true },
-        )
-    }
+    val detailCallbacks = rememberModelDetailCallbacks(
+        viewModel = viewModel,
+        onViewImages = onViewImages,
+        onCreatorClick = onCreatorClick,
+        onTryInComfyUI = onTryInComfyUI,
+        onSendToPC = { showSendToPCSheet = true },
+        onWriteReview = { showSubmitReviewSheet = true },
+    )
 
     ModelDetailScaffold(
         uiState = uiState,
@@ -125,36 +111,130 @@ fun ModelDetailScreen(
         onFindSimilar = onFindSimilar,
     )
 
+    ModelDetailOverlays(
+        uiState = uiState,
+        viewModel = viewModel,
+        modelId = modelId,
+        collections = collections,
+        modelCollectionIds = modelCollectionIds,
+        sheetVisibility = ModelDetailSheetVisibility(
+            showSubmitReviewSheet = showSubmitReviewSheet,
+            showSendToPCSheet = showSendToPCSheet,
+            showCollectionSheet = showCollectionSheet,
+            showQRCodeSheet = showQRCodeSheet,
+            showShareSheet = showShareSheet,
+        ),
+        onDismissSubmitReview = { showSubmitReviewSheet = false },
+        onDismissSendToPC = { showSendToPCSheet = false },
+        onDismissCollection = { showCollectionSheet = false },
+        onDismissQRCode = { showQRCodeSheet = false },
+        onDismissShare = { showShareSheet = false },
+        shareHashtags = shareHashtags,
+        onToggleShareHashtag = onToggleShareHashtag,
+        onAddShareHashtag = onAddShareHashtag,
+        onRemoveShareHashtag = onRemoveShareHashtag,
+    )
+}
+
+private data class ModelDetailSheetVisibility(
+    val showSubmitReviewSheet: Boolean,
+    val showSendToPCSheet: Boolean,
+    val showCollectionSheet: Boolean,
+    val showQRCodeSheet: Boolean,
+    val showShareSheet: Boolean,
+)
+
+@Suppress("LongParameterList")
+@Composable
+private fun ModelDetailOverlays(
+    uiState: ModelDetailUiState,
+    viewModel: ModelDetailViewModel,
+    modelId: Long,
+    collections: List<com.riox432.civitdeck.domain.model.ModelCollection>,
+    modelCollectionIds: List<Long>,
+    sheetVisibility: ModelDetailSheetVisibility,
+    onDismissSubmitReview: () -> Unit,
+    onDismissSendToPC: () -> Unit,
+    onDismissCollection: () -> Unit,
+    onDismissQRCode: () -> Unit,
+    onDismissShare: () -> Unit,
+    shareHashtags: List<ShareHashtag>,
+    onToggleShareHashtag: (String, Boolean) -> Unit,
+    onAddShareHashtag: (String) -> Unit,
+    onRemoveShareHashtag: (String) -> Unit,
+) {
     ReviewSubmitHandler(
         uiState = uiState,
         viewModel = viewModel,
-        showSubmitReviewSheet = showSubmitReviewSheet,
-        onDismissSubmitReview = { showSubmitReviewSheet = false },
+        showSubmitReviewSheet = sheetVisibility.showSubmitReviewSheet,
+        onDismissSubmitReview = onDismissSubmitReview,
     )
 
     ModelDetailSheets(
-        showSendToPCSheet = showSendToPCSheet,
-        onDismissSendToPC = { showSendToPCSheet = false },
+        showSendToPCSheet = sheetVisibility.showSendToPCSheet,
+        onDismissSendToPC = onDismissSendToPC,
         uiState = uiState,
-        showCollectionSheet = showCollectionSheet,
-        onDismissCollection = { showCollectionSheet = false },
+        showCollectionSheet = sheetVisibility.showCollectionSheet,
+        onDismissCollection = onDismissCollection,
         collections = collections,
         modelCollectionIds = modelCollectionIds,
         viewModel = viewModel,
-        showQRCodeSheet = showQRCodeSheet,
-        onDismissQRCode = { showQRCodeSheet = false },
+        showQRCodeSheet = sheetVisibility.showQRCodeSheet,
+        onDismissQRCode = onDismissQRCode,
         modelId = modelId,
     )
 
-    if (showShareSheet) {
+    if (sheetVisibility.showShareSheet) {
         SocialShareSheet(
             hashtags = shareHashtags,
             onToggleHashtag = onToggleShareHashtag,
             onAddHashtag = onAddShareHashtag,
             onRemoveHashtag = onRemoveShareHashtag,
-            onDismiss = { showShareSheet = false },
+            onDismiss = onDismissShare,
         )
     }
+}
+
+@Composable
+private fun DownloadEnqueueEffect(viewModel: ModelDetailViewModel) {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        viewModel.downloadEnqueuedEvent.collect { downloadId ->
+            DownloadScheduler.enqueue(context, downloadId)
+        }
+    }
+}
+
+@Composable
+private fun rememberModelDetailCallbacks(
+    viewModel: ModelDetailViewModel,
+    onViewImages: (Long) -> Unit,
+    onCreatorClick: (String) -> Unit,
+    onTryInComfyUI: (
+        (
+            sha256: String,
+            modelName: String,
+            meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?
+        ) -> Unit
+    )?,
+    onSendToPC: () -> Unit,
+    onWriteReview: () -> Unit,
+): ModelDetailCallbacks = remember(viewModel, onViewImages, onCreatorClick, onTryInComfyUI) {
+    ModelDetailCallbacks(
+        onRetry = viewModel::retry,
+        onVersionSelected = viewModel::onVersionSelected,
+        onViewImages = onViewImages,
+        onCreatorClick = onCreatorClick,
+        onTryInComfyUI = onTryInComfyUI,
+        onSendToPC = onSendToPC,
+        onSaveNote = viewModel::saveNote,
+        onAddTag = viewModel::addTag,
+        onRemoveTag = viewModel::removeTag,
+        onDownloadFile = viewModel::downloadFile,
+        onCancelDownload = viewModel::cancelDownload,
+        onReviewSortChanged = viewModel::onReviewSortChanged,
+        onWriteReview = onWriteReview,
+    )
 }
 
 @Suppress("LongParameterList")

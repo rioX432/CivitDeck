@@ -115,7 +115,7 @@ fun ModelSearchScreen(
     )
 }
 
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchScreenBody(
@@ -147,6 +147,67 @@ private fun SearchScreenBody(
         }
     }
 
+    SearchScreenContentBox(
+        padding = padding,
+        layoutDirection = layoutDirection,
+        density = density,
+        headerState = headerState,
+        uiState = uiState,
+        searchHistory = searchHistory,
+        gridState = gridState,
+        viewModel = viewModel,
+        gridColumns = gridColumns,
+        compareModelName = compareModelName,
+        ownedHashes = ownedHashes,
+        favoriteIds = favoriteIds,
+        callbacks = callbacks,
+        onToggleFavorite = onToggleFavorite,
+        isFabVisible = isFabVisible,
+        activeFilterCount = activeFilterCount,
+        onShowFilterSheet = { showFilterSheet = true },
+    )
+
+    SearchScreenSheets(
+        uiState = uiState,
+        viewModel = viewModel,
+        savedFilters = savedFilters,
+        showFilterSheet = showFilterSheet,
+        showSavedFiltersSheet = showSavedFiltersSheet,
+        showSaveDialog = showSaveDialog,
+        saveFilterName = saveFilterName,
+        onSaveFilterNameChange = { saveFilterName = it },
+        onDismissFilterSheet = { showFilterSheet = false },
+        onShowSavedFilters = { showSavedFiltersSheet = true },
+        onShowSaveDialog = { showSaveDialog = true },
+        onDismissSavedFilters = { showSavedFiltersSheet = false },
+        onDismissSaveDialog = {
+            showSaveDialog = false
+            saveFilterName = ""
+        },
+    )
+}
+
+@Suppress("LongParameterList")
+@Composable
+private fun SearchScreenContentBox(
+    padding: androidx.compose.foundation.layout.PaddingValues,
+    layoutDirection: androidx.compose.ui.unit.LayoutDirection,
+    density: androidx.compose.ui.unit.Density,
+    headerState: CollapsibleHeaderState,
+    uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
+    searchHistory: List<String>,
+    gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
+    viewModel: ModelSearchViewModel,
+    gridColumns: Int,
+    compareModelName: String?,
+    ownedHashes: Set<String>,
+    favoriteIds: Set<Long>,
+    callbacks: SearchScreenCallbacks,
+    onToggleFavorite: (com.riox432.civitdeck.domain.model.Model) -> Unit,
+    isFabVisible: Boolean,
+    activeFilterCount: Int,
+    onShowFilterSheet: () -> Unit,
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -199,7 +260,7 @@ private fun SearchScreenBody(
         SpeedDialFab(
             visible = isFabVisible,
             activeFilterCount = activeFilterCount,
-            onFilterClick = { showFilterSheet = true },
+            onFilterClick = onShowFilterSheet,
             onDiscoverClick = callbacks.onDiscoverClick,
             onScanQRCode = callbacks.onScanQRCode,
             onTextSearch = if (BuildConfig.FEATURE_SIMILARITY_SEARCH) callbacks.onTextSearch else null,
@@ -214,13 +275,31 @@ private fun SearchScreenBody(
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
+}
 
+@Suppress("LongParameterList")
+@Composable
+private fun SearchScreenSheets(
+    uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
+    viewModel: ModelSearchViewModel,
+    savedFilters: List<com.riox432.civitdeck.domain.model.SavedSearchFilter>,
+    showFilterSheet: Boolean,
+    showSavedFiltersSheet: Boolean,
+    showSaveDialog: Boolean,
+    saveFilterName: String,
+    onSaveFilterNameChange: (String) -> Unit,
+    onDismissFilterSheet: () -> Unit,
+    onShowSavedFilters: () -> Unit,
+    onShowSaveDialog: () -> Unit,
+    onDismissSavedFilters: () -> Unit,
+    onDismissSaveDialog: () -> Unit,
+) {
     if (showFilterSheet) {
         FilterBottomSheet(
             uiState = uiState,
-            onDismiss = { showFilterSheet = false },
-            onShowSavedFilters = { showSavedFiltersSheet = true },
-            onSaveFilter = { showSaveDialog = true },
+            onDismiss = onDismissFilterSheet,
+            onShowSavedFilters = onShowSavedFilters,
+            onSaveFilter = onShowSaveDialog,
             onResetFilters = viewModel::resetFilters,
             filterCallbacks = FilterCallbacks(
                 onTypeSelected = viewModel::onTypeSelected,
@@ -242,27 +321,23 @@ private fun SearchScreenBody(
             savedFilters = savedFilters,
             onApply = { filter ->
                 viewModel.applyFilter(filter)
-                showFilterSheet = false
+                onDismissFilterSheet()
             },
             onDelete = viewModel::deleteSavedFilter,
-            onDismiss = { showSavedFiltersSheet = false },
+            onDismiss = onDismissSavedFilters,
         )
     }
     if (showSaveDialog) {
         SaveFilterDialog(
             filterName = saveFilterName,
-            onFilterNameChange = { saveFilterName = it },
+            onFilterNameChange = onSaveFilterNameChange,
             onConfirm = {
                 if (saveFilterName.isNotBlank()) {
                     viewModel.saveCurrentFilter(saveFilterName.trim())
                 }
-                showSaveDialog = false
-                saveFilterName = ""
+                onDismissSaveDialog()
             },
-            onDismiss = {
-                showSaveDialog = false
-                saveFilterName = ""
-            },
+            onDismiss = onDismissSaveDialog,
         )
     }
 }

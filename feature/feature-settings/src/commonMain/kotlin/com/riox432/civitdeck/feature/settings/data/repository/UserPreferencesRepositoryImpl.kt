@@ -21,6 +21,13 @@ import com.riox432.civitdeck.domain.repository.StoragePreferencesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+/**
+ * Single-row preferences facade. It implements five cohesive preference-domain interfaces
+ * (content-filter, display, auth, app-behavior, storage) all backed by the same single-row
+ * [UserPreferencesDao]. Splitting into five classes would duplicate identical DAO boilerplate
+ * and fan out Koin bindings with no cohesion or behavioral benefit, so the high function count
+ * is suppressed deliberately.
+ */
 @Suppress("TooManyFunctions")
 class UserPreferencesRepositoryImpl(
     private val dao: UserPreferencesDao,

@@ -56,7 +56,6 @@ import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewMo
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 
-@Suppress("LongMethod")
 @Composable
 fun DesktopWorkflowTemplateScreen(
     viewModel: WorkflowTemplateViewModel,
@@ -120,21 +119,42 @@ fun DesktopWorkflowTemplateScreen(
         }
     }
 
+    TemplateScreenDialogs(
+        showImportDialog = showImportDialog,
+        importText = importText,
+        exportedJson = state.exportedJson,
+        onImportTextChange = { importText = it },
+        onImportConfirm = {
+            viewModel.onImportTemplate(importText)
+            importText = ""
+            showImportDialog = false
+        },
+        onImportDismiss = { showImportDialog = false },
+        onExportDismiss = viewModel::onDismissExport,
+    )
+}
+
+@Composable
+private fun TemplateScreenDialogs(
+    showImportDialog: Boolean,
+    importText: String,
+    exportedJson: String?,
+    onImportTextChange: (String) -> Unit,
+    onImportConfirm: () -> Unit,
+    onImportDismiss: () -> Unit,
+    onExportDismiss: () -> Unit,
+) {
     if (showImportDialog) {
         ImportDialog(
             text = importText,
-            onTextChange = { importText = it },
-            onConfirm = {
-                viewModel.onImportTemplate(importText)
-                importText = ""
-                showImportDialog = false
-            },
-            onDismiss = { showImportDialog = false },
+            onTextChange = onImportTextChange,
+            onConfirm = onImportConfirm,
+            onDismiss = onImportDismiss,
         )
     }
 
-    state.exportedJson?.let { json ->
-        ExportDialog(json = json, onDismiss = viewModel::onDismissExport)
+    exportedJson?.let { json ->
+        ExportDialog(json = json, onDismiss = onExportDismiss)
     }
 }
 

@@ -97,7 +97,7 @@ private fun SettingsMainContent(
 }
 
 @Composable
-@Suppress("CyclomaticComplexMethod", "LongMethod")
+@Suppress("CyclomaticComplexMethod")
 private fun SettingsOverlayContent(
     backstack: SnapshotStateList<DesktopRoute>,
     currentRoute: DesktopRoute?,

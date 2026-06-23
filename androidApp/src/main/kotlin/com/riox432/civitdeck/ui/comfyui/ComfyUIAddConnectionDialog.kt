@@ -27,7 +27,6 @@ import com.riox432.civitdeck.ui.theme.Spacing
 private const val TOPIC_ID_LENGTH = 8
 
 @Composable
-@Suppress("LongMethod")
 internal fun AddConnectionDialog(
     editing: ComfyUIConnection?,
     onSave: (
@@ -82,24 +81,56 @@ internal fun AddConnectionDialog(
             )
         },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    val port = portText.toIntOrNull() ?: ComfyUIConnection.DEFAULT_COMFYUI_PORT
-                    onSave(
-                        name.ifBlank { hostname },
-                        hostname,
-                        port,
-                        useHttps,
-                        acceptSelfSigned,
-                        ntfyServerUrl.ifBlank { null },
-                        ntfyTopic.ifBlank { null },
-                    )
-                },
-                enabled = hostname.isNotBlank(),
-            ) { Text(stringResource(R.string.action_save)) }
+            AddConnectionConfirmButton(
+                name = name,
+                hostname = hostname,
+                portText = portText,
+                useHttps = useHttps,
+                acceptSelfSigned = acceptSelfSigned,
+                ntfyServerUrl = ntfyServerUrl,
+                ntfyTopic = ntfyTopic,
+                onSave = onSave,
+            )
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
+}
+
+@Composable
+@Suppress("LongParameterList")
+private fun AddConnectionConfirmButton(
+    name: String,
+    hostname: String,
+    portText: String,
+    useHttps: Boolean,
+    acceptSelfSigned: Boolean,
+    ntfyServerUrl: String,
+    ntfyTopic: String,
+    onSave: (
+        name: String,
+        hostname: String,
+        port: Int,
+        useHttps: Boolean,
+        acceptSelfSigned: Boolean,
+        ntfyServerUrl: String?,
+        ntfyTopic: String?,
+    ) -> Unit,
+) {
+    TextButton(
+        onClick = {
+            val port = portText.toIntOrNull() ?: ComfyUIConnection.DEFAULT_COMFYUI_PORT
+            onSave(
+                name.ifBlank { hostname },
+                hostname,
+                port,
+                useHttps,
+                acceptSelfSigned,
+                ntfyServerUrl.ifBlank { null },
+                ntfyTopic.ifBlank { null },
+            )
+        },
+        enabled = hostname.isNotBlank(),
+    ) { Text(stringResource(R.string.action_save)) }
 }
 
 @Composable

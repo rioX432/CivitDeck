@@ -71,7 +71,6 @@ private const val DEFAULT_GRID_COLUMNS = 4
 private const val IMAGE_ASPECT_RATIO = 1f
 private const val DATASET_IMAGE_SIZE = 300
 
-@Suppress("LongMethod")
 @Composable
 fun DesktopDatasetDetailScreen(
     datasetName: String,
@@ -127,25 +126,46 @@ fun DesktopDatasetDetailScreen(
         }
     }
 
+    DatasetDetailDialogs(
+        showExportDialog = showExportDialog,
+        availableExportFormats = availableExportFormats,
+        captionEditState = captionEditState,
+        onExport = { formatId ->
+            viewModel.startExport(formatId)
+            showExportDialog = false
+        },
+        onExportDismiss = { showExportDialog = false },
+        onCaptionSave = { imageId, text ->
+            viewModel.editCaption(imageId, text)
+            captionEditState = null
+        },
+        onCaptionDismiss = { captionEditState = null },
+    )
+}
+
+@Composable
+private fun DatasetDetailDialogs(
+    showExportDialog: Boolean,
+    availableExportFormats: List<com.riox432.civitdeck.plugin.PluginExportFormat>,
+    captionEditState: Pair<Long, String>?,
+    onExport: (String) -> Unit,
+    onExportDismiss: () -> Unit,
+    onCaptionSave: (Long, String) -> Unit,
+    onCaptionDismiss: () -> Unit,
+) {
     if (showExportDialog) {
         DesktopExportDialog(
             formats = availableExportFormats,
-            onExport = { formatId ->
-                viewModel.startExport(formatId)
-                showExportDialog = false
-            },
-            onDismiss = { showExportDialog = false },
+            onExport = onExport,
+            onDismiss = onExportDismiss,
         )
     }
 
     captionEditState?.let { (imageId, initialCaption) ->
         CaptionEditDialog(
             initialCaption = initialCaption,
-            onSave = { text ->
-                viewModel.editCaption(imageId, text)
-                captionEditState = null
-            },
-            onDismiss = { captionEditState = null },
+            onSave = { text -> onCaptionSave(imageId, text) },
+            onDismiss = onCaptionDismiss,
         )
     }
 }
@@ -289,7 +309,6 @@ private fun DatasetImageGridContent(
     }
 }
 
-@Suppress("LongMethod")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DesktopDatasetImageItem(
@@ -320,49 +339,58 @@ private fun DesktopDatasetImageItem(
                 .clip(RoundedCornerShape(CornerRadius.image)),
         )
         if (isSelectionMode) {
-            Box(
-                modifier = Modifier
-                    .padding(Spacing.sm)
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (isSelected) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
-                        },
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                if (isSelected) {
-                    Icon(
-                        Icons.Default.CheckCircle,
-                        contentDescription = "Selected",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
-            }
+            SelectionIndicator(isSelected = isSelected)
         } else {
             SourceBadge(
                 sourceType = image.sourceType,
                 modifier = Modifier.align(Alignment.BottomEnd).padding(Spacing.xs),
             )
             if (image.excluded) {
-                Text(
-                    text = "Flagged",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onError,
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(Spacing.xs)
-                        .clip(RoundedCornerShape(CornerRadius.chip))
-                        .background(MaterialTheme.colorScheme.error.copy(alpha = 0.85f))
-                        .padding(horizontal = Spacing.xs, vertical = 2.dp),
-                )
+                FlaggedBadge(modifier = Modifier.align(Alignment.TopStart))
             }
         }
     }
+}
+
+@Composable
+private fun SelectionIndicator(isSelected: Boolean) {
+    Box(
+        modifier = Modifier
+            .padding(Spacing.sm)
+            .size(24.dp)
+            .clip(CircleShape)
+            .background(
+                if (isSelected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+                },
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (isSelected) {
+            Icon(
+                Icons.Default.CheckCircle,
+                contentDescription = "Selected",
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun FlaggedBadge(modifier: Modifier = Modifier) {
+    Text(
+        text = "Flagged",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onError,
+        modifier = modifier
+            .padding(Spacing.xs)
+            .clip(RoundedCornerShape(CornerRadius.chip))
+            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.85f))
+            .padding(horizontal = Spacing.xs, vertical = 2.dp),
+    )
 }
 
 @Composable

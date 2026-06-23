@@ -153,27 +153,13 @@ private fun DiscoverBaseContent(
 }
 
 @Composable
-@Suppress("CyclomaticComplexMethod", "LongMethod")
+@Suppress("CyclomaticComplexMethod")
 private fun DiscoverOverlayContent(
     backstack: SnapshotStateList<DesktopRoute>,
     currentRoute: DesktopRoute?,
 ) {
     when (currentRoute) {
-        is DesktopRoute.ModelDetail -> {
-            val detailVm: ModelDetailViewModel = koinViewModel(
-                key = "detail_${currentRoute.modelId}",
-            ) { parametersOf(currentRoute.modelId) }
-            DesktopDetailScreen(
-                viewModel = detailVm,
-                onBack = { backstack.removeLastOrNull() },
-                onImageClick = { urls, index ->
-                    backstack.add(DesktopRoute.ImageViewer(urls, index))
-                },
-                onCreatorClick = { username ->
-                    backstack.add(DesktopRoute.CreatorProfile(username))
-                },
-            )
-        }
+        is DesktopRoute.ModelDetail -> DiscoverModelDetailOverlay(backstack, currentRoute)
         is DesktopRoute.ImageViewer -> {
             DesktopImageViewer(
                 imageUrls = currentRoute.imageUrls,
@@ -202,19 +188,45 @@ private fun DiscoverOverlayContent(
                 },
             )
         }
-        is DesktopRoute.ModelCompare -> {
-            val leftVm: ModelDetailViewModel = koinViewModel(
-                key = "compare_left_${currentRoute.leftModelId}",
-            ) { parametersOf(currentRoute.leftModelId) }
-            val rightVm: ModelDetailViewModel = koinViewModel(
-                key = "compare_right_${currentRoute.rightModelId}",
-            ) { parametersOf(currentRoute.rightModelId) }
-            DesktopCompareScreen(
-                leftViewModel = leftVm,
-                rightViewModel = rightVm,
-                onBack = { backstack.removeLastOrNull() },
-            )
-        }
+        is DesktopRoute.ModelCompare -> DiscoverModelCompareOverlay(backstack, currentRoute)
         else -> { /* Base content is shown */ }
     }
+}
+
+@Composable
+private fun DiscoverModelDetailOverlay(
+    backstack: SnapshotStateList<DesktopRoute>,
+    route: DesktopRoute.ModelDetail,
+) {
+    val detailVm: ModelDetailViewModel = koinViewModel(
+        key = "detail_${route.modelId}",
+    ) { parametersOf(route.modelId) }
+    DesktopDetailScreen(
+        viewModel = detailVm,
+        onBack = { backstack.removeLastOrNull() },
+        onImageClick = { urls, index ->
+            backstack.add(DesktopRoute.ImageViewer(urls, index))
+        },
+        onCreatorClick = { username ->
+            backstack.add(DesktopRoute.CreatorProfile(username))
+        },
+    )
+}
+
+@Composable
+private fun DiscoverModelCompareOverlay(
+    backstack: SnapshotStateList<DesktopRoute>,
+    route: DesktopRoute.ModelCompare,
+) {
+    val leftVm: ModelDetailViewModel = koinViewModel(
+        key = "compare_left_${route.leftModelId}",
+    ) { parametersOf(route.leftModelId) }
+    val rightVm: ModelDetailViewModel = koinViewModel(
+        key = "compare_right_${route.rightModelId}",
+    ) { parametersOf(route.rightModelId) }
+    DesktopCompareScreen(
+        leftViewModel = leftVm,
+        rightViewModel = rightVm,
+        onBack = { backstack.removeLastOrNull() },
+    )
 }

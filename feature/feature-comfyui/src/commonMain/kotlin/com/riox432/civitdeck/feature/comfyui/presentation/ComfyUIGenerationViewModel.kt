@@ -24,12 +24,9 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptComfyUIGene
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
-import com.riox432.civitdeck.util.Logger
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 data class GenerationUiState(
     val checkpoints: List<String> = emptyList(),
@@ -80,7 +77,7 @@ data class GenerationUiState(
         get() = if (totalSteps > 0) currentStep.toFloat() / totalSteps.toFloat() else 0f
 }
 
-@Suppress("LongParameterList", "TooManyFunctions")
+@Suppress("LongParameterList")
 class ComfyUIGenerationViewModel(
     private val fetchCheckpoints: FetchComfyUICheckpointsUseCase,
     private val fetchLoras: FetchComfyUILorasUseCase,
@@ -119,49 +116,20 @@ class ComfyUIGenerationViewModel(
         observeGenNotifEnabled = observeGenNotifEnabled,
     )
 
+    private val resourceLoader = GenerationResourceLoader(
+        scope = viewModelScope,
+        uiState = _uiState,
+        fetchCheckpoints = fetchCheckpoints,
+        fetchLoras = fetchLoras,
+        fetchControlNets = fetchControlNets,
+        fetchObjectInfo = fetchObjectInfo,
+        extractParameters = extractParameters,
+    )
+
     init {
-        loadCheckpoints()
-        loadLoras()
-        loadControlNets()
-    }
-
-    private fun loadCheckpoints() {
-        _uiState.update { it.copy(isLoadingCheckpoints = true) }
-        launchWithErrorHandling(
-            tag = "Failed to load checkpoints",
-            onError = { e -> _uiState.update { it.copy(isLoadingCheckpoints = false, error = e.message) } },
-        ) {
-            val list = fetchCheckpoints()
-            _uiState.update {
-                it.copy(
-                    checkpoints = list,
-                    selectedCheckpoint = list.firstOrNull() ?: "",
-                    isLoadingCheckpoints = false,
-                )
-            }
-        }
-    }
-
-    private fun loadLoras() {
-        _uiState.update { it.copy(isLoadingLoras = true) }
-        launchWithErrorHandling(
-            tag = "Failed to fetch loras",
-            onError = { _uiState.update { it.copy(isLoadingLoras = false) } },
-        ) {
-            val list = fetchLoras()
-            _uiState.update { it.copy(availableLoras = list, isLoadingLoras = false) }
-        }
-    }
-
-    private fun loadControlNets() {
-        _uiState.update { it.copy(isLoadingControlNets = true) }
-        launchWithErrorHandling(
-            tag = "Failed to fetch control nets",
-            onError = { _uiState.update { it.copy(isLoadingControlNets = false) } },
-        ) {
-            val list = fetchControlNets()
-            _uiState.update { it.copy(availableControlNets = list, isLoadingControlNets = false) }
-        }
+        resourceLoader.loadCheckpoints()
+        resourceLoader.loadLoras()
+        resourceLoader.loadControlNets()
     }
 
     fun onCheckpointSelected(checkpoint: String) {
@@ -245,7 +213,7 @@ class ComfyUIGenerationViewModel(
         try {
             val validated = importWorkflow(jsonInput)
             _uiState.update { it.copy(customWorkflowJson = validated, workflowImportError = null) }
-            extractWorkflowParameters(validated)
+            resourceLoader.extractWorkflowParameters(validated)
         } catch (e: IllegalStateException) {
             _uiState.update { it.copy(workflowImportError = e.message) }
         }
@@ -279,19 +247,7 @@ class ComfyUIGenerationViewModel(
 
     fun onRefreshParameters() {
         val json = _uiState.value.customWorkflowJson ?: return
-        extractWorkflowParameters(json)
-    }
-
-    private fun extractWorkflowParameters(workflowJson: String) {
-        _uiState.update { it.copy(isLoadingParameters = true) }
-        launchWithErrorHandling(
-            tag = "Failed to extract workflow parameters",
-            onError = { _uiState.update { it.copy(isLoadingParameters = false) } },
-        ) {
-            val objectInfoJson = fetchObjectInfo()
-            val params = extractParameters(workflowJson, objectInfoJson)
-            _uiState.update { it.copy(extractedParameters = params, isLoadingParameters = false) }
-        }
+        resourceLoader.extractWorkflowParameters(json)
     }
 
     // -- Inpainting mask --
@@ -357,26 +313,5 @@ class ComfyUIGenerationViewModel(
             maskImageFilename = state.maskImageFilename,
             denoiseStrength = state.denoiseStrength,
         )
-    }
-
-    private inline fun launchWithErrorHandling(
-        tag: String,
-        crossinline onError: (Exception) -> Unit,
-        crossinline block: suspend () -> Unit,
-    ) {
-        viewModelScope.launch {
-            try {
-                block()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                Logger.e(TAG, "$tag: ${e.message}")
-                onError(e)
-            }
-        }
-    }
-
-    companion object {
-        private const val TAG = "ComfyUIGenerationVM"
     }
 }

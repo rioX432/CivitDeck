@@ -1,5 +1,6 @@
 package com.riox432.civitdeck
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,37 +35,16 @@ import okio.Path.Companion.toPath
 import org.koin.mp.KoinPlatform
 import java.util.prefs.Preferences
 
-@Suppress("LongMethod")
 fun main() {
     initKoin {
         modules(desktopModule)
     }
     setupCoilImageLoader()
-    val applicationScope: ApplicationScope = KoinPlatform.getKoin().get()
-    applicationScope.launch {
-        registerWorkflowPlugins()
-        registerExportPlugins()
-        registerThemePlugins()
-    }
-    applicationScope.launch {
-        val cleanup: CleanupBrowsingHistoryUseCase = KoinPlatform.getKoin().get()
-        cleanup(System.currentTimeMillis())
-    }
+    startBackgroundTasks()
 
     application {
         val windowPrefs = remember { WindowPreferences.load() }
-        val windowState by remember {
-            mutableStateOf(
-                WindowState(
-                    size = DpSize(windowPrefs.width.dp, windowPrefs.height.dp),
-                    position = if (windowPrefs.x >= 0 && windowPrefs.y >= 0) {
-                        WindowPosition(windowPrefs.x.dp, windowPrefs.y.dp)
-                    } else {
-                        WindowPosition.PlatformDefault
-                    },
-                ),
-            )
-        }
+        val windowState by remember { mutableStateOf(createWindowState(windowPrefs)) }
 
         var currentScreen by remember { mutableStateOf("Discover") }
         val windowTitle = "CivitDeck — $currentScreen"
@@ -77,36 +57,10 @@ fun main() {
             title = windowTitle,
             state = windowState,
         ) {
-            MenuBar {
-                Menu("Edit") {
-                    Item("Cut", shortcut = KeyShortcut(Key.X, meta = true), onClick = {})
-                    Item("Copy", shortcut = KeyShortcut(Key.C, meta = true), onClick = {})
-                    Item("Paste", shortcut = KeyShortcut(Key.V, meta = true), onClick = {})
-                    Item("Select All", shortcut = KeyShortcut(Key.A, meta = true), onClick = {})
-                }
-                Menu("View") {
-                    Item(
-                        "Refresh",
-                        shortcut = KeyShortcut(Key.R, meta = true),
-                        onClick = { currentScreen = "Discover" },
-                    )
-                    Item(
-                        "Toggle Sidebar",
-                        shortcut = KeyShortcut(Key.Backslash, meta = true),
-                        onClick = {},
-                    )
-                }
-                Menu("Window") {
-                    Item(
-                        "Minimize",
-                        shortcut = KeyShortcut(Key.M, meta = true),
-                        onClick = { windowState.isMinimized = true },
-                    )
-                }
-                Menu("Help") {
-                    Item("About", onClick = {})
-                }
-            }
+            AppMenuBar(
+                onRefresh = { currentScreen = "Discover" },
+                onMinimize = { windowState.isMinimized = true },
+            )
             window.minimumSize = java.awt.Dimension(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
 
             DisposableEffect(Unit) {
@@ -122,6 +76,65 @@ fun main() {
             }
 
             DesktopApp(onScreenChanged = { currentScreen = it })
+        }
+    }
+}
+
+private fun startBackgroundTasks() {
+    val applicationScope: ApplicationScope = KoinPlatform.getKoin().get()
+    applicationScope.launch {
+        registerWorkflowPlugins()
+        registerExportPlugins()
+        registerThemePlugins()
+    }
+    applicationScope.launch {
+        val cleanup: CleanupBrowsingHistoryUseCase = KoinPlatform.getKoin().get()
+        cleanup(System.currentTimeMillis())
+    }
+}
+
+private fun createWindowState(windowPrefs: WindowPreferences): WindowState = WindowState(
+    size = DpSize(windowPrefs.width.dp, windowPrefs.height.dp),
+    position = if (windowPrefs.x >= 0 && windowPrefs.y >= 0) {
+        WindowPosition(windowPrefs.x.dp, windowPrefs.y.dp)
+    } else {
+        WindowPosition.PlatformDefault
+    },
+)
+
+@Composable
+private fun androidx.compose.ui.window.FrameWindowScope.AppMenuBar(
+    onRefresh: () -> Unit,
+    onMinimize: () -> Unit,
+) {
+    MenuBar {
+        Menu("Edit") {
+            Item("Cut", shortcut = KeyShortcut(Key.X, meta = true), onClick = {})
+            Item("Copy", shortcut = KeyShortcut(Key.C, meta = true), onClick = {})
+            Item("Paste", shortcut = KeyShortcut(Key.V, meta = true), onClick = {})
+            Item("Select All", shortcut = KeyShortcut(Key.A, meta = true), onClick = {})
+        }
+        Menu("View") {
+            Item(
+                "Refresh",
+                shortcut = KeyShortcut(Key.R, meta = true),
+                onClick = onRefresh,
+            )
+            Item(
+                "Toggle Sidebar",
+                shortcut = KeyShortcut(Key.Backslash, meta = true),
+                onClick = {},
+            )
+        }
+        Menu("Window") {
+            Item(
+                "Minimize",
+                shortcut = KeyShortcut(Key.M, meta = true),
+                onClick = onMinimize,
+            )
+        }
+        Menu("Help") {
+            Item("About", onClick = {})
         }
     }
 }
