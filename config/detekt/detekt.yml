@@ -13,6 +13,11 @@ complexity:
     thresholdInInterfaces: 30
     thresholdInObjects: 30
     thresholdInEnums: 30
+    # Compose screen files cohesively group one screen with many small @Composable
+    # section sub-functions. Splitting cohesive UI for the linter's sake hurts
+    # readability, so exempt @Composable functions from the file/class threshold.
+    ignoreAnnotatedFunctions:
+      - Composable
 
 exceptions:
   TooGenericExceptionCaught:
