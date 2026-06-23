@@ -11,7 +11,6 @@ import com.riox432.civitdeck.domain.model.Model
  * with platform haptic feedback.
  */
 @Composable
-@Suppress("LongParameterList")
 fun SwipeableModelCard(
     model: Model,
     isFavorite: Boolean,

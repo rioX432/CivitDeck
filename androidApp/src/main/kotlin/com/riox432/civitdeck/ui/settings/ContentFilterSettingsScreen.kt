@@ -25,7 +25,6 @@ import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettings
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsUiState
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 
-@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentFilterSettingsScreen(

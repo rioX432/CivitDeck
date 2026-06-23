@@ -1,19 +1,9 @@
 package com.riox432.civitdeck.feature.comfyui.presentation
 
-import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationStatus
-import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
-import com.riox432.civitdeck.domain.service.AppLifecycleTracker
-import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter
-import com.riox432.civitdeck.domain.service.GenerationNotificationService
-import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.util.currentTimeMillis
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptComfyUIGenerationUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -30,27 +20,17 @@ import kotlinx.coroutines.launch
  * Handles generation submission, progress tracking (WebSocket + polling), interruption, and
  * image saving. Extracted from [ComfyUIGenerationViewModel] to reduce function count.
  */
-@Suppress("LongParameterList")
 internal class GenerationExecutionDelegate(
     private val scope: CoroutineScope,
     private val uiState: MutableStateFlow<GenerationUiState>,
-    private val submitGeneration: SubmitComfyUIGenerationUseCase,
-    private val pollResult: PollComfyUIResultUseCase,
-    private val observeProgress: ObserveGenerationProgressUseCase,
-    private val interruptGeneration: InterruptComfyUIGenerationUseCase,
-    private val saveImage: SaveGeneratedImageUseCase,
-    private val repository: ComfyUIConnectionRepository,
-    private val notificationService: GenerationNotificationService,
-    private val lifecycleTracker: AppLifecycleTracker,
-    private val backgroundMonitorStarter: BackgroundMonitorStarter,
-    observeGenNotifEnabled: ObserveGenerationNotificationsEnabledUseCase,
+    private val useCases: GenerationExecutionUseCases,
 ) {
     private var progressJob: Job? = null
     private var generationStartTimeMs: Long = 0L
     private var notificationsEnabled: Boolean = true
 
     init {
-        observeGenNotifEnabled()
+        useCases.observeGenNotifEnabled()
             .onEach { notificationsEnabled = it }
             .launchIn(scope)
     }
@@ -75,11 +55,11 @@ internal class GenerationExecutionDelegate(
                 uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
             },
         ) {
-            val promptId = submitGeneration(params)
+            val promptId = useCases.submitGeneration(params)
             uiState.update { it.copy(generationStatus = GenerationStatus.Running) }
-            val connection = repository.getActiveConnection()
+            val connection = useCases.repository.getActiveConnection()
             if (connection != null) {
-                backgroundMonitorStarter.startMonitoring(
+                useCases.backgroundMonitorStarter.startMonitoring(
                     promptId,
                     connection.baseUrl,
                     connection.wsScheme,
@@ -93,12 +73,12 @@ internal class GenerationExecutionDelegate(
 
     fun onInterrupt() {
         progressJob?.cancel()
-        backgroundMonitorStarter.stopMonitoring()
+        useCases.backgroundMonitorStarter.stopMonitoring()
         launchWithErrorHandling(
             tag = "Interrupt failed",
             onError = { e -> uiState.update { it.copy(error = e.message) } },
         ) {
-            interruptGeneration()
+            useCases.interruptGeneration()
             uiState.update {
                 it.copy(
                     generationStatus = GenerationStatus.Idle,
@@ -112,7 +92,7 @@ internal class GenerationExecutionDelegate(
 
     fun onSaveImage(imageUrl: String) {
         scope.launch {
-            val success = saveImage(imageUrl)
+            val success = useCases.saveImage(imageUrl)
             uiState.update { it.copy(imageSaveSuccess = success) }
         }
     }
@@ -123,7 +103,7 @@ internal class GenerationExecutionDelegate(
 
     private fun startWebSocketProgress(promptId: String, connection: ComfyUIConnection) {
         progressJob = scope.launch {
-            observeProgress(promptId, connection.baseUrl, connection.wsScheme)
+            useCases.observeProgress(promptId, connection.baseUrl, connection.wsScheme)
                 .catch { pollForResult(promptId) }
                 .collect { progress ->
                     uiState.update { state ->
@@ -152,13 +132,13 @@ internal class GenerationExecutionDelegate(
     }
 
     private suspend fun fetchFinalResult(promptId: String) {
-        backgroundMonitorStarter.stopMonitoring()
+        useCases.backgroundMonitorStarter.stopMonitoring()
         val onError = { e: Exception ->
             notifyErrorIfNeeded(promptId, e.message ?: "Unknown error")
             uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
         }
         runCatchingLogged("Failed to fetch final result", onError) {
-            val result = pollResult(promptId)
+            val result = useCases.pollResult(promptId)
             if (result.status == GenerationStatus.Completed) {
                 notifyCompleteIfNeeded(promptId, result.imageUrls.size)
                 uiState.update {
@@ -183,7 +163,7 @@ internal class GenerationExecutionDelegate(
             delay(POLL_INTERVAL_MS)
             var done = false
             val success = runCatchingLogged("Poll for result failed", onError) {
-                val result = pollResult(promptId)
+                val result = useCases.pollResult(promptId)
                 when (result.status) {
                     GenerationStatus.Completed -> {
                         notifyCompleteIfNeeded(promptId, result.imageUrls.size)
@@ -213,14 +193,14 @@ internal class GenerationExecutionDelegate(
     // region Notification helpers
 
     private fun notifyCompleteIfNeeded(promptId: String, imageCount: Int) {
-        if (!notificationsEnabled || lifecycleTracker.isInForeground) return
+        if (!notificationsEnabled || useCases.lifecycleTracker.isInForeground) return
         val elapsed = currentTimeMs() - generationStartTimeMs
-        notificationService.notifyGenerationComplete(promptId, imageCount, elapsed)
+        useCases.notificationService.notifyGenerationComplete(promptId, imageCount, elapsed)
     }
 
     private fun notifyErrorIfNeeded(promptId: String, errorMessage: String) {
-        if (!notificationsEnabled || lifecycleTracker.isInForeground) return
-        notificationService.notifyGenerationError(promptId, errorMessage)
+        if (!notificationsEnabled || useCases.lifecycleTracker.isInForeground) return
+        useCases.notificationService.notifyGenerationError(promptId, errorMessage)
     }
 
     private fun currentTimeMs(): Long = currentTimeMillis()

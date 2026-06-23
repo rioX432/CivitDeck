@@ -347,6 +347,7 @@ private fun DesktopNtfySection(
 }
 
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
 @Suppress("LongParameterList")
 private fun AddConnectionForm(
     nameInput: String,

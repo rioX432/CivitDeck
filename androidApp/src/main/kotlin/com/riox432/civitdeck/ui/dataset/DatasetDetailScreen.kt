@@ -110,9 +110,10 @@ fun DatasetDetailScreen(
     )
 }
 
-@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun DatasetDetailScaffold(
     datasetName: String,
     viewModel: DatasetDetailViewModel,
@@ -200,7 +201,6 @@ private fun DatasetDetailScaffold(
     )
 }
 
-@Suppress("LongParameterList")
 @Composable
 private fun DatasetExportOverlays(
     showExportSheet: Boolean,

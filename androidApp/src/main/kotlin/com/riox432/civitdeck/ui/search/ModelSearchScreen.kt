@@ -116,9 +116,10 @@ fun ModelSearchScreen(
     )
 }
 
-@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun SearchScreenBody(
     headerState: CollapsibleHeaderState,
     uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
@@ -188,8 +189,9 @@ private fun SearchScreenBody(
     )
 }
 
-@Suppress("LongParameterList")
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun SearchScreenContentBox(
     padding: androidx.compose.foundation.layout.PaddingValues,
     layoutDirection: androidx.compose.ui.unit.LayoutDirection,
@@ -261,7 +263,6 @@ private fun SearchScreenContentBox(
     }
 }
 
-@Suppress("LongParameterList")
 @Composable
 private fun BoxScope.SearchScreenForeground(
     headerState: CollapsibleHeaderState,
@@ -304,8 +305,9 @@ private fun BoxScope.SearchScreenForeground(
     )
 }
 
-@Suppress("LongParameterList")
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun SearchScreenSheets(
     uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
     viewModel: ModelSearchViewModel,
@@ -396,7 +398,6 @@ private fun SaveFilterDialog(
     )
 }
 
-@Suppress("LongParameterList")
 @Composable
 private fun SpeedDialFab(
     visible: Boolean,
@@ -490,7 +491,6 @@ private fun PrimarySpeedDialFab(
     }
 }
 
-@Suppress("LongParameterList")
 @Composable
 private fun SpeedDialItems(
     expanded: Boolean,

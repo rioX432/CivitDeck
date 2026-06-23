@@ -141,7 +141,6 @@ class ExtractWorkflowParametersUseCase(
         }
     }
 
-    @Suppress("LongParameterList")
     private fun extractSingleParam(
         nodeId: String,
         title: String,

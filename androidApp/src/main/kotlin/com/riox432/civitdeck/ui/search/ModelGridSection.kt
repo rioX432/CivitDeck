@@ -57,9 +57,10 @@ data class ModelGridCallbacks(
     val onCompareModel: (Long, String) -> Unit,
 )
 
-@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 internal fun ModelSearchContent(
     recommendations: List<RecommendationSection>,
     gridState: LazyGridState,
@@ -103,9 +104,10 @@ internal fun ModelSearchContent(
     )
 }
 
-@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun SearchContentPullToRefresh(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
@@ -160,8 +162,9 @@ private fun SearchContentPullToRefresh(
     }
 }
 
-@Suppress("LongParameterList")
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun SearchContentCrossfade(
     stateKey: String,
     error: String?,
@@ -217,8 +220,9 @@ private fun SearchContentCrossfade(
     }
 }
 
-@Suppress("LongParameterList")
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun ModelGrid(
     models: List<Model>,
     isLoadingMore: Boolean,

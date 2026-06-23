@@ -51,7 +51,6 @@ internal class DetailReviewDelegate(
         loadReviews()
     }
 
-    @Suppress("LongParameterList")
     fun submitReview(
         modelVersionId: Long,
         rating: Int,

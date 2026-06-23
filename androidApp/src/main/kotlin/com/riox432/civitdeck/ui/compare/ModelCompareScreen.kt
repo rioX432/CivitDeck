@@ -134,7 +134,6 @@ private fun CompareBody(
     )
 }
 
-@Suppress("LongParameterList")
 @Composable
 private fun CompareLoadedBody(
     leftState: ModelDetailUiState,

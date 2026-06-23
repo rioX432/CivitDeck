@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-@Suppress("LongParameterList")
 class DatasetDetailViewModel(
     val datasetId: Long,
     observeDatasetImagesUseCase: ObserveDatasetImagesUseCase,

@@ -49,10 +49,14 @@ import com.riox432.civitdeck.domain.usecase.SetThemeModeUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
 import com.riox432.civitdeck.domain.usecase.ValidateApiKeyUseCase
 import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AppearanceUseCases
 import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.CacheUseCases
 import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.DisplayPreferenceUseCases
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.StorageSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.StoredDataUseCases
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -72,22 +76,32 @@ val settingsViewModelModule = module {
             removeExcludedTagUseCase = get<RemoveExcludedTagUseCase>(),
         )
     }
+    factory {
+        DisplayPreferenceUseCases(
+            observeDefaultSortOrder = get<ObserveDefaultSortOrderUseCase>(),
+            setDefaultSortOrder = get<SetDefaultSortOrderUseCase>(),
+            observeDefaultTimePeriod = get<ObserveDefaultTimePeriodUseCase>(),
+            setDefaultTimePeriod = get<SetDefaultTimePeriodUseCase>(),
+            observeGridColumns = get<ObserveGridColumnsUseCase>(),
+            setGridColumns = get<SetGridColumnsUseCase>(),
+        )
+    }
+    factory {
+        AppearanceUseCases(
+            observeAccentColor = get<ObserveAccentColorUseCase>(),
+            setAccentColor = get<SetAccentColorUseCase>(),
+            observeAmoledDarkMode = get<ObserveAmoledDarkModeUseCase>(),
+            setAmoledDarkMode = get<SetAmoledDarkModeUseCase>(),
+            observeThemeMode = get<ObserveThemeModeUseCase>(),
+            setThemeMode = get<SetThemeModeUseCase>(),
+            observeCustomNavShortcuts = get<ObserveCustomNavShortcutsUseCase>(),
+            setCustomNavShortcuts = get<SetCustomNavShortcutsUseCase>(),
+        )
+    }
     viewModel {
         DisplaySettingsViewModel(
-            observeDefaultSortOrderUseCase = get<ObserveDefaultSortOrderUseCase>(),
-            setDefaultSortOrderUseCase = get<SetDefaultSortOrderUseCase>(),
-            observeDefaultTimePeriodUseCase = get<ObserveDefaultTimePeriodUseCase>(),
-            setDefaultTimePeriodUseCase = get<SetDefaultTimePeriodUseCase>(),
-            observeGridColumnsUseCase = get<ObserveGridColumnsUseCase>(),
-            setGridColumnsUseCase = get<SetGridColumnsUseCase>(),
-            observeAccentColorUseCase = get<ObserveAccentColorUseCase>(),
-            setAccentColorUseCase = get<SetAccentColorUseCase>(),
-            observeAmoledDarkModeUseCase = get<ObserveAmoledDarkModeUseCase>(),
-            setAmoledDarkModeUseCase = get<SetAmoledDarkModeUseCase>(),
-            observeThemeModeUseCase = get<ObserveThemeModeUseCase>(),
-            setThemeModeUseCase = get<SetThemeModeUseCase>(),
-            observeCustomNavShortcutsUseCase = get<ObserveCustomNavShortcutsUseCase>(),
-            setCustomNavShortcutsUseCase = get<SetCustomNavShortcutsUseCase>(),
+            displayUseCases = get(),
+            appearanceUseCases = get(),
         )
     }
     viewModel {
@@ -111,20 +125,30 @@ val settingsViewModelModule = module {
             validateApiKeyUseCase = get<ValidateApiKeyUseCase>(),
         )
     }
+    factory {
+        CacheUseCases(
+            observeNetworkStatus = get<ObserveNetworkStatusUseCase>(),
+            observeOfflineCacheEnabled = get<ObserveOfflineCacheEnabledUseCase>(),
+            setOfflineCacheEnabled = get<SetOfflineCacheEnabledUseCase>(),
+            observeCacheSizeLimit = get<ObserveCacheSizeLimitUseCase>(),
+            setCacheSizeLimit = get<SetCacheSizeLimitUseCase>(),
+            getCacheInfo = get<GetCacheInfoUseCase>(),
+            evictCache = get<EvictCacheUseCase>(),
+            clearCache = get<ClearCacheUseCase>(),
+        )
+    }
+    factory {
+        StoredDataUseCases(
+            clearSearchHistory = get<ClearSearchHistoryUseCase>(),
+            clearBrowsingHistory = get<ClearBrowsingHistoryUseCase>(),
+            getHiddenModels = get<GetHiddenModelsUseCase>(),
+            unhideModel = get<UnhideModelUseCase>(),
+        )
+    }
     viewModel {
         StorageSettingsViewModel(
-            observeNetworkStatusUseCase = get<ObserveNetworkStatusUseCase>(),
-            observeOfflineCacheEnabledUseCase = get<ObserveOfflineCacheEnabledUseCase>(),
-            setOfflineCacheEnabledUseCase = get<SetOfflineCacheEnabledUseCase>(),
-            observeCacheSizeLimitUseCase = get<ObserveCacheSizeLimitUseCase>(),
-            setCacheSizeLimitUseCase = get<SetCacheSizeLimitUseCase>(),
-            getCacheInfoUseCase = get<GetCacheInfoUseCase>(),
-            evictCacheUseCase = get<EvictCacheUseCase>(),
-            clearSearchHistoryUseCase = get<ClearSearchHistoryUseCase>(),
-            clearBrowsingHistoryUseCase = get<ClearBrowsingHistoryUseCase>(),
-            clearCacheUseCase = get<ClearCacheUseCase>(),
-            getHiddenModelsUseCase = get<GetHiddenModelsUseCase>(),
-            unhideModelUseCase = get<UnhideModelUseCase>(),
+            cacheUseCases = get(),
+            storedDataUseCases = get(),
         )
     }
 }

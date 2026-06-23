@@ -106,6 +106,7 @@ private fun LazyListScope.guidedSetupItem(onNavigateToOnboarding: () -> Unit) {
     }
 }
 
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
 @Suppress("LongParameterList")
 private fun LazyListScope.settingsItems(
     state: ComfyUISettingsUiState,

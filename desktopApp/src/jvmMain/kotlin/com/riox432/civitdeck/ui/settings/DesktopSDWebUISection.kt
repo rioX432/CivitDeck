@@ -68,7 +68,6 @@ fun SDWebUISettingsSection(viewModel: SDWebUISettingsViewModel) {
 }
 
 @Composable
-@Suppress("LongParameterList")
 private fun SDWebUIAddConnectionForm(
     nameInput: String,
     hostInput: String,

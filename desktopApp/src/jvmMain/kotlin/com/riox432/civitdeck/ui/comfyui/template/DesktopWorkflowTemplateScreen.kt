@@ -121,7 +121,6 @@ private fun TemplateSnackbarEffects(
 }
 
 @Composable
-@Suppress("LongParameterList")
 private fun TemplateScaffold(
     state: WorkflowTemplateUiState,
     snackbarHostState: SnackbarHostState,
@@ -220,7 +219,6 @@ private fun TemplateToolbar(
 }
 
 @Composable
-@Suppress("LongParameterList")
 private fun TemplateSearchAndFilters(
     searchQuery: String,
     selectedCategory: WorkflowTemplateCategory?,
@@ -316,7 +314,6 @@ private fun TypeFilterRow(
 }
 
 @Composable
-@Suppress("LongParameterList")
 private fun TemplateList(
     state: WorkflowTemplateUiState,
     onSelectTemplate: ((WorkflowTemplate) -> Unit)?,
@@ -358,7 +355,6 @@ private fun TemplateList(
 }
 
 @Composable
-@Suppress("LongParameterList")
 private fun TemplateCard(
     template: WorkflowTemplate,
     onSelect: (() -> Unit)?,

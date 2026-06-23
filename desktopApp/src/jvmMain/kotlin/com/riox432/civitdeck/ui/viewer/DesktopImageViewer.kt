@@ -106,7 +106,6 @@ fun DesktopImageViewer(
 }
 
 @Composable
-@Suppress("LongParameterList")
 private fun BoxScope.ImageViewerBody(
     imageUrls: List<String>,
     currentIndex: Int,

@@ -101,7 +101,6 @@ fun ImageViewerOverlay(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Suppress("LongParameterList")
 private fun ImageViewerContent(
     images: List<ViewerImage>,
     initialIndex: Int,

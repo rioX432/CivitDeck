@@ -60,7 +60,6 @@ internal fun VersionSelector(
     }
 }
 
-@Suppress("LongParameterList")
 @Composable
 internal fun VersionDetail(
     version: ModelVersion,

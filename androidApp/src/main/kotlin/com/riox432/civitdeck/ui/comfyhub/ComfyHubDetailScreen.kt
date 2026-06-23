@@ -136,7 +136,6 @@ private fun DetailContentSwitch(
     }
 }
 
-@Suppress("LongParameterList")
 @Composable
 private fun DetailContent(
     workflow: ComfyHubWorkflow,

@@ -20,9 +20,10 @@ import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.ui.share.ShareSettingsSection
 
-@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 fun AdvancedSettingsScreen(
     viewModel: AppBehaviorSettingsViewModel,
     onBack: () -> Unit,

@@ -66,7 +66,6 @@ fun SubmitReviewSheet(
     }
 }
 
-@Suppress("LongParameterList")
 @Composable
 private fun SubmitReviewContent(
     rating: Int,

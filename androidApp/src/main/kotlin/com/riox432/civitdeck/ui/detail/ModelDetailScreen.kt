@@ -51,8 +51,9 @@ import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.qrcode.QRCodeSheet
 import com.riox432.civitdeck.ui.share.SocialShareSheet
 
-@Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
 @Suppress("LongParameterList")
+@Composable
 fun ModelDetailScreen(
     viewModel: ModelDetailViewModel,
     modelId: Long,
@@ -144,8 +145,9 @@ private data class ModelDetailSheetVisibility(
     val showShareSheet: Boolean,
 )
 
-@Suppress("LongParameterList")
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun ModelDetailOverlays(
     uiState: ModelDetailUiState,
     viewModel: ModelDetailViewModel,
@@ -237,8 +239,9 @@ private fun rememberModelDetailCallbacks(
     )
 }
 
-@Suppress("LongParameterList")
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun ModelDetailScaffold(
     uiState: ModelDetailUiState,
     viewModel: ModelDetailViewModel,
@@ -313,6 +316,7 @@ private fun ReviewSubmitHandler(
 }
 
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
 @Suppress("LongParameterList")
 private fun ModelDetailSheets(
     showSendToPCSheet: Boolean,
@@ -511,8 +515,9 @@ private fun ModelDetailBody(
     )
 }
 
-@Suppress("LongParameterList")
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun ModelDetailBodyLayout(
     uiState: ModelDetailUiState,
     model: Model?,

@@ -34,7 +34,6 @@ import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveActive
 import com.riox432.civitdeck.ui.theme.Spacing
 import org.koin.compose.koinInject
 
-@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IntegrationsHubScreen(
@@ -88,6 +87,7 @@ fun IntegrationsHubScreen(
     }
 }
 
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
 @Suppress("LongParameterList")
 private fun LazyListScope.integrationItems(
     comfyUIName: String?,

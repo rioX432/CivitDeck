@@ -27,7 +27,6 @@ data class AppBehaviorSettingsUiState(
     val generationNotificationsEnabled: Boolean = true,
 )
 
-@Suppress("LongParameterList")
 class AppBehaviorSettingsViewModel(
     observePowerUserModeUseCase: ObservePowerUserModeUseCase,
     private val setPowerUserModeUseCase: SetPowerUserModeUseCase,

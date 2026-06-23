@@ -102,7 +102,6 @@ class LocalModelFileRepositoryImplTest {
         override suspend fun getOwnedHashes(): List<String> =
             files.filter { it.matchedModelId != null }.map { it.sha256Hash }
 
-        @Suppress("LongParameterList")
         override suspend fun updateMatchInfo(
             fileId: Long,
             modelId: Long,

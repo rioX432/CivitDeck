@@ -102,8 +102,9 @@ fun SDWebUIGenerationScreen(
     }
 }
 
-@Suppress("LongParameterList")
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun SDWebUIGenerationContent(
     state: SDWebUIGenerationUiState,
     modifier: Modifier = Modifier,
@@ -152,6 +153,7 @@ private fun SDWebUIGenerationContent(
     }
 }
 
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
 @Suppress("LongParameterList")
 private fun LazyListScope.sdwebuiFormItems(
     state: SDWebUIGenerationUiState,

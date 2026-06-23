@@ -101,7 +101,6 @@ fun DesktopSearchScreen(
     }
 }
 
-@Suppress("LongParameterList")
 @Composable
 private fun SearchResultsArea(
     uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
