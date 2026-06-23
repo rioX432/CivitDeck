@@ -16,7 +16,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class MultiSourceSearchUseCaseTest {
@@ -141,7 +140,9 @@ class MultiSourceSearchUseCaseTest {
         // Assert: results still contain CivitAI + TensorArt; HF error is recorded
         assertEquals(listOf(1L, 20L), result.models.map { it.id })
         assertTrue(result.hasPartialFailure)
-        assertEquals(hfError, result.sourceErrors[ModelSource.HUGGING_FACE])
+        // Verify error key presence and message; reference identity not guaranteed across coroutine boundaries
+        assertNotNull(result.sourceErrors[ModelSource.HUGGING_FACE])
+        assertEquals(hfError.message, result.sourceErrors[ModelSource.HUGGING_FACE]?.message)
         assertNull(result.sourceErrors[ModelSource.CIVITAI])
         assertNull(result.sourceErrors[ModelSource.TENSOR_ART])
     }
@@ -165,7 +166,8 @@ class MultiSourceSearchUseCaseTest {
         // Assert: secondary results are still returned; CivitAI error is captured
         assertEquals(listOf(10L, 20L), result.models.map { it.id })
         assertTrue(result.hasPartialFailure)
-        assertEquals(civitaiError, result.sourceErrors[ModelSource.CIVITAI])
+        // Reference identity is not preserved across the coroutine boundary; match on message.
+        assertEquals(civitaiError.message, result.sourceErrors[ModelSource.CIVITAI]?.message)
         assertNull(result.nextCursor) // no cursor when CivitAI fails
     }
 
@@ -271,9 +273,10 @@ class MultiSourceSearchUseCaseTest {
         // Assert: models list is empty; all three errors are captured
         assertTrue(result.models.isEmpty())
         assertTrue(result.hasPartialFailure)
-        assertEquals(civitaiError, result.sourceErrors[ModelSource.CIVITAI])
-        assertEquals(hfError, result.sourceErrors[ModelSource.HUGGING_FACE])
-        assertEquals(taError, result.sourceErrors[ModelSource.TENSOR_ART])
+        // Reference identity is not preserved across coroutine boundaries; match on message.
+        assertEquals(civitaiError.message, result.sourceErrors[ModelSource.CIVITAI]?.message)
+        assertEquals(hfError.message, result.sourceErrors[ModelSource.HUGGING_FACE]?.message)
+        assertEquals(taError.message, result.sourceErrors[ModelSource.TENSOR_ART]?.message)
     }
 
     @Test
