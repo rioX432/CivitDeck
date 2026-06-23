@@ -1,0 +1,336 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "nsfw_tap_to_reveal" : {
+      "comment" : "Label shown over blurred NSFW content prompting the user to tap to reveal it",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap to reveal"
+          }
+        }
+      }
+    },
+    "nsfw_show_content_accessibility" : {
+      "comment" : "Accessibility label for the tappable area that reveals blurred content",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show content"
+          }
+        }
+      }
+    },
+    "settings_title" : {
+      "comment" : "Navigation title for the Settings screen",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
+    },
+    "settings_power_user_hint" : {
+      "comment" : "Hint shown when Power User Mode is disabled",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable Power User Mode in Advanced & Integrations for more features"
+          }
+        }
+      }
+    },
+    "settings_offline_banner" : {
+      "comment" : "Banner shown when the device is offline and cached data is displayed",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You are offline — showing cached data"
+          }
+        }
+      }
+    },
+    "settings_section_account" : {
+      "comment" : "Settings section header for account",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account"
+          }
+        }
+      }
+    },
+    "settings_appearance" : {
+      "comment" : "Settings row title for appearance",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appearance"
+          }
+        }
+      }
+    },
+    "settings_section_notifications" : {
+      "comment" : "Settings section header for notifications",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        }
+      }
+    },
+    "settings_model_updates" : {
+      "comment" : "Settings row title for model update notifications",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Model Updates"
+          }
+        }
+      }
+    },
+    "settings_content_behavior" : {
+      "comment" : "Settings row title for content and behavior",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Content & Behavior"
+          }
+        }
+      }
+    },
+    "settings_section_history" : {
+      "comment" : "Settings section header for history",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History"
+          }
+        }
+      }
+    },
+    "settings_browsing_history" : {
+      "comment" : "Settings row title for browsing history",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Browsing History"
+          }
+        }
+      }
+    },
+    "settings_data_storage" : {
+      "comment" : "Settings row title for data and storage",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data & Storage"
+          }
+        }
+      }
+    },
+    "settings_advanced_integrations" : {
+      "comment" : "Settings row title for advanced and integrations",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advanced & Integrations"
+          }
+        }
+      }
+    },
+    "settings_section_analytics" : {
+      "comment" : "Settings section header for analytics",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analytics"
+          }
+        }
+      }
+    },
+    "settings_usage_stats" : {
+      "comment" : "Settings row title for usage statistics",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usage Stats"
+          }
+        }
+      }
+    },
+    "settings_section_training" : {
+      "comment" : "Settings section header for training",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Training"
+          }
+        }
+      }
+    },
+    "settings_datasets" : {
+      "comment" : "Settings row title for datasets",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datasets"
+          }
+        }
+      }
+    },
+    "settings_section_about" : {
+      "comment" : "Settings section header for about",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About"
+          }
+        }
+      }
+    },
+    "settings_app_version" : {
+      "comment" : "Settings row label for the app version",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Version"
+          }
+        }
+      }
+    },
+    "settings_open_source_licenses" : {
+      "comment" : "Settings row title for open source licenses",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Source Licenses"
+          }
+        }
+      }
+    },
+    "settings_replay_gesture_tutorial" : {
+      "comment" : "Settings button to replay the gesture tutorial",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replay Gesture Tutorial"
+          }
+        }
+      }
+    },
+    "settings_connected_as" : {
+      "comment" : "Label above the connected account username",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected as"
+          }
+        }
+      }
+    },
+    "settings_disconnect" : {
+      "comment" : "Button to disconnect the connected account",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disconnect"
+          }
+        }
+      }
+    },
+    "settings_disconnect_confirm_message" : {
+      "comment" : "Confirmation message asking whether to remove the saved API key",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove your CivitAI API key?"
+          }
+        }
+      }
+    },
+    "action_cancel" : {
+      "comment" : "Generic cancel button",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "action_remove" : {
+      "comment" : "Generic remove button",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove"
+          }
+        }
+      }
+    },
+    "settings_api_key_placeholder" : {
+      "comment" : "Placeholder for the API key input field",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste API key"
+          }
+        }
+      }
+    },
+    "settings_api_key_verify" : {
+      "comment" : "Button to validate and save the API key",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verify"
+          }
+        }
+      }
+    },
+    "settings_api_key_help" : {
+      "comment" : "Helper text guiding the user to where they can get their API key",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get your key at civitai.com/user/account"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
