@@ -118,7 +118,6 @@ class ConnectionOnboardingViewModel(
     }
 
     /** Tests and (on success) saves a manually entered connection. */
-    @Suppress("LongParameterList")
     fun onManualSubmit(
         name: String,
         hostname: String,

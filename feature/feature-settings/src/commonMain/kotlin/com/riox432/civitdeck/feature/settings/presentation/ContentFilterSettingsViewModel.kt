@@ -33,7 +33,6 @@ data class ContentFilterSettingsUiState(
     val excludedTags: List<String> = emptyList(),
 )
 
-@Suppress("LongParameterList")
 class ContentFilterSettingsViewModel(
     observeNsfwFilterUseCase: ObserveNsfwFilterUseCase,
     private val setNsfwFilterUseCase: SetNsfwFilterUseCase,

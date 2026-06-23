@@ -244,6 +244,8 @@ class GetRecommendationsUseCase(
         )
     }
 
+    // Private query builder: each param is an independent query dimension; a param object
+    // would only wrap this single internal call site.
     @Suppress("LongParameterList")
     private suspend fun fetchSection(
         title: String,

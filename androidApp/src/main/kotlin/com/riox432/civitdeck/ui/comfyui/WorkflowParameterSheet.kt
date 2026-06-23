@@ -161,7 +161,6 @@ private fun androidx.compose.foundation.lazy.LazyListScope.renderGroupedSections
     }
 }
 
-@Suppress("LongParameterList")
 private fun androidx.compose.foundation.lazy.LazyListScope.renderAdvancedSection(
     advancedParams: List<ExtractedParameter>,
     showAdvanced: Boolean,

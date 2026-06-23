@@ -294,7 +294,6 @@ class ComfyUIGenerationRepositoryImpl(
         )
     }
 
-    @Suppress("LongParameterList")
     private fun buildKSampler(
         params: ComfyUIGenerationParams,
         modelNodeId: String,

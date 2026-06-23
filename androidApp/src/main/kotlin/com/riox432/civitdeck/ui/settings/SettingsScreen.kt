@@ -36,8 +36,9 @@ import com.riox432.civitdeck.ui.update.UpdateInstallController
 import com.riox432.civitdeck.ui.update.UpdateInstallHost
 import com.riox432.civitdeck.ui.update.rememberUpdateInstallController
 
-@Suppress("LongParameterList")
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 fun SettingsScreen(
     authViewModel: AuthSettingsViewModel,
     storageViewModel: StorageSettingsViewModel,
@@ -147,7 +148,6 @@ private fun LazyListScope.settingsUpdateItems(
     }
 }
 
-@Suppress("LongParameterList")
 private fun LazyListScope.settingsAboutItems(
     powerUserMode: Boolean,
     updateState: UpdateUiState,

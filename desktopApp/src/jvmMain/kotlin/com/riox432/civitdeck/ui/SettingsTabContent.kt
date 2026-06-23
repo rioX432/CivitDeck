@@ -56,7 +56,6 @@ fun SettingsTabContent(
 }
 
 @Composable
-@Suppress("LongParameterList")
 private fun SettingsMainContent(
     onNavigateToBackup: () -> Unit,
     onNavigateToPlugins: () -> Unit,

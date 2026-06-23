@@ -26,7 +26,6 @@ import com.riox432.civitdeck.ui.theme.shimmer
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-@Suppress("LongParameterList")
 fun ModelCard(
     model: Model,
     onClick: (() -> Unit)? = null,
@@ -66,7 +65,6 @@ fun ModelCard(
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-@Suppress("LongParameterList")
 private fun CoilThumbnail(
     thumbnailUrl: String,
     modelId: Long,

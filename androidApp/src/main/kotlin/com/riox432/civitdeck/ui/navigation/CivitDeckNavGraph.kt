@@ -227,7 +227,6 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Discover) {
     }
 }
 
-@Suppress("LongParameterList")
 private fun androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScope.navSuiteItems(
     navItems: List<Any>,
     selectedTabId: String,
@@ -259,7 +258,6 @@ private fun androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteS
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-@Suppress("LongParameterList")
 @Composable
 private fun CivitDeckTabContent(
     activeBackStack: MutableList<Any>,
@@ -297,7 +295,7 @@ private fun slideTransition(enterOffset: (Int) -> Int, exitOffset: (Int) -> Int)
             fadeOut(tween(Duration.normal, easing = Easing.standard)),
     )
 
-@Suppress("LongParameterList", "UnusedParameter")
+@Suppress("UnusedParameter")
 @Composable
 private fun CivitDeckNavDisplay(
     backStack: MutableList<Any>,
@@ -357,7 +355,6 @@ private fun CivitDeckNavDisplay(
     )
 }
 
-@Suppress("LongParameterList")
 private fun EntryProviderScope<Any>.searchEntry(
     backStack: MutableList<Any>,
     searchViewModel: ModelSearchViewModel,

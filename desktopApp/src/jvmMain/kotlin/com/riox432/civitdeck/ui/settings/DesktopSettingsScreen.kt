@@ -17,6 +17,7 @@ import com.riox432.civitdeck.ui.theme.Spacing
 import com.riox432.civitdeck.ui.update.DesktopUpdateViewModel
 
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
 @Suppress("LongParameterList")
 fun DesktopSettingsScreen(
     authSettingsViewModel: AuthSettingsViewModel,
@@ -58,7 +59,6 @@ fun DesktopSettingsScreen(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-@Suppress("LongParameterList")
 private fun ToolsSection(
     onNavigateToDatasets: () -> Unit,
     onNavigateToBackup: () -> Unit,

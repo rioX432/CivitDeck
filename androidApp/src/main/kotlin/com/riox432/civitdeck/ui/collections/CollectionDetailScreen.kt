@@ -63,8 +63,9 @@ import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
-@Suppress("LongParameterList")
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 fun CollectionDetailScreen(
     collectionName: String,
     models: List<FavoriteModelSummary>,

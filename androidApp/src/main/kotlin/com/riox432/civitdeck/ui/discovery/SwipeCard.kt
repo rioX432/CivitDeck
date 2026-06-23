@@ -63,7 +63,6 @@ fun SwipeCard(
     }
 }
 
-@Suppress("LongParameterList")
 private fun Modifier.swipeGesture(
     scope: CoroutineScope,
     offset: Animatable<Offset, *>,

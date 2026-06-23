@@ -24,7 +24,6 @@ data class PluginManagementUiState(
     val selectedPluginConfig: String = "{}",
 ) : UiLoadingState
 
-@Suppress("LongParameterList")
 class PluginManagementViewModel(
     private val observeInstalledPluginsUseCase: ObserveInstalledPluginsUseCase,
     private val activatePluginUseCase: ActivatePluginUseCase,

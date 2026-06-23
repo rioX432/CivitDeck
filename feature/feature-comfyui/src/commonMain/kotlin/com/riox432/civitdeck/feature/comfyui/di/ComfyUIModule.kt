@@ -86,6 +86,8 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIHistoryViewMode
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIQueueViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ConnectionOnboardingViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.GenerationExecutionUseCases
+import com.riox432.civitdeck.feature.comfyui.presentation.GenerationResourceUseCases
 import com.riox432.civitdeck.feature.comfyui.presentation.MaskEditorViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
@@ -202,6 +204,31 @@ val comfyuiModule = module {
     // Plugin adapter
     single { ComfyUIWorkflowPlugin(get()) }
 
+    // Use-case bundles (grouped to keep ComfyUIGenerationViewModel constructor small)
+    factory {
+        GenerationResourceUseCases(
+            fetchCheckpoints = get(),
+            fetchLoras = get(),
+            fetchControlNets = get(),
+            fetchObjectInfo = get(),
+            extractParameters = get(),
+        )
+    }
+    factory {
+        GenerationExecutionUseCases(
+            submitGeneration = get(),
+            pollResult = get(),
+            observeProgress = get(),
+            interruptGeneration = get(),
+            saveImage = get(),
+            observeGenNotifEnabled = get(),
+            repository = get(),
+            notificationService = get(),
+            lifecycleTracker = get(),
+            backgroundMonitorStarter = get(),
+        )
+    }
+
     // ViewModels
     viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel {
@@ -216,8 +243,10 @@ val comfyuiModule = module {
     }
     viewModel {
         ComfyUIGenerationViewModel(
-            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(),
+            executionUseCases = get(),
+            resourceUseCases = get(),
+            importWorkflow = get(),
+            injectParameters = get(),
         )
     }
     viewModel { ComfyUIHistoryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }

@@ -118,7 +118,6 @@ fun DesktopDatasetDetailScreen(
 }
 
 @Composable
-@Suppress("LongParameterList")
 private fun DatasetDetailContent(
     datasetName: String,
     filteredImages: List<DatasetImage>,

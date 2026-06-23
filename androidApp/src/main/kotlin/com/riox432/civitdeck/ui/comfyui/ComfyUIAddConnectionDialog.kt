@@ -97,7 +97,6 @@ internal fun AddConnectionDialog(
 }
 
 @Composable
-@Suppress("LongParameterList")
 private fun AddConnectionConfirmButton(
     name: String,
     hostname: String,
@@ -134,6 +133,7 @@ private fun AddConnectionConfirmButton(
 }
 
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
 @Suppress("LongParameterList")
 private fun AddConnectionDialogContent(
     name: String,
@@ -160,7 +160,6 @@ private fun AddConnectionDialogContent(
 }
 
 @Composable
-@Suppress("LongParameterList")
 private fun ConnectionFields(
     name: String,
     onNameChange: (String) -> Unit,

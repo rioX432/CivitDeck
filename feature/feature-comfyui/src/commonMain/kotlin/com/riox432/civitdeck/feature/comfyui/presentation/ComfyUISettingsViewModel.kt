@@ -90,7 +90,6 @@ class ComfyUISettingsViewModel(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(SUBSCRIBE_TIMEOUT), ComfyUISettingsUiState())
 
-    @Suppress("LongParameterList")
     fun onSaveConnection(
         name: String,
         hostname: String,

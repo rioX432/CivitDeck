@@ -2,28 +2,13 @@ package com.riox432.civitdeck.feature.comfyui.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
-import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
-import com.riox432.civitdeck.domain.service.AppLifecycleTracker
-import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter
-import com.riox432.civitdeck.domain.service.GenerationNotificationService
-import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.model.ExtractedParameter
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExtractWorkflowParametersUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchObjectInfoUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InjectWorkflowParametersUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptComfyUIGenerationUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -77,25 +62,11 @@ data class GenerationUiState(
         get() = if (totalSteps > 0) currentStep.toFloat() / totalSteps.toFloat() else 0f
 }
 
-@Suppress("LongParameterList")
 class ComfyUIGenerationViewModel(
-    private val fetchCheckpoints: FetchComfyUICheckpointsUseCase,
-    private val fetchLoras: FetchComfyUILorasUseCase,
-    private val fetchControlNets: FetchComfyUIControlNetsUseCase,
+    executionUseCases: GenerationExecutionUseCases,
+    resourceUseCases: GenerationResourceUseCases,
     private val importWorkflow: ImportWorkflowUseCase,
-    private val extractParameters: ExtractWorkflowParametersUseCase,
     private val injectParameters: InjectWorkflowParametersUseCase,
-    private val fetchObjectInfo: FetchObjectInfoUseCase,
-    submitGeneration: SubmitComfyUIGenerationUseCase,
-    pollResult: PollComfyUIResultUseCase,
-    observeProgress: ObserveGenerationProgressUseCase,
-    interruptGeneration: InterruptComfyUIGenerationUseCase,
-    saveImage: SaveGeneratedImageUseCase,
-    repository: ComfyUIConnectionRepository,
-    notificationService: GenerationNotificationService,
-    lifecycleTracker: AppLifecycleTracker,
-    backgroundMonitorStarter: BackgroundMonitorStarter,
-    observeGenNotifEnabled: ObserveGenerationNotificationsEnabledUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GenerationUiState())
@@ -104,26 +75,13 @@ class ComfyUIGenerationViewModel(
     private val generationDelegate = GenerationExecutionDelegate(
         scope = viewModelScope,
         uiState = _uiState,
-        submitGeneration = submitGeneration,
-        pollResult = pollResult,
-        observeProgress = observeProgress,
-        interruptGeneration = interruptGeneration,
-        saveImage = saveImage,
-        repository = repository,
-        notificationService = notificationService,
-        lifecycleTracker = lifecycleTracker,
-        backgroundMonitorStarter = backgroundMonitorStarter,
-        observeGenNotifEnabled = observeGenNotifEnabled,
+        useCases = executionUseCases,
     )
 
     private val resourceLoader = GenerationResourceLoader(
         scope = viewModelScope,
         uiState = _uiState,
-        fetchCheckpoints = fetchCheckpoints,
-        fetchLoras = fetchLoras,
-        fetchControlNets = fetchControlNets,
-        fetchObjectInfo = fetchObjectInfo,
-        extractParameters = extractParameters,
+        useCases = resourceUseCases,
     )
 
     init {

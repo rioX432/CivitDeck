@@ -89,7 +89,6 @@ private fun DownloadQueueToolbar(onBack: () -> Unit) {
 }
 
 @Composable
-@Suppress("LongParameterList")
 private fun DownloadQueueBody(
     state: DownloadQueueUiState,
     onPause: (Long) -> Unit,

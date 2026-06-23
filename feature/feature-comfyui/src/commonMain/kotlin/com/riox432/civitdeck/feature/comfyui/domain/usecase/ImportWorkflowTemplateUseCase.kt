@@ -102,7 +102,6 @@ class ImportWorkflowTemplateUseCase(
         }
     }
 
-    @Suppress("LongParameterList")
     private fun createTemplateFromExtracted(
         jsonObj: JsonObject,
         params: List<ExtractedParameter>,

@@ -90,8 +90,9 @@ fun SwipeableCardLayout(
     )
 }
 
-@Suppress("LongParameterList")
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun SwipeableCardLayoutInner(
     dragOffset: Float,
     revealWidthPx: Float,

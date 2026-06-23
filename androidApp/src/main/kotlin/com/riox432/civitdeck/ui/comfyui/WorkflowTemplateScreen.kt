@@ -62,7 +62,6 @@ import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateUiStat
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
 import com.riox432.civitdeck.ui.theme.Spacing
 
-@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkflowTemplateScreen(
@@ -132,9 +131,10 @@ private fun TemplateScreenEffects(
     }
 }
 
-@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun TemplateScaffold(
     state: WorkflowTemplateUiState,
     snackbarHostState: SnackbarHostState,
@@ -200,8 +200,9 @@ private fun TemplateScaffold(
     }
 }
 
-@Suppress("LongParameterList")
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun TemplateContent(
     modifier: Modifier,
     state: WorkflowTemplateUiState,
@@ -235,7 +236,6 @@ private fun TemplateContent(
     }
 }
 
-@Suppress("LongParameterList")
 private fun LazyListScope.templateListItems(
     state: WorkflowTemplateUiState,
     onSelectTemplate: ((WorkflowTemplate) -> Unit)?,
@@ -403,7 +403,6 @@ private fun ExportDialog(json: String, onDismiss: () -> Unit) {
     )
 }
 
-@Suppress("LongParameterList")
 @Composable
 private fun TemplateCard(
     template: WorkflowTemplate,

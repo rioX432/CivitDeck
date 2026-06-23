@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
  * personal tags, downloads) and reflects them into [ModelDetailUiState].
  * Extracted from [ModelDetailViewModel] to reduce its function count.
  */
-@Suppress("LongParameterList")
 internal class DetailObserversDelegate(
     private val modelId: Long,
     private val scope: CoroutineScope,

@@ -1,13 +1,6 @@
 package com.riox432.civitdeck.feature.search.presentation
 
 import com.riox432.civitdeck.domain.model.SavedSearchFilter
-import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
-import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
-import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSavedSearchFilterUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.GetHiddenModelIdsUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
-import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -16,18 +9,11 @@ import kotlinx.coroutines.launch
  * Delegate handling excluded tags, hidden models, and saved filter operations
  * extracted from [ModelSearchViewModel] to stay under detekt's function-count threshold.
  */
-@Suppress("LongParameterList")
 internal class SearchFilterDelegate(
     private val scope: CoroutineScope,
     private val filterState: MutableStateFlow<FilterState>,
     private val hiddenModelIds: MutableStateFlow<Set<Long>>,
-    private val getExcludedTagsUseCase: GetExcludedTagsUseCase,
-    private val addExcludedTagUseCase: AddExcludedTagUseCase,
-    private val removeExcludedTagUseCase: RemoveExcludedTagUseCase,
-    private val getHiddenModelIdsUseCase: GetHiddenModelIdsUseCase,
-    private val hideModelUseCase: HideModelUseCase,
-    private val saveSearchFilterUseCase: SaveSearchFilterUseCase,
-    private val deleteSavedSearchFilterUseCase: DeleteSavedSearchFilterUseCase,
+    private val useCases: SearchFilterUseCases,
     private val updateFilter: (transform: (FilterState) -> FilterState) -> Unit,
     private val resetPaginationAndReload: () -> Unit,
 ) {
@@ -36,7 +22,7 @@ internal class SearchFilterDelegate(
         val trimmed = tag.trim().lowercase()
         if (trimmed.isBlank()) return
         scope.launch {
-            addExcludedTagUseCase(trimmed)
+            useCases.addExcludedTag(trimmed)
             loadExcludedTags()
             resetPaginationAndReload()
         }
@@ -44,7 +30,7 @@ internal class SearchFilterDelegate(
 
     fun onRemoveExcludedTag(tag: String) {
         scope.launch {
-            removeExcludedTagUseCase(tag)
+            useCases.removeExcludedTag(tag)
             loadExcludedTags()
             resetPaginationAndReload()
         }
@@ -52,8 +38,8 @@ internal class SearchFilterDelegate(
 
     fun onHideModel(modelId: Long, modelName: String) {
         scope.launch {
-            hideModelUseCase(modelId, modelName)
-            val ids = getHiddenModelIdsUseCase()
+            useCases.hideModel(modelId, modelName)
+            val ids = useCases.getHiddenModelIds()
             hiddenModelIds.value = ids
         }
     }
@@ -75,7 +61,7 @@ internal class SearchFilterDelegate(
             selectedSources = filter.selectedSources,
             savedAt = 0,
         )
-        scope.launch { saveSearchFilterUseCase(name, toSave) }
+        scope.launch { useCases.saveSearchFilter(name, toSave) }
     }
 
     fun applyFilter(filter: SavedSearchFilter) {
@@ -97,13 +83,13 @@ internal class SearchFilterDelegate(
     }
 
     fun deleteSavedFilter(id: Long) {
-        scope.launch { deleteSavedSearchFilterUseCase(id) }
+        scope.launch { useCases.deleteSavedSearchFilter(id) }
     }
 
     fun loadExcludedTags() {
         scope.launch {
-            val tags = getExcludedTagsUseCase()
-            val hiddenIds = getHiddenModelIdsUseCase()
+            val tags = useCases.getExcludedTags()
+            val hiddenIds = useCases.getHiddenModelIds()
             hiddenModelIds.value = hiddenIds
             updateFilter { it.copy(excludedTags = tags) }
         }
