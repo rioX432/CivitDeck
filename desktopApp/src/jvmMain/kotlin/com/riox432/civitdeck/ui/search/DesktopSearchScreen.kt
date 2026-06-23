@@ -90,40 +90,60 @@ fun DesktopSearchScreen(
             onResetFilters = viewModel::resetFilters,
         )
 
-        when {
-            uiState.isLoading && uiState.models.isEmpty() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+        SearchResultsArea(
+            uiState = uiState,
+            displayState = displayState,
+            contentFilterState = contentFilterState,
+            gridState = gridState,
+            onModelClick = onModelClick,
+            onRetry = viewModel::onSearch,
+        )
+    }
+}
+
+@Suppress("LongParameterList")
+@Composable
+private fun SearchResultsArea(
+    uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
+    displayState: com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsUiState,
+    contentFilterState: com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsUiState,
+    gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
+    onModelClick: (Long) -> Unit,
+    onRetry: () -> Unit,
+) {
+    when {
+        uiState.isLoading && uiState.models.isEmpty() -> {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
-            uiState.error != null && uiState.models.isEmpty() -> {
-                SearchErrorState(error = uiState.error, onRetry = viewModel::onSearch)
-            }
-            !uiState.isLoading && uiState.error == null && uiState.models.isEmpty() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "No models found",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            else -> {
-                val nsfwFilterLevel = contentFilterState.nsfwFilterLevel
-                val filteredModels = if (nsfwFilterLevel == NsfwFilterLevel.All) {
-                    uiState.models.filter { !it.nsfw }
-                } else {
-                    uiState.models
-                }
-                SearchResultsGrid(
-                    models = filteredModels,
-                    columns = displayState.gridColumns,
-                    isLoadingMore = uiState.isLoadingMore,
-                    gridState = gridState,
-                    nsfwBlurSettings = contentFilterState.nsfwBlurSettings,
-                    onModelClick = onModelClick,
+        }
+        uiState.error != null && uiState.models.isEmpty() -> {
+            SearchErrorState(error = uiState.error, onRetry = onRetry)
+        }
+        !uiState.isLoading && uiState.error == null && uiState.models.isEmpty() -> {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = "No models found",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+        }
+        else -> {
+            val nsfwFilterLevel = contentFilterState.nsfwFilterLevel
+            val filteredModels = if (nsfwFilterLevel == NsfwFilterLevel.All) {
+                uiState.models.filter { !it.nsfw }
+            } else {
+                uiState.models
+            }
+            SearchResultsGrid(
+                models = filteredModels,
+                columns = displayState.gridColumns,
+                isLoadingMore = uiState.isLoadingMore,
+                gridState = gridState,
+                nsfwBlurSettings = contentFilterState.nsfwBlurSettings,
+                onModelClick = onModelClick,
+            )
         }
     }
 }

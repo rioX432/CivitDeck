@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
@@ -318,29 +319,15 @@ private fun CivitDeckNavDisplay(
         transitionSpec = { slideTransition(enterOffset = { it / 4 }, exitOffset = { -it / 4 }) },
         popTransitionSpec = { slideTransition(enterOffset = { -it / 4 }, exitOffset = { it / 4 }) },
         entryProvider = entryProvider {
-            entry<SearchRoute> {
-                ModelSearchScreen(
-                    viewModel = searchViewModel,
-                    callbacks = SearchScreenCallbacks(
-                        onModelClick = { modelId, thumbnailUrl, suffix ->
-                            val cmpId = compareModelId
-                            if (cmpId != null) {
-                                backStack.add(CompareRoute(cmpId, modelId))
-                                onCancelCompare()
-                            } else {
-                                backStack.add(DetailRoute(modelId, thumbnailUrl, suffix))
-                            }
-                        },
-                        onCancelCompare = onCancelCompare,
-                        onDiscoverClick = { backStack.add(DiscoveryRoute) },
-                        onCompareModel = onCompareModel,
-                        onScanQRCode = { backStack.add(QRScannerRoute) },
-                        onTextSearch = { backStack.add(TextSearchRoute) },
-                    ),
-                    scrollToTopTrigger = searchScrollTrigger,
-                    compareModelName = compareModelName,
-                )
-            }
+            searchEntry(
+                backStack = backStack,
+                searchViewModel = searchViewModel,
+                searchScrollTrigger = searchScrollTrigger,
+                compareModelId = compareModelId,
+                compareModelName = compareModelName,
+                onCompareModel = onCompareModel,
+                onCancelCompare = onCancelCompare,
+            )
             createHubEntry(backStack)
             collectionsEntry(backStack)
             collectionDetailEntry(backStack, compareModelId, onCancelCompare)
@@ -362,34 +349,76 @@ private fun CivitDeckNavDisplay(
             compareEntry(backStack)
             discoveryEntry(backStack)
             browseImagesEntry(backStack)
-            entry<SettingsRoute> {
-                val authVm: AuthSettingsViewModel = koinViewModel()
-                val storageVm: StorageSettingsViewModel = koinViewModel()
-                val behaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
-                val updateVm: UpdateViewModel = koinViewModel()
-                val gestureTutorialVm: com.riox432.civitdeck.feature.gallery.presentation.GestureTutorialViewModel =
-                    koinViewModel()
-                SettingsScreen(
-                    authViewModel = authVm,
-                    storageViewModel = storageVm,
-                    appBehaviorViewModel = behaviorVm,
-                    updateViewModel = updateVm,
-                    onNavigateToAppearance = { backStack.add(AppearanceSettingsRoute) },
-                    onNavigateToContentFilter = { backStack.add(ContentFilterSettingsRoute) },
-                    onNavigateToStorage = { backStack.add(StorageSettingsRoute) },
-                    onNavigateToAdvanced = { backStack.add(AdvancedSettingsRoute) },
-                    onNavigateToAnalytics = { backStack.add(AnalyticsRoute) },
-                    onNavigateToNotificationCenter = { backStack.add(NotificationCenterRoute) },
-                    onNavigateToBrowsingHistory = { backStack.add(BrowsingHistoryRoute) },
-                    onNavigateToDownloadQueue = { backStack.add(DownloadQueueRoute) },
-                    onNavigateToLicenses = { backStack.add(LicensesRoute) },
-                    onReplayGestureTutorial = gestureTutorialVm::resetTutorial,
-                    scrollToTopTrigger = settingsScrollTrigger,
-                )
-            }
+            settingsEntry(backStack, settingsScrollTrigger)
             settingsSubScreenEntries(backStack)
             comfyUIEntries(backStack)
             externalServerEntries(backStack)
         },
     )
+}
+
+@Suppress("LongParameterList")
+private fun EntryProviderScope<Any>.searchEntry(
+    backStack: MutableList<Any>,
+    searchViewModel: ModelSearchViewModel,
+    searchScrollTrigger: Int,
+    compareModelId: Long?,
+    compareModelName: String?,
+    onCompareModel: (Long, String) -> Unit,
+    onCancelCompare: () -> Unit,
+) {
+    entry<SearchRoute> {
+        ModelSearchScreen(
+            viewModel = searchViewModel,
+            callbacks = SearchScreenCallbacks(
+                onModelClick = { modelId, thumbnailUrl, suffix ->
+                    val cmpId = compareModelId
+                    if (cmpId != null) {
+                        backStack.add(CompareRoute(cmpId, modelId))
+                        onCancelCompare()
+                    } else {
+                        backStack.add(DetailRoute(modelId, thumbnailUrl, suffix))
+                    }
+                },
+                onCancelCompare = onCancelCompare,
+                onDiscoverClick = { backStack.add(DiscoveryRoute) },
+                onCompareModel = onCompareModel,
+                onScanQRCode = { backStack.add(QRScannerRoute) },
+                onTextSearch = { backStack.add(TextSearchRoute) },
+            ),
+            scrollToTopTrigger = searchScrollTrigger,
+            compareModelName = compareModelName,
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.settingsEntry(
+    backStack: MutableList<Any>,
+    settingsScrollTrigger: Int,
+) {
+    entry<SettingsRoute> {
+        val authVm: AuthSettingsViewModel = koinViewModel()
+        val storageVm: StorageSettingsViewModel = koinViewModel()
+        val behaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
+        val updateVm: UpdateViewModel = koinViewModel()
+        val gestureTutorialVm: com.riox432.civitdeck.feature.gallery.presentation.GestureTutorialViewModel =
+            koinViewModel()
+        SettingsScreen(
+            authViewModel = authVm,
+            storageViewModel = storageVm,
+            appBehaviorViewModel = behaviorVm,
+            updateViewModel = updateVm,
+            onNavigateToAppearance = { backStack.add(AppearanceSettingsRoute) },
+            onNavigateToContentFilter = { backStack.add(ContentFilterSettingsRoute) },
+            onNavigateToStorage = { backStack.add(StorageSettingsRoute) },
+            onNavigateToAdvanced = { backStack.add(AdvancedSettingsRoute) },
+            onNavigateToAnalytics = { backStack.add(AnalyticsRoute) },
+            onNavigateToNotificationCenter = { backStack.add(NotificationCenterRoute) },
+            onNavigateToBrowsingHistory = { backStack.add(BrowsingHistoryRoute) },
+            onNavigateToDownloadQueue = { backStack.add(DownloadQueueRoute) },
+            onNavigateToLicenses = { backStack.add(LicensesRoute) },
+            onReplayGestureTutorial = gestureTutorialVm::resetTutorial,
+            scrollToTopTrigger = settingsScrollTrigger,
+        )
+    }
 }

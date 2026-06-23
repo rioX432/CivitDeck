@@ -66,33 +66,13 @@ fun DesktopBrowsingHistoryScreen(
         )
 
         if (state.isEmpty) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Text(
-                    text = "No browsing history",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            EmptyHistoryMessage()
         } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(Spacing.lg),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md),
-            ) {
-                state.groups.forEach { group ->
-                    HistoryGroupCard(
-                        group = group,
-                        onModelClick = onModelClick,
-                        onDelete = viewModel::deleteItem,
-                    )
-                }
-            }
+            HistoryGroupList(
+                groups = state.groups,
+                onModelClick = onModelClick,
+                onDelete = viewModel::deleteItem,
+            )
         }
     }
 
@@ -104,6 +84,44 @@ fun DesktopBrowsingHistoryScreen(
             },
             onDismiss = { showClearDialog = false },
         )
+    }
+}
+
+@Composable
+private fun EmptyHistoryMessage() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            text = "No browsing history",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun HistoryGroupList(
+    groups: List<DateGroup>,
+    onModelClick: (Long) -> Unit,
+    onDelete: (Long) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md),
+    ) {
+        groups.forEach { group ->
+            HistoryGroupCard(
+                group = group,
+                onModelClick = onModelClick,
+                onDelete = onDelete,
+            )
+        }
     }
 }
 

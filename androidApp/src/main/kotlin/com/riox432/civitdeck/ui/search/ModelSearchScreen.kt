@@ -10,6 +10,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -246,35 +247,61 @@ private fun SearchScreenContentBox(
             isComparing = compareModelName != null,
         )
 
-        CollapsibleHeader(
+        SearchScreenForeground(
             headerState = headerState,
-            query = uiState.query,
+            uiState = uiState,
             searchHistory = searchHistory,
-            onQueryChange = viewModel::onQueryChange,
-            onSearch = viewModel::onSearch,
-            onHistoryItemClick = viewModel::onHistoryItemClick,
-            onDeleteHistoryItem = viewModel::removeSearchHistoryItem,
-            onClearHistory = viewModel::clearSearchHistory,
-        )
-
-        SpeedDialFab(
-            visible = isFabVisible,
+            viewModel = viewModel,
+            callbacks = callbacks,
+            isFabVisible = isFabVisible,
             activeFilterCount = activeFilterCount,
-            onFilterClick = onShowFilterSheet,
-            onDiscoverClick = callbacks.onDiscoverClick,
-            onScanQRCode = callbacks.onScanQRCode,
-            onTextSearch = if (BuildConfig.FEATURE_SIMILARITY_SEARCH) callbacks.onTextSearch else null,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(Spacing.lg),
-        )
-
-        ComparisonBottomBar(
             compareModelName = compareModelName,
-            onCancel = callbacks.onCancelCompare,
-            modifier = Modifier.align(Alignment.BottomCenter),
+            onShowFilterSheet = onShowFilterSheet,
         )
     }
+}
+
+@Suppress("LongParameterList")
+@Composable
+private fun BoxScope.SearchScreenForeground(
+    headerState: CollapsibleHeaderState,
+    uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
+    searchHistory: List<String>,
+    viewModel: ModelSearchViewModel,
+    callbacks: SearchScreenCallbacks,
+    isFabVisible: Boolean,
+    activeFilterCount: Int,
+    compareModelName: String?,
+    onShowFilterSheet: () -> Unit,
+) {
+    CollapsibleHeader(
+        headerState = headerState,
+        query = uiState.query,
+        searchHistory = searchHistory,
+        onQueryChange = viewModel::onQueryChange,
+        onSearch = viewModel::onSearch,
+        onHistoryItemClick = viewModel::onHistoryItemClick,
+        onDeleteHistoryItem = viewModel::removeSearchHistoryItem,
+        onClearHistory = viewModel::clearSearchHistory,
+    )
+
+    SpeedDialFab(
+        visible = isFabVisible,
+        activeFilterCount = activeFilterCount,
+        onFilterClick = onShowFilterSheet,
+        onDiscoverClick = callbacks.onDiscoverClick,
+        onScanQRCode = callbacks.onScanQRCode,
+        onTextSearch = if (BuildConfig.FEATURE_SIMILARITY_SEARCH) callbacks.onTextSearch else null,
+        modifier = Modifier
+            .align(Alignment.BottomEnd)
+            .padding(Spacing.lg),
+    )
+
+    ComparisonBottomBar(
+        compareModelName = compareModelName,
+        onCancel = callbacks.onCancelCompare,
+        modifier = Modifier.align(Alignment.BottomCenter),
+    )
 }
 
 @Suppress("LongParameterList")

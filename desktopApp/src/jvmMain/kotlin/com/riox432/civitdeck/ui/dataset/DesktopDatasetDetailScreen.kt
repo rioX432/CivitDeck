@@ -87,43 +87,17 @@ fun DesktopDatasetDetailScreen(
     var captionEditState by remember { mutableStateOf<Pair<Long, String>?>(null) }
 
     Surface(modifier = modifier.fillMaxSize()) {
-        Column {
-            DatasetDetailToolbar(
-                datasetName = datasetName,
-                isSelectionMode = isSelectionMode,
-                selectedCount = selectedImageIds.size,
-                onBack = onBack,
-                onClearSelection = viewModel::clearSelection,
-                onSelectAll = viewModel::selectAll,
-                onExport = { showExportDialog = true },
-            )
-            SourceFilterRow(
-                selectedSource = selectedSource,
-                onSourceSelected = viewModel::setSourceFilter,
-            )
-            if (isSelectionMode && selectedImageIds.isNotEmpty()) {
-                SelectionActionBar(
-                    selectedCount = selectedImageIds.size,
-                    onRemove = viewModel::removeSelected,
-                )
-            }
-            DatasetImageGridContent(
-                images = filteredImages,
-                isSelectionMode = isSelectionMode,
-                selectedImageIds = selectedImageIds,
-                onImageClick = { image ->
-                    if (isSelectionMode) {
-                        viewModel.toggleSelection(image.id)
-                    } else {
-                        captionEditState = image.id to (image.caption?.text.orEmpty())
-                    }
-                },
-                onImageLongClick = { imageId ->
-                    if (!isSelectionMode) viewModel.enterSelectionMode(imageId)
-                },
-                modifier = Modifier.weight(1f),
-            )
-        }
+        DatasetDetailContent(
+            datasetName = datasetName,
+            filteredImages = filteredImages,
+            selectedImageIds = selectedImageIds,
+            isSelectionMode = isSelectionMode,
+            selectedSource = selectedSource,
+            viewModel = viewModel,
+            onBack = onBack,
+            onExportClick = { showExportDialog = true },
+            onEditCaption = { id, caption -> captionEditState = id to caption },
+        )
     }
 
     DatasetDetailDialogs(
@@ -141,6 +115,58 @@ fun DesktopDatasetDetailScreen(
         },
         onCaptionDismiss = { captionEditState = null },
     )
+}
+
+@Composable
+@Suppress("LongParameterList")
+private fun DatasetDetailContent(
+    datasetName: String,
+    filteredImages: List<DatasetImage>,
+    selectedImageIds: Set<Long>,
+    isSelectionMode: Boolean,
+    selectedSource: ImageSource?,
+    viewModel: DatasetDetailViewModel,
+    onBack: () -> Unit,
+    onExportClick: () -> Unit,
+    onEditCaption: (Long, String) -> Unit,
+) {
+    Column {
+        DatasetDetailToolbar(
+            datasetName = datasetName,
+            isSelectionMode = isSelectionMode,
+            selectedCount = selectedImageIds.size,
+            onBack = onBack,
+            onClearSelection = viewModel::clearSelection,
+            onSelectAll = viewModel::selectAll,
+            onExport = onExportClick,
+        )
+        SourceFilterRow(
+            selectedSource = selectedSource,
+            onSourceSelected = viewModel::setSourceFilter,
+        )
+        if (isSelectionMode && selectedImageIds.isNotEmpty()) {
+            SelectionActionBar(
+                selectedCount = selectedImageIds.size,
+                onRemove = viewModel::removeSelected,
+            )
+        }
+        DatasetImageGridContent(
+            images = filteredImages,
+            isSelectionMode = isSelectionMode,
+            selectedImageIds = selectedImageIds,
+            onImageClick = { image ->
+                if (isSelectionMode) {
+                    viewModel.toggleSelection(image.id)
+                } else {
+                    onEditCaption(image.id, image.caption?.text.orEmpty())
+                }
+            },
+            onImageLongClick = { imageId ->
+                if (!isSelectionMode) viewModel.enterSelectionMode(imageId)
+            },
+            modifier = Modifier.weight(1f),
+        )
+    }
 }
 
 @Composable

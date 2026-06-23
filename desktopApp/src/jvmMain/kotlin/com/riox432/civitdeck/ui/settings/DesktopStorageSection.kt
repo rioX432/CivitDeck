@@ -57,28 +57,49 @@ internal fun StorageSection(viewModel: StorageSettingsViewModel) {
         }
     }
 
+    StorageClearDialogs(
+        viewModel = viewModel,
+        showClearCacheDialog = showClearCacheDialog,
+        showClearSearchDialog = showClearSearchDialog,
+        showClearHistoryDialog = showClearHistoryDialog,
+        onDismissCache = { showClearCacheDialog = false },
+        onDismissSearch = { showClearSearchDialog = false },
+        onDismissHistory = { showClearHistoryDialog = false },
+    )
+}
+
+@Composable
+private fun StorageClearDialogs(
+    viewModel: StorageSettingsViewModel,
+    showClearCacheDialog: Boolean,
+    showClearSearchDialog: Boolean,
+    showClearHistoryDialog: Boolean,
+    onDismissCache: () -> Unit,
+    onDismissSearch: () -> Unit,
+    onDismissHistory: () -> Unit,
+) {
     ClearCacheDialog(
         visible = showClearCacheDialog,
-        onDismiss = { showClearCacheDialog = false },
+        onDismiss = onDismissCache,
         onConfirm = {
             viewModel.onClearCache()
-            showClearCacheDialog = false
+            onDismissCache()
         },
     )
     ClearSearchDialog(
         visible = showClearSearchDialog,
-        onDismiss = { showClearSearchDialog = false },
+        onDismiss = onDismissSearch,
         onConfirm = {
             viewModel.onClearSearchHistory()
-            showClearSearchDialog = false
+            onDismissSearch()
         },
     )
     ClearHistoryDialog(
         visible = showClearHistoryDialog,
-        onDismiss = { showClearHistoryDialog = false },
+        onDismiss = onDismissHistory,
         onConfirm = {
             viewModel.onClearBrowsingHistory()
-            showClearHistoryDialog = false
+            onDismissHistory()
         },
     )
 }

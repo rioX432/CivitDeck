@@ -44,89 +44,127 @@ fun SDWebUISettingsSection(viewModel: SDWebUISettingsViewModel) {
         )
         Spacer(modifier = Modifier.height(Spacing.sm))
 
-        state.activeConnection?.let { active ->
-            Text(
-                text = "Active: ${active.name} (${active.hostname}:${active.port})",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            OutlinedButton(
-                onClick = viewModel::onTestConnection,
-                enabled = !state.isTesting,
-            ) {
-                Text(if (state.isTesting) "Testing..." else "Test")
-            }
-            state.testError?.let { error ->
-                Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-            }
-        }
+        SDWebUIActiveConnection(state = state, viewModel = viewModel)
+        SDWebUISavedConnections(state = state, viewModel = viewModel)
 
-        if (state.connections.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            Text("Saved Connections:", style = MaterialTheme.typography.labelMedium)
-            state.connections.forEach { conn ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        "${conn.name} (${conn.hostname}:${conn.port})",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Row {
-                        TextButton(onClick = { viewModel.onActivateConnection(conn.id) }) {
-                            Text("Activate")
-                        }
-                        TextButton(onClick = { viewModel.onDeleteConnection(conn.id) }) {
-                            Text("Delete")
-                        }
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        SDWebUIAddConnectionForm(
+            nameInput = nameInput,
+            hostInput = hostInput,
+            portInput = portInput,
+            onNameChange = { nameInput = it },
+            onHostChange = { hostInput = it },
+            onPortChange = { portInput = it },
+            onSave = {
+                portInput.toIntOrNull()?.let { port ->
+                    viewModel.onSaveConnection(nameInput, hostInput, port)
+                    nameInput = ""
+                    hostInput = ComfyUiConnectionDefaults.DEFAULT_HOST
+                    portInput = SDWebUIConnection.DEFAULT_SDWEBUI_PORT.toString()
+                }
+            },
+        )
+    }
+}
+
+@Composable
+@Suppress("LongParameterList")
+private fun SDWebUIAddConnectionForm(
+    nameInput: String,
+    hostInput: String,
+    portInput: String,
+    onNameChange: (String) -> Unit,
+    onHostChange: (String) -> Unit,
+    onPortChange: (String) -> Unit,
+    onSave: () -> Unit,
+) {
+    Text("Add Connection:", style = MaterialTheme.typography.labelMedium)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        OutlinedTextField(
+            value = nameInput,
+            onValueChange = onNameChange,
+            label = { Text("Name") },
+            singleLine = true,
+            modifier = Modifier.weight(1f),
+        )
+        OutlinedTextField(
+            value = hostInput,
+            onValueChange = onHostChange,
+            label = { Text("Host") },
+            singleLine = true,
+            modifier = Modifier.weight(1f),
+        )
+        OutlinedTextField(
+            value = portInput,
+            onValueChange = onPortChange,
+            label = { Text("Port") },
+            singleLine = true,
+            modifier = Modifier.width(Spacing.xxl * 3),
+        )
+    }
+    Spacer(modifier = Modifier.height(Spacing.sm))
+    Button(
+        onClick = onSave,
+        enabled = nameInput.isNotBlank() && hostInput.isNotBlank(),
+    ) {
+        Text("Save Connection")
+    }
+}
+
+@Composable
+private fun SDWebUIActiveConnection(
+    state: com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsUiState,
+    viewModel: SDWebUISettingsViewModel,
+) {
+    state.activeConnection?.let { active ->
+        Text(
+            text = "Active: ${active.name} (${active.hostname}:${active.port})",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        OutlinedButton(
+            onClick = viewModel::onTestConnection,
+            enabled = !state.isTesting,
+        ) {
+            Text(if (state.isTesting) "Testing..." else "Test")
+        }
+        state.testError?.let { error ->
+            Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable
+private fun SDWebUISavedConnections(
+    state: com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsUiState,
+    viewModel: SDWebUISettingsViewModel,
+) {
+    if (state.connections.isNotEmpty()) {
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        Text("Saved Connections:", style = MaterialTheme.typography.labelMedium)
+        state.connections.forEach { conn ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "${conn.name} (${conn.hostname}:${conn.port})",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f),
+                )
+                Row {
+                    TextButton(onClick = { viewModel.onActivateConnection(conn.id) }) {
+                        Text("Activate")
+                    }
+                    TextButton(onClick = { viewModel.onDeleteConnection(conn.id) }) {
+                        Text("Delete")
                     }
                 }
             }
-        }
-
-        Spacer(modifier = Modifier.height(Spacing.sm))
-        Text("Add Connection:", style = MaterialTheme.typography.labelMedium)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-        ) {
-            OutlinedTextField(
-                value = nameInput,
-                onValueChange = { nameInput = it },
-                label = { Text("Name") },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-            )
-            OutlinedTextField(
-                value = hostInput,
-                onValueChange = { hostInput = it },
-                label = { Text("Host") },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-            )
-            OutlinedTextField(
-                value = portInput,
-                onValueChange = { portInput = it },
-                label = { Text("Port") },
-                singleLine = true,
-                modifier = Modifier.width(Spacing.xxl * 3),
-            )
-        }
-        Spacer(modifier = Modifier.height(Spacing.sm))
-        Button(
-            onClick = {
-                val port = portInput.toIntOrNull() ?: return@Button
-                viewModel.onSaveConnection(nameInput, hostInput, port)
-                nameInput = ""
-                hostInput = ComfyUiConnectionDefaults.DEFAULT_HOST
-                portInput = SDWebUIConnection.DEFAULT_SDWEBUI_PORT.toString()
-            },
-            enabled = nameInput.isNotBlank() && hostInput.isNotBlank(),
-        ) {
-            Text("Save Connection")
         }
     }
 }
@@ -139,124 +177,171 @@ fun SDWebUIGenerationSection(viewModel: SDWebUIGenerationViewModel) {
         if (state.isLoading) {
             Text("Loading resources...", style = MaterialTheme.typography.bodySmall)
         } else {
-            if (state.models.isNotEmpty()) {
-                SettingsDropdown(
-                    label = "Model",
-                    selected = state.selectedModel.ifEmpty { "Select..." },
-                    options = state.models,
-                    onSelected = viewModel::onModelSelected,
-                )
-                Spacer(modifier = Modifier.height(Spacing.sm))
-            }
-            if (state.samplers.isNotEmpty()) {
-                SettingsDropdown(
-                    label = "Sampler",
-                    selected = state.selectedSampler,
-                    options = state.samplers,
-                    onSelected = viewModel::onSamplerSelected,
-                )
-                Spacer(modifier = Modifier.height(Spacing.sm))
-            }
-            OutlinedTextField(
-                value = state.prompt,
-                onValueChange = viewModel::onPromptChanged,
-                label = { Text("Prompt") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3,
-                maxLines = 5,
-            )
+            SDWebUIResourceSelectors(state = state, viewModel = viewModel)
+            SDWebUIPromptFields(state = state, viewModel = viewModel)
             Spacer(modifier = Modifier.height(Spacing.sm))
-            OutlinedTextField(
-                value = state.negativePrompt,
-                onValueChange = viewModel::onNegativePromptChanged,
-                label = { Text("Negative Prompt") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2,
-                maxLines = 3,
-            )
+            SDWebUIGenerationParams(state = state, viewModel = viewModel)
             Spacer(modifier = Modifier.height(Spacing.sm))
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
-                Column(modifier = Modifier.weight(1f)) {
-                    SliderSetting(
-                        label = "Steps",
-                        value = state.steps.toFloat(),
-                        valueRange = 1f..150f,
-                        steps = 148,
-                        valueLabel = state.steps.toString(),
-                        onValueChange = { viewModel.onStepsChanged(it.toInt()) },
-                    )
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    SliderSetting(
-                        label = "CFG Scale",
-                        value = state.cfgScale.toFloat(),
-                        valueRange = 1f..30f,
-                        steps = 28,
-                        valueLabel = "%.1f".format(state.cfgScale),
-                        onValueChange = { viewModel.onCfgChanged(it.toDouble()) },
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
-                OutlinedTextField(
-                    value = state.width.toString(),
-                    onValueChange = { it.toIntOrNull()?.let(viewModel::onWidthChanged) },
-                    label = { Text("Width") },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f),
-                )
-                OutlinedTextField(
-                    value = state.height.toString(),
-                    onValueChange = { it.toIntOrNull()?.let(viewModel::onHeightChanged) },
-                    label = { Text("Height") },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f),
-                )
-                OutlinedTextField(
-                    value = if (state.seed == -1L) "" else state.seed.toString(),
-                    onValueChange = { viewModel.onSeedChanged(it.toLongOrNull() ?: -1L) },
-                    label = { Text("Seed (-1 = random)") },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f),
-                )
-            }
+            SDWebUIDimensionFields(state = state, viewModel = viewModel)
             Spacer(modifier = Modifier.height(Spacing.md))
-            if (state.isGenerating) {
-                LinearProgressIndicator(
-                    progress = { state.progress.toFloat() },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Spacer(modifier = Modifier.height(Spacing.sm))
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                    Text(
-                        "Generating... ${(state.progress * 100).toInt()}%",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                    OutlinedButton(onClick = viewModel::onInterrupt) {
-                        Text("Interrupt")
-                    }
-                }
-            } else {
-                Button(
-                    onClick = viewModel::onGenerate,
-                    enabled = state.prompt.isNotBlank(),
-                ) {
-                    Text("Generate")
-                }
-            }
-            state.error?.let { error ->
-                Spacer(modifier = Modifier.height(Spacing.sm))
-                Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-            }
-            if (state.generatedImages.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(Spacing.sm))
-                Text(
-                    "${state.generatedImages.size} image(s) generated",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+            SDWebUIGenerateControls(state = state, viewModel = viewModel)
+            SDWebUIGenerationFooter(state = state)
+        }
+    }
+}
+
+@Composable
+private fun SDWebUIResourceSelectors(
+    state: com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationUiState,
+    viewModel: SDWebUIGenerationViewModel,
+) {
+    if (state.models.isNotEmpty()) {
+        SettingsDropdown(
+            label = "Model",
+            selected = state.selectedModel.ifEmpty { "Select..." },
+            options = state.models,
+            onSelected = viewModel::onModelSelected,
+        )
+        Spacer(modifier = Modifier.height(Spacing.sm))
+    }
+    if (state.samplers.isNotEmpty()) {
+        SettingsDropdown(
+            label = "Sampler",
+            selected = state.selectedSampler,
+            options = state.samplers,
+            onSelected = viewModel::onSamplerSelected,
+        )
+        Spacer(modifier = Modifier.height(Spacing.sm))
+    }
+}
+
+@Composable
+private fun SDWebUIPromptFields(
+    state: com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationUiState,
+    viewModel: SDWebUIGenerationViewModel,
+) {
+    OutlinedTextField(
+        value = state.prompt,
+        onValueChange = viewModel::onPromptChanged,
+        label = { Text("Prompt") },
+        modifier = Modifier.fillMaxWidth(),
+        minLines = 3,
+        maxLines = 5,
+    )
+    Spacer(modifier = Modifier.height(Spacing.sm))
+    OutlinedTextField(
+        value = state.negativePrompt,
+        onValueChange = viewModel::onNegativePromptChanged,
+        label = { Text("Negative Prompt") },
+        modifier = Modifier.fillMaxWidth(),
+        minLines = 2,
+        maxLines = 3,
+    )
+}
+
+@Composable
+private fun SDWebUIGenerationParams(
+    state: com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationUiState,
+    viewModel: SDWebUIGenerationViewModel,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        Column(modifier = Modifier.weight(1f)) {
+            SliderSetting(
+                label = "Steps",
+                value = state.steps.toFloat(),
+                valueRange = 1f..150f,
+                steps = 148,
+                valueLabel = state.steps.toString(),
+                onValueChange = { viewModel.onStepsChanged(it.toInt()) },
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            SliderSetting(
+                label = "CFG Scale",
+                value = state.cfgScale.toFloat(),
+                valueRange = 1f..30f,
+                steps = 28,
+                valueLabel = "%.1f".format(state.cfgScale),
+                onValueChange = { viewModel.onCfgChanged(it.toDouble()) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun SDWebUIDimensionFields(
+    state: com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationUiState,
+    viewModel: SDWebUIGenerationViewModel,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        OutlinedTextField(
+            value = state.width.toString(),
+            onValueChange = { it.toIntOrNull()?.let(viewModel::onWidthChanged) },
+            label = { Text("Width") },
+            singleLine = true,
+            modifier = Modifier.weight(1f),
+        )
+        OutlinedTextField(
+            value = state.height.toString(),
+            onValueChange = { it.toIntOrNull()?.let(viewModel::onHeightChanged) },
+            label = { Text("Height") },
+            singleLine = true,
+            modifier = Modifier.weight(1f),
+        )
+        OutlinedTextField(
+            value = if (state.seed == -1L) "" else state.seed.toString(),
+            onValueChange = { viewModel.onSeedChanged(it.toLongOrNull() ?: -1L) },
+            label = { Text("Seed (-1 = random)") },
+            singleLine = true,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun SDWebUIGenerateControls(
+    state: com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationUiState,
+    viewModel: SDWebUIGenerationViewModel,
+) {
+    if (state.isGenerating) {
+        LinearProgressIndicator(
+            progress = { state.progress.toFloat() },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            Text(
+                "Generating... ${(state.progress * 100).toInt()}%",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            OutlinedButton(onClick = viewModel::onInterrupt) {
+                Text("Interrupt")
             }
         }
+    } else {
+        Button(
+            onClick = viewModel::onGenerate,
+            enabled = state.prompt.isNotBlank(),
+        ) {
+            Text("Generate")
+        }
+    }
+}
+
+@Composable
+private fun SDWebUIGenerationFooter(
+    state: com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationUiState,
+) {
+    state.error?.let { error ->
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+    }
+    if (state.generatedImages.isNotEmpty()) {
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        Text(
+            "${state.generatedImages.size} image(s) generated",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary,
+        )
     }
 }

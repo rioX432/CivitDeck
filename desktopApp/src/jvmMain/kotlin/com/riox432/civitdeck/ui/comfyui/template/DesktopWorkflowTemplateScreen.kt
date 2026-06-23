@@ -70,53 +70,19 @@ fun DesktopWorkflowTemplateScreen(
     var showImportDialog by remember { mutableStateOf(false) }
     var importText by remember { mutableStateOf("") }
 
-    LaunchedEffect(state.error) {
-        state.error?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.dismissError()
-        }
-    }
-    LaunchedEffect(state.importError) {
-        state.importError?.let {
-            snackbarHostState.showSnackbar("Import failed: $it")
-            viewModel.onDismissImportError()
-        }
-    }
+    TemplateSnackbarEffects(state, snackbarHostState, viewModel)
 
     Surface(modifier = modifier.fillMaxSize()) {
-        Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            floatingActionButton = {
-                if (onSelectTemplate == null) {
-                    FloatingActionButton(onClick = onCreateTemplate) {
-                        Icon(Icons.Default.Add, "Create template")
-                    }
-                }
-            },
-        ) { padding ->
-            Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-                TemplateToolbar(
-                    onBack = onBack,
-                    onImportClick = { showImportDialog = true },
-                    isPicker = onSelectTemplate != null,
-                )
-                TemplateSearchAndFilters(
-                    searchQuery = state.searchQuery,
-                    selectedCategory = state.selectedCategory,
-                    selectedType = state.selectedType,
-                    onSearchQueryChanged = viewModel::onSearchQueryChanged,
-                    onCategorySelected = viewModel::onCategorySelected,
-                    onTypeSelected = viewModel::onTypeSelected,
-                )
-                TemplateList(
-                    state = state,
-                    onSelectTemplate = onSelectTemplate,
-                    onEditTemplate = onEditTemplate,
-                    onExport = viewModel::onExportTemplate,
-                    onDelete = viewModel::onDeleteTemplate,
-                )
-            }
-        }
+        TemplateScaffold(
+            state = state,
+            snackbarHostState = snackbarHostState,
+            viewModel = viewModel,
+            onBack = onBack,
+            onCreateTemplate = onCreateTemplate,
+            onEditTemplate = onEditTemplate,
+            onSelectTemplate = onSelectTemplate,
+            onImportClick = { showImportDialog = true },
+        )
     }
 
     TemplateScreenDialogs(
@@ -132,6 +98,73 @@ fun DesktopWorkflowTemplateScreen(
         onImportDismiss = { showImportDialog = false },
         onExportDismiss = viewModel::onDismissExport,
     )
+}
+
+@Composable
+private fun TemplateSnackbarEffects(
+    state: WorkflowTemplateUiState,
+    snackbarHostState: SnackbarHostState,
+    viewModel: WorkflowTemplateViewModel,
+) {
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.dismissError()
+        }
+    }
+    LaunchedEffect(state.importError) {
+        state.importError?.let {
+            snackbarHostState.showSnackbar("Import failed: $it")
+            viewModel.onDismissImportError()
+        }
+    }
+}
+
+@Composable
+@Suppress("LongParameterList")
+private fun TemplateScaffold(
+    state: WorkflowTemplateUiState,
+    snackbarHostState: SnackbarHostState,
+    viewModel: WorkflowTemplateViewModel,
+    onBack: () -> Unit,
+    onCreateTemplate: () -> Unit,
+    onEditTemplate: (WorkflowTemplate) -> Unit,
+    onSelectTemplate: ((WorkflowTemplate) -> Unit)?,
+    onImportClick: () -> Unit,
+) {
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            if (onSelectTemplate == null) {
+                FloatingActionButton(onClick = onCreateTemplate) {
+                    Icon(Icons.Default.Add, "Create template")
+                }
+            }
+        },
+    ) { padding ->
+        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            TemplateToolbar(
+                onBack = onBack,
+                onImportClick = onImportClick,
+                isPicker = onSelectTemplate != null,
+            )
+            TemplateSearchAndFilters(
+                searchQuery = state.searchQuery,
+                selectedCategory = state.selectedCategory,
+                selectedType = state.selectedType,
+                onSearchQueryChanged = viewModel::onSearchQueryChanged,
+                onCategorySelected = viewModel::onCategorySelected,
+                onTypeSelected = viewModel::onTypeSelected,
+            )
+            TemplateList(
+                state = state,
+                onSelectTemplate = onSelectTemplate,
+                onEditTemplate = onEditTemplate,
+                onExport = viewModel::onExportTemplate,
+                onDelete = viewModel::onDeleteTemplate,
+            )
+        }
+    }
 }
 
 @Composable

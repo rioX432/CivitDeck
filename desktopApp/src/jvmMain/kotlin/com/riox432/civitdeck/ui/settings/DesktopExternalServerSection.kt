@@ -39,48 +39,8 @@ fun ExternalServerSettingsSection(viewModel: ExternalServerSettingsViewModel) {
         )
         Spacer(modifier = Modifier.height(Spacing.sm))
 
-        state.activeConfig?.let { active ->
-            Text(
-                text = "Active: ${active.name} (${active.baseUrl})",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            OutlinedButton(
-                onClick = viewModel::onTestConnection,
-                enabled = !state.isTesting,
-            ) {
-                Text(if (state.isTesting) "Testing..." else "Test Connection")
-            }
-            state.testError?.let { error ->
-                Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-            }
-        }
-
-        if (state.configs.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            Text("Saved Configs:", style = MaterialTheme.typography.labelMedium)
-            state.configs.forEach { config ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        "${config.name} - ${config.baseUrl}",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Row {
-                        TextButton(onClick = { viewModel.onActivateConfig(config.id) }) {
-                            Text("Activate")
-                        }
-                        TextButton(onClick = { viewModel.onDeleteConfig(config.id) }) {
-                            Text("Delete")
-                        }
-                    }
-                }
-            }
-        }
+        ExternalServerActiveConfig(state = state, viewModel = viewModel)
+        ExternalServerSavedConfigs(state = state, viewModel = viewModel)
 
         Spacer(modifier = Modifier.height(Spacing.sm))
         Text("Add Server:", style = MaterialTheme.typography.labelMedium)
@@ -118,6 +78,61 @@ fun ExternalServerSettingsSection(viewModel: ExternalServerSettingsViewModel) {
             enabled = nameInput.isNotBlank() && urlInput.isNotBlank(),
         ) {
             Text("Save Config")
+        }
+    }
+}
+
+@Composable
+private fun ExternalServerActiveConfig(
+    state: com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsUiState,
+    viewModel: ExternalServerSettingsViewModel,
+) {
+    state.activeConfig?.let { active ->
+        Text(
+            text = "Active: ${active.name} (${active.baseUrl})",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        OutlinedButton(
+            onClick = viewModel::onTestConnection,
+            enabled = !state.isTesting,
+        ) {
+            Text(if (state.isTesting) "Testing..." else "Test Connection")
+        }
+        state.testError?.let { error ->
+            Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable
+private fun ExternalServerSavedConfigs(
+    state: com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsUiState,
+    viewModel: ExternalServerSettingsViewModel,
+) {
+    if (state.configs.isNotEmpty()) {
+        Spacer(modifier = Modifier.height(Spacing.sm))
+        Text("Saved Configs:", style = MaterialTheme.typography.labelMedium)
+        state.configs.forEach { config ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "${config.name} - ${config.baseUrl}",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f),
+                )
+                Row {
+                    TextButton(onClick = { viewModel.onActivateConfig(config.id) }) {
+                        Text("Activate")
+                    }
+                    TextButton(onClick = { viewModel.onDeleteConfig(config.id) }) {
+                        Text("Delete")
+                    }
+                }
+            }
         }
     }
 }
