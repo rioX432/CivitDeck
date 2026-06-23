@@ -32,6 +32,10 @@ class CivitDeckKmpLibraryPlugin : Plugin<Project> {
                         // commonTest runs on the androidHostTest compilation.
                         withHostTest {
                             isIncludeAndroidResources = true
+                            // Unmocked android.util.Log calls (via Logger) throw by
+                            // default on the JVM host test runtime. Returning defaults
+                            // turns them into no-ops so use-case logic can be unit tested.
+                            isReturnDefaultValues = true
                         }
                     }
             }
