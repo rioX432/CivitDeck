@@ -1,5 +1,3 @@
-@file:Suppress("TooManyFunctions")
-
 package com.riox432.civitdeck.feature.comfyui.data.encoder
 
 import com.riox432.civitdeck.feature.comfyui.domain.model.PathSegment

@@ -1,5 +1,3 @@
-@file:Suppress("TooManyFunctions")
-
 package com.riox432.civitdeck.ui.comfyui
 
 import androidx.compose.foundation.layout.Arrangement

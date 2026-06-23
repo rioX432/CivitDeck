@@ -1,5 +1,3 @@
-@file:Suppress("TooManyFunctions")
-
 package com.riox432.civitdeck.ui.detail
 
 import androidx.compose.animation.AnimatedContent

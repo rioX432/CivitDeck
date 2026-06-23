@@ -1,5 +1,3 @@
-@file:Suppress("TooManyFunctions")
-
 package com.riox432.civitdeck.ui.analytics
 
 import androidx.compose.foundation.Canvas

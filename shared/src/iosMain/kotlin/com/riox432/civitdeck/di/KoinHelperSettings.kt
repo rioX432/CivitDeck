@@ -1,3 +1,4 @@
+// iOS Koin factory bridge: many cohesive single-line ViewModel accessors for Swift interop.
 @file:Suppress("TooManyFunctions")
 
 package com.riox432.civitdeck.di
