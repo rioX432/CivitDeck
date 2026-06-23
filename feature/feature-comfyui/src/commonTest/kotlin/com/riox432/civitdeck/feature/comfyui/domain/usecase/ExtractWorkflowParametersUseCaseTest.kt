@@ -231,6 +231,177 @@ class ExtractWorkflowParametersUseCaseTest {
 
     // endregion
 
+    // region Schema / parameter-type resolution edge cases
+
+    @Test
+    fun legacyResolvesSelectTypeFromSchemaOptions() {
+        val workflow = """
+        {
+            "4": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {"ckpt_name": "sd_xl.safetensors"},
+                "_meta": {"title": "Load Checkpoint"}
+            }
+        }
+        """.trimIndent()
+        // object_info exposes ckpt_name as a list of options -> SELECT.
+        val objectInfo = """
+        {
+            "CheckpointLoaderSimple": {
+                "input": {
+                    "required": {
+                        "ckpt_name": [["sd_xl.safetensors", "sd_15.safetensors"]]
+                    }
+                }
+            }
+        }
+        """.trimIndent()
+
+        val params = useCase(workflow, objectInfo)
+
+        val ckpt = params.single { it.paramName == "ckpt_name" }
+        assertEquals(ParameterType.SELECT, ckpt.paramType)
+        assertEquals(listOf("sd_xl.safetensors", "sd_15.safetensors"), ckpt.options)
+    }
+
+    @Test
+    fun appModeResolvesBooleanTypeFromSchema() {
+        // BOOLEAN type comes from the schema type descriptor, not the param name.
+        val workflow = """
+        {
+            "12": {
+                "class_type": "KSamplerAdvanced",
+                "inputs": {"my_flag": true},
+                "_meta": {"title": "Sampler"}
+            },
+            "extra": {
+                "linearData": {"inputs": [["12", "my_flag"]], "outputs": []},
+                "linearMode": true
+            }
+        }
+        """.trimIndent()
+        val objectInfo = """
+        {
+            "KSamplerAdvanced": {
+                "input": {
+                    "required": {
+                        "my_flag": ["BOOLEAN", {"default": true}]
+                    }
+                }
+            }
+        }
+        """.trimIndent()
+
+        val params = useCase(workflow, objectInfo)
+
+        assertEquals(ParameterType.BOOLEAN, params.single().paramType)
+    }
+
+    @Test
+    fun resolvesSchemaFromOptionalBlockWhenNotInRequired() {
+        // The schema constraint for "denoise" lives under "optional", not "required".
+        val workflow = """
+        {
+            "3": {
+                "class_type": "KSampler",
+                "inputs": {"denoise": 0.5},
+                "_meta": {"title": "KSampler"}
+            }
+        }
+        """.trimIndent()
+        val objectInfo = """
+        {
+            "KSampler": {
+                "input": {
+                    "required": {},
+                    "optional": {
+                        "denoise": ["FLOAT", {"min": 0.0, "max": 1.0, "step": 0.01}]
+                    }
+                }
+            }
+        }
+        """.trimIndent()
+
+        val params = useCase(workflow, objectInfo)
+
+        val denoise = params.single { it.paramName == "denoise" }
+        assertEquals(0.0, denoise.min)
+        assertEquals(1.0, denoise.max)
+        assertEquals(0.01, denoise.step)
+    }
+
+    @Test
+    fun appModeDetectsImageParamByName() {
+        // "image" is a known image param even without schema.
+        val workflow = """
+        {
+            "20": {
+                "class_type": "LoadImage",
+                "inputs": {"image": "photo.png"},
+                "_meta": {"title": "Load Image"}
+            },
+            "extra": {
+                "linearData": {"inputs": [["20", "image"]], "outputs": []},
+                "linearMode": true
+            }
+        }
+        """.trimIndent()
+
+        val params = useCase(workflow)
+
+        assertEquals(ParameterType.IMAGE, params.single().paramType)
+    }
+
+    @Test
+    fun legacySortsByNodePriorityThenNodeId() {
+        // CLIPTextEncode (priority 1) must sort before CheckpointLoaderSimple (priority 2),
+        // even though the checkpoint node id is numerically smaller.
+        val workflow = """
+        {
+            "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {"ckpt_name": "model.safetensors"},
+                "_meta": {"title": "Checkpoint"}
+            },
+            "6": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {"text": "a cat"},
+                "_meta": {"title": "Prompt"}
+            }
+        }
+        """.trimIndent()
+
+        val params = useCase(workflow)
+
+        assertEquals("CLIPTextEncode", params.first().nodeClassType)
+        assertEquals("CheckpointLoaderSimple", params.last().nodeClassType)
+    }
+
+    @Test
+    fun appModeSkipsInputWhenNodeMissing() {
+        // A designated input pointing at a non-existent node yields no parameter.
+        val workflow = """
+        {
+            "6": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {"text": "a cat"},
+                "_meta": {"title": "Prompt"}
+            },
+            "extra": {
+                "linearData": {"inputs": [["6", "text"], ["999", "seed"]], "outputs": []},
+                "linearMode": true
+            }
+        }
+        """.trimIndent()
+
+        val params = useCase(workflow)
+
+        assertEquals(1, params.size)
+        assertEquals("text", params.single().paramName)
+    }
+
+    // endregion
+
     // region Error handling
 
     @Test
