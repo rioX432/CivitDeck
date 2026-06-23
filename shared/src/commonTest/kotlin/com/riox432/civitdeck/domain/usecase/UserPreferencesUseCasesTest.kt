@@ -21,7 +21,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@Suppress("TooManyFunctions")
 class UserPreferencesUseCasesTest {
 
     private class FakeUserPreferencesRepository :

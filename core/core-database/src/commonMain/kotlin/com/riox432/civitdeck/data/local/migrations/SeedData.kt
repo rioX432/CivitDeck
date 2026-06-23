@@ -22,7 +22,6 @@ internal val defaultCollectionCallback = object : RoomDatabase.Callback() {
     }
 }
 
-@Suppress("LongMethod")
 private fun seedBuiltInTemplates(connection: SQLiteConnection) {
     // INSERT OR IGNORE guarantees idempotency: rows with the same negative IDs are silently
     // skipped if they already exist, so this function is safe to call on every app open.

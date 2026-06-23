@@ -141,7 +141,6 @@ class ModelSearchViewModelTest {
         val nsfwPrefs: FakeContentFilterPreferencesRepository,
     )
 
-    @Suppress("LongMethod")
     private fun TestScope.createViewModel(): TestDeps {
         // StandardTestDispatcher defers the ViewModel's init coroutines until the
         // scheduler is advanced — this avoids the eager-construction NPE where

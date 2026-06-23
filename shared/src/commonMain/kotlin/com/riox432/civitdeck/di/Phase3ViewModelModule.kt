@@ -66,7 +66,6 @@ import com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-@Suppress("LongMethod")
 val phase3ViewModelModule = module {
     viewModel { AnalyticsViewModel(get<GetBrowsingStatsUseCase>()) }
     viewModel {

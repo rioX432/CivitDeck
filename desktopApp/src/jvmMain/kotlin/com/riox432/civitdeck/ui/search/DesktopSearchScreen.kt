@@ -39,7 +39,7 @@ import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.Spacing
 import org.koin.compose.viewmodel.koinViewModel
 
-@Suppress("LongMethod", "CyclomaticComplexMethod", "UnusedParameter")
+@Suppress("CyclomaticComplexMethod", "UnusedParameter")
 @Composable
 fun DesktopSearchScreen(
     viewModel: ModelSearchViewModel,
@@ -70,30 +70,14 @@ fun DesktopSearchScreen(
     }
 
     Column(modifier = modifier.fillMaxSize()) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            DesktopSearchBar(
-                query = uiState.query,
-                onQueryChange = viewModel::onQueryChange,
-                onSearch = viewModel::onSearch,
-                focusRequester = searchFocusRequester,
-                modifier = Modifier.weight(1f),
-            )
-            IconButton(onClick = onQRCodeClick, modifier = Modifier.desktopFocusRing()) {
-                Icon(
-                    Icons.Default.QrCode,
-                    contentDescription = "QR Code",
-                )
-            }
-            IconButton(onClick = onUrlImportClick, modifier = Modifier.desktopFocusRing()) {
-                Icon(
-                    Icons.Default.Link,
-                    contentDescription = "Import from URL",
-                )
-            }
-        }
+        SearchTopBar(
+            query = uiState.query,
+            onQueryChange = viewModel::onQueryChange,
+            onSearch = viewModel::onSearch,
+            onQRCodeClick = onQRCodeClick,
+            onUrlImportClick = onUrlImportClick,
+            searchFocusRequester = searchFocusRequester,
+        )
 
         DesktopFilterBar(
             uiState = uiState,
@@ -106,78 +90,157 @@ fun DesktopSearchScreen(
             onResetFilters = viewModel::resetFilters,
         )
 
-        when {
-            uiState.isLoading && uiState.models.isEmpty() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
-            uiState.error != null && uiState.models.isEmpty() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = uiState.error ?: "Unknown error",
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                        TextButton(onClick = viewModel::onSearch) {
-                            Text("Retry")
-                        }
-                    }
-                }
-            }
-            !uiState.isLoading && uiState.error == null && uiState.models.isEmpty() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "No models found",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            else -> {
-                val columns = displayState.gridColumns
-                val nsfwFilterLevel = contentFilterState.nsfwFilterLevel
-                val filteredModels = if (nsfwFilterLevel == NsfwFilterLevel.All) {
-                    uiState.models.filter { !it.nsfw }
-                } else {
-                    uiState.models
-                }
-                val nsfwBlurSettings = contentFilterState.nsfwBlurSettings
+        SearchResultsArea(
+            uiState = uiState,
+            displayState = displayState,
+            contentFilterState = contentFilterState,
+            gridState = gridState,
+            onModelClick = onModelClick,
+            onRetry = viewModel::onSearch,
+        )
+    }
+}
 
-                LazyVerticalGrid(
-                    columns = if (columns > 0) {
-                        GridCells.Fixed(
-                            columns
-                        )
-                    } else {
-                        GridCells.Adaptive(minSize = CARD_MIN_WIDTH)
-                    },
-                    state = gridState,
-                    contentPadding = PaddingValues(Spacing.md),
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-                    modifier = Modifier.fillMaxSize(),
+@Suppress("LongParameterList")
+@Composable
+private fun SearchResultsArea(
+    uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
+    displayState: com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsUiState,
+    contentFilterState: com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsUiState,
+    gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
+    onModelClick: (Long) -> Unit,
+    onRetry: () -> Unit,
+) {
+    when {
+        uiState.isLoading && uiState.models.isEmpty() -> {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+        uiState.error != null && uiState.models.isEmpty() -> {
+            SearchErrorState(error = uiState.error, onRetry = onRetry)
+        }
+        !uiState.isLoading && uiState.error == null && uiState.models.isEmpty() -> {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = "No models found",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        else -> {
+            val nsfwFilterLevel = contentFilterState.nsfwFilterLevel
+            val filteredModels = if (nsfwFilterLevel == NsfwFilterLevel.All) {
+                uiState.models.filter { !it.nsfw }
+            } else {
+                uiState.models
+            }
+            SearchResultsGrid(
+                models = filteredModels,
+                columns = displayState.gridColumns,
+                isLoadingMore = uiState.isLoadingMore,
+                gridState = gridState,
+                nsfwBlurSettings = contentFilterState.nsfwBlurSettings,
+                onModelClick = onModelClick,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchTopBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    onQRCodeClick: () -> Unit,
+    onUrlImportClick: () -> Unit,
+    searchFocusRequester: FocusRequester,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        DesktopSearchBar(
+            query = query,
+            onQueryChange = onQueryChange,
+            onSearch = onSearch,
+            focusRequester = searchFocusRequester,
+            modifier = Modifier.weight(1f),
+        )
+        IconButton(onClick = onQRCodeClick, modifier = Modifier.desktopFocusRing()) {
+            Icon(
+                Icons.Default.QrCode,
+                contentDescription = "QR Code",
+            )
+        }
+        IconButton(onClick = onUrlImportClick, modifier = Modifier.desktopFocusRing()) {
+            Icon(
+                Icons.Default.Link,
+                contentDescription = "Import from URL",
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchErrorState(
+    error: String?,
+    onRetry: () -> Unit,
+) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = error ?: "Unknown error",
+                color = MaterialTheme.colorScheme.error,
+            )
+            TextButton(onClick = onRetry) {
+                Text("Retry")
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchResultsGrid(
+    models: List<com.riox432.civitdeck.domain.model.Model>,
+    columns: Int,
+    isLoadingMore: Boolean,
+    gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
+    nsfwBlurSettings: com.riox432.civitdeck.domain.model.NsfwBlurSettings,
+    onModelClick: (Long) -> Unit,
+) {
+    LazyVerticalGrid(
+        columns = if (columns > 0) {
+            GridCells.Fixed(
+                columns
+            )
+        } else {
+            GridCells.Adaptive(minSize = CARD_MIN_WIDTH)
+        },
+        state = gridState,
+        contentPadding = PaddingValues(Spacing.md),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        itemsIndexed(
+            items = models,
+            key = { _, model -> model.id },
+        ) { _, model ->
+            DesktopModelCard(
+                model = model,
+                onClick = { onModelClick(model.id) },
+                nsfwBlurSettings = nsfwBlurSettings,
+            )
+        }
+        if (isLoadingMore) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    itemsIndexed(
-                        items = filteredModels,
-                        key = { _, model -> model.id },
-                    ) { _, model ->
-                        DesktopModelCard(
-                            model = model,
-                            onClick = { onModelClick(model.id) },
-                            nsfwBlurSettings = nsfwBlurSettings,
-                        )
-                    }
-                    if (uiState.isLoadingMore) {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            Box(
-                                modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                    }
+                    CircularProgressIndicator()
                 }
             }
         }

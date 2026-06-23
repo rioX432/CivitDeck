@@ -135,7 +135,6 @@ class ComfyUIGenerationRepositoryImpl(
         api.setBaseUrl("$scheme://${active.hostname}:${active.port}")
     }
 
-    @Suppress("LongMethod")
     private fun buildWorkflow(params: ComfyUIGenerationParams): JsonObject {
         // If custom workflow JSON is provided, use it directly
         val customJson = params.customWorkflowJson
@@ -187,7 +186,6 @@ class ComfyUIGenerationRepositoryImpl(
         }
     }
 
-    @Suppress("LongMethod")
     private fun buildInpaintingWorkflow(params: ComfyUIGenerationParams): JsonObject {
         val loraChain = buildLoraChain(params.loraSelections)
         val finalModelNodeId = loraChain.lastOrNull()?.nodeId ?: "3"
@@ -202,47 +200,11 @@ class ComfyUIGenerationRepositoryImpl(
                 put(loraNode.nodeId, loraNode.jsonNode)
             }
             // Load init image
-            put(
-                "30",
-                buildJsonObject {
-                    put("class_type", "LoadImage")
-                    put(
-                        "inputs",
-                        buildJsonObject {
-                            put("image", requireNotNull(params.initImageFilename))
-                        }
-                    )
-                },
-            )
+            put("30", buildLoadImageNode(requireNotNull(params.initImageFilename)))
             // Load mask image
-            put(
-                "31",
-                buildJsonObject {
-                    put("class_type", "LoadImage")
-                    put(
-                        "inputs",
-                        buildJsonObject {
-                            put("image", requireNotNull(params.maskImageFilename))
-                        }
-                    )
-                },
-            )
+            put("31", buildLoadImageNode(requireNotNull(params.maskImageFilename)))
             // Set latent via VAEEncode with mask
-            put(
-                "32",
-                buildJsonObject {
-                    put("class_type", "VAEEncodeForInpaint")
-                    put(
-                        "inputs",
-                        buildJsonObject {
-                            put("pixels", nodeLink("30", 0))
-                            put("vae", nodeLink("3", 2))
-                            put("mask", nodeLink("31", 0))
-                            put("grow_mask_by", 6)
-                        }
-                    )
-                },
-            )
+            put("32", buildVaeEncodeForInpaint())
             // Conditioning
             put("6", buildClipEncode(params.prompt, finalClipNodeId, finalClipOutput))
             put("7", buildClipEncode(params.negativePrompt, finalClipNodeId, finalClipOutput))
@@ -270,6 +232,24 @@ class ComfyUIGenerationRepositoryImpl(
     private fun buildCheckpointNode(checkpoint: String) = buildJsonObject {
         put("class_type", "CheckpointLoaderSimple")
         put("inputs", buildJsonObject { put("ckpt_name", checkpoint) })
+    }
+
+    private fun buildLoadImageNode(filename: String) = buildJsonObject {
+        put("class_type", "LoadImage")
+        put("inputs", buildJsonObject { put("image", filename) })
+    }
+
+    private fun buildVaeEncodeForInpaint() = buildJsonObject {
+        put("class_type", "VAEEncodeForInpaint")
+        put(
+            "inputs",
+            buildJsonObject {
+                put("pixels", nodeLink("30", 0))
+                put("vae", nodeLink("3", 2))
+                put("mask", nodeLink("31", 0))
+                put("grow_mask_by", 6)
+            }
+        )
     }
 
     private fun buildClipEncode(text: String, clipNodeId: String, clipOutput: Int) =

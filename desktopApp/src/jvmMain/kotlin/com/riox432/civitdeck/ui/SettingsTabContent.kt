@@ -97,7 +97,7 @@ private fun SettingsMainContent(
 }
 
 @Composable
-@Suppress("CyclomaticComplexMethod", "LongMethod")
+@Suppress("CyclomaticComplexMethod")
 private fun SettingsOverlayContent(
     backstack: SnapshotStateList<DesktopRoute>,
     currentRoute: DesktopRoute?,
@@ -135,26 +135,8 @@ private fun SettingsOverlayContent(
                 onBack = { backstack.removeLastOrNull() },
             )
         }
-        is DesktopRoute.NotificationCenter -> {
-            val vm: NotificationCenterViewModel = koinViewModel()
-            DesktopNotificationCenterScreen(
-                viewModel = vm,
-                onBack = { backstack.removeLastOrNull() },
-                onModelClick = { modelId ->
-                    backstack.add(DesktopRoute.ModelDetail(modelId))
-                },
-            )
-        }
-        is DesktopRoute.BrowsingHistory -> {
-            val vm: BrowsingHistoryViewModel = koinViewModel()
-            DesktopBrowsingHistoryScreen(
-                viewModel = vm,
-                onBack = { backstack.removeLastOrNull() },
-                onModelClick = { modelId ->
-                    backstack.add(DesktopRoute.ModelDetail(modelId))
-                },
-            )
-        }
+        is DesktopRoute.NotificationCenter -> SettingsNotificationCenterOverlay(backstack)
+        is DesktopRoute.BrowsingHistory -> SettingsBrowsingHistoryOverlay(backstack)
         is DesktopRoute.DownloadQueue -> {
             val vm: DownloadQueueViewModel = koinViewModel()
             DesktopDownloadQueueScreen(
@@ -164,4 +146,32 @@ private fun SettingsOverlayContent(
         }
         else -> { /* Settings main screen is shown */ }
     }
+}
+
+@Composable
+private fun SettingsNotificationCenterOverlay(
+    backstack: SnapshotStateList<DesktopRoute>,
+) {
+    val vm: NotificationCenterViewModel = koinViewModel()
+    DesktopNotificationCenterScreen(
+        viewModel = vm,
+        onBack = { backstack.removeLastOrNull() },
+        onModelClick = { modelId ->
+            backstack.add(DesktopRoute.ModelDetail(modelId))
+        },
+    )
+}
+
+@Composable
+private fun SettingsBrowsingHistoryOverlay(
+    backstack: SnapshotStateList<DesktopRoute>,
+) {
+    val vm: BrowsingHistoryViewModel = koinViewModel()
+    DesktopBrowsingHistoryScreen(
+        viewModel = vm,
+        onBack = { backstack.removeLastOrNull() },
+        onModelClick = { modelId ->
+            backstack.add(DesktopRoute.ModelDetail(modelId))
+        },
+    )
 }

@@ -99,7 +99,6 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
     }
 }
 
-@Suppress("LongMethod")
 val MIGRATION_6_7 = object : Migration(6, 7) {
     override fun migrate(connection: SQLiteConnection) {
         // Create collections table
@@ -163,7 +162,6 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
     }
 }
 
-@Suppress("LongMethod")
 val MIGRATION_8_9 = object : Migration(8, 9) {
     override fun migrate(connection: SQLiteConnection) {
         connection.execSQL(

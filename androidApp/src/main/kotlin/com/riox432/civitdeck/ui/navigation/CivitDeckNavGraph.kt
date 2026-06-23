@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
@@ -125,7 +126,41 @@ private class TabState(
     }
 }
 
-@Suppress("LongMethod")
+private class NavTabStates(
+    val fixed: Map<String, TabState>,
+    val shortcut: Map<String, TabState>,
+)
+
+@Composable
+private fun rememberNavTabStates(): NavTabStates = remember {
+    NavTabStates(
+        fixed = mapOf(
+            Tab.Discover.name to TabState(mutableStateListOf<Any>(SearchRoute)),
+            Tab.Create.name to TabState(mutableStateListOf<Any>(CreateHubRoute)),
+            Tab.Library.name to TabState(mutableStateListOf<Any>(CollectionsRoute)),
+            Tab.Settings.name to TabState(mutableStateListOf<Any>(SettingsRoute)),
+        ),
+        shortcut = mapOf(
+            NavShortcut.OutputGallery.name to TabState(mutableStateListOf<Any>(ComfyUIHistoryRoute)),
+            NavShortcut.Generate.name to TabState(mutableStateListOf<Any>(ComfyUIGenerationRoute)),
+            NavShortcut.ImageGallery.name to TabState(mutableStateListOf<Any>(BrowseImagesRoute)),
+            NavShortcut.ExternalServerGallery.name to TabState(mutableStateListOf<Any>(ExternalServerGalleryRoute)),
+        ),
+    )
+}
+
+@Composable
+private fun rememberNavLayoutType(): NavigationSuiteType {
+    val adaptiveInfo = currentWindowAdaptiveInfo()
+    return if (
+        adaptiveInfo.windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND)
+    ) {
+        NavigationSuiteType.NavigationDrawer
+    } else {
+        NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(adaptiveInfo)
+    }
+}
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Discover) {
@@ -137,23 +172,9 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Discover) {
 
     var selectedTabId by rememberSaveable { mutableStateOf(initialTab.name) }
 
-    val fixedTabStates = remember {
-        mapOf(
-            Tab.Discover.name to TabState(mutableStateListOf<Any>(SearchRoute)),
-            Tab.Create.name to TabState(mutableStateListOf<Any>(CreateHubRoute)),
-            Tab.Library.name to TabState(mutableStateListOf<Any>(CollectionsRoute)),
-            Tab.Settings.name to TabState(mutableStateListOf<Any>(SettingsRoute)),
-        )
-    }
-
-    val shortcutTabStates = remember {
-        mapOf(
-            NavShortcut.OutputGallery.name to TabState(mutableStateListOf<Any>(ComfyUIHistoryRoute)),
-            NavShortcut.Generate.name to TabState(mutableStateListOf<Any>(ComfyUIGenerationRoute)),
-            NavShortcut.ImageGallery.name to TabState(mutableStateListOf<Any>(BrowseImagesRoute)),
-            NavShortcut.ExternalServerGallery.name to TabState(mutableStateListOf<Any>(ExternalServerGalleryRoute)),
-        )
-    }
+    val tabStates = rememberNavTabStates()
+    val fixedTabStates = tabStates.fixed
+    val shortcutTabStates = tabStates.shortcut
 
     val activeShortcuts = if (behaviorState.powerUserMode) displayState.customNavShortcuts else emptyList()
 
@@ -175,61 +196,94 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Discover) {
     var compareModelId by rememberSaveable { mutableStateOf<Long?>(null) }
     var compareModelName by rememberSaveable { mutableStateOf<String?>(null) }
 
-    val adaptiveInfo = currentWindowAdaptiveInfo()
-    val navLayoutType = if (
-        adaptiveInfo.windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND)
-    ) {
-        NavigationSuiteType.NavigationDrawer
-    } else {
-        NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(adaptiveInfo)
-    }
-
     NavigationSuiteScaffold(
-        layoutType = navLayoutType,
+        layoutType = rememberNavLayoutType(),
         navigationSuiteItems = {
-            navItems.forEach { navItem ->
-                val info = navItemInfoFor(navItem) ?: return@forEach
-                val selected = info.id == selectedTabId
-                item(
-                    selected = selected,
-                    onClick = {
-                        if (info.id == selectedTabId) {
-                            (fixedTabStates[info.id] ?: shortcutTabStates[info.id])?.onReselected()
-                        } else {
-                            selectedTabId = info.id
-                        }
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = if (selected) info.activeIcon else info.inactiveIcon,
-                            contentDescription = info.label,
-                        )
-                    },
-                    label = { Text(info.label) },
-                )
-            }
+            navSuiteItems(
+                navItems = navItems,
+                selectedTabId = selectedTabId,
+                fixedTabStates = fixedTabStates,
+                shortcutTabStates = shortcutTabStates,
+                onSelectTab = { selectedTabId = it },
+            )
         },
     ) {
-        Scaffold { padding ->
-            SharedTransitionLayout(modifier = Modifier.padding(padding)) {
-                CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                    CivitDeckNavDisplay(
-                        backStack = activeBackStack,
-                        searchViewModel = searchViewModel,
-                        searchScrollTrigger = fixedTabStates.getValue(Tab.Discover.name).scrollTrigger,
-                        settingsScrollTrigger = fixedTabStates.getValue(Tab.Settings.name).scrollTrigger,
-                        compareModelId = compareModelId,
-                        compareModelName = compareModelName,
-                        onCompareModel = { id, name ->
-                            compareModelId = id
-                            compareModelName = name
-                        },
-                        onCancelCompare = {
-                            compareModelId = null
-                            compareModelName = null
-                        },
-                    )
+        CivitDeckTabContent(
+            activeBackStack = activeBackStack,
+            searchViewModel = searchViewModel,
+            searchScrollTrigger = fixedTabStates.getValue(Tab.Discover.name).scrollTrigger,
+            settingsScrollTrigger = fixedTabStates.getValue(Tab.Settings.name).scrollTrigger,
+            compareModelId = compareModelId,
+            compareModelName = compareModelName,
+            onCompareModel = { id, name ->
+                compareModelId = id
+                compareModelName = name
+            },
+            onCancelCompare = {
+                compareModelId = null
+                compareModelName = null
+            },
+        )
+    }
+}
+
+@Suppress("LongParameterList")
+private fun androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScope.navSuiteItems(
+    navItems: List<Any>,
+    selectedTabId: String,
+    fixedTabStates: Map<String, TabState>,
+    shortcutTabStates: Map<String, TabState>,
+    onSelectTab: (String) -> Unit,
+) {
+    navItems.forEach { navItem ->
+        val info = navItemInfoFor(navItem) ?: return@forEach
+        val selected = info.id == selectedTabId
+        item(
+            selected = selected,
+            onClick = {
+                if (info.id == selectedTabId) {
+                    (fixedTabStates[info.id] ?: shortcutTabStates[info.id])?.onReselected()
+                } else {
+                    onSelectTab(info.id)
                 }
+            },
+            icon = {
+                Icon(
+                    imageVector = if (selected) info.activeIcon else info.inactiveIcon,
+                    contentDescription = info.label,
+                )
+            },
+            label = { Text(info.label) },
+        )
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Suppress("LongParameterList")
+@Composable
+private fun CivitDeckTabContent(
+    activeBackStack: MutableList<Any>,
+    searchViewModel: ModelSearchViewModel,
+    searchScrollTrigger: Int,
+    settingsScrollTrigger: Int,
+    compareModelId: Long?,
+    compareModelName: String?,
+    onCompareModel: (Long, String) -> Unit,
+    onCancelCompare: () -> Unit,
+) {
+    Scaffold { padding ->
+        SharedTransitionLayout(modifier = Modifier.padding(padding)) {
+            CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                CivitDeckNavDisplay(
+                    backStack = activeBackStack,
+                    searchViewModel = searchViewModel,
+                    searchScrollTrigger = searchScrollTrigger,
+                    settingsScrollTrigger = settingsScrollTrigger,
+                    compareModelId = compareModelId,
+                    compareModelName = compareModelName,
+                    onCompareModel = onCompareModel,
+                    onCancelCompare = onCancelCompare,
+                )
             }
         }
     }
@@ -243,7 +297,7 @@ private fun slideTransition(enterOffset: (Int) -> Int, exitOffset: (Int) -> Int)
             fadeOut(tween(Duration.normal, easing = Easing.standard)),
     )
 
-@Suppress("LongParameterList", "LongMethod", "UnusedParameter")
+@Suppress("LongParameterList", "UnusedParameter")
 @Composable
 private fun CivitDeckNavDisplay(
     backStack: MutableList<Any>,
@@ -265,29 +319,15 @@ private fun CivitDeckNavDisplay(
         transitionSpec = { slideTransition(enterOffset = { it / 4 }, exitOffset = { -it / 4 }) },
         popTransitionSpec = { slideTransition(enterOffset = { -it / 4 }, exitOffset = { it / 4 }) },
         entryProvider = entryProvider {
-            entry<SearchRoute> {
-                ModelSearchScreen(
-                    viewModel = searchViewModel,
-                    callbacks = SearchScreenCallbacks(
-                        onModelClick = { modelId, thumbnailUrl, suffix ->
-                            val cmpId = compareModelId
-                            if (cmpId != null) {
-                                backStack.add(CompareRoute(cmpId, modelId))
-                                onCancelCompare()
-                            } else {
-                                backStack.add(DetailRoute(modelId, thumbnailUrl, suffix))
-                            }
-                        },
-                        onCancelCompare = onCancelCompare,
-                        onDiscoverClick = { backStack.add(DiscoveryRoute) },
-                        onCompareModel = onCompareModel,
-                        onScanQRCode = { backStack.add(QRScannerRoute) },
-                        onTextSearch = { backStack.add(TextSearchRoute) },
-                    ),
-                    scrollToTopTrigger = searchScrollTrigger,
-                    compareModelName = compareModelName,
-                )
-            }
+            searchEntry(
+                backStack = backStack,
+                searchViewModel = searchViewModel,
+                searchScrollTrigger = searchScrollTrigger,
+                compareModelId = compareModelId,
+                compareModelName = compareModelName,
+                onCompareModel = onCompareModel,
+                onCancelCompare = onCancelCompare,
+            )
             createHubEntry(backStack)
             collectionsEntry(backStack)
             collectionDetailEntry(backStack, compareModelId, onCancelCompare)
@@ -309,34 +349,76 @@ private fun CivitDeckNavDisplay(
             compareEntry(backStack)
             discoveryEntry(backStack)
             browseImagesEntry(backStack)
-            entry<SettingsRoute> {
-                val authVm: AuthSettingsViewModel = koinViewModel()
-                val storageVm: StorageSettingsViewModel = koinViewModel()
-                val behaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
-                val updateVm: UpdateViewModel = koinViewModel()
-                val gestureTutorialVm: com.riox432.civitdeck.feature.gallery.presentation.GestureTutorialViewModel =
-                    koinViewModel()
-                SettingsScreen(
-                    authViewModel = authVm,
-                    storageViewModel = storageVm,
-                    appBehaviorViewModel = behaviorVm,
-                    updateViewModel = updateVm,
-                    onNavigateToAppearance = { backStack.add(AppearanceSettingsRoute) },
-                    onNavigateToContentFilter = { backStack.add(ContentFilterSettingsRoute) },
-                    onNavigateToStorage = { backStack.add(StorageSettingsRoute) },
-                    onNavigateToAdvanced = { backStack.add(AdvancedSettingsRoute) },
-                    onNavigateToAnalytics = { backStack.add(AnalyticsRoute) },
-                    onNavigateToNotificationCenter = { backStack.add(NotificationCenterRoute) },
-                    onNavigateToBrowsingHistory = { backStack.add(BrowsingHistoryRoute) },
-                    onNavigateToDownloadQueue = { backStack.add(DownloadQueueRoute) },
-                    onNavigateToLicenses = { backStack.add(LicensesRoute) },
-                    onReplayGestureTutorial = gestureTutorialVm::resetTutorial,
-                    scrollToTopTrigger = settingsScrollTrigger,
-                )
-            }
+            settingsEntry(backStack, settingsScrollTrigger)
             settingsSubScreenEntries(backStack)
             comfyUIEntries(backStack)
             externalServerEntries(backStack)
         },
     )
+}
+
+@Suppress("LongParameterList")
+private fun EntryProviderScope<Any>.searchEntry(
+    backStack: MutableList<Any>,
+    searchViewModel: ModelSearchViewModel,
+    searchScrollTrigger: Int,
+    compareModelId: Long?,
+    compareModelName: String?,
+    onCompareModel: (Long, String) -> Unit,
+    onCancelCompare: () -> Unit,
+) {
+    entry<SearchRoute> {
+        ModelSearchScreen(
+            viewModel = searchViewModel,
+            callbacks = SearchScreenCallbacks(
+                onModelClick = { modelId, thumbnailUrl, suffix ->
+                    val cmpId = compareModelId
+                    if (cmpId != null) {
+                        backStack.add(CompareRoute(cmpId, modelId))
+                        onCancelCompare()
+                    } else {
+                        backStack.add(DetailRoute(modelId, thumbnailUrl, suffix))
+                    }
+                },
+                onCancelCompare = onCancelCompare,
+                onDiscoverClick = { backStack.add(DiscoveryRoute) },
+                onCompareModel = onCompareModel,
+                onScanQRCode = { backStack.add(QRScannerRoute) },
+                onTextSearch = { backStack.add(TextSearchRoute) },
+            ),
+            scrollToTopTrigger = searchScrollTrigger,
+            compareModelName = compareModelName,
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.settingsEntry(
+    backStack: MutableList<Any>,
+    settingsScrollTrigger: Int,
+) {
+    entry<SettingsRoute> {
+        val authVm: AuthSettingsViewModel = koinViewModel()
+        val storageVm: StorageSettingsViewModel = koinViewModel()
+        val behaviorVm: AppBehaviorSettingsViewModel = koinViewModel()
+        val updateVm: UpdateViewModel = koinViewModel()
+        val gestureTutorialVm: com.riox432.civitdeck.feature.gallery.presentation.GestureTutorialViewModel =
+            koinViewModel()
+        SettingsScreen(
+            authViewModel = authVm,
+            storageViewModel = storageVm,
+            appBehaviorViewModel = behaviorVm,
+            updateViewModel = updateVm,
+            onNavigateToAppearance = { backStack.add(AppearanceSettingsRoute) },
+            onNavigateToContentFilter = { backStack.add(ContentFilterSettingsRoute) },
+            onNavigateToStorage = { backStack.add(StorageSettingsRoute) },
+            onNavigateToAdvanced = { backStack.add(AdvancedSettingsRoute) },
+            onNavigateToAnalytics = { backStack.add(AnalyticsRoute) },
+            onNavigateToNotificationCenter = { backStack.add(NotificationCenterRoute) },
+            onNavigateToBrowsingHistory = { backStack.add(BrowsingHistoryRoute) },
+            onNavigateToDownloadQueue = { backStack.add(DownloadQueueRoute) },
+            onNavigateToLicenses = { backStack.add(LicensesRoute) },
+            onReplayGestureTutorial = gestureTutorialVm::resetTutorial,
+            scrollToTopTrigger = settingsScrollTrigger,
+        )
+    }
 }

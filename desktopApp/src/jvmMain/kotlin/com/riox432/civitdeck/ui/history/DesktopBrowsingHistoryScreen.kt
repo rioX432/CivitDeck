@@ -44,7 +44,6 @@ import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
 
-@Suppress("LongMethod")
 @Composable
 fun DesktopBrowsingHistoryScreen(
     viewModel: BrowsingHistoryViewModel,
@@ -67,52 +66,81 @@ fun DesktopBrowsingHistoryScreen(
         )
 
         if (state.isEmpty) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Text(
-                    text = "No browsing history",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            EmptyHistoryMessage()
         } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(Spacing.lg),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md),
-            ) {
-                state.groups.forEach { group ->
-                    HistoryGroupCard(
-                        group = group,
-                        onModelClick = onModelClick,
-                        onDelete = viewModel::deleteItem,
-                    )
-                }
-            }
+            HistoryGroupList(
+                groups = state.groups,
+                onModelClick = onModelClick,
+                onDelete = viewModel::deleteItem,
+            )
         }
     }
 
     if (showClearDialog) {
-        AlertDialog(
-            onDismissRequest = { showClearDialog = false },
-            title = { Text("Clear All History") },
-            text = { Text("Are you sure? This cannot be undone.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.clearAll()
-                    showClearDialog = false
-                }) { Text("Clear") }
+        ClearHistoryDialog(
+            onConfirm = {
+                viewModel.clearAll()
+                showClearDialog = false
             },
-            dismissButton = {
-                TextButton(onClick = { showClearDialog = false }) { Text("Cancel") }
-            },
+            onDismiss = { showClearDialog = false },
         )
     }
+}
+
+@Composable
+private fun EmptyHistoryMessage() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            text = "No browsing history",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun HistoryGroupList(
+    groups: List<DateGroup>,
+    onModelClick: (Long) -> Unit,
+    onDelete: (Long) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md),
+    ) {
+        groups.forEach { group ->
+            HistoryGroupCard(
+                group = group,
+                onModelClick = onModelClick,
+                onDelete = onDelete,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ClearHistoryDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Clear All History") },
+        text = { Text("Are you sure? This cannot be undone.") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) { Text("Clear") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        },
+    )
 }
 
 @Composable

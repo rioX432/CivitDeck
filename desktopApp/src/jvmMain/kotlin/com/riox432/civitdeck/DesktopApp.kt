@@ -58,7 +58,6 @@ enum class DesktopTab(
     Settings("Settings", Icons.Default.Settings),
 }
 
-@Suppress("LongMethod")
 @Composable
 fun DesktopApp(
     onScreenChanged: (String) -> Unit = {},
@@ -77,69 +76,94 @@ fun DesktopApp(
         accentColor = displayState.accentColor,
         amoledDarkMode = displayState.amoledDarkMode,
     ) {
-        var selectedTab by remember { mutableStateOf(DesktopTab.Discover) }
-        val backstack = remember {
-            androidx.compose.runtime.mutableStateListOf<DesktopRoute>()
-        }
+        DesktopAppScaffold(onScreenChanged = onScreenChanged)
+    }
+}
 
-        LaunchedEffect(selectedTab) {
-            onScreenChanged(selectedTab.label)
-        }
-        val searchFocusRequester = remember { FocusRequester() }
-        val isMac = remember {
-            System.getProperty("os.name").lowercase().contains("mac")
-        }
-        val focusManager = LocalFocusManager.current
+@Composable
+private fun DesktopAppScaffold(
+    onScreenChanged: (String) -> Unit,
+) {
+    var selectedTab by remember { mutableStateOf(DesktopTab.Discover) }
+    val backstack = remember {
+        androidx.compose.runtime.mutableStateListOf<DesktopRoute>()
+    }
 
-        Surface(
-            color = MaterialTheme.colorScheme.background,
-            modifier = Modifier.onPreviewKeyEvent { event ->
-                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+    LaunchedEffect(selectedTab) {
+        onScreenChanged(selectedTab.label)
+    }
+    val searchFocusRequester = remember { FocusRequester() }
+    val isMac = remember {
+        System.getProperty("os.name").lowercase().contains("mac")
+    }
+    val focusManager = LocalFocusManager.current
 
-                // Tab / Shift+Tab -> move focus between interactive elements
-                if (event.key == Key.Tab) {
-                    if (event.isShiftPressed) {
-                        focusManager.moveFocus(FocusDirection.Previous)
-                    } else {
-                        focusManager.moveFocus(FocusDirection.Next)
-                    }
-                    return@onPreviewKeyEvent true
-                }
-
-                val hasModifier = if (isMac) event.isMetaPressed else event.isCtrlPressed
-                handleKeyboardShortcut(
-                    key = event.key,
-                    hasModifier = hasModifier,
-                    onTabSelected = {
-                        selectedTab = it
-                        backstack.clear()
-                    },
-                    onBack = { backstack.removeLastOrNull() },
-                    onFocusSearch = {
-                        selectedTab = DesktopTab.Discover
-                        backstack.clear()
-                        searchFocusRequester.requestFocus()
-                    },
-                )
-            },
-        ) {
-            Row(modifier = Modifier.fillMaxSize()) {
-                DesktopNavigationRail(
-                    selectedTab = selectedTab,
-                    onTabSelected = {
-                        selectedTab = it
-                        backstack.clear()
-                    },
-                )
-                DesktopContent(
-                    selectedTab = selectedTab,
-                    backstack = backstack,
-                    searchFocusRequester = searchFocusRequester,
-                    modifier = Modifier.weight(1f).fillMaxHeight(),
-                )
-            }
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.onPreviewKeyEvent { event ->
+            handleAppKeyEvent(
+                event = event,
+                isMac = isMac,
+                focusManager = focusManager,
+                onTabSelected = {
+                    selectedTab = it
+                    backstack.clear()
+                },
+                onBack = { backstack.removeLastOrNull() },
+                onFocusSearch = {
+                    selectedTab = DesktopTab.Discover
+                    backstack.clear()
+                    searchFocusRequester.requestFocus()
+                },
+            )
+        },
+    ) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            DesktopNavigationRail(
+                selectedTab = selectedTab,
+                onTabSelected = {
+                    selectedTab = it
+                    backstack.clear()
+                },
+            )
+            DesktopContent(
+                selectedTab = selectedTab,
+                backstack = backstack,
+                searchFocusRequester = searchFocusRequester,
+                modifier = Modifier.weight(1f).fillMaxHeight(),
+            )
         }
     }
+}
+
+private fun handleAppKeyEvent(
+    event: androidx.compose.ui.input.key.KeyEvent,
+    isMac: Boolean,
+    focusManager: androidx.compose.ui.focus.FocusManager,
+    onTabSelected: (DesktopTab) -> Unit,
+    onBack: () -> Unit,
+    onFocusSearch: () -> Unit,
+): Boolean {
+    if (event.type != KeyEventType.KeyDown) return false
+
+    // Tab / Shift+Tab -> move focus between interactive elements
+    if (event.key == Key.Tab) {
+        if (event.isShiftPressed) {
+            focusManager.moveFocus(FocusDirection.Previous)
+        } else {
+            focusManager.moveFocus(FocusDirection.Next)
+        }
+        return true
+    }
+
+    val hasModifier = if (isMac) event.isMetaPressed else event.isCtrlPressed
+    return handleKeyboardShortcut(
+        key = event.key,
+        hasModifier = hasModifier,
+        onTabSelected = onTabSelected,
+        onBack = onBack,
+        onFocusSearch = onFocusSearch,
+    )
 }
 
 private fun handleKeyboardShortcut(

@@ -120,7 +120,7 @@ private fun EditorToolbar(
 }
 
 @Composable
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList")
 private fun EditorContent(
     name: String,
     description: String,
@@ -139,45 +139,23 @@ private fun EditorContent(
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
         item {
-            OutlinedTextField(
-                value = name,
-                onValueChange = onNameChange,
-                label = { Text("Template Name") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
+            TemplateBasicFields(
+                name = name,
+                description = description,
+                type = type,
+                category = category,
+                onNameChange = onNameChange,
+                onDescriptionChange = onDescriptionChange,
+                onTypeChange = onTypeChange,
+                onCategoryChange = onCategoryChange,
             )
         }
         item {
-            OutlinedTextField(
-                value = description,
-                onValueChange = onDescriptionChange,
-                label = { Text("Description") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2,
-                maxLines = 4,
+            VariablesHeader(
+                onAddVariable = {
+                    onVariablesChange(variables + newVariable(variables.size))
+                },
             )
-        }
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
-                TypeSelector(type = type, onTypeChange = onTypeChange)
-                CategorySelector(category = category, onCategoryChange = onCategoryChange)
-            }
-        }
-        item {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "Variables",
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.weight(1f),
-                )
-                IconButton(
-                    onClick = {
-                        onVariablesChange(variables + newVariable(variables.size))
-                    },
-                ) {
-                    Icon(Icons.Default.Add, "Add variable")
-                }
-            }
         }
         itemsIndexed(variables, key = { _, v -> v.name }) { index, variable ->
             VariableEditor(
@@ -193,6 +171,54 @@ private fun EditorContent(
                     )
                 },
             )
+        }
+    }
+}
+
+@Composable
+private fun TemplateBasicFields(
+    name: String,
+    description: String,
+    type: WorkflowTemplateType,
+    category: WorkflowTemplateCategory,
+    onNameChange: (String) -> Unit,
+    onDescriptionChange: (String) -> Unit,
+    onTypeChange: (WorkflowTemplateType) -> Unit,
+    onCategoryChange: (WorkflowTemplateCategory) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        OutlinedTextField(
+            value = name,
+            onValueChange = onNameChange,
+            label = { Text("Template Name") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+        )
+        OutlinedTextField(
+            value = description,
+            onValueChange = onDescriptionChange,
+            label = { Text("Description") },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 2,
+            maxLines = 4,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+            TypeSelector(type = type, onTypeChange = onTypeChange)
+            CategorySelector(category = category, onCategoryChange = onCategoryChange)
+        }
+    }
+}
+
+@Composable
+private fun VariablesHeader(onAddVariable: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            "Variables",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.weight(1f),
+        )
+        IconButton(onClick = onAddVariable) {
+            Icon(Icons.Default.Add, "Add variable")
         }
     }
 }

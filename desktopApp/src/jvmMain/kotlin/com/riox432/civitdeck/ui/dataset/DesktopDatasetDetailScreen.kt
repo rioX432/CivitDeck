@@ -71,7 +71,6 @@ private const val DEFAULT_GRID_COLUMNS = 4
 private const val IMAGE_ASPECT_RATIO = 1f
 private const val DATASET_IMAGE_SIZE = 300
 
-@Suppress("LongMethod")
 @Composable
 fun DesktopDatasetDetailScreen(
     datasetName: String,
@@ -88,64 +87,111 @@ fun DesktopDatasetDetailScreen(
     var captionEditState by remember { mutableStateOf<Pair<Long, String>?>(null) }
 
     Surface(modifier = modifier.fillMaxSize()) {
-        Column {
-            DatasetDetailToolbar(
-                datasetName = datasetName,
-                isSelectionMode = isSelectionMode,
-                selectedCount = selectedImageIds.size,
-                onBack = onBack,
-                onClearSelection = viewModel::clearSelection,
-                onSelectAll = viewModel::selectAll,
-                onExport = { showExportDialog = true },
-            )
-            SourceFilterRow(
-                selectedSource = selectedSource,
-                onSourceSelected = viewModel::setSourceFilter,
-            )
-            if (isSelectionMode && selectedImageIds.isNotEmpty()) {
-                SelectionActionBar(
-                    selectedCount = selectedImageIds.size,
-                    onRemove = viewModel::removeSelected,
-                )
-            }
-            DatasetImageGridContent(
-                images = filteredImages,
-                isSelectionMode = isSelectionMode,
-                selectedImageIds = selectedImageIds,
-                onImageClick = { image ->
-                    if (isSelectionMode) {
-                        viewModel.toggleSelection(image.id)
-                    } else {
-                        captionEditState = image.id to (image.caption?.text.orEmpty())
-                    }
-                },
-                onImageLongClick = { imageId ->
-                    if (!isSelectionMode) viewModel.enterSelectionMode(imageId)
-                },
-                modifier = Modifier.weight(1f),
-            )
-        }
+        DatasetDetailContent(
+            datasetName = datasetName,
+            filteredImages = filteredImages,
+            selectedImageIds = selectedImageIds,
+            isSelectionMode = isSelectionMode,
+            selectedSource = selectedSource,
+            viewModel = viewModel,
+            onBack = onBack,
+            onExportClick = { showExportDialog = true },
+            onEditCaption = { id, caption -> captionEditState = id to caption },
+        )
     }
 
+    DatasetDetailDialogs(
+        showExportDialog = showExportDialog,
+        availableExportFormats = availableExportFormats,
+        captionEditState = captionEditState,
+        onExport = { formatId ->
+            viewModel.startExport(formatId)
+            showExportDialog = false
+        },
+        onExportDismiss = { showExportDialog = false },
+        onCaptionSave = { imageId, text ->
+            viewModel.editCaption(imageId, text)
+            captionEditState = null
+        },
+        onCaptionDismiss = { captionEditState = null },
+    )
+}
+
+@Composable
+@Suppress("LongParameterList")
+private fun DatasetDetailContent(
+    datasetName: String,
+    filteredImages: List<DatasetImage>,
+    selectedImageIds: Set<Long>,
+    isSelectionMode: Boolean,
+    selectedSource: ImageSource?,
+    viewModel: DatasetDetailViewModel,
+    onBack: () -> Unit,
+    onExportClick: () -> Unit,
+    onEditCaption: (Long, String) -> Unit,
+) {
+    Column {
+        DatasetDetailToolbar(
+            datasetName = datasetName,
+            isSelectionMode = isSelectionMode,
+            selectedCount = selectedImageIds.size,
+            onBack = onBack,
+            onClearSelection = viewModel::clearSelection,
+            onSelectAll = viewModel::selectAll,
+            onExport = onExportClick,
+        )
+        SourceFilterRow(
+            selectedSource = selectedSource,
+            onSourceSelected = viewModel::setSourceFilter,
+        )
+        if (isSelectionMode && selectedImageIds.isNotEmpty()) {
+            SelectionActionBar(
+                selectedCount = selectedImageIds.size,
+                onRemove = viewModel::removeSelected,
+            )
+        }
+        DatasetImageGridContent(
+            images = filteredImages,
+            isSelectionMode = isSelectionMode,
+            selectedImageIds = selectedImageIds,
+            onImageClick = { image ->
+                if (isSelectionMode) {
+                    viewModel.toggleSelection(image.id)
+                } else {
+                    onEditCaption(image.id, image.caption?.text.orEmpty())
+                }
+            },
+            onImageLongClick = { imageId ->
+                if (!isSelectionMode) viewModel.enterSelectionMode(imageId)
+            },
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun DatasetDetailDialogs(
+    showExportDialog: Boolean,
+    availableExportFormats: List<com.riox432.civitdeck.plugin.PluginExportFormat>,
+    captionEditState: Pair<Long, String>?,
+    onExport: (String) -> Unit,
+    onExportDismiss: () -> Unit,
+    onCaptionSave: (Long, String) -> Unit,
+    onCaptionDismiss: () -> Unit,
+) {
     if (showExportDialog) {
         DesktopExportDialog(
             formats = availableExportFormats,
-            onExport = { formatId ->
-                viewModel.startExport(formatId)
-                showExportDialog = false
-            },
-            onDismiss = { showExportDialog = false },
+            onExport = onExport,
+            onDismiss = onExportDismiss,
         )
     }
 
     captionEditState?.let { (imageId, initialCaption) ->
         CaptionEditDialog(
             initialCaption = initialCaption,
-            onSave = { text ->
-                viewModel.editCaption(imageId, text)
-                captionEditState = null
-            },
-            onDismiss = { captionEditState = null },
+            onSave = { text -> onCaptionSave(imageId, text) },
+            onDismiss = onCaptionDismiss,
         )
     }
 }
@@ -289,7 +335,6 @@ private fun DatasetImageGridContent(
     }
 }
 
-@Suppress("LongMethod")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DesktopDatasetImageItem(
@@ -320,49 +365,58 @@ private fun DesktopDatasetImageItem(
                 .clip(RoundedCornerShape(CornerRadius.image)),
         )
         if (isSelectionMode) {
-            Box(
-                modifier = Modifier
-                    .padding(Spacing.sm)
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (isSelected) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
-                        },
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                if (isSelected) {
-                    Icon(
-                        Icons.Default.CheckCircle,
-                        contentDescription = "Selected",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
-            }
+            SelectionIndicator(isSelected = isSelected)
         } else {
             SourceBadge(
                 sourceType = image.sourceType,
                 modifier = Modifier.align(Alignment.BottomEnd).padding(Spacing.xs),
             )
             if (image.excluded) {
-                Text(
-                    text = "Flagged",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onError,
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(Spacing.xs)
-                        .clip(RoundedCornerShape(CornerRadius.chip))
-                        .background(MaterialTheme.colorScheme.error.copy(alpha = 0.85f))
-                        .padding(horizontal = Spacing.xs, vertical = 2.dp),
-                )
+                FlaggedBadge(modifier = Modifier.align(Alignment.TopStart))
             }
         }
     }
+}
+
+@Composable
+private fun SelectionIndicator(isSelected: Boolean) {
+    Box(
+        modifier = Modifier
+            .padding(Spacing.sm)
+            .size(24.dp)
+            .clip(CircleShape)
+            .background(
+                if (isSelected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+                },
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (isSelected) {
+            Icon(
+                Icons.Default.CheckCircle,
+                contentDescription = "Selected",
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun FlaggedBadge(modifier: Modifier = Modifier) {
+    Text(
+        text = "Flagged",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onError,
+        modifier = modifier
+            .padding(Spacing.xs)
+            .clip(RoundedCornerShape(CornerRadius.chip))
+            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.85f))
+            .padding(horizontal = Spacing.xs, vertical = 2.dp),
+    )
 }
 
 @Composable

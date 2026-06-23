@@ -120,7 +120,6 @@ private fun BackupToolbar(onBack: () -> Unit) {
     }
 }
 
-@Suppress("LongMethod")
 @Composable
 private fun BackupBody(
     state: BackupUiState,
@@ -147,62 +146,82 @@ private fun BackupBody(
             }
         }
         items(BackupCategory.entries.toList(), key = { it.name }) { category ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Spacing.lg, vertical = Spacing.sm)
-                    .desktopFocusRing()
-                    .clickable(onClickLabel = "Toggle") { viewModel.onToggleCategory(category) },
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Checkbox(
-                    checked = category in state.selectedCategories,
-                    onCheckedChange = { viewModel.onToggleCategory(category) },
-                )
-                Text(
-                    text = category.displayName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(start = Spacing.sm),
-                )
-            }
+            BackupCategoryRow(
+                category = category,
+                checked = category in state.selectedCategories,
+                onToggle = { viewModel.onToggleCategory(category) },
+            )
         }
         item { HorizontalDivider() }
         item { Spacer(Modifier.height(Spacing.md)) }
         item {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.lg),
-                verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-            ) {
-                Button(
-                    onClick = viewModel::onExport,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = state.selectedCategories.isNotEmpty() && !state.isExporting,
-                ) {
-                    if (state.isExporting) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.padding(end = Spacing.sm),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                        )
-                    }
-                    Text("Export Backup")
-                }
-                OutlinedButton(
-                    onClick = { loadBackupFromFile(viewModel) },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !state.isImporting,
-                ) {
-                    if (state.isImporting) {
-                        CircularProgressIndicator(modifier = Modifier.padding(end = Spacing.sm))
-                    }
-                    Text("Import from File")
-                }
-                Spacer(Modifier.height(Spacing.lg))
-            }
+            BackupActionButtons(state = state, viewModel = viewModel)
         }
     }
 }
 
-@Suppress("LongMethod")
+@Composable
+private fun BackupCategoryRow(
+    category: BackupCategory,
+    checked: Boolean,
+    onToggle: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.lg, vertical = Spacing.sm)
+            .desktopFocusRing()
+            .clickable(onClickLabel = "Toggle") { onToggle() },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = { onToggle() },
+        )
+        Text(
+            text = category.displayName,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(start = Spacing.sm),
+        )
+    }
+}
+
+@Composable
+private fun BackupActionButtons(
+    state: BackupUiState,
+    viewModel: BackupViewModel,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        Button(
+            onClick = viewModel::onExport,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = state.selectedCategories.isNotEmpty() && !state.isExporting,
+        ) {
+            if (state.isExporting) {
+                CircularProgressIndicator(
+                    modifier = Modifier.padding(end = Spacing.sm),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
+            Text("Export Backup")
+        }
+        OutlinedButton(
+            onClick = { loadBackupFromFile(viewModel) },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !state.isImporting,
+        ) {
+            if (state.isImporting) {
+                CircularProgressIndicator(modifier = Modifier.padding(end = Spacing.sm))
+            }
+            Text("Import from File")
+        }
+        Spacer(Modifier.height(Spacing.lg))
+    }
+}
+
 @Composable
 private fun ImportConfirmationDialog(
     state: BackupUiState,
@@ -221,43 +240,16 @@ private fun ImportConfirmationDialog(
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(Modifier.height(Spacing.md))
-                Text("Restore Strategy:", style = MaterialTheme.typography.titleSmall)
-                RestoreStrategy.entries.forEach { strategy ->
-                    key(strategy.name) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = Spacing.xs)
-                                .clickable { onStrategyChanged(strategy) },
-                        ) {
-                            RadioButton(
-                                selected = state.restoreStrategy == strategy,
-                                onClick = { onStrategyChanged(strategy) },
-                            )
-                            Text(strategy.displayName, style = MaterialTheme.typography.bodyMedium)
-                        }
-                    }
-                }
+                RestoreStrategyList(
+                    selectedStrategy = state.restoreStrategy,
+                    onStrategyChanged = onStrategyChanged,
+                )
                 Spacer(Modifier.height(Spacing.sm))
-                Text("Categories to restore:", style = MaterialTheme.typography.titleSmall)
-                state.importCategories.forEach { category ->
-                    key(category.name) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = Spacing.xs)
-                                .clickable { onToggleCategory(category) },
-                        ) {
-                            Checkbox(
-                                checked = category in state.selectedCategories,
-                                onCheckedChange = { onToggleCategory(category) },
-                            )
-                            Text(category.displayName, style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                }
+                RestoreCategoryList(
+                    importCategories = state.importCategories,
+                    selectedCategories = state.selectedCategories,
+                    onToggleCategory = onToggleCategory,
+                )
             }
         },
         confirmButton = {
@@ -270,6 +262,57 @@ private fun ImportConfirmationDialog(
             TextButton(onClick = onDismiss) { Text("Cancel") }
         },
     )
+}
+
+@Composable
+private fun RestoreStrategyList(
+    selectedStrategy: RestoreStrategy,
+    onStrategyChanged: (RestoreStrategy) -> Unit,
+) {
+    Text("Restore Strategy:", style = MaterialTheme.typography.titleSmall)
+    RestoreStrategy.entries.forEach { strategy ->
+        key(strategy.name) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = Spacing.xs)
+                    .clickable { onStrategyChanged(strategy) },
+            ) {
+                RadioButton(
+                    selected = selectedStrategy == strategy,
+                    onClick = { onStrategyChanged(strategy) },
+                )
+                Text(strategy.displayName, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RestoreCategoryList(
+    importCategories: Set<BackupCategory>,
+    selectedCategories: Set<BackupCategory>,
+    onToggleCategory: (BackupCategory) -> Unit,
+) {
+    Text("Categories to restore:", style = MaterialTheme.typography.titleSmall)
+    importCategories.forEach { category ->
+        key(category.name) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = Spacing.xs)
+                    .clickable { onToggleCategory(category) },
+            ) {
+                Checkbox(
+                    checked = category in selectedCategories,
+                    onCheckedChange = { onToggleCategory(category) },
+                )
+                Text(category.displayName, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
 }
 
 private fun saveBackupToFile(json: String) {

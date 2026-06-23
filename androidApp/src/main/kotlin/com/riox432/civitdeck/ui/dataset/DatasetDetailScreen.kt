@@ -110,7 +110,7 @@ fun DatasetDetailScreen(
     )
 }
 
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DatasetDetailScaffold(
@@ -187,6 +187,32 @@ private fun DatasetDetailScaffold(
         onTrainableToggle = { id, trainable -> viewModel.updateTrainable(id, trainable) },
         onDismissDetail = viewModel::dismissDetail,
     )
+    DatasetExportOverlays(
+        showExportSheet = showExportSheet,
+        exportProgress = exportProgress,
+        allImages = allImages,
+        availableExportFormats = availableExportFormats,
+        selectedExportFormatId = selectedExportFormatId,
+        onDismissExport = onDismissExport,
+        onExportFormatSelected = onExportFormatSelected,
+        onStartExport = onStartExport,
+        onDismissExportResult = onDismissExportResult,
+    )
+}
+
+@Suppress("LongParameterList")
+@Composable
+private fun DatasetExportOverlays(
+    showExportSheet: Boolean,
+    exportProgress: ExportProgress?,
+    allImages: List<DatasetImage>,
+    availableExportFormats: List<PluginExportFormat>,
+    selectedExportFormatId: String?,
+    onDismissExport: () -> Unit,
+    onExportFormatSelected: (String) -> Unit,
+    onStartExport: (String) -> Unit,
+    onDismissExportResult: () -> Unit,
+) {
     if (showExportSheet) {
         val trainableCount = allImages.count { it.trainable && !it.excluded }
         val nonTrainableCount = allImages.size - trainableCount

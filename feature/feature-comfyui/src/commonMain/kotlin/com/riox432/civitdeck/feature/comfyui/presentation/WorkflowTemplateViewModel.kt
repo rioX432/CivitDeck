@@ -142,7 +142,6 @@ class WorkflowTemplateViewModel(
                 createdAt = 0L,
             )
 
-        @Suppress("LongMethod")
         fun defaultVariablesFor(type: WorkflowTemplateType): List<TemplateVariable> =
             when (type) {
                 WorkflowTemplateType.TXT2IMG -> txt2imgVariables()

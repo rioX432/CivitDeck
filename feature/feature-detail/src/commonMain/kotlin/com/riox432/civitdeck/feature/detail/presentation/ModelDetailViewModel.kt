@@ -57,7 +57,6 @@ data class ModelDetailUiState(
     val fileVramCompatibility: Map<Long, VramCompatibility> = emptyMap(),
 ) : UiLoadingState
 
-@Suppress("TooManyFunctions")
 class ModelDetailViewModel(
     private val modelId: Long,
     private val modelUseCases: ModelUseCases,
@@ -120,10 +119,21 @@ class ModelDetailViewModel(
         downloadEnqueuedEvent = _downloadEnqueuedEvent,
     )
 
+    private val observersDelegate = DetailObserversDelegate(
+        modelId = modelId,
+        scope = viewModelScope,
+        uiState = _uiState,
+        observeIsFavorite = modelUseCases.observeIsFavorite,
+        observeNsfwFilter = modelUseCases.observeNsfwFilter,
+        observePowerUserMode = modelUseCases.observePowerUserMode,
+        observeModelNote = notesTagsUseCases.observeModelNote,
+        observePersonalTags = notesTagsUseCases.observePersonalTags,
+        observeModelDownloads = downloadUseCases.observeModelDownloads,
+    )
+
     init {
         loadModel()
-        observeFavorite()
-        startObservers()
+        observersDelegate.start()
         reviewDelegate.loadReviews()
         fetchSystemStats()
     }
@@ -259,66 +269,6 @@ class ModelDetailViewModel(
                 if (v.id == versionId) v.copy(images = enriched) else v
             }
             current.copy(model = currentModel.copy(modelVersions = updatedVersions))
-        }
-    }
-
-    // endregion
-
-    // region Private — Observers
-
-    private fun startObservers() {
-        observeNsfwFilter()
-        observePowerUserMode()
-        observeNote()
-        observePersonalTags()
-        observeDownloads()
-    }
-
-    private fun observeFavorite() {
-        viewModelScope.launch {
-            modelUseCases.observeIsFavorite(modelId).collect { isFavorite ->
-                _uiState.update { it.copy(isFavorite = isFavorite) }
-            }
-        }
-    }
-
-    private fun observeNsfwFilter() {
-        viewModelScope.launch {
-            modelUseCases.observeNsfwFilter().collect { level ->
-                _uiState.update { it.copy(nsfwFilterLevel = level) }
-            }
-        }
-    }
-
-    private fun observePowerUserMode() {
-        viewModelScope.launch {
-            modelUseCases.observePowerUserMode().collect { enabled ->
-                _uiState.update { it.copy(powerUserMode = enabled) }
-            }
-        }
-    }
-
-    private fun observeNote() {
-        viewModelScope.launch {
-            notesTagsUseCases.observeModelNote(modelId).collect { note ->
-                _uiState.update { it.copy(note = note) }
-            }
-        }
-    }
-
-    private fun observePersonalTags() {
-        viewModelScope.launch {
-            notesTagsUseCases.observePersonalTags(modelId).collect { tags ->
-                _uiState.update { it.copy(personalTags = tags) }
-            }
-        }
-    }
-
-    private fun observeDownloads() {
-        viewModelScope.launch {
-            downloadUseCases.observeModelDownloads(modelId).collect { downloads ->
-                _uiState.update { it.copy(downloads = downloads) }
-            }
         }
     }
 
