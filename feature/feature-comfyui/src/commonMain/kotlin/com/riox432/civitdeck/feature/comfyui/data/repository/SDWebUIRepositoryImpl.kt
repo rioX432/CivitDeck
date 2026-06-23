@@ -90,21 +90,26 @@ class SDWebUIRepositoryImpl(
     override fun generateImage(params: SDWebUIGenerationParams): Flow<SDWebUIGenerationProgress> =
         flow {
             ensureApiConfigured()
-            try {
-                coroutineScope {
-                    val genDeferred = async { callGenerationApi(params) }
-                    while (!genDeferred.isCompleted) {
-                        val progress = safeGetProgress()
-                        emit(progress)
-                        delay(PROGRESS_POLL_MS)
-                    }
-                    val result = genDeferred.await()
-                    emit(SDWebUIGenerationProgress.Completed(result.images))
+            // The generation API runs as a child coroutine while we poll progress.
+            // Its outcome is captured into a Result *inside* the child so a failure
+            // never cancels the enclosing coroutineScope. That keeps every emit() on
+            // the single flow-collector coroutine and makes the terminal Completed/Error
+            // emission deterministic (a racing scope-cancellation would otherwise let the
+            // exception escape mid-emit and violate the Flow emission invariant).
+            val outcome = coroutineScope {
+                val genDeferred = async { runCatching { callGenerationApi(params) } }
+                while (!genDeferred.isCompleted) {
+                    emit(safeGetProgress())
+                    delay(PROGRESS_POLL_MS)
                 }
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                Logger.e(TAG, "Image generation failed: ${e.message}")
-                emit(SDWebUIGenerationProgress.Error(e.message ?: "Generation failed"))
+                genDeferred.await()
             }
+            outcome
+                .onSuccess { emit(SDWebUIGenerationProgress.Completed(it.images)) }
+                .onFailure { e ->
+                    Logger.e(TAG, "Image generation failed: ${e.message}")
+                    emit(SDWebUIGenerationProgress.Error(e.message ?: "Generation failed"))
+                }
         }
 
     override suspend fun interruptGeneration() {
