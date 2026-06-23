@@ -18,14 +18,14 @@ struct NsfwBlurView<Content: View>: View {
                 Color.clear
                     .contentShape(Rectangle())
                     .accessibilityAddTraits(.isButton)
-                    .accessibilityLabel("Show content")
+                    .accessibilityLabel(Text("nsfw_show_content_accessibility"))
                     .onTapGesture {
                         withAnimation(MotionAnimation.standard) {
                             isRevealed = true
                         }
                     }
                     .overlay {
-                        Text("Tap to reveal")
+                        Text("nsfw_tap_to_reveal")
                             .font(.civitLabelMedium)
                             .foregroundColor(.civitOnSurface.opacity(0.7))
                     }

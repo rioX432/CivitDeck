@@ -37,14 +37,14 @@ struct SettingsScreen: View {
                 aboutSection
                 if !appBehaviorState.powerUserMode {
                     Section {
-                        Text("Enable Power User Mode in Advanced & Integrations for more features")
+                        Text("settings_power_user_hint")
                             .font(.civitBodySmall)
                             .foregroundColor(.civitOnSurfaceVariant)
                             .lineLimit(3)
                     }
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle("settings_title")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
@@ -52,7 +52,7 @@ struct SettingsScreen: View {
     private var offlineBanner: some View {
         HStack {
             Spacer()
-            Text("You are offline — showing cached data")
+            Text("settings_offline_banner")
                 .font(.civitBodySmall)
                 .foregroundColor(.civitOnErrorContainer)
             Spacer()
@@ -61,7 +61,7 @@ struct SettingsScreen: View {
     }
 
     private func accountSection(authState: AuthSettingsUiState) -> some View {
-        Section("Account") {
+        Section("settings_section_account") {
             if let username = authState.connectedUsername, authState.apiKey != nil {
                 ConnectedAccountRow(username: username, onClear: vmStore.auth.onClearApiKey)
             } else {
@@ -77,15 +77,15 @@ struct SettingsScreen: View {
     private var appearanceSection: some View {
         Section {
             NavigationLink(destination: AppearanceSettingsView(viewModel: vmStore.display)) {
-                Text("Appearance")
+                Text("settings_appearance")
             }
         }
     }
 
     private var notificationsSection: some View {
-        Section("Notifications") {
+        Section("settings_section_notifications") {
             NavigationLink(destination: NotificationCenterView()) {
-                Label("Model Updates", systemImage: "bell")
+                Label("settings_model_updates", systemImage: "bell")
             }
         }
     }
@@ -97,15 +97,15 @@ struct SettingsScreen: View {
                 displayViewModel: vmStore.display,
                 appBehaviorViewModel: vmStore.appBehavior
             )) {
-                Text("Content & Behavior")
+                Text("settings_content_behavior")
             }
         }
     }
 
     private var historySection: some View {
-        Section("History") {
+        Section("settings_section_history") {
             NavigationLink(destination: BrowsingHistoryView()) {
-                Label("Browsing History", systemImage: "clock.arrow.circlepath")
+                Label("settings_browsing_history", systemImage: "clock.arrow.circlepath")
             }
         }
     }
@@ -113,7 +113,7 @@ struct SettingsScreen: View {
     private var dataStorageSection: some View {
         Section {
             NavigationLink(destination: StorageSettingsView(viewModel: vmStore.storage)) {
-                Text("Data & Storage")
+                Text("settings_data_storage")
             }
         }
     }
@@ -124,42 +124,42 @@ struct SettingsScreen: View {
                 viewModel: vmStore.appBehavior,
                 displayViewModel: vmStore.display
             )) {
-                Text("Advanced & Integrations")
+                Text("settings_advanced_integrations")
             }
         }
     }
 
     private var analyticsSection: some View {
-        Section("Analytics") {
+        Section("settings_section_analytics") {
             NavigationLink(destination: AnalyticsView()) {
-                Label("Usage Stats", systemImage: "chart.bar.xaxis")
+                Label("settings_usage_stats", systemImage: "chart.bar.xaxis")
             }
         }
     }
 
     private var datasetsSection: some View {
-        Section("Training") {
+        Section("settings_section_training") {
             NavigationLink(destination: DatasetListView()) {
-                Label("Datasets", systemImage: "photo.on.rectangle.angled")
+                Label("settings_datasets", systemImage: "photo.on.rectangle.angled")
             }
         }
     }
 
     private var aboutSection: some View {
-        Section("About") {
+        Section("settings_section_about") {
             HStack {
-                Text("App Version")
+                Text("settings_app_version")
                 Spacer()
                 Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")
                     .foregroundColor(.civitOnSurfaceVariant)
             }
-            NavigationLink("Open Source Licenses") {
+            NavigationLink("settings_open_source_licenses") {
                 LicensesView()
             }
             Button {
                 vmStore.replayGestureTutorial()
             } label: {
-                Text("Replay Gesture Tutorial")
+                Text("settings_replay_gesture_tutorial")
                     .foregroundColor(.civitOnSurface)
             }
         }
@@ -174,21 +174,21 @@ private struct ConnectedAccountRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("Connected as")
+                Text("settings_connected_as")
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
                 Text(username)
                     .font(.civitBodyMedium)
             }
             Spacer()
-            Button("Disconnect") { showConfirmation = true }
+            Button("settings_disconnect") { showConfirmation = true }
                 .foregroundColor(.civitError)
         }
-        .alert("Disconnect", isPresented: $showConfirmation) {
-            Button("Cancel", role: .cancel) {}
-            Button("Remove", role: .destructive) { onClear() }
+        .alert("settings_disconnect", isPresented: $showConfirmation) {
+            Button("action_cancel", role: .cancel) {}
+            Button("action_remove", role: .destructive) { onClear() }
         } message: {
-            Text("Remove your CivitAI API key?")
+            Text("settings_disconnect_confirm_message")
         }
     }
 }
@@ -202,12 +202,12 @@ private struct ApiKeyInputRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack {
-                SecureField("Paste API key", text: $keyInput)
+                SecureField("settings_api_key_placeholder", text: $keyInput)
                     .textContentType(.password)
                 if isValidating {
                     ProgressView()
                 } else {
-                    Button("Verify") {
+                    Button("settings_api_key_verify") {
                         onValidateAndSave(keyInput)
                         keyInput = ""
                     }
@@ -219,7 +219,7 @@ private struct ApiKeyInputRow: View {
                     .font(.civitBodySmall)
                     .foregroundColor(.civitError)
             }
-            Text("Get your key at civitai.com/user/account")
+            Text("settings_api_key_help")
                 .font(.civitBodySmall)
                 .foregroundColor(.civitOnSurfaceVariant)
         }
