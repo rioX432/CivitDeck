@@ -254,4 +254,64 @@ class ModelSearchViewModelTest {
 
         assertEquals(modelCallsAfterInit, deps.modelRepo.getModelsCallCount)
     }
+
+    // region Recommendation visibility (search results first)
+
+    private fun recommendationSections(count: Int) = List(count) { index ->
+        com.riox432.civitdeck.domain.model.RecommendationSection(
+            title = "Section $index",
+            reason = "",
+            models = listOf(testModel(id = index.toLong() + 100L)),
+        )
+    }
+
+    @Test
+    fun recommendations_hidden_while_search_is_active() {
+        val state = ModelSearchUiState(
+            loadedRecommendations = recommendationSections(3),
+            hasActiveSearch = true,
+        )
+        assertTrue(state.recommendations.isEmpty())
+    }
+
+    @Test
+    fun recommendations_capped_while_browsing_idle() {
+        val state = ModelSearchUiState(
+            loadedRecommendations = recommendationSections(5),
+            hasActiveSearch = false,
+        )
+        assertEquals(ModelSearchUiState.MAX_IDLE_RECOMMENDATION_SECTIONS, state.recommendations.size)
+    }
+
+    @Test
+    fun submitting_a_query_activates_search_and_clearing_deactivates_it() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+
+        deps.vm.onQueryChange("illustrious")
+        deps.vm.onSearch()
+        advanceUntilIdle()
+        assertTrue(deps.vm.uiState.value.hasActiveSearch)
+
+        deps.vm.onQueryChange("")
+        deps.vm.onSearch()
+        advanceUntilIdle()
+        assertTrue(!deps.vm.uiState.value.hasActiveSearch)
+    }
+
+    @Test
+    fun type_filter_activates_search() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+
+        deps.vm.onTypeSelected(com.riox432.civitdeck.domain.model.ModelType.LORA)
+        advanceUntilIdle()
+        assertTrue(deps.vm.uiState.value.hasActiveSearch)
+
+        deps.vm.onTypeSelected(null)
+        advanceUntilIdle()
+        assertTrue(!deps.vm.uiState.value.hasActiveSearch)
+    }
+
+    // endregion
 }
