@@ -38,3 +38,18 @@ One note per decision/lesson. Newest at the bottom.
 - 2026-07-07: `./gradlew :androidApp:installDebug` with the user's physical phone on
   wireless adb installed to ALL devices ("Installed on 3 devices") — always prefix
   ANDROID_SERIAL=emulator-5554. Flag the accidental install in the PR.
+- 2026-07-07: Detail-screen "Versions gap" root cause: in a plain Row, the first chip
+  that doesn't fully fit is measured with the tiny leftover width, its label wraps one
+  character per line, and the chip grows ~800 px tall (a11y showed it as an 819px-tall
+  CheckBox — M3 FilterChip's semantics role). Fixed by making FilterChipRow
+  horizontally scrollable, which also makes version 4+ reachable at all.
+- 2026-07-07: Bet 4 verified against a mock ComfyUI server (python http.server on host,
+  reachable from the emulator via 10.0.2.2:8188, /queue + /system_stats + /history
+  endpoints): guided setup connects, hub card shows green Online + Generate/Queue/
+  Outputs, queue screen reads the mock. Good technique for future remote-flow testing.
+- 2026-07-07: Bet 6: AGP left a stale 278 MB APK when only removing entries — always
+  `:androidApp:clean` before before/after size comparisons. Clean debug APK: 275.6 MB ->
+  126.7 MB. Runtime check confirmed the designed fallback fires
+  ("SigLIP-2 vision asset missing" warning, no crash) and embedOnBrowse no-ops — which
+  also stops downloading+embedding every browsed model's thumbnail for a disabled
+  feature.
