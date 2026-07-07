@@ -165,6 +165,10 @@
     <string name="settings_api_key_hint">Get your key at civitai.com/user/account</string>
     <string name="settings_nsfw_content">NSFW Content</string>
     <string name="settings_nsfw_content_description">Show NSFW content in search results</string>
+    <string name="settings_nsfw_level_safe">Safe</string>
+    <string name="settings_nsfw_level_moderate">Moderate</string>
+    <string name="settings_nsfw_level_everything">Everything</string>
+    <string name="search_filter_nsfw_level">NSFW level</string>
     <string name="settings_section_front_door">CivitAI Site</string>
     <string name="settings_front_door_full">Open links on civitai.red</string>
     <string name="settings_front_door_description">Choose which CivitAI site \"Open in browser\", share, and QR links use. civitai.red shows the full catalog; civitai.com is the safe-for-work front door. This does not change the NSFW content filter above.</string>

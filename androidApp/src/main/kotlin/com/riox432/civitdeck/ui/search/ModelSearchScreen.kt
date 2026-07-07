@@ -335,6 +335,7 @@ private fun SearchScreenSheets(
                 onBaseModelToggled = viewModel::onBaseModelToggled,
                 onSortSelected = viewModel::onSortSelected,
                 onPeriodSelected = viewModel::onPeriodSelected,
+                onNsfwLevelSelected = viewModel::onNsfwFilterLevelSelected,
                 onFreshFindToggled = viewModel::onFreshFindToggled,
                 onQualityFilterToggled = viewModel::onQualityFilterToggled,
                 onAddIncludedTag = viewModel::onAddIncludedTag,

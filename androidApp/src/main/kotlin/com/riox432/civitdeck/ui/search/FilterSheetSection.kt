@@ -30,9 +30,11 @@ import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelType
+import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState
+import com.riox432.civitdeck.ui.settings.NsfwLevelChipRow
 import com.riox432.civitdeck.ui.theme.Spacing
 
 /**
@@ -43,6 +45,7 @@ data class FilterCallbacks(
     val onBaseModelToggled: (BaseModel) -> Unit,
     val onSortSelected: (SortOrder) -> Unit,
     val onPeriodSelected: (TimePeriod) -> Unit,
+    val onNsfwLevelSelected: (NsfwFilterLevel) -> Unit,
     val onFreshFindToggled: () -> Unit,
     val onQualityFilterToggled: () -> Unit,
     val onAddIncludedTag: (String) -> Unit,
@@ -119,6 +122,7 @@ private fun FilterSheetContent(
         filterSourceSection(uiState, filterCallbacks.onSourceToggled)
         filterModelSections(uiState, filterCallbacks.onTypeSelected, filterCallbacks.onBaseModelToggled)
         filterSortSections(uiState, filterCallbacks.onSortSelected, filterCallbacks.onPeriodSelected)
+        filterNsfwSection(uiState, filterCallbacks.onNsfwLevelSelected)
         filterToggleSections(uiState, filterCallbacks.onFreshFindToggled, filterCallbacks.onQualityFilterToggled)
         filterTagSections(
             uiState,
@@ -204,6 +208,23 @@ private fun androidx.compose.foundation.lazy.LazyListScope.filterSortSections(
             selectedPeriod = uiState.selectedPeriod,
             onPeriodSelected = onPeriodSelected,
         )
+    }
+    item { HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg)) }
+}
+
+private fun androidx.compose.foundation.lazy.LazyListScope.filterNsfwSection(
+    uiState: ModelSearchUiState,
+    onNsfwLevelSelected: (NsfwFilterLevel) -> Unit,
+) {
+    item {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            FilterSectionHeader(stringResource(R.string.search_filter_nsfw_level))
+            NsfwLevelChipRow(
+                level = uiState.nsfwFilterLevel,
+                onLevelSelected = onNsfwLevelSelected,
+                modifier = Modifier.padding(horizontal = Spacing.lg),
+            )
+        }
     }
     item { HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg)) }
 }

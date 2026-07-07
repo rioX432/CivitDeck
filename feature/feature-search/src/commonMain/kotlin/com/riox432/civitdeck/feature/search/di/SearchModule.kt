@@ -87,6 +87,7 @@ val searchModule = module {
     factory {
         SearchPreferencesUseCases(
             observeNsfwFilter = get(),
+            setNsfwFilter = get(),
             observeGridColumns = get(),
             observeDefaultSortOrder = get(),
             observeDefaultTimePeriod = get(),

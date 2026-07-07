@@ -21,3 +21,17 @@ data class ModelStats(
     val ratingCount: Int,
     val rating: Double,
 )
+
+/**
+ * Preview candidates for browse-surface cards, safest first.
+ *
+ * Videos are excluded — image loaders cannot decode a video URL, which
+ * previously rendered NSFW models (whose first preview is often a video)
+ * as broken cards. Static images are ordered by ascending NSFW level so a
+ * SFW preview is preferred when the creator provides one; original order
+ * is kept within the same level.
+ */
+fun Model.browseThumbnailCandidates(): List<ModelImage> =
+    modelVersions.firstOrNull()?.images.orEmpty()
+        .filter { it.contentType == MediaContentType.IMAGE }
+        .sortedBy { it.nsfwLevel.ordinal }

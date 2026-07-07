@@ -18,3 +18,23 @@ One note per decision/lesson. Newest at the bottom.
 - 2026-07-07: Versions-section dead space + scroll trap on the detail screen is visible
   on-device but the cause is not yet identified in code (FilterChipRow is a plain Row —
   not it). Investigate during Bet 3.
+- 2026-07-07: NSFW pipeline verified against the live API (user asked to double-check;
+  suspicion confirmed on three axes): (1) /models model-version images carry a NUMERIC
+  browsing-level bitmask (PG=1..Blocked=32) but the mapper only matched bits 1/2/4/8 —
+  XXX(16)/Blocked(32)/masks fell through to None (explicit content classified safe);
+  (2) omitting the /models nsfw param makes the API strip non-PG images → NSFW models
+  rendered as broken cards (empty images), so "All" must send nsfw=true; (3) omitting
+  the /images nsfw param now returns PG-only → "All" showed SFW-only galleries; must
+  send nsfw=X. Curl evidence: 20 nsfw=true models contained 397 level-16 and 3 level-32
+  images; /images without param returned browsingLevel=1 only.
+- 2026-07-07: LazyVerticalGrid anchors by key when items are inserted at index 0 —
+  late-loading recommendation rows landed invisibly ABOVE the viewport (looked like
+  "recommendations broken" for ~30 min of debugging). Fix: follow insertions only when
+  the user is at the very top. Debug trick that found it: temporary Logger.w of
+  section count proved state was correct while the screen showed nothing.
+- 2026-07-07: detekt TooManyFunctions threshold 30 hit on ModelSearchViewModel when
+  adding onNsfwFilterLevelSelected — merged the two init preference observers into
+  one observePreferences() instead of suppressing.
+- 2026-07-07: `./gradlew :androidApp:installDebug` with the user's physical phone on
+  wireless adb installed to ALL devices ("Installed on 3 devices") — always prefix
+  ANDROID_SERIAL=emulator-5554. Flag the accidental install in the PR.

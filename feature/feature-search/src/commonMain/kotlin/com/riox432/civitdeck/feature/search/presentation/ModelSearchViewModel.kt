@@ -160,8 +160,7 @@ class ModelSearchViewModel(
     )
 
     init {
-        observeNsfwFilter()
-        observeQualityThreshold()
+        observePreferences()
         filterDelegate.loadExcludedTags()
         loadDefaults(preferencesUseCases.observeDefaultSortOrder, preferencesUseCases.observeDefaultTimePeriod)
         loadRecommendations()
@@ -234,6 +233,16 @@ class ModelSearchViewModel(
             it.copy(selectedBaseModels = updated)
         }
         refresh()
+    }
+
+    /**
+     * Persists a new NSFW browsing level. The persisted preference is the single
+     * source of truth: [observeNsfwFilter] picks up the change and triggers the
+     * refresh and recommendations reload, so Settings and the filter sheet stay
+     * in sync automatically.
+     */
+    fun onNsfwFilterLevelSelected(level: NsfwFilterLevel) {
+        viewModelScope.launch { preferencesUseCases.setNsfwFilter(level) }
     }
 
     fun onFreshFindToggled() {
@@ -336,7 +345,7 @@ class ModelSearchViewModel(
         }
     }
 
-    private fun observeNsfwFilter() {
+    private fun observePreferences() {
         viewModelScope.launch {
             var initialized = false
             preferencesUseCases.observeNsfwFilter().collect { level ->
@@ -350,9 +359,6 @@ class ModelSearchViewModel(
                 initialized = true
             }
         }
-    }
-
-    private fun observeQualityThreshold() {
         viewModelScope.launch {
             preferencesUseCases.observeQualityThreshold().collect { threshold ->
                 _filterState.update { it.copy(qualityThreshold = threshold) }

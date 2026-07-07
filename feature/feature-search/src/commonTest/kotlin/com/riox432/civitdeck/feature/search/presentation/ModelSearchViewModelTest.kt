@@ -196,6 +196,7 @@ class ModelSearchViewModelTest {
             ),
             preferencesUseCases = SearchPreferencesUseCases(
                 observeNsfwFilter = ObserveNsfwFilterUseCase(nsfwPrefs),
+                setNsfwFilter = com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase(nsfwPrefs),
                 observeGridColumns = ObserveGridColumnsUseCase(displayRepo),
                 observeDefaultSortOrder = ObserveDefaultSortOrderUseCase(displayRepo),
                 observeDefaultTimePeriod = ObserveDefaultTimePeriodUseCase(displayRepo),
@@ -297,6 +298,32 @@ class ModelSearchViewModelTest {
         deps.vm.onSearch()
         advanceUntilIdle()
         assertTrue(!deps.vm.uiState.value.hasActiveSearch)
+    }
+
+    @Test
+    fun recommendations_load_into_ui_state_on_init() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+        val st = deps.vm.uiState.value
+        assertTrue(st.loadedRecommendations.isNotEmpty(), "loadedRecommendations empty")
+        assertTrue(st.recommendations.isNotEmpty(), "visible recommendations empty while idle")
+    }
+
+    @Test
+    fun selecting_nsfw_level_persists_and_refreshes() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+        val callsAfterInit = deps.modelRepo.getModelsCallCount
+
+        deps.vm.onNsfwFilterLevelSelected(NsfwFilterLevel.All)
+        advanceUntilIdle()
+
+        assertEquals(NsfwFilterLevel.All, deps.nsfwPrefs.nsfwFilterLevelFlow.value)
+        assertEquals(NsfwFilterLevel.All, deps.vm.uiState.value.nsfwFilterLevel)
+        assertTrue(
+            deps.modelRepo.getModelsCallCount > callsAfterInit,
+            "persisted level change should refresh results via the preference observer",
+        )
     }
 
     @Test

@@ -12,6 +12,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
+import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSavedSearchFilterUseCase
@@ -68,6 +69,7 @@ data class SearchFilterUseCases(
  */
 data class SearchPreferencesUseCases(
     val observeNsfwFilter: ObserveNsfwFilterUseCase,
+    val setNsfwFilter: SetNsfwFilterUseCase,
     val observeGridColumns: ObserveGridColumnsUseCase,
     val observeDefaultSortOrder: ObserveDefaultSortOrderUseCase,
     val observeDefaultTimePeriod: ObserveDefaultTimePeriodUseCase,

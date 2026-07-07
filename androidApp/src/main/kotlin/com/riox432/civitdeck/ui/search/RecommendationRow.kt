@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.RecommendationSection
+import com.riox432.civitdeck.domain.model.browseThumbnailCandidates
 import com.riox432.civitdeck.ui.adaptive.isExpandedWidth
 import com.riox432.civitdeck.ui.components.ModelCard
 import com.riox432.civitdeck.ui.theme.Elevation
@@ -56,8 +57,7 @@ internal fun RecommendationRow(
             horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         ) {
             items(items = section.models, key = { it.id }) { model ->
-                val thumbnailUrl = model.modelVersions
-                    .firstOrNull()?.images?.firstOrNull()?.url
+                val thumbnailUrl = model.browseThumbnailCandidates().firstOrNull()?.url
                 ModelCard(
                     model = model,
                     onClick = { onModelClick(model.id, thumbnailUrl, sharedElementSuffix) },

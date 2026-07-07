@@ -35,6 +35,7 @@ import coil3.compose.SubcomposeAsyncImageContent
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.browseThumbnailCandidates
 import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.theme.CornerRadius
@@ -71,8 +72,7 @@ fun CardStack(
         val prefetchCards = cards.drop(MAX_VISIBLE_CARDS).take(PREFETCH_COUNT)
         val imageLoader = context.imageLoader
         prefetchCards.forEach { model ->
-            val url = model.modelVersions
-                .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
+            val url = model.browseThumbnailCandidates().firstOrNull()?.thumbnailUrl()
             if (url != null) {
                 val request = ImageRequest.Builder(context)
                     .data(url)
@@ -159,8 +159,7 @@ private fun ExitAnimationOverlay(exiting: ExitingCard, onComplete: () -> Unit) {
 
 @Composable
 private fun DiscoveryCard(model: Model) {
-    val thumbnailUrl = model.modelVersions
-        .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
+    val thumbnailUrl = model.browseThumbnailCandidates().firstOrNull()?.thumbnailUrl()
 
     Card(
         shape = RoundedCornerShape(CornerRadius.card),
