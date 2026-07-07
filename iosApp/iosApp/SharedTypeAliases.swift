@@ -447,3 +447,40 @@ extension Core_domainModelImage {
         return parts.joined(separator: "/")
     }
 }
+
+// MARK: - NsfwLevel ordering
+// SKIE does not expose the Kotlin enum ordinal, so map it explicitly for
+// safest-first sorting. Order matches the Kotlin declaration: None < Soft < Mature < X.
+extension Core_domainNsfwLevel {
+    var severity: Int {
+        switch self {
+        case .none: return 0
+        case .soft: return 1
+        case .mature: return 2
+        case .x: return 3
+        default: return 3
+        }
+    }
+}
+
+// MARK: - Model browse-thumbnail selection
+// Mirrors the Kotlin `Model.browseThumbnailCandidates()` extension (not exported
+// to Swift): static images only (never a video URL, which image loaders can't
+// decode and which rendered NSFW models as broken cards), safest first.
+extension Core_domainModel {
+    func browseThumbnailCandidates() -> [Core_domainModelImage] {
+        let images = modelVersions.first?.images ?? []
+        // Stable sort by severity (Swift's `sorted` is not guaranteed stable):
+        // keep original order within the same level via the enumerated index.
+        return images
+            .filter { $0.contentType == .image }
+            .enumerated()
+            .sorted { lhs, rhs in
+                if lhs.element.nsfwLevel.severity != rhs.element.nsfwLevel.severity {
+                    return lhs.element.nsfwLevel.severity < rhs.element.nsfwLevel.severity
+                }
+                return lhs.offset < rhs.offset
+            }
+            .map { $0.element }
+    }
+}

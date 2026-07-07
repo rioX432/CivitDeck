@@ -58,17 +58,16 @@ struct ContentFilterSettingsView: View {
     }
 
     private func nsfwToggle(state: ContentFilterSettingsUiState) -> some View {
-        Toggle(isOn: Binding(
-            get: { state.nsfwFilterLevel != .off },
-            set: { _ in viewModel.onNsfwFilterToggle() }
-        )) {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("NSFW Content")
-                    .font(.civitBodyMedium)
-                Text("Show NSFW content in search results")
-                    .font(.civitBodySmall)
-                    .foregroundColor(.civitOnSurfaceVariant)
-            }
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("NSFW Content")
+                .font(.civitBodyMedium)
+            Text("Show NSFW content in search results")
+                .font(.civitBodySmall)
+                .foregroundColor(.civitOnSurfaceVariant)
+            NsfwLevelPicker(
+                level: state.nsfwFilterLevel,
+                onChanged: { viewModel.onNsfwFilterChanged(level: $0) }
+            )
         }
     }
 

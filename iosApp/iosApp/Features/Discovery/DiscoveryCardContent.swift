@@ -17,8 +17,19 @@ struct DiscoveryCardContent: View {
     }
 
     private var cardImage: some View {
-        let urlString = model.modelVersions.first?.images.first.flatMap { $0.thumbnailUrl(width: 450) }
+        // Safest static image first (never a video URL); mirrors Android's card behavior.
+        let candidate = model.browseThumbnailCandidates().first
+        let urlString = candidate?.thumbnailUrl(width: 450)
+        let blurRadius = ModelCardView.cardBlurRadius(for: candidate?.nsfwLevel)
         return CivitAsyncImageView(imageUrl: urlString, aspectRatio: imageAspectRatio)
+            .blur(radius: blurRadius)
+            .clipped()
+            .overlay(alignment: .topLeading) {
+                if blurRadius > 0 {
+                    NsfwBadgeView()
+                        .padding(Spacing.sm)
+                }
+            }
     }
 
     private var cardInfo: some View {

@@ -151,6 +151,10 @@ final class ModelSearchViewModel: ObservableObject {
         vm.onPeriodSelected(period: period)
     }
 
+    func onNsfwFilterLevelSelected(_ level: NsfwFilterLevel) {
+        vm.onNsfwFilterLevelSelected(level: level)
+    }
+
     func onFreshFindToggled() {
         vm.onFreshFindToggled()
     }

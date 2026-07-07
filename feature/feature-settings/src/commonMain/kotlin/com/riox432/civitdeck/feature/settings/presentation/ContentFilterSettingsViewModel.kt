@@ -107,13 +107,4 @@ class ContentFilterSettingsViewModel(
             _mutableState.update { it.copy(excludedTags = tags) }
         }
     }
-
-    fun onNsfwFilterToggle() {
-        val newLevel = if (uiState.value.nsfwFilterLevel == NsfwFilterLevel.Off) {
-            NsfwFilterLevel.All
-        } else {
-            NsfwFilterLevel.Off
-        }
-        onNsfwFilterChanged(newLevel)
-    }
 }
