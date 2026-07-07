@@ -77,21 +77,19 @@ fun SettingsScreen(
                 item { OfflineBanner() }
             }
             settingsAccountItems(authState, authViewModel)
-            item { SectionHeader(stringResource(R.string.settings_section_appearance)) }
+            // Each row names its own destination — repeating it as a section header
+            // above every single row doubled the list length with pure noise.
+            item { SectionHeader(stringResource(R.string.settings_section_browsing)) }
             item { SubScreenRow(stringResource(R.string.settings_section_appearance), onNavigateToAppearance) }
-            item { SectionHeader(stringResource(R.string.settings_section_content_behavior)) }
             item { SubScreenRow(stringResource(R.string.settings_section_content_behavior), onNavigateToContentFilter) }
-            item { SectionHeader(stringResource(R.string.settings_section_notifications)) }
             item { SubScreenRow(stringResource(R.string.settings_model_updates), onNavigateToNotificationCenter) }
-            item { SectionHeader(stringResource(R.string.settings_section_history)) }
-            item { SubScreenRow(stringResource(R.string.settings_browsing_history), onNavigateToBrowsingHistory) }
             item { SectionHeader(stringResource(R.string.settings_section_data_storage)) }
+            item { SubScreenRow(stringResource(R.string.settings_browsing_history), onNavigateToBrowsingHistory) }
             item { SubScreenRow(stringResource(R.string.settings_section_data_storage), onNavigateToStorage) }
             item { SubScreenRow(stringResource(R.string.download_queue_title), onNavigateToDownloadQueue) }
             item { SectionHeader(stringResource(R.string.settings_section_advanced_integrations)) }
             item { SubScreenRow(stringResource(R.string.settings_section_advanced_integrations), onNavigateToAdvanced) }
             if (appBehaviorState.powerUserMode) {
-                item { SectionHeader(stringResource(R.string.settings_section_analytics)) }
                 item { SubScreenRow(stringResource(R.string.settings_usage_stats), onNavigateToAnalytics) }
             }
             settingsUpdateItems(updateState, updateViewModel, installController)

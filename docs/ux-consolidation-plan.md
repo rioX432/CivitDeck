@@ -112,8 +112,17 @@ truth).
   (they are currently missing from the CI task list — coverage gap).
 - iOS: iOS cards/settings keep current behavior (binary toggle stays functional since the
   repository enum is unchanged); parity work listed in PR as follow-up. UNVERIFIED.
-- Query semantics guard: `nsfw=false` when Off, `null` otherwise — unchanged; tests assert
-  this stays true (SearchPageLoader tests already cover it; extend for level mapping).
+- Query semantics (REVISED during implementation, verified against the live API): the
+  API changed under the app. Omitting the `/models` `nsfw` param now makes the server
+  strip non-PG images (NSFW models arrive with empty image arrays -> broken cards), and
+  omitting the `/images` `nsfw` param returns PG-only. So the params are now ALWAYS sent:
+  `/models` `nsfw=false` for Off / `nsfw=true` otherwise (level narrowing stays
+  client-side via `filterNsfwImages`), `/images` `nsfw=None|Soft|X` by level. Tests
+  assert these mappings (SearchPageLoader, ImageGalleryViewModel, DtoMapper).
+- Grid-card blur uses fixed per-level strengths (16/24 dp) rather than the gallery blur
+  sliders — the sliders are documented as gallery-specific and cards must stay
+  predictable; on Android < 12 (`Modifier.blur` no-op) an opaque scrim covers the
+  thumbnail instead.
 
 ### Bet 3 — Model detail reads in decision order
 Reorder detail items to: media -> header/stats/actions -> tags -> Description ->

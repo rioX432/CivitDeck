@@ -165,6 +165,7 @@
     <string name="settings_api_key_hint">Get your key at civitai.com/user/account</string>
     <string name="settings_nsfw_content">NSFW Content</string>
     <string name="settings_nsfw_content_description">Show NSFW content in search results</string>
+    <string name="settings_section_browsing">Browsing</string>
     <string name="settings_nsfw_level_safe">Safe</string>
     <string name="settings_nsfw_level_moderate">Moderate</string>
     <string name="settings_nsfw_level_everything">Everything</string>

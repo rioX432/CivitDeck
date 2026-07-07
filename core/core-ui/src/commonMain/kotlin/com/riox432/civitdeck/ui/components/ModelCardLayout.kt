@@ -127,8 +127,9 @@ private fun ModelCardLayoutContent(
             .fillMaxWidth()
             .aspectRatio(1f)
 
+        val blurRadius = cardBlurRadiusFor(currentImage?.nsfwLevel)
         Box {
-            Box(modifier = Modifier.blur(cardBlurRadiusFor(currentImage?.nsfwLevel))) {
+            Box(modifier = Modifier.blur(blurRadius)) {
                 imageContent(
                     thumbnailUrl,
                     model.name,
@@ -138,6 +139,15 @@ private fun ModelCardLayoutContent(
                         currentImageIndex++
                     }
                 }
+            }
+            // Modifier.blur is a no-op below Android 12 (RenderEffect); cover the
+            // thumbnail with an opaque scrim there so NSFW content never shows raw.
+            if (blurRadius > 0.dp && !isBlurSupported()) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                )
             }
             NsfwLevelBadge(
                 nsfwLevel = currentImage?.nsfwLevel,
