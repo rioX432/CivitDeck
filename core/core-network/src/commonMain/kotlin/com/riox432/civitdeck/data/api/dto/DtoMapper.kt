@@ -100,7 +100,7 @@ fun ModelFileDto.toDomain(): ModelFile = ModelFile(
 fun ModelImageDto.toDomain(): ModelImage = ModelImage(
     url = url,
     nsfw = nsfw,
-    nsfwLevel = nsfwLevel.toNsfwLevel(),
+    nsfwLevel = nsfwLevel.toNsfwLevel(fallbackNsfw = nsfw),
     width = width,
     height = height,
     hash = hash,
@@ -122,7 +122,7 @@ fun ImageDto.toDomain(): Image = Image(
     width = width,
     height = height,
     nsfw = nsfw,
-    nsfwLevel = nsfwLevel.toNsfwLevel(),
+    nsfwLevel = nsfwLevel.toNsfwLevel(fallbackNsfw = nsfw),
     createdAt = createdAt ?: "",
     postId = postId,
     username = username,
@@ -187,12 +187,24 @@ private fun String.toModelType(): ModelType = toEnum(ModelType.Other)
 
 private fun String?.toModelMode(): ModelMode? = toEnumOrNull<ModelMode>()
 
-private fun String?.toNsfwLevel(): NsfwLevel = this?.toEnum(NsfwLevel.None) ?: NsfwLevel.None
+private fun String?.toNsfwLevel(fallbackNsfw: Boolean = false): NsfwLevel =
+    this?.toEnumOrNull<NsfwLevel>() ?: if (fallbackNsfw) NsfwLevel.Mature else NsfwLevel.None
 
-private fun Int?.toNsfwLevel(): NsfwLevel = when (this) {
-    1 -> NsfwLevel.None
-    2 -> NsfwLevel.Soft
-    4 -> NsfwLevel.Mature
-    8 -> NsfwLevel.X
+/**
+ * Maps CivitAI's numeric browsing-level bitmask to the app's [NsfwLevel].
+ * Bits: PG=1, PG13=2, R=4, X=8, XXX=16, Blocked=32. A value may be a mask of
+ * several bits, so classify by the strictest (highest) bit — anything at or
+ * above X (8), including XXX and Blocked, must never be treated as safe.
+ * Unrated (null/0) falls back to the image's legacy `nsfw` boolean.
+ */
+internal fun Int?.toNsfwLevel(fallbackNsfw: Boolean = false): NsfwLevel = when {
+    this == null || this <= 0 -> if (fallbackNsfw) NsfwLevel.Mature else NsfwLevel.None
+    this >= NSFW_LEVEL_X_BIT -> NsfwLevel.X
+    this >= NSFW_LEVEL_R_BIT -> NsfwLevel.Mature
+    this >= NSFW_LEVEL_PG13_BIT -> NsfwLevel.Soft
     else -> NsfwLevel.None
 }
+
+private const val NSFW_LEVEL_PG13_BIT = 2
+private const val NSFW_LEVEL_R_BIT = 4
+private const val NSFW_LEVEL_X_BIT = 8

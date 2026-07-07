@@ -50,6 +50,7 @@ class ImageGalleryViewModelTest {
         private val pages: List<PaginatedResult<Image>>,
     ) : ImageRepository {
         var callCount = 0
+        var lastNsfwLevel: NsfwLevel? = null
 
         override suspend fun getImages(
             modelId: Long?,
@@ -63,6 +64,7 @@ class ImageGalleryViewModelTest {
         ): PaginatedResult<Image> {
             val result = pages.getOrElse(callCount) { pages.last() }
             callCount++
+            lastNsfwLevel = nsfwLevel
             return result
         }
     }
@@ -79,6 +81,25 @@ class ImageGalleryViewModelTest {
         autoSavePromptUseCase = AutoSavePromptUseCase(savedPromptRepo),
         observeNsfwBlurSettingsUseCase = ObserveNsfwBlurSettingsUseCase(prefsRepo),
     )
+
+    @Test
+    fun nsfw_level_is_always_sent_explicitly() {
+        // Omitting the /images nsfw parameter now means PG-only server-side,
+        // so every filter level must map to an explicit query value.
+        val page = PaginatedResult(listOf(testImage(1L)), PageMetadata(null, null))
+
+        val offRepo = FakeImageRepo(listOf(page))
+        createVm(offRepo, prefsRepo = FakeContentFilterPreferencesRepository(NsfwFilterLevel.Off))
+        assertEquals(NsfwLevel.None, offRepo.lastNsfwLevel)
+
+        val softRepo = FakeImageRepo(listOf(page))
+        createVm(softRepo, prefsRepo = FakeContentFilterPreferencesRepository(NsfwFilterLevel.Soft))
+        assertEquals(NsfwLevel.Soft, softRepo.lastNsfwLevel)
+
+        val allRepo = FakeImageRepo(listOf(page))
+        createVm(allRepo, prefsRepo = FakeContentFilterPreferencesRepository(NsfwFilterLevel.All))
+        assertEquals(NsfwLevel.X, allRepo.lastNsfwLevel)
+    }
 
     @Test
     fun loads_initial_images() {

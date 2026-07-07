@@ -9,6 +9,7 @@ import com.riox432.civitdeck.domain.model.RecommendationSectionType
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.model.filterNsfwImages
+import com.riox432.civitdeck.domain.model.includeNsfwModels
 import com.riox432.civitdeck.domain.repository.AppBehaviorPreferencesRepository
 import com.riox432.civitdeck.domain.repository.BrowsingHistoryRepository
 import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
@@ -185,7 +186,7 @@ class GetRecommendationsUseCase(
         nsfwLevel: NsfwFilterLevel,
         qualityThreshold: Int,
     ): RecommendationSection? {
-        val nsfw = if (nsfwLevel == NsfwFilterLevel.Off) false else null
+        val nsfw = nsfwLevel.includeNsfwModels()
         val result = modelRepository.getModels(
             ModelSearchQuery(
                 sort = SortOrder.MostDownloaded,
@@ -260,7 +261,7 @@ class GetRecommendationsUseCase(
         sectionType: RecommendationSectionType = RecommendationSectionType.PERSONALIZED,
         qualityThreshold: Int = 0,
     ): RecommendationSection? {
-        val nsfw = if (nsfwLevel == NsfwFilterLevel.Off) false else null
+        val nsfw = nsfwLevel.includeNsfwModels()
         val result = modelRepository.getModels(
             ModelSearchQuery(
                 type = type,
@@ -292,7 +293,7 @@ class GetRecommendationsUseCase(
         nsfwLevel: NsfwFilterLevel,
         qualityThreshold: Int,
     ): RecommendationSection? {
-        val nsfw = if (nsfwLevel == NsfwFilterLevel.Off) false else null
+        val nsfw = nsfwLevel.includeNsfwModels()
         val result = modelRepository.getModels(
             ModelSearchQuery(
                 sort = SortOrder.MostDownloaded,

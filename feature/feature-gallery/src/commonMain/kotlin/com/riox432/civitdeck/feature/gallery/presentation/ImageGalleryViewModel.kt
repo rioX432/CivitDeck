@@ -7,9 +7,9 @@ import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
-import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
+import com.riox432.civitdeck.domain.model.imagesQueryMaxLevel
 import com.riox432.civitdeck.domain.usecase.AutoSavePromptUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwBlurSettingsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
@@ -146,11 +146,10 @@ class ImageGalleryViewModel(
 
     private suspend fun loadPage(cursor: String?, limit: Int): LoadResult<Image> {
         val state = _uiState.value
-        val nsfwLevel = when (state.nsfwFilterLevel) {
-            NsfwFilterLevel.Off -> NsfwLevel.None
-            NsfwFilterLevel.Soft -> NsfwLevel.Soft
-            NsfwFilterLevel.All -> null
-        }
+        // Always send an explicit level: the /images endpoint now defaults to
+        // PG-only when the nsfw parameter is omitted, which made "All" show
+        // SFW-only results.
+        val nsfwLevel = state.nsfwFilterLevel.imagesQueryMaxLevel()
         val result = getImagesUseCase(
             modelVersionId = modelVersionId,
             sort = state.selectedSort,
