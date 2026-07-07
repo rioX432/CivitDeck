@@ -140,8 +140,11 @@ private fun LazyListScope.settingsItems(
         }
     }
 
-    // ntfy push notifications section
-    item { NtfySection(state, onTestNtfy) }
+    // ntfy push notifications section — setup instructions only make sense once a
+    // server is configured; hide it entirely before that (progressive disclosure).
+    if (state.activeConnection != null) {
+        item { NtfySection(state, onTestNtfy) }
+    }
 
     // Scan LAN section
     item { ScanLanSection(state, onScanLan, onSelectDiscovered) }
