@@ -5,6 +5,14 @@ plugins {
     alias(libs.plugins.aboutlibraries)
 }
 
+// Gate embedding-based similarity search. Default off until SigLIP-2 embeddings are
+// being produced on-device (parent #602, phases C/D). While off, the 52 MB SigLIP-2
+// asset and the ONNX runtime native libraries (~112 MB across ABIs) are excluded from
+// the APK; ImageEmbeddingModelImpl detects the missing asset and reports unavailable,
+// so all embedding call sites no-op. Enable with -Pcivitdeck.enableSimilaritySearch=true.
+val similaritySearchEnabled =
+    providers.gradleProperty("civitdeck.enableSimilaritySearch").orNull == "true"
+
 android {
     namespace = "com.riox432.civitdeck"
 
@@ -15,9 +23,15 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Gate embedding-based similarity search UI. Default off until SigLIP-2 embeddings
-        // are being produced on-device (parent #602, phases C/D).
-        buildConfigField("boolean", "FEATURE_SIMILARITY_SEARCH", "false")
+        buildConfigField("boolean", "FEATURE_SIMILARITY_SEARCH", similaritySearchEnabled.toString())
+    }
+
+    sourceSets {
+        named("main") {
+            if (similaritySearchEnabled) {
+                assets.srcDir("src/similarity/assets")
+            }
+        }
     }
 
     // Release signing config from environment variables (CI)
@@ -41,6 +55,11 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+        if (!similaritySearchEnabled) {
+            jniLibs {
+                excludes += "**/libonnxruntime*.so"
+            }
         }
     }
 
