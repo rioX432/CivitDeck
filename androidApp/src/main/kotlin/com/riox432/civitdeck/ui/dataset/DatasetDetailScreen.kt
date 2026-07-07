@@ -1,6 +1,5 @@
 package com.riox432.civitdeck.ui.dataset
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,7 +9,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -371,9 +369,7 @@ private fun DatasetImageGrid(
                                 ?.replaceFirstChar { c -> c.uppercase() }
                                 ?: allLabel
                         },
-                        modifier = Modifier
-                            .horizontalScroll(rememberScrollState())
-                            .padding(horizontal = Spacing.sm),
+                        modifier = Modifier.padding(horizontal = Spacing.sm),
                     )
                     if (duplicateCount > 0 || lowResCount > 0) {
                         QualitySummaryChip(

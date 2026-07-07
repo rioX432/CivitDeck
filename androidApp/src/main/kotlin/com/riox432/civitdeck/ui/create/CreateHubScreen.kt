@@ -139,7 +139,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.connectMoreItems(
     if (!showComfy && sdConfigured && externalConfigured) return
     item {
         Text(
-            text = "Connect",
+            text = stringResource(R.string.create_hub_connect_section),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = Spacing.sm, bottom = Spacing.xxs),
@@ -376,19 +376,20 @@ private fun UtilityRow(
 
 private fun ComfyUIConnectionStatus.toHubStatus(): HubStatus = when (this) {
     ComfyUIConnectionStatus.Connected -> HubStatus.Connected
-    ComfyUIConnectionStatus.Error, ComfyUIConnectionStatus.Disconnected -> HubStatus.Error
+    ComfyUIConnectionStatus.Error -> HubStatus.Error
+    // Disconnected means "saved but not tested yet", not a failed test.
     else -> HubStatus.Unknown
 }
 
 private fun SDWebUIConnectionStatus.toHubStatus(): HubStatus = when (this) {
     SDWebUIConnectionStatus.Connected -> HubStatus.Connected
-    SDWebUIConnectionStatus.Error, SDWebUIConnectionStatus.Disconnected -> HubStatus.Error
+    SDWebUIConnectionStatus.Error -> HubStatus.Error
     else -> HubStatus.Unknown
 }
 
 private fun ExternalServerConnectionStatus.toHubStatus(): HubStatus = when (this) {
     ExternalServerConnectionStatus.Connected -> HubStatus.Connected
-    ExternalServerConnectionStatus.Error, ExternalServerConnectionStatus.Disconnected -> HubStatus.Error
+    ExternalServerConnectionStatus.Error -> HubStatus.Error
     else -> HubStatus.Unknown
 }
 
