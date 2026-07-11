@@ -99,6 +99,9 @@ private fun CoilThumbnail(
     SubcomposeAsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
             .data(thumbnailUrl)
+            // Explicit key so the detail carousel can reference this exact cache
+            // entry via placeholderMemoryCacheKey during the shared-element handoff.
+            .memoryCacheKey(thumbnailUrl)
             .crossfade(Duration.normal)
             .build(),
         contentDescription = contentDescription,

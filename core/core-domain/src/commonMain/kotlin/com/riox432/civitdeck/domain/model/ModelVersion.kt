@@ -51,9 +51,15 @@ data class ModelImage(
  * Returns a CDN URL resized to the given [width].
  * CivitAI CDN format: .../xG1nkqKTMzGDvpLrqFT7WA/{uuid}/width={size}/{filename}
  */
-fun ModelImage.thumbnailUrl(width: Int = 450): String {
-    if (!url.contains("image.civitai.com")) return url
-    val parts = url.split("/").toMutableList()
+fun ModelImage.thumbnailUrl(width: Int = 450): String = url.cdnThumbnailUrl(width)
+
+/**
+ * String variant of [thumbnailUrl] for call sites that only carry a raw URL
+ * (e.g. fullscreen viewers referencing the grid's cached thumbnail).
+ */
+fun String.cdnThumbnailUrl(width: Int = 450): String {
+    if (!contains("image.civitai.com")) return this
+    val parts = split("/").toMutableList()
     val widthIdx = parts.indexOfFirst { it.startsWith("width=") }
     if (widthIdx != -1) {
         parts[widthIdx] = "width=$width"

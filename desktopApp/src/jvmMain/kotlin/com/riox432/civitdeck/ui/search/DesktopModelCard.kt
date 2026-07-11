@@ -40,6 +40,9 @@ fun DesktopModelCard(
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(PlatformContext.INSTANCE)
                     .data(thumbnailUrl)
+                    // Explicit key so detail/viewer requests can reference this cache
+                    // entry via placeholderMemoryCacheKey for a seamless handoff.
+                    .memoryCacheKey(thumbnailUrl)
                     .size(Size(GRID_THUMBNAIL_SIZE, GRID_THUMBNAIL_SIZE))
                     .build(),
                 contentDescription = contentDescription,

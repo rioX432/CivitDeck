@@ -213,7 +213,12 @@ struct ModelDetailScreen: View {
             if !images.isEmpty {
                 TabView(selection: $currentCarouselPage) {
                     ForEach(Array(images.enumerated()), id: \.offset) { index, image in
-                        CivitAsyncImageView(imageUrl: image.url, aspectRatio: 1)
+                        CivitAsyncImageView(
+                            imageUrl: image.url,
+                            aspectRatio: 1,
+                            placeholderUrl: image.thumbnailUrl(width: 450),
+                            maxPixelSize: 1200
+                        )
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 selectedCarouselIndex = index

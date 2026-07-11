@@ -36,7 +36,11 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import coil3.PlatformContext
 import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.SubcomposeAsyncImageContent
+import coil3.request.ImageRequest
+import com.riox432.civitdeck.domain.model.cdnThumbnailUrl
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -173,7 +177,12 @@ private fun ZoomableViewerImage(
     offsetY: Float,
 ) {
     SubcomposeAsyncImage(
-        model = url,
+        model = ImageRequest.Builder(PlatformContext.INSTANCE)
+            .data(url)
+            // Paint the grid's cached thumbnail while full-res loads so opening the
+            // viewer never drops to a blank spinner (Coil placeholder recipe).
+            .placeholderMemoryCacheKey(url.cdnThumbnailUrl())
+            .build(),
         contentDescription = contentDescription,
         modifier = Modifier
             .fillMaxSize()
@@ -184,12 +193,16 @@ private fun ZoomableViewerImage(
                 translationY = offsetY
             },
         contentScale = ContentScale.Fit,
-        loading = {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.onSurface)
+        loading = { state ->
+            if (state.painter != null) {
+                SubcomposeAsyncImageContent()
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onSurface)
+                }
             }
         },
         error = { ImageErrorPlaceholder(modifier = Modifier.fillMaxSize()) },

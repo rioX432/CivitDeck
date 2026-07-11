@@ -43,6 +43,29 @@ class ModelImageUrlTest {
         assertEquals("https://example.com/image.png", img.thumbnailUrl())
     }
 
+    // -- cdnThumbnailUrl (String variant used by fullscreen viewers) --
+
+    @Test
+    fun cdnThumbnailUrl_matches_thumbnailUrl_for_same_source() {
+        val rawUrl = "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/abc-123/original=true/photo.jpeg"
+        assertEquals(image(rawUrl).thumbnailUrl(450), rawUrl.cdnThumbnailUrl(450))
+    }
+
+    @Test
+    fun cdnThumbnailUrl_replaces_existing_width() {
+        val url = "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/abc-123/width=1024/photo.jpeg"
+        assertEquals(
+            "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/abc-123/width=450/photo.jpeg",
+            url.cdnThumbnailUrl(450),
+        )
+    }
+
+    @Test
+    fun cdnThumbnailUrl_noop_for_non_civitai_url() {
+        val url = "https://example.com/image.png"
+        assertEquals(url, url.cdnThumbnailUrl())
+    }
+
     // -- stripCdnWidth --
 
     @Test

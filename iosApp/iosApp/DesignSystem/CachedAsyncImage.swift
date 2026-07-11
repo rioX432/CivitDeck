@@ -8,6 +8,10 @@ private let imageLogger = Logger(subsystem: "com.riox432.civitdeck", category: "
 /// with a larger URLCache for better image caching performance.
 struct CachedAsyncImage<Content: View>: View {
     let url: URL?
+    /// Low-res variant expected to already be in the URLCache (e.g. the grid
+    /// thumbnail). Shown instantly while the full image loads so list -> detail
+    /// navigation never drops to a blank placeholder. Cache-only: never fetched.
+    var placeholderURL: URL?
     var maxPixelSize: CGFloat = defaultMaxPixelSize
     @ViewBuilder let content: (AsyncImagePhase) -> Content
 
@@ -33,6 +37,8 @@ struct CachedAsyncImage<Content: View>: View {
             cachePolicy: .returnCacheDataElseLoad
         )
 
+        showCachedPlaceholderIfAvailable(finalRequest: request)
+
         do {
             let (data, response) = try await ImageURLSession.shared.data(for: request)
             if let http = response as? HTTPURLResponse {
@@ -55,6 +61,22 @@ struct CachedAsyncImage<Content: View>: View {
                 phase = .failure(error)
             }
         }
+    }
+
+    /// Decodes the placeholder from the URLCache if present (no network) and
+    /// shows it as an early success phase. Skipped when the final image itself
+    /// is already cached, since it will render immediately anyway.
+    private func showCachedPlaceholderIfAvailable(finalRequest: URLRequest) {
+        guard let placeholderURL,
+              let cache = ImageURLSession.shared.configuration.urlCache,
+              cache.cachedResponse(for: finalRequest) == nil else { return }
+        let placeholderRequest = URLRequest(
+            url: placeholderURL,
+            cachePolicy: .returnCacheDataElseLoad
+        )
+        guard let data = cache.cachedResponse(for: placeholderRequest)?.data,
+              let image = Self.downsampledImage(data: data, maxPixelSize: maxPixelSize) else { return }
+        phase = .success(Image(uiImage: image))
     }
 
     private static func downsampledImage(data: Data, maxPixelSize: CGFloat) -> UIImage? {
@@ -112,7 +134,7 @@ enum ImagePrefetcher {
     }
 }
 
-private let defaultMaxPixelSize: CGFloat = 400
+let defaultMaxPixelSize: CGFloat = 400
 
 private enum ImageLoadingError: Error {
     case invalidData

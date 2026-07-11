@@ -6,11 +6,18 @@ struct CivitAsyncImageView: View {
     let imageUrl: String?
     var contentMode: ContentMode = .fill
     var aspectRatio: CGFloat?
+    /// Low-res variant already cached by the grid; shown while the full image loads.
+    var placeholderUrl: String?
+    var maxPixelSize: CGFloat = defaultMaxPixelSize
 
     var body: some View {
         if let urlString = imageUrl, let url = URL(string: urlString) {
             container {
-                CachedAsyncImage(url: url) { phase in
+                CachedAsyncImage(
+                    url: url,
+                    placeholderURL: placeholderUrl.flatMap { URL(string: $0) },
+                    maxPixelSize: maxPixelSize
+                ) { phase in
                     switch phase {
                     case .success(let image):
                         image.resizable()
