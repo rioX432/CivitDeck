@@ -53,3 +53,33 @@ One note per decision/lesson. Newest at the bottom.
   ("SigLIP-2 vision asset missing" warning, no crash) and embedOnBrowse no-ops — which
   also stops downloading+embedding every browsed model's thumbnail for a disabled
   feature.
+- 2026-07-11: User directives mid-run: (1) every improvement must land on ALL of
+  Android/iOS/Desktop, not Android-only; (2) top pain point = list->detail transition
+  breaks because the detail hero re-loads the image. Added the cross-platform parity
+  section + Bet 7 to the plan.
+- 2026-07-11: Bet 7 root causes found by frame-stepping a screen recording (ffmpeg
+  fps=10 extraction): the shared element morphed as a GRAY box. Two independent bugs:
+  (a) detail carousel loads full-res `image.url` with a shimmer loading slot — fixed
+  with Coil's placeholderMemoryCacheKey(image.thumbnailUrl()) + rendering
+  SubcomposeAsyncImageContent() in the loading slot when a placeholder painter exists;
+  (b) RecommendationRow/CreatorProfileScreen passed RAW `?.url` as the nav thumbnail
+  arg while the card cached `thumbnailUrl()` (450px) — placeholder missed the cache.
+  Grid path was correct all along; only carousel/creator paths were broken. Verified
+  by re-recording both paths: image now stays painted through the whole morph.
+- 2026-07-11: Coil recipe notes: default memory-cache key = URL string only when the
+  request has no transformations (size is NOT in the key), so explicit
+  .memoryCacheKey(url) on grid requests + .placeholderMemoryCacheKey(url) on detail
+  requests match deterministically even with different .size().
+- 2026-07-11: Desktop inventory surprises: DesktopSearchScreen AND DesktopDiscoveryScreen
+  had an INVERTED local NSFW filter (level All stripped NSFW models; level Off showed
+  everything) layered on top of the shared VM/use-case filtering — deleted both, the
+  shared layer already handles it. DesktopModelCard never called ModelCardLayout's
+  onError so the multi-candidate thumbnail fallback silently didn't work on Desktop.
+- 2026-07-11: Desktop GUI verification: `screencapture -l <CGWindowID>` works without
+  accessibility permission (window-id lookup via a swift -e CGWindowList snippet);
+  CGEventPost keystrokes also post fine. BUT the user was actively using the machine
+  (focus stealing is hostile) — verified the search screen visually, stopped there,
+  and left hub/detail/settings as compile-verified. Kill `:desktopApp:run` when done.
+- 2026-07-11: CI gate now includes :core:core-domain:testAndroidHostTest and
+  :core:core-network:testAndroidHostTest (added during this PR) — derive the gate from
+  ci.yml, the old memory list is stale.
