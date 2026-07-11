@@ -64,6 +64,8 @@ internal fun InfoPanel(
         modifier = modifier.padding(Spacing.lg),
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
+        // Decision order (matches Android/iOS detail): header/stats -> tags ->
+        // description -> versions/files.
         item { ModelInfoHeader(model = model, onCreatorClick = onCreatorClick) }
         item {
             ModelStatsRow(
@@ -72,6 +74,12 @@ internal fun InfoPanel(
                 rating = model.stats.rating,
                 commentCount = model.stats.commentCount,
             )
+        }
+        if (model.tags.isNotEmpty()) {
+            item { TagsSection(tags = model.tags) }
+        }
+        model.description?.takeIf { it.isNotBlank() }?.let { description ->
+            item { DescriptionSection(description = description) }
         }
         if (model.modelVersions.size > 1) {
             item {
@@ -85,9 +93,6 @@ internal fun InfoPanel(
         if (selectedVersion != null) {
             item { VersionInfo(version = selectedVersion) }
         }
-        if (model.tags.isNotEmpty()) {
-            item { TagsSection(tags = model.tags) }
-        }
         if (selectedVersion != null && selectedVersion.files.isNotEmpty()) {
             item {
                 FilesSection(
@@ -95,9 +100,6 @@ internal fun InfoPanel(
                     fileVramCompatibility = uiState.fileVramCompatibility,
                 )
             }
-        }
-        model.description?.takeIf { it.isNotBlank() }?.let { description ->
-            item { DescriptionSection(description = description) }
         }
     }
 }
