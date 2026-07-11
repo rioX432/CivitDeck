@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-07-11
+
 ### Added
 
 - Create hub — the Create tab now shows a live server-connection status card (ComfyUI/SD WebUI/external server) with quick actions instead of a static settings shortcut, on Android, Desktop, and iOS (c3d0038c, 13f57a75, dadd5f73)
@@ -705,7 +707,10 @@ Initial release of CivitDeck.
 - Clean Architecture + MVVM with Koin dependency injection
 - GitHub Actions CI (Android + iOS)
 
-[Unreleased]: https://github.com/rioX432/CivitDeck/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/rioX432/CivitDeck/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/rioX432/CivitDeck/compare/v2.3.0...v2.4.0
+[2.3.0]: https://github.com/rioX432/CivitDeck/compare/v2.2.0...v2.3.0
+[2.2.0]: https://github.com/rioX432/CivitDeck/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/rioX432/CivitDeck/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/rioX432/CivitDeck/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/rioX432/CivitDeck/compare/v1.2.0...v2.0.0
