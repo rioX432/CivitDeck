@@ -8,12 +8,12 @@ Want to influence priorities? [Open an issue](https://github.com/rioX432/CivitDe
 
 ## Positioning
 
-CivitDeck is the only native iOS/Android client for CivitAI.
+CivitDeck is the only native iOS/Android/Desktop client for CivitAI.
 Focus: **Browse → Curate → Generate-ready** (not an on-device generator).
 Local-first design hedges against CivitAI platform risk.
 
 The core loop:
-1. **Browse** CivitAI models and images on mobile
+1. **Browse** CivitAI models and images on mobile or desktop
 2. **Curate** — save, collect, and compare what you want to use
 3. **Prepare** — build a training dataset and export it, ready for kohya-ss
 
@@ -42,7 +42,7 @@ Quality-of-life improvements and account features.
 - [x] Tag-based exploration
 - [x] Enhanced collection management ([#121](https://github.com/rioX432/CivitDeck/issues/121))
 - [x] Creator profiles
-- [ ] Offline browsing improvements ([#122](https://github.com/rioX432/CivitDeck/issues/122))
+- [x] Offline browsing improvements ([#122](https://github.com/rioX432/CivitDeck/issues/122))
 
 ## Phase 2 -- Power User Expansion (Complete)
 
@@ -52,7 +52,7 @@ Advanced features for users who generate, not just browse.
 - [x] Power user mode -- toggleable advanced metadata panel
 - [x] Prompt history and template system
 - [x] Large screen and tablet support ([#125](https://github.com/rioX432/CivitDeck/issues/125))
-- [ ] Push notifications for model updates ([#120](https://github.com/rioX432/CivitDeck/issues/120)) -- moved to Phase 5 backlog
+- [x] Push notifications for model updates ([#120](https://github.com/rioX432/CivitDeck/issues/120)) -- shipped as Model Update Notifications (Phase 8)
 
 ## Phase 3 -- Generation Server Integration (Complete)
 
@@ -202,11 +202,11 @@ Advanced curation using Claude API integration.
 
 ---
 
-## Phase 10 -- Ecosystem (Future)
+## Phase 10 -- Ecosystem (In Progress)
 
 Extend CivitDeck beyond mobile.
 
-- [ ] Desktop companion app ([#193](https://github.com/rioX432/CivitDeck/issues/193))
+- [x] Desktop companion app ([#193](https://github.com/rioX432/CivitDeck/issues/193)) -- Compose Desktop app (macOS/Windows/Linux) sharing KMP business logic; all 10 sub-issues (#465-#474) closed
 - [ ] Cloud sync — cross-device favorites, collections, and settings
 
 ---
