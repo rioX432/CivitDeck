@@ -31,9 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
-import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
-import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -53,8 +51,6 @@ fun DesktopSearchScreen(
     val uiState by viewModel.uiState.collectAsState()
     val displayViewModel: DisplaySettingsViewModel = koinViewModel()
     val displayState by displayViewModel.uiState.collectAsState()
-    val contentFilterVm: ContentFilterSettingsViewModel = koinViewModel()
-    val contentFilterState by contentFilterVm.uiState.collectAsState()
     val gridState = rememberLazyGridState()
 
     // Trigger load more near the end
@@ -87,13 +83,13 @@ fun DesktopSearchScreen(
             onBaseModelToggled = viewModel::onBaseModelToggled,
             onQualityFilterToggled = viewModel::onQualityFilterToggled,
             onSourceToggled = viewModel::toggleSource,
+            onNsfwLevelSelected = viewModel::onNsfwFilterLevelSelected,
             onResetFilters = viewModel::resetFilters,
         )
 
         SearchResultsArea(
             uiState = uiState,
             displayState = displayState,
-            contentFilterState = contentFilterState,
             gridState = gridState,
             onModelClick = onModelClick,
             onRetry = viewModel::onSearch,
@@ -105,7 +101,6 @@ fun DesktopSearchScreen(
 private fun SearchResultsArea(
     uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
     displayState: com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsUiState,
-    contentFilterState: com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsUiState,
     gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
     onModelClick: (Long) -> Unit,
     onRetry: () -> Unit,
@@ -129,18 +124,13 @@ private fun SearchResultsArea(
             }
         }
         else -> {
-            val nsfwFilterLevel = contentFilterState.nsfwFilterLevel
-            val filteredModels = if (nsfwFilterLevel == NsfwFilterLevel.All) {
-                uiState.models.filter { !it.nsfw }
-            } else {
-                uiState.models
-            }
+            // NSFW filtering is fully handled by the shared ViewModel (server
+            // param + client-side level narrowing) — no local re-filtering.
             SearchResultsGrid(
-                models = filteredModels,
+                models = uiState.models,
                 columns = displayState.gridColumns,
                 isLoadingMore = uiState.isLoadingMore,
                 gridState = gridState,
-                nsfwBlurSettings = contentFilterState.nsfwBlurSettings,
                 onModelClick = onModelClick,
             )
         }
@@ -206,7 +196,6 @@ private fun SearchResultsGrid(
     columns: Int,
     isLoadingMore: Boolean,
     gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
-    nsfwBlurSettings: com.riox432.civitdeck.domain.model.NsfwBlurSettings,
     onModelClick: (Long) -> Unit,
 ) {
     LazyVerticalGrid(
@@ -230,7 +219,6 @@ private fun SearchResultsGrid(
             DesktopModelCard(
                 model = model,
                 onClick = { onModelClick(model.id) },
-                nsfwBlurSettings = nsfwBlurSettings,
             )
         }
         if (isLoadingMore) {

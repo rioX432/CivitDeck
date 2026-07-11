@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelType
+import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState
@@ -29,6 +30,7 @@ fun DesktopFilterBar(
     onBaseModelToggled: (BaseModel) -> Unit,
     onQualityFilterToggled: () -> Unit,
     onSourceToggled: (ModelSource) -> Unit,
+    onNsfwLevelSelected: (NsfwFilterLevel) -> Unit,
     onResetFilters: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -77,6 +79,15 @@ fun DesktopFilterBar(
             checked = uiState.isQualityFilterEnabled,
             onToggle = onQualityFilterToggled,
         )
+
+        // NSFW browsing level (same 3 levels as Settings; writes the same
+        // shared preference through the ViewModel)
+        NsfwFilterLevel.entries.forEach { level ->
+            TypeChip(
+                label = level.displayLabel(),
+                selected = uiState.nsfwFilterLevel == level,
+            ) { onNsfwLevelSelected(level) }
+        }
 
         TextButton(onClick = onResetFilters) {
             Text("Reset", style = MaterialTheme.typography.labelSmall)
@@ -146,4 +157,11 @@ private fun ModelSource.displayLabel(): String = when (this) {
     ModelSource.CIVITAI -> "CivitAI"
     ModelSource.HUGGING_FACE -> "HuggingFace"
     ModelSource.TENSOR_ART -> "TensorArt"
+}
+
+/** Same user-facing labels as the Android/iOS 3-level NSFW control. */
+internal fun NsfwFilterLevel.displayLabel(): String = when (this) {
+    NsfwFilterLevel.Off -> "Safe"
+    NsfwFilterLevel.Soft -> "Moderate"
+    NsfwFilterLevel.All -> "Everything"
 }

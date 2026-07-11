@@ -26,8 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.riox432.civitdeck.domain.model.NsfwFilterLevel
-import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.search.DesktopModelCard
 import com.riox432.civitdeck.ui.theme.Elevation
@@ -43,8 +41,6 @@ fun DesktopDiscoveryScreen(
     val uiState by viewModel.uiState.collectAsState()
     val displayViewModel: DisplaySettingsViewModel = koinViewModel()
     val displayState by displayViewModel.uiState.collectAsState()
-    val contentFilterVm: ContentFilterSettingsViewModel = koinViewModel()
-    val contentFilterState by contentFilterVm.uiState.collectAsState()
 
     Column(modifier = modifier.fillMaxSize()) {
         DiscoveryTopBar(onRefresh = viewModel::refresh)
@@ -81,8 +77,6 @@ fun DesktopDiscoveryScreen(
                 DiscoveryGrid(
                     sections = uiState.sections,
                     columns = displayState.gridColumns,
-                    nsfwFilterLevel = contentFilterState.nsfwFilterLevel,
-                    nsfwBlurSettings = contentFilterState.nsfwBlurSettings,
                     onModelClick = onModelClick,
                 )
             }
@@ -94,8 +88,6 @@ fun DesktopDiscoveryScreen(
 private fun DiscoveryGrid(
     sections: List<com.riox432.civitdeck.domain.model.RecommendationSection>,
     columns: Int,
-    nsfwFilterLevel: NsfwFilterLevel,
-    nsfwBlurSettings: com.riox432.civitdeck.domain.model.NsfwBlurSettings,
     onModelClick: (Long) -> Unit,
 ) {
     LazyVerticalGrid(
@@ -117,20 +109,14 @@ private fun DiscoveryGrid(
                 )
             }
 
-            val models = if (nsfwFilterLevel == NsfwFilterLevel.All) {
-                section.models.filter { !it.nsfw }
-            } else {
-                section.models
-            }
-
+            // NSFW filtering already applied by GetRecommendationsUseCase.
             items(
-                items = models,
+                items = section.models,
                 key = { model -> "${section.title}_${model.id}" },
             ) { model ->
                 DesktopModelCard(
                     model = model,
                     onClick = { onModelClick(model.id) },
-                    nsfwBlurSettings = nsfwBlurSettings,
                 )
             }
         }
