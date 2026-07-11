@@ -19,7 +19,11 @@ struct ComfyUISettingsView: View {
             if !viewModel.visibleSuggestions.isEmpty {
                 optimizationSuggestionsSection
             }
-            ntfySection
+            // ntfy setup copy only makes sense once a server is configured
+            // (progressive disclosure — same gating as Android).
+            if viewModel.activeConnection != nil {
+                ntfySection
+            }
             scanLanSection
             if viewModel.isConnected {
                 NavigationLink("Open txt2img Generator") {
