@@ -19,7 +19,8 @@ import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState
 import com.riox432.civitdeck.ui.theme.Spacing
 
-@Suppress("UnusedParameter")
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("UnusedParameter", "LongParameterList")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DesktopFilterBar(

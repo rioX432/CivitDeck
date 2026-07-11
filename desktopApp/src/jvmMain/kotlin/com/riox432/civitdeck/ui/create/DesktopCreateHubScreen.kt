@@ -86,31 +86,13 @@ fun DesktopCreateHubScreen(
             ConnectServerHero(onSetUp = onComfyUIClick)
         }
         if (comfyConfigured) {
-            ServerCard(
-                icon = Icons.Default.Brush,
-                title = "ComfyUI",
-                subtitle = comfyState.activeConnection?.let { "${it.hostname}:${it.port}" }.orEmpty(),
-                status = comfyState.connectionStatus.toHubStatus(),
-                onClick = onComfyUIClick,
-            )
+            ComfyUIServerCard(comfyState, onComfyUIClick)
         }
         if (sdConfigured) {
-            ServerCard(
-                icon = Icons.Default.Cloud,
-                title = "SD WebUI",
-                subtitle = sdState.activeConnection?.let { "${it.hostname}:${it.port}" }.orEmpty(),
-                status = sdState.connectionStatus.toHubStatus(),
-                onClick = onSDWebUIClick,
-            )
+            SDWebUIServerCard(sdState, onSDWebUIClick)
         }
         if (externalConfigured) {
-            ServerCard(
-                icon = Icons.Default.Dns,
-                title = externalState.activeConfig?.name ?: "External Server",
-                subtitle = externalState.activeConfig?.baseUrl.orEmpty(),
-                status = externalState.connectionStatus.toHubStatus(),
-                onClick = onExternalServerClick,
-            )
+            ExternalServerCard(externalState, onExternalServerClick)
         }
         ConnectMoreSection(
             comfyConfigured = comfyConfigured,
@@ -128,6 +110,48 @@ fun DesktopCreateHubScreen(
             onClick = onWorkflowTemplatesClick,
         )
     }
+}
+
+@Composable
+private fun ComfyUIServerCard(
+    state: com.riox432.civitdeck.feature.comfyui.presentation.ComfyUISettingsUiState,
+    onClick: () -> Unit,
+) {
+    ServerCard(
+        icon = Icons.Default.Brush,
+        title = "ComfyUI",
+        subtitle = state.activeConnection?.let { "${it.hostname}:${it.port}" }.orEmpty(),
+        status = state.connectionStatus.toHubStatus(),
+        onClick = onClick,
+    )
+}
+
+@Composable
+private fun SDWebUIServerCard(
+    state: com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsUiState,
+    onClick: () -> Unit,
+) {
+    ServerCard(
+        icon = Icons.Default.Cloud,
+        title = "SD WebUI",
+        subtitle = state.activeConnection?.let { "${it.hostname}:${it.port}" }.orEmpty(),
+        status = state.connectionStatus.toHubStatus(),
+        onClick = onClick,
+    )
+}
+
+@Composable
+private fun ExternalServerCard(
+    state: com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsUiState,
+    onClick: () -> Unit,
+) {
+    ServerCard(
+        icon = Icons.Default.Dns,
+        title = state.activeConfig?.name ?: "External Server",
+        subtitle = state.activeConfig?.baseUrl.orEmpty(),
+        status = state.connectionStatus.toHubStatus(),
+        onClick = onClick,
+    )
 }
 
 @Composable
