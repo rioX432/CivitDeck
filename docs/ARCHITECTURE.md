@@ -38,12 +38,12 @@ CivitDeck/
 │   │   └── src/{androidMain,jvmMain}/kotlin/.../
 │   │       ├── ui/components/        # LoadingStateOverlay, ErrorStateView, ModelStatsRow, …
 │   │       └── ui/theme/             # CivitDeckColors, CivitDeckTypography, CivitDeckSpacing
-│   └── core-plugin/          # Plugin system: interfaces, registry, capability adapters
-│       └── src/commonMain/kotlin/.../
-│           ├── plugin/               # Plugin API, PluginRegistry, InMemoryPluginRegistry
-│           ├── plugin/capability/    # ExportFormatPlugin, ThemePlugin, WorkflowEnginePlugin
-│           ├── plugin/model/         # Plugin data models
-│           └── plugin/di/            # PluginModule (Koin)
+│   ├── core-plugin/          # Plugin system: interfaces, registry, capability adapters
+│   │   └── src/commonMain/kotlin/.../
+│   │       ├── plugin/               # Plugin API, PluginRegistry, InMemoryPluginRegistry
+│   │       ├── plugin/capability/    # ExportFormatPlugin, ThemePlugin, WorkflowEnginePlugin
+│   │       ├── plugin/model/         # Plugin data models
+│   │       └── plugin/di/            # PluginModule (Koin)
 │   └── core-testing/         # Shared test infra (commonMain): fake repositories, ApplicationScope(TestScope)
 │       └── src/commonMain/kotlin/.../ # helper, Turbine — consumed by feature/core commonTest
 ├── feature/                  # Feature modules — each owns its ViewModels + use cases in commonMain
@@ -113,7 +113,7 @@ graph TB
 
 ### Data Layer (`core/core-network/` + `core/core-database/` + `core/core-data/`)
 
-- **API** (`core-network`): Ktor HTTP client targeting `https://civitai.com/api/v1`. Endpoints include `/models`, `/models/:id`, `/model-versions/:id`, `/images`, `/creators`, and `/tags`. Pagination is cursor-based for images and page-based for others. Also includes ComfyUI, SD WebUI (Automatic1111/Forge), and custom External Server API clients.
+- **API** (`core-network`): Ktor HTTP client targeting `https://civitai.com/api/v1`. Endpoints include `/models`, `/models/:id`, `/model-versions/:id`, `/images`, `/creators`, and `/tags`. Pagination is cursor-based for images and page-based for others. Also includes API clients for ComfyUI (REST + WebSocket), SD WebUI (Automatic1111/Forge), Civitai Link, ComfyHub, custom External Servers, multi-source search (HuggingFace, TensorArt), and GitHub Releases (in-app update check).
 - **Local** (`core-database`): Room KMP database (version 48) for offline favorites, user collections, saved prompts, saved search filters, SD WebUI/ComfyUI connections, external server configs, dataset collections, model notes, followed creators, feed cache, model downloads, plugin data, quality scores, and response caching with TTL. Migrations tracked sequentially from version 1. This module is pure local storage and does **not** depend on `core-network`.
 - **Repository Implementations** (`core-data`): Combine remote API calls with local cache and map DTOs → domain models. `ModelRepositoryImpl` and friends live here (extracted from `core-database`) so the database layer stays network-free; `core-data` depends on both `core-network` and `core-database`.
 
@@ -193,10 +193,10 @@ Koin is used as the DI framework across all modules:
 
 ## CI/CD
 
-GitHub Actions runs on every push to `master` and on pull requests:
+GitHub Actions runs on every push to `master` and on pull requests. A `changes` job (`dorny/paths-filter@v3`) first detects which platform paths changed; each platform job then only runs if its own path, `shared`/`core`/`feature` (which touch all platforms), or the CI workflow itself changed:
 
-1. **Android job**: Shared unit tests → Detekt lint → Debug APK build
-2. **Desktop job**: Desktop app compilation check (`./gradlew :desktopApp:run` or build verification)
-3. **iOS job**: SwiftLint → Xcode build for iOS Simulator
+1. **Android job**: `testAndroidHostTest` for `shared`, `core-domain`, `core-network`, `core-data`, and the KMP feature modules that have Android host tests (`feature-search`, `feature-detail`, `feature-gallery`, `feature-prompts`, `feature-creator`, `feature-externalserver`) + `jvmTest` for `core-database` and `feature-comfyui` (Android-actual `Context`/`Log` requirements push those tests to the JVM target) → root `detekt` (all modules) → `:androidApp:assembleDebug`
+2. **Desktop job**: `:desktopApp:compileKotlinJvm`
+3. **iOS job** (`macos-26` / Xcode 26, arm64-only): SwiftLint (`--strict`) → `xcodebuild build` with `ARCHS=arm64 ONLY_ACTIVE_ARCH=NO` (the KMP framework only configures `iosSimulatorArm64`, so a generic-arch build fails to resolve `Shared.framework`)
 
 See `.github/workflows/ci.yml` for the full configuration.

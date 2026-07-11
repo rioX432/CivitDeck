@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Create hub — the Create tab now shows a live server-connection status card (ComfyUI/SD WebUI/external server) with quick actions instead of a static settings shortcut, on Android, Desktop, and iOS (c3d0038c, 13f57a75, dadd5f73)
+- Seamless list-to-detail image handoff — the cached list/grid thumbnail is used as a placeholder while the full-resolution detail image loads, eliminating the blank-then-pop-in flash on Android/iOS/Desktop (3a5c45f7)
+- Per-image NSFW card blur/badge with safest-first thumbnail selection and a reachable "Soft" filter level, replacing model-level-only blurring (9c53f1ed, 7bb3bbdf, 8df3c276)
+
+### Changed
+
+- Reordered the model detail screen into decision order (safety/compatibility info before description) and fixed a version-chip row layout blowup (3c84606e)
+- Reduced APK size (275MB → 127MB) by excluding the SigLIP asset and ONNX native libraries from the build when on-device similarity search is disabled (6f5bafe8)
+- Hid recommendation carousels while actively searching and capped idle-state sections at 2 to reduce home-screen scroll depth (d54e3c05)
+- Localized all Create-hub strings, made connection status mapping honest (no false "connected"), and removed dead code found in review (d2d01ce2)
+- Deduplicated settings section headers, added CI domain/network tests, and added a blur-effect fallback for devices below Android 12 (b64abf3e)
+- Set up iOS String Catalog and externalized remaining hardcoded Settings/NSFW strings (e953161e)
+- Bundled over-injected use cases into cohesive groups and removed stale `LongParameterList` suppressions (#936)
+
+### Fixed
+
+- Fixed navigation thumbnail args not matching the loaded card URL, which broke the shared-element placeholder cache hit on recommendation rows and creator grids (017d37fd)
+- Fixed the iOS NSFW-level segmented control visually reverting by updating `@Published` immediately in the picker setter, before the KMP flow emits (ef329e0c)
+- Fixed NSFW level bitmask mapping and ensured `nsfw` query params are always sent explicitly, never omitted (41e23293)
+- Fixed the SD WebUI generation flow race so a failed generation always emits an `Error` state instead of silently hanging (100c93d4)
+
+### Infrastructure
+
+- Added commonTest unit test coverage across ~20 previously-untested use cases (ComfyUI export/import/workflow, core-plugin themes, external-server connections, dataset/download/history cleanup, model updates, embedding search) (a94145ef, 899af506, 753fdeca, f9fadbe0, 0e7b1c9a, ec563fd0, 26d10e32, 9f24b245, d2c8c5bf, 11c73759, 6346e40b, da072ec8, 966e1c94, cd3a0ffd, ec45b868, #931)
+- Enabled `returnDefaultValues` for host tests so `Logger` calls don't throw under test (8b858d92)
+- Resolved remaining file-level `TooManyFunctions`/`LongMethod` detekt debt via Composable config exemption, composable splitting, and delegate extraction (c20ed9d7, 1e78cc8c, 20c9c70d, ae00a128)
+
 ## [2.3.0] - 2026-06-21
 
 ### Added
