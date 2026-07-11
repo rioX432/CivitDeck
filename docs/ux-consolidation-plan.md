@@ -194,3 +194,51 @@ reversible presentation changes.
 - Per bet + before PR: the full Android CI gate above, plus per-bet extra gates, plus
   emulator drive-through of the changed flow with screenshots (smoke check only, not
   regression proof).
+
+## Cross-platform parity pass (added 2026-07-11, user directive)
+
+The user directed that every improvement must land on Android, iOS, AND Desktop — not
+Android-only. Inventory of where each bet stands per platform after the first pass:
+
+| Bet | Android | iOS | Desktop |
+|---|---|---|---|
+| 1 Results-first search | done | done (shared VM; carousels render from shared state) | N/A — Desktop renders no recommendation carousels |
+| 2a Safest-first card thumbnail + blur/badge | done | done | done via shared `ModelCardLayout`; but `DesktopModelCard` still wraps it in a redundant first-image `NsfwBlurOverlay` (wrong image, double blur) — remove |
+| 2c 3-level NSFW control | done (settings + filter sheet) | done (settings + filter sheet) | settings dropdown exists but shows raw enum names (`Off/Soft/All`); filter bar has NO NSFW control — align labels (`Safe/Moderate/Everything`) + add filter-bar chips |
+| 3 Decision-order detail | done | done | InfoPanel order is header → stats → versions → tags → files → description; reorder to header → stats → tags → description → versions → files |
+| 4 Create hub with live status | done | NOT done — `CreateHubView` is still a static 4-row launcher | NOT done — `DesktopCreateHubScreen` is still a static 4-row launcher |
+| 4b ntfy progressive disclosure | done | NOT done — `ntfySection` renders before any server is configured | N/A (no ntfy UI on Desktop) |
+| 5 Settings dedupe | done | N/A — iOS List sections have no echo | N/A — Desktop sections have no echo |
+| 6 APK slimming | done | N/A (no ONNX payload in iOS bundle) | N/A |
+
+Additional Desktop-only bug found during the inventory: `DesktopSearchScreen` applies a
+local NSFW filter that is INVERTED — at level `All` (Everything) it removes NSFW models,
+at `Off` (Safe) it shows everything. The shared VM already handles filtering (server
+param + client narrowing), so the local filter is deleted rather than fixed.
+
+### Bet 7 — Seamless list→detail image handoff (all 3 platforms; user's top ask)
+
+Navigating from a model card to the detail screen re-loads the hero image at a different
+URL/size, so the shared-element-like transition lands on a shimmer and the flow visibly
+breaks. Fix per platform, using each image loader's official low-res-first mechanism:
+
+- **Android**: grid cards keep loading `image.thumbnailUrl()` (450-wide variant). The
+  detail carousel loads full-res `image.url` — set Coil's `placeholderMemoryCacheKey`
+  to the image's `thumbnailUrl()` so the already-cached grid thumbnail paints instantly
+  under the shared-element animation while full-res loads, then crossfades. This is
+  Coil's documented recipe for exactly this transition (docs/recipes: "Using a Memory
+  Cache Key as a Placeholder"). `SubcomposeAsyncImage`'s loading slot must render
+  `SubcomposeAsyncImageContent()` when a placeholder painter exists (shimmer only when
+  there is none), otherwise the placeholder never shows.
+- **Desktop**: same Coil recipe in `DesktopImageViewer` (full-res view); the detail
+  `ImageGridPanel` already reuses `thumbnailUrl()` so it hits the memory cache as-is.
+- **iOS**: `CachedAsyncImage` gets an optional `placeholderURL`. Before fetching the
+  main URL it decodes the placeholder from `URLCache` if present (no extra network) and
+  shows it as an instant low-res phase, then swaps when the full image arrives. The
+  detail carousel passes `image.thumbnailUrl(width: 450)` — the exact URL the card
+  cached. The carousel also gets `maxPixelSize: 1200` (documented DesignSystem rule for
+  detail views; it currently decodes at the 400 default).
+
+Verification: Android emulator drive-through (this is the flow the user called out),
+Desktop `:desktopApp:run` visual check, iOS compile-level only (runtime UNVERIFIED,
+listed in the PR).
