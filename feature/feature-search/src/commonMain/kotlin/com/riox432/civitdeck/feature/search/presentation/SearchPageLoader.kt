@@ -2,9 +2,9 @@ package com.riox432.civitdeck.feature.search.presentation
 
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelSource
-import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.filterNsfwImages
+import com.riox432.civitdeck.domain.model.includeNsfwModels
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.QualityScoreCalculator
 import com.riox432.civitdeck.domain.util.LoadResult
@@ -72,7 +72,7 @@ internal class SearchPageLoader(
                 baseModels = filter.selectedBaseModels.toList().ifEmpty { null },
                 cursor = currentCursor,
                 limit = remaining.coerceAtLeast(PAGE_SIZE),
-                nsfw = if (filter.nsfwFilterLevel == NsfwFilterLevel.Off) false else null,
+                nsfw = filter.nsfwFilterLevel.includeNsfwModels(),
             )
 
             var filtered = applyClientFilters(result.items, filter, viewedIds)

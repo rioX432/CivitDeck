@@ -35,6 +35,7 @@ import com.riox432.civitdeck.ui.comfyui.TemplateParameterScreen
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateEditorScreen
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateScreen
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
+import com.riox432.civitdeck.ui.create.CreateHubCallbacks
 import com.riox432.civitdeck.ui.create.CreateHubScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerImageDetailScreen
@@ -48,10 +49,18 @@ private var serverGalleryImagesHolder: List<ServerImage> = emptyList()
 internal fun EntryProviderScope<Any>.createHubEntry(backStack: MutableList<Any>) {
     entry<CreateHubRoute> {
         CreateHubScreen(
-            onNavigateToComfyUI = { backStack.add(ComfyUISettingsRoute) },
-            onNavigateToSDWebUI = { backStack.add(SDWebUISettingsRoute) },
-            onNavigateToExternalServer = { backStack.add(ExternalServerSettingsRoute) },
-            onNavigateToModelFiles = { backStack.add(ModelFileBrowserRoute) },
+            callbacks = CreateHubCallbacks(
+                onNavigateToComfyUI = { backStack.add(ComfyUISettingsRoute) },
+                onNavigateToComfyUIGeneration = { backStack.add(ComfyUIGenerationRoute) },
+                onNavigateToComfyUIQueue = { backStack.add(ComfyUIQueueRoute) },
+                onNavigateToComfyUIHistory = { backStack.add(ComfyUIHistoryRoute) },
+                onNavigateToOnboarding = { backStack.add(ConnectionOnboardingRoute) },
+                onNavigateToSDWebUI = { backStack.add(SDWebUISettingsRoute) },
+                onNavigateToSDWebUIGeneration = { backStack.add(SDWebUIGenerationRoute) },
+                onNavigateToExternalServer = { backStack.add(ExternalServerSettingsRoute) },
+                onNavigateToExternalServerGallery = { backStack.add(ExternalServerGalleryRoute) },
+                onNavigateToModelFiles = { backStack.add(ModelFileBrowserRoute) },
+            ),
         )
     }
 }

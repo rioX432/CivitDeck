@@ -25,6 +25,7 @@ import com.riox432.civitdeck.domain.model.FrontDoorMode
 import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.model.NsfwBlurSettings
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.ui.components.FilterChipRow
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -55,28 +56,40 @@ internal fun FrontDoorRow(mode: FrontDoorMode, onChange: (FrontDoorMode) -> Unit
 
 @Composable
 internal fun NsfwToggleRow(level: NsfwFilterLevel, onToggle: (NsfwFilterLevel) -> Unit) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Spacing.lg, vertical = Spacing.md),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.settings_nsfw_content), style = MaterialTheme.typography.bodyLarge)
-            Text(
-                stringResource(R.string.settings_nsfw_content_description),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Switch(
-            checked = level != NsfwFilterLevel.Off,
-            onCheckedChange = {
-                onToggle(if (level == NsfwFilterLevel.Off) NsfwFilterLevel.All else NsfwFilterLevel.Off)
-            },
+        Text(stringResource(R.string.settings_nsfw_content), style = MaterialTheme.typography.bodyLarge)
+        Text(
+            stringResource(R.string.settings_nsfw_content_description),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        NsfwLevelChipRow(level = level, onLevelSelected = onToggle)
     }
+}
+
+@Composable
+internal fun NsfwLevelChipRow(
+    level: NsfwFilterLevel,
+    onLevelSelected: (NsfwFilterLevel) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val labels = mapOf(
+        NsfwFilterLevel.Off to stringResource(R.string.settings_nsfw_level_safe),
+        NsfwFilterLevel.Soft to stringResource(R.string.settings_nsfw_level_moderate),
+        NsfwFilterLevel.All to stringResource(R.string.settings_nsfw_level_everything),
+    )
+    FilterChipRow(
+        options = NsfwFilterLevel.entries.toList(),
+        selected = level,
+        onSelect = onLevelSelected,
+        label = { labels.getValue(it) },
+        modifier = modifier,
+    )
 }
 
 @Composable

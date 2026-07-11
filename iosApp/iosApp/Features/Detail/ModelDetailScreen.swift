@@ -174,7 +174,13 @@ struct ModelDetailScreen: View {
                 if let version = viewModel.selectedVersion {
                     imageActionsRow(modelVersionId: version.id)
                 }
+                // Decision-order (mirrors Android): what the model IS (tags,
+                // description, versions, files) before personal annotations
+                // (notes, tags) and reviews, which are empty on most models.
                 tagsSection(tags: model.tags)
+                descriptionSection(description: model.description_)
+                versionSelector(model: model)
+                versionDetail
                 ModelNotesSection(
                     note: viewModel.note,
                     onSave: { viewModel.saveNote($0) }
@@ -192,9 +198,6 @@ struct ModelDetailScreen: View {
                     onSortChanged: { viewModel.onReviewSortChanged($0) },
                     onWriteReview: { showSubmitReviewSheet = true }
                 )
-                descriptionSection(description: model.description_)
-                versionSelector(model: model)
-                versionDetail
             }
         }
     }
@@ -210,7 +213,12 @@ struct ModelDetailScreen: View {
             if !images.isEmpty {
                 TabView(selection: $currentCarouselPage) {
                     ForEach(Array(images.enumerated()), id: \.offset) { index, image in
-                        CivitAsyncImageView(imageUrl: image.url, aspectRatio: 1)
+                        CivitAsyncImageView(
+                            imageUrl: image.url,
+                            aspectRatio: 1,
+                            placeholderUrl: image.thumbnailUrl(width: 450),
+                            maxPixelSize: 1200
+                        )
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 selectedCarouselIndex = index

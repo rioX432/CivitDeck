@@ -180,6 +180,7 @@ struct ModelSearchScreen: View {
                     typeFilterChips
                     baseModelFilterChips
                     sortAndPeriodChips
+                    nsfwLevelSection
                     includedTagsSection
                     excludedTagsSection
                 }

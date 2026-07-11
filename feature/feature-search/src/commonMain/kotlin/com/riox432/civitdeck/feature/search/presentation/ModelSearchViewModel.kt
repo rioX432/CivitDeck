@@ -37,8 +37,9 @@ data class ModelSearchUiState(
     val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
     val isFreshFindEnabled: Boolean = false,
     val isQualityFilterEnabled: Boolean = false,
-    val recommendations: List<RecommendationSection> = emptyList(),
+    val loadedRecommendations: List<RecommendationSection> = emptyList(),
     val isLoadingRecommendations: Boolean = false,
+    val hasActiveSearch: Boolean = false,
     val excludedTags: List<String> = emptyList(),
     val includedTags: List<String> = emptyList(),
     val selectedSources: Set<ModelSource> = setOf(ModelSource.CIVITAI),
@@ -48,7 +49,20 @@ data class ModelSearchUiState(
     val isLoadingMore: Boolean = false,
     override val error: String? = null,
     val hasMore: Boolean = true,
-) : UiLoadingState
+) : UiLoadingState {
+
+    /**
+     * Recommendation sections the UI should render. Hidden entirely while a search
+     * query or a narrowing filter is active (search results must come first), and
+     * capped while browsing idle so the model grid stays above the fold.
+     */
+    val recommendations: List<RecommendationSection>
+        get() = if (hasActiveSearch) emptyList() else loadedRecommendations.take(MAX_IDLE_RECOMMENDATION_SECTIONS)
+
+    companion object {
+        const val MAX_IDLE_RECOMMENDATION_SECTIONS = 2
+    }
+}
 
 /**
  * Internal filter state used to track all filter parameters and trigger reloads.
@@ -67,6 +81,14 @@ internal data class FilterState(
     val includedTags: List<String> = emptyList(),
     val selectedSources: Set<ModelSource> = setOf(ModelSource.CIVITAI),
 )
+
+/** True when the user is actively narrowing results rather than browsing idle. */
+internal fun FilterState.hasActiveSearch(): Boolean =
+    query.isNotBlank() ||
+        selectedType != null ||
+        selectedBaseModels.isNotEmpty() ||
+        includedTags.isNotEmpty() ||
+        isFreshFindEnabled
 
 class ModelSearchViewModel(
     private val coreUseCases: SearchCoreUseCases,
@@ -138,8 +160,7 @@ class ModelSearchViewModel(
     )
 
     init {
-        observeNsfwFilter()
-        observeQualityThreshold()
+        observePreferences()
         filterDelegate.loadExcludedTags()
         loadDefaults(preferencesUseCases.observeDefaultSortOrder, preferencesUseCases.observeDefaultTimePeriod)
         loadRecommendations()
@@ -156,7 +177,7 @@ class ModelSearchViewModel(
         if (query.isNotBlank()) {
             viewModelScope.launch { historyUseCases.addSearchHistory(query.trim()) }
         }
-        _filterState.update { it.copy(query = query) }
+        updateFilter { it.copy(query = query) }
         refresh()
     }
 
@@ -212,6 +233,16 @@ class ModelSearchViewModel(
             it.copy(selectedBaseModels = updated)
         }
         refresh()
+    }
+
+    /**
+     * Persists a new NSFW browsing level. The persisted preference is the single
+     * source of truth: [observeNsfwFilter] picks up the change and triggers the
+     * refresh and recommendations reload, so Settings and the filter sheet stay
+     * in sync automatically.
+     */
+    fun onNsfwFilterLevelSelected(level: NsfwFilterLevel) {
+        viewModelScope.launch { preferencesUseCases.setNsfwFilter(level) }
     }
 
     fun onFreshFindToggled() {
@@ -314,7 +345,7 @@ class ModelSearchViewModel(
         }
     }
 
-    private fun observeNsfwFilter() {
+    private fun observePreferences() {
         viewModelScope.launch {
             var initialized = false
             preferencesUseCases.observeNsfwFilter().collect { level ->
@@ -328,9 +359,6 @@ class ModelSearchViewModel(
                 initialized = true
             }
         }
-    }
-
-    private fun observeQualityThreshold() {
         viewModelScope.launch {
             preferencesUseCases.observeQualityThreshold().collect { threshold ->
                 _filterState.update { it.copy(qualityThreshold = threshold) }
@@ -345,7 +373,7 @@ class ModelSearchViewModel(
             try {
                 val sections = coreUseCases.getRecommendations()
                 _uiState.update {
-                    it.copy(recommendations = sections, isLoadingRecommendations = false)
+                    it.copy(loadedRecommendations = sections, isLoadingRecommendations = false)
                 }
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 Logger.w(TAG, "Failed to load recommendations: ${e.message}")
@@ -367,6 +395,7 @@ class ModelSearchViewModel(
                 nsfwFilterLevel = f.nsfwFilterLevel,
                 isFreshFindEnabled = f.isFreshFindEnabled,
                 isQualityFilterEnabled = f.isQualityFilterEnabled,
+                hasActiveSearch = f.hasActiveSearch(),
                 excludedTags = f.excludedTags,
                 includedTags = f.includedTags,
                 selectedSources = f.selectedSources,

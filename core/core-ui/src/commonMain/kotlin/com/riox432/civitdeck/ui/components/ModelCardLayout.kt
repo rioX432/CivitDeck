@@ -3,6 +3,7 @@ package com.riox432.civitdeck.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -26,10 +27,15 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelSource
+import com.riox432.civitdeck.domain.model.NsfwLevel
+import com.riox432.civitdeck.domain.model.browseThumbnailCandidates
 import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.theme.CivitDeckColors
 import com.riox432.civitdeck.ui.theme.CornerRadius
@@ -112,27 +118,74 @@ private fun ModelCardLayoutContent(
     ) -> Unit,
 ) {
     Column {
-        val imageUrls = model.modelVersions
-            .firstOrNull()?.images?.map { it.thumbnailUrl() } ?: emptyList()
+        val candidates = remember(model) { model.browseThumbnailCandidates() }
         var currentImageIndex by remember { mutableIntStateOf(0) }
-        val thumbnailUrl = imageUrls.getOrNull(currentImageIndex)
+        val currentImage = candidates.getOrNull(currentImageIndex)
+        val thumbnailUrl = currentImage?.thumbnailUrl()
 
         val imageModifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
 
-        imageContent(
-            thumbnailUrl,
-            model.name,
-            imageModifier,
-        ) {
-            if (currentImageIndex + 1 < imageUrls.size) {
-                currentImageIndex++
+        val blurRadius = cardBlurRadiusFor(currentImage?.nsfwLevel)
+        Box {
+            Box(modifier = Modifier.blur(blurRadius)) {
+                imageContent(
+                    thumbnailUrl,
+                    model.name,
+                    imageModifier,
+                ) {
+                    if (currentImageIndex + 1 < candidates.size) {
+                        currentImageIndex++
+                    }
+                }
             }
+            // Modifier.blur is a no-op below Android 12 (RenderEffect); cover the
+            // thumbnail with an opaque scrim there so NSFW content never shows raw.
+            if (blurRadius > 0.dp && !isBlurSupported()) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                )
+            }
+            NsfwLevelBadge(
+                nsfwLevel = currentImage?.nsfwLevel,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(Spacing.sm),
+            )
         }
 
         ModelCardInfoSection(model = model, isOwned = isOwned)
     }
+}
+
+/**
+ * Blur strength for browse-card thumbnails by the shown image's own NSFW level.
+ * Cards use fixed strengths (not the gallery's user sliders) so the grid stays
+ * predictable; tapping the card opens the detail where full controls apply.
+ */
+private fun cardBlurRadiusFor(level: NsfwLevel?): Dp = when (level) {
+    NsfwLevel.Mature -> 16.dp
+    NsfwLevel.X -> 24.dp
+    else -> 0.dp
+}
+
+@Composable
+private fun NsfwLevelBadge(nsfwLevel: NsfwLevel?, modifier: Modifier = Modifier) {
+    if (nsfwLevel != NsfwLevel.Mature && nsfwLevel != NsfwLevel.X) return
+    Text(
+        text = "NSFW",
+        style = MaterialTheme.typography.labelSmall,
+        color = CivitDeckColors.onScrim,
+        modifier = modifier
+            .background(
+                color = CivitDeckColors.scrim.copy(alpha = 0.6f),
+                shape = RoundedCornerShape(CornerRadius.chip),
+            )
+            .padding(horizontal = Spacing.sm, vertical = Spacing.xxs),
+    )
 }
 
 @Composable

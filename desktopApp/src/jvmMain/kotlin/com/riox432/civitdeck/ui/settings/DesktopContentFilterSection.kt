@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.feature.settings.presentation.ContentFilterSettingsViewModel
+import com.riox432.civitdeck.ui.search.displayLabel
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -21,10 +22,13 @@ internal fun ContentFilterSection(viewModel: ContentFilterSettingsViewModel) {
 
     SettingsCard(title = "Content Filter") {
         SettingsDropdown(
-            label = "NSFW Filter",
-            selected = state.nsfwFilterLevel.name,
-            options = NsfwFilterLevel.entries.map { it.name },
-            onSelected = { viewModel.onNsfwFilterChanged(NsfwFilterLevel.valueOf(it)) },
+            label = "NSFW Browsing Level",
+            selected = state.nsfwFilterLevel.displayLabel(),
+            options = NsfwFilterLevel.entries.map { it.displayLabel() },
+            onSelected = { label ->
+                NsfwFilterLevel.entries.firstOrNull { it.displayLabel() == label }
+                    ?.let(viewModel::onNsfwFilterChanged)
+            },
         )
         Spacer(modifier = Modifier.height(Spacing.sm))
         BlurIntensitySliders(

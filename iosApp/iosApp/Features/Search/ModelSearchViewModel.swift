@@ -151,6 +151,14 @@ final class ModelSearchViewModel: ObservableObject {
         vm.onPeriodSelected(period: period)
     }
 
+    func onNsfwFilterLevelSelected(_ level: NsfwFilterLevel) {
+        // Update the @Published immediately so the segmented Picker doesn't
+        // visually revert while the KMP preference round-trips (see CLAUDE.md
+        // "Toggle/Picker Bindings with KMP ViewModels").
+        nsfwFilterLevel = level
+        vm.onNsfwFilterLevelSelected(level: level)
+    }
+
     func onFreshFindToggled() {
         vm.onFreshFindToggled()
     }

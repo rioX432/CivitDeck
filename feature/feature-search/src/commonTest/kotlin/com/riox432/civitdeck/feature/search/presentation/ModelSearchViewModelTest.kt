@@ -196,6 +196,7 @@ class ModelSearchViewModelTest {
             ),
             preferencesUseCases = SearchPreferencesUseCases(
                 observeNsfwFilter = ObserveNsfwFilterUseCase(nsfwPrefs),
+                setNsfwFilter = com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase(nsfwPrefs),
                 observeGridColumns = ObserveGridColumnsUseCase(displayRepo),
                 observeDefaultSortOrder = ObserveDefaultSortOrderUseCase(displayRepo),
                 observeDefaultTimePeriod = ObserveDefaultTimePeriodUseCase(displayRepo),
@@ -254,4 +255,90 @@ class ModelSearchViewModelTest {
 
         assertEquals(modelCallsAfterInit, deps.modelRepo.getModelsCallCount)
     }
+
+    // region Recommendation visibility (search results first)
+
+    private fun recommendationSections(count: Int) = List(count) { index ->
+        com.riox432.civitdeck.domain.model.RecommendationSection(
+            title = "Section $index",
+            reason = "",
+            models = listOf(testModel(id = index.toLong() + 100L)),
+        )
+    }
+
+    @Test
+    fun recommendations_hidden_while_search_is_active() {
+        val state = ModelSearchUiState(
+            loadedRecommendations = recommendationSections(3),
+            hasActiveSearch = true,
+        )
+        assertTrue(state.recommendations.isEmpty())
+    }
+
+    @Test
+    fun recommendations_capped_while_browsing_idle() {
+        val state = ModelSearchUiState(
+            loadedRecommendations = recommendationSections(5),
+            hasActiveSearch = false,
+        )
+        assertEquals(ModelSearchUiState.MAX_IDLE_RECOMMENDATION_SECTIONS, state.recommendations.size)
+    }
+
+    @Test
+    fun submitting_a_query_activates_search_and_clearing_deactivates_it() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+
+        deps.vm.onQueryChange("illustrious")
+        deps.vm.onSearch()
+        advanceUntilIdle()
+        assertTrue(deps.vm.uiState.value.hasActiveSearch)
+
+        deps.vm.onQueryChange("")
+        deps.vm.onSearch()
+        advanceUntilIdle()
+        assertTrue(!deps.vm.uiState.value.hasActiveSearch)
+    }
+
+    @Test
+    fun recommendations_load_into_ui_state_on_init() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+        val st = deps.vm.uiState.value
+        assertTrue(st.loadedRecommendations.isNotEmpty(), "loadedRecommendations empty")
+        assertTrue(st.recommendations.isNotEmpty(), "visible recommendations empty while idle")
+    }
+
+    @Test
+    fun selecting_nsfw_level_persists_and_refreshes() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+        val callsAfterInit = deps.modelRepo.getModelsCallCount
+
+        deps.vm.onNsfwFilterLevelSelected(NsfwFilterLevel.All)
+        advanceUntilIdle()
+
+        assertEquals(NsfwFilterLevel.All, deps.nsfwPrefs.nsfwFilterLevelFlow.value)
+        assertEquals(NsfwFilterLevel.All, deps.vm.uiState.value.nsfwFilterLevel)
+        assertTrue(
+            deps.modelRepo.getModelsCallCount > callsAfterInit,
+            "persisted level change should refresh results via the preference observer",
+        )
+    }
+
+    @Test
+    fun type_filter_activates_search() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+
+        deps.vm.onTypeSelected(com.riox432.civitdeck.domain.model.ModelType.LORA)
+        advanceUntilIdle()
+        assertTrue(deps.vm.uiState.value.hasActiveSearch)
+
+        deps.vm.onTypeSelected(null)
+        advanceUntilIdle()
+        assertTrue(!deps.vm.uiState.value.hasActiveSearch)
+    }
+
+    // endregion
 }

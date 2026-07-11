@@ -46,3 +46,4 @@ androidApp/src/main/assets/ml/siglip2_vocab.json
 *.log
 *.tmp
 progress.txt
+build-logic/convention/bin/

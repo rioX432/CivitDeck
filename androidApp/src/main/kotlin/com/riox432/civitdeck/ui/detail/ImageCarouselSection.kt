@@ -29,11 +29,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.SubcomposeAsyncImageContent
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.MediaContentType
 import com.riox432.civitdeck.domain.model.ModelImage
+import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
 import com.riox432.civitdeck.ui.navigation.LocalSharedTransitionScope
 import com.riox432.civitdeck.ui.navigation.SharedElementKeys
@@ -124,6 +126,7 @@ internal fun SharedThumbnailPlaceholder(
     SubcomposeAsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
             .data(thumbnailUrl)
+            .memoryCacheKey(thumbnailUrl)
             .crossfade(Duration.normal)
             .build(),
         contentDescription = stringResource(R.string.cd_model_thumbnail),
@@ -222,6 +225,9 @@ private fun CarouselImage(
         SubcomposeAsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(image.url)
+                // Paint the grid card's cached thumbnail while full-res loads so the
+                // shared-element transition never lands on a shimmer (Coil recipe).
+                .placeholderMemoryCacheKey(image.thumbnailUrl())
                 .crossfade(Duration.normal)
                 .build(),
             contentDescription = stringResource(R.string.cd_model_image),
@@ -229,13 +235,17 @@ private fun CarouselImage(
             modifier = modifier
                 .background(MaterialTheme.colorScheme.surfaceContainerLow)
                 .clickable(onClick = onClick),
-            loading = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(CAROUSEL_ASPECT_RATIO)
-                        .shimmer(),
-                )
+            loading = { state ->
+                if (state.painter != null) {
+                    SubcomposeAsyncImageContent()
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(CAROUSEL_ASPECT_RATIO)
+                            .shimmer(),
+                    )
+                }
             },
             error = {
                 LaunchedEffect(image.url) { onError() }

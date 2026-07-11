@@ -1,3 +1,4 @@
+import SwiftUI
 import Shared
 
 // MARK: - NSFW Image Filtering
@@ -9,6 +10,56 @@ extension ModelImage {
         case .soft: return nsfwLevel == .none || nsfwLevel == .soft
         default: return true
         }
+    }
+}
+
+// MARK: - NSFW Level Picker
+
+/// Three-level content control (Safe / Moderate / Everything), mirroring the
+/// Android chip row. The persisted preference is the single source of truth —
+/// Settings and the search filter both write through the same use case.
+struct NsfwLevelPicker: View {
+    let level: NsfwFilterLevel
+    let onChanged: (NsfwFilterLevel) -> Void
+
+    private static let options: [NsfwFilterLevel] = [.off, .soft, .all]
+
+    static func label(_ level: NsfwFilterLevel) -> String {
+        switch level {
+        case .off: return "Safe"
+        case .soft: return "Moderate"
+        default: return "Everything"
+        }
+    }
+
+    var body: some View {
+        Picker("NSFW level", selection: Binding(
+            get: { level },
+            set: { onChanged($0) }
+        )) {
+            ForEach(Self.options, id: \.self) { option in
+                Text(Self.label(option)).tag(option)
+            }
+        }
+        .pickerStyle(.segmented)
+    }
+}
+
+// MARK: - Search Filter Sheet NSFW Section
+
+extension ModelSearchScreen {
+    var nsfwLevelSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("NSFW level")
+                .font(.civitTitleSmall)
+                .foregroundColor(.civitOnSurfaceVariant)
+            NsfwLevelPicker(
+                level: viewModel.nsfwFilterLevel,
+                onChanged: { viewModel.onNsfwFilterLevelSelected($0) }
+            )
+        }
+        .padding(.horizontal, Spacing.lg)
+        .padding(.vertical, Spacing.sm)
     }
 }
 

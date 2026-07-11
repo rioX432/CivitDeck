@@ -31,6 +31,8 @@ class ImageEmbeddingModelTest {
     private fun createModel(): ImageEmbeddingModel =
         ImageEmbeddingModelImpl(InstrumentationRegistry.getInstrumentation().targetContext)
 
+    // NOTE: requires building with -Pcivitdeck.enableSimilaritySearch=true — the
+    // SigLIP-2 asset is excluded from the APK while similarity search is disabled.
     @Test
     fun modelIsAvailable() {
         val model = createModel()

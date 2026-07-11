@@ -18,8 +18,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 /**
- * Covers the NSFW boundary in [SearchPageLoader.loadCivitaiPage]:
- * `nsfw = if (filter.nsfwFilterLevel == NsfwFilterLevel.Off) false else null`.
+ * Covers the NSFW boundary in [SearchPageLoader.loadCivitaiPage]: the `/models`
+ * `nsfw` parameter must always be sent explicitly (false for Off, true otherwise) —
+ * omitting it makes the API strip non-PG images, leaving NSFW models thumbnail-less.
+ * Finer level filtering (Soft) happens client-side via `filterNsfwImages`.
  */
 class SearchPageLoaderTest {
 
@@ -64,7 +66,7 @@ class SearchPageLoaderTest {
     }
 
     @Test
-    fun nsfwFilterSoft_sends_nsfw_null() = runTest {
+    fun nsfwFilterSoft_sends_nsfw_true() = runTest {
         val modelRepo = FakeModelRepository(
             pages = listOf(testPaginatedResult(items = listOf(testModel(id = 1L)))),
         )
@@ -76,11 +78,11 @@ class SearchPageLoaderTest {
             limit = 20,
         )
 
-        assertNull(modelRepo.lastQuery?.nsfw)
+        assertEquals(true, modelRepo.lastQuery?.nsfw)
     }
 
     @Test
-    fun nsfwFilterAll_sends_nsfw_null() = runTest {
+    fun nsfwFilterAll_sends_nsfw_true() = runTest {
         val modelRepo = FakeModelRepository(
             pages = listOf(testPaginatedResult(items = listOf(testModel(id = 1L)))),
         )
@@ -92,7 +94,33 @@ class SearchPageLoaderTest {
             limit = 20,
         )
 
-        assertNull(modelRepo.lastQuery?.nsfw)
+        assertEquals(true, modelRepo.lastQuery?.nsfw)
+    }
+
+    @Test
+    fun soft_filter_drops_images_above_soft_and_imageless_models() = runTest {
+        val softModel = testModel(id = 1L)
+        val explicitOnlyModel = testModel(
+            id = 2L,
+            modelVersions = listOf(
+                com.riox432.civitdeck.testing.testModelVersion(
+                    modelId = 2L,
+                    nsfwLevel = com.riox432.civitdeck.domain.model.NsfwLevel.X,
+                ),
+            ),
+        )
+        val modelRepo = FakeModelRepository(
+            pages = listOf(testPaginatedResult(items = listOf(softModel, explicitOnlyModel))),
+        )
+        val loader = loaderWith(modelRepo)
+
+        val result = loader.loadPage(
+            filter = FilterState(nsfwFilterLevel = NsfwFilterLevel.Soft),
+            cursor = null,
+            limit = 20,
+        )
+
+        assertEquals(listOf(1L), result.items.map { it.id })
     }
 
     @Test

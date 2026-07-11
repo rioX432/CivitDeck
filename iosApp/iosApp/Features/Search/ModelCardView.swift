@@ -45,9 +45,30 @@ struct ModelCardView: View {
     }
 
     private var thumbnailImage: some View {
-        let urlString = model.modelVersions.first?.images.first.flatMap { $0.thumbnailUrl(width: 450) }
+        // Safest static image first (never a video URL); mirrors Android's ModelCardLayout.
+        let candidate = model.browseThumbnailCandidates().first
+        let urlString = candidate?.thumbnailUrl(width: 450)
+        let blurRadius = ModelCardView.cardBlurRadius(for: candidate?.nsfwLevel)
         return CivitAsyncImageView(imageUrl: urlString, aspectRatio: 1)
+            .blur(radius: blurRadius)
+            .clipped()
+            .overlay(alignment: .topLeading) {
+                if blurRadius > 0 {
+                    NsfwBadgeView()
+                        .padding(Spacing.sm)
+                }
+            }
             .parallaxEffect(offset: parallaxOffset)
+    }
+
+    /// Fixed per-level blur for browse cards (matches Android: Mature 16, X 24);
+    /// the gallery blur sliders intentionally do not apply here.
+    static func cardBlurRadius(for level: NsfwLevel?) -> CGFloat {
+        switch level {
+        case .mature: return 16
+        case .x: return 24
+        default: return 0
+        }
     }
 
     private var statsRow: some View {
@@ -56,6 +77,19 @@ struct ModelCardView: View {
             favoriteCount: model.stats.favoriteCount,
             rating: model.stats.rating
         )
+    }
+}
+
+struct NsfwBadgeView: View {
+    var body: some View {
+        Text("NSFW")
+            .font(.civitLabelXSmall)
+            .foregroundColor(.white)
+            .padding(.horizontal, Spacing.sm)
+            .padding(.vertical, Spacing.xxs)
+            .background(Color.black.opacity(0.6))
+            .clipShape(Capsule())
+            .accessibilityLabel("NSFW content")
     }
 }
 

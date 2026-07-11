@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.RecommendationSection
+import com.riox432.civitdeck.domain.model.browseThumbnailCandidates
 import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.components.LaunchStaggerAnimation
 import com.riox432.civitdeck.ui.components.isReducedMotionEnabled
@@ -237,6 +238,20 @@ private fun ModelGrid(
 ) {
     val reducedMotion = isReducedMotionEnabled()
 
+    // Recommendations load after the first model page and are inserted above the
+    // grid anchor, which would leave them invisibly above the viewport. By the time
+    // this effect reads the state the insertion already happened, so "user was at
+    // the top" now reads as firstVisibleItemIndex == recommendations.size with a
+    // zero offset — snap back to the real top in that case only.
+    LaunchedEffect(recommendations.size) {
+        if (recommendations.isNotEmpty() &&
+            gridState.firstVisibleItemIndex <= recommendations.size &&
+            gridState.firstVisibleItemScrollOffset == 0
+        ) {
+            gridState.scrollToItem(0)
+        }
+    }
+
     // Trigger load-more when approaching end of list
     LaunchedEffect(gridState, models.size) {
         snapshotFlow {
@@ -307,8 +322,7 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.modelItems(
         contentType = { "model" },
     ) { index ->
         val model = models[index]
-        val thumbnailUrl = model.modelVersions
-            .firstOrNull()?.images?.firstOrNull()?.thumbnailUrl()
+        val thumbnailUrl = model.browseThumbnailCandidates().firstOrNull()?.thumbnailUrl()
         val isOwned = ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
 
         // Track whether this item has already played its entrance animation.

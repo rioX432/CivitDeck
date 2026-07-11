@@ -185,25 +185,9 @@ private fun LazyListScope.modelDetailActionItems(
             onSendToPC = callbacks.onSendToPC,
         )
     }
+    // Decision-order: what the model IS (description, versions, files) comes before
+    // personal annotations (notes, tags) and reviews, which are empty on most models.
     if (model.tags.isNotEmpty()) { item { TagsSection(tags = model.tags) } }
-    item { ModelNotesSection(note = uiState.note, onSaveNote = callbacks.onSaveNote) }
-    item {
-        PersonalTagsSection(
-            tags = uiState.personalTags,
-            onAddTag = callbacks.onAddTag,
-            onRemoveTag = callbacks.onRemoveTag,
-        )
-    }
-    item {
-        ReviewsSection(
-            reviews = uiState.reviews,
-            ratingTotals = uiState.ratingTotals,
-            sortOrder = uiState.reviewSortOrder,
-            isLoading = uiState.isReviewsLoading,
-            onSortChanged = callbacks.onReviewSortChanged,
-            onWriteReview = callbacks.onWriteReview,
-        )
-    }
     model.description?.takeIf { it.isNotBlank() }?.let { description ->
         item { DescriptionSection(description = description) }
     }
@@ -224,6 +208,24 @@ private fun LazyListScope.modelDetailActionItems(
             fileVramCompatibility = uiState.fileVramCompatibility,
             onDownloadFile = callbacks.onDownloadFile,
             onCancelDownload = callbacks.onCancelDownload,
+        )
+    }
+    item { ModelNotesSection(note = uiState.note, onSaveNote = callbacks.onSaveNote) }
+    item {
+        PersonalTagsSection(
+            tags = uiState.personalTags,
+            onAddTag = callbacks.onAddTag,
+            onRemoveTag = callbacks.onRemoveTag,
+        )
+    }
+    item {
+        ReviewsSection(
+            reviews = uiState.reviews,
+            ratingTotals = uiState.ratingTotals,
+            sortOrder = uiState.reviewSortOrder,
+            isLoading = uiState.isReviewsLoading,
+            onSortChanged = callbacks.onReviewSortChanged,
+            onWriteReview = callbacks.onWriteReview,
         )
     }
 }
