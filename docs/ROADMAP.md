@@ -64,12 +64,10 @@ Bridge CivitAI browsing with your local generation setup.
 - [x] SD WebUI (Automatic1111/Forge) API support ([#178](https://github.com/rioX432/CivitDeck/issues/178))
 - [x] Civitai Link integration -- one-tap send model to PC ([#179](https://github.com/rioX432/CivitDeck/issues/179))
 
-**Backlog (Phase 3 scope, not yet scheduled):**
-- [ ] Live generation preview in-app
-- [ ] Workflow template library
-- [ ] Remote queue management (send prompt, interrupt, monitor status) -- see note below
-
-> **Note — Remote Execution Epic**: If the goal extends to fully operating ComfyUI from mobile (submit prompt, queue/interrupt, real-time progress), that warrants a dedicated epic covering: authenticated connection (Tailscale / reverse proxy), Prompt API, Queue API, and `/ws` live status. This is not yet scoped as a separate issue but is the natural next step after Phase 4.
+**Backlog (Phase 3 scope) -- Complete:**
+- [x] Live generation preview in-app -- WebSocket-driven real-time preview with interrupt support
+- [x] Workflow template library -- template editor + picker, ComfyHub import, APP-mode metadata support
+- [x] Remote queue management (send prompt, interrupt, monitor status) -- ComfyUI generation queue screen + WebSocket live status
 
 ---
 
@@ -166,27 +164,29 @@ Features shipped between Phase 6 and 7 that were not originally planned in the r
 
 ---
 
-## Phase 7 -- UX Consolidation (Next)
+## Phase 7 -- UX Consolidation (Complete)
 
-The app has grown to 44 Android routes / 38 iOS views / 230+ use cases. User feedback indicates feature density is becoming overwhelming. This phase focuses on simplifying navigation and reducing cognitive load.
+The app had grown to 44 Android routes / 38 iOS views / 230+ use cases. User feedback indicated feature density was becoming overwhelming. This phase simplified navigation and reduced cognitive load, on Android, iOS, and Desktop (PR [#979](https://github.com/rioX432/CivitDeck/pull/979)).
 
-- [ ] Navigation information architecture redesign — reduce top-level destinations, group related features
-- [ ] Settings consolidation — reduce 11 sub-screens to 4–5 logical groups
-- [ ] Integrations hub — unify ComfyUI, SD WebUI, and External Server into a single management surface
-- [ ] Progressive disclosure — expand Power User Mode gating to hide advanced features by default
-- [ ] Refactor `SettingsViewModel` into domain-scoped ViewModels — split monolithic VM into focused units
+- [x] Navigation information architecture redesign — bottom nav reduced to 4 top-level destinations (Discover / Create / Library / Settings), related features grouped under each
+- [x] Settings consolidation — deduplicated section headers, regrouped into Account / Browsing / Data & Storage / Advanced
+- [x] Integrations hub — Create tab is now a live status hub (per-server cards, quick actions) instead of a static link list, covering ComfyUI, SD WebUI, and External Server
+- [x] Progressive disclosure — e.g. ntfy push-notification setup hidden until a ComfyUI connection exists
+- [x] Refactor `SettingsViewModel` into domain-scoped ViewModels — split into `AuthSettingsViewModel`, `DisplaySettingsViewModel`, `ContentFilterSettingsViewModel`, `StorageSettingsViewModel`, `AppBehaviorSettingsViewModel`, `BackupViewModel`
+
+Also shipped in this pass: results-first search (recommendation carousels hidden while searching), working NSFW filtering (bitmask mapping fix + safest-first thumbnails + 3-level control), decision-order model detail, seamless list-to-detail image handoff, and a 54% smaller Android APK (275.6 MB → 126.7 MB) via conditional SigLIP-2/ONNX asset inclusion.
 
 ---
 
-## Phase 8 -- Discovery Intelligence (Future)
+## Phase 8 -- Discovery Intelligence (Complete)
 
 Go beyond CivitAI-only search. Help users find the right model faster with cross-platform search and smart recommendations.
 
-- [ ] Multi-platform model search (HuggingFace + TensorArt)
-- [ ] Image similarity search — find visually similar models
-- [ ] Smart feed with quality filtering (anti-Buzz-farming)
-- [ ] Model update notifications for followed models
-- [ ] ComfyHub workflow integration
+- [x] Multi-platform model search (HuggingFace + TensorArt) — unified search with platform filter and source indicators
+- [x] Image similarity search — find visually similar models using on-device SigLIP-2 embeddings
+- [x] Smart feed with quality filtering (anti-Buzz-farming) — quality score based on downloads, favorites, and ratings
+- [x] Model update notifications for followed models
+- [x] ComfyHub workflow integration — browse and import community workflows directly into the workflow library
 
 ---
 
