@@ -83,3 +83,10 @@ One note per decision/lesson. Newest at the bottom.
 - 2026-07-11: CI gate now includes :core:core-domain:testAndroidHostTest and
   :core:core-network:testAndroidHostTest (added during this PR) — derive the gate from
   ci.yml, the old memory list is stale.
+- 2026-07-11: Parity pass wrapped: full Android gate green locally AND all four GitHub
+  CI checks green on push; fresh-context verifier over the 8 new commits found no
+  blockers. Two carried notes: Desktop Soft-level cards lost their old slider blur
+  (converged on the fixed 16/24 design — intentional), and the hub hero can flash one
+  frame before async VM state arrives. Detekt gotchas hit: LongParameterList threshold
+  10 (suppress with the repo's standard justification comment), LongMethod 60 (split
+  hub server cards into per-server composables).
