@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.browseThumbnailCandidates
+import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.adaptive.isExpandedWidth
 import com.riox432.civitdeck.ui.components.ModelCard
 import com.riox432.civitdeck.ui.theme.Elevation
@@ -57,7 +58,9 @@ internal fun RecommendationRow(
             horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         ) {
             items(items = section.models, key = { it.id }) { model ->
-                val thumbnailUrl = model.browseThumbnailCandidates().firstOrNull()?.url
+                // Must match the URL the card actually loads (thumbnailUrl(), not raw
+                // url) or the detail's shared-element placeholder misses the cache.
+                val thumbnailUrl = model.browseThumbnailCandidates().firstOrNull()?.thumbnailUrl()
                 ModelCard(
                     model = model,
                     onClick = { onModelClick(model.id, thumbnailUrl, sharedElementSuffix) },

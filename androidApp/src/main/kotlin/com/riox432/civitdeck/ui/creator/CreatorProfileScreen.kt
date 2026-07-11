@@ -40,6 +40,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
+import com.riox432.civitdeck.domain.model.browseThumbnailCandidates
+import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileUiState
 import com.riox432.civitdeck.feature.creator.presentation.CreatorProfileViewModel
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
@@ -186,8 +188,9 @@ private fun CreatorModelGrid(
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
         items(items = uiState.models, key = { it.id }) { model ->
-            val thumbnailUrl = model.modelVersions
-                .firstOrNull()?.images?.firstOrNull()?.url
+            // Must match the URL the card actually loads (safest candidate at
+            // thumbnail width) or the detail's shared-element placeholder misses.
+            val thumbnailUrl = model.browseThumbnailCandidates().firstOrNull()?.thumbnailUrl()
             ModelCard(
                 model = model,
                 onClick = { onModelClick(model.id, thumbnailUrl) },
