@@ -2,7 +2,7 @@
 name: social-scanner
 description: "Scan X/Reddit/HackerNews/communities for sentiment and reception on a topic"
 tools: WebSearch, WebFetch
-model: sonnet
+model: haiku
 maxTurns: 20
 permissionMode: bypassPermissions
 ---

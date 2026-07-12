@@ -2,7 +2,7 @@
 name: source-verifier
 description: "Validate all URLs exist and check claim-source consistency"
 tools: WebFetch, WebSearch
-model: sonnet
+model: haiku
 maxTurns: 30
 permissionMode: bypassPermissions
 ---

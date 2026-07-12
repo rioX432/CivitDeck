@@ -99,14 +99,46 @@ Use Claude Code Agent Teams for parallel development when tasks are independent:
 
 ## /goal for Autonomous Execution
 
-Use `/goal` to set a completion condition for unattended task execution:
+Use `/goal` to set a completion condition for unattended task execution. After each turn, a small fast evaluator model (Haiku by default) reads the condition plus the conversation and returns yes/no. **The evaluator cannot run tools — it judges only what appears as text in the transcript** `[official]`. A condition is only as good as the evidence Claude prints.
+
+Build every condition from 5 elements:
+
+| # | Element | Example fragment |
+|---|---------|------------------|
+| 1 | End state (measurable, true/false) | "every test under tests/auth passes" |
+| 2 | Proof command — must actually exist; resolve from CLAUDE.md Commands / CI config, never guess | "run `./gradlew test`" |
+| 3 | Evidence signal (exact success output) | "the summary line shows `0 failed`" |
+| 4 | Guardrail + its proof | "do not modify test files — show `git diff --stat` each turn" |
+| 5 | Stop clause **as an OR-branch of the condition** | "— or stop after 20 turns, then summarize the blocker" |
+
+Copy-paste template:
 
 ```
-/goal "All tests pass and PR is created for issue #42"
-/goal --tokens 250K "Lint errors are zero and build succeeds"
+/goal <end state>. Prove it by, in the most recent turn, running <command> and
+showing its output contains <exact signal> — or stop after <N> turns or if
+<no-progress signal>, then summarize the blocker. Constraints: <what must not change>.
 ```
 
-- A separate evaluator model checks the condition after each turn
-- Write conditions as measurable end states (not process descriptions)
-- Include constraints on what must NOT change
-- Use `/goal pause` / `/goal clear` to interrupt
+Rules (verified against the official docs and small evaluator probes):
+
+- **Stop clause must be OR-joined into the condition** ("… shows `0 failed` — or stop after N turns"). Written as a free-standing sentence it is never treated as a completion path and the loop outlives its cap `[tested]`
+- **Stop at the cap, on that turn, and print the blocker summary.** Overshooting the cap and stopping later can prevent the goal from ever completing `[tested]`
+- **Re-run the proof command in the most recent turn after any change.** The evaluator tracks recency on its own — an unverified change stalls the loop with "no" forever `[tested]`
+- **Evidence = actual command output in the transcript.** A narrated "tests pass" without output is not accepted; a printed test summary, `review.json` contents, or a PR URL is `[tested]`
+- Subcommands: `/goal` (status), `/goal clear` (aliases: `stop`/`off`/`reset`/`none`/`cancel`). **There is no `--tokens` flag and no `pause` subcommand**
+- Conditions can be up to 4,000 characters. Headless: `claude -p "/goal <condition>"` runs the loop to completion in one invocation `[official]`
+- `/goal` is a session-scoped Stop-hook wrapper — it is unavailable when `disableAllHooks` is set, and there is no official support for it taking effect inside an `Agent()` sub-agent prompt
+
+Anti-patterns (rewrite before use): `make the code better` (no proof), `when the tests pass` (no command named, no fresh-proof directive), `fix all the bugs` (unbounded, subjective).
+
+## Model Selection for Agents
+
+Match the model tier to the sub-task instead of defaulting everything to one tier. Use aliases (`haiku`/`sonnet`/`opus`) so agents track the latest generation automatically.
+
+| Tier | Cost (per MTok, in/out) | Use for |
+|---|---|---|
+| `haiku` | $1 / $5 | Mechanical collection: URL existence checks, web/SNS scans, data gathering with no analysis |
+| `sonnet` | $3 / $15 | Review, analysis, test writing — near-Opus coding quality since Sonnet 5 |
+| `opus` | $5 / $25 | Long-horizon autonomous implementation, architecture decisions |
+
+For long autonomous runs (Opus tier): state the full task specification up front in one well-specified prompt and run at high effort — clear goals up front produce more efficient and more accurate output than progressively revealed instructions.

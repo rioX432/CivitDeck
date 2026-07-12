@@ -2,7 +2,7 @@
 name: deep-researcher
 description: "Supplement Deep Search results with web/SNS research. Collector only — no analysis"
 tools: WebSearch, WebFetch
-model: sonnet
+model: haiku
 maxTurns: 20
 permissionMode: bypassPermissions
 ---

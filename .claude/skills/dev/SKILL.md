@@ -286,6 +286,7 @@ If CLAUDE.md doesn't specify commands, detect from project files:
 - `package.json` → `npm test`, `npm run lint`
 - `Cargo.toml` → `cargo build`, `cargo test`, `cargo clippy`
 - `pyproject.toml` / `setup.py` → `pytest`, `ruff check`
+- `pubspec.yaml` → `flutter test` (or `dart test`), `dart analyze`
 
 ### Failure Handling
 1. Analyze the failure
@@ -388,16 +389,25 @@ Mark task 9 `completed`.
 
 ## Autonomous Mode (/goal)
 
-When the user invokes `/dev` with `/goal`, the workflow runs autonomously:
+When the user invokes `/dev` under a `/goal`, the workflow runs autonomously. **Do not wrap the raw request in `/goal`** — build the condition from the repo per `rules/ai-ops.md → /goal for Autonomous Execution`. The `/goal` evaluator cannot run tools; it only reads what is printed in the transcript, so the condition must name real commands and their exact success output.
+
+Condition template (resolve `{test command}` and `{success signal}` from CLAUDE.md's Commands section — never guess):
 
 ```
-/goal "Issue $ARGUMENTS is resolved: tests pass, review has no Critical findings, and PR is created"
+/goal Issue $ARGUMENTS is resolved: in the most recent turn, {test command} was run
+and its output shows {success signal, e.g. "0 failed" / "BUILD SUCCESSFUL"}, the
+review step printed review.json counts showing "critical": 0, and the PR URL was
+printed — or stop after 25 turns or if the same failure recurs 3 times, then
+summarize the blocker. Constraints: do not modify or delete test files except those
+the issue explicitly requires — show `git diff --stat` each turn.
 ```
 
 In autonomous mode:
 - Skip `AskUserQuestion` confirmations — proceed with best judgment
 - Stop on Critical review findings or 3 consecutive failures (these still require human input)
-- The `/goal` evaluator checks the completion condition after each phase
+- **Surface fresh evidence every turn**: after any code change, re-run the failing check and show its output — the evaluator discounts evidence that predates the last change
+- **Print `review.json` counts as text** after Phase 7 — the evaluator cannot read files
+- **If the turn cap is reached, stop on that turn** and print the blocker summary; do not keep working past the cap
 
 ### Structured Return Value
 
