@@ -120,28 +120,46 @@ TaskCreate for each issue: "#{number}: {title}"
 git checkout main && git pull origin main
 ```
 
-#### 4b. Run /dev in isolated sub-agent (autonomous via /goal)
+#### 4b. Run /dev in isolated sub-agent (autonomous)
 ```
 Agent(
-  prompt: "/goal 'Issue #{issue_number} is resolved: tests pass, review has no Critical findings, and PR is created' /dev #{issue_number}",
+  prompt: "/dev #{issue_number} — run in autonomous mode (no user confirmations).
+    Definition of done, all evidence required in your final message:
+    (1) the project's test command output (from CLAUDE.md Commands) showing its
+        success signal, re-run after your last change;
+    (2) review.json counts printed as text — \"critical\": 0 is required;
+    (3) the PR URL.
+    Constraints: do not modify or delete test files except those the issue
+    explicitly requires — include `git diff --stat` in the final message to prove
+    it. If the same failure recurs 3 times, stop and report the blocker instead.
+    Finish by printing the Structured Return Value JSON.",
   model: "opus",
   isolation: "worktree"
 )
 ```
 
+> **Why no `/goal` inside the Agent() prompt?** `/goal` is a session-scoped
+> Stop-hook wrapper. There is no official support for slash commands taking
+> effect inside a sub-agent prompt, so a `/goal` there is likely inert text.
+> Instead, the completion condition is stated as explicit instructions with
+> evidence requirements, and Step 4b-result verifies the evidence rather than
+> trusting the sub-agent's self-report. If a true evaluator loop per issue is
+> needed, run the issue headlessly — `claude -p "/goal <condition>"` is
+> officially supported.
+
 The sub-agent:
 - Gets a fresh context (no pollution from previous issues)
 - Works in an isolated git worktree (no file conflicts)
-- Runs the full /dev workflow autonomously via /goal
+- Runs the full /dev workflow autonomously
 - Skips AskUserQuestion confirmations (proceeds with best judgment)
 - Returns: structured result with PR URL, review status, and counts
 
 #### 4b-result. Review Validation
 
-After the sub-agent completes, validate the result before proceeding to merge:
+After the sub-agent completes, validate the result before proceeding to merge. **Never trust the sub-agent's narrated success** — a claim of "tests pass, review clean" without evidence is the most common failure mode of long autonomous loops (proxy-signal collapse):
 
-1. Read `workspace/{issue}/review.json` to get the structured review output
-2. Parse the sub-agent's return value for review status
+1. Read `workspace/{issue}/review.json` yourself to get the structured review output
+2. Parse the sub-agent's return value for review status — and cross-check it against review.json; on mismatch, treat the issue as failed
 
 **Decision logic:**
 
@@ -191,16 +209,26 @@ Mark all tasks `completed`.
 
 ## Autonomous Mode (/goal)
 
-When the user invokes `/dev-all` with `/goal`, the entire batch runs autonomously:
+To run the entire batch under `/goal`, **derive the condition from the resolved issue list (Step 1)** — never wrap the raw request. The evaluator only reads transcript text, so the condition must reference output this skill actually prints (the final report table, `gh pr view` output):
 
 ```
-/goal "All issues in $ARGUMENTS are resolved: each has a merged PR or a documented skip reason"
+/goal Every issue in {resolved issue list} is resolved or explicitly skipped: the
+final report table, printed in the most recent turn, shows for each issue either a
+merged PR (verified by `gh pr view --json state` output showing MERGED) or a skip
+reason — or stop after {5 × issue count} turns or after 3 consecutive issue
+failures, then summarize what is blocking. Constraints: do not close an issue
+without a merged fix, and do not drop issues from the list to finish early.
 ```
+
+Derivation rules:
+- **End state ← Step 1's resolved issue list, locked at plan confirmation.** Do not remove issues mid-run to make the condition easier to satisfy (criteria laundering)
+- **Proof ← the final report table + `gh pr view --json state` output**, re-printed in the most recent turn
+- **Turn cap ← ~5 turns per issue**, joined as an OR-branch of the condition
 
 In autonomous mode:
 - Skip `AskUserQuestion` confirmations — proceed with best judgment
-- On CI failure: skip the issue and continue (don't stop)
-- Stop only on 3 consecutive failures
+- On CI failure: skip the issue and continue (don't stop); record the skip reason in the report
+- On 3 consecutive failures or at the turn cap: **stop on that turn** and print the blocking summary (the stop branch only completes the goal if the summary actually appears)
 
 ## Error Handling
 
