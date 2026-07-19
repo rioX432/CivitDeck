@@ -20,12 +20,14 @@ import com.riox432.civitdeck.di.initializeFrontDoor
 import com.riox432.civitdeck.di.registerExportPlugins
 import com.riox432.civitdeck.di.registerThemePlugins
 import com.riox432.civitdeck.di.registerWorkflowPlugins
+import com.riox432.civitdeck.domain.download.DownloadScheduler
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.domain.repository.AppVersionProvider
 import com.riox432.civitdeck.domain.usecase.CleanupBrowsingHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.util.ApplicationScope
+import com.riox432.civitdeck.download.AndroidDownloadScheduler
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
@@ -123,6 +125,7 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
 
 val androidModule = module {
     single<AppVersionProvider> { AndroidAppVersionProvider() }
+    single<DownloadScheduler> { AndroidDownloadScheduler(androidContext()) }
     viewModel { params ->
         ModelDetailViewModel(params.get(), get(), get(), get(), get(), get(), get())
     }
