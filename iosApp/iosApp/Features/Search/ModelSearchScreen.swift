@@ -61,7 +61,6 @@ struct ModelSearchScreen: View {
                 HStack {
                     Spacer()
                     VStack(spacing: Spacing.sm) {
-                        if FeatureFlags.similaritySearch { AiSearchFab(visible: headerVisible) }
                         QRScannerFab(visible: headerVisible)
                         DiscoverFab(visible: headerVisible)
                         filterFab
@@ -99,7 +98,6 @@ struct ModelSearchScreen: View {
             .navigationDestination(for: QRScannerDestination.self) { _ in
                 QRScannerView { navigationPath.removeLast(); navigationPath.append($0) }
             }
-            .navigationDestination(for: TextSearchDestination.self) { _ in TextSearchView() }
             .task { await viewModel.observeSearchHistory() }
             .task { await viewModel.observeGridColumns() }
             .task { await viewModel.observeOwnedHashes() }
@@ -170,6 +168,8 @@ struct ModelSearchScreen: View {
                 && !viewModel.searchHistory.isEmpty
         }
         .onChange(of: isSearchFocused) { focused in
+            // Drives SearchState.Editing so recommendations hide while the bar is focused.
+            viewModel.onSearchFocusChanged(focused)
             if !focused { viewModel.onSearch() }
             showHistory = focused
                 && viewModel.query.isEmpty

@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.search.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.riox432.civitdeck.domain.ml.EmbeddingModels
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelSource
@@ -9,6 +10,7 @@ import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.SavedSearchFilter
+import com.riox432.civitdeck.domain.model.SimilarModelHit
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
@@ -17,7 +19,11 @@ import com.riox432.civitdeck.domain.util.PaginatedLoader
 import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.util.Logger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -43,6 +49,14 @@ data class ModelSearchUiState(
     val excludedTags: List<String> = emptyList(),
     val includedTags: List<String> = emptyList(),
     val selectedSources: Set<ModelSource> = setOf(ModelSource.CIVITAI),
+    // Search-bar phase inputs (see [searchState]).
+    val isEditing: Boolean = false,
+    val isExperimentalSearchActive: Boolean = false,
+    // Experimental on-device semantic search (Android-only, opt-in). Availability flags are
+    // false on iOS/Desktop/ML-free flavors, so the UI hides these affordances there.
+    val isSemanticEnabled: Boolean = false,
+    val semanticAvailable: Boolean = false,
+    val imageSearchAvailable: Boolean = false,
     // Pagination state from PaginatedLoader
     val models: List<Model> = emptyList(),
     override val isLoading: Boolean = false,
@@ -52,12 +66,28 @@ data class ModelSearchUiState(
 ) : UiLoadingState {
 
     /**
-     * Recommendation sections the UI should render. Hidden entirely while a search
-     * query or a narrowing filter is active (search results must come first), and
-     * capped while browsing idle so the model grid stays above the fold.
+     * Current phase of the search bar. [Results] wins whenever anything is committed
+     * (a keyword/tag filter or an experimental semantic/image search); otherwise a
+     * focused bar is [Editing] and an unfocused, empty bar is [Idle].
+     */
+    val searchState: SearchState
+        get() = when {
+            hasActiveSearch || isExperimentalSearchActive -> SearchState.Results
+            isEditing -> SearchState.Editing
+            else -> SearchState.Idle
+        }
+
+    /**
+     * Recommendation sections the UI should render. Shown only in [SearchState.Idle]
+     * (hidden while editing or showing results), and capped so the model grid stays
+     * above the fold.
      */
     val recommendations: List<RecommendationSection>
-        get() = if (hasActiveSearch) emptyList() else loadedRecommendations.take(MAX_IDLE_RECOMMENDATION_SECTIONS)
+        get() = if (searchState == SearchState.Idle) {
+            loadedRecommendations.take(MAX_IDLE_RECOMMENDATION_SECTIONS)
+        } else {
+            emptyList()
+        }
 
     companion object {
         const val MAX_IDLE_RECOMMENDATION_SECTIONS = 2
@@ -90,12 +120,17 @@ internal fun FilterState.hasActiveSearch(): Boolean =
         includedTags.isNotEmpty() ||
         isFreshFindEnabled
 
+// Single entry point for the whole Discover surface: filters, pagination, history, saved
+// filters, recommendations and the opt-in semantic/image experiments all funnel through
+// one VM shared by three platforms, so the public action surface is intentionally broad.
+@Suppress("TooManyFunctions")
 class ModelSearchViewModel(
     private val coreUseCases: SearchCoreUseCases,
     private val historyUseCases: SearchHistoryUseCases,
     private val filterUseCases: SearchFilterUseCases,
     private val preferencesUseCases: SearchPreferencesUseCases,
     private val favoritesUseCases: SearchFavoritesUseCases,
+    private val semanticUseCases: SearchSemanticUseCases,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModelSearchUiState())
@@ -104,6 +139,13 @@ class ModelSearchViewModel(
     private val _filterState = MutableStateFlow(FilterState())
     private val _hiddenModelIds = MutableStateFlow<Set<Long>>(emptySet())
     private var recommendationsJob: Job? = null
+
+    // Distinguishes which producer owns [ModelSearchUiState.models]: the paginated keyword
+    // loader (default) or a one-shot experimental semantic/image search. Combined with
+    // [searchGeneration] this guards against a stale completion overwriting newer results.
+    private var currentSource = SearchSource.Keyword
+    private var experimentalJob: Job? = null
+    private var searchGeneration = 0L
 
     private val pageLoader = SearchPageLoader(
         getModelsUseCase = coreUseCases.getModels,
@@ -147,19 +189,29 @@ class ModelSearchViewModel(
         pageSize = SearchPageLoader.PAGE_SIZE,
         load = { cursor, limit -> pageLoader.loadPage(_filterState.value, cursor, limit) },
         onStateChanged = { loadState ->
-            _uiState.update {
-                it.copy(
-                    models = loadState.items,
-                    isLoading = loadState.isLoading,
-                    isLoadingMore = loadState.isLoadingMore,
-                    error = loadState.error,
-                    hasMore = loadState.hasMore,
-                )
+            // Ignore keyword page updates while an experimental search owns the grid, so a
+            // late-resolving keyword load cannot clobber semantic/image results.
+            if (currentSource == SearchSource.Keyword) {
+                _uiState.update {
+                    it.copy(
+                        models = loadState.items,
+                        isLoading = loadState.isLoading,
+                        isLoadingMore = loadState.isLoadingMore,
+                        error = loadState.error,
+                        hasMore = loadState.hasMore,
+                    )
+                }
             }
         },
     )
 
     init {
+        _uiState.update {
+            it.copy(
+                semanticAvailable = semanticUseCases.textSearch.isAvailable,
+                imageSearchAvailable = semanticUseCases.embedImage.isAvailable,
+            )
+        }
         observePreferences()
         filterDelegate.loadExcludedTags()
         loadDefaults(preferencesUseCases.observeDefaultSortOrder, preferencesUseCases.observeDefaultTimePeriod)
@@ -172,12 +224,36 @@ class ModelSearchViewModel(
         _uiState.update { it.copy(query = query) }
     }
 
+    /**
+     * Tracks search-bar focus so an empty, focused bar moves to [SearchState.Editing]
+     * (hiding recommendations) before anything is committed.
+     */
+    fun onSearchFocusChanged(focused: Boolean) {
+        _uiState.update { it.copy(isEditing = focused) }
+    }
+
     fun onSearch() {
         val query = _uiState.value.query
         if (query.isNotBlank()) {
             viewModelScope.launch { historyUseCases.addSearchHistory(query.trim()) }
         }
-        updateFilter { it.copy(query = query) }
+        val semantic = _uiState.value
+        if (semantic.isSemanticEnabled && semantic.semanticAvailable && query.isNotBlank()) {
+            runSemanticSearch(query)
+        } else {
+            updateFilter { it.copy(query = query) }
+            refresh()
+        }
+    }
+
+    /**
+     * Clears the query and any committed search, returning the bar to [SearchState.Idle]
+     * so recommendations are restored. Also drops focus so a lingering [Editing] phase
+     * doesn't keep them hidden.
+     */
+    fun clearSearch() {
+        _uiState.update { it.copy(query = "", isEditing = false) }
+        updateFilter { it.copy(query = "") }
         refresh()
     }
 
@@ -314,12 +390,129 @@ class ModelSearchViewModel(
     // region Pagination
 
     fun loadMore() {
+        // Experimental results are one-shot; only the keyword loader paginates.
+        if (currentSource != SearchSource.Keyword) return
         paginatedLoader.loadMore()
     }
 
     fun refresh() {
+        // Any keyword refresh reclaims the grid from an in-flight experimental search.
+        experimentalJob?.cancel()
+        experimentalJob = null
+        currentSource = SearchSource.Keyword
+        searchGeneration++
+        if (_uiState.value.isExperimentalSearchActive) {
+            _uiState.update { it.copy(isExperimentalSearchActive = false) }
+        }
         pageLoader.resetPagination()
         paginatedLoader.loadFirst()
+    }
+
+    // endregion
+
+    // region Experimental semantic search (opt-in, Android-only)
+
+    /**
+     * Toggles the opt-in semantic (SigLIP) search. Turning it off while semantic results
+     * are showing reverts to the always-available keyword path; turning it on with a
+     * pending query re-runs the search semantically.
+     */
+    fun onToggleSemanticSearch() {
+        val enabled = !_uiState.value.isSemanticEnabled
+        _uiState.update { it.copy(isSemanticEnabled = enabled) }
+        val query = _uiState.value.query
+        when {
+            !enabled && _uiState.value.isExperimentalSearchActive -> refresh()
+            enabled && query.isNotBlank() && semanticUseCases.textSearch.isAvailable -> runSemanticSearch(query)
+        }
+    }
+
+    /**
+     * Runs a natural-language semantic search over cached embeddings. On any encoder
+     * failure it silently falls back to keyword retrieval, so search always succeeds.
+     */
+    private fun runSemanticSearch(query: String) {
+        updateFilter { it.copy(query = query) }
+        runExperimentalSearch(fallbackQuery = query) {
+            resolveHits(semanticUseCases.textSearch(query))
+        }
+    }
+
+    /**
+     * Image-input search: embeds the picked image and finds visually similar models.
+     * A no-op unless the on-device image embedder is available (Android experiment).
+     */
+    fun onImageSearch(imageBytes: ByteArray) {
+        if (!semanticUseCases.embedImage.isAvailable) return
+        _uiState.update { it.copy(query = "") }
+        updateFilter { it.copy(query = "") }
+        runExperimentalSearch(fallbackQuery = null) {
+            val vector = semanticUseCases.embedImage(imageBytes)
+            resolveHits(
+                semanticUseCases.findSimilarByEmbedding(
+                    query = vector,
+                    embeddingModel = EmbeddingModels.SIGLIP2_BASE,
+                ),
+            )
+        }
+    }
+
+    /**
+     * Finds models similar to [modelId] using its cached embedding. Returns an empty grid
+     * when the model has not been embedded yet (no encoder ran on this device).
+     */
+    fun onFindSimilarToModel(modelId: Long) {
+        _uiState.update { it.copy(query = "") }
+        updateFilter { it.copy(query = "") }
+        runExperimentalSearch(fallbackQuery = null) {
+            val source = semanticUseCases.embeddingRepository.get(modelId) ?: return@runExperimentalSearch emptyList()
+            resolveHits(
+                semanticUseCases.findSimilarByEmbedding(
+                    query = source.vector,
+                    embeddingModel = source.embeddingModel,
+                    sourceModelId = modelId,
+                ),
+            )
+        }
+    }
+
+    private fun runExperimentalSearch(
+        fallbackQuery: String?,
+        block: suspend () -> List<Model>,
+    ) {
+        experimentalJob?.cancel()
+        currentSource = SearchSource.Experimental
+        val generation = ++searchGeneration
+        _uiState.update {
+            it.copy(isExperimentalSearchActive = true, isLoading = true, isLoadingMore = false, error = null)
+        }
+        experimentalJob = viewModelScope.launch {
+            try {
+                val results = block()
+                if (generation == searchGeneration) {
+                    _uiState.update { it.copy(models = results, isLoading = false, hasMore = false) }
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                if (generation != searchGeneration) return@launch
+                Logger.w(TAG, "Experimental search failed: ${e.message}")
+                if (fallbackQuery != null) {
+                    // Availability of search must never depend on embeddings — fall back to keyword.
+                    updateFilter { it.copy(query = fallbackQuery) }
+                    refresh()
+                } else {
+                    _uiState.update { it.copy(isLoading = false, models = emptyList(), hasMore = false) }
+                }
+            }
+        }
+    }
+
+    private suspend fun resolveHits(hits: List<SimilarModelHit>): List<Model> = coroutineScope {
+        hits
+            .map { hit -> async { runCatching { semanticUseCases.getModelDetail(hit.modelId) }.getOrNull() } }
+            .awaitAll()
+            .filterNotNull()
     }
 
     // endregion
@@ -414,3 +607,6 @@ class ModelSearchViewModel(
         private const val STOP_TIMEOUT = 5_000L
     }
 }
+
+/** Which producer currently owns [ModelSearchUiState.models]. */
+private enum class SearchSource { Keyword, Experimental }

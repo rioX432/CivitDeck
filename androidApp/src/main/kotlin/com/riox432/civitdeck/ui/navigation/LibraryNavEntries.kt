@@ -3,7 +3,6 @@ package com.riox432.civitdeck.ui.navigation
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
-import com.riox432.civitdeck.BuildConfig
 import com.riox432.civitdeck.feature.collections.presentation.BatchTagEditorViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
@@ -202,11 +201,9 @@ internal fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {
             } else {
                 null
             },
-            onFindSimilar = if (BuildConfig.FEATURE_SIMILARITY_SEARCH) {
-                { modelId -> backStack.add(SimilarModelsRoute(modelId)) }
-            } else {
-                null
-            },
+            // Standalone Similar Models screen retired (#988); on-device similarity is now an
+            // opt-in experiment inside the unified Discover search bar.
+            onFindSimilar = null,
         )
     }
 }

@@ -111,10 +111,6 @@ data object PluginManagementRoute
 
 data class PluginDetailRoute(val pluginId: String)
 
-data class SimilarModelsRoute(val modelId: Long)
-
-data object TextSearchRoute
-
 data object NotificationCenterRoute
 
 data object FeedRoute

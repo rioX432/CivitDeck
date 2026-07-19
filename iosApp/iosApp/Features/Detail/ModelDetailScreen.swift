@@ -61,16 +61,6 @@ struct ModelDetailScreen: View {
                         .accessibilityLabel("QR code")
                 }
             }
-            if FeatureFlags.similaritySearch {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink {
-                        SimilarModelsView(modelId: viewModel.modelId)
-                    } label: {
-                        Image(systemName: "sparkle.magnifyingglass")
-                            .accessibilityLabel("Find similar models")
-                    }
-                }
-            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     showShareSheet = true

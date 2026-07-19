@@ -48,6 +48,8 @@
     <string name="cd_stars">%1$d stars</string>
     <string name="cd_discover">Discover</string>
     <string name="cd_scan_qr_code">Scan QR code</string>
+    <string name="search_semantic_toggle">Semantic search (experimental)</string>
+    <string name="search_image_search">Search by image</string>
     <string name="cd_filters">Filters</string>
     <string name="cd_compare">Compare</string>
     <string name="cd_hide_model">Hide model</string>

@@ -28,6 +28,7 @@ import com.riox432.civitdeck.feature.search.presentation.SearchFavoritesUseCases
 import com.riox432.civitdeck.feature.search.presentation.SearchFilterUseCases
 import com.riox432.civitdeck.feature.search.presentation.SearchHistoryUseCases
 import com.riox432.civitdeck.feature.search.presentation.SearchPreferencesUseCases
+import com.riox432.civitdeck.feature.search.presentation.SearchSemanticUseCases
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -101,9 +102,18 @@ val searchModule = module {
             observeOwnedModelHashes = get(),
         )
     }
+    factory {
+        SearchSemanticUseCases(
+            textSearch = get(),
+            embedImage = get(),
+            findSimilarByEmbedding = get(),
+            getModelDetail = get(),
+            embeddingRepository = get(),
+        )
+    }
 
     // ViewModels
-    viewModel { ModelSearchViewModel(get(), get(), get(), get(), get()) }
+    viewModel { ModelSearchViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { SwipeDiscoveryViewModel(get(), get()) }
     viewModel { BrowsingHistoryViewModel(get(), get(), get()) }
 }

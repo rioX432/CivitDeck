@@ -46,9 +46,7 @@ import com.riox432.civitdeck.feature.gallery.presentation.ShareViewModel
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
 import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
-import com.riox432.civitdeck.feature.search.presentation.SimilarModelsViewModel
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
-import com.riox432.civitdeck.feature.search.presentation.TextSearchViewModel
 import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.AuthSettingsViewModel
 import com.riox432.civitdeck.feature.settings.presentation.BackupViewModel
@@ -86,9 +84,6 @@ fun KoinHelper.createBackupViewModel(): BackupViewModel = resolve()
 fun KoinHelper.createFeedViewModel(): FeedViewModel = resolve()
 fun KoinHelper.createNotificationCenterViewModel(): NotificationCenterViewModel = resolve()
 fun KoinHelper.createPluginManagementViewModel(): PluginManagementViewModel = resolve()
-fun KoinHelper.createSimilarModelsViewModel(modelId: Long): SimilarModelsViewModel =
-    resolve { parametersOf(modelId) }
-fun KoinHelper.createTextSearchViewModel(): TextSearchViewModel = resolve()
 fun KoinHelper.createShareViewModel(): ShareViewModel = resolve()
 fun KoinHelper.createGestureTutorialViewModel(): GestureTutorialViewModel = resolve()
 fun KoinHelper.createDatasetListViewModel(): DatasetListViewModel = resolve()

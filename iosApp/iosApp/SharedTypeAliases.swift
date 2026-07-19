@@ -406,12 +406,6 @@ typealias BatchTagEditorViewModel = Feature_collectionsBatchTagEditorViewModel
 typealias ExportWithPluginUseCase = Feature_collectionsExportWithPluginUseCase
 typealias GetAvailableExportFormatsUseCase = Feature_collectionsGetAvailableExportFormatsUseCase
 
-// MARK: - Search VMs (moved from shared to feature-search)
-typealias TextSearchViewModel = Feature_searchTextSearchViewModel
-typealias TextSearchUiState = Feature_searchTextSearchUiState
-typealias SimilarModelsViewModel = Feature_searchSimilarModelsViewModel
-typealias SimilarModelsUiState = Feature_searchSimilarModelsUiState
-
 // MARK: - Gallery VMs (moved from shared to feature-gallery)
 typealias DownloadQueueViewModel = Feature_galleryDownloadQueueViewModel
 typealias DownloadQueueUiState = Feature_galleryDownloadQueueUiState
