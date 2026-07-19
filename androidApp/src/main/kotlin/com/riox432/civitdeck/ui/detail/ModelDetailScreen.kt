@@ -423,7 +423,7 @@ private fun DetailOverflowMenu(
                 },
             )
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.cd_share)) },
+                text = { Text(stringResource(R.string.detail_share)) },
                 leadingIcon = { Icon(Icons.Default.Share, contentDescription = null) },
                 onClick = {
                     expanded = false

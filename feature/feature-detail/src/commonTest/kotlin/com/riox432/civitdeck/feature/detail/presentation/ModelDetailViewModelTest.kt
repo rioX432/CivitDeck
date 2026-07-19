@@ -245,9 +245,9 @@ class ModelDetailViewModelTest {
     }
 
     @Test
-    fun rating_is_retained_after_reviews_removed() = runTest {
-        // Reviews list/submit were removed (#991), but Model.stats.rating comes from the
-        // REST /models stats object (not the removed tRPC resourceReview path) and must still render.
+    fun rating_is_retained_in_state() = runTest {
+        // Model.stats.rating is sourced from the REST /models stats object, independent of the
+        // review pipeline, so it surfaces in detail state without any review use case involved.
         val deps = createViewModel(this)
         assertEquals(4.5, deps.vm.uiState.value.model?.stats?.rating)
     }

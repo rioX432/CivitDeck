@@ -45,7 +45,6 @@
     <string name="cd_delete_filter">Delete filter</string>
     <string name="cd_create_new_collection">Create new collection</string>
     <string name="cd_in_collection">In collection</string>
-    <string name="cd_stars">%1$d stars</string>
     <string name="cd_discover">Discover</string>
     <string name="cd_scan_qr_code">Scan QR code</string>
     <string name="search_semantic_toggle">Semantic search (experimental)</string>
@@ -76,8 +75,6 @@
     <string name="cd_retry_download">Retry download</string>
     <string name="cd_full_size_image">Full-size image</string>
     <string name="cd_version_image">Version image</string>
-    <string name="cd_recommended">Recommended</string>
-    <string name="cd_not_recommended">Not recommended</string>
     <string name="cd_cancel_selection">Cancel selection</string>
     <string name="cd_pause_download">Pause download</string>
     <string name="cd_resume_download">Resume download</string>
@@ -293,7 +290,6 @@
     <string name="action_test">Test</string>
     <string name="action_add">Add</string>
     <string name="action_generate">Generate</string>
-    <string name="action_submit">Submit</string>
     <string name="action_clear">Clear</string>
     <string name="action_copy">Copy</string>
     <string name="action_share">Share</string>
@@ -303,7 +299,6 @@
     <string name="action_select_all">Select All</string>
     <string name="action_deselect_all">Deselect All</string>
     <string name="action_clear_all">Clear All</string>
-    <string name="action_write">Write</string>
     <string name="action_disconnect">Disconnect</string>
     <string name="action_interrupt">Interrupt</string>
     <string name="action_uninstall">Uninstall</string>
@@ -328,8 +323,6 @@
     <string name="label_port">Port</string>
     <string name="label_caption">Caption</string>
     <string name="label_hashtags">Hashtags</string>
-    <string name="label_rating">Rating</string>
-    <string name="label_recommendation">Recommendation</string>
 
     <!-- Tutorial -->
     <string name="tutorial_skip">Skip</string>
@@ -575,15 +568,13 @@
     <!-- Detail -->
     <string name="detail_find_similar">Find similar</string>
     <string name="detail_add_to_collection">Add to collection</string>
+    <string name="detail_share">Share</string>
     <string name="detail_qr_code">QR code</string>
     <string name="detail_view_community_images">View Community Images</string>
     <string name="detail_send_to_pc">Send to PC</string>
     <string name="detail_try_in_comfyui">Try in ComfyUI</string>
     <string name="detail_note_placeholder">e.g. Works great with X LoRA</string>
     <string name="detail_tag_placeholder">Tag name</string>
-    <string name="detail_review_details_label">Details (optional)</string>
-    <string name="detail_recommend">Recommend</string>
-    <string name="detail_not_recommended">Not recommended</string>
     <string name="detail_compare_images">Compare Images</string>
     <string name="detail_compare_models_title">Compare Models</string>
 
