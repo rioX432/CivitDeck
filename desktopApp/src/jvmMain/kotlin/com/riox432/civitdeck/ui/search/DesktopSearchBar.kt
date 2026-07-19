@@ -15,8 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import com.riox432.civitdeck.ui.desktopFocusRing
+import com.riox432.civitdeck.ui.testing.DiscoveryTestTags
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @Composable
@@ -32,6 +34,7 @@ fun DesktopSearchBar(
         onValueChange = onQueryChange,
         modifier = modifier
             .fillMaxWidth()
+            .testTag(DiscoveryTestTags.SEARCH_FIELD)
             .padding(horizontal = Spacing.lg, vertical = Spacing.sm)
             .focusRequester(focusRequester)
             .desktopFocusRing(),

@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.api.ApiKeyProvider
+import com.riox432.civitdeck.data.api.CivitAiEndpoints
 import com.riox432.civitdeck.domain.repository.AuthPreferencesRepository
 import com.riox432.civitdeck.domain.usecase.ObserveFrontDoorModeUseCase
 import com.riox432.civitdeck.domain.util.ApplicationScope
@@ -19,6 +20,7 @@ import com.riox432.civitdeck.plugin.di.pluginModule
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.KoinAppDeclaration
+import org.koin.dsl.module
 import org.koin.mp.KoinPlatform
 
 val sharedModules: List<Module>
@@ -49,8 +51,20 @@ val sharedModules: List<Module>
     )
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
+    initKoin(CivitAiEndpoints.Production, appDeclaration)
+}
+
+/**
+ * Starts Koin with an explicit [CivitAiEndpoints]. Used by the E2E/QA Android build to point
+ * the discovery flow at a local fixture server (issue #990); production and Simulator builds
+ * call the no-endpoints overload above and resolve [CivitAiEndpoints.Production]. The endpoints
+ * single lives only here (not in [networkModule]), so every startup path has exactly one
+ * definition — no reliance on Koin definition-override semantics.
+ */
+fun initKoin(endpoints: CivitAiEndpoints, appDeclaration: KoinAppDeclaration = {}) {
     startKoin {
         appDeclaration()
+        modules(module { single { endpoints } })
         modules(sharedModules)
     }
 }

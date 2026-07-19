@@ -1,10 +1,6 @@
 import SwiftUI
 import Shared
 
-struct CompareDestination: Hashable {
-    let leftModelId: Int64
-    let rightModelId: Int64
-}
 struct ModelSearchScreen: View {
     @ObservedObject var viewModel: ModelSearchViewModel
     @EnvironmentObject private var comparisonState: ComparisonState
@@ -162,6 +158,7 @@ struct ModelSearchScreen: View {
             },
             isFocused: $isSearchFocused
         )
+        .accessibilityIdentifier("discovery_search_field")
         .onChange(of: viewModel.query) { newValue in
             showHistory = newValue.isEmpty
                 && isSearchFocused
@@ -304,6 +301,7 @@ struct ModelSearchScreen: View {
                             isOwned: viewModel.isModelOwned(model),
                             heroNamespace: heroNamespace
                         )
+                        .accessibilityIdentifier("discovery_model_card")
                         .onTapGesture {
                             if let cmpId = comparisonState.selectedModelId {
                                 navigationPath.append(
@@ -335,6 +333,7 @@ struct ModelSearchScreen: View {
                     }
                 }
                 .padding(.horizontal, Spacing.md)
+                .accessibilityIdentifier("discovery_model_grid")
 
                 if viewModel.isLoadingMore {
                     ProgressView()

@@ -31,7 +31,9 @@ import org.koin.dsl.module
 val networkModule = module {
     single { ApiKeyProvider() }
     single { createHttpClient(get()) }
-    single { CivitAiApi(get()) }
+    // CivitAiEndpoints is provided by initKoin (Production by default; the E2E/QA build passes
+    // a fixture-server value) so there is exactly one definition per startup path — issue #990.
+    single { CivitAiApi(get(), get()) }
     single {
         Json {
             ignoreUnknownKeys = true

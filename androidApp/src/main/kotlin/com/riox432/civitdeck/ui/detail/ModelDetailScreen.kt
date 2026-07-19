@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,6 +51,7 @@ import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.qrcode.QRCodeSheet
 import com.riox432.civitdeck.ui.share.SocialShareSheet
+import com.riox432.civitdeck.ui.testing.DiscoveryTestTags
 
 // Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
 @Suppress("LongParameterList")
@@ -257,6 +259,7 @@ private fun ModelDetailScaffold(
     onFindSimilar: ((Long) -> Unit)? = null,
 ) {
     Scaffold(
+        modifier = Modifier.testTag(DiscoveryTestTags.MODEL_DETAIL_ROOT),
         topBar = {
             ModelDetailTopBar(
                 uiState = uiState,
@@ -388,7 +391,10 @@ private fun ModelDetailTopBar(
         },
         actions = {
             // Primary actions: Favorite and Share
-            IconButton(onClick = onFavoriteToggle) {
+            IconButton(
+                onClick = onFavoriteToggle,
+                modifier = Modifier.testTag(DiscoveryTestTags.MODEL_FAVORITE_BUTTON),
+            ) {
                 Icon(
                     imageVector = if (uiState.isFavorite) {
                         Icons.Default.Favorite

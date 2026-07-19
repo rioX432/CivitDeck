@@ -1,0 +1,30 @@
+# Discovery smoke flow 2: gallery -> save prompt.
+# Kept separate from the search flow (short, single-responsibility flows are more robust
+# than one long chain). Opens a model's image gallery, reveals metadata, saves the prompt.
+# The nav steps between detail and the metadata sheet are app-specific; tune selectors on
+# device. The save action itself is pinned by test tag (issue #990).
+appId: com.riox432.civitdeck
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "discovery_search_field"
+- inputText: "anime"
+- pressKey: Enter
+- tapOn:
+    id: "discovery_model_card"
+    index: 0
+- assertVisible:
+    id: "model_detail_root"
+# Open the image gallery for this model, then its metadata sheet. These entry points are
+# label-based (no stable tag yet) — adjust text to the localized strings on device.
+- tapOn:
+    text: "Images"
+    optional: true
+- tapOn:
+    text: "Info"
+    optional: true
+- assertVisible:
+    id: "gallery_save_prompt_button"
+- tapOn:
+    id: "gallery_save_prompt_button"

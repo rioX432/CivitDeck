@@ -37,10 +37,12 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.zIndex
 import com.riox432.civitdeck.R
+import com.riox432.civitdeck.ui.testing.DiscoveryTestTags
 import com.riox432.civitdeck.ui.theme.CornerRadius
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -208,7 +210,9 @@ private fun SearchTextField(
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        modifier = modifier.onFocusChanged { onFocusChanged(it.isFocused) },
+        modifier = modifier
+            .testTag(DiscoveryTestTags.SEARCH_FIELD)
+            .onFocusChanged { onFocusChanged(it.isFocused) },
         placeholder = { Text(stringResource(R.string.search_placeholder)) },
         trailingIcon = {
             if (query.isNotEmpty()) {

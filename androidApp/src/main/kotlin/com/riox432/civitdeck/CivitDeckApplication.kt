@@ -12,6 +12,7 @@ import coil3.disk.DiskCache
 import coil3.disk.directory
 import coil3.memory.MemoryCache
 import coil3.request.crossfade
+import com.riox432.civitdeck.data.api.CivitAiEndpoints
 import com.riox432.civitdeck.di.embeddingModule
 import com.riox432.civitdeck.di.initKoin
 import com.riox432.civitdeck.di.initializeAuth
@@ -48,7 +49,15 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
 
     override fun onCreate() {
         super.onCreate()
-        initKoin {
+        // CIVITAI_*_URL come from the `environment` flavor: production points at civitai.com,
+        // e2e at the local fixture server. Passing them here is the only seam that swaps the
+        // discovery flow's backend (issue #990).
+        initKoin(
+            CivitAiEndpoints(
+                apiBaseUrl = BuildConfig.CIVITAI_BASE_URL,
+                trpcBaseUrl = BuildConfig.CIVITAI_TRPC_BASE_URL,
+            ),
+        ) {
             androidContext(this@CivitDeckApplication)
             modules(androidModule, embeddingModule)
         }

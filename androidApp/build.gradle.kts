@@ -22,6 +22,14 @@ android {
         versionName = "2.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // CivitAI backend URLs, read by CivitDeckApplication and injected into CivitAiApi via
+        // CivitAiEndpoints. Default is production (civitai.com); only a debug build with
+        // -Pcivitdeck.e2eBaseUrl overrides them (see the debug buildType below). Release always
+        // resolves these production values, so the E2E fixture URL can never enter a release
+        // artifact (issue #990).
+        buildConfigField("String", "CIVITAI_BASE_URL", "\"https://civitai.com/api/v1\"")
+        buildConfigField("String", "CIVITAI_TRPC_BASE_URL", "\"https://civitai.com/api/trpc\"")
     }
 
     // Two distribution channels: `githubFull` (GitHub Releases sideload — bundles ML and
@@ -81,6 +89,16 @@ android {
     }
 
     buildTypes {
+        debug {
+            // E2E QA seam (issue #990): when -Pcivitdeck.e2eBaseUrl is passed, point the debug
+            // build's CivitAI URLs at the local fixture server so the discovery flow is
+            // deterministic under Maestro. Gated on the property, and only on debug, so a plain
+            // debug build still hits civitai.com and no release build can read this override.
+            providers.gradleProperty("civitdeck.e2eBaseUrl").orNull?.let { e2eBase ->
+                buildConfigField("String", "CIVITAI_BASE_URL", "\"$e2eBase/api/v1\"")
+                buildConfigField("String", "CIVITAI_TRPC_BASE_URL", "\"$e2eBase/api/trpc\"")
+            }
+        }
         release {
             isMinifyEnabled = false
             val releaseKeystore = System.getenv("RELEASE_KEYSTORE")

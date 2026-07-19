@@ -1,0 +1,21 @@
+# Discovery smoke flow 1: search -> detail -> save to collection.
+# Runs against a debug build assembled with -Pcivitdeck.e2eBaseUrl, whose CivitAI base URL
+# points at the local fixture server so results are deterministic (issue #990).
+# Node ids match DiscoveryTestTags (core-ui) / testTag on Android Compose.
+appId: com.riox432.civitdeck
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "discovery_search_field"
+- inputText: "anime"
+- pressKey: Enter
+- assertVisible:
+    id: "discovery_model_grid"
+- tapOn:
+    id: "discovery_model_card"
+    index: 0
+- assertVisible:
+    id: "model_detail_root"
+- tapOn:
+    id: "model_favorite_button"

@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.riox432.civitdeck.R
@@ -29,6 +30,7 @@ import com.riox432.civitdeck.domain.export.WorkflowExportService
 import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
+import com.riox432.civitdeck.ui.testing.DiscoveryTestTags
 import com.riox432.civitdeck.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,7 +100,10 @@ private fun PromptSection(
             ) {
                 Text(stringResource(R.string.gallery_copy_prompt))
             }
-            OutlinedButton(onClick = onSavePrompt) {
+            OutlinedButton(
+                onClick = onSavePrompt,
+                modifier = Modifier.testTag(DiscoveryTestTags.GALLERY_SAVE_PROMPT),
+            ) {
                 Text(stringResource(R.string.gallery_save_prompt))
             }
         }
