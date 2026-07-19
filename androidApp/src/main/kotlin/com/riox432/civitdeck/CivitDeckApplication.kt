@@ -12,6 +12,7 @@ import coil3.disk.DiskCache
 import coil3.disk.directory
 import coil3.memory.MemoryCache
 import coil3.request.crossfade
+import com.riox432.civitdeck.di.embeddingModule
 import com.riox432.civitdeck.di.initKoin
 import com.riox432.civitdeck.di.initializeAuth
 import com.riox432.civitdeck.di.initializeFrontDoor
@@ -49,7 +50,7 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
         super.onCreate()
         initKoin {
             androidContext(this@CivitDeckApplication)
-            modules(androidModule)
+            modules(androidModule, embeddingModule)
         }
         applicationScope.launch {
             registerWorkflowPlugins()

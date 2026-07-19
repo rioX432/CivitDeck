@@ -6,8 +6,8 @@ import com.riox432.civitdeck.domain.usecase.FindSimilarModelsByEmbeddingUseCase
 import com.riox432.civitdeck.domain.usecase.TextSearchUseCase
 import org.koin.dsl.module
 
-// ImageEmbeddingModel and TextEmbeddingModel are registered in domainPlatformModule
-// (interface in commonMain + platform impl class).
+// ImageEmbeddingModel and TextEmbeddingModel are registered by mlPlatformModule
+// (in :core:core-ml) so ML-free build flavors can drop that binding entirely.
 val embeddingDomainModule = module {
     factory { EmbedImageUseCase(get()) }
     factory { EmbedOnBrowseUseCase(get(), get(), get()) }
