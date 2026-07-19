@@ -1,8 +1,12 @@
 package com.riox432.civitdeck.feature.search.presentation
 
+import com.riox432.civitdeck.domain.repository.ModelEmbeddingRepository
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
+import com.riox432.civitdeck.domain.usecase.EmbedImageUseCase
+import com.riox432.civitdeck.domain.usecase.FindSimilarModelsByEmbeddingUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
+import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultSortOrderUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveDefaultTimePeriodUseCase
@@ -13,6 +17,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveOwnedModelHashesUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveQualityThresholdUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveExcludedTagUseCase
 import com.riox432.civitdeck.domain.usecase.SetNsfwFilterUseCase
+import com.riox432.civitdeck.domain.usecase.TextSearchUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.AddSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.DeleteSavedSearchFilterUseCase
@@ -83,4 +88,18 @@ data class SearchFavoritesUseCases(
     val toggleFavorite: ToggleFavoriteUseCase,
     val observeFavorites: ObserveFavoritesUseCase,
     val observeOwnedModelHashes: ObserveOwnedModelHashesUseCase,
+)
+
+/**
+ * Experimental on-device semantic search (SigLIP-2), folded in from the retired standalone
+ * Text Search / Find Similar screens. Every member reports `isAvailable = false` on iOS,
+ * Desktop and ML-free Android flavors, so these paths stay an opt-in Android experiment and
+ * never sit on the primary (keyword/tag) retrieval path.
+ */
+data class SearchSemanticUseCases(
+    val textSearch: TextSearchUseCase,
+    val embedImage: EmbedImageUseCase,
+    val findSimilarByEmbedding: FindSimilarModelsByEmbeddingUseCase,
+    val getModelDetail: GetModelDetailUseCase,
+    val embeddingRepository: ModelEmbeddingRepository,
 )

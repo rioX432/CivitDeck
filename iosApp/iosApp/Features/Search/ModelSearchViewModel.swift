@@ -74,7 +74,11 @@ final class ModelSearchViewModel: ObservableObject {
             excludedTags = state.excludedTags.compactMap { $0 as? String }
             recommendations = state.recommendations as? [RecommendationSection] ?? []
             selectedSources = Set(state.selectedSources.compactMap { $0 as? Core_domainModelSource })
-            WidgetDataWriter.writeTrendingModel(from: recommendations)
+            // Use the full recommendation set, not the gated `recommendations` (which is empty
+            // while editing/showing results), so the widget keeps its trending model.
+            WidgetDataWriter.writeTrendingModel(
+                from: state.loadedRecommendations as? [RecommendationSection] ?? []
+            )
         }
     }
 
@@ -117,6 +121,10 @@ final class ModelSearchViewModel: ObservableObject {
 
     func onSearch() {
         vm.onSearch()
+    }
+
+    func onSearchFocusChanged(_ focused: Bool) {
+        vm.onSearchFocusChanged(focused: focused)
     }
 
     func onHistoryItemClick(_ item: String) {

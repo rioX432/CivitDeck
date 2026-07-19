@@ -1,5 +1,8 @@
 package com.riox432.civitdeck.ui.search
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -25,6 +28,7 @@ import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Style
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -43,25 +47,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.riox432.civitdeck.BuildConfig
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Groups navigation/action callback parameters for the search screen.
@@ -72,7 +80,19 @@ data class SearchScreenCallbacks(
     val onDiscoverClick: () -> Unit = {},
     val onCompareModel: (Long, String) -> Unit = { _, _ -> },
     val onScanQRCode: () -> Unit = {},
-    val onTextSearch: () -> Unit = {},
+)
+
+/**
+ * Opt-in on-device semantic search actions surfaced in the search speed-dial. Both are
+ * hidden unless the matching encoder is available (Android experiment only); keyword/tag
+ * search always drives the grid, so these never sit on the primary retrieval path.
+ */
+private data class SemanticFabActions(
+    val showSemanticToggle: Boolean,
+    val isSemanticEnabled: Boolean,
+    val onToggleSemantic: () -> Unit,
+    val showImageSearch: Boolean,
+    val onPickImage: () -> Unit,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -289,6 +309,22 @@ private fun BoxScope.SearchScreenForeground(
     compareModelName: String?,
     onShowFilterSheet: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            scope.launch {
+                // Reading a shared URI can throw (revoked grant, missing file, OOM on a huge
+                // image) — swallow so a failed pick never crashes search.
+                val bytes = withContext(Dispatchers.IO) {
+                    runCatching { context.contentResolver.openInputStream(uri)?.use { it.readBytes() } }
+                        .getOrNull()
+                }
+                if (bytes != null) viewModel.onImageSearch(bytes)
+            }
+        }
+    }
+
     CollapsibleHeader(
         headerState = headerState,
         query = uiState.query,
@@ -298,6 +334,8 @@ private fun BoxScope.SearchScreenForeground(
         onHistoryItemClick = viewModel::onHistoryItemClick,
         onDeleteHistoryItem = viewModel::removeSearchHistoryItem,
         onClearHistory = viewModel::clearSearchHistory,
+        onFocusChanged = viewModel::onSearchFocusChanged,
+        onClearSearch = viewModel::clearSearch,
     )
 
     SpeedDialFab(
@@ -306,7 +344,17 @@ private fun BoxScope.SearchScreenForeground(
         onFilterClick = onShowFilterSheet,
         onDiscoverClick = callbacks.onDiscoverClick,
         onScanQRCode = callbacks.onScanQRCode,
-        onTextSearch = if (BuildConfig.FEATURE_SIMILARITY_SEARCH) callbacks.onTextSearch else null,
+        semanticActions = SemanticFabActions(
+            showSemanticToggle = uiState.semanticAvailable,
+            isSemanticEnabled = uiState.isSemanticEnabled,
+            onToggleSemantic = viewModel::onToggleSemanticSearch,
+            showImageSearch = uiState.imageSearchAvailable,
+            onPickImage = {
+                imagePicker.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                )
+            },
+        ),
         modifier = Modifier
             .align(Alignment.BottomEnd)
             .padding(Spacing.lg),
@@ -420,7 +468,7 @@ private fun SpeedDialFab(
     onFilterClick: () -> Unit,
     onDiscoverClick: () -> Unit,
     onScanQRCode: () -> Unit,
-    onTextSearch: (() -> Unit)?,
+    semanticActions: SemanticFabActions,
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -457,11 +505,8 @@ private fun SpeedDialFab(
                     expanded = false
                     onScanQRCode()
                 },
-                onTextSearch = onTextSearch?.let { {
-                    expanded = false
-                    it()
-                }
-                },
+                semanticActions = semanticActions,
+                onCollapse = { expanded = false },
             )
             PrimarySpeedDialFab(
                 expanded = expanded,
@@ -507,30 +552,76 @@ private fun PrimarySpeedDialFab(
 }
 
 @Composable
+private fun SemanticSpeedDialItems(
+    expanded: Boolean,
+    semanticActions: SemanticFabActions,
+    onCollapse: () -> Unit,
+    enter: androidx.compose.animation.EnterTransition,
+    exit: androidx.compose.animation.ExitTransition,
+) {
+    if (semanticActions.showSemanticToggle) {
+        SpeedDialItem(
+            visible = expanded,
+            label = stringResource(R.string.search_semantic_toggle),
+            icon = {
+                Icon(
+                    Icons.Outlined.AutoAwesome,
+                    contentDescription = stringResource(R.string.search_semantic_toggle),
+                )
+            },
+            containerColor = if (semanticActions.isSemanticEnabled) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.secondaryContainer
+            },
+            onClick = {
+                onCollapse()
+                semanticActions.onToggleSemantic()
+            },
+            enter = enter,
+            exit = exit,
+        )
+    }
+    if (semanticActions.showImageSearch) {
+        SpeedDialItem(
+            visible = expanded,
+            label = stringResource(R.string.search_image_search),
+            icon = {
+                Icon(Icons.Outlined.Image, contentDescription = stringResource(R.string.search_image_search))
+            },
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            onClick = {
+                onCollapse()
+                semanticActions.onPickImage()
+            },
+            enter = enter,
+            exit = exit,
+        )
+    }
+}
+
+@Composable
 private fun SpeedDialItems(
     expanded: Boolean,
     onFilterClick: () -> Unit,
     activeFilterCount: Int,
     onDiscoverClick: () -> Unit,
     onScanQRCode: () -> Unit,
-    onTextSearch: (() -> Unit)?,
+    semanticActions: SemanticFabActions,
+    onCollapse: () -> Unit,
 ) {
     val enterAnim = scaleIn(animationSpec = tween(Duration.fast, easing = Easing.standard)) +
         fadeIn(animationSpec = tween(Duration.fast, easing = Easing.standard))
     val exitAnim = scaleOut(animationSpec = tween(Duration.fast, easing = Easing.standard)) +
         fadeOut(animationSpec = tween(Duration.fast, easing = Easing.standard))
 
-    if (onTextSearch != null) {
-        SpeedDialItem(
-            visible = expanded,
-            label = "AI Search",
-            icon = { Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI Search") },
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            onClick = onTextSearch,
-            enter = enterAnim,
-            exit = exitAnim,
-        )
-    }
+    SemanticSpeedDialItems(
+        expanded = expanded,
+        semanticActions = semanticActions,
+        onCollapse = onCollapse,
+        enter = enterAnim,
+        exit = exitAnim,
+    )
     SpeedDialItem(
         visible = expanded,
         label = stringResource(R.string.cd_scan_qr_code),

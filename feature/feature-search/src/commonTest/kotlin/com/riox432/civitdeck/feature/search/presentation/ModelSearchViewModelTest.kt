@@ -9,9 +9,16 @@ import com.riox432.civitdeck.domain.repository.HiddenModelRepository
 import com.riox432.civitdeck.domain.repository.HuggingFaceRepository
 import com.riox432.civitdeck.domain.repository.ModelFileHashRepository
 import com.riox432.civitdeck.domain.repository.SavedSearchFilterRepository
+import com.riox432.civitdeck.domain.model.ModelEmbedding
+import com.riox432.civitdeck.domain.model.SimilarModelHit
+import com.riox432.civitdeck.domain.repository.ModelEmbeddingRepository
 import com.riox432.civitdeck.domain.repository.SearchHistoryRepository
 import com.riox432.civitdeck.domain.repository.TensorArtRepository
 import com.riox432.civitdeck.domain.usecase.AddExcludedTagUseCase
+import com.riox432.civitdeck.domain.usecase.EmbedImageUseCase
+import com.riox432.civitdeck.domain.usecase.FindSimilarModelsByEmbeddingUseCase
+import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
+import com.riox432.civitdeck.domain.usecase.TextSearchUseCase
 import com.riox432.civitdeck.domain.usecase.ClearSearchHistoryUseCase
 import com.riox432.civitdeck.domain.usecase.GetExcludedTagsUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
@@ -40,7 +47,9 @@ import com.riox432.civitdeck.testing.FakeAppBehaviorPreferencesRepository
 import com.riox432.civitdeck.testing.FakeBrowsingHistoryRepository
 import com.riox432.civitdeck.testing.FakeContentFilterPreferencesRepository
 import com.riox432.civitdeck.testing.FakeFavoriteRepository
+import com.riox432.civitdeck.testing.FakeImageEmbeddingModel
 import com.riox432.civitdeck.testing.FakeModelRepository
+import com.riox432.civitdeck.testing.FakeTextEmbeddingModel
 import com.riox432.civitdeck.testing.testModel
 import com.riox432.civitdeck.testing.testPaginatedResult
 import kotlinx.coroutines.Dispatchers
@@ -134,6 +143,20 @@ class ModelSearchViewModelTest {
         override suspend fun setThemeMode(mode: com.riox432.civitdeck.domain.model.ThemeMode) = Unit
     }
 
+    private class FakeModelEmbeddingRepo : ModelEmbeddingRepository {
+        override suspend fun get(modelId: Long): ModelEmbedding? = null
+        override suspend fun count(embeddingModel: String) = 0
+        override suspend fun cache(embedding: ModelEmbedding) = Unit
+        override suspend fun findSimilar(
+            query: FloatArray,
+            embeddingModel: String,
+            limit: Int,
+            excludeModelId: Long?,
+        ): List<SimilarModelHit> = emptyList()
+        override suspend fun deleteStale(keepModel: String) = 0
+        override suspend fun clear() = Unit
+    }
+
     private class TestDeps(
         val vm: ModelSearchViewModel,
         val modelRepo: FakeModelRepository,
@@ -161,6 +184,7 @@ class ModelSearchViewModelTest {
         val searchHistoryRepo = FakeSearchHistoryRepo()
         val hashRepo = FakeModelFileHashRepo()
         val displayRepo = FakeDisplayPrefsRepo()
+        val embeddingRepo = FakeModelEmbeddingRepo()
 
         val multiSource = MultiSourceSearchUseCase(modelRepo, hfRepo, taRepo)
 
@@ -206,6 +230,15 @@ class ModelSearchViewModelTest {
                 toggleFavorite = ToggleFavoriteUseCase(favRepo),
                 observeFavorites = ObserveFavoritesUseCase(favRepo),
                 observeOwnedModelHashes = ObserveOwnedModelHashesUseCase(hashRepo),
+            ),
+            semanticUseCases = SearchSemanticUseCases(
+                // Encoders default to unavailable, mirroring iOS/Desktop/ML-free flavors:
+                // the semantic/image paths stay off and keyword search always drives results.
+                textSearch = TextSearchUseCase(FakeTextEmbeddingModel(), embeddingRepo),
+                embedImage = EmbedImageUseCase(FakeImageEmbeddingModel()),
+                findSimilarByEmbedding = FindSimilarModelsByEmbeddingUseCase(embeddingRepo),
+                getModelDetail = GetModelDetailUseCase(modelRepo),
+                embeddingRepository = embeddingRepo,
             ),
         )
         return TestDeps(vm, modelRepo, favRepo, nsfwPrefs)
@@ -338,6 +371,92 @@ class ModelSearchViewModelTest {
         deps.vm.onTypeSelected(null)
         advanceUntilIdle()
         assertTrue(!deps.vm.uiState.value.hasActiveSearch)
+    }
+
+    // endregion
+
+    // region SearchState machine (Idle / Editing / Results)
+
+    @Test
+    fun search_state_starts_idle_with_visible_recommendations() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+        val st = deps.vm.uiState.value
+        assertEquals(SearchState.Idle, st.searchState)
+        assertTrue(st.recommendations.isNotEmpty(), "recommendations should show while idle")
+    }
+
+    @Test
+    fun focusing_empty_bar_moves_to_editing_and_hides_recommendations() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+
+        deps.vm.onSearchFocusChanged(true)
+        advanceUntilIdle()
+
+        val st = deps.vm.uiState.value
+        assertEquals(SearchState.Editing, st.searchState)
+        assertTrue(st.recommendations.isEmpty(), "recommendations must hide while editing")
+    }
+
+    @Test
+    fun submitting_query_moves_to_results_and_hides_recommendations() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+
+        deps.vm.onSearchFocusChanged(true)
+        deps.vm.onQueryChange("anime")
+        deps.vm.onSearch()
+        advanceUntilIdle()
+
+        val st = deps.vm.uiState.value
+        assertEquals(SearchState.Results, st.searchState)
+        assertTrue(st.recommendations.isEmpty())
+    }
+
+    @Test
+    fun clearing_search_returns_to_idle_and_restores_recommendations() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+
+        deps.vm.onSearchFocusChanged(true)
+        deps.vm.onQueryChange("anime")
+        deps.vm.onSearch()
+        advanceUntilIdle()
+        assertEquals(SearchState.Results, deps.vm.uiState.value.searchState)
+
+        deps.vm.clearSearch()
+        advanceUntilIdle()
+
+        val st = deps.vm.uiState.value
+        assertEquals(SearchState.Idle, st.searchState)
+        assertEquals("", st.query)
+        assertTrue(st.recommendations.isNotEmpty(), "recommendations must be restored on clear")
+    }
+
+    @Test
+    fun semantic_and_image_search_unavailable_by_default() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+        val st = deps.vm.uiState.value
+        // Encoders are fakes reporting unavailable — the opt-in experiments stay hidden and
+        // keyword retrieval remains the sole driver, honoring the isolation invariant.
+        assertTrue(!st.semanticAvailable)
+        assertTrue(!st.imageSearchAvailable)
+    }
+
+    @Test
+    fun image_search_is_ignored_when_embedder_unavailable() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+        val modelsBefore = deps.vm.uiState.value.models
+
+        deps.vm.onImageSearch(byteArrayOf(1, 2, 3))
+        advanceUntilIdle()
+
+        // No embedder → no experimental takeover; keyword results are untouched.
+        assertTrue(!deps.vm.uiState.value.isExperimentalSearchActive)
+        assertEquals(modelsBefore, deps.vm.uiState.value.models)
     }
 
     // endregion

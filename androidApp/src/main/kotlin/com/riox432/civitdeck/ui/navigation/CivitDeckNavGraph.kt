@@ -334,8 +334,6 @@ private fun CivitDeckNavDisplay(
             batchTagEditorEntry(backStack)
             duplicateReviewEntry(backStack)
             detailEntry(backStack)
-            similarModelsEntry(backStack)
-            textSearchEntry(backStack)
             qrScannerEntry(backStack)
             analyticsEntry(backStack)
             notificationCenterEntry(backStack)
@@ -381,7 +379,6 @@ private fun EntryProviderScope<Any>.searchEntry(
                 onDiscoverClick = { backStack.add(DiscoveryRoute) },
                 onCompareModel = onCompareModel,
                 onScanQRCode = { backStack.add(QRScannerRoute) },
-                onTextSearch = { backStack.add(TextSearchRoute) },
             ),
             scrollToTopTrigger = searchScrollTrigger,
             compareModelName = compareModelName,

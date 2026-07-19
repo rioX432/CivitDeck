@@ -98,6 +98,8 @@ internal fun HeaderSnapEffect(gridState: LazyGridState, headerState: Collapsible
 }
 
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 internal fun CollapsibleHeader(
     headerState: CollapsibleHeaderState,
     query: String,
@@ -107,6 +109,8 @@ internal fun CollapsibleHeader(
     onHistoryItemClick: (String) -> Unit,
     onDeleteHistoryItem: (String) -> Unit,
     onClearHistory: () -> Unit,
+    onFocusChanged: (Boolean) -> Unit,
+    onClearSearch: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -126,11 +130,15 @@ internal fun CollapsibleHeader(
             onHistoryItemClick = onHistoryItemClick,
             onDeleteHistoryItem = onDeleteHistoryItem,
             onClearHistory = onClearHistory,
+            onFocusChanged = onFocusChanged,
+            onClearSearch = onClearSearch,
         )
     }
 }
 
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun SearchBarWithFilterButton(
     query: String,
     onQueryChange: (String) -> Unit,
@@ -139,6 +147,8 @@ private fun SearchBarWithFilterButton(
     onHistoryItemClick: (String) -> Unit,
     onDeleteHistoryItem: (String) -> Unit,
     onClearHistory: () -> Unit,
+    onFocusChanged: (Boolean) -> Unit,
+    onClearSearch: () -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     var showHistory by remember { mutableStateOf(false) }
@@ -156,11 +166,13 @@ private fun SearchBarWithFilterButton(
                 showHistory = false
             },
             onFocusChanged = { focused ->
+                // Drives SearchState.Editing so recommendations hide the moment the bar is
+                // focused, and reappear on blur (see ModelSearchViewModel.onSearchFocusChanged).
+                onFocusChanged(focused)
                 showHistory = focused && query.isEmpty() && searchHistory.isNotEmpty()
             },
             onClear = {
-                onQueryChange("")
-                onSearch()
+                onClearSearch()
                 showHistory = searchHistory.isNotEmpty()
             },
             modifier = Modifier.fillMaxWidth(),

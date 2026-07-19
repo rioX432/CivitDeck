@@ -1,7 +1,6 @@
 package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.domain.download.DownloadScheduler
-import com.riox432.civitdeck.domain.repository.ModelEmbeddingRepository
 import com.riox432.civitdeck.domain.usecase.ActivatePluginUseCase
 import com.riox432.civitdeck.domain.usecase.AddShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.BatchEditTagsUseCase
@@ -15,10 +14,8 @@ import com.riox432.civitdeck.domain.usecase.DeleteDatasetCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.DeleteDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.DetectDuplicatesUseCase
 import com.riox432.civitdeck.domain.usecase.EditCaptionUseCase
-import com.riox432.civitdeck.domain.usecase.FindSimilarModelsByEmbeddingUseCase
 import com.riox432.civitdeck.domain.usecase.GetBrowsingStatsUseCase
 import com.riox432.civitdeck.domain.usecase.GetCreatorFeedUseCase
-import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelUpdateNotificationsUseCase
 import com.riox432.civitdeck.domain.usecase.GetPluginConfigUseCase
 import com.riox432.civitdeck.domain.usecase.GetTagSuggestionsUseCase
@@ -42,7 +39,6 @@ import com.riox432.civitdeck.domain.usecase.RestoreBackupUseCase
 import com.riox432.civitdeck.domain.usecase.ResumeDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.SetAutoUpdateCheckUseCase
 import com.riox432.civitdeck.domain.usecase.SetSeenTutorialVersionUseCase
-import com.riox432.civitdeck.domain.usecase.TextSearchUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.UninstallPluginUseCase
 import com.riox432.civitdeck.domain.usecase.UpdatePluginConfigUseCase
@@ -59,8 +55,6 @@ import com.riox432.civitdeck.feature.gallery.presentation.GestureTutorialViewMod
 import com.riox432.civitdeck.feature.gallery.presentation.NotificationCenterViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ShareViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.UpdateViewModel
-import com.riox432.civitdeck.feature.search.presentation.SimilarModelsViewModel
-import com.riox432.civitdeck.feature.search.presentation.TextSearchViewModel
 import com.riox432.civitdeck.feature.settings.presentation.BackupViewModel
 import com.riox432.civitdeck.presentation.plugin.PluginManagementViewModel
 import org.koin.core.module.dsl.viewModel
@@ -97,14 +91,6 @@ val phase3ViewModelModule = module {
             uninstallPluginUseCase = get<UninstallPluginUseCase>(),
             getPluginConfigUseCase = get<GetPluginConfigUseCase>(),
             updatePluginConfigUseCase = get<UpdatePluginConfigUseCase>(),
-        )
-    }
-    viewModel { params ->
-        SimilarModelsViewModel(
-            modelId = params.get(),
-            getModelDetail = get<GetModelDetailUseCase>(),
-            embeddingRepository = get<ModelEmbeddingRepository>(),
-            findSimilarByEmbedding = get<FindSimilarModelsByEmbeddingUseCase>(),
         )
     }
     viewModel {
@@ -154,12 +140,6 @@ val phase3ViewModelModule = module {
             observeDatasetImagesUseCase = get<ObserveDatasetImagesUseCase>(),
             batchEditTagsUseCase = get<BatchEditTagsUseCase>(),
             getTagSuggestionsUseCase = get<GetTagSuggestionsUseCase>(),
-        )
-    }
-    viewModel {
-        TextSearchViewModel(
-            textSearchUseCase = get<TextSearchUseCase>(),
-            getModelDetail = get<GetModelDetailUseCase>(),
         )
     }
     viewModel {

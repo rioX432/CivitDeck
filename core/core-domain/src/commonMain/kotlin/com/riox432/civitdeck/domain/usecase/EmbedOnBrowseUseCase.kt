@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.domain.usecase
 
+import com.riox432.civitdeck.domain.ml.EmbeddingModels
 import com.riox432.civitdeck.domain.model.ModelEmbedding
 import com.riox432.civitdeck.domain.repository.ModelEmbeddingRepository
 import com.riox432.civitdeck.domain.repository.ThumbnailDownloader
@@ -36,15 +37,10 @@ class EmbedOnBrowseUseCase(
         embeddingRepository.cache(
             ModelEmbedding(
                 modelId = modelId,
-                embeddingModel = EMBEDDING_MODEL_ID,
+                embeddingModel = EmbeddingModels.SIGLIP2_BASE,
                 vector = vector,
                 cachedAt = 0L, // repository fills in current time when cachedAt <= 0
             ),
         )
-    }
-
-    private companion object {
-        /** Matches the SigLIP-2 base model used across all platforms. */
-        private const val EMBEDDING_MODEL_ID = "siglip2-base-p16-224"
     }
 }
