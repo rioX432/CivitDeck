@@ -4,7 +4,7 @@
 
 # CivitDeck
 
-**The power user client for CivitAI — browse, compare, and bridge to your generation workflow**
+**The CivitAI app for discovery — browse, personalize, and find the models & prompts you want**
 
 Built with Kotlin Multiplatform (KMP) | Android, iOS & Desktop
 
@@ -34,7 +34,7 @@ Built with Kotlin Multiplatform (KMP) | Android, iOS & Desktop
 2. **Metadata is buried** — generation parameters (prompt, sampler, CFG, seed) are hidden behind multiple clicks. Comparing model versions is tedious.
 3. **Mobile web is painful** — CivitAI's desktop site on mobile means pinch-zooming, slow loads, and no offline access.
 
-CivitDeck is built for power users and creators who generate, not just browse.
+CivitDeck is the CivitAI app for discovery: browse and search the catalog fast on mobile, get a feed personalized to what you actually use, and surface the right models and prompts — then bridge what you find straight to your local generation setup.
 
 ## Features
 
@@ -75,7 +75,7 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Fresh Find** — discover recently published models before they trend
 - **Quality Filter** — filter models by calculated quality score based on downloads, favorites, and ratings
 - **Integrations Hub** — unified management screen for ComfyUI, SD WebUI, Civitai Link, and external servers
-- **Cross-Platform** — native Android (Jetpack Compose), iOS (SwiftUI) & Desktop (Compose Desktop) with 49 shared ViewModels in KMP commonMain
+- **Cross-Platform** — native Android (Jetpack Compose), iOS (SwiftUI) & Desktop (Compose Desktop) with 42 shared ViewModels in KMP commonMain
 
 See the full [Roadmap](docs/ROADMAP.md) for planned features.
 
