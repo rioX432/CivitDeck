@@ -1,10 +1,6 @@
 import SwiftUI
 import Shared
 
-struct CompareDestination: Hashable {
-    let leftModelId: Int64
-    let rightModelId: Int64
-}
 struct ModelSearchScreen: View {
     @ObservedObject var viewModel: ModelSearchViewModel
     @EnvironmentObject private var comparisonState: ComparisonState
@@ -162,8 +158,6 @@ struct ModelSearchScreen: View {
             },
             isFocused: $isSearchFocused
         )
-        // Mirrors DiscoveryTestTags.SEARCH_FIELD (core-ui) so the discovery flow is
-        // addressable from UI tests on the same contract as Android/Desktop (issue #990).
         .accessibilityIdentifier("discovery_search_field")
         .onChange(of: viewModel.query) { newValue in
             showHistory = newValue.isEmpty
@@ -307,7 +301,6 @@ struct ModelSearchScreen: View {
                             isOwned: viewModel.isModelOwned(model),
                             heroNamespace: heroNamespace
                         )
-                        // Mirrors DiscoveryTestTags.MODEL_CARD (core-ui) — issue #990.
                         .accessibilityIdentifier("discovery_model_card")
                         .onTapGesture {
                             if let cmpId = comparisonState.selectedModelId {
@@ -340,7 +333,6 @@ struct ModelSearchScreen: View {
                     }
                 }
                 .padding(.horizontal, Spacing.md)
-                // Mirrors DiscoveryTestTags.MODEL_GRID (core-ui) — issue #990.
                 .accessibilityIdentifier("discovery_model_grid")
 
                 if viewModel.isLoadingMore {
