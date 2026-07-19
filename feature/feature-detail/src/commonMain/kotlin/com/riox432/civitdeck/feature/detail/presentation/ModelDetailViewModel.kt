@@ -11,9 +11,6 @@ import com.riox432.civitdeck.domain.model.ModelImage
 import com.riox432.civitdeck.domain.model.ModelNote
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PersonalTag
-import com.riox432.civitdeck.domain.model.RatingTotals
-import com.riox432.civitdeck.domain.model.ResourceReview
-import com.riox432.civitdeck.domain.model.ReviewSortOrder
 import com.riox432.civitdeck.domain.model.SystemStats
 import com.riox432.civitdeck.domain.util.ApplicationScope
 import com.riox432.civitdeck.domain.util.SystemStatsProvider
@@ -46,13 +43,6 @@ data class ModelDetailUiState(
     val note: ModelNote? = null,
     val personalTags: List<PersonalTag> = emptyList(),
     val downloads: List<ModelDownload> = emptyList(),
-    val reviews: List<ResourceReview> = emptyList(),
-    val ratingTotals: RatingTotals? = null,
-    val reviewSortOrder: ReviewSortOrder = ReviewSortOrder.Newest,
-    val isReviewsLoading: Boolean = false,
-    val reviewsError: String? = null,
-    val isSubmittingReview: Boolean = false,
-    val reviewSubmitSuccess: Boolean = false,
     val systemStats: SystemStats? = null,
     val fileVramCompatibility: Map<Long, VramCompatibility> = emptyMap(),
 ) : UiLoadingState
@@ -63,7 +53,6 @@ class ModelDetailViewModel(
     private val collectionUseCases: CollectionUseCases,
     private val notesTagsUseCases: NotesTagsUseCases,
     private val downloadUseCases: DownloadUseCases,
-    private val reviewUseCases: ReviewUseCases,
     private val systemStatsProvider: SystemStatsProvider,
     private val appScope: ApplicationScope,
 ) : ViewModel() {
@@ -72,15 +61,6 @@ class ModelDetailViewModel(
     val uiState: StateFlow<ModelDetailUiState> = _uiState.asStateFlow()
     private val enrichedVersionIds = MutableStateFlow<Set<Long>>(emptySet())
     private var viewStartTimeMs: Long = 0L
-
-    private val reviewDelegate = DetailReviewDelegate(
-        modelId = modelId,
-        scope = viewModelScope,
-        uiState = _uiState,
-        getModelReviewsUseCase = reviewUseCases.getModelReviews,
-        getRatingTotalsUseCase = reviewUseCases.getRatingTotals,
-        submitReviewUseCase = reviewUseCases.submitReview,
-    )
 
     private val notesTagsDelegate = DetailNotesTagsDelegate(
         modelId = modelId,
@@ -134,7 +114,6 @@ class ModelDetailViewModel(
     init {
         loadModel()
         observersDelegate.start()
-        reviewDelegate.loadReviews()
         fetchSystemStats()
     }
 
@@ -190,21 +169,6 @@ class ModelDetailViewModel(
     }
 
     fun cancelDownload(downloadId: Long) = downloadDelegate.cancelDownload(downloadId)
-
-    // endregion
-
-    // region Reviews
-
-    fun onReviewSortChanged(order: ReviewSortOrder) = reviewDelegate.onReviewSortChanged(order)
-
-    fun submitReview(
-        modelVersionId: Long,
-        rating: Int,
-        recommended: Boolean,
-        details: String?,
-    ) = reviewDelegate.submitReview(modelVersionId, rating, recommended, details)
-
-    fun dismissReviewSuccess() = reviewDelegate.dismissReviewSuccess()
 
     // endregion
 

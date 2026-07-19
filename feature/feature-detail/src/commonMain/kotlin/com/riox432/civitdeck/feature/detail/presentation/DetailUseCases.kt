@@ -9,8 +9,6 @@ import com.riox432.civitdeck.domain.usecase.EmbedOnBrowseUseCase
 import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
-import com.riox432.civitdeck.domain.usecase.GetModelReviewsUseCase
-import com.riox432.civitdeck.domain.usecase.GetRatingTotalsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
@@ -22,7 +20,6 @@ import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
-import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 
@@ -70,13 +67,4 @@ data class DownloadUseCases(
     val observeModelDownloads: ObserveModelDownloadsUseCase,
     val enqueueDownload: EnqueueDownloadUseCase,
     val cancelDownload: CancelDownloadUseCase,
-)
-
-/**
- * Review operations: fetching reviews/ratings and submitting new reviews.
- */
-data class ReviewUseCases(
-    val getModelReviews: GetModelReviewsUseCase,
-    val getRatingTotals: GetRatingTotalsUseCase,
-    val submitReview: SubmitReviewUseCase,
 )

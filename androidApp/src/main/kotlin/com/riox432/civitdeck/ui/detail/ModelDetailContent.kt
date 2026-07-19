@@ -39,13 +39,12 @@ data class ModelDetailCallbacks(
     val onTryInComfyUI:
     ((sha256: String, modelName: String, meta: com.riox432.civitdeck.domain.model.ImageGenerationMeta?) -> Unit)?,
     val onSendToPC: () -> Unit = {},
+    val canSendToPC: Boolean = false,
     val onSaveNote: (String) -> Unit = {},
     val onAddTag: (String) -> Unit = {},
     val onRemoveTag: (String) -> Unit = {},
     val onDownloadFile: (ModelFile) -> Unit = {},
     val onCancelDownload: (Long) -> Unit = {},
-    val onReviewSortChanged: (com.riox432.civitdeck.domain.model.ReviewSortOrder) -> Unit = {},
-    val onWriteReview: () -> Unit = {},
 )
 
 @Composable
@@ -182,11 +181,12 @@ private fun LazyListScope.modelDetailActionItems(
                     callbacks.onTryInComfyUI.invoke(sha256, model.name, sampleMeta)
                 }
             },
+            showSendToPC = callbacks.canSendToPC,
             onSendToPC = callbacks.onSendToPC,
         )
     }
     // Decision-order: what the model IS (description, versions, files) comes before
-    // personal annotations (notes, tags) and reviews, which are empty on most models.
+    // personal annotations (notes, tags), which are empty on most models.
     if (model.tags.isNotEmpty()) { item { TagsSection(tags = model.tags) } }
     model.description?.takeIf { it.isNotBlank() }?.let { description ->
         item { DescriptionSection(description = description) }
@@ -216,16 +216,6 @@ private fun LazyListScope.modelDetailActionItems(
             tags = uiState.personalTags,
             onAddTag = callbacks.onAddTag,
             onRemoveTag = callbacks.onRemoveTag,
-        )
-    }
-    item {
-        ReviewsSection(
-            reviews = uiState.reviews,
-            ratingTotals = uiState.ratingTotals,
-            sortOrder = uiState.reviewSortOrder,
-            isLoading = uiState.isReviewsLoading,
-            onSortChanged = callbacks.onReviewSortChanged,
-            onWriteReview = callbacks.onWriteReview,
         )
     }
 }

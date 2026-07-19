@@ -5,7 +5,6 @@ import com.riox432.civitdeck.feature.detail.presentation.DownloadUseCases
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelUseCases
 import com.riox432.civitdeck.feature.detail.presentation.NotesTagsUseCases
-import com.riox432.civitdeck.feature.detail.presentation.ReviewUseCases
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -42,8 +41,7 @@ val detailModule = module {
         )
     }
     factory { DownloadUseCases(observeModelDownloads = get(), enqueueDownload = get(), cancelDownload = get()) }
-    factory { ReviewUseCases(getModelReviews = get(), getRatingTotals = get(), submitReview = get()) }
     viewModel { params ->
-        ModelDetailViewModel(params.get(), get(), get(), get(), get(), get(), get(), get())
+        ModelDetailViewModel(params.get(), get(), get(), get(), get(), get(), get())
     }
 }

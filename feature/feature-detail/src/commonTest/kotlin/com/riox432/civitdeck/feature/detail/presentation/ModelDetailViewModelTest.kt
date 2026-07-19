@@ -12,15 +12,12 @@ import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.PersonalTag
-import com.riox432.civitdeck.domain.model.RatingTotals
 import com.riox432.civitdeck.domain.repository.CollectionRepository
 import com.riox432.civitdeck.domain.repository.ContentFilterPreferencesRepository
 import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
 import com.riox432.civitdeck.domain.repository.ModelEmbeddingRepository
 import com.riox432.civitdeck.domain.repository.ModelNoteRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
-import com.riox432.civitdeck.domain.repository.ReviewPage
-import com.riox432.civitdeck.domain.repository.ReviewRepository
 import com.riox432.civitdeck.domain.repository.ThumbnailDownloader
 import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
@@ -32,8 +29,6 @@ import com.riox432.civitdeck.domain.usecase.EmbedOnBrowseUseCase
 import com.riox432.civitdeck.domain.usecase.EnqueueDownloadUseCase
 import com.riox432.civitdeck.domain.usecase.EnrichModelImagesUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
-import com.riox432.civitdeck.domain.usecase.GetModelReviewsUseCase
-import com.riox432.civitdeck.domain.usecase.GetRatingTotalsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveModelCollectionsUseCase
@@ -45,7 +40,6 @@ import com.riox432.civitdeck.domain.usecase.ObservePowerUserModeUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveModelFromCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
-import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.util.ApplicationScope
@@ -152,26 +146,6 @@ class ModelDetailViewModelTest {
         override suspend fun clearCompletedDownloads() = Unit
     }
 
-    private class FakeReviewRepo : ReviewRepository {
-        override suspend fun getReviews(
-            modelId: Long,
-            modelVersionId: Long?,
-            limit: Int,
-            cursor: Int?,
-        ) = ReviewPage(emptyList(), null)
-
-        override suspend fun getRatingTotals(modelId: Long, modelVersionId: Long?) =
-            RatingTotals(0, 0, 0, 0, 0, 0, 0)
-
-        override suspend fun submitReview(
-            modelId: Long,
-            modelVersionId: Long,
-            rating: Int,
-            recommended: Boolean,
-            details: String?,
-        ) = Unit
-    }
-
     private class NoOpEmbeddingRepo : ModelEmbeddingRepository {
         override suspend fun get(modelId: Long) = null
         override suspend fun count(embeddingModel: String) = 0
@@ -213,7 +187,6 @@ class ModelDetailViewModelTest {
         val noteRepo = FakeNoteRepo()
         val powerUserRepo = FakeAppBehaviorPreferencesRepository()
         val downloadRepo = FakeDownloadRepo()
-        val reviewRepo = FakeReviewRepo()
 
         val modelUseCases = ModelUseCases(
             getModelDetail = GetModelDetailUseCase(modelRepo),
@@ -249,11 +222,6 @@ class ModelDetailViewModelTest {
             enqueueDownload = EnqueueDownloadUseCase(downloadRepo),
             cancelDownload = CancelDownloadUseCase(downloadRepo),
         )
-        val reviewUseCases = ReviewUseCases(
-            getModelReviews = GetModelReviewsUseCase(reviewRepo),
-            getRatingTotals = GetRatingTotalsUseCase(reviewRepo),
-            submitReview = SubmitReviewUseCase(reviewRepo),
-        )
 
         val vm = ModelDetailViewModel(
             modelId = model.id,
@@ -261,7 +229,6 @@ class ModelDetailViewModelTest {
             collectionUseCases = collectionUseCases,
             notesTagsUseCases = notesTagsUseCases,
             downloadUseCases = downloadUseCases,
-            reviewUseCases = reviewUseCases,
             systemStatsProvider = SystemStatsProvider { null },
             appScope = appScope,
         )
@@ -275,6 +242,14 @@ class ModelDetailViewModelTest {
         assertNull(state.error)
         assertEquals("Test Model", state.model?.name)
         assertTrue(deps.modelRepo.getModelCalled)
+    }
+
+    @Test
+    fun rating_is_retained_in_state() = runTest {
+        // Model.stats.rating is sourced from the REST /models stats object, independent of the
+        // review pipeline, so it surfaces in detail state without any review use case involved.
+        val deps = createViewModel(this)
+        assertEquals(4.5, deps.vm.uiState.value.model?.stats?.rating)
     }
 
     @Test
