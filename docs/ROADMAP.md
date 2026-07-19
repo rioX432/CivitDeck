@@ -183,7 +183,7 @@ Also shipped in this pass: results-first search (recommendation carousels hidden
 Go beyond CivitAI-only search. Help users find the right model faster with cross-platform search and smart recommendations.
 
 - [x] Multi-platform model search (HuggingFace + TensorArt) — unified search with platform filter and source indicators
-- [x] Image similarity search — find visually similar models using on-device SigLIP-2 embeddings
+- [~] Image similarity search (experimental, Android-only, off by default) — on-device SigLIP-2 embeddings. Not shipped: build-flag gated, indexes only locally-cached models, no working iOS/Desktop encoder. Corpus-index path scoped in [docs/research/989-semantic-corpus-index-spike.md](research/989-semantic-corpus-index-spike.md).
 - [x] Smart feed with quality filtering (anti-Buzz-farming) — quality score based on downloads, favorites, and ratings
 - [x] Model update notifications for followed models
 - [x] ComfyHub workflow integration — browse and import community workflows directly into the workflow library

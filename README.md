@@ -67,8 +67,7 @@ CivitDeck is built for power users and creators who generate, not just browse.
 - **Generation Notifications** — get notified when ComfyUI generations finish via local notifications or ntfy.sh push, with background monitoring kept alive by a foreground service
 - **Hardware Monitoring** — view connected ComfyUI server hardware (VRAM/RAM/GPU) with per-model VRAM compatibility badges and optimization suggestions
 - **CivitAI Site Toggle** — choose whether web and share links open `civitai.com` (SFW) or `civitai.red` (full), independent of the content filter
-- **Image Similarity Search** — find visually similar models using on-device SigLIP-2 embeddings
-- **Text-to-Image Search** — describe what you want in natural language, find matching models via SigLIP-2 text encoder
+- **Semantic Search (experimental, Android-only, off by default)** — on-device SigLIP-2 embeddings for "find similar" and natural-language search. Not a shipped feature: it is gated behind a build flag, covers only locally-cached models (not the CivitAI catalog), and is not wired into the default search path. iOS and Desktop have no working encoder. See [docs/research/989-semantic-corpus-index-spike.md](docs/research/989-semantic-corpus-index-spike.md).
 - **Model Update Notifications** — get notified when followed models receive updates
 - **Smart Recommendations** — personalized model suggestions with time-decay scoring and engagement tracking
 - **Browsing History** — dedicated history screen with search frequency charts

@@ -157,6 +157,14 @@ internal class SigLipTokenizer private constructor(
         }
 
         /**
+         * Builds a tokenizer directly from a vocab JSON string, bypassing Android assets.
+         *
+         * Visible for testing — lets the tokenizer parity test construct a tokenizer from
+         * a fixture without an Android [Context]. The JSON format matches [parseVocab].
+         */
+        internal fun fromVocabJson(jsonStr: String): SigLipTokenizer = parseVocab(jsonStr)
+
+        /**
          * Parses the vocabulary JSON exported by the Python script.
          *
          * Format:
