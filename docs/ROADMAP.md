@@ -8,14 +8,20 @@ Want to influence priorities? [Open an issue](https://github.com/rioX432/CivitDe
 
 ## Positioning
 
-CivitDeck is the only native iOS/Android/Desktop client for CivitAI.
-Focus: **Browse → Curate → Generate-ready** (not an on-device generator).
-Local-first design hedges against CivitAI platform risk.
+CivitDeck is the only actively-maintained native multiplatform client for CivitAI (Android, iOS, Desktop). CivitAI-RN, the earlier React Native native client, is no longer maintained.
+
+**Current direction — be the CivitAI app for discovery.** The wedge is helping users find the right model and prompt faster: browse, personalize, and search across sources. On-device generation is explicitly out of scope — CivitDeck is a browser and controller, not a generator.
+
+**Distribution is FOSS-first.** Two channels ship from one codebase:
+- `githubFull` — GitHub Releases sideload; bundles on-device ML (SigLIP-2 / ONNX) and in-app self-update.
+- `fdroid` — F-Droid FOSS-store build; no ML assets and no self-update, to stay reproducible and store-policy clean.
+
+Local-first design (Room KMP cache, offline browsing) hedges against CivitAI platform risk.
 
 The core loop:
-1. **Browse** CivitAI models and images on mobile or desktop
-2. **Curate** — save, collect, and compare what you want to use
-3. **Prepare** — build a training dataset and export it, ready for kohya-ss
+1. **Discover** — browse, search, and get a personalized feed of CivitAI models and prompts on mobile or desktop
+2. **Curate** — save, collect, compare, and note what you want to use
+3. **Bridge** — send models to your local ComfyUI / SD WebUI setup, or build and export a training dataset ready for kohya-ss
 
 ---
 
@@ -158,7 +164,7 @@ Features shipped between Phase 6 and 7 that were not originally planned in the r
 - [x] Creator follow & feed ([#123](https://github.com/rioX432/CivitDeck/issues/123), PR [#362](https://github.com/rioX432/CivitDeck/pull/362))
 - [x] Video preview support ([#187](https://github.com/rioX432/CivitDeck/issues/187), PR [#381](https://github.com/rioX432/CivitDeck/pull/381))
 - [x] Background downloads (PR [#385](https://github.com/rioX432/CivitDeck/pull/385))
-- [x] Reviews & ratings ([#189](https://github.com/rioX432/CivitDeck/issues/189), PR [#386](https://github.com/rioX432/CivitDeck/pull/386), [#433](https://github.com/rioX432/CivitDeck/pull/433))
+- [~] Reviews & ratings ([#189](https://github.com/rioX432/CivitDeck/issues/189), PR [#386](https://github.com/rioX432/CivitDeck/pull/386), [#433](https://github.com/rioX432/CivitDeck/pull/433)) — later removed ([#991](https://github.com/rioX432/CivitDeck/pull/991)): reviews are CivitAI's own territory and off the discovery wedge
 - [x] Backup & restore ([#190](https://github.com/rioX432/CivitDeck/issues/190), PR [#387](https://github.com/rioX432/CivitDeck/pull/387))
 - [x] Plugin system ([#409](https://github.com/rioX432/CivitDeck/issues/409)–[#414](https://github.com/rioX432/CivitDeck/issues/414), PR [#419](https://github.com/rioX432/CivitDeck/pull/419))
 
@@ -183,7 +189,8 @@ Also shipped in this pass: results-first search (recommendation carousels hidden
 Go beyond CivitAI-only search. Help users find the right model faster with cross-platform search and smart recommendations.
 
 - [x] Multi-platform model search (HuggingFace + TensorArt) — unified search with platform filter and source indicators
-- [~] Image similarity search (experimental, Android-only, off by default) — on-device SigLIP-2 embeddings. Not shipped: build-flag gated, indexes only locally-cached models, no working iOS/Desktop encoder. Corpus-index path scoped in [docs/research/989-semantic-corpus-index-spike.md](research/989-semantic-corpus-index-spike.md).
+- [x] Unified search bar ([#988](https://github.com/rioX432/CivitDeck/pull/988)) — one Discover search field with `Idle / Editing / Results` states; the earlier separate Text Search and Similar Models entry points are retired and folded in here
+- [~] Text-to-image & image similarity search (experimental, Android-only, off by default) — on-device SigLIP-2 embeddings power both natural-language ("text-to-image") and "find similar" queries. Not shipped: build-flag gated (`githubFull` only), indexes only locally-cached models, no working iOS/Desktop encoder. Corpus-index path scoped in [docs/research/989-semantic-corpus-index-spike.md](research/989-semantic-corpus-index-spike.md).
 - [x] Smart feed with quality filtering (anti-Buzz-farming) — quality score based on downloads, favorites, and ratings
 - [x] Model update notifications for followed models
 - [x] ComfyHub workflow integration — browse and import community workflows directly into the workflow library
