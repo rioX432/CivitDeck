@@ -15,6 +15,12 @@ kotlin {
             implementation(libs.onnxruntime.android)
             implementation(libs.kotlinx.serialization.json)
         }
+
+        // SigLipTokenizer is androidMain-only, so its parity test runs as an
+        // Android host (JVM) unit test — task :core:core-ml:testAndroidHostTest.
+        getByName("androidHostTest").dependencies {
+            implementation(libs.kotlin.test)
+        }
     }
 
     android {

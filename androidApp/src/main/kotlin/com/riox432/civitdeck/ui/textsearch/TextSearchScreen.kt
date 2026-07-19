@@ -130,9 +130,10 @@ private fun TextSearchBody(
 private fun UnavailableState() {
     EmptyStateMessage(
         icon = Icons.Outlined.AutoAwesome,
-        title = "AI Search coming soon",
-        subtitle = "Text-to-image search using SigLIP-2 is under development. " +
-            "The text encoder and tokenizer are being integrated.",
+        title = "AI Search (experimental)",
+        subtitle = "On-device text-to-image search with SigLIP-2 is an Android-only experiment " +
+            "and is not yet available. It only covers models cached on this device, not the " +
+            "CivitAI catalog. The text encoder and tokenizer are still being integrated.",
     )
 }
 

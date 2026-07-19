@@ -60,9 +60,9 @@ struct TextSearchView: View {
     private var unavailableState: some View {
         EmptyStateView(
             icon: "sparkles",
-            title: "AI Search coming soon",
-            subtitle: "Text-to-image search using SigLIP-2 is under development. " +
-                "The text encoder and tokenizer are being integrated."
+            title: "AI Search (experimental)",
+            subtitle: "On-device text-to-image search is an experimental Android-only feature. " +
+                "iOS has no SigLIP-2 text encoder, so this screen is disabled here."
         )
     }
 
