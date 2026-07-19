@@ -51,6 +51,13 @@ internal var sigLIP2Bridge: SigLIP2Bridge? = null
     private set
 
 /**
+ * Reads the registered Swift bridge. Public (unlike the [sigLIP2Bridge] holder) so the
+ * iOS `ImageEmbeddingModel` implementation in `:core:core-ml` — a separate module — can
+ * reach it without exposing the mutable holder.
+ */
+fun currentSigLIP2Bridge(): SigLIP2Bridge? = sigLIP2Bridge
+
+/**
  * Called from Swift `iOSApp.swift` after `doInitKoin` so the platform actual of
  * [ImageEmbeddingModel] can find the Core ML implementation.
  *

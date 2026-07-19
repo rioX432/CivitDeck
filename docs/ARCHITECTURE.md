@@ -20,6 +20,11 @@ CivitDeck/
 │   │       ├── domain/repository/    # Repository interfaces (contracts)
 │   │       ├── domain/usecase/       # Single-responsibility use cases (return Flow)
 │   │       └── di/                   # DomainModule (Koin)
+│   ├── core-ml/              # On-device embedding impls (ONNX/CoreML/no-op) + SigLipTokenizer
+│   │   └── src/{androidMain,iosMain,jvmMain}/kotlin/.../
+│   │       ├── domain/ml/            # ImageEmbeddingModelImpl, TextEmbeddingModelImpl, SigLipTokenizer
+│   │       └── di/                   # mlPlatformModule (Koin) — isolates onnxruntime so the
+│   │                                 # fdroid flavor can drop ML at the dependency level
 │   ├── core-network/         # Network layer: Ktor client, DTOs, API services
 │   │   └── src/commonMain/kotlin/.../
 │   │       ├── data/api/             # CivitAI, ComfyUI, SD WebUI, ExternalServer API clients + DTOs
@@ -184,7 +189,8 @@ Koin is used as the DI framework across all modules:
 - **core-network** (`core/core-network/.../di/NetworkModule`): Ktor client, CivitAI, ComfyUI, SD WebUI, and ExternalServer API services
 - **core-database** (`core/core-database/.../di/DatabaseModule`): Room DB instance, all DAOs (loaded before core-data)
 - **core-data** (`core/core-data/.../di/CoreDataModule`): Network+cache repository bindings (`ModelRepositoryImpl`, etc.); load order is network → database → core-data
-- **core-domain** (`core/core-domain/.../di/DomainModule` + `DomainPlatformModule`): Repository bindings, use case factory; `domainPlatformModule` (`expect`/`actual`) provides platform service impls (embedding models, notification/lifecycle/monitor services) via constructor injection
+- **core-domain** (`core/core-domain/.../di/DomainModule` + `DomainPlatformModule`): Repository bindings, use case factory; `domainPlatformModule` (`expect`/`actual`) provides platform service impls (notification/lifecycle/monitor services) via constructor injection
+- **core-ml** (`core/core-ml/.../di/mlPlatformModule`): On-device embedding model bindings (`expect`/`actual`). Wired only where ML ships — iOS/Desktop via `shared`'s `embeddingPlatformModule`, Android `githubFull` flavor directly; the `fdroid` flavor binds unavailable no-ops and never depends on this module (so onnxruntime is absent)
 - **core-plugin** (`core/core-plugin/.../di/PluginModule`): Plugin registry, built-in capability adapters
 - **shared** (`shared/src/commonMain/di/`): Re-exports core modules; `SharedViewModelModule`, `Phase3ViewModelModule`, `SettingsViewModelModule` for shared ViewModels; platform export bindings (`DatasetZipWriterFactory`, `ExportPathProvider`) in `PlatformModule.<platform>`
 - **Android** (`androidApp/CivitDeckApplication.kt`): Platform-specific bindings (DownloadScheduler actual, DuplicateReviewViewModel), platform drivers

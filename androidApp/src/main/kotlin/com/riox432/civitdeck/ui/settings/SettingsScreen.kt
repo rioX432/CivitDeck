@@ -92,7 +92,9 @@ fun SettingsScreen(
             if (appBehaviorState.powerUserMode) {
                 item { SubScreenRow(stringResource(R.string.settings_usage_stats), onNavigateToAnalytics) }
             }
-            settingsUpdateItems(updateState, updateViewModel, installController)
+            if (BuildConfig.FEATURE_SELF_UPDATE) {
+                settingsUpdateItems(updateState, updateViewModel, installController)
+            }
             settingsAboutItems(
                 appBehaviorState.powerUserMode,
                 updateState,
@@ -108,7 +110,9 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxSize(),
             )
         }
-        UpdateInstallHost(installController)
+        if (BuildConfig.FEATURE_SELF_UPDATE) {
+            UpdateInstallHost(installController)
+        }
     }
 }
 
@@ -155,13 +159,16 @@ private fun LazyListScope.settingsAboutItems(
 ) {
     item { SectionHeader(stringResource(R.string.settings_section_about)) }
     item { InfoRow(stringResource(R.string.settings_app_version), BuildConfig.VERSION_NAME) }
-    item {
-        UpdateCheckRow(
-            autoCheckEnabled = updateState.autoCheckEnabled,
-            isChecking = updateState.isChecking,
-            onAutoCheckChanged = updateViewModel::setAutoCheckEnabled,
-            onCheckNow = updateViewModel::checkForUpdate,
-        )
+    // In-app update check drives the self-update flow — githubFull only.
+    if (BuildConfig.FEATURE_SELF_UPDATE) {
+        item {
+            UpdateCheckRow(
+                autoCheckEnabled = updateState.autoCheckEnabled,
+                isChecking = updateState.isChecking,
+                onAutoCheckChanged = updateViewModel::setAutoCheckEnabled,
+                onCheckNow = updateViewModel::checkForUpdate,
+            )
+        }
     }
     item { NavigationRow(stringResource(R.string.settings_open_source_licenses), onNavigateToLicenses) }
     item { NavigationRow(stringResource(R.string.settings_replay_gesture_tutorial), onReplayGestureTutorial) }

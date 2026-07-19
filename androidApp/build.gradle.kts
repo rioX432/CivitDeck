@@ -22,12 +22,29 @@ android {
         versionName = "2.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 
-        buildConfigField("boolean", "FEATURE_SIMILARITY_SEARCH", similaritySearchEnabled.toString())
+    // Two distribution channels: `githubFull` (GitHub Releases sideload — bundles ML and
+    // in-app self-update) and `fdroid` (FOSS store — no ONNX/SigLIP, no self-update).
+    // fdroid excludes ML at the dependency level by not depending on :core:core-ml.
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("githubFull") {
+            dimension = "distribution"
+            isDefault = true
+            buildConfigField("boolean", "FEATURE_SELF_UPDATE", "true")
+            buildConfigField("boolean", "FEATURE_SIMILARITY_SEARCH", similaritySearchEnabled.toString())
+        }
+        create("fdroid") {
+            dimension = "distribution"
+            buildConfigField("boolean", "FEATURE_SELF_UPDATE", "false")
+            buildConfigField("boolean", "FEATURE_SIMILARITY_SEARCH", "false")
+        }
     }
 
     sourceSets {
-        named("main") {
+        // The SigLIP-2 asset is ML-only and githubFull-only; fdroid never sees it.
+        named("githubFull") {
             if (similaritySearchEnabled) {
                 assets.srcDir("src/similarity/assets")
             }
@@ -85,6 +102,9 @@ dependencies {
     androidTestImplementation(libs.androidx.test.rules)
 
     implementation(project(":shared"))
+    // ML lives only in the githubFull flavor — fdroid drops it (and onnxruntime + native
+    // libs) entirely at the dependency level.
+    "githubFullImplementation"(project(":core:core-ml"))
     implementation(project(":core:core-ui"))
     implementation(project(":feature:feature-search"))
     implementation(project(":feature:feature-detail"))

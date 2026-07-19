@@ -43,6 +43,16 @@ kotlin {
             implementation(libs.koin.android)
         }
 
+        // core-ml is wired per-platform, NOT in commonMain: Android build flavors
+        // (F-Droid) must be able to exclude it. iOS and Desktop always bundle it.
+        iosMain.dependencies {
+            implementation(project(":core:core-ml"))
+        }
+
+        jvmMain.dependencies {
+            implementation(project(":core:core-ml"))
+        }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)

@@ -20,11 +20,11 @@ import kotlin.coroutines.resume
 class ImageEmbeddingModelImpl : ImageEmbeddingModel {
 
     override val isAvailable: Boolean
-        get() = sigLIP2Bridge?.isAvailable == true
+        get() = currentSigLIP2Bridge()?.isAvailable == true
 
     @Suppress("ThrowsCount")
     override suspend fun embed(imageBytes: ByteArray): FloatArray {
-        val bridge = sigLIP2Bridge
+        val bridge = currentSigLIP2Bridge()
             ?: throw NotImplementedError(
                 "SigLIP2Bridge not registered — call registerSigLIP2Bridge from Swift",
             )
