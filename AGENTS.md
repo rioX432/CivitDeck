@@ -51,7 +51,7 @@ CivitDeck/
 ├── core/
 │   ├── core-domain/          # Domain layer: models, repository interfaces, use cases, DomainModule + DomainPlatformModule (Koin)
 │   ├── core-network/         # Network layer: Ktor client, DTOs (CivitAI + ComfyUI + WebUI + ExternalServer), NetworkModule (Koin)
-│   ├── core-database/        # Local storage only: Room KMP entities/DAOs/migrations (v48), DatabaseModule (Koin); no core-network dep
+│   ├── core-database/        # Local storage only: Room KMP entities/DAOs/migrations (v49), DatabaseModule (Koin); no core-network dep
 │   ├── core-data/            # Network+cache repository impls (ModelRepositoryImpl etc.) + DTO→domain mappers, coreDataModule (Koin)
 │   ├── core-ui/              # Shared Compose components + design tokens (KMP: Android + Desktop)
 │   ├── core-plugin/          # Plugin system: interfaces, registry, capability adapters, PluginModule (Koin)

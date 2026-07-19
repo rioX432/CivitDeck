@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Discovery-engine refocus: sharpen the app around native CivitAI discovery and open the FOSS distribution channel.
+
+### Added
+
+- Personalization signals — recommendation-card taps are recorded via an append-only interaction event log (retained even without a prior history row, accumulating instead of overwriting), and recommendations refresh on return from a detail view (#987, #994)
+- Unified search bar — keyword/tag, image, and experimental semantic search fold into one `ModelSearchViewModel` with explicit `Idle`/`Editing`/`Results` states; recommendations show only while idle (#988, #997)
+- Build flavors — `fdroid` (FOSS, no ML/self-update) and `githubFull` (bundled ML + in-app self-update), with a dedicated `core-ml` module extracted from `core-domain` so the F-Droid build excludes ONNX at the dependency level (#986, #993)
+- Deterministic QA foundation for the discovery flow — base-URL-injectable E2E seam, recorded CivitAI fixtures, stable discovery test tags, a semantic golden-query top-K test, and a Desktop Compose smoke test (PoC, not CI-gated) (#990, #998)
+- Semantic corpus-index spike decision doc and a `SigLipTokenizer` HF-parity test (#989, #996)
+
+### Changed
+
+- SigLIP-2 semantic search relabeled as **Android-only, experimental, off by default** and kept off the default retrieval path (keyword/tag stays primary); iOS/Desktop have no working encoder (#989, #996)
+- "Send to PC" (CV2) demoted to show only with a compatible connection; detail-screen Share/QR moved into an overflow menu; Analytics/Backup/Compare/Dataset/Hardware peripherals moved off the discovery-primary surface (kept, reversible) (#991, #1000)
+- Docs & positioning — README now leads with the single discovery promise, the ViewModel count is unified to the measured 42, and ROADMAP is reframed as a forward-looking compass (#992, #1001)
+
+### Removed
+
+- Reviews list/submit feature (reads/writes CivitAI's tRPC, conflicts with the "no SNS/community" scope) — `Model.stats.rating` is retained and still shown; the 2 tRPC review requests per model detail are eliminated (#991, #1000)
+
+### Fixed
+
+- Download Queue no longer crashes on Android — registered the missing `AndroidDownloadScheduler` Koin binding (`DownloadScheduler` was bound on iOS/Desktop but not Android since #694) (#1003)
+- Bounded the interaction-event query with a limit (#987)
+
+### Infrastructure
+
+- Extracted `core-ml`; network→database→core-data module load order; per-flavor packaging exclusions and manifest permissions (#986, #993)
+- Synced ai-dev-template common + KMP layer files (#980)
+
 ## [2.4.0] - 2026-07-11
 
 ### Added

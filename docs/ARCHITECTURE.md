@@ -31,7 +31,7 @@ CivitDeck/
 │   │       └── di/                   # NetworkModule (Koin)
 │   ├── core-database/        # Local storage only: Room KMP entities, DAOs, migrations
 │   │   └── src/commonMain/kotlin/.../
-│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v48)
+│   │       ├── data/local/           # Entities, DAOs, CivitDeckDatabase (v49)
 │   │       ├── data/local/migration/ # Sequential migrations (1→2 … 47→48)
 │   │       └── di/                   # DatabaseModule (Koin) — no longer depends on core-network
 │   ├── core-data/            # Data aggregation: network+cache repositories (ModelRepositoryImpl,
@@ -52,7 +52,7 @@ CivitDeck/
 │   └── core-testing/         # Shared test infra (commonMain): fake repositories, ApplicationScope(TestScope)
 │       └── src/commonMain/kotlin/.../ # helper, Turbine — consumed by feature/core commonTest
 ├── feature/                  # Feature modules — each owns its ViewModels + use cases in commonMain
-│   ├── feature-search/       # Search, swipe discovery, text search, similar models, browsing history
+│   ├── feature-search/       # Unified search (keyword/tag + image + experimental semantic), swipe discovery, recommendations, browsing history
 │   ├── feature-detail/       # Model detail view + model comparison
 │   ├── feature-gallery/      # Image gallery, downloads, analytics, notifications, share, update
 │   ├── feature-creator/      # Creator profiles, follow system, feed
@@ -119,7 +119,7 @@ graph TB
 ### Data Layer (`core/core-network/` + `core/core-database/` + `core/core-data/`)
 
 - **API** (`core-network`): Ktor HTTP client targeting `https://civitai.com/api/v1`. Endpoints include `/models`, `/models/:id`, `/model-versions/:id`, `/images`, `/creators`, and `/tags`. Pagination is cursor-based for images and page-based for others. Also includes API clients for ComfyUI (REST + WebSocket), SD WebUI (Automatic1111/Forge), Civitai Link, ComfyHub, custom External Servers, multi-source search (HuggingFace, TensorArt), and GitHub Releases (in-app update check).
-- **Local** (`core-database`): Room KMP database (version 48) for offline favorites, user collections, saved prompts, saved search filters, SD WebUI/ComfyUI connections, external server configs, dataset collections, model notes, followed creators, feed cache, model downloads, plugin data, quality scores, and response caching with TTL. Migrations tracked sequentially from version 1. This module is pure local storage and does **not** depend on `core-network`.
+- **Local** (`core-database`): Room KMP database (version 49) for offline favorites, user collections, saved prompts, saved search filters, SD WebUI/ComfyUI connections, external server configs, dataset collections, model notes, followed creators, feed cache, model downloads, interaction events (recommendation signals), plugin data, quality scores, and response caching with TTL. Migrations tracked sequentially from version 1. This module is pure local storage and does **not** depend on `core-network`.
 - **Repository Implementations** (`core-data`): Combine remote API calls with local cache and map DTOs → domain models. `ModelRepositoryImpl` and friends live here (extracted from `core-database`) so the database layer stays network-free; `core-data` depends on both `core-network` and `core-database`.
 
 ### Domain Layer (`core/core-domain/`)
