@@ -16,8 +16,6 @@ import com.riox432.civitdeck.domain.usecase.GetFollowedCreatorsUseCase
 import com.riox432.civitdeck.domain.usecase.GetHiddenModelsUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelDetailUseCase
 import com.riox432.civitdeck.domain.usecase.GetModelLicenseUseCase
-import com.riox432.civitdeck.domain.usecase.GetModelReviewsUseCase
-import com.riox432.civitdeck.domain.usecase.GetRatingTotalsUseCase
 import com.riox432.civitdeck.domain.usecase.GetUnreadFeedCountUseCase
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.IsFollowingCreatorUseCase
@@ -28,7 +26,6 @@ import com.riox432.civitdeck.domain.usecase.ObserveRecentlyViewedUseCase
 import com.riox432.civitdeck.domain.usecase.RemovePersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.SaveModelNoteUseCase
 import com.riox432.civitdeck.domain.usecase.SearchModelsByTagUseCase
-import com.riox432.civitdeck.domain.usecase.SubmitReviewUseCase
 import com.riox432.civitdeck.domain.usecase.TrackModelViewUseCase
 import com.riox432.civitdeck.domain.usecase.UnfollowCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.UnhideModelUseCase
@@ -69,11 +66,6 @@ fun KoinHelper.getSearchModelsByTagUseCase(): SearchModelsByTagUseCase = resolve
 
 // Analytics
 fun KoinHelper.getBrowsingStatsUseCase(): GetBrowsingStatsUseCase = resolve()
-
-// Reviews
-fun KoinHelper.getModelReviewsUseCase(): GetModelReviewsUseCase = resolve()
-fun KoinHelper.getRatingTotalsUseCase(): GetRatingTotalsUseCase = resolve()
-fun KoinHelper.getSubmitReviewUseCase(): SubmitReviewUseCase = resolve()
 
 // Creator Follow & Feed
 fun KoinHelper.getFollowCreatorUseCase(): FollowCreatorUseCase = resolve()

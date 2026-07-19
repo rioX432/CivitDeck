@@ -18,12 +18,6 @@ final class ModelDetailViewModelOwner: ObservableObject {
     @Published var note: ModelNote?
     @Published var personalTags: [PersonalTag] = []
     @Published var downloads: [ModelDownload] = []
-    @Published var reviews: [ResourceReview] = []
-    @Published var ratingTotals: RatingTotals?
-    @Published var reviewSortOrder: ReviewSortOrder = .newest
-    @Published var isReviewsLoading: Bool = false
-    @Published var isSubmittingReview: Bool = false
-    @Published var reviewSubmitSuccess: Bool = false
     @Published var fileVramCompatibility: [Int64: VramCompatibility] = [:]
 
     let modelId: Int64
@@ -57,12 +51,6 @@ final class ModelDetailViewModelOwner: ObservableObject {
             note = state.note
             personalTags = state.personalTags as? [PersonalTag] ?? []
             downloads = state.downloads as? [ModelDownload] ?? []
-            reviews = state.reviews as? [ResourceReview] ?? []
-            ratingTotals = state.ratingTotals
-            reviewSortOrder = state.reviewSortOrder
-            isReviewsLoading = state.isReviewsLoading
-            isSubmittingReview = state.isSubmittingReview
-            reviewSubmitSuccess = state.reviewSubmitSuccess
             fileVramCompatibility = Self.mapVramCompatibility(state.fileVramCompatibility)
         }
     }
@@ -102,19 +90,6 @@ final class ModelDetailViewModelOwner: ObservableObject {
     }
 
     func cancelDownload(_ downloadId: Int64) { vm.cancelDownload(downloadId: downloadId) }
-
-    func onReviewSortChanged(_ order: ReviewSortOrder) { vm.onReviewSortChanged(order: order) }
-
-    func submitReview(modelVersionId: Int64, rating: Int32, recommended: Bool, details: String?) {
-        vm.submitReview(
-            modelVersionId: modelVersionId,
-            rating: rating,
-            recommended: recommended,
-            details: details
-        )
-    }
-
-    func dismissReviewSuccess() { vm.dismissReviewSuccess() }
 
     func trackInteraction(_ type: InteractionType) {
         // Interaction tracking is handled internally by shared VM

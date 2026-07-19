@@ -1,32 +1,19 @@
 package com.riox432.civitdeck.data.api
 
-import com.riox432.civitdeck.data.api.dto.CreateReviewInput
 import com.riox432.civitdeck.data.api.dto.CreatorListResponse
 import com.riox432.civitdeck.data.api.dto.ImageListResponse
 import com.riox432.civitdeck.data.api.dto.ModelListResponse
 import com.riox432.civitdeck.data.api.dto.ModelResponse
 import com.riox432.civitdeck.data.api.dto.ModelVersionResponse
-import com.riox432.civitdeck.data.api.dto.RatingTotalsInput
-import com.riox432.civitdeck.data.api.dto.RatingTotalsResponse
-import com.riox432.civitdeck.data.api.dto.ReviewListInput
-import com.riox432.civitdeck.data.api.dto.ReviewListResponse
 import com.riox432.civitdeck.data.api.dto.TagListResponse
-import com.riox432.civitdeck.data.api.dto.TrpcInput
-import com.riox432.civitdeck.data.api.dto.TrpcResponse
 import com.riox432.civitdeck.data.api.dto.UserMeResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
-import io.ktor.http.contentType
 import io.ktor.serialization.ContentConvertException
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 /**
  * Raw query parameters for the CivitAI /models endpoint.
@@ -151,66 +138,5 @@ class CivitAiApi(
         return client.get("${endpoints.apiBaseUrl}/me") {
             header(HttpHeaders.Authorization, "Bearer $apiKey")
         }.body()
-    }
-
-    // --- tRPC endpoints for reviews ---
-
-    suspend fun getReviews(
-        modelId: Long,
-        modelVersionId: Long? = null,
-        limit: Int = 20,
-        cursor: Int? = null,
-    ): ReviewListResponse {
-        val input = TrpcInput(
-            ReviewListInput(
-                modelId = modelId,
-                modelVersionId = modelVersionId,
-                limit = limit,
-                cursor = cursor,
-            ),
-        )
-        val response: TrpcResponse<ReviewListResponse> =
-            client.get("${endpoints.trpcBaseUrl}/resourceReview.getInfinite") {
-                parameter("input", Json.encodeToString(input))
-            }.body()
-        return response.result.data.json
-    }
-
-    suspend fun getRatingTotals(
-        modelId: Long,
-        modelVersionId: Long? = null,
-    ): RatingTotalsResponse {
-        val input = TrpcInput(
-            RatingTotalsInput(modelId = modelId, modelVersionId = modelVersionId),
-        )
-        val response: TrpcResponse<RatingTotalsResponse> =
-            client.get("${endpoints.trpcBaseUrl}/resourceReview.getRatingTotals") {
-                parameter("input", Json.encodeToString(input))
-            }.body()
-        return response.result.data.json
-    }
-
-    suspend fun createReview(
-        apiKey: String,
-        modelId: Long,
-        modelVersionId: Long,
-        rating: Int,
-        recommended: Boolean,
-        details: String? = null,
-    ) {
-        val input = TrpcInput(
-            CreateReviewInput(
-                modelId = modelId,
-                modelVersionId = modelVersionId,
-                rating = rating,
-                recommended = recommended,
-                details = details,
-            ),
-        )
-        client.post("${endpoints.trpcBaseUrl}/resourceReview.create") {
-            header(HttpHeaders.Authorization, "Bearer $apiKey")
-            contentType(ContentType.Application.Json)
-            setBody(input)
-        }
     }
 }

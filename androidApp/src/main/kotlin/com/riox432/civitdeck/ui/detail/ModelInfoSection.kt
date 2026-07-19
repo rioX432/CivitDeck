@@ -109,6 +109,7 @@ internal fun ImageActionsRow(
     onViewImages: () -> Unit,
     showTryInComfyUI: Boolean = false,
     onTryInComfyUI: () -> Unit = {},
+    showSendToPC: Boolean = false,
     onSendToPC: () -> Unit = {},
 ) {
     FlowRow(
@@ -127,8 +128,10 @@ internal fun ImageActionsRow(
         ) {
             Text(stringResource(R.string.detail_view_community_images))
         }
-        OutlinedButton(onClick = onSendToPC) {
-            Text(stringResource(R.string.detail_send_to_pc))
+        if (showSendToPC) {
+            OutlinedButton(onClick = onSendToPC) {
+                Text(stringResource(R.string.detail_send_to_pc))
+            }
         }
         if (showTryInComfyUI) {
             Button(

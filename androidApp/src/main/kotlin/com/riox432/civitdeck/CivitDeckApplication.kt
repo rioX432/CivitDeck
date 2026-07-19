@@ -124,7 +124,7 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
 val androidModule = module {
     single<AppVersionProvider> { AndroidAppVersionProvider() }
     viewModel { params ->
-        ModelDetailViewModel(params.get(), get(), get(), get(), get(), get(), get(), get())
+        ModelDetailViewModel(params.get(), get(), get(), get(), get(), get(), get())
     }
     viewModel { params -> DuplicateReviewViewModel(params.get(), get(), get()) }
     // DownloadQueueViewModel now registered in shared Phase3ViewModelModule

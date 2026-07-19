@@ -19,9 +19,9 @@ struct ModelDetailScreen: View {
     @State private var showComfyUIGeneration = false
     @State private var showLinkSheet = false
     @State private var showQRCodeSheet = false
-    @State private var showSubmitReviewSheet = false
     @State private var showShareSheet = false
     @StateObject private var shareHashtagVM = ShareHashtagViewModelOwner()
+    @StateObject private var linkStatusOwner = CivitaiLinkSendViewModelOwner()
 
     var body: some View {
         Group {
@@ -45,30 +45,7 @@ struct ModelDetailScreen: View {
         .task { await viewModel.observeUiState() }
         .onDisappear { viewModel.onDisappear() }
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showCollectionSheet = true
-                } label: {
-                    Image(systemName: "folder.badge.plus")
-                        .accessibilityLabel("Add to collection")
-                }
-            }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showQRCodeSheet = true
-                } label: {
-                    Image(systemName: "qrcode")
-                        .accessibilityLabel("QR code")
-                }
-            }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showShareSheet = true
-                } label: {
-                    Image(systemName: "square.and.arrow.up")
-                        .accessibilityLabel("Share")
-                }
-            }
+            // Primary action: Favorite. Peripheral actions (share, QR, collections) live in the overflow menu.
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     HapticFeedback.impact.trigger()
@@ -77,6 +54,28 @@ struct ModelDetailScreen: View {
                     Image(systemName: viewModel.isFavorite ? "heart.fill" : "heart")
                         .accessibilityLabel(viewModel.isFavorite ? "Remove from favorites" : "Add to favorites")
                         .foregroundColor(viewModel.isFavorite ? .civitError : .civitOnSurface)
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button {
+                        showCollectionSheet = true
+                    } label: {
+                        Label("Add to collection", systemImage: "folder.badge.plus")
+                    }
+                    Button {
+                        showShareSheet = true
+                    } label: {
+                        Label("Share", systemImage: "square.and.arrow.up")
+                    }
+                    Button {
+                        showQRCodeSheet = true
+                    } label: {
+                        Label("QR code", systemImage: "qrcode")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .accessibilityLabel("More options")
                 }
             }
         }
@@ -94,6 +93,7 @@ struct ModelDetailScreen: View {
             .presentationDetents([.medium, .large])
         }
         .task { await shareHashtagVM.observeHashtags() }
+        .task { await linkStatusOwner.observeStatus() }
         .sheet(isPresented: $showCollectionSheet) {
             AddToCollectionSheet(
                 collections: viewModel.collections,
@@ -142,10 +142,6 @@ struct ModelDetailScreen: View {
                 )
             }
         }
-        .sheet(isPresented: $showSubmitReviewSheet) { submitReviewSheet }
-        .onChange(of: viewModel.reviewSubmitSuccess) { success in
-            if success { showSubmitReviewSheet = false; viewModel.dismissReviewSuccess() }
-        }
     }
 
     // MARK: - Content
@@ -166,7 +162,7 @@ struct ModelDetailScreen: View {
                 }
                 // Decision-order (mirrors Android): what the model IS (tags,
                 // description, versions, files) before personal annotations
-                // (notes, tags) and reviews, which are empty on most models.
+                // (notes, tags), which are empty on most models.
                 tagsSection(tags: model.tags)
                 descriptionSection(description: model.description_)
                 versionSelector(model: model)
@@ -179,14 +175,6 @@ struct ModelDetailScreen: View {
                     tags: viewModel.personalTags,
                     onAdd: { viewModel.addTag($0) },
                     onRemove: { viewModel.removeTag($0) }
-                )
-                ReviewsSection(
-                    reviews: viewModel.reviews,
-                    ratingTotals: viewModel.ratingTotals,
-                    sortOrder: viewModel.reviewSortOrder,
-                    isLoading: viewModel.isReviewsLoading,
-                    onSortChanged: { viewModel.onReviewSortChanged($0) },
-                    onWriteReview: { showSubmitReviewSheet = true }
                 )
             }
         }
@@ -280,14 +268,17 @@ struct ModelDetailScreen: View {
                     .buttonStyle(.bordered)
                 }
             }
-            HStack(spacing: Spacing.sm) {
-                Button {
-                    showLinkSheet = true
-                } label: {
-                    Text("Send to PC")
-                        .frame(maxWidth: .infinity)
+            // Demote CV2 send: only expose "Send to PC" when a Civitai Link connection is active.
+            if linkStatusOwner.isConnected {
+                HStack(spacing: Spacing.sm) {
+                    Button {
+                        showLinkSheet = true
+                    } label: {
+                        Text("Send to PC")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
             }
             if viewModel.powerUserMode {
                 Button {
@@ -404,19 +395,5 @@ struct ModelDetailScreen: View {
                 onCancelDownload: { viewModel.cancelDownload($0) }
             )
         }
-    }
-
-    private var submitReviewSheet: some View {
-        SubmitReviewSheet(
-            isSubmitting: viewModel.isSubmittingReview,
-            onSubmit: { rating, recommended, details in
-                guard let version = viewModel.selectedVersion else { return }
-                viewModel.submitReview(
-                    modelVersionId: version.id, rating: rating,
-                    recommended: recommended, details: details
-                )
-            },
-            onDismiss: { showSubmitReviewSheet = false }
-        )
     }
 }

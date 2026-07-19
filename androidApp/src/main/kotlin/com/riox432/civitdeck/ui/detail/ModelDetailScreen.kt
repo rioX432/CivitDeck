@@ -38,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
+import com.riox432.civitdeck.domain.model.CivitaiLinkStatus
 import com.riox432.civitdeck.domain.model.HapticFeedbackType
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelImage
@@ -45,6 +46,7 @@ import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
 import com.riox432.civitdeck.domain.model.stripCdnWidth
 import com.riox432.civitdeck.download.DownloadScheduler
+import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSendViewModel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailUiState
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.ui.collections.AddToCollectionSheet
@@ -52,6 +54,7 @@ import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.qrcode.QRCodeSheet
 import com.riox432.civitdeck.ui.share.SocialShareSheet
 import com.riox432.civitdeck.ui.testing.DiscoveryTestTags
+import org.koin.compose.viewmodel.koinViewModel
 
 // Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
 @Suppress("LongParameterList")
@@ -84,9 +87,13 @@ fun ModelDetailScreen(
     var showCollectionSheet by remember { mutableStateOf(false) }
     var showSendToPCSheet by remember { mutableStateOf(false) }
     var showQRCodeSheet by remember { mutableStateOf(false) }
-    var showSubmitReviewSheet by remember { mutableStateOf(false) }
     var showShareSheet by remember { mutableStateOf(false) }
     val haptic = rememberHapticFeedback()
+
+    // Demote CV2 send: only expose "Send to PC" when a Civitai Link connection is active.
+    val civitaiLinkViewModel: CivitaiLinkSendViewModel = koinViewModel()
+    val civitaiLinkStatus by civitaiLinkViewModel.status.collectAsStateWithLifecycle()
+    val canSendToPC = civitaiLinkStatus == CivitaiLinkStatus.Connected
 
     DownloadEnqueueEffect(viewModel)
 
@@ -96,7 +103,7 @@ fun ModelDetailScreen(
         onCreatorClick = onCreatorClick,
         onTryInComfyUI = onTryInComfyUI,
         onSendToPC = { showSendToPCSheet = true },
-        onWriteReview = { showSubmitReviewSheet = true },
+        canSendToPC = canSendToPC,
     )
 
     ModelDetailScaffold(
@@ -121,13 +128,11 @@ fun ModelDetailScreen(
         collections = collections,
         modelCollectionIds = modelCollectionIds,
         sheetVisibility = ModelDetailSheetVisibility(
-            showSubmitReviewSheet = showSubmitReviewSheet,
             showSendToPCSheet = showSendToPCSheet,
             showCollectionSheet = showCollectionSheet,
             showQRCodeSheet = showQRCodeSheet,
             showShareSheet = showShareSheet,
         ),
-        onDismissSubmitReview = { showSubmitReviewSheet = false },
         onDismissSendToPC = { showSendToPCSheet = false },
         onDismissCollection = { showCollectionSheet = false },
         onDismissQRCode = { showQRCodeSheet = false },
@@ -140,7 +145,6 @@ fun ModelDetailScreen(
 }
 
 private data class ModelDetailSheetVisibility(
-    val showSubmitReviewSheet: Boolean,
     val showSendToPCSheet: Boolean,
     val showCollectionSheet: Boolean,
     val showQRCodeSheet: Boolean,
@@ -157,7 +161,6 @@ private fun ModelDetailOverlays(
     collections: List<com.riox432.civitdeck.domain.model.ModelCollection>,
     modelCollectionIds: List<Long>,
     sheetVisibility: ModelDetailSheetVisibility,
-    onDismissSubmitReview: () -> Unit,
     onDismissSendToPC: () -> Unit,
     onDismissCollection: () -> Unit,
     onDismissQRCode: () -> Unit,
@@ -167,13 +170,6 @@ private fun ModelDetailOverlays(
     onAddShareHashtag: (String) -> Unit,
     onRemoveShareHashtag: (String) -> Unit,
 ) {
-    ReviewSubmitHandler(
-        uiState = uiState,
-        viewModel = viewModel,
-        showSubmitReviewSheet = sheetVisibility.showSubmitReviewSheet,
-        onDismissSubmitReview = onDismissSubmitReview,
-    )
-
     ModelDetailSheets(
         showSendToPCSheet = sheetVisibility.showSendToPCSheet,
         onDismissSendToPC = onDismissSendToPC,
@@ -222,8 +218,8 @@ private fun rememberModelDetailCallbacks(
         ) -> Unit
     )?,
     onSendToPC: () -> Unit,
-    onWriteReview: () -> Unit,
-): ModelDetailCallbacks = remember(viewModel, onViewImages, onCreatorClick, onTryInComfyUI) {
+    canSendToPC: Boolean,
+): ModelDetailCallbacks = remember(viewModel, onViewImages, onCreatorClick, onTryInComfyUI, canSendToPC) {
     ModelDetailCallbacks(
         onRetry = viewModel::retry,
         onVersionSelected = viewModel::onVersionSelected,
@@ -231,13 +227,12 @@ private fun rememberModelDetailCallbacks(
         onCreatorClick = onCreatorClick,
         onTryInComfyUI = onTryInComfyUI,
         onSendToPC = onSendToPC,
+        canSendToPC = canSendToPC,
         onSaveNote = viewModel::saveNote,
         onAddTag = viewModel::addTag,
         onRemoveTag = viewModel::removeTag,
         onDownloadFile = viewModel::downloadFile,
         onCancelDownload = viewModel::cancelDownload,
-        onReviewSortChanged = viewModel::onReviewSortChanged,
-        onWriteReview = onWriteReview,
     )
 }
 
@@ -288,33 +283,6 @@ private fun ModelDetailScaffold(
             detailCallbacks = detailCallbacks,
             contentPadding = padding,
         )
-    }
-}
-
-@Composable
-private fun ReviewSubmitHandler(
-    uiState: ModelDetailUiState,
-    viewModel: ModelDetailViewModel,
-    showSubmitReviewSheet: Boolean,
-    onDismissSubmitReview: () -> Unit,
-) {
-    if (showSubmitReviewSheet) {
-        SubmitReviewSheet(
-            isSubmitting = uiState.isSubmittingReview,
-            onSubmit = { rating, recommended, details ->
-                val versionId = uiState.model?.modelVersions
-                    ?.getOrNull(uiState.selectedVersionIndex)?.id ?: return@SubmitReviewSheet
-                viewModel.submitReview(versionId, rating, recommended, details)
-            },
-            onDismiss = onDismissSubmitReview,
-        )
-    }
-
-    LaunchedEffect(uiState.reviewSubmitSuccess) {
-        if (uiState.reviewSubmitSuccess) {
-            onDismissSubmitReview()
-            viewModel.dismissReviewSuccess()
-        }
     }
 }
 
@@ -390,7 +358,7 @@ private fun ModelDetailTopBar(
             }
         },
         actions = {
-            // Primary actions: Favorite and Share
+            // Primary action: Favorite. Peripheral actions (share, QR) live in the overflow menu.
             IconButton(
                 onClick = onFavoriteToggle,
                 modifier = Modifier.testTag(DiscoveryTestTags.MODEL_FAVORITE_BUTTON),
@@ -409,14 +377,12 @@ private fun ModelDetailTopBar(
                     },
                 )
             }
-            IconButton(onClick = onShareClick) {
-                Icon(Icons.Default.Share, contentDescription = stringResource(R.string.cd_share))
-            }
             // Secondary actions in overflow menu
             DetailOverflowMenu(
                 onFindSimilar = onFindSimilar,
                 onAddToCollection = onAddToCollection,
                 onShowQRCode = onShowQRCode,
+                onShareClick = onShareClick,
             )
         },
     )
@@ -427,6 +393,7 @@ private fun DetailOverflowMenu(
     onFindSimilar: (() -> Unit)?,
     onAddToCollection: () -> Unit,
     onShowQRCode: () -> Unit,
+    onShareClick: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     Box {
@@ -453,6 +420,14 @@ private fun DetailOverflowMenu(
                 onClick = {
                     expanded = false
                     onAddToCollection()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.cd_share)) },
+                leadingIcon = { Icon(Icons.Default.Share, contentDescription = null) },
+                onClick = {
+                    expanded = false
+                    onShareClick()
                 },
             )
             DropdownMenuItem(

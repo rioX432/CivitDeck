@@ -194,12 +194,6 @@ typealias GetCreatorFeedUseCase = Core_domainGetCreatorFeedUseCase
 typealias GetUnreadFeedCountUseCase = Core_domainGetUnreadFeedCountUseCase
 typealias MarkFeedReadUseCase = Core_domainMarkFeedReadUseCase
 typealias GetFollowedCreatorsUseCase = Core_domainGetFollowedCreatorsUseCase
-typealias GetModelReviewsUseCase = Core_domainGetModelReviewsUseCase
-typealias GetRatingTotalsUseCase = Core_domainGetRatingTotalsUseCase
-typealias RatingTotals = Core_domainRatingTotals
-typealias ResourceReview = Core_domainResourceReview
-typealias ReviewPage = Core_domainReviewPage
-typealias SubmitReviewUseCase = Core_domainSubmitReviewUseCase
 typealias BackupCategory = Core_domainBackupCategory
 typealias RestoreStrategy = Core_domainRestoreStrategy
 typealias CreateBackupUseCase = Core_domainCreateBackupUseCase
@@ -244,7 +238,6 @@ typealias ObserveThemePluginsUseCase = Core_pluginObserveThemePluginsUseCase
 typealias ActivateThemePluginUseCase = Core_pluginActivateThemePluginUseCase
 typealias ImportThemeUseCase = Core_pluginImportThemeUseCase
 
-typealias ReviewSortOrder = Core_domainReviewSortOrder
 typealias VramCompatibility = Core_domainVramCompatibility
 typealias OptimizationSuggestion = Core_domainOptimizationSuggestion
 
