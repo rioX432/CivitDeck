@@ -45,11 +45,14 @@ data class ModelListQuery(
     val nsfw: Boolean? = null,
 )
 
-class CivitAiApi(private val client: HttpClient) {
+class CivitAiApi(
+    private val client: HttpClient,
+    private val endpoints: CivitAiEndpoints = CivitAiEndpoints.Production,
+) {
 
     suspend fun getModels(params: ModelListQuery = ModelListQuery()): ModelListResponse {
         return try {
-            client.get("$BASE_URL/models") {
+            client.get("${endpoints.apiBaseUrl}/models") {
                 params.query?.let { parameter("query", it) }
                 params.tag?.let { parameter("tag", it) }
                 params.type?.let { parameter("types", it) }
@@ -68,7 +71,7 @@ class CivitAiApi(private val client: HttpClient) {
 
     suspend fun getModel(id: Long): ModelResponse {
         return try {
-            client.get("$BASE_URL/models/$id").body()
+            client.get("${endpoints.apiBaseUrl}/models/$id").body()
         } catch (e: ContentConvertException) {
             throw DataParseException(e.message, e)
         }
@@ -76,7 +79,7 @@ class CivitAiApi(private val client: HttpClient) {
 
     suspend fun getModelVersion(id: Long): ModelVersionResponse {
         return try {
-            client.get("$BASE_URL/model-versions/$id").body()
+            client.get("${endpoints.apiBaseUrl}/model-versions/$id").body()
         } catch (e: ContentConvertException) {
             throw DataParseException(e.message, e)
         }
@@ -84,7 +87,7 @@ class CivitAiApi(private val client: HttpClient) {
 
     suspend fun getModelVersionLicense(versionId: Long): ModelVersionResponse {
         return try {
-            client.get("$BASE_URL/model-versions/$versionId").body()
+            client.get("${endpoints.apiBaseUrl}/model-versions/$versionId").body()
         } catch (e: ContentConvertException) {
             throw DataParseException(e.message, e)
         }
@@ -92,7 +95,7 @@ class CivitAiApi(private val client: HttpClient) {
 
     suspend fun getModelVersionByHash(hash: String): ModelVersionResponse {
         return try {
-            client.get("$BASE_URL/model-versions/by-hash/$hash").body()
+            client.get("${endpoints.apiBaseUrl}/model-versions/by-hash/$hash").body()
         } catch (e: ContentConvertException) {
             throw DataParseException(e.message, e)
         }
@@ -108,7 +111,7 @@ class CivitAiApi(private val client: HttpClient) {
         limit: Int? = null,
         cursor: String? = null,
     ): ImageListResponse {
-        return client.get("$BASE_URL/images") {
+        return client.get("${endpoints.apiBaseUrl}/images") {
             modelId?.let { parameter("modelId", it) }
             modelVersionId?.let { parameter("modelVersionId", it) }
             username?.let { parameter("username", it) }
@@ -125,7 +128,7 @@ class CivitAiApi(private val client: HttpClient) {
         page: Int? = null,
         limit: Int? = null,
     ): CreatorListResponse {
-        return client.get("$BASE_URL/creators") {
+        return client.get("${endpoints.apiBaseUrl}/creators") {
             query?.let { parameter("query", it) }
             page?.let { parameter("page", it) }
             limit?.let { parameter("limit", it) }
@@ -137,7 +140,7 @@ class CivitAiApi(private val client: HttpClient) {
         page: Int? = null,
         limit: Int? = null,
     ): TagListResponse {
-        return client.get("$BASE_URL/tags") {
+        return client.get("${endpoints.apiBaseUrl}/tags") {
             query?.let { parameter("query", it) }
             page?.let { parameter("page", it) }
             limit?.let { parameter("limit", it) }
@@ -145,7 +148,7 @@ class CivitAiApi(private val client: HttpClient) {
     }
 
     suspend fun getMe(apiKey: String): UserMeResponse {
-        return client.get("$BASE_URL/me") {
+        return client.get("${endpoints.apiBaseUrl}/me") {
             header(HttpHeaders.Authorization, "Bearer $apiKey")
         }.body()
     }
@@ -167,7 +170,7 @@ class CivitAiApi(private val client: HttpClient) {
             ),
         )
         val response: TrpcResponse<ReviewListResponse> =
-            client.get("$TRPC_BASE_URL/resourceReview.getInfinite") {
+            client.get("${endpoints.trpcBaseUrl}/resourceReview.getInfinite") {
                 parameter("input", Json.encodeToString(input))
             }.body()
         return response.result.data.json
@@ -181,7 +184,7 @@ class CivitAiApi(private val client: HttpClient) {
             RatingTotalsInput(modelId = modelId, modelVersionId = modelVersionId),
         )
         val response: TrpcResponse<RatingTotalsResponse> =
-            client.get("$TRPC_BASE_URL/resourceReview.getRatingTotals") {
+            client.get("${endpoints.trpcBaseUrl}/resourceReview.getRatingTotals") {
                 parameter("input", Json.encodeToString(input))
             }.body()
         return response.result.data.json
@@ -204,15 +207,10 @@ class CivitAiApi(private val client: HttpClient) {
                 details = details,
             ),
         )
-        client.post("$TRPC_BASE_URL/resourceReview.create") {
+        client.post("${endpoints.trpcBaseUrl}/resourceReview.create") {
             header(HttpHeaders.Authorization, "Bearer $apiKey")
             contentType(ContentType.Application.Json)
             setBody(input)
         }
-    }
-
-    companion object {
-        const val BASE_URL = "https://civitai.com/api/v1"
-        private const val TRPC_BASE_URL = "https://civitai.com/api/trpc"
     }
 }

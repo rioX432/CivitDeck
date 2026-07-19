@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.RecommendationSection
@@ -42,6 +43,7 @@ import com.riox432.civitdeck.domain.model.browseThumbnailCandidates
 import com.riox432.civitdeck.domain.model.thumbnailUrl
 import com.riox432.civitdeck.ui.components.LaunchStaggerAnimation
 import com.riox432.civitdeck.ui.components.isReducedMotionEnabled
+import com.riox432.civitdeck.ui.testing.DiscoveryTestTags
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -269,6 +271,7 @@ private fun ModelGrid(
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(gridColumns),
+        modifier = Modifier.testTag(DiscoveryTestTags.MODEL_GRID),
         state = gridState,
         contentPadding = PaddingValues(
             start = Spacing.md,

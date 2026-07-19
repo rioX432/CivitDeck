@@ -14,10 +14,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.ui.components.SwipeableModelCard
+import com.riox432.civitdeck.ui.testing.DiscoveryTestTags
 
 @Composable
 internal fun ModelGridItem(
@@ -30,7 +32,7 @@ internal fun ModelGridItem(
     modifier: Modifier = Modifier,
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    Box(modifier = modifier) {
+    Box(modifier = modifier.testTag(DiscoveryTestTags.MODEL_CARD)) {
         SwipeableModelCard(
             model = model,
             isFavorite = isFavorite,
