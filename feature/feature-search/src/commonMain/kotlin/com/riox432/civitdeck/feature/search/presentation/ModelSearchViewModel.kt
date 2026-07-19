@@ -163,7 +163,7 @@ class ModelSearchViewModel(
         observePreferences()
         filterDelegate.loadExcludedTags()
         loadDefaults(preferencesUseCases.observeDefaultSortOrder, preferencesUseCases.observeDefaultTimePeriod)
-        loadRecommendations()
+        refreshRecommendations()
     }
 
     // region Filter actions
@@ -353,7 +353,7 @@ class ModelSearchViewModel(
                 _uiState.update { it.copy(nsfwFilterLevel = level) }
                 _filterState.update { it.copy(nsfwFilterLevel = level) }
                 if (initialized && prev != level) {
-                    loadRecommendations()
+                    refreshRecommendations()
                     refresh()
                 }
                 initialized = true
@@ -366,7 +366,11 @@ class ModelSearchViewModel(
         }
     }
 
-    private fun loadRecommendations() {
+    /**
+     * (Re)computes recommendations from the latest interaction signals. Called on init and
+     * when returning from a detail view so a just-recorded click/view reshapes the feed.
+     */
+    fun refreshRecommendations() {
         recommendationsJob?.cancel()
         recommendationsJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoadingRecommendations = true) }

@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -136,9 +137,22 @@ private fun DiscoverBaseContent(
         }
         DiscoverSection.Trending -> {
             val discoveryVm: DesktopDiscoveryViewModel = koinViewModel()
+            // Recompute recommendations when the detail overlay closes so a just-recorded
+            // click reshapes the feed. Skips the initial empty state (init already loads).
+            var hasNavigatedAway by remember { mutableStateOf(false) }
+            LaunchedEffect(backstack.isEmpty()) {
+                if (backstack.isEmpty()) {
+                    if (hasNavigatedAway) discoveryVm.refresh()
+                } else {
+                    hasNavigatedAway = true
+                }
+            }
             DesktopDiscoveryScreen(
                 viewModel = discoveryVm,
-                onModelClick = { backstack.add(DesktopRoute.ModelDetail(it)) },
+                onModelClick = {
+                    discoveryVm.trackRecommendationClick(it)
+                    backstack.add(DesktopRoute.ModelDetail(it))
+                },
             )
         }
         DiscoverSection.Feed -> {

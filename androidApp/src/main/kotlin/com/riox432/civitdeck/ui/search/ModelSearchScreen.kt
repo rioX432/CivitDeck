@@ -52,6 +52,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.BuildConfig
 import com.riox432.civitdeck.R
@@ -91,6 +93,14 @@ fun ModelSearchScreen(
     val headerState = rememberCollapsibleHeaderState()
 
     HeaderSnapEffect(gridState = gridState, headerState = headerState)
+
+    // Recompute recommendations when the screen resumes after navigating away (e.g. back
+    // from a detail view) so a just-recorded click reshapes the feed. Skips the first
+    // resume because init already loads recommendations.
+    var hasResumedOnce by rememberSaveable { mutableStateOf(false) }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        if (hasResumedOnce) viewModel.refreshRecommendations() else hasResumedOnce = true
+    }
 
     var lastHandledTrigger by rememberSaveable { mutableIntStateOf(scrollToTopTrigger) }
     LaunchedEffect(scrollToTopTrigger) {
@@ -240,6 +250,10 @@ private fun SearchScreenContentBox(
                 onHideModel = viewModel::onHideModel,
                 onToggleFavorite = onToggleFavorite,
                 onCompareModel = callbacks.onCompareModel,
+                onRecommendationClick = { id, thumbnail, suffix ->
+                    viewModel.trackRecommendationClick(id)
+                    callbacks.onModelClick(id, thumbnail, suffix)
+                },
             ),
             topPadding = topPadding,
             bottomPadding = padding.calculateBottomPadding(),

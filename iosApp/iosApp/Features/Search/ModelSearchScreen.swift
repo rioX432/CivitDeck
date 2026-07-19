@@ -110,6 +110,11 @@ struct ModelSearchScreen: View {
                 navigationPath.append(id)
                 _ = router.consume()
             }
+            .onChange(of: navigationPath.count) { count in
+                // Returned to the search root (e.g. back from a detail view): recompute
+                // recommendations so a just-recorded click reshapes the feed.
+                if count == 0 { viewModel.refreshRecommendations() }
+            }
         }
     }
     private var activeFilterCount: Int {
@@ -485,6 +490,9 @@ extension ModelSearchScreen { // MARK: - Tag Sections
         )
     }
     var recommendationSections: some View {
-        RecommendationSectionsView(recommendations: viewModel.recommendations)
+        RecommendationSectionsView(
+            recommendations: viewModel.recommendations,
+            onRecommendationClick: { viewModel.trackRecommendationClick(modelId: $0) }
+        )
     }
 }

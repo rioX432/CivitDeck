@@ -48,6 +48,7 @@ val databaseModule = module {
     single { get<CivitDeckDatabase>().savedPromptDao() }
     single { get<CivitDeckDatabase>().searchHistoryDao() }
     single { get<CivitDeckDatabase>().browsingHistoryDao() }
+    single { get<CivitDeckDatabase>().interactionEventDao() }
     single { get<CivitDeckDatabase>().excludedTagDao() }
     single { get<CivitDeckDatabase>().hiddenModelDao() }
     single { get<CivitDeckDatabase>().localModelFileDao() }
@@ -77,7 +78,7 @@ val databaseModule = module {
     // Repositories (DB-only)
     single<CacheRepository> { CacheRepositoryImpl(get()) }
     single<FavoriteRepository> { FavoriteRepositoryImpl(get()) }
-    single<BrowsingHistoryRepository> { BrowsingHistoryRepositoryImpl(get()) }
+    single<BrowsingHistoryRepository> { BrowsingHistoryRepositoryImpl(get(), get()) }
     single<ModelVersionCheckpointRepository> { ModelVersionCheckpointRepositoryImpl(get()) }
 
     // Mixed network + cache repositories (ModelRepository, LocalModelFile*,

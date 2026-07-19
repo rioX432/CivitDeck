@@ -56,6 +56,9 @@ struct HeaderHeightPreferenceKey: PreferenceKey {
 
 struct RecommendationSectionsView: View {
     let recommendations: [RecommendationSection]
+    // Records the recommendation-click signal before navigation; defaults to a no-op so
+    // previews and other call sites without a view model still compile.
+    var onRecommendationClick: (Int64) -> Void = { _ in }
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     private var cardSize: CGSize {
@@ -81,6 +84,9 @@ struct RecommendationSectionsView: View {
                                     .frame(width: cardSize.width, height: cardSize.height)
                             }
                             .buttonStyle(.plain)
+                            .simultaneousGesture(TapGesture().onEnded {
+                                onRecommendationClick(model.id)
+                            })
                         }
                     }
                     .padding(.horizontal, Spacing.md)
