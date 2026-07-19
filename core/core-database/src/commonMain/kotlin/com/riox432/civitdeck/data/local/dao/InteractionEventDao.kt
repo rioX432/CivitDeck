@@ -10,8 +10,11 @@ interface InteractionEventDao {
     @Insert
     suspend fun insert(event: InteractionEventEntity)
 
-    @Query("SELECT * FROM interaction_event WHERE timestamp >= :sinceMillis")
-    suspend fun getEventsSince(sinceMillis: Long): List<InteractionEventEntity>
+    @Query(
+        "SELECT * FROM interaction_event WHERE timestamp >= :sinceMillis " +
+            "ORDER BY timestamp DESC LIMIT :limit",
+    )
+    suspend fun getEventsSince(sinceMillis: Long, limit: Int = 500): List<InteractionEventEntity>
 
     @Query(
         "SELECT COUNT(*) FROM interaction_event " +

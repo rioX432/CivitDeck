@@ -143,8 +143,10 @@ class BrowsingHistoryRepositoryImplTest {
             events.add(event.copy(id = idCounter++))
         }
 
-        override suspend fun getEventsSince(sinceMillis: Long): List<InteractionEventEntity> =
+        override suspend fun getEventsSince(sinceMillis: Long, limit: Int): List<InteractionEventEntity> =
             events.filter { it.timestamp >= sinceMillis }
+                .sortedByDescending { it.timestamp }
+                .take(limit)
 
         override suspend fun getCountByTypeSince(type: String, sinceMillis: Long): Int =
             events.count { it.type == type && it.timestamp >= sinceMillis }
