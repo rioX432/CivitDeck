@@ -1,10 +1,14 @@
 package com.riox432.civitdeck.data.repository
 
+import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.BrowsingHistoryDao
 import com.riox432.civitdeck.data.local.dao.DayCount
+import com.riox432.civitdeck.data.local.dao.InteractionEventDao
 import com.riox432.civitdeck.data.local.dao.NameCount
 import com.riox432.civitdeck.data.local.entity.BrowsingHistoryEntity
+import com.riox432.civitdeck.data.local.entity.InteractionEventEntity
 import com.riox432.civitdeck.data.local.repository.BrowsingHistoryRepositoryImpl
+import com.riox432.civitdeck.domain.model.InteractionType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
@@ -131,10 +135,37 @@ class BrowsingHistoryRepositoryImplTest {
         }
     }
 
+    private class FakeInteractionEventDao : InteractionEventDao {
+        val events = mutableListOf<InteractionEventEntity>()
+        private var idCounter = 1L
+
+        override suspend fun insert(event: InteractionEventEntity) {
+            events.add(event.copy(id = idCounter++))
+        }
+
+        override suspend fun getEventsSince(sinceMillis: Long): List<InteractionEventEntity> =
+            events.filter { it.timestamp >= sinceMillis }
+
+        override suspend fun getCountByTypeSince(type: String, sinceMillis: Long): Int =
+            events.count { it.type == type && it.timestamp >= sinceMillis }
+
+        override suspend fun deleteOlderThan(cutoffMillis: Long): Int {
+            val before = events.size
+            events.removeAll { it.timestamp < cutoffMillis }
+            return before - events.size
+        }
+
+        override suspend fun deleteAll(): Int {
+            val count = events.size
+            events.clear()
+            return count
+        }
+    }
+
     @Test
     fun trackView_inserts_entity() = runTest {
         val dao = FakeDao()
-        val repo = BrowsingHistoryRepositoryImpl(dao)
+        val repo = BrowsingHistoryRepositoryImpl(dao, FakeInteractionEventDao())
         repo.trackView(1L, "TestModel", "Checkpoint", "artist", null, listOf("anime"))
         assertEquals(1, dao.entities.size)
         assertEquals(1L, dao.entities[0].modelId)
@@ -147,7 +178,7 @@ class BrowsingHistoryRepositoryImplTest {
     @Test
     fun trackView_joins_tags_with_comma() = runTest {
         val dao = FakeDao()
-        val repo = BrowsingHistoryRepositoryImpl(dao)
+        val repo = BrowsingHistoryRepositoryImpl(dao, FakeInteractionEventDao())
         repo.trackView(1L, "Test", "LORA", null, null, listOf("anime", "portrait", "girl"))
         assertEquals("anime,portrait,girl", dao.entities[0].tags)
     }
@@ -155,7 +186,7 @@ class BrowsingHistoryRepositoryImplTest {
     @Test
     fun getRecentTypes_counts_by_type() = runTest {
         val dao = FakeDao()
-        val repo = BrowsingHistoryRepositoryImpl(dao)
+        val repo = BrowsingHistoryRepositoryImpl(dao, FakeInteractionEventDao())
         repo.trackView(1L, "M1", "Checkpoint", null, null, emptyList())
         repo.trackView(2L, "M2", "Checkpoint", null, null, emptyList())
         repo.trackView(3L, "M3", "LORA", null, null, emptyList())
@@ -168,7 +199,7 @@ class BrowsingHistoryRepositoryImplTest {
     @Test
     fun getRecentCreators_counts_by_creator() = runTest {
         val dao = FakeDao()
-        val repo = BrowsingHistoryRepositoryImpl(dao)
+        val repo = BrowsingHistoryRepositoryImpl(dao, FakeInteractionEventDao())
         repo.trackView(1L, "M1", "Checkpoint", "artist1", null, emptyList())
         repo.trackView(2L, "M2", "LORA", "artist1", null, emptyList())
         repo.trackView(3L, "M3", "LORA", "artist2", null, emptyList())
@@ -183,7 +214,7 @@ class BrowsingHistoryRepositoryImplTest {
     @Test
     fun getRecentTags_counts_split_tags() = runTest {
         val dao = FakeDao()
-        val repo = BrowsingHistoryRepositoryImpl(dao)
+        val repo = BrowsingHistoryRepositoryImpl(dao, FakeInteractionEventDao())
         repo.trackView(1L, "M1", "Checkpoint", null, null, listOf("anime", "girl"))
         repo.trackView(2L, "M2", "LORA", null, null, listOf("anime", "landscape"))
 
@@ -196,7 +227,7 @@ class BrowsingHistoryRepositoryImplTest {
     @Test
     fun getRecentTags_ignores_blank_tags() = runTest {
         val dao = FakeDao()
-        val repo = BrowsingHistoryRepositoryImpl(dao)
+        val repo = BrowsingHistoryRepositoryImpl(dao, FakeInteractionEventDao())
         repo.trackView(1L, "M1", "Checkpoint", null, null, emptyList())
 
         val tags = repo.getRecentTags()
@@ -206,7 +237,7 @@ class BrowsingHistoryRepositoryImplTest {
     @Test
     fun getAllViewedModelIds_returns_distinct_ids() = runTest {
         val dao = FakeDao()
-        val repo = BrowsingHistoryRepositoryImpl(dao)
+        val repo = BrowsingHistoryRepositoryImpl(dao, FakeInteractionEventDao())
         repo.trackView(1L, "M1", "Checkpoint", null, null, emptyList())
         repo.trackView(1L, "M1", "Checkpoint", null, null, emptyList())
         repo.trackView(2L, "M2", "LORA", null, null, emptyList())
@@ -218,9 +249,110 @@ class BrowsingHistoryRepositoryImplTest {
     @Test
     fun clearAll_removes_everything() = runTest {
         val dao = FakeDao()
-        val repo = BrowsingHistoryRepositoryImpl(dao)
+        val eventDao = FakeInteractionEventDao()
+        val repo = BrowsingHistoryRepositoryImpl(dao, eventDao)
         repo.trackView(1L, "M1", "Checkpoint", null, null, emptyList())
+        repo.trackInteraction(1L, InteractionType.FAVORITE)
         repo.clearAll()
         assertTrue(dao.entities.isEmpty())
+        assertTrue(eventDao.events.isEmpty())
+    }
+
+    @Test
+    fun trackInteraction_persists_event() = runTest {
+        val eventDao = FakeInteractionEventDao()
+        val repo = BrowsingHistoryRepositoryImpl(FakeDao(), eventDao)
+        repo.trackView(1L, "M1", "Checkpoint", null, null, listOf("anime"))
+        repo.trackInteraction(1L, InteractionType.RECOMMENDATION_CLICK)
+
+        assertEquals(1, eventDao.events.size)
+        assertEquals(1L, eventDao.events[0].modelId)
+        assertEquals(InteractionType.RECOMMENDATION_CLICK.name, eventDao.events[0].type)
+    }
+
+    @Test
+    fun trackInteraction_retained_without_history_row() = runTest {
+        // No trackView first: the model has no browsing_history row. The event must still
+        // be recorded rather than silently discarded.
+        val eventDao = FakeInteractionEventDao()
+        val repo = BrowsingHistoryRepositoryImpl(FakeDao(), eventDao)
+        repo.trackInteraction(42L, InteractionType.DOWNLOAD)
+
+        assertEquals(1, eventDao.events.size)
+        assertEquals(42L, eventDao.events[0].modelId)
+        assertEquals(
+            1,
+            repo.getInteractionCountByType(InteractionType.DOWNLOAD, sinceMillis = 0L),
+        )
+    }
+
+    @Test
+    fun trackInteraction_accumulates_without_overwrite() = runTest {
+        val eventDao = FakeInteractionEventDao()
+        val repo = BrowsingHistoryRepositoryImpl(FakeDao(), eventDao)
+        repo.trackInteraction(1L, InteractionType.RECOMMENDATION_CLICK)
+        repo.trackInteraction(1L, InteractionType.RECOMMENDATION_CLICK)
+        repo.trackInteraction(1L, InteractionType.FAVORITE)
+
+        assertEquals(3, eventDao.events.size)
+        assertEquals(2, repo.getRecommendationClickCount(sinceMillis = 0L))
+        assertEquals(
+            1,
+            repo.getInteractionCountByType(InteractionType.FAVORITE, sinceMillis = 0L),
+        )
+    }
+
+    @Test
+    fun weightedTags_include_interaction_event_signal() = runTest {
+        val dao = FakeDao()
+        val eventDao = FakeInteractionEventDao()
+        val repo = BrowsingHistoryRepositoryImpl(dao, eventDao)
+        // Two models viewed once each; a DOWNLOAD event on the "anime" model must push its
+        // tag above the merely-viewed "landscape" model.
+        repo.trackView(1L, "M1", "Checkpoint", null, null, listOf("anime"))
+        repo.trackView(2L, "M2", "Checkpoint", null, null, listOf("landscape"))
+        repo.trackInteraction(1L, InteractionType.DOWNLOAD)
+
+        val weighted = repo.getWeightedTags()
+        val anime = weighted["anime"] ?: 0.0
+        val landscape = weighted["landscape"] ?: 0.0
+        assertTrue(anime > landscape, "download event should raise anime above landscape")
+    }
+
+    @Test
+    fun weightedTags_decay_favours_recent_over_old() = runTest {
+        val dao = FakeDao()
+        val repo = BrowsingHistoryRepositoryImpl(dao, FakeInteractionEventDao())
+        val now = currentTimeMillis()
+        val dayMs = 86_400_000L
+        // Same duration/engagement; only recency differs. Continuous decay must rank the
+        // recently-viewed tag above the one viewed two months ago.
+        dao.entities.add(
+            BrowsingHistoryEntity(
+                id = 1L,
+                modelId = 1L,
+                modelName = "Recent",
+                modelType = "Checkpoint",
+                creatorName = null,
+                tags = "recent",
+                viewedAt = now - dayMs,
+            ),
+        )
+        dao.entities.add(
+            BrowsingHistoryEntity(
+                id = 2L,
+                modelId = 2L,
+                modelName = "Old",
+                modelType = "Checkpoint",
+                creatorName = null,
+                tags = "old",
+                viewedAt = now - 60 * dayMs,
+            ),
+        )
+
+        val weighted = repo.getWeightedTags()
+        val recent = weighted["recent"] ?: 0.0
+        val old = weighted["old"] ?: 0.0
+        assertTrue(recent > old, "recent view should outweigh a 60-day-old view")
     }
 }

@@ -251,4 +251,8 @@ final class ModelSearchViewModel: ObservableObject {
     func trackRecommendationClick(modelId: Int64) {
         vm.trackRecommendationClick(modelId: modelId)
     }
+
+    func refreshRecommendations() {
+        vm.refreshRecommendations()
+    }
 }

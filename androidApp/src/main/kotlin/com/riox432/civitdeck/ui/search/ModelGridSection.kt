@@ -54,6 +54,8 @@ data class ModelGridCallbacks(
     val onHideModel: (Long, String) -> Unit,
     val onToggleFavorite: (Model) -> Unit,
     val onCompareModel: (Long, String) -> Unit,
+    // Recommendation-card taps: records the interaction signal, then navigates like onModelClick.
+    val onRecommendationClick: (Long, String?, String) -> Unit = onModelClick,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -277,7 +279,7 @@ private fun ModelGrid(
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
-        recommendationItems(recommendations, callbacks.onModelClick)
+        recommendationItems(recommendations, callbacks.onRecommendationClick)
         modelItems(
             models,
             ownedHashes,
