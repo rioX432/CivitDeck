@@ -1,7 +1,10 @@
 ---
 name: dev-investigate
-description: "Investigate codebase for an issue in a forked context (context isolation)"
+description: "Investigate the codebase for one issue in a forked context, writing a self-contained investigation-report.md. Use when /dev needs codebase investigation without spending the caller's context on file reads."
 context: fork
+# The caller reads investigation-report.md immediately after invoking this skill.
+# Forked skills default to background: true, which would let that read race the fork.
+background: false
 allowed-tools:
   - Read
   - Glob
@@ -16,152 +19,36 @@ allowed-tools:
 
 # /dev-investigate — Forked-Context Investigation
 
-Investigate the codebase for a given issue in a forked context. This skill runs with `context: fork` so that large Read results do not pollute the caller's context window.
+Investigate the codebase for a given issue and write the findings to a file. Runs with `context: fork` so the caller receives only the report, not hundreds of file reads.
 
-**Input:** $ARGUMENTS (issue details, keywords, affected areas from Phase 1)
+**Input:** $ARGUMENTS (issue details, keywords, affected areas from `/dev` Phase 1)
 
-## Why Fork?
-
-Investigation reads many files to trace data flows and map dependencies. Running in a forked context keeps this token-heavy work isolated — the caller only receives the final `investigation-report.md`, not hundreds of file reads.
+The method and report format live in [../investigate/report-format.md](../investigate/report-format.md) — read it before Step 3, including the **Issue-driven additions** section.
 
 ---
 
 ## Step 1: Parse Input
 
-Extract from `$ARGUMENTS`:
-- Issue summary and acceptance criteria
-- Keywords and technical terms
-- Known affected areas (from issue labels, description)
-- Project architecture context (from CLAUDE.md)
+Extract from `$ARGUMENTS`: issue summary and acceptance criteria, keywords and technical terms, known affected areas.
 
-Read `CLAUDE.md` for project architecture, conventions, and directory structure.
-
----
+Read `CLAUDE.md` for architecture, conventions, and directory structure.
 
 ## Step 2: Find Entry Points
 
 1. **Grep** for keywords from the issue (class names, function names, error messages)
 2. **Glob** for likely file patterns (feature directories, module names)
 3. **git log** for recent changes in related areas
-4. Identify 3-6 entry points to start deep investigation
+4. Settle on 3-6 entry points
 
----
+## Step 3: Investigate
 
-## Step 3: Deep Investigation (Explore Agents)
+Follow [../investigate/report-format.md](../investigate/report-format.md): pick 2-4 axes, launch the Explore agents in parallel, apply the investigation checklist, then run the Think Twice pass.
 
-Launch parallel Explore agents for each investigation axis:
+## Step 4: Write the Report
 
-### Agent template
+Write `investigation-report.md` in the current working directory, using the report skeleton **plus the Issue-driven additions** (the `Changes Needed` column and the `Decision Points` section — `/dig` consumes them directly).
 
-```
-Agent(
-  subagent_type: "Explore",
-  prompt: "Investigate {axis} for {issue} in this codebase.
-
-  Entry points: {identified files/symbols}
-
-  You MUST:
-  1. Read every relevant file — no guessing
-  2. Trace calls and data flow through actual code paths
-  3. Note public API surfaces and internal boundaries
-  4. Check for tests — list what's tested and what's not
-  5. List all files involved with their role
-
-  Report: structured findings with file:line references."
-)
-```
-
-### Investigation axes (select 2-4 based on issue type):
-
-- **Code structure**: Where does the relevant code live? What layer/module?
-- **Data flow**: How does data enter, transform, and exit?
-- **Dependencies**: What depends on this? What does this depend on?
-- **Test coverage**: What's tested? What's not? Where are the test files?
-- **History**: Recent changes, who touched it, related PRs (`git log`, `git blame`)
-
-### Investigation checklist
-
-For each axis, the agent must cover:
-
-- [ ] **Read the code**: Every involved file, not just entry points
-- [ ] **Trace the flow**: Follow function calls, event handlers, data transformations
-- [ ] **Map boundaries**: Module boundaries, public vs internal APIs
-- [ ] **Check tests**: Existing test files, what's covered, what's missing
-- [ ] **Check history**: `git log` / `git blame` for recent changes and context
-
----
-
-## Step 4: Think Twice
-
-After receiving agent reports, verify:
-1. Did the agents actually read the code, or did they speculate?
-2. Are there other possible causes or code paths not considered?
-3. Is impact analysis complete — all callers, all downstream dependencies?
-4. Do findings from different axes contradict each other?
-
-If gaps remain, launch follow-up Explore agents for specific areas.
-
----
-
-## Step 5: Write Investigation Report
-
-Write `investigation-report.md` in the current working directory.
-
-**Filename sanitization**: If the issue has a reference (e.g., `#42`, `PGR-1234`), the file is still named `investigation-report.md` (the caller handles issue-specific paths).
-
-```markdown
-# Investigation Report: {issue title}
-
-## Summary
-- 1-3 sentence overview of findings
-
-## Architecture Overview
-- Component/module structure relevant to the issue
-- Layer boundaries and responsibilities
-
-## Data Flow
-- Entry point -> processing -> output (with file:line references)
-- State management involved
-- Side effects (DB writes, API calls, file I/O)
-
-## Affected Files
-| File | Role | Lines | Changes Needed |
-|------|------|-------|----------------|
-| `src/...` | Entry point | 45-120 | Modify X |
-| `src/...` | Data layer | 10-80 | Add Y |
-
-## Dependencies
-- **Upstream** (what calls this): [list with file:line]
-- **Downstream** (what this calls): [list with file:line]
-- **External** (libraries, APIs, services): [list]
-
-## Existing Patterns
-- How similar features are implemented in this codebase
-- Conventions observed (naming, error handling, testing)
-
-## Test Coverage
-- Existing tests: [list with file paths]
-- Covered scenarios: [list]
-- Missing coverage: [list]
-
-## Risks / Concerns
-- Potential issues discovered during investigation
-- Complexity hotspots
-- Missing error handling or edge cases
-
-## Decision Points
-- Ambiguities that need resolution in /dig phase
-- Design choices with trade-offs
-
-## Open Questions
-- Things that could not be determined from code alone
-```
-
-**Rules:**
-- Every claim must reference a specific `file:line`
-- Distinguish facts (read from code) from inferences
-- If something is unclear, put it in Open Questions — do not guess
-- The report must be self-contained — the caller has no access to this fork's context
+The report must be self-contained. The caller cannot see this fork's context, so anything not written down is lost.
 
 ---
 
@@ -171,5 +58,5 @@ Write `investigation-report.md` in the current working directory.
 |-----------|--------|
 | Entry points unclear | Grep broadly, expand search patterns |
 | Agent returns shallow results | Re-launch with more specific prompts |
-| Codebase too large for full trace | Scope down, report what was covered and what was skipped |
+| Codebase too large for full trace | Scope down; record what was covered **and what was skipped** |
 | CLAUDE.md missing | Infer architecture from directory structure |

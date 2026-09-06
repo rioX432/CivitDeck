@@ -29,6 +29,29 @@ If Codex MCP is not configured or fails to respond:
 2. Check existing codebase for precedent
 3. Document the decision rationale in the PR description
 
+### Call pattern (used by /dev, /dig, /decompose)
+
+Skills that consult Codex all follow the same shape. Do not restate it in the skill — reference this section.
+
+```
+ToolSearch("select:mcp__codex__codex")
+
+mcp__codex__codex(prompt: "
+  ## {what Codex is being given}
+  {context}
+
+  ## {what Codex is asked for}
+  {numbered request — one topic only}
+")
+```
+
+Rules for every call site:
+
+- **One topic per call.** A call mixing architecture and naming gets a worse answer on both.
+- **Feed it facts, not the raw issue.** Pass the investigation findings, the affected-files table, the existing patterns — Codex has no repo access.
+- **Codex advises, Claude decides.** Its output is an input to the decision matrix or task list, never the final answer, and never applied unreviewed.
+- **On failure — `ToolSearch` finds nothing, or the call errors — skip the step and continue** with the traditional flow. Log one line saying Codex was unavailable. A Codex outage must never block the workflow.
+
 ## Think Twice
 - After writing code, **re-read and verify it's correct**
 - Check:

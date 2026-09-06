@@ -1,0 +1,36 @@
+{
+  "skill_name": "investigate",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/investigate how session tokens are refreshed",
+      "expected_output": "A report grounded in file:line evidence, with no proposals",
+      "expectations": [
+        "2-4 investigation axes are chosen and Explore agents are launched in parallel, one per axis",
+        "Every claim in the report carries a file:line reference",
+        "Facts read from code are distinguished from inferences",
+        "The report ends without proposing an implementation or filing an issue"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "An Explore agent came back with 'the token is probably refreshed by an interceptor' and no file references.",
+      "expected_output": "The shallow result is rejected and re-investigated, not written into the report",
+      "expectations": [
+        "The Think Twice pass identifies the result as speculation rather than reading",
+        "A follow-up Explore agent is launched scoped to the specific gap",
+        "The unverified claim does not appear in the report as a finding"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "The investigation cannot determine whether the refresh is retried on 401, because the behavior depends on server configuration.",
+      "expected_output": "The unknown goes to Open Questions",
+      "expectations": [
+        "The item appears under Open Questions rather than being answered by a plausible guess",
+        "The report says what was covered and what was not",
+        "No implementation recommendation is made on the basis of the unknown"
+      ]
+    }
+  ]
+}

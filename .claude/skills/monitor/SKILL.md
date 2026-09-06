@@ -1,6 +1,6 @@
 ---
 name: monitor
-description: "KPI monitoring and issue proposal: analyze crash rates, store reviews, and metrics to suggest next priorities"
+description: "KPI monitoring and issue proposal: analyze crash rates, store reviews, and metrics to suggest next priorities, then file them as GitHub Issues. Assumes a mobile app with store presence; requires the gh CLI."
 user-invocable: true
 disable-model-invocation: true
 allowed-tools:
@@ -8,7 +8,7 @@ allowed-tools:
   - Grep
   - Glob
   - Agent
-  - Bash(gh issue create:*)
+  - Skill
   - Bash(gh issue list:*)
   - TaskCreate
   - TaskUpdate
@@ -71,13 +71,18 @@ Score potential features on two axes:
 
 ### 5. Issue Proposal
 
-For each recommended action:
-```bash
-gh issue create \
-  --title "{priority-label}: {concise description}" \
-  --body "{rationale with data points}" \
-  --label "ai-proposed,{priority}"
+Hand recommended actions to the `issue` skill:
+
 ```
+Skill("issue", args: "Batch: KPI monitor proposals. Source: /monitor run {date}.
+{for each action: priority, description, the metric or review data that motivates it,
+affected user segment}. Add the `ai-proposed` label.")
+```
+
+The metric that triggered the proposal is the `Context` evidence, and its target value is the
+`Done when` — a proposal with no measurable target is not ready to file.
+
+Do **not** call `gh issue create` directly from this skill.
 
 ## Output Format
 

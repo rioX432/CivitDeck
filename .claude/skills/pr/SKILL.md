@@ -1,6 +1,6 @@
 ---
 name: pr
-description: "Create a pull request for the current branch using the project's PR template"
+description: "Open a GitHub pull request for the current branch using the project PR template, with issue linking and a generated changelog. Use when the branch is reviewed and ready to open. Requires the gh CLI."
 user-invocable: true
 disable-model-invocation: true
 allowed-tools:

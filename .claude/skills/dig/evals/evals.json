@@ -1,0 +1,38 @@
+{
+  "skill_name": "dig",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "The investigation surfaced 6 decision points: where to place the new service, whether errors return Result or throw, the class name, whether the API is public, sync vs async, and unit vs integration tests. CLAUDE.md documents the module layout, and src/api/client.kt already uses Result<T>.",
+      "expected_output": "Most decisions are auto-decided from documented conventions and codebase precedent; only genuinely open ones reach the user",
+      "expectations": [
+        "Placement is auto-decided from the CLAUDE.md module layout, citing the rule",
+        "Error handling is auto-decided as Result<T> by citing the existing pattern with a file reference",
+        "Naming and test strategy are auto-decided from conventions rather than asked",
+        "At most 4 questions are asked in a round, and each carries 2-4 concrete options",
+        "The recommended option is the one matching existing codebase patterns"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "One remaining ambiguity is 'should the cache be per-process or shared across processes?' and Codex MCP is not configured. Proceed.",
+      "expected_output": "The Codex step is skipped without blocking, and the decision goes to the user",
+      "expectations": [
+        "The missing Codex tool is handled as a skip, not an error that stops the skill",
+        "The concurrency category is recognized as one that warrants Codex when available",
+        "The decision still reaches the user with options and trade-offs rather than being guessed"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Output the dig results for a run where 3 decisions were auto-decided, 1 was resolved by reading code, 1 was chosen by the user, and 1 could not be resolved at all.",
+      "expected_output": "A decision matrix that separates the four kinds and records the unresolved one as an assumption with a risk",
+      "expectations": [
+        "Auto-decided, Investigated, and User-decided decisions appear in separate tables",
+        "Each auto-decided row names the rule or file that decided it",
+        "The unresolved decision appears in the Assumptions table with an explicit risk, not silently omitted",
+        "No decision is presented as settled without a stated basis"
+      ]
+    }
+  ]
+}

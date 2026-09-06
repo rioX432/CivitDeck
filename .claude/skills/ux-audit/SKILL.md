@@ -11,7 +11,7 @@ allowed-tools:
   - Agent
   - WebSearch
   - AskUserQuestion
-  - Bash(gh issue create:*)
+  - Skill
   - Bash(gh issue list:*)
   - Bash(gh label create:*)
   - Bash(gh label list:*)
@@ -99,7 +99,7 @@ Found N screens:
 
 Launch **4 agents in parallel** (model: sonnet). Each agent analyzes all screens.
 
-See `${CLAUDE_SKILL_DIR}/reference.md` for detailed criteria per agent.
+Read [reference.md](reference.md) first — it holds the detailed criteria each agent evaluates against.
 
 ### Agent A: Heuristic Evaluation
 ```
@@ -109,7 +109,7 @@ For Web Visual mode: analyze screenshots + accessibility tree.
 For Mobile Visual mode: analyze screenshots + UI element dump from mobile-mcp.
 For Code mode: analyze UI code structure and patterns.
 
-For each screen, check all 10 heuristics (see reference.md for details).
+For each screen, check all 10 heuristics (criteria in [reference.md](reference.md)).
 Output: [screen] heuristic_number severity — finding — suggestion
 Severity: Critical / Warning / Suggestion
 ```
@@ -135,7 +135,7 @@ For Mobile Visual mode (mobile-mcp):
   3. Use mobile_take_screenshot + Claude Vision for visual contrast check
   4. Test screen reader traversal: navigate elements sequentially
 
-For Code mode: (see reference.md for platform-specific checks)
+For Code mode: (platform-specific checks in [reference.md](reference.md))
   - Android: contentDescription, clickable size >= 48dp, semantic elements
   - iOS: accessibilityLabel, frame >= 44pt, Dynamic Type support
   - Web: alt text, ARIA roles, semantic HTML, form labels
@@ -261,33 +261,21 @@ Output: [screen] guideline severity — finding — suggestion
 
 ### 4c. Create GitHub Issues
 
-For each selected finding:
-```bash
-gh issue create \
-  --title "UX: {description}" \
-  --body "$(cat <<'EOF'
-## Problem
-{description}
+Hand the selected findings to the `issue` skill:
 
-## Screen
-{screen name and file path}
-
-## Current State
-{what it looks like now}
-
-## Proposed Fix
-{incremental improvement}
-
-## Impact
-{who is affected, severity}
-
-## References
-- WCAG 2.2: {criterion if applicable}
-- {Platform guideline if applicable}
-EOF
-)" \
-  --label "ux,{severity}"
 ```
+Skill("issue", args: "Batch: UX audit findings. Source: /ux-audit run on {target}.
+{for each finding: severity, screen name, file path, current state, proposed fix,
+who is affected, WCAG 2.2 criterion or platform guideline reference}")
+```
+
+UX-specific requirements to pass through:
+
+- One issue per screen-level problem, not per element — a contrast failure repeated on 12 buttons is one issue
+- The WCAG criterion or platform guideline goes in `Context` as the evidence link
+- `Done when` must be observable: a contrast ratio, a screen-reader traversal, a touch-target size — never "looks better"
+
+Do **not** call `gh issue create` directly from this skill.
 
 ---
 
@@ -309,4 +297,4 @@ EOF
 | axe-core CDN blocked by CSP | Fall back to code-based a11y checks, note in report |
 | Dev server won't start | Ask user for URL or switch to Code mode |
 | No UI files found | Report error, suggest checking $ARGUMENTS |
-| `gh issue create` fails | Output issue content as text for manual creation |
+| Issue filing fails | The `issue` skill outputs the drafted bodies as markdown for manual creation |

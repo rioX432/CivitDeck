@@ -1,0 +1,38 @@
+{
+  "skill_name": "review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/review on a branch with 40 changed files. Prepare the diff.",
+      "expected_output": "Base branch resolved, commands run individually, both agents launched in parallel",
+      "expectations": [
+        "The base branch is determined rather than assumed to be `main`",
+        "`git diff {base}...HEAD` (three-dot) is used so unrelated base commits are excluded",
+        "Git commands are run as separate calls, not chained with `&&`",
+        "Agent A and Agent B are launched in the same turn so they run concurrently",
+        "`.claude/agents/` is checked for project-specific reviewers before finalizing the agent set"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Agent A reports 'possible NPE at Foo.kt:88' and Agent B reports 'missing null check, Foo.kt:88'. Produce the report.",
+      "expected_output": "One finding, not two",
+      "expectations": [
+        "The two reports are recognized as the same defect and merged",
+        "A single final severity is assigned rather than one per agent",
+        "The merged finding keeps the file:line reference"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "The review found 1 Critical, 2 Warning and 5 Nit findings. /dev is waiting on the result. What happens next?",
+      "expected_output": "Critical blocks; the caller stops rather than committing",
+      "expectations": [
+        "The Critical finding is reported as blocking and no commit or PR proceeds",
+        "Severity ordering is preserved in the report: Critical, Warning, Suggestion, Nit",
+        "Nit findings are not escalated into blockers",
+        "The counts are printed as text so an autonomous caller can read them from the transcript"
+      ]
+    }
+  ]
+}

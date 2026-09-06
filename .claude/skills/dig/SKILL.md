@@ -1,6 +1,6 @@
 ---
 name: dig
-description: "Clarify ambiguities in plans with structured questions and auto-decide rules"
+description: "Resolve design ambiguities before implementation: auto-decide what codebase patterns already settle, ask the user about the rest, and output a decision matrix. Use after investigation, before decomposition, when the approach could go several valid ways."
 user-invocable: true
 allowed-tools:
   - ToolSearch
@@ -57,38 +57,17 @@ For non-auto-decidable ambiguities in the **architecture**, **api-design**, or *
 
 **Skip this step for**: naming, testing, error-handling, data-flow categories (these are resolved by codebase patterns or user preference).
 
-#### Load Codex
+Follow the call pattern and fallback in `rules/behavior.md → Call pattern`.
 
-```
-ToolSearch("select:mcp__codex__codex")
-```
+**Give Codex**: the unresolved architecture/api-design/concurrency ambiguities with their options, plus the codebase patterns found in Step 2.
 
-#### Call Codex (if available)
+**Ask Codex for**, per ambiguity:
+1. An evaluation of the proposed options
+2. Alternatives not yet considered
+3. A recommendation with reasoning
+4. Risks and trade-offs
 
-```
-mcp__codex__codex(
-  prompt: "Given these unresolved design decisions, explore alternatives:
-
-  ## Ambiguities
-  {list of non-auto-decidable architecture/api-design/concurrency ambiguities with their options}
-
-  ## Codebase Context
-  {relevant patterns from Step 2, existing conventions}
-
-  For each ambiguity:
-  1. Evaluate the proposed options
-  2. Suggest any additional alternatives not yet considered
-  3. Recommend the best option with reasoning
-  4. Flag any risks or trade-offs"
-)
-```
-
-Incorporate Codex recommendations into the options presented to the user in Step 4.
-
-#### Fallback (Codex unavailable)
-
-If `ToolSearch` fails to find Codex or the call errors:
-- Skip this step — proceed to Step 4 with Step 3 results only (traditional flow)
+Fold the recommendations into the options presented to the user in Step 4 — they are options, not decisions.
 
 ### Step 4: Ask User (max 3 rounds, max 4 questions per round)
 

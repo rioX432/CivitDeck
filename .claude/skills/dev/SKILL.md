@@ -1,6 +1,6 @@
 ---
 name: dev
-description: "E2E development: investigate → dig → decompose → implement → test → review → PR"
+description: "End-to-end development for one issue: investigate → design → resolve ambiguities → decompose → implement → test → review → PR. Reads GitHub or Linear issues; writes branches and pull requests to GitHub via the gh CLI."
 argument-hint: "[issue number or ID, e.g. #42 or PGR-1234]"
 user-invocable: true
 disable-model-invocation: true
@@ -99,6 +99,23 @@ Detect the issue source from "$ARGUMENTS":
 1. Use `ToolSearch` with `+figma-remote` to load Figma MCP
 2. Fetch design context and screenshot
 
+### Sizing Gate
+
+Before investigating, check that the issue is one executable unit. Run the sizing gate from the
+`issue` skill against the issue body (`skills/issue/SKILL.md → Step 3`).
+
+If the issue fails a check — an `and` in the title, an unresolved design choice, a task list of
+ten boxes, an `epic` label — **stop and split before implementing**:
+
+```
+Skill("issue", args: "Re-size #{issue}: {quoted text that failed the gate}")
+```
+
+Then run `/dev` against one of the resulting children. An oversized issue is the single largest
+cause of an unreviewable PR and of `/goal` runs that never terminate.
+
+In autonomous mode, a failed gate is a **stop condition**, not something to work around.
+
 **Branch naming** (from labels or issue type):
 - Bug → `fix/{issue-ref}-{kebab-case-short-desc}`
 - Otherwise → `feat/{issue-ref}-{kebab-case-short-desc}`
@@ -149,48 +166,18 @@ Mark task 2 `completed`.
 
 Mark task 3 `in_progress`.
 
-Use Codex to generate a technical design before diving into ambiguity resolution and decomposition.
+Use Codex to generate a technical design before ambiguity resolution and decomposition.
+Follow the call pattern and fallback in `rules/behavior.md → Call pattern`.
 
-### Load Codex
+**Give Codex**: the issue title and description, the investigation summary, the affected-files table.
 
-```
-ToolSearch("select:mcp__codex__codex")
-```
+**Ask Codex for**:
+1. The implementation approach (architecture, data flow changes)
+2. Interface changes and new abstractions needed
+3. Edge cases and error handling strategy
+4. Risks and trade-offs
 
-### Call Codex
-
-If Codex is available:
-
-```
-mcp__codex__codex(
-  prompt: "Given this investigation report and issue, produce a technical design:
-
-  ## Issue
-  {issue title and description}
-
-  ## Investigation Findings
-  {summary from investigation-report.md}
-
-  ## Affected Files
-  {affected files table from report}
-
-  ## Design Request
-  1. Propose the implementation approach (architecture, data flow changes)
-  2. Identify interface changes and new abstractions needed
-  3. List edge cases and error handling strategy
-  4. Flag risks and trade-offs
-
-  Output a concise technical design document."
-)
-```
-
-Save the design output for use in Phase 3 (/dig) and Phase 4 (/decompose).
-
-### Fallback (Codex unavailable)
-
-If `ToolSearch` fails to find Codex or the call errors:
-- Skip this phase — proceed to Phase 3 with investigation results only (traditional flow)
-- Log: "Codex unavailable, skipping technical design phase"
+Save the output for Phase 3 (`/dig`) and Phase 4 (`/decompose`).
 
 Mark task 3 `completed`.
 

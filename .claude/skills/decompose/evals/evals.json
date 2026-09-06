@@ -1,0 +1,38 @@
+{
+  "skill_name": "decompose",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Decompose: add a favorites feature to a KMP app — a data model, a repository, a use case, a Compose screen, and tests.",
+      "expected_output": "Tasks ordered inner-to-outer with dependencies, each 5-30 minutes, tests paired with their implementation",
+      "expectations": [
+        "Tasks are ordered commonMain API / expect-actual / platform implementations before UI, per the KMP layer list",
+        "Implementation and its test are the same task, not separate ones",
+        "The data type and its mapper are one task",
+        "Cross-cutting checks (lint, format) are the last task and depend on the rest",
+        "Every task states What, Where with a file path, How, Why, and Verify"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "One of the decomposed tasks is \"Implement the sync engine\" and you estimate it at 3 hours.",
+      "expected_output": "The task is split further before implementation starts",
+      "expectations": [
+        "The task is recognized as exceeding the 5-30 minute size rule",
+        "It is split into smaller tasks rather than accepted with a note",
+        "Each resulting task keeps a concrete Verify step"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Show the final task list for a 6-task decomposition and hand off to implementation.",
+      "expected_output": "A table with layer and blocking dependencies, then user confirmation before implementing",
+      "expectations": [
+        "The output is a table with columns for layer, description and Blocked By",
+        "Dependency edges point at earlier task numbers, with core-type tasks blocking implementation tasks",
+        "User confirmation is requested before the implementation loop begins",
+        "Parallelizable groups are identified rather than everything being serialized"
+      ]
+    }
+  ]
+}

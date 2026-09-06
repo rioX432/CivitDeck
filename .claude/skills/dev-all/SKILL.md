@@ -1,6 +1,6 @@
 ---
 name: dev-all
-description: "Process issues sequentially: /dev per issue in isolated sub-agent → CI wait → merge → next"
+description: "Process a batch of issues sequentially: /dev per issue in an isolated sub-agent → review validation → CI wait → conditional merge → next. GitHub-only; requires the gh CLI."
 argument-hint: "[issue numbers, e.g. #42 #43 #44, or empty for all open issues]"
 user-invocable: true
 disable-model-invocation: true

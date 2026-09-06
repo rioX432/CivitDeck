@@ -1,11 +1,11 @@
 ---
 name: audit
-description: "Audit codebase for tech debt, code quality, and architecture issues — then create GitHub Issues"
-argument-hint: "[scope: all (default), or specific directory/module]"
+description: "Audit the codebase for tech debt, code quality, architecture, performance, visual, and dependency issues with parallel scanners, then file the findings as right-sized GitHub Issues. Use for a health check of a repo or module; scope it with tech-debt / quality / architecture / visual / deps."
+argument-hint: "[all (default) | tech-debt | quality | architecture | visual | deps | <directory>]"
 user-invocable: true
 disable-model-invocation: true
 allowed-tools:
-  - Bash(gh issue create:*)
+  - Skill
   - Bash(gh issue list:*)
   - Bash(git log:*)
   - Glob
@@ -24,9 +24,25 @@ allowed-tools:
 
 # /audit — Codebase Health Audit
 
-Audit the codebase for code quality, tech debt, architecture, and security issues. Findings become GitHub Issues.
+Audit the codebase for code quality, tech debt, architecture, performance, visual, and dependency issues. Findings become GitHub Issues via the `issue` skill.
 
 **Scope:** $ARGUMENTS (default: all)
+
+## Scope Selection
+
+`$ARGUMENTS` selects which scanners run. A directory path narrows the files every scanner looks at.
+
+| Scope | Static analysis | Scanners |
+|---|---|---|
+| `all` (default) | yes | A, B, C, D, E |
+| `tech-debt` | yes | A (debt) + C (architecture, performance) |
+| `quality` | yes | B (quality, testing) |
+| `architecture` | no | C |
+| `visual` | no | D |
+| `deps` | no | E |
+| `<directory>` | yes, scoped | all, restricted to that path |
+
+Skip the steps for scanners not selected, and say in the report which scanners were skipped.
 
 ---
 
@@ -92,13 +108,16 @@ Scan for code quality issues.
 4. Duplicated code (3+ similar blocks)
 5. Missing error handling (empty catch, swallowed errors)
 6. Public API without tests
-7. Inconsistent patterns across similar features
+7. Test files with no assertions
+8. Missing edge case coverage (null, empty, boundary values)
+9. God classes (too many unrelated responsibilities)
+10. Inconsistent patterns across similar features
 
 Return findings as structured list:
 - category, severity, file, line, description, snippet
 ```
 
-### Agent C: Architecture Scanner
+### Agent C: Architecture & Performance Scanner
 
 ```
 Read CLAUDE.md to understand the project architecture, then scan for:
@@ -108,8 +127,11 @@ Read CLAUDE.md to understand the project architecture, then scan for:
 2. Circular dependencies between modules
 3. Incorrect dependency direction
 4. Missing abstractions (concrete where interface should be)
-5. Resource leak indicators (open without close)
+5. Resource leak indicators (open without close), retain cycles, leaked references
 6. Concurrency issues (shared mutable state without synchronization)
+7. N+1 queries and missing indexes on frequently queried columns
+8. Unbounded lists without pagination
+9. Heavy computation on the main/UI thread
 
 Return findings as structured list:
 - category, severity, file, line, description, snippet
@@ -233,37 +255,20 @@ Static Analysis: {pass / N violations}
 
 Mark task 6 `in_progress`.
 
-For each selected finding:
+Invoke the `issue` skill in batch mode — it owns duplicate checking, the sizing gate, splitting, the body template, and labels:
 
-```bash
-gh issue create \
-  --title "{Category}: {description}" \
-  --body "$(cat <<'EOF'
-## Summary
-{Description}
-
-## Location
-`{file}:{line}`
-
-## Details
-{snippet}
-
-## Suggested Fix
-{suggestion}
-EOF
-)" \
-  --label "{auto-detected labels}"
+```
+Skill("issue", args: "Batch: audit findings. Source: /audit run on {scope}.
+{for each selected finding: severity, category, file:line, description, snippet, suggested fix}")
 ```
 
-### Label Mapping
-| Category | Labels |
-|----------|--------|
-| Critical | `bug`, `priority: high` |
-| High | `bug` |
-| Code Quality | `tech-debt` |
-| Architecture | `tech-debt` |
-| Visual | `ux` |
-| Dependency | `dependencies`, `security` (if CVE) |
+Audit-specific inputs to pass through:
+
+- **Group before handing over**: findings sharing a root cause become one issue, not one per occurrence
+- Only Critical and High findings are eligible; Medium and Low stay in the report
+- Every finding carries its `file:line` so the issue's `Files (expected)` section is real
+
+Do **not** call `gh issue create` directly from this skill.
 
 Mark task 6 `completed`.
 
@@ -275,5 +280,5 @@ Mark task 6 `completed`.
 |-----------|--------|
 | Static analysis tool not available | Skip, note in report |
 | Agent returns no findings | Note "No issues found" |
-| `gh issue create` fails | Report, user can create manually |
+| Issue filing fails | The `issue` skill outputs the drafted bodies as markdown for manual creation |
 | 0 findings total | Report "Codebase looks healthy!" |

@@ -1,6 +1,6 @@
 ---
 name: review
-description: "Multi-agent parallel code review against the base branch"
+description: "Review the current branch against its base with parallel agents for bugs/security and architecture/quality, producing severity-ranked findings. Use before committing or opening a PR."
 user-invocable: true
 allowed-tools:
   - Read

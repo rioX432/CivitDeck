@@ -1,0 +1,41 @@
+{
+  "skill_name": "issue",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "File a GitHub Issue for this: \"The settings screen is a mess. Fix the layout, add dark mode, and make the toggles accessible.\"",
+      "expected_output": "The request is rejected as one issue and split into independently mergeable units",
+      "expectations": [
+        "The sizing gate is applied and check 1 (single outcome) is reported as failed, quoting the \"and\" in the request",
+        "The result is 3 or more separate issues, each with a single outcome in the title",
+        "Each issue has a `Done when` naming a concrete verification, not a restatement of the goal",
+        "Each issue has a `Scope: Out` section pointing at its sibling issues",
+        "No single issue titled with a category verb like \"Fix the settings screen\" survives"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "A tech-debt scan found 47 detekt violations across 14 files: 9 swallowed exceptions in sync/, 6 in network/, and 32 assorted style warnings. Turn this into issues.",
+      "expected_output": "Findings are grouped by root cause, capped, and low-severity ones are not filed",
+      "expectations": [
+        "Occurrences are grouped by root cause rather than one issue per violation",
+        "The 32 style warnings are left in the report and explicitly not filed as issues",
+        "The swallowed-exception work is split by module because a single group would exceed the ~5 file limit",
+        "Each created issue lists its occurrences as a table with file:line inside the body",
+        "Duplicate checking against existing open issues is performed before creating anything"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Here is issue #88: \"Migrate the data layer to the new API. We'll decide between the REST and gRPC client during implementation.\" Is this ready for /dev?",
+      "expected_output": "Not ready — check 4 fails; a spike is filed before any implementation issue",
+      "expectations": [
+        "Check 4 (no open decisions) is reported as failed, quoting the REST-vs-gRPC text",
+        "A spike issue is proposed whose deliverable is a written decision, not code",
+        "The spike's `Done when` refers to a posted decision and rationale, not to passing tests",
+        "Implementation issues are deferred until the spike closes, rather than drafted with a guessed client choice",
+        "#88 is proposed to become the epic rather than being closed or implemented as-is"
+      ]
+    }
+  ]
+}

@@ -13,7 +13,7 @@
 **Research documents (docs/research/, RESEARCH.md, etc.) must NOT be directly implemented.**
 
 Research flow:
-1. Research findings → file as GitHub Issue (with Core Value alignment and complexity cost)
+1. Research findings → file as GitHub Issue **via `/ai-dev:issue`** (with Core Value alignment and complexity cost)
 2. Issue passes weekly review by the user
 3. Only then can it enter the development flow below
 
@@ -26,8 +26,11 @@ Research flow:
 **WIP limit: 1 issue at a time.** Finish (merge or close) the current issue before starting the next.
 
 1. `gh issue list` to find unstarted issues
-2. **Skip issues labeled `won't`**
+2. **Skip issues labeled `won't`** and issues labeled `epic` (work their children instead)
 3. Read the issue, understand requirements, plan implementation
+3b. **Run the sizing gate** (`/ai-dev:issue → Step 3`). An issue that fails it gets split before
+   any code is written — an oversized issue produces an unreviewable PR and an unfinishable
+   `/goal` condition
 4. **Verify Core Value alignment** — if the issue lacks a "Core Value Alignment" section, ask the user before proceeding
 5. Confirm design/plan with **Codex MCP** (see rules/behavior.md for usage):
    - **Required**: architecture changes, new patterns, migrations, security-sensitive design
