@@ -1,0 +1,39 @@
+{
+  "skills": [
+    "audit",
+    "competitive-audit",
+    "decompose",
+    "dev",
+    "dev-all",
+    "dev-investigate",
+    "dig",
+    "investigate",
+    "issue",
+    "monitor",
+    "pr",
+    "review",
+    "think",
+    "update-docs",
+    "ux-audit"
+  ],
+  "agents": [
+    "case-analyzer.md",
+    "counter-argument.md",
+    "deep-researcher.md",
+    "perf-reviewer.md",
+    "repo-analyzer.md",
+    "security-reviewer.md",
+    "social-scanner.md",
+    "source-verifier.md",
+    "test-writer.md",
+    "ui-reviewer.md"
+  ],
+  "rules": [
+    "ai-ops.md",
+    "behavior.md",
+    "coding-conventions.md",
+    "design-personality.md",
+    "l10n-conventions.md",
+    "mobile-conventions.md"
+  ]
+}
