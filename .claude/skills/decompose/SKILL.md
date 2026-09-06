@@ -1,6 +1,6 @@
 ---
 name: decompose
-description: "Break a task into ordered subtasks with dependencies"
+description: "Break a confirmed task into 5-30 minute subtasks ordered by architecture layer with explicit dependencies. Use after investigation and ambiguity resolution, before the implementation loop. Not for splitting GitHub Issues — that is the issue skill."
 user-invocable: true
 allowed-tools:
   - ToolSearch
@@ -121,40 +121,15 @@ Ask user to confirm before starting implementation.
 
 After generating the full task list, use Codex to validate the decomposition.
 
-### Load Codex
+Follow the call pattern and fallback in `rules/behavior.md → Call pattern`.
 
-```
-ToolSearch("select:mcp__codex__codex")
-```
+**Give Codex**: the full task table with dependencies, and the architecture layers from CLAUDE.md.
 
-### Call Codex (if available)
+**Ask Codex to check**:
+1. **Layer ordering** — inner-to-outer (core → logic → infra → presentation → tests → cross-cutting)?
+2. **Missing tasks** — gaps between steps?
+3. **Dependency correctness** — wrong, missing, or unnecessary edges?
+4. **Parallelization** — which tasks share no state and no dependency?
+5. **Risk** — which tasks need extra verification?
 
-```
-mcp__codex__codex(
-  prompt: "Validate this task decomposition for correctness and completeness:
-
-  ## Task List
-  {full task table with dependencies}
-
-  ## Project Architecture
-  {architecture layers from CLAUDE.md}
-
-  ## Validation Checklist
-  1. **Layer ordering**: Are tasks ordered inner-to-outer (core → logic → infra → presentation → tests → cross-cutting)?
-  2. **Missing tasks**: Are there any steps that should exist between tasks? Any gaps?
-  3. **Dependency correctness**: Are all dependency edges correct? Any missing or unnecessary dependencies?
-  4. **Parallelization**: Which tasks could safely run in parallel (no shared state, no dependency)?
-  5. **Risk assessment**: Which tasks are highest-risk and might need extra verification?
-
-  Output: validated task list with any corrections, plus a list of parallelizable task groups."
-)
-```
-
-If Codex suggests corrections:
-1. Apply the corrections to the task list
-2. Note what was changed and why
-
-### Fallback (Codex unavailable)
-
-If `ToolSearch` fails to find Codex or the call errors:
-- Skip validation — output the task list as-is (traditional flow)
+Apply any corrections and note what changed and why.

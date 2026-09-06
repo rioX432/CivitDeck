@@ -1,0 +1,37 @@
+{
+  "skill_name": "competitive-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Run /competitive-audit on a project whose CLAUDE.md has no ## Core Values section.",
+      "expected_output": "The Phase 0 gate stops the run",
+      "expectations": [
+        "The audit stops at Phase 0 rather than proceeding with inferred Core Values",
+        "The user is asked to define Core Values before the audit continues",
+        "No issues are filed"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Research found 7 candidate improvements that all pass the Core Value one-step test. File them.",
+      "expected_output": "At most 3 are filed; the other 4 are recorded as Won't Do or deferred with reasons",
+      "expectations": [
+        "The cap of 3 issues per run is enforced and overrides the issue skill's default batch cap of 10",
+        "Ranking uses user pain severity, Core Value impact, and complexity cost",
+        "Rejected candidates are recorded with reasoning rather than dropped silently",
+        "Issues are created through the issue skill, not with a direct gh issue create call"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "A competitor has an AI meeting-summary feature that our users have never asked for. Our Core Value is \"accurate real-time translation\". What happens to it?",
+      "expected_output": "It fails the one-step distance test and goes to Won't Do, not the backlog",
+      "expectations": [
+        "The one-step distance test is applied and shown to fail, with the intermediate reasoning steps named",
+        "The absence of user pain point evidence is treated as disqualifying on its own",
+        "An entry is proposed for CLAUDE.md ## Won't Do with the reason, so future audits do not re-propose it",
+        "No issue is filed for it"
+      ]
+    }
+  ]
+}

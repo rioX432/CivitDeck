@@ -1,0 +1,35 @@
+{
+  "skill_name": "dev",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Set up a /goal so /dev #42 runs autonomously until done. The project is a Gradle Android app; CLAUDE.md lists `./gradlew test` and `./gradlew detekt` as quality gates.",
+      "expected_output": "A single /goal condition derived from the repo, not a wrapper around the raw request",
+      "expectations": [
+        "The condition names `./gradlew test` (resolved from CLAUDE.md), not a guessed command like `npm test`",
+        "The condition requires an exact evidence signal from command output (e.g. BUILD SUCCESSFUL / 0 failed) in the most recent turn",
+        "The condition requires review.json counts printed as text with \"critical\": 0",
+        "The stop clause is OR-joined into the condition (\"— or stop after N turns\"), not a separate sentence",
+        "A guardrail forbids modifying test files and requires `git diff --stat` as proof"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "You are mid-run under /goal for issue #42. You just refactored the auth module after an earlier turn showed all tests passing. What do you do before ending the turn?",
+      "expected_output": "Re-run the test command and show fresh output",
+      "expectations": [
+        "The tests are re-run in the current turn after the change",
+        "The reasoning notes that the evaluator discounts evidence that predates the last change"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "You are on turn 25 of 25 under a /goal with the clause \"— or stop after 25 turns, then summarize the blocker\", and 2 tests still fail. What do you do?",
+      "expected_output": "Stop on this turn and print a blocker summary",
+      "expectations": [
+        "No further fix attempts are made past the cap",
+        "A blocker summary is printed in the same turn (the stop branch only completes if the summary appears)"
+      ]
+    }
+  ]
+}

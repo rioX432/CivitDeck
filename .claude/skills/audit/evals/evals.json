@@ -1,0 +1,37 @@
+{
+  "skill_name": "audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/audit deps on a Gradle project where CLAUDE.md lists no lint command.",
+      "expected_output": "Only the dependency scanner runs; skipped scanners are named in the report",
+      "expectations": [
+        "Scanners A through D are not launched, because the `deps` scope selects only E",
+        "Static analysis is skipped for the `deps` scope rather than being auto-detected and run anyway",
+        "The report states which scanners were skipped, not just what was found",
+        "Findings are not filed directly with `gh issue create` — the issue skill is invoked"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/audit found 3 Critical, 8 High, 22 Medium and 61 Low findings. The user picks \"All Critical + High\". What gets filed?",
+      "expected_output": "At most 11 findings reach the issue skill, grouped by root cause, and Medium/Low stay in the report",
+      "expectations": [
+        "Medium and Low findings are explicitly kept out of issue creation",
+        "Findings sharing a root cause are grouped into one issue before handoff, not filed one per occurrence",
+        "Each handed-over finding carries its file:line so the issue can name expected files",
+        "The batch cap of 10 issues per run is respected or the overflow is reported rather than silently filed"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "During /audit, detekt is not installed and `./gradlew detekt` fails with 'task not found'. Continue.",
+      "expected_output": "Static analysis is skipped and noted; the parallel scanners still run",
+      "expectations": [
+        "The failure is recorded in the report rather than retried repeatedly",
+        "The remaining scanners still run — one missing tool does not abort the audit",
+        "The report does not claim the codebase passed static analysis"
+      ]
+    }
+  ]
+}
