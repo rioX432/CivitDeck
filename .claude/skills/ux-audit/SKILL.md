@@ -28,12 +28,12 @@ allowed-tools:
   - mcp__playwright__browser_evaluate
   - mcp__mobile-mcp__mobile_take_screenshot
   - mcp__mobile-mcp__mobile_list_elements_on_screen
-  - mcp__mobile-mcp__mobile_click
   - mcp__mobile-mcp__mobile_click_on_screen_at_coordinates
   - mcp__mobile-mcp__mobile_swipe_on_screen
-  - mcp__mobile-mcp__mobile_type_text
+  - mcp__mobile-mcp__mobile_type_keys
   - mcp__mobile-mcp__mobile_press_button
-  - mcp__mobile-mcp__mobile_get_device_info
+  - mcp__mobile-mcp__mobile_list_available_devices
+  - mcp__mobile-mcp__mobile_get_screen_size
 ---
 
 # /ux-audit — UI/UX Comprehensive Audit
@@ -42,7 +42,7 @@ Analyze the app's UI/UX quality, detect issues, propose incremental improvements
 
 **Target:** $ARGUMENTS (URL for web, `mobile` for emulator/simulator visual audit, or specific module/screen)
 
-**This is a long-running skill.** Use TaskCreate to track phases.
+**This is a long-running skill.** Track progress with the task tools when this session has them (`TaskCreate` / `TaskUpdate`; Claude 5 models and background sub-agents do not). Otherwise keep the checklist in your replies and update it as each step completes.
 
 ## Analysis Mode Detection
 
@@ -68,10 +68,10 @@ Detect the analysis mode from `$ARGUMENTS` and available tools:
 3. Use Playwright to discover pages (navigate sitemap, router config, or nav links)
 
 ### Mobile Visual mode
-1. Use `mobile_get_device_info` to confirm emulator/simulator is connected
+1. Use `mobile_list_available_devices` to confirm an emulator/simulator is connected; every other mobile-mcp tool takes that `device` id
 2. Use `mobile_take_screenshot` to capture the current screen
 3. Use `mobile_list_elements_on_screen` to get UI element hierarchy
-4. Navigate through the app using `mobile_click` and `mobile_press_button` (Back)
+4. Navigate through the app using `mobile_click_on_screen_at_coordinates` (coordinates or an element `ref` from step 3) and `mobile_press_button` (Back)
 5. Build screen list by exploring the app's navigation structure
 6. For each screen: capture screenshot + dump UI elements
 

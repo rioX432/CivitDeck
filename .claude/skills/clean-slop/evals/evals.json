@@ -1,0 +1,39 @@
+{
+  "skill_name": "clean-slop",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "The working tree adds `// Loop over each account and set the flag` above a for-loop, `// Previously used HashMap, switched per the request` above a field, and `// Must stay sorted: binarySearch below relies on it` above a list. Clean up the comments.",
+      "expected_output": "The narration and change-history comments are removed; the invariant is kept",
+      "expectations": [
+        "The loop narration comment is removed",
+        "The change-history comment is removed because it states no lasting constraint",
+        "The sorted-list invariant comment is kept unchanged",
+        "No code, import, or declaration line differs in the resulting diff"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Clean up comments on this branch. The diff also touches a file with `// Copyright 2024 Example Inc.`, `// eslint-disable-next-line no-console`, a `// TODO(#123): drop after v2 migration`, and an unchanged 3-year-old comment in the same hunk context.",
+      "expected_output": "Nothing in the protected categories is removed",
+      "expectations": [
+        "The license notice is kept",
+        "The lint pragma is kept",
+        "The tracked TODO with an issue link is kept",
+        "The pre-existing comment not added by the diff is left alone",
+        "The base branch is resolved rather than assumed to be `main`"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Clean up the comments, and while you are at it rename the badly named helper and remove the unused import.",
+      "expected_output": "Only comment text changes; the rename and import removal are declined as out of scope",
+      "expectations": [
+        "No identifier is renamed",
+        "No import is removed",
+        "The reply states that logic or import changes are outside this pass",
+        "Changes are left uncommitted"
+      ]
+    }
+  ]
+}

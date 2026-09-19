@@ -8,14 +8,14 @@
       "expectations": [
         "Placement is auto-decided from the CLAUDE.md module layout, citing the rule",
         "Error handling is auto-decided as Result<T> by citing the existing pattern with a file reference",
-        "Naming and test strategy are auto-decided from conventions rather than asked",
-        "At most 4 questions are asked in a round, and each carries 2-4 concrete options",
+        "Naming and test strategy are dropped or auto-decided from conventions rather than asked",
+        "At most 5 questions are asked in total (no more than 4 at a time), and each carries 2-4 concrete options and a recommendation",
         "The recommended option is the one matching existing codebase patterns"
       ]
     },
     {
       "id": 2,
-      "prompt": "One remaining ambiguity is 'should the cache be per-process or shared across processes?' and Codex MCP is not configured. Proceed.",
+      "prompt": "One remaining ambiguity is 'should the cache be per-process or shared across processes?' and the `codex` CLI is not installed. Proceed.",
       "expected_output": "The Codex step is skipped without blocking, and the decision goes to the user",
       "expectations": [
         "The missing Codex tool is handled as a skip, not an error that stops the skill",
@@ -32,6 +32,17 @@
         "Each auto-decided row names the rule or file that decided it",
         "The unresolved decision appears in the Assumptions table with an explicit risk, not silently omitted",
         "No decision is presented as settled without a stated basis"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "You are running inside an autonomous /dev sub-agent (no AskUserQuestion tool). After auto-deciding, two decisions remain: whether deleted items are soft- or hard-deleted, and the name of a private helper.",
+      "expected_output": "No question is asked; the impactful decision gets the recommended default recorded as an assumption, the naming point is dropped",
+      "expectations": [
+        "No attempt is made to ask the user",
+        "The soft/hard delete decision is resolved with a recommended option and recorded in Assumptions with source `default` and a risk",
+        "The private helper name is dropped or auto-decided rather than treated as a blocking decision",
+        "The output includes Acceptance Criteria and Out of Scope sections"
       ]
     }
   ]

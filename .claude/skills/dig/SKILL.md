@@ -1,30 +1,30 @@
 ---
 name: dig
-description: "Resolve design ambiguities before implementation: auto-decide what codebase patterns already settle, ask the user about the rest, and output a decision matrix. Use after investigation, before decomposition, when the approach could go several valid ways."
+description: "Resolve design ambiguities before implementation: keep only the decisions that would change the result, auto-decide what codebase patterns already settle, ask the user at most 5 questions with a recommendation each, and output a decision matrix with acceptance criteria. Use after investigation, before decomposition, when the approach could go several valid ways. Skip when the change fits in one sentence and follows existing patterns."
 user-invocable: true
-allowed-tools:
-  - ToolSearch
 ---
 
 # Dig — Structured Ambiguity Resolution
 
-Resolve ambiguities before implementation by generating structured questions with options. Auto-decides choices that follow established project patterns.
+Find the decisions that would change what gets built, settle what evidence settles, and ask the user only the rest. This step does not edit product code.
 
 ## When to Use
 
 - After investigation is complete but before decomposition
 - When there are design choices, trade-offs, or unclear requirements
-- When the approach could go multiple valid directions
+- Skip it when the change can be described in one sentence and every choice follows from the request or an existing pattern. State any assumption and continue
 
 ## Process
 
-### Step 1: Extract Ambiguities
+### Step 1: Extract Decision Points
 
-From the investigation results, identify every decision point:
+From the investigation results, list each open point and what depends on it:
 
 | # | Ambiguity | Category | Auto-decidable? |
 |---|-----------|----------|-----------------|
 | 1 | ... | architecture / api-design / data-flow / concurrency / error-handling / naming / testing | yes/no |
+
+Keep a point only if a different answer would change user-visible behavior, a data model or API contract, architecture or dependency direction, what the tests assert, or something costly to reverse. Drop style preferences. Rank the rest by impact × uncertainty.
 
 ### Step 2: Apply Auto-Decide Rules
 
@@ -57,7 +57,7 @@ For non-auto-decidable ambiguities in the **architecture**, **api-design**, or *
 
 **Skip this step for**: naming, testing, error-handling, data-flow categories (these are resolved by codebase patterns or user preference).
 
-Follow the call pattern and fallback in `rules/behavior.md → Call pattern`.
+Follow the call pattern and fallback in [rules/behavior.md → Call pattern](../../rules/behavior.md).
 
 **Give Codex**: the unresolved architecture/api-design/concurrency ambiguities with their options, plus the codebase patterns found in Step 2.
 
@@ -69,12 +69,13 @@ Follow the call pattern and fallback in `rules/behavior.md → Call pattern`.
 
 Fold the recommendations into the options presented to the user in Step 4 — they are options, not decisions.
 
-### Step 4: Ask User (max 3 rounds, max 4 questions per round)
+### Step 4: Ask Only What Blocks
 
-Present remaining unknowns with `AskUserQuestion`:
-- Context from investigation
-- 2-4 concrete options with trade-offs
-- Recommend the option matching existing codebase patterns
+- At most 5 questions per run, highest impact first, unless the user asks for a fuller interview. `AskUserQuestion` takes up to 4 at a time; hold back a question whose options depend on another answer
+- One decision per question: why it matters in one sentence, 2-4 mutually exclusive options with trade-offs, and a recommendation with its evidence — usually the existing codebase pattern
+- If an answer is ambiguous, clarify it before moving on. If an answer changes the direction, re-read the affected code and repeat Steps 1-4 for the points it opens
+- **No user reachable** (autonomous `/dev`, or running as a sub-agent without `AskUserQuestion`): do not ask. Take the recommended option, record it under Assumptions with source `default`, and list the open questions for the caller
+- If nothing blocks, say so and move on
 
 ### Step 5: Output Decision Matrix
 
@@ -97,6 +98,14 @@ Present remaining unknowns with `AskUserQuestion`:
 | 3 | Public API surface | Option A: minimal | user preference |
 
 ### Assumptions (if any)
-| # | Assumption | Risk |
-|---|-----------|------|
+| # | Assumption | Source | Risk | How it will be checked |
+|---|-----------|--------|------|------------------------|
+
+### Acceptance Criteria
+- {observable outcome, including one end-to-end check — reuse the issue's `Done when` when it exists}
+
+### Out of Scope
+- {what this change will not do — reuse the issue's `Scope: Out` when it exists}
 ```
+
+Pass the matrix to `/decompose`.

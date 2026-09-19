@@ -39,7 +39,7 @@ The method and report format live in [report-format.md](report-format.md) — re
    - **Free-form question**: extract key terms, identify likely code areas
 2. Choose 2-4 investigation axes (table in `report-format.md`)
 3. Identify entry points per axis — files, classes, functions
-4. `TaskCreate` one task per axis
+4. Track one item per axis (`TaskCreate` when this session has it; otherwise a checklist in your reply)
 
 ## Phase 2: Deep Investigation
 

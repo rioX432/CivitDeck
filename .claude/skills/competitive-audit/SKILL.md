@@ -33,7 +33,7 @@ allowed-tools:
 
 Evaluate project completeness, research competitors, analyze advantages/gaps, investigate improvement opportunities, and file actionable GitHub issues.
 
-**This is a long-running skill.** Use TaskCreate to track phases and persist progress across `/compact`.
+**This is a long-running skill.** Track progress with the task tools when this session has them (`TaskCreate` / `TaskUpdate`; Claude 5 models and background sub-agents do not). Otherwise keep the checklist in your replies and update it as each step completes.
 
 ## Trigger
 
