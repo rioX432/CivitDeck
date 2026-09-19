@@ -2,7 +2,7 @@
 <!-- What changed and why -->
 
 ## Related Issue
-<!-- #XX or N/A -->
+<!-- `Closes #XX` — merging this PR closes the issue. N/A if none -->
 
 ## Screenshots / Video
 <!-- Required for UI changes. Before/After on both platforms if applicable -->
