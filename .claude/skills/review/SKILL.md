@@ -9,7 +9,8 @@ allowed-tools:
   - Agent
   - Bash(git diff:*)
   - Bash(git log:*)
-  - Bash(git status)
+  - Bash(git status:*)
+  - Bash(git symbolic-ref:*)
   - Bash(gh pr view:*)
 ---
 
@@ -19,11 +20,16 @@ Review the current branch's changes against the base branch using parallel revie
 
 ## Step 0: Prepare
 
-1. Identify base branch (`main` or `master`) and current branch
-2. `git log` — commits on this branch
-3. `git diff {base}...HEAD` — full changeset
+1. Resolve the base branch: the open PR's base (`gh pr view --json baseRefName`), otherwise the remote default branch (`git symbolic-ref refs/remotes/origin/HEAD`). Do not assume `main`
+2. `git log {base}..HEAD` — commits on this branch
+3. Build the changeset from both sources — `/dev` reviews before it commits, so the working tree usually holds most of the change:
+   - `git diff {base}...HEAD` — committed changes
+   - `git diff HEAD` — staged and unstaged changes
+   - `git status --short` — untracked files; read the new source files in full
 4. `gh pr view --json body` — PR description (if available)
 5. Run each command individually — do NOT chain with `&&`
+
+If both diffs are empty and there are no untracked source files, report "nothing to review" and stop.
 
 ## Step 1: Build Change Context
 
@@ -76,7 +82,8 @@ Check `.claude/agents/` for project-specific reviewer agents (e.g., `kmp-reviewe
 
 1. Collect findings from all agents
 2. **Deduplicate**: remove findings reported by multiple agents
-3. Assign final severity:
+3. **Verify every Critical and Warning** before it is reported: re-read the cited code and its callers and confirm the failure scenario actually occurs (concrete input or state → wrong result). Drop a finding the code refutes; downgrade one you cannot confirm to Suggestion and say so. A Critical stops `/dev` and makes `/dev-all` skip the issue, so an unverified Critical costs a whole run
+4. Assign final severity:
    - **Critical**: crash, data loss, security vulnerability, incorrect behavior
    - **Warning**: potential bug, performance issue, architecture violation
    - **Suggestion**: improvement opportunity, non-blocking

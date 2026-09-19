@@ -10,7 +10,6 @@ allowed-tools:
   - Bash(git log:*)
   - Bash(git status)
   - Bash(git branch:*)
-  - Bash(gh pr create:*)
   - Bash(gh pr merge:*)
   - Bash(gh pr view:*)
   - Bash(gh pr checks:*)
@@ -108,65 +107,71 @@ Ask user to confirm before proceeding.
 
 ## Step 4: Sequential Issue Loop
 
-Create a master task tracker:
-```
-TaskCreate for each issue: "#{number}: {title}"
-```
+Create one tracked item per issue, `#{number}: {title}`. Track progress with the task tools when this session has them (`TaskCreate` / `TaskUpdate`; Claude 5 models and background sub-agents do not). Otherwise keep the checklist in your replies and update it as each step completes.
 
 ### For each issue (in order):
 
 #### 4a. Pull latest main
 ```bash
-git checkout main && git pull origin main
+git checkout {default branch} && git pull origin {default branch}
 ```
 
 #### 4b. Run /dev in isolated sub-agent (autonomous)
+
+Slash commands in an `Agent()` prompt are plain text, and `/dev` is user-invocation-only (`disable-model-invocation`), so the sub-agent cannot load it through the Skill tool. Hand it the workflow file instead — the user authorized these runs by invoking `/dev-all`:
+
 ```
 Agent(
-  prompt: "/dev #{issue_number} — run in autonomous mode (no user confirmations).
+  prompt: "Run the /dev workflow for issue #{issue_number} in autonomous mode.
+    Read ${CLAUDE_SKILL_DIR}/../dev/SKILL.md and follow it from Phase 1; its
+    argument placeholder is #{issue_number}. Do not call Skill(\"dev\") — it is
+    user-invocation-only. No user is reachable: apply its Autonomous Mode rules.
     Definition of done, all evidence required in your final message:
     (1) the project's test command output (from CLAUDE.md Commands) showing its
         success signal, re-run after your last change;
     (2) review.json counts printed as text — \"critical\": 0 is required;
     (3) the PR URL.
     Constraints: do not modify or delete test files except those the issue
-    explicitly requires — include `git diff --stat` in the final message to prove
-    it. If the same failure recurs 3 times, stop and report the blocker instead.
-    Finish by printing the Structured Return Value JSON.",
+    explicitly requires — include `git diff --stat {base}...HEAD` in the final
+    message to prove it. If the same failure recurs 3 times, stop and report
+    the blocker instead. Finish by printing the Structured Return Value JSON,
+    including the absolute path of review.json, followed by the full
+    review.json contents.",
   model: "opus",
-  isolation: "worktree"
+  isolation: "worktree",
+  run_in_background: false
 )
 ```
 
 > **Why no `/goal` inside the Agent() prompt?** `/goal` is a session-scoped
-> Stop-hook wrapper. There is no official support for slash commands taking
-> effect inside a sub-agent prompt, so a `/goal` there is likely inert text.
-> Instead, the completion condition is stated as explicit instructions with
-> evidence requirements, and Step 4b-result verifies the evidence rather than
-> trusting the sub-agent's self-report. If a true evaluator loop per issue is
-> needed, run the issue headlessly — `claude -p "/goal <condition>"` is
-> officially supported.
+> Stop-hook wrapper, and slash commands in a sub-agent prompt are not expanded,
+> so a `/goal` there is inert text. Instead, the completion condition is stated
+> as explicit instructions with evidence requirements, and Step 4b-result
+> verifies the evidence rather than trusting the sub-agent's self-report. If a
+> true evaluator loop per issue is needed, run the issue headlessly —
+> `claude -p "/goal <condition>"` is officially supported.
 
 The sub-agent:
 - Gets a fresh context (no pollution from previous issues)
-- Works in an isolated git worktree (no file conflicts)
-- Runs the full /dev workflow autonomously
-- Skips AskUserQuestion confirmations (proceeds with best judgment)
-- Returns: structured result with PR URL, review status, and counts
+- Works in an isolated git worktree under `.claude/worktrees/` (no file conflicts). The worktree may already be removed when the sub-agent returns (for example when the project gitignores `workspace/`), so the sub-agent also prints review.json
+- Runs the full /dev workflow autonomously; it has no `AskUserQuestion`, so /dev records defaults as assumptions instead of asking
+- Returns: structured result with PR URL, review status, counts, assumptions, and the review.json path
 
 #### 4b-result. Review Validation
 
 After the sub-agent completes, validate the result before proceeding to merge. **Never trust the sub-agent's narrated success** — a claim of "tests pass, review clean" without evidence is the most common failure mode of long autonomous loops (proxy-signal collapse):
 
-1. Read `workspace/{issue}/review.json` yourself to get the structured review output
-2. Parse the sub-agent's return value for review status — and cross-check it against review.json; on mismatch, treat the issue as failed
+1. Read the review.json at the absolute path in the sub-agent's return value (`review_json` — it lives in the sub-agent's worktree, not in this checkout). If the worktree is gone, use the review.json contents printed in the return value. Neither present means the issue failed
+2. Confirm the PR independently: `gh pr view {PR_URL} --json state,headRefName` must show an open PR for the issue branch
+3. Parse the sub-agent's return value for review status — and cross-check it against review.json; on mismatch, treat the issue as failed
+4. Carry the sub-agent's `assumptions` into the final report
 
 **Decision logic:**
 
 | Review Status | Action |
 |---------------|--------|
 | `critical` (critical_count > 0) | **Skip this issue.** Report to user: "#{issue} has {N} critical findings — skipping." Mark task as failed. Proceed to next issue. |
-| `warnings` (warning_count > 0) | **Report to user.** `AskUserQuestion`: "#{issue} PR has {N} unresolved warnings. Merge anyway?" If yes → proceed. If no → skip. |
+| `warnings` (unresolved warning_count > 0) | **Report to user.** `AskUserQuestion`: "#{issue} PR has {N} unresolved warnings. Merge anyway?" If yes → proceed. If no → skip. |
 | `clean` | **Proceed to auto-merge.** |
 | Sub-agent failed (`status: "failed"`) | **Skip this issue.** Report failure reason. Proceed to next issue. |
 
@@ -236,7 +241,7 @@ In autonomous mode:
 |-----------|--------|
 | Issue not found | Skip, warn in report |
 | Circular dependency | Skip affected issues, report |
-| Sub-agent /dev fails | Ask user: skip or stop |
+| Sub-agent /dev fails | Skip, report the failure reason, proceed to next issue |
 | CI fails | Ask user: skip or stop |
 | Merge conflict | Ask user: skip or stop |
 | 3 consecutive failures | Stop, report to user |

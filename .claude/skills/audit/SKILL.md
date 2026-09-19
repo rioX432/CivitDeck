@@ -48,7 +48,7 @@ Skip the steps for scanners not selected, and say in the report which scanners w
 
 ## Step 1: Setup
 
-Create task tracker:
+Create a tracked item per step. Track progress with the task tools when this session has them (`TaskCreate` / `TaskUpdate`; Claude 5 models and background sub-agents do not). Otherwise keep the checklist in your replies and update it as each step completes.
 1. "Run static analysis"
 2. "Scan tech debt"
 3. "Scan code quality"

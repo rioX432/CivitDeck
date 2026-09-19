@@ -36,7 +36,7 @@ allowed-tools:
 
 Zero-base thinking: discard assumptions, collect facts, synthesize essentials, propose with counter-arguments.
 
-**This is a long-running skill.** Use TaskCreate to track phases and persist progress across `/compact`.
+**This is a long-running skill.** Track progress with the task tools when this session has them (`TaskCreate` / `TaskUpdate`; Claude 5 models and background sub-agents do not). Otherwise keep the checklist in your replies and update it as each step completes.
 
 ## Principles
 
@@ -88,7 +88,7 @@ Zero-base thinking: discard assumptions, collect facts, synthesize essentials, p
 2. For each axis, execute in parallel:
    - `mcp__gemini-deepsearch__deep_search` (free, 250/day) — primary
    - `mcp__perplexity__perplexity_research` — top 1-3 axes only (cost: ~$0.4-1.3/call)
-3. TaskCreate for each axis to track progress
+3. Track each axis as its own item
 
 ### Phase 2: Research Integration
 

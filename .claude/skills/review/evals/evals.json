@@ -6,8 +6,9 @@
       "prompt": "/review on a branch with 40 changed files. Prepare the diff.",
       "expected_output": "Base branch resolved, commands run individually, both agents launched in parallel",
       "expectations": [
-        "The base branch is determined rather than assumed to be `main`",
-        "`git diff {base}...HEAD` (three-dot) is used so unrelated base commits are excluded",
+        "The base branch is resolved from the PR base or the remote default branch rather than assumed to be `main`",
+        "`git diff {base}...HEAD` (three-dot) is used for committed changes so unrelated base commits are excluded",
+        "Uncommitted changes are included via `git diff HEAD` and `git status`, so work not yet committed is reviewed",
         "Git commands are run as separate calls, not chained with `&&`",
         "Agent A and Agent B are launched in the same turn so they run concurrently",
         "`.claude/agents/` is checked for project-specific reviewers before finalizing the agent set"
@@ -32,6 +33,16 @@
         "Severity ordering is preserved in the report: Critical, Warning, Suggestion, Nit",
         "Nit findings are not escalated into blockers",
         "The counts are printed as text so an autonomous caller can read them from the transcript"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/review is called from /dev before anything is committed: the feature branch has no commits yet, and the working tree changes PriceCalculator.kt so a 10% discount is applied as `price * 10`.",
+      "expected_output": "The uncommitted change is reviewed and the bug is reported as a verified Critical",
+      "expectations": [
+        "The review does not conclude there is nothing to review from an empty `{base}...HEAD` diff",
+        "The discount bug is reported with its file:line",
+        "The Critical finding states a concrete failure scenario (input and wrong result) confirmed against the code"
       ]
     }
   ]

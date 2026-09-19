@@ -8,12 +8,10 @@ allowed-tools:
   - Bash(git checkout:*)
   - Bash(git add:*)
   - Bash(git commit:*)
-  - Bash(git push:*)
   - Bash(git diff:*)
   - Bash(git log:*)
   - Bash(git status)
   - Bash(git branch:*)
-  - Bash(gh pr create:*)
   - Bash(gh issue view:*)
   - Glob
   - Grep
@@ -28,7 +26,7 @@ allowed-tools:
   - TaskGet
   - ToolSearch
   - AskUserQuestion
-  - mcp__codex__codex
+  - Bash(codex exec:*)
 ---
 
 # /dev — E2E Development Workflow
@@ -37,9 +35,13 @@ Resolve Issue $ARGUMENTS from investigation to PR creation.
 
 **Target:** $ARGUMENTS
 
+Sibling skills (`dev-investigate`, `dig`, `decompose`, `clean-slop`, `review`, `pr`, `issue`) are invoked from the same source as this skill: if it runs as `dev` or was read from `.claude/skills/dev/SKILL.md` (synced into the project), use the bare name; otherwise (`ai-dev:dev`, or read from the plugin's copy) use `ai-dev:<name>`. From the plugin, a bare `review` resolves to the built-in `/review` (an alias of `/code-review`), and other installed plugins may ship the same bare names.
+
+Scratch artifacts for this run go in `workspace/{issue}/` (investigation report, `review.json`). They are never staged or committed.
+
 ## Setup: Create Task Tracker
 
-Use `TaskCreate` to create a task for each phase. This provides progress visibility and persistence across `/compact`.
+Create one tracked item per phase. Track progress with the task tools when this session has them (`TaskCreate` / `TaskUpdate`; Claude 5 models and background sub-agents do not). Otherwise keep the checklist in your replies and update it as each step completes. "Mark task N" below means updating that item.
 
 1. "Gather context from issue"
 2. "Investigate codebase (/dev-investigate)"
@@ -51,7 +53,7 @@ Use `TaskCreate` to create a task for each phase. This provides progress visibil
 8. "Review changes"
 9. "Commit & create PR"
 
-Use `TaskUpdate` to mark each task `in_progress` when starting and `completed` when done.
+Mark each item `in_progress` when starting and `completed` when done.
 
 ## Workflow
 
@@ -102,7 +104,7 @@ Detect the issue source from "$ARGUMENTS":
 ### Sizing Gate
 
 Before investigating, check that the issue is one executable unit. Run the sizing gate from the
-`issue` skill against the issue body (`skills/issue/SKILL.md → Step 3`).
+`issue` skill against the issue body ([issue → Step 3](../issue/SKILL.md)).
 
 If the issue fails a check — an `and` in the title, an unresolved design choice, a task list of
 ten boxes, an `epic` label — **stop and split before implementing**:
@@ -140,13 +142,13 @@ Mark task 2 `in_progress`.
 Invoke the `/dev-investigate` skill to run investigation in a forked context. This keeps large Read results isolated from this context.
 
 ```
-Skill("dev-investigate", args: "{issue title}. {issue description}. Keywords: {keywords}. Affected areas: {areas from labels/description}")
+Skill("dev-investigate", args: "Report path: workspace/{issue}/investigation-report.md. {issue title}. {issue description}. Keywords: {keywords}. Affected areas: {areas from labels/description}")
 ```
 
 After the skill completes, read the investigation report:
 
 ```
-Read("investigation-report.md")
+Read("workspace/{issue}/investigation-report.md")
 ```
 
 ### Think Twice
@@ -156,7 +158,7 @@ After reading the report:
 2. Are there other possible causes not considered?
 3. Is impact analysis complete?
 
-If anything is ambiguous, use `AskUserQuestion`. **Never assume.**
+If anything is ambiguous, use `AskUserQuestion`. **Never assume silently** — in autonomous mode, apply the fallback in [Autonomous Mode](#autonomous-mode-goal).
 
 Mark task 2 `completed`.
 
@@ -167,7 +169,7 @@ Mark task 2 `completed`.
 Mark task 3 `in_progress`.
 
 Use Codex to generate a technical design before ambiguity resolution and decomposition.
-Follow the call pattern and fallback in `rules/behavior.md → Call pattern`.
+Follow the call pattern and fallback in [rules/behavior.md → Call pattern](../../rules/behavior.md).
 
 **Give Codex**: the issue title and description, the investigation summary, the affected-files table.
 
@@ -220,6 +222,8 @@ Mark task 6 `in_progress`.
 
 ### 5a. Create Branch
 
+Record `{base}` — the remote default branch (`git symbolic-ref refs/remotes/origin/HEAD`) — before branching. Every later `{base}` is this value; pass it to `review` and `pr`.
+
 ```bash
 git checkout -b {branch-name}
 ```
@@ -229,27 +233,27 @@ git checkout -b {branch-name}
 **TDD mode** (when issue has `tdd` label, or test changes are the primary goal):
 ```
 LOOP for each subtask:
-  1. TaskUpdate → in_progress
+  1. Mark in_progress
   2. Read target code
   3. Write/update tests FIRST (use test-writer agent if needed)
   4. Run tests — confirm they FAIL (red)
   5. Implement the minimal code to pass
   6. Run tests — confirm they PASS (green)
   7. Refactor if needed (keep tests passing)
-  8. TaskUpdate → completed
+  8. Mark completed
 ```
 
 **Standard mode** (default):
 ```
 LOOP for each subtask (in dependency order):
-  1. TaskUpdate → in_progress
+  1. Mark in_progress
   2. Read target code (MUST read before editing)
   3. Implement changes (Edit/Write)
   4. Self-verify (run Verify step from task description)
-  5. TaskUpdate → completed
+  5. Mark completed
 
 INTERRUPT conditions:
-  - Unexpected problem → AskUserQuestion
+  - Unexpected problem → AskUserQuestion (autonomous: see Stop Conditions)
   - 3 consecutive failures → STOP and report
 ```
 
@@ -257,6 +261,14 @@ Guidelines:
 - Follow existing code patterns (read surrounding code first)
 - Follow CLAUDE.md conventions
 - Keep changes minimal and focused
+
+### 5c. Clean Up Comments
+
+Run the comment cleanup pass on this task's uncommitted changes before the quality gate, so the gate and the review see the final text:
+
+```
+Skill("clean-slop", args: "working-tree")
+```
 
 Mark task 6 `completed`.
 
@@ -319,9 +331,11 @@ After the review completes, write `workspace/{issue}/review.json`:
 }
 ```
 
+`status` and `counts` cover unresolved findings only; resolved ones stay in `findings` with `"resolved": true`.
+
 ### Review Result Handling
 - **Critical**: STOP. Report to user. Do NOT proceed.
-- **Warning**: Fix, re-run Quality Gate (Phase 6). Update `review.json` findings as `"resolved": true`.
+- **Warning**: Fix, re-run the comment cleanup (5c) and the Quality Gate (Phase 6). Mark the finding `"resolved": true` and recompute `counts` and `status` from the findings still unresolved.
 - **Suggestion**: Note but don't block
 
 Mark task 8 `completed`.
@@ -347,25 +361,15 @@ Mark task 9 `in_progress`.
 git add {specific files}
 git commit -m "{concise message}"
 ```
-- Explicit file staging (no `git add .`)
+- Explicit file staging (no `git add .`); never stage `workspace/`
 - No Co-Authored-By, no AI stamps
 
 ### 8b. Push & PR
-```bash
-git push -u origin {branch-name}
+
+Invoke the `pr` skill — it owns push, the PR template, changelog, base branch and issue linking:
+
 ```
-
-Use the project's `pull_request_template.md` if available. Only fill in Description and Related Issues.
-
-```bash
-gh pr create --title "#{issue} {description}" --body "$(cat <<'EOF'
-## Description
-- {bullet point summary}
-
-## Related Issues
-Closes #{issue}
-EOF
-)"
+Skill("pr", args: "Issue #{issue}. Base: {base}. Assumptions: {autonomous-mode defaults, if any}")
 ```
 
 Report PR URL to the user.
@@ -376,7 +380,7 @@ Mark task 9 `completed`.
 
 ## Autonomous Mode (/goal)
 
-When the user invokes `/dev` under a `/goal`, the workflow runs autonomously. **Do not wrap the raw request in `/goal`** — build the condition from the repo per `rules/ai-ops.md → /goal for Autonomous Execution`. The `/goal` evaluator cannot run tools; it only reads what is printed in the transcript, so the condition must name real commands and their exact success output.
+When the user invokes `/dev` under a `/goal`, the workflow runs autonomously. **Do not wrap the raw request in `/goal`** — build the condition from the repo per [rules/ai-ops.md → /goal for Autonomous Execution](../../rules/ai-ops.md). The `/goal` evaluator cannot run tools; it only reads what is printed in the transcript, so the condition must name real commands and their exact success output.
 
 Condition template (resolve `{test command}` and `{success signal}` from CLAUDE.md's Commands section — never guess):
 
@@ -386,11 +390,12 @@ and its output shows {success signal, e.g. "0 failed" / "BUILD SUCCESSFUL"}, the
 review step printed review.json counts showing "critical": 0, and the PR URL was
 printed — or stop after 25 turns or if the same failure recurs 3 times, then
 summarize the blocker. Constraints: do not modify or delete test files except those
-the issue explicitly requires — show `git diff --stat` each turn.
+the issue explicitly requires — show `git diff --stat $(git merge-base {base} HEAD)` each turn.
 ```
 
 In autonomous mode:
 - Skip `AskUserQuestion` confirmations — proceed with best judgment
+- **No user is reachable** (sub-agents have no `AskUserQuestion`). At every other point that says to ask — Think Twice, `/dig` questions, "Investigation unclear", an unexpected problem that is not in Stop Conditions — take the recommended option, record it as an assumption (question, choice, evidence), and continue. Print the assumptions in the final message and pass them to the `pr` skill
 - Stop on Critical review findings or 3 consecutive failures (these still require human input)
 - **Surface fresh evidence every turn**: after any code change, re-run the failing check and show its output — the evaluator discounts evidence that predates the last change
 - **Print `review.json` counts as text** after Phase 7 — the evaluator cannot read files
@@ -405,6 +410,8 @@ On completion, output a structured result for callers (e.g., `/dev-all`):
   "issue": "{issue reference}",
   "status": "success | failed | blocked",
   "pr_url": "https://github.com/owner/repo/pull/N",
+  "review_json": "{absolute path of workspace/{issue}/review.json}",
+  "assumptions": ["{question → chosen default, evidence}"],
   "review": {
     "status": "clean | warnings | critical",
     "critical_count": 0,
@@ -414,16 +421,17 @@ On completion, output a structured result for callers (e.g., `/dev-all`):
 }
 ```
 
-### AskUserQuestion Skip Rules
+### Confirmations and Stop Conditions
 
-In autonomous mode, `AskUserQuestion` is skipped when:
+In autonomous mode, the two confirmations proceed without asking:
 1. **Approach confirmation** (Phase 4): Proceed with the decomposed task list
 2. **Commit + PR confirmation** (Phase 8): Proceed if review status is `clean` or `warnings` (no unresolved criticals)
 
-`AskUserQuestion` is NOT skipped when:
-1. **Critical review findings**: Always stop and report
-2. **3 consecutive failures**: Always stop and report
-3. **Unexpected errors**: Always stop and report
+Stop and report — never take a default — on:
+1. **Critical review findings**
+2. **3 consecutive failures** of the same check
+3. **A failed sizing gate**
+4. **Tool or environment errors**: issue not found, git/gh/PR failure, a build that cannot run at all
 
 ## Error Handling
 
@@ -435,5 +443,5 @@ In autonomous mode, `AskUserQuestion` is skipped when:
 | Tests fail (≤3 attempts) | Fix and retry |
 | Tests fail (>3 attempts) | Report to user, stop |
 | Critical review finding | Report to user, stop |
-| Warning review finding | Fix, re-run quality gate |
+| Warning review finding | Fix, re-run 5c and the quality gate |
 | Git/PR creation fails | Report error, stop |

@@ -32,7 +32,7 @@ Research flow:
    any code is written — an oversized issue produces an unreviewable PR and an unfinishable
    `/goal` condition
 4. **Verify Core Value alignment** — if the issue lacks a "Core Value Alignment" section, ask the user before proceeding
-5. Confirm design/plan with **Codex MCP** (see rules/behavior.md for usage):
+5. Confirm design/plan with **Codex** (see rules/behavior.md for usage):
    - **Required**: architecture changes, new patterns, migrations, security-sensitive design
    - **Optional**: complex trade-offs where existing patterns don't clearly apply
    - **Skip**: existing-pattern implementations, small bug fixes, naming, test strategy (auto-decide from codebase)

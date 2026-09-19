@@ -7,6 +7,7 @@ context: fork
 background: false
 allowed-tools:
   - Read
+  - Write
   - Glob
   - Grep
   - Bash(git log:*)
@@ -29,7 +30,7 @@ The method and report format live in [../investigate/report-format.md](../invest
 
 ## Step 1: Parse Input
 
-Extract from `$ARGUMENTS`: issue summary and acceptance criteria, keywords and technical terms, known affected areas.
+Extract from `$ARGUMENTS`: the report path, issue summary and acceptance criteria, keywords and technical terms, known affected areas.
 
 Read `CLAUDE.md` for architecture, conventions, and directory structure.
 
@@ -46,7 +47,7 @@ Follow [../investigate/report-format.md](../investigate/report-format.md): pick 
 
 ## Step 4: Write the Report
 
-Write `investigation-report.md` in the current working directory, using the report skeleton **plus the Issue-driven additions** (the `Changes Needed` column and the `Decision Points` section — `/dig` consumes them directly).
+Write the report to the `Report path:` given in `$ARGUMENTS` (default `workspace/investigation-report.md`) — relative to the project working directory, not this skill's directory — creating the directory if needed, using the report skeleton **plus the Issue-driven additions** (the `Changes Needed` column and the `Decision Points` section — `/dig` consumes them directly).
 
 The report must be self-contained. The caller cannot see this fork's context, so anything not written down is lost.
 
