@@ -56,7 +56,7 @@ struct MaskEditorView: View {
                 ) { phase in
                     switch phase {
                     case .success(let image):
-                        image.resizable().aspectRatio(contentMode: .fit)
+                        image.resizable().scaledToFit()
                     default:
                         Color.civitSurfaceVariant
                     }
