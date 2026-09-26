@@ -58,7 +58,7 @@ internal fun EntryProviderScope<Any>.collectionsEntry(backStack: MutableList<Any
 
 internal fun EntryProviderScope<Any>.collectionDetailEntry(
     backStack: MutableList<Any>,
-    compareModelId: Long?,
+    compareModelId: () -> Long?,
     onCancelCompare: () -> Unit,
 ) {
     entry<CollectionDetailRoute> { key ->
@@ -82,7 +82,7 @@ internal fun EntryProviderScope<Any>.collectionDetailEntry(
             collectionId = key.collectionId,
             onBack = { backStack.removeLastOrNull() },
             onModelClick = { modelId ->
-                val cmpId = compareModelId
+                val cmpId = compareModelId()
                 if (cmpId != null) {
                     backStack.add(CompareRoute(cmpId, modelId))
                     onCancelCompare()
