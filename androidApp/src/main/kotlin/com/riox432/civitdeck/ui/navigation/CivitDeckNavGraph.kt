@@ -34,15 +34,13 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.entryProvider
@@ -111,42 +109,9 @@ private fun navItemInfoFor(navItem: Any): NavItemInfo? = when (navItem) {
     else -> null
 }
 
-private class TabState(
-    val backStack: MutableList<Any>,
-    scrollTrigger: Int = 0,
-) {
-    var scrollTrigger by mutableIntStateOf(scrollTrigger)
-
-    fun onReselected() {
-        if (backStack.size > 1) {
-            while (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-        } else {
-            scrollTrigger++
-        }
-    }
-}
-
-private class NavTabStates(
-    val fixed: Map<String, TabState>,
-    val shortcut: Map<String, TabState>,
-)
-
-@Composable
-private fun rememberNavTabStates(): NavTabStates = remember {
-    NavTabStates(
-        fixed = mapOf(
-            Tab.Discover.name to TabState(mutableStateListOf<Any>(SearchRoute)),
-            Tab.Create.name to TabState(mutableStateListOf<Any>(CreateHubRoute)),
-            Tab.Library.name to TabState(mutableStateListOf<Any>(CollectionsRoute)),
-            Tab.Settings.name to TabState(mutableStateListOf<Any>(SettingsRoute)),
-        ),
-        shortcut = mapOf(
-            NavShortcut.OutputGallery.name to TabState(mutableStateListOf<Any>(ComfyUIHistoryRoute)),
-            NavShortcut.Generate.name to TabState(mutableStateListOf<Any>(ComfyUIGenerationRoute)),
-            NavShortcut.ImageGallery.name to TabState(mutableStateListOf<Any>(BrowseImagesRoute)),
-            NavShortcut.ExternalServerGallery.name to TabState(mutableStateListOf<Any>(ExternalServerGalleryRoute)),
-        ),
-    )
+/** Pops the top route unless it is the tab's root; NavDisplay throws on an empty back stack. */
+internal fun MutableList<Any>.popIfNotRoot() {
+    if (size > 1) removeLastOrNull()
 }
 
 @Composable
@@ -172,7 +137,7 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Discover) {
 
     var selectedTabId by rememberSaveable { mutableStateOf(initialTab.name) }
 
-    val tabStates = rememberNavTabStates()
+    val tabStates = viewModel { NavTabStatesHolder() }.tabStates
     val fixedTabStates = tabStates.fixed
     val shortcutTabStates = tabStates.shortcut
 
@@ -309,7 +274,7 @@ private fun CivitDeckNavDisplay(
 ) {
     NavDisplay(
         backStack = backStack,
-        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
+        onBack = { backStack.popIfNotRoot() },
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),

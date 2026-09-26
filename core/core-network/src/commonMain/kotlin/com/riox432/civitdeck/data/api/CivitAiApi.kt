@@ -107,6 +107,8 @@ class CivitAiApi(
             nsfw?.let { parameter("nsfw", it) }
             limit?.let { parameter("limit", it) }
             cursor?.let { parameter("cursor", it) }
+            // /images omits `meta` (prompt, sampler, seed) unless explicitly requested.
+            parameter("withMeta", true)
         }.body()
     }
 

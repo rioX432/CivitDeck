@@ -60,7 +60,7 @@ private struct HistoryRow: View {
             CachedAsyncImage(url: URL(string: item.thumbnailUrl ?? "")) { phase in
                 switch phase {
                 case .success(let image):
-                    image.resizable().aspectRatio(contentMode: .fill)
+                    image.resizable().scaledToFill()
                 default:
                     Color.civitSurfaceContainerHigh
                 }

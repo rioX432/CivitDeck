@@ -1,24 +1,37 @@
 package com.riox432.civitdeck.feature.comfyui.data.repository
 
+import com.riox432.civitdeck.data.api.RetryConfig
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.GenerationStatus
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respondError
+import io.ktor.client.engine.mock.toByteArray
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.HttpRequestData
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.Url
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
  * Covers [ComfyUIGenerationRepositoryImpl]'s non-WebSocket surface: asset fetch,
  * prompt submission, history-based result polling, mask upload, object-info fetch,
- * image URL building, and the active-connection guard. WebSocket progress is excluded.
+ * image URL building, and the active-connection guard, plus the client id shared by
+ * prompt submission and the WebSocket handshake. WebSocket message handling is excluded.
  */
 class ComfyUIGenerationRepositoryImplTest {
 
@@ -51,6 +64,41 @@ class ComfyUIGenerationRepositoryImplTest {
         val id = r.submitGeneration(ComfyUIGenerationParams(checkpoint = "m", prompt = "p"))
 
         assertEquals("g-1", id)
+    }
+
+    @Test
+    fun submitGeneration_sends_the_client_id_the_progress_socket_connects_with() = runTest {
+        var promptBody: JsonObject? = null
+        var wsUrl: Url? = null
+        val client = HttpClient(
+            MockEngine { request ->
+                when {
+                    request.url.encodedPath.startsWith("/ws") -> wsUrl = request.url
+                    request.url.encodedPath == "/prompt" ->
+                        promptBody = testJson.decodeFromString(request.body.toByteArray().decodeToString())
+                }
+                okJson("""{"prompt_id":"g-1"}""")
+            },
+        ) {
+            install(ContentNegotiation) { json(testJson) }
+            install(WebSockets)
+        }
+        val r = ComfyUIGenerationRepositoryImpl(
+            daoWithActive(),
+            ComfyUIApi(client, testJson),
+            ComfyUIWebSocketApi(client, testJson, RetryConfig(maxRetries = 0)),
+            testJson,
+        )
+
+        r.submitGeneration(ComfyUIGenerationParams(checkpoint = "m", prompt = "p"))
+        // The mock cannot complete a WebSocket handshake; only the handshake URL matters here.
+        runCatching { r.observeGenerationProgress("g-1", "http://h:8188", "ws").toList() }
+
+        val submittedId = promptBody?.get("client_id")?.jsonPrimitive?.content
+        // The socket path embeds the query, so re-parse the full URL to read it.
+        val socketId = wsUrl?.let { Url(it.toString()).parameters["clientId"] }
+        assertFalse(submittedId.isNullOrBlank())
+        assertEquals(submittedId, socketId)
     }
 
     @Test

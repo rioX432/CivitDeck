@@ -373,7 +373,7 @@ struct ComfyUIGenerationView: View {
             if let preview = viewModel.previewImage {
                 Image(uiImage: preview)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .frame(maxWidth: .infinity)
                     .clipShape(RoundedRectangle(cornerRadius: CornerRadius.image))
                     .accessibilityLabel("Generation preview")

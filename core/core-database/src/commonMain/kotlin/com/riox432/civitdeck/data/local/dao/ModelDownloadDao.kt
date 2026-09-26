@@ -23,8 +23,11 @@ interface ModelDownloadDao {
     @Query("SELECT * FROM model_downloads WHERE fileId = :fileId LIMIT 1")
     suspend fun getByFileId(fileId: Long): ModelDownloadEntity?
 
-    @Query("UPDATE model_downloads SET status = :status, updatedAt = :updatedAt WHERE id = :id")
-    suspend fun updateStatus(id: Long, status: String, updatedAt: Long): Int
+    @Query(
+        "UPDATE model_downloads SET status = :status, errorMessage = :errorMessage, " +
+            "updatedAt = :updatedAt WHERE id = :id",
+    )
+    suspend fun updateStatus(id: Long, status: String, errorMessage: String?, updatedAt: Long): Int
 
     @Query(
         "UPDATE model_downloads SET downloadedBytes = :bytes, updatedAt = :updatedAt WHERE id = :id",
