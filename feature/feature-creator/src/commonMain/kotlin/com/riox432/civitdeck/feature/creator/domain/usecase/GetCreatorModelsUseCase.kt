@@ -8,9 +8,10 @@ import com.riox432.civitdeck.domain.repository.ModelRepository
 class GetCreatorModelsUseCase(private val repository: ModelRepository) {
     suspend operator fun invoke(
         username: String,
+        nsfw: Boolean,
         cursor: String? = null,
         limit: Int? = null,
     ): PaginatedResult<Model> = repository.getModels(
-        ModelSearchQuery(username = username, cursor = cursor, limit = limit),
+        ModelSearchQuery(username = username, cursor = cursor, limit = limit, nsfw = nsfw),
     )
 }

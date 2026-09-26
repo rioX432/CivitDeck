@@ -2,15 +2,20 @@ package com.riox432.civitdeck.feature.creator.presentation
 
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelSearchQuery
+import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.domain.model.PageMetadata
 import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.domain.usecase.FollowCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.IsFollowingCreatorUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.UnfollowCreatorUseCase
 import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseCase
+import com.riox432.civitdeck.testing.FakeContentFilterPreferencesRepository
 import com.riox432.civitdeck.testing.FakeCreatorFollowRepository
 import com.riox432.civitdeck.testing.testModel
+import com.riox432.civitdeck.testing.testModelVersion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -44,8 +49,10 @@ class CreatorProfileViewModelTest {
         private val pages: List<PaginatedResult<Model>>,
     ) : ModelRepository {
         var callCount = 0
+        var lastQuery: ModelSearchQuery? = null
 
         override suspend fun getModels(query: ModelSearchQuery): PaginatedResult<Model> {
+            lastQuery = query
             val result = pages.getOrElse(callCount) { pages.last() }
             callCount++
             return result
@@ -61,9 +68,13 @@ class CreatorProfileViewModelTest {
         username: String,
         repo: ModelRepository,
         followRepo: FakeCreatorFollowRepository = FakeCreatorFollowRepository(),
+        nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.All,
     ) = CreatorProfileViewModel(
         username = username,
         getCreatorModelsUseCase = GetCreatorModelsUseCase(repo),
+        observeNsfwFilterUseCase = ObserveNsfwFilterUseCase(
+            FakeContentFilterPreferencesRepository(nsfwFilterLevel),
+        ),
         isFollowingCreatorUseCase = IsFollowingCreatorUseCase(followRepo),
         followCreatorUseCase = FollowCreatorUseCase(followRepo),
         unfollowCreatorUseCase = UnfollowCreatorUseCase(followRepo),
@@ -154,5 +165,32 @@ class CreatorProfileViewModelTest {
         )
         val vm = createViewModel("artist123", repo)
         assertEquals("artist123", vm.uiState.value.username)
+    }
+
+    @Test
+    fun nsfw_level_all_sends_nsfw_true_to_repository() {
+        val repo = FakeModelRepo(
+            listOf(PaginatedResult(listOf(creatorModel(1L)), PageMetadata(null, null))),
+        )
+        val vm = createViewModel("testuser", repo, nsfwFilterLevel = NsfwFilterLevel.All)
+
+        assertEquals(true, repo.lastQuery?.nsfw)
+        assertEquals(1, vm.uiState.value.models.size)
+    }
+
+    @Test
+    fun nsfw_level_off_sends_nsfw_false_and_drops_nsfw_only_models() {
+        val safeModel = testModel(id = 1L)
+        val nsfwOnlyModel = testModel(
+            id = 2L,
+            modelVersions = listOf(testModelVersion(modelId = 2L, nsfwLevel = NsfwLevel.X)),
+        )
+        val repo = FakeModelRepo(
+            listOf(PaginatedResult(listOf(safeModel, nsfwOnlyModel), PageMetadata(null, null))),
+        )
+        val vm = createViewModel("testuser", repo, nsfwFilterLevel = NsfwFilterLevel.Off)
+
+        assertEquals(false, repo.lastQuery?.nsfw)
+        assertEquals(listOf(1L), vm.uiState.value.models.map { it.id })
     }
 }

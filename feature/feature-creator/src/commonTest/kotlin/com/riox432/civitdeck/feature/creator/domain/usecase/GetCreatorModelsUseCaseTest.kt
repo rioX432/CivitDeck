@@ -19,13 +19,14 @@ class GetCreatorModelsUseCaseTest {
         val repo = FakeModelRepository(listOf(testPaginatedResult(items = models)))
         val useCase = GetCreatorModelsUseCase(repo)
 
-        val result = useCase(username = "alice", cursor = "c1", limit = 30)
+        val result = useCase(username = "alice", nsfw = true, cursor = "c1", limit = 30)
 
         assertEquals(models, result.items)
         val query = repo.lastQuery!!
         assertEquals("alice", query.username)
         assertEquals("c1", query.cursor)
         assertEquals(30, query.limit)
+        assertEquals(true, query.nsfw)
     }
 
     @Test
@@ -33,11 +34,12 @@ class GetCreatorModelsUseCaseTest {
         val repo = FakeModelRepository(listOf(testPaginatedResult()))
         val useCase = GetCreatorModelsUseCase(repo)
 
-        useCase(username = "bob")
+        useCase(username = "bob", nsfw = false)
 
         val query = repo.lastQuery!!
         assertEquals("bob", query.username)
         assertEquals(null, query.cursor)
         assertEquals(null, query.limit)
+        assertEquals(false, query.nsfw)
     }
 }
