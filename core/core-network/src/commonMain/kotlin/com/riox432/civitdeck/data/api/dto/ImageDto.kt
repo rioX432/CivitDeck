@@ -13,7 +13,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 
 @Serializable
@@ -74,6 +73,10 @@ private val KNOWN_KEYS = setOf(
     "Size",
 )
 
+// `comfy` is the full ComfyUI workflow graph as a JSON string (often tens of KB); rendering it as
+// an additional-parameter row would flood the metadata UI and bloat the response cache.
+private val EXCLUDED_KEYS = setOf("comfy")
+
 internal object ImageMetaDtoSerializer : KSerializer<ImageMetaDto> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("ImageMetaDto")
 
@@ -82,22 +85,26 @@ internal object ImageMetaDtoSerializer : KSerializer<ImageMetaDto> {
         val obj = jsonDecoder.decodeJsonElement() as JsonObject
         val additional = mutableMapOf<String, String>()
         for ((key, value) in obj) {
-            if (key !in KNOWN_KEYS && value is JsonPrimitive) {
+            if (key !in KNOWN_KEYS && key !in EXCLUDED_KEYS && value is JsonPrimitive) {
                 value.contentOrNull?.let { additional[key] = it }
             }
         }
         return ImageMetaDto(
-            prompt = obj["prompt"]?.jsonPrimitive?.contentOrNull,
-            negativePrompt = obj["negativePrompt"]?.jsonPrimitive?.contentOrNull,
-            sampler = obj["sampler"]?.jsonPrimitive?.contentOrNull,
-            cfgScale = obj["cfgScale"]?.jsonPrimitive?.doubleOrNull,
-            steps = obj["steps"]?.jsonPrimitive?.longOrNull?.toInt(),
-            seed = obj["seed"]?.jsonPrimitive?.longOrNull,
-            model = obj["Model"]?.jsonPrimitive?.contentOrNull,
-            size = obj["Size"]?.jsonPrimitive?.contentOrNull,
+            prompt = obj.primitive("prompt")?.contentOrNull,
+            negativePrompt = obj.primitive("negativePrompt")?.contentOrNull,
+            sampler = obj.primitive("sampler")?.contentOrNull,
+            cfgScale = obj.primitive("cfgScale")?.doubleOrNull,
+            steps = obj.primitive("steps")?.longOrNull?.toInt(),
+            seed = obj.primitive("seed")?.longOrNull,
+            model = obj.primitive("Model")?.contentOrNull,
+            size = obj.primitive("Size")?.contentOrNull,
             additionalParams = additional,
         )
     }
+
+    // Returns null for object/array values instead of throwing, so one malformed item cannot fail
+    // a whole page of images.
+    private fun JsonObject.primitive(key: String): JsonPrimitive? = this[key] as? JsonPrimitive
 
     override fun serialize(encoder: Encoder, value: ImageMetaDto) {
         val jsonEncoder = encoder as JsonEncoder
