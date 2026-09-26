@@ -11,6 +11,7 @@ import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.isSuccess
+import io.ktor.utils.io.readAvailable
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -94,10 +95,8 @@ class DesktopDownloadScheduler(
         val buffer = ByteArray(DOWNLOAD_BUFFER_SIZE)
         var downloadedBytes = 0L
         destFile.outputStream().use { output ->
-            while (true) {
-                val read = channel.readAvailable(buffer)
-                if (read == -1) break
-                if (read <= 0) continue
+            var read: Int
+            while (channel.readAvailable(buffer).also { read = it } != -1) {
                 output.write(buffer, 0, read)
                 downloadedBytes += read
                 repository.updateProgress(downloadId, downloadedBytes)
