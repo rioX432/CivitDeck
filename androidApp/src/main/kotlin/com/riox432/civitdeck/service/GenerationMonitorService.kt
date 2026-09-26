@@ -36,8 +36,7 @@ import org.koin.android.ext.android.inject
  *
  * Lifecycle:
  * - Started by [BackgroundMonitorStarter] after generation is submitted
- * - Stops itself when [ComfyUIWebSocketMessage.ExecutionSuccess] or
- *   [ComfyUIWebSocketMessage.ExecutionError] is received
+ * - Stops itself when the [ComfyUIWebSocketApi.observeProgress] flow completes or fails
  * - Can be stopped externally via [ACTION_STOP] intent
  */
 class GenerationMonitorService : Service() {
