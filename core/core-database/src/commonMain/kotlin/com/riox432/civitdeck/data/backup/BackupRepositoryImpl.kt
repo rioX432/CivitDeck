@@ -167,16 +167,44 @@ class BackupRepositoryImpl(
         categories: Set<BackupCategory>,
     ) {
         if (BackupCategory.COLLECTIONS !in categories || backup.collections == null) return
+        val dao = collectionDaos.collectionDao
         if (strategy == RestoreStrategy.OVERWRITE) {
-            collectionDaos.collectionDao.deleteAllEntries()
-            collectionDaos.collectionDao.deleteAllNonDefault()
+            dao.deleteAllEntries()
+            dao.deleteAllNonDefault()
+            dao.insertCollections(backup.collections.filter { !it.isDefault }.map { it.toEntity() })
+            backup.collectionModels?.map { it.toEntity() }?.let { dao.insertEntries(it) }
+            return
         }
-        backup.collections.filter { !it.isDefault }.map { it.toEntity() }.let {
-            collectionDaos.collectionDao.insertCollections(it)
-        }
-        backup.collectionModels?.map { it.toEntity() }?.let {
-            collectionDaos.collectionDao.insertEntries(it)
-        }
+        val localIds = mergeCollections(backup.collections)
+        backup.collectionModels
+            ?.mapNotNull { dto -> localIds[dto.collectionId]?.let { dto.toEntity().copy(collectionId = it) } }
+            ?.let { dao.insertEntries(it) }
+    }
+
+    /**
+     * Resolves each backup collection to a local collection id without touching existing
+     * rows: `insertCollections` uses REPLACE, which deletes the conflicting row and cascades
+     * to its entries. Non-default collections match by name (lowest id wins when names
+     * repeat) so repeated restores are idempotent; unmatched ones get a new id.
+     *
+     * @return backup collection id → local collection id
+     */
+    private suspend fun mergeCollections(collections: List<CollectionDto>): Map<Long, Long> {
+        val dao = collectionDaos.collectionDao
+        val local = dao.getAll()
+        val localDefaultId = local.firstOrNull { it.isDefault }?.id
+        val localIdByName = local.filter { !it.isDefault }
+            .groupBy { it.name }
+            .mapValues { (_, sameName) -> sameName.minOf { it.id } }
+            .toMutableMap()
+        return collections.mapNotNull { dto ->
+            val localId = if (dto.isDefault) {
+                localDefaultId
+            } else {
+                localIdByName.getOrPut(dto.name) { dao.insertCollection(dto.toEntity().copy(id = 0)) }
+            }
+            localId?.let { dto.id to it }
+        }.toMap()
     }
 
     private suspend fun restoreContentData(
