@@ -113,7 +113,11 @@ internal fun SavedPromptDto.toEntity() = SavedPromptEntity(
     templateMetadata = templateMetadata,
 )
 
-internal fun UserPreferencesDto.toEntity() = UserPreferencesEntity(
+/**
+ * The backup carries only part of the row (never the API keys), so it is applied onto
+ * [existing] to keep every column it does not carry.
+ */
+internal fun UserPreferencesDto.applyTo(existing: UserPreferencesEntity) = existing.copy(
     nsfwFilterLevel = nsfwFilterLevel, defaultSortOrder = defaultSortOrder,
     defaultTimePeriod = defaultTimePeriod, gridColumns = gridColumns,
     powerUserMode = powerUserMode, notificationsEnabled = notificationsEnabled,

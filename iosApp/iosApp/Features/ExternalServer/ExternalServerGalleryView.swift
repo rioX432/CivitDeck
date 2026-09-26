@@ -38,6 +38,7 @@ struct ExternalServerGalleryView: View {
                     if viewModel.supportsFilters {
                         Button {
                             viewModel.showFilterSheet = true
+                            viewModel.onShowFilterSheet()
                         } label: {
                             Image(systemName: "line.3.horizontal.decrease.circle")
                                 .accessibilityLabel("Filters")
@@ -46,9 +47,7 @@ struct ExternalServerGalleryView: View {
                     if viewModel.supportsGeneration {
                         Button {
                             viewModel.showGenerationSheet = true
-                            if viewModel.generationOptions.isEmpty {
-                                Task { viewModel.onShowGenerationSheet() }
-                            }
+                            viewModel.onShowGenerationSheet()
                         } label: {
                             Image(systemName: "bolt.fill")
                                 .accessibilityLabel("Generate")
@@ -57,14 +56,26 @@ struct ExternalServerGalleryView: View {
                 }
             }
         }
-        .sheet(isPresented: $viewModel.showFilterSheet) {
+        .sheet(isPresented: Binding(
+            get: { viewModel.showFilterSheet },
+            set: { isShown in
+                viewModel.showFilterSheet = isShown
+                if !isShown { viewModel.onDismissFilterSheet() }
+            }
+        )) {
             ExternalServerFilterSheet(
                 filters: viewModel.filters,
                 onApply: { viewModel.vm.onFiltersChanged(filters: $0) },
                 onReset: { viewModel.onResetFilters() }
             )
         }
-        .sheet(isPresented: $viewModel.showGenerationSheet) {
+        .sheet(isPresented: Binding(
+            get: { viewModel.showGenerationSheet },
+            set: { isShown in
+                viewModel.showGenerationSheet = isShown
+                if !isShown { viewModel.onDismissGenerationSheet() }
+            }
+        )) {
             ExternalServerGenerationSheet(viewModel: viewModel)
         }
         .fullScreenCover(isPresented: Binding(
@@ -89,7 +100,7 @@ struct ExternalServerGalleryView: View {
             }
         }
         .task {
-            viewModel.onRetry()
+            await viewModel.observeUiState()
         }
     }
 

@@ -18,7 +18,8 @@ data class ComfyUIWsEnvelope(
  * Typed WebSocket messages after parsing the envelope.
  */
 sealed class ComfyUIWebSocketMessage {
-    data class Status(val queueRemaining: Int) : ComfyUIWebSocketMessage()
+    /** [queueRemaining] counts pending plus running prompts; null when the frame omits it. */
+    data class Status(val queueRemaining: Int?) : ComfyUIWebSocketMessage()
     data class ExecutionStart(val promptId: String) : ComfyUIWebSocketMessage()
     data class Executing(val promptId: String, val node: String?) : ComfyUIWebSocketMessage()
     data class Progress(
@@ -55,7 +56,7 @@ internal data class WsStatusInner(
 
 @Serializable
 internal data class WsExecInfo(
-    @SerialName("queue_remaining") val queueRemaining: Int = 0,
+    @SerialName("queue_remaining") val queueRemaining: Int? = null,
 )
 
 @Serializable

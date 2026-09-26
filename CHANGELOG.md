@@ -30,9 +30,11 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 ### Fixed
 
 - Restoring a backup with "Merge" no longer deletes or renames an existing collection whose id matches a backup collection; backup collections merge into same-name local collections or are added as new ones (#1019)
+- iOS ComfyUI generation form now sends the checkpoint, prompts, sampler settings, size, seed, ControlNet and denoise values to the shared ViewModel, so Generate submits what was entered instead of silently doing nothing (#1025)
 - Download Queue no longer crashes on Android — registered the missing `AndroidDownloadScheduler` Koin binding (`DownloadScheduler` was bound on iOS/Desktop but not Android since #694) (#1003)
 - Bounded the interaction-event query with a limit (#987)
 - ComfyUI generation now reaches Completed/Error over the WebSocket — `/prompt` sends the same `client_id` the progress socket connects with, so ComfyUI delivers `execution_success`/`execution_error` to the app (#1021)
+- iOS External Server gallery now shows the server's images, loading and error states, and its Filter/Generate actions — the screen observes the shared ViewModel state instead of re-requesting page 1, and the Filter/Generate sheets open and close through the shared ViewModel so they no longer reopen or close on their own (#1029)
 - iOS ComfyHub browser and workflow detail screens now show their data — both defined `observeUiState()` on their owner but never called it, so the shared ViewModel state (workflows, loading, errors, import/save results) never reached the view (#1029 follow-up)
 
 ### Infrastructure

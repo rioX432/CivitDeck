@@ -57,6 +57,10 @@ internal class SearchPageLoader(
         val seenIds = mutableSetOf<Long>()
         var currentCursor = cursor
         var nextCursor: String? = null
+        val sortKey = clientSortKey(filter.selectedSort)
+        // Only the download count follows the API's order across pages; a watermark on any
+        // other key discards valid next-page results.
+        val watermarkKey = sortKey.takeIf { filter.selectedSort == SortOrder.MostDownloaded }
         val pageWatermark = sortWatermark
 
         repeat(MAX_FETCH_ITERATIONS) {
@@ -76,8 +80,8 @@ internal class SearchPageLoader(
             )
 
             var filtered = applyClientFilters(result.items, filter, viewedIds)
-            if (pageWatermark != null) {
-                filtered = filtered.filter { sortValueOf(it, filter) <= pageWatermark }
+            if (watermarkKey != null && pageWatermark != null) {
+                filtered = filtered.filter { watermarkKey(it) <= pageWatermark }
             }
             for (model in filtered) {
                 if (seenIds.add(model.id)) {
@@ -89,10 +93,10 @@ internal class SearchPageLoader(
             currentCursor = nextCursor
         }
 
-        accumulated.sortByDescending { sortValueOf(it, filter) }
+        if (sortKey != null) accumulated.sortByDescending(sortKey)
 
-        if (accumulated.isNotEmpty()) {
-            sortWatermark = accumulated.minOf { sortValueOf(it, filter) }
+        if (watermarkKey != null && accumulated.isNotEmpty()) {
+            sortWatermark = accumulated.minOf(watermarkKey)
         }
 
         return LoadResult(items = accumulated, nextCursor = nextCursor)
@@ -164,10 +168,14 @@ internal class SearchPageLoader(
     }
 }
 
-private fun sortValueOf(model: Model, filter: FilterState): Double =
-    when (filter.selectedSort) {
-        SortOrder.MostDownloaded -> model.stats.downloadCount.toDouble()
-        SortOrder.HighestRated -> model.stats.rating
-        SortOrder.Newest -> model.id.toDouble()
-        SortOrder.Quality -> QualityScoreCalculator.calculate(model.stats).toDouble()
+/**
+ * Client-side ordering key for [sort], or null to keep the API's cursor order: the API orders
+ * Newest by a server timestamp and Highest Rated by thumbsUpCount, and no [Model] field
+ * reproduces either order.
+ */
+private fun clientSortKey(sort: SortOrder): ((Model) -> Double)? =
+    when (sort) {
+        SortOrder.MostDownloaded -> { model -> model.stats.downloadCount.toDouble() }
+        SortOrder.Quality -> { model -> QualityScoreCalculator.calculate(model.stats).toDouble() }
+        SortOrder.Newest, SortOrder.HighestRated -> null
     }

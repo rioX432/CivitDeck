@@ -35,12 +35,13 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
  * Unit tests for [BackupRepositoryImpl] covering selective category export, metadata
- * category parsing, and a MERGE/OVERWRITE restore round-trip for the notes & tags subset.
- * Connection/preference DAOs are stubbed since those categories are not exercised here.
+ * category parsing, a MERGE/OVERWRITE restore round-trip for the notes & tags subset, and
+ * the settings restore. DAOs for categories not exercised here are stubbed.
  */
 class BackupRepositoryImplTest {
 
@@ -101,15 +102,22 @@ class BackupRepositoryImplTest {
         override fun observeCollectionThumbnail(collectionId: Long): Flow<String?> = MutableStateFlow(null)
     }
 
+    private class FakeUserPreferencesDao(var row: UserPreferencesEntity? = null) : UserPreferencesDao {
+        override fun observePreferences(): Flow<UserPreferencesEntity?> = MutableStateFlow(row)
+        override suspend fun getPreferences(): UserPreferencesEntity? = row
+        override suspend fun upsert(entity: UserPreferencesEntity) { row = entity }
+    }
+
     private fun buildRepo(
         noteDao: FakeModelNoteDao = FakeModelNoteDao(),
         tagDao: FakePersonalTagDao = FakePersonalTagDao(),
         collectionDao: FakeCollectionDao = FakeCollectionDao(),
+        prefsDao: FakeUserPreferencesDao = FakeUserPreferencesDao(),
     ) = BackupRepositoryImpl(
         collectionDaos = CollectionDaos(collectionDao),
         connectionDaos = ConnectionDaos(StubComfyDao, StubSdDao, StubExternalDao),
         contentDaos = ContentDaos(StubPromptDao, noteDao, tagDao, StubFilterDao, StubFollowDao),
-        preferenceDaos = PreferenceDaos(StubPrefsDao, StubHiddenDao, StubExcludedDao),
+        preferenceDaos = PreferenceDaos(prefsDao, StubHiddenDao, StubExcludedDao),
     )
 
     @Test
@@ -169,6 +177,24 @@ class BackupRepositoryImplTest {
         // Request only NOTES; TAGS data present in backup must be skipped.
         targetRepo.restoreBackup(backup, RestoreStrategy.MERGE, setOf(BackupCategory.NOTES))
         assertTrue(targetTags.tags.isEmpty())
+    }
+
+    @Test
+    fun restoreBackup_settings_keeps_columns_the_backup_does_not_carry() = runTest {
+        val sourcePrefs = FakeUserPreferencesDao(UserPreferencesEntity(gridColumns = 4, apiKey = "other-device"))
+        val backup = buildRepo(prefsDao = sourcePrefs).createBackup(setOf(BackupCategory.SETTINGS))
+
+        RestoreStrategy.entries.forEach { strategy ->
+            val targetPrefs = FakeUserPreferencesDao(
+                UserPreferencesEntity(apiKey = "secret", frontDoorMode = "Full", gridColumns = 2),
+            )
+            buildRepo(prefsDao = targetPrefs).restoreBackup(backup, strategy, setOf(BackupCategory.SETTINGS))
+
+            val restored = assertNotNull(targetPrefs.row, "$strategy")
+            assertEquals("secret", restored.apiKey, "$strategy")
+            assertEquals("Full", restored.frontDoorMode, "$strategy")
+            assertEquals(4, restored.gridColumns, "$strategy")
+        }
     }
 
     // --- Stub DAOs for categories not exercised in these tests ---
@@ -270,11 +296,5 @@ class BackupRepositoryImplTest {
         override suspend fun insertAll(entities: List<SavedSearchFilterEntity>) = Unit
         override suspend fun deleteAll(): Int = 0
         override suspend fun deleteById(id: Long): Int = 0
-    }
-
-    private object StubPrefsDao : UserPreferencesDao {
-        override fun observePreferences(): Flow<UserPreferencesEntity?> = MutableStateFlow(null)
-        override suspend fun getPreferences(): UserPreferencesEntity? = null
-        override suspend fun upsert(entity: UserPreferencesEntity) = Unit
     }
 }
