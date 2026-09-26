@@ -96,11 +96,17 @@ struct WorkflowTemplateView: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.civitOnSurfaceVariant)
                 .accessibilityHidden(true)
-            TextField("Search templates...", text: $viewModel.searchQuery)
-                .font(.civitBodyMedium)
+            TextField(
+                "Search templates...",
+                text: Binding(
+                    get: { viewModel.searchQuery },
+                    set: { viewModel.onSearchQueryChanged($0) }
+                )
+            )
+            .font(.civitBodyMedium)
             if !viewModel.searchQuery.isEmpty {
                 Button {
-                    viewModel.searchQuery = ""
+                    viewModel.onSearchQueryChanged("")
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.civitOnSurfaceVariant)
