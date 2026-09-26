@@ -43,6 +43,7 @@ struct ModelDetailScreen: View {
         .navigationTitle(viewModel.model?.name ?? "")
         .navigationBarTitleDisplayMode(.inline)
         .task { await viewModel.observeUiState() }
+        .task { await viewModel.observeDownloadEnqueuedEvent() }
         .onDisappear { viewModel.onDisappear() }
         .toolbar {
             // Primary action: Favorite. Peripheral actions (share, QR, collections) live in the overflow menu.

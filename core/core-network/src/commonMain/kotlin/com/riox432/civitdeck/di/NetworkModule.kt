@@ -11,6 +11,7 @@ import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
 import com.riox432.civitdeck.data.api.comfyui.createComfyUIHttpClient
 import com.riox432.civitdeck.data.api.comfyui.createComfyUIHttpClientWithSelfSignedTls
 import com.riox432.civitdeck.data.api.createHttpClient
+import com.riox432.civitdeck.data.api.download.createModelDownloadHttpClient
 import com.riox432.civitdeck.data.api.externalserver.ExternalServerApi
 import com.riox432.civitdeck.data.api.externalserver.createExternalServerHttpClient
 import com.riox432.civitdeck.data.api.huggingface.HuggingFaceApi
@@ -77,4 +78,7 @@ val networkModule = module {
     single(named("tensorart")) { createTensorArtHttpClient() }
     single { TensorArtApi(get(named("tensorart"))) }
     single<TensorArtRepository> { TensorArtRepositoryImpl(get()) }
+
+    // Model file downloads (Desktop scheduler; Android/iOS use their own native downloaders)
+    single(named("modeldownload")) { createModelDownloadHttpClient(get()) }
 }

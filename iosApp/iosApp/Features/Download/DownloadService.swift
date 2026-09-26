@@ -38,6 +38,21 @@ final class DownloadService: NSObject, ObservableObject {
         task.resume()
     }
 
+    /// Starts the transfer for a download that was just enqueued (inserted into the DB
+    /// as `Pending`) but has no in-flight `URLSessionDownloadTask` yet.
+    func handleEnqueuedDownload(downloadId: Int64) async {
+        do {
+            guard let download = try await repository.getDownloadById(id: downloadId) else {
+                print("DownloadService: enqueued download record not found for id \(downloadId)")
+                return
+            }
+            let apiKey = KoinHelper.shared.getApiKeyProvider().apiKey
+            startDownload(downloadId: downloadId, url: download.fileUrl, apiKey: apiKey)
+        } catch {
+            print("DownloadService: failed to fetch enqueued download record: \(error)")
+        }
+    }
+
     /// Stores resume data keyed by download ID for pause/resume
     private var resumeDataStore: [Int64: Data] = [:]
 
@@ -176,6 +191,13 @@ final class DownloadService: NSObject, ObservableObject {
     }
 }
 
+/// Mirrors Android's `"HTTP <code>"` failure message so a 401/403/etc. response is
+/// surfaced as a failed download instead of silently completing with a hash mismatch.
+private struct DownloadHTTPError: LocalizedError {
+    let statusCode: Int
+    var errorDescription: String? { "HTTP \(statusCode)" }
+}
+
 // MARK: - URLSession Delegate
 
 private class DownloadSessionDelegate: NSObject, URLSessionDownloadDelegate {
@@ -187,6 +209,19 @@ private class DownloadSessionDelegate: NSObject, URLSessionDownloadDelegate {
         didFinishDownloadingTo location: URL
     ) {
         guard let downloadId = downloadTask.taskDescription.flatMap(Int64.init) else { return }
+
+        if let httpResponse = downloadTask.response as? HTTPURLResponse,
+           !(200...299).contains(httpResponse.statusCode) {
+            Task { @MainActor [weak service] in
+                service?.handleComplete(
+                    downloadId: downloadId,
+                    location: nil,
+                    error: DownloadHTTPError(statusCode: httpResponse.statusCode)
+                )
+            }
+            return
+        }
+
         // Copy to temp before dispatching to main actor (location is only valid in this callback)
         let tempDir = FileManager.default.temporaryDirectory
         let tempFile = tempDir.appendingPathComponent(UUID().uuidString)

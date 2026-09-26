@@ -44,3 +44,14 @@ globs: desktopApp/**/*.kt
 - No WorkManager — background tasks use plain coroutines
 - No system notifications — use in-app notification UI
 - No Glance widgets or Quick Settings tiles
+
+## Downloads
+- `DesktopDownloadScheduler` (`shared/src/jvmMain/.../download/`) streams model files via a
+  dedicated Ktor `HttpClient` (Koin qualifier `"modeldownload"`), since there is no WorkManager
+  or background `URLSession` to hand the transfer to
+- Like Android's `ModelDownloadWorker`, there is no byte-range resume — "resume"/"retry"
+  restarts the file from byte 0
+- Files land under `~/.civitdeck/Downloads/<modelType>/<fileName>`
+- The detail screen's `LaunchedEffect` collecting `downloadEnqueuedEvent` (in
+  `DesktopDetailScreen.kt`) is the sole trigger that turns an enqueued DB row into a running
+  transfer — mirrors Android's `DownloadEnqueueEffect`

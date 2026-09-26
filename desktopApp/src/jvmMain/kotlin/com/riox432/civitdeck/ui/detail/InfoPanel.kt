@@ -18,8 +18,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -38,7 +46,10 @@ import coil3.PlatformContext
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.size.Size
+import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelDownload
+import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.util.FormatUtils
 import com.riox432.civitdeck.domain.util.VramCompatibility
@@ -52,12 +63,16 @@ import com.riox432.civitdeck.ui.theme.VramColors
 import com.riox432.civitdeck.ui.theme.shimmer
 
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 internal fun InfoPanel(
     model: Model,
     uiState: ModelDetailUiState,
     selectedVersion: ModelVersion?,
     onVersionSelected: (Int) -> Unit,
     onCreatorClick: (String) -> Unit,
+    onDownloadFile: (ModelFile) -> Unit,
+    onCancelDownload: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -97,7 +112,10 @@ internal fun InfoPanel(
             item {
                 FilesSection(
                     files = selectedVersion.files,
+                    downloads = uiState.downloads.associateBy { it.fileId },
                     fileVramCompatibility = uiState.fileVramCompatibility,
+                    onDownload = onDownloadFile,
+                    onCancelDownload = onCancelDownload,
                 )
             }
         }
@@ -238,8 +256,13 @@ private fun TagsSection(tags: List<String>) {
 }
 
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun FilesSection(
-    files: List<com.riox432.civitdeck.domain.model.ModelFile>,
+    files: List<ModelFile>,
+    downloads: Map<Long, ModelDownload>,
+    onDownload: (ModelFile) -> Unit,
+    onCancelDownload: (Long) -> Unit,
     fileVramCompatibility: Map<Long, VramCompatibility> = emptyMap(),
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
@@ -265,9 +288,80 @@ private fun FilesSection(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Spacer(modifier = Modifier.width(Spacing.sm))
+                FileDownloadAction(
+                    file = file,
+                    downloadState = downloads[file.id],
+                    onDownload = onDownload,
+                    onCancelDownload = onCancelDownload,
+                )
             }
         }
     }
+}
+
+@Composable
+private fun FileDownloadAction(
+    file: ModelFile,
+    downloadState: ModelDownload?,
+    onDownload: (ModelFile) -> Unit,
+    onCancelDownload: (Long) -> Unit,
+) {
+    when (downloadState?.status) {
+        null, DownloadStatus.Cancelled, DownloadStatus.Paused -> {
+            IconButton(onClick = { onDownload(file) }) {
+                Icon(
+                    Icons.Default.Download,
+                    contentDescription = "Download",
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+        DownloadStatus.Pending -> {
+            CircularProgressIndicator(
+                modifier = Modifier.size(DOWNLOAD_INDICATOR_SIZE),
+                strokeWidth = DOWNLOAD_INDICATOR_STROKE,
+            )
+        }
+        DownloadStatus.Downloading -> {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(
+                    progress = { downloadProgress(downloadState) },
+                    modifier = Modifier.size(DOWNLOAD_INDICATOR_SIZE),
+                    strokeWidth = DOWNLOAD_INDICATOR_STROKE,
+                )
+                IconButton(onClick = { onCancelDownload(downloadState.id) }) {
+                    Icon(
+                        Icons.Default.Cancel,
+                        contentDescription = "Cancel download",
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        }
+        DownloadStatus.Completed -> {
+            Icon(
+                Icons.Default.CheckCircle,
+                contentDescription = "Downloaded",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(Spacing.sm),
+            )
+        }
+        DownloadStatus.Failed -> {
+            IconButton(onClick = { onDownload(file) }) {
+                Icon(
+                    Icons.Default.Refresh,
+                    contentDescription = "Retry download",
+                    tint = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
+    }
+}
+
+private fun downloadProgress(download: ModelDownload): Float {
+    if (download.fileSizeBytes <= 0) return 0f
+    return (download.downloadedBytes.toFloat() / download.fileSizeBytes.toFloat()).coerceIn(0f, 1f)
 }
 
 @Composable
