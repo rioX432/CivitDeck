@@ -35,6 +35,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Bounded the interaction-event query with a limit (#987)
 - ComfyUI generation now reaches Completed/Error over the WebSocket — `/prompt` sends the same `client_id` the progress socket connects with, so ComfyUI delivers `execution_success`/`execution_error` to the app (#1021)
 - iOS External Server gallery now shows the server's images, loading and error states, and its Filter/Generate actions — the screen observes the shared ViewModel state instead of re-requesting page 1, and the Filter/Generate sheets open and close through the shared ViewModel so they no longer reopen or close on their own (#1029)
+- Swipe discovery now sends the NSFW filter setting with its `/models` requests and filters card images to the chosen level, so users with Soft/All see NSFW models and Off no longer gets blank cards (#1071)
 
 ### Infrastructure
 
