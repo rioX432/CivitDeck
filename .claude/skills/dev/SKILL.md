@@ -399,6 +399,9 @@ In autonomous mode:
 - Stop on Critical review findings or 3 consecutive failures (these still require human input)
 - **Surface fresh evidence every turn**: after any code change, re-run the failing check and show its output — the evaluator discounts evidence that predates the last change
 - **Print `review.json` counts as text** after Phase 7 — the evaluator cannot read files
+- After the final commit and PR creation, re-run the issue's proof command against that exact `HEAD`. Record the
+  command, exit code, expected success signal, a short output excerpt containing the signal, and `git rev-parse
+  HEAD` in the structured return. A pre-commit or pre-review test run does not verify the PR head.
 - **If the turn cap is reached, stop on that turn** and print the blocker summary; do not keep working past the cap
 
 ### Structured Return Value
@@ -410,6 +413,13 @@ On completion, output a structured result for callers (e.g., `/dev-all`):
   "issue": "{issue reference}",
   "status": "success | failed | blocked",
   "pr_url": "https://github.com/owner/repo/pull/N",
+  "verification": {
+    "command": "{exact command from CLAUDE.md or the issue}",
+    "exit_code": 0,
+    "success_signal": "{exact observed signal}",
+    "output_excerpt": "{bounded excerpt containing the signal}",
+    "head_sha": "{git rev-parse HEAD after the final commit}"
+  },
   "review_json": "{absolute path of workspace/{issue}/review.json}",
   "assumptions": ["{question → chosen default, evidence}"],
   "review": {

@@ -128,7 +128,8 @@ Agent(
     user-invocation-only. No user is reachable: apply its Autonomous Mode rules.
     Definition of done, all evidence required in your final message:
     (1) the project's test command output (from CLAUDE.md Commands) showing its
-        success signal, re-run after your last change;
+        success signal, re-run after the final commit, with the command, exit
+        code, bounded output excerpt, and tested HEAD SHA in `verification`;
     (2) review.json counts printed as text — \"critical\": 0 is required;
     (3) the PR URL.
     Constraints: do not modify or delete test files except those the issue
@@ -162,9 +163,11 @@ The sub-agent:
 After the sub-agent completes, validate the result before proceeding to merge. **Never trust the sub-agent's narrated success** — a claim of "tests pass, review clean" without evidence is the most common failure mode of long autonomous loops (proxy-signal collapse):
 
 1. Read the review.json at the absolute path in the sub-agent's return value (`review_json` — it lives in the sub-agent's worktree, not in this checkout). If the worktree is gone, use the review.json contents printed in the return value. Neither present means the issue failed
-2. Confirm the PR independently: `gh pr view {PR_URL} --json state,headRefName` must show an open PR for the issue branch
-3. Parse the sub-agent's return value for review status — and cross-check it against review.json; on mismatch, treat the issue as failed
-4. Carry the sub-agent's `assumptions` into the final report
+2. Confirm the PR independently: `gh pr view {PR_URL} --json state,headRefName,headRefOid` must show an open PR for the issue branch
+3. Validate `verification`: command and success signal are non-empty, exit code is 0, the bounded output excerpt contains the exact signal, and `head_sha` equals the PR's `headRefOid`. Missing or mismatched evidence fails the issue; do not accept narrated test success
+4. Run `gh pr checks --required {PR_URL}`. Failed or pending required checks block merge. If the repository has no required checks, record that fact and rely only on the head-bound proof above; do not call the absence of CI a pass
+5. Parse the sub-agent's return value for review status and cross-check it against review.json; on mismatch, treat the issue as failed
+6. Carry the sub-agent's `assumptions` and verification evidence into the final report
 
 **Decision logic:**
 
@@ -172,7 +175,7 @@ After the sub-agent completes, validate the result before proceeding to merge. *
 |---------------|--------|
 | `critical` (critical_count > 0) | **Skip this issue.** Report to user: "#{issue} has {N} critical findings — skipping." Mark task as failed. Proceed to next issue. |
 | `warnings` (unresolved warning_count > 0) | **Report to user.** `AskUserQuestion`: "#{issue} PR has {N} unresolved warnings. Merge anyway?" If yes → proceed. If no → skip. |
-| `clean` | **Proceed to auto-merge.** |
+| `clean` | **Proceed only when head-bound verification and required checks pass.** |
 | Sub-agent failed (`status: "failed"`) | **Skip this issue.** Report failure reason. Proceed to next issue. |
 
 #### 4c. Enable auto-merge

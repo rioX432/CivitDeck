@@ -4,7 +4,7 @@ description: "Supplement Deep Search results with web/SNS research. Collector on
 tools: WebSearch, WebFetch
 model: haiku
 maxTurns: 20
-permissionMode: bypassPermissions
+permissionMode: plan
 ---
 
 # Deep Researcher Agent

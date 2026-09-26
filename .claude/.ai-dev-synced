@@ -11,6 +11,7 @@
     "investigate",
     "issue",
     "monitor",
+    "orchestrate",
     "pr",
     "review",
     "think",
@@ -36,5 +37,9 @@
     "design-personality.md",
     "l10n-conventions.md",
     "mobile-conventions.md"
+  ],
+  "adapters": [
+    "claude",
+    "codex"
   ]
 }

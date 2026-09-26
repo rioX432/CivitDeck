@@ -1,0 +1,233 @@
+---
+name: dev-all
+description: "Process a batch of issues sequentially: /dev per issue in an isolated sub-agent → review validation → CI wait → conditional merge → next. GitHub-only; requires the gh CLI."
+---
+
+> **Host adaptation:** Treat product-specific tool names as capabilities. Use the
+> equivalent tools available in the current host, ask through its interaction mechanism,
+> and skip optional integrations that are unavailable. Resolve repository guidance from
+> `AGENTS.md`, falling back to `CLAUDE.md` only when needed. `$ARGUMENTS` means the current
+> user request; `${CLAUDE_SKILL_DIR}` means the directory containing this skill.
+
+# /dev-all — Sequential Issue Processing
+
+Process multiple GitHub Issues sequentially. Each issue runs `/dev` in an isolated sub-agent, then waits for CI and merges before proceeding to the next.
+
+**Arguments:** $ARGUMENTS
+
+## Why Per-Issue (not Single Branch)?
+
+Each issue gets its own branch, PR, and merge cycle:
+- **Clean git history**: each PR is atomic and reviewable
+- **CI validates each change independently**
+- **Merge conflicts are impossible**: each issue starts from latest main
+- **Rollback is easy**: revert a single PR, not a batch
+
+---
+
+## Step 0: Core Value Check (GATE)
+
+1. Read the project's `CLAUDE.md` and look for `## Core Values` section
+2. **If missing**: Warn the user that Core Values are undefined. Ask if they want to:
+   - Define Core Values now (recommended)
+   - Proceed without the filter (not recommended — risk of feature bloat)
+3. If user chooses to proceed without, log a warning in the final report
+
+---
+
+## Step 1: Resolve Target Issues
+
+**If `$ARGUMENTS` is provided:** Extract issue numbers.
+**If empty:** Fetch all open issues:
+```bash
+gh issue list --state open --json number,title,labels,body --limit 100
+```
+
+### 1a. Filter Issues
+
+- **Skip issues labeled `won't`** — these are explicitly decided not to implement
+- **Skip issues listed in CLAUDE.md `## Won't Do`** — cross-reference issue titles
+
+---
+
+## Step 2: Parallel Investigation (Read-Only)
+
+Launch **parallel Explore agents** (one per issue) to quickly understand scope:
+
+Each agent:
+1. `gh issue view {NUMBER} --json title,body,labels,comments`
+2. Grep/Glob to find related code
+3. Return: summary, affected files, estimated scope, dependencies
+
+---
+
+## Step 3: Dependency Analysis & Order
+
+### 3a. Detect Dependencies
+Check issue bodies for: `blocked by #N`, `depends on #N`, `after #N`
+
+### 3b. Execution Order
+Topological sort:
+1. Independent issues first (ascending by number)
+2. Dependent issues after their dependencies
+3. Circular dependencies → skip, report
+
+---
+
+## ── AskUserQuestion: Execution Plan ──
+
+Present:
+1. Ordered list of issues
+2. Dependencies detected
+3. Skipped issues (with reasons — including `won't` label and Won't Do matches)
+4. Estimated scope per issue
+5. **Core Value alignment per issue** (if Core Values are defined)
+
+Ask user to confirm before proceeding.
+
+---
+
+## Step 4: Sequential Issue Loop
+
+Create one tracked item per issue, `#{number}: {title}`. Track progress with the task tools when this session has them (`TaskCreate` / `TaskUpdate`; Claude 5 models and background sub-agents do not). Otherwise keep the checklist in your replies and update it as each step completes.
+
+### For each issue (in order):
+
+#### 4a. Pull latest main
+```bash
+git checkout {default branch} && git pull origin {default branch}
+```
+
+#### 4b. Run /dev in isolated sub-agent (autonomous)
+
+Slash commands in an `Agent()` prompt are plain text, and `/dev` is user-invocation-only (`disable-model-invocation`), so the sub-agent cannot load it through the Skill tool. Hand it the workflow file instead — the user authorized these runs by invoking `/dev-all`:
+
+```
+Agent(
+  prompt: "Run the /dev workflow for issue #{issue_number} in autonomous mode.
+    Read ${CLAUDE_SKILL_DIR}/../dev/SKILL.md and follow it from Phase 1; its
+    argument placeholder is #{issue_number}. Do not call Skill(\"dev\") — it is
+    user-invocation-only. No user is reachable: apply its Autonomous Mode rules.
+    Definition of done, all evidence required in your final message:
+    (1) the project's test command output (from CLAUDE.md Commands) showing its
+        success signal, re-run after the final commit, with the command, exit
+        code, bounded output excerpt, and tested HEAD SHA in `verification`;
+    (2) review.json counts printed as text — \"critical\": 0 is required;
+    (3) the PR URL.
+    Constraints: do not modify or delete test files except those the issue
+    explicitly requires — include `git diff --stat {base}...HEAD` in the final
+    message to prove it. If the same failure recurs 3 times, stop and report
+    the blocker instead. Finish by printing the Structured Return Value JSON,
+    including the absolute path of review.json, followed by the full
+    review.json contents.",
+  model: "opus",
+  isolation: "worktree",
+  run_in_background: false
+)
+```
+
+> **Why no `/goal` inside the Agent() prompt?** `/goal` is a session-scoped
+> Stop-hook wrapper, and slash commands in a sub-agent prompt are not expanded,
+> so a `/goal` there is inert text. Instead, the completion condition is stated
+> as explicit instructions with evidence requirements, and Step 4b-result
+> verifies the evidence rather than trusting the sub-agent's self-report. If a
+> true evaluator loop per issue is needed, run the issue headlessly —
+> `claude -p "/goal <condition>"` is officially supported.
+
+The sub-agent:
+- Gets a fresh context (no pollution from previous issues)
+- Works in an isolated git worktree under `.claude/worktrees/` (no file conflicts). The worktree may already be removed when the sub-agent returns (for example when the project gitignores `workspace/`), so the sub-agent also prints review.json
+- Runs the full /dev workflow autonomously; it has no `AskUserQuestion`, so /dev records defaults as assumptions instead of asking
+- Returns: structured result with PR URL, review status, counts, assumptions, and the review.json path
+
+#### 4b-result. Review Validation
+
+After the sub-agent completes, validate the result before proceeding to merge. **Never trust the sub-agent's narrated success** — a claim of "tests pass, review clean" without evidence is the most common failure mode of long autonomous loops (proxy-signal collapse):
+
+1. Read the review.json at the absolute path in the sub-agent's return value (`review_json` — it lives in the sub-agent's worktree, not in this checkout). If the worktree is gone, use the review.json contents printed in the return value. Neither present means the issue failed
+2. Confirm the PR independently: `gh pr view {PR_URL} --json state,headRefName,headRefOid` must show an open PR for the issue branch
+3. Validate `verification`: command and success signal are non-empty, exit code is 0, the bounded output excerpt contains the exact signal, and `head_sha` equals the PR's `headRefOid`. Missing or mismatched evidence fails the issue; do not accept narrated test success
+4. Run `gh pr checks --required {PR_URL}`. Failed or pending required checks block merge. If the repository has no required checks, record that fact and rely only on the head-bound proof above; do not call the absence of CI a pass
+5. Parse the sub-agent's return value for review status and cross-check it against review.json; on mismatch, treat the issue as failed
+6. Carry the sub-agent's `assumptions` and verification evidence into the final report
+
+**Decision logic:**
+
+| Review Status | Action |
+|---------------|--------|
+| `critical` (critical_count > 0) | **Skip this issue.** Report to user: "#{issue} has {N} critical findings — skipping." Mark task as failed. Proceed to next issue. |
+| `warnings` (unresolved warning_count > 0) | **Report to user.** `AskUserQuestion`: "#{issue} PR has {N} unresolved warnings. Merge anyway?" If yes → proceed. If no → skip. |
+| `clean` | **Proceed only when head-bound verification and required checks pass.** |
+| Sub-agent failed (`status: "failed"`) | **Skip this issue.** Report failure reason. Proceed to next issue. |
+
+#### 4c. Enable auto-merge
+```bash
+gh pr merge {PR_URL} --auto --merge --delete-branch
+```
+
+#### 4d. Wait for merge
+Poll until merged (check every 30 seconds, timeout 15 minutes):
+```bash
+STATE=$(gh pr view {PR_URL} --json state -q '.state')
+```
+
+If CI fails:
+1. Report the failure to user
+2. Ask: skip this issue and continue, or stop?
+
+#### 4e. Mark task completed and proceed
+
+---
+
+## Step 5: Final Report
+
+```
+## Batch Development Summary
+
+| # | Issue | PR | Status |
+|---|-------|----|--------|
+| 1 | #{42} Title | PR_URL | Merged |
+| 2 | #{43} Title | PR_URL | Merged |
+| 3 | #{44} Title | — | Skipped (CI failed) |
+
+Completed: N / M issues
+```
+
+Mark all tasks `completed`.
+
+---
+
+## Autonomous Mode (/goal)
+
+To run the entire batch under `/goal`, **derive the condition from the resolved issue list (Step 1)** — never wrap the raw request. The evaluator only reads transcript text, so the condition must reference output this skill actually prints (the final report table, `gh pr view` output):
+
+```
+/goal Every issue in {resolved issue list} is resolved or explicitly skipped: the
+final report table, printed in the most recent turn, shows for each issue either a
+merged PR (verified by `gh pr view --json state` output showing MERGED) or a skip
+reason — or stop after {5 × issue count} turns or after 3 consecutive issue
+failures, then summarize what is blocking. Constraints: do not close an issue
+without a merged fix, and do not drop issues from the list to finish early.
+```
+
+Derivation rules:
+- **End state ← Step 1's resolved issue list, locked at plan confirmation.** Do not remove issues mid-run to make the condition easier to satisfy (criteria laundering)
+- **Proof ← the final report table + `gh pr view --json state` output**, re-printed in the most recent turn
+- **Turn cap ← ~5 turns per issue**, joined as an OR-branch of the condition
+
+In autonomous mode:
+- Skip `AskUserQuestion` confirmations — proceed with best judgment
+- On CI failure: skip the issue and continue (don't stop); record the skip reason in the report
+- On 3 consecutive failures or at the turn cap: **stop on that turn** and print the blocking summary (the stop branch only completes the goal if the summary actually appears)
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| Issue not found | Skip, warn in report |
+| Circular dependency | Skip affected issues, report |
+| Sub-agent /dev fails | Skip, report the failure reason, proceed to next issue |
+| CI fails | Ask user: skip or stop |
+| Merge conflict | Ask user: skip or stop |
+| 3 consecutive failures | Stop, report to user |
+| Auto-merge timeout (15min) | Report, ask user |

@@ -4,7 +4,7 @@ description: "Deep dive analysis of a specific case: outcomes, success factors, 
 tools: WebSearch, WebFetch
 model: sonnet
 maxTurns: 20
-permissionMode: bypassPermissions
+permissionMode: plan
 ---
 
 # Case Analyzer Agent

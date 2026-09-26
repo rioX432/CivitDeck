@@ -32,7 +32,8 @@ The method and report format live in [../investigate/report-format.md](../invest
 
 Extract from `$ARGUMENTS`: the report path, issue summary and acceptance criteria, keywords and technical terms, known affected areas.
 
-Read `CLAUDE.md` for architecture, conventions, and directory structure.
+Read the nearest `AGENTS.md` for architecture, conventions, and directory structure. If absent, fall back to
+`CLAUDE.md`, then infer only what the repository structure supports.
 
 ## Step 2: Find Entry Points
 
@@ -60,4 +61,4 @@ The report must be self-contained. The caller cannot see this fork's context, so
 | Entry points unclear | Grep broadly, expand search patterns |
 | Agent returns shallow results | Re-launch with more specific prompts |
 | Codebase too large for full trace | Scope down; record what was covered **and what was skipped** |
-| CLAUDE.md missing | Infer architecture from directory structure |
+| Project guidance missing | Infer architecture from directory structure and label the inference |

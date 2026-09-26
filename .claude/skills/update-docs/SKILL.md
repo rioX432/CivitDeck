@@ -70,7 +70,10 @@ Create tasks based on selected scope:
 
 Mark gathering task `in_progress`.
 
-Read [scanners.md](scanners.md) and launch its **Subagents A, B, C and D in parallel** (Explore, model: haiku) — project structure, existing docs, git history, feature inventory. Each returns a structured list; none of them writes files.
+Read [scanners.md](scanners.md) and run only the independent scanners required by the selected scope. Parallelize
+them when the host supports isolated read-only workers; otherwise run them sequentially. Each returns a structured
+list and none writes files. Choose an available cost-effective model for mechanical collection rather than relying
+on a hard-coded provider tier.
 
 Scope the scanners to the phases selected in Phase 0: a `changelog`-only run needs C alone, `readme` needs B and D, `architecture` needs A and B, `oss` needs B.
 

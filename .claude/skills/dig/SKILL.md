@@ -28,20 +28,20 @@ Keep a point only if a different answer would change user-visible behavior, a da
 
 ### Step 2: Apply Auto-Decide Rules
 
-For auto-decidable ambiguities, check the project's CLAUDE.md, rules/*.md, and existing codebase patterns to determine the answer.
+For auto-decidable ambiguities, check the project's `AGENTS.md`, host-specific override, rules/*.md, and existing codebase patterns.
 
 **How to auto-decide:**
-1. Check if CLAUDE.md or rules/ explicitly defines a convention for this decision
+1. Check if project guidance or rules/ explicitly defines a convention for this decision
 2. Check if the codebase has an established pattern (Grep for similar implementations)
 3. If a clear, consistent pattern exists → auto-decide and record the rule
 
 **Common decision categories:**
-- **Architecture**: Where does this code belong? (Check CLAUDE.md architecture section)
+- **Architecture**: Where does this code belong? (Check the project architecture section)
 - **API Design**: Public or internal? What return type? (Check existing public API patterns)
 - **Data Flow**: Sync or async? Callback or stream? (Check established patterns)
 - **Concurrency**: Thread safety approach? (Check existing locking/synchronization patterns)
 - **Error Handling**: Exception, Result type, or null? (Check existing error patterns)
-- **Naming**: Follow project naming conventions (Check CLAUDE.md or rules/)
+- **Naming**: Follow project naming conventions (Check project guidance or rules/)
 - **Testing**: Unit, integration, or both? (Check existing test patterns)
 
 ### Step 3: Investigate Remaining Unknowns
@@ -85,7 +85,7 @@ Fold the recommendations into the options presented to the user in Step 4 — th
 ### Auto-Decided
 | # | Decision | Rule | Result |
 |---|----------|------|--------|
-| 1 | Where to place X | CLAUDE.md: "feature code in src/features/" | src/features/x/ |
+| 1 | Where to place X | AGENTS.md: "feature code in src/features/" | src/features/x/ |
 
 ### Investigated
 | # | Decision | Finding | Result |

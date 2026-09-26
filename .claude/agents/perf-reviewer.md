@@ -4,7 +4,7 @@ description: "Compose/CMP performance reviewer for changed files. Detects recomp
 tools: Read, Grep, Glob
 model: sonnet
 maxTurns: 20
-permissionMode: bypassPermissions
+permissionMode: plan
 ---
 
 # Mobile Performance Reviewer

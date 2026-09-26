@@ -28,7 +28,7 @@ If an open decision would change the plan, go back to `/dig` instead of planning
 
 ### Cut by behavior, not by layer
 
-Each subtask delivers one observable behavior through the layers it needs, so a wrong assumption shows up after the first subtask rather than after every layer is built. Inside a subtask, follow the project's layer order from CLAUDE.md (inner to outer, e.g. types → logic → data → UI; for KMP: commonMain → expect/actual → androidMain / iosMain).
+Each subtask delivers one observable behavior through the layers it needs, so a wrong assumption shows up after the first subtask rather than after every layer is built. Inside a subtask, follow the project's layer order from `AGENTS.md` or a host-specific project override (inner to outer, e.g. types → logic → data → UI; for KMP: commonMain → expect/actual → androidMain / iosMain).
 
 - **Prerequisites first**: a contract, schema, shared type, generated code, or migration that every slice needs is its own first subtask
 - **Spike the unknowns**: when a subtask's approach is uncertain, add a small spike whose output is a decision with evidence, and order the dependent subtasks after it
@@ -46,7 +46,7 @@ Each task must include:
 - **Where**: Target file(s) with paths
 - **How**: Specific implementation approach
 - **Why**: Reason this change is needed
-- **Verify**: The command or manual check that proves it, from CLAUDE.md → Commands. Name checks that cannot run locally (device, account, environment) instead of implying they pass
+- **Verify**: The command or manual check that proves it, from project guidance → Commands. Name checks that cannot run locally instead of implying they pass
 
 ### Dependencies and parallelism
 
@@ -54,7 +54,7 @@ Set `Blocked By` only on real dependencies. Mark subtasks parallel only when the
 
 ## Task Format
 
-Create each subtask with `TaskCreate` when this session has it (Claude 5 models and background sub-agents do not); otherwise list the subtasks in this format in your reply and keep their status there:
+Create each subtask with the host's task tracker when available; otherwise list the subtasks in this format in your reply and keep their status there:
 
 ```
 subject: "Implement {What} in {Where}"
@@ -94,7 +94,7 @@ After generating the full task list, use Codex to validate the decomposition.
 
 Follow the call pattern and fallback in [rules/behavior.md → Call pattern](../../rules/behavior.md).
 
-**Give Codex**: the full task table with dependencies, and the architecture layers from CLAUDE.md.
+**Give the independent reviewer**: the full task table with dependencies and the architecture layers from project guidance.
 
 **Ask Codex to check**:
 1. **Slicing** — does each subtask deliver an observable behavior, with its test inside it?

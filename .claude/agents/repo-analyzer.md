@@ -4,7 +4,7 @@ description: "Analyze GitHub repository: code, features, Issues/PRs, external re
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 model: sonnet
 maxTurns: 30
-permissionMode: bypassPermissions
+permissionMode: plan
 ---
 
 # Repo Analyzer Agent
