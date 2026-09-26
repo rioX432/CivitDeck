@@ -102,26 +102,15 @@ struct ComfyUIGenerationView: View {
             || viewModel.generationStatus == .running
     }
 
-    @ViewBuilder
-    private var topBarProgress: some View {
-        if viewModel.totalSteps > 0 {
-            ProgressView(value: viewModel.progressFraction)
-                .progressViewStyle(.linear)
-                .frame(maxWidth: .infinity)
-        } else {
-            ProgressView()
-                .progressViewStyle(.linear)
-                .frame(maxWidth: .infinity)
-        }
-    }
-
     private var checkpointPicker: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             Text("Checkpoint").font(.civitLabelMedium)
             if viewModel.isLoadingCheckpoints {
                 ProgressView()
             } else {
-                Picker("Checkpoint", selection: $viewModel.selectedCheckpoint) {
+                Picker("Checkpoint", selection: Binding(
+                    get: { viewModel.selectedCheckpoint }, set: { viewModel.onCheckpointSelected($0) }
+                )) {
                     ForEach(viewModel.checkpoints, id: \.self) { ckpt in
                         Text(ckpt).tag(ckpt).lineLimit(1)
                     }
@@ -133,10 +122,14 @@ struct ComfyUIGenerationView: View {
 
     private var promptInputs: some View {
         VStack(spacing: Spacing.sm) {
-            TextField("Prompt", text: $viewModel.prompt, axis: .vertical)
+            TextField("Prompt", text: Binding(
+                get: { viewModel.prompt }, set: { viewModel.onPromptChanged($0) }
+            ), axis: .vertical)
                 .lineLimit(3...6)
                 .textFieldStyle(.roundedBorder)
-            TextField("Negative Prompt", text: $viewModel.negativePrompt, axis: .vertical)
+            TextField("Negative Prompt", text: Binding(
+                get: { viewModel.negativePrompt }, set: { viewModel.onNegativePromptChanged($0) }
+            ), axis: .vertical)
                 .lineLimit(2...4)
                 .textFieldStyle(.roundedBorder)
         }
@@ -144,33 +137,25 @@ struct ComfyUIGenerationView: View {
 
     private var parameterControls: some View {
         VStack(spacing: Spacing.sm) {
-            paramSlider(label: "Steps", value: $viewModel.steps, range: 1...150, format: "%.0f")
-            paramSlider(label: "CFG Scale", value: $viewModel.cfgScale, range: 1...30, format: "%.1f")
+            paramSlider(label: "Steps", value: Binding(
+                get: { viewModel.steps }, set: { viewModel.onStepsChanged($0) }
+            ), range: 1...150, format: "%.0f")
+            paramSlider(label: "CFG Scale", value: Binding(
+                get: { viewModel.cfgScale }, set: { viewModel.onCfgScaleChanged($0) }
+            ), range: 1...30, format: "%.1f")
             HStack(spacing: Spacing.sm) {
-                TextField("Width", text: $viewModel.width)
+                TextField("Width", text: Binding(get: { viewModel.width }, set: { viewModel.onWidthChanged($0) }))
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
-                TextField("Height", text: $viewModel.height)
+                TextField("Height", text: Binding(get: { viewModel.height }, set: { viewModel.onHeightChanged($0) }))
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
             }
-            TextField("Seed (-1 = random)", text: $viewModel.seed)
+            TextField("Seed (-1 = random)", text: Binding(
+                get: { viewModel.seed }, set: { viewModel.onSeedChanged($0) }
+            ))
                 .keyboardType(.numberPad)
                 .textFieldStyle(.roundedBorder)
-        }
-    }
-
-    private func paramSlider(
-        label: String,
-        value: Binding<Double>,
-        range: ClosedRange<Double>,
-        format: String
-    ) -> some View {
-        HStack {
-            Text("\(label): \(String(format: format, value.wrappedValue))")
-                .font(.civitBodySmall)
-                .frame(width: sliderLabelWidth, alignment: .leading)
-            Slider(value: value, in: range)
         }
     }
 
@@ -200,16 +185,22 @@ struct ComfyUIGenerationView: View {
     private var controlNetSection: some View {
         GroupBox(label: Label("ControlNet", systemImage: "slider.horizontal.3")) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Toggle("Enable ControlNet", isOn: $viewModel.controlNetEnabled)
+                Toggle("Enable ControlNet", isOn: Binding(
+                    get: { viewModel.controlNetEnabled }, set: { viewModel.onControlNetToggled($0) }
+                ))
                 if viewModel.controlNetEnabled {
-                    Picker("Model", selection: $viewModel.selectedControlNet) {
+                    Picker("Model", selection: Binding(
+                        get: { viewModel.selectedControlNet }, set: { viewModel.onControlNetSelected($0) }
+                    )) {
                         Text("Select...").tag("")
                         ForEach(viewModel.availableControlNets, id: \.self) { cn in
                             Text(cn.components(separatedBy: "/").last ?? cn).tag(cn)
                         }
                     }
                     .pickerStyle(.menu)
-                    paramSlider(label: "Strength", value: $viewModel.controlNetStrength, range: 0...2, format: "%.2f")
+                    paramSlider(label: "Strength", value: Binding(
+                        get: { viewModel.controlNetStrength }, set: { viewModel.onControlNetStrengthChanged($0) }
+                    ), range: 0...2, format: "%.2f")
                 }
             }
         }
@@ -229,7 +220,9 @@ struct ComfyUIGenerationView: View {
                     }
                     paramSlider(
                         label: "Denoise",
-                        value: $viewModel.denoiseStrength,
+                        value: Binding(
+                            get: { viewModel.denoiseStrength }, set: { viewModel.onDenoiseStrengthChanged($0) }
+                        ),
                         range: 0...1,
                         format: "%.2f"
                     )
@@ -317,7 +310,7 @@ struct ComfyUIGenerationView: View {
         let isGenerating = viewModel.generationStatus == .submitting
             || viewModel.generationStatus == .running
         let canGenerate = viewModel.customWorkflowJson != nil
-            || (!viewModel.selectedCheckpoint.isEmpty && !viewModel.prompt.isEmpty)
+            || (!viewModel.selectedCheckpoint.isEmpty && !viewModel.prompt.isEmpty && viewModel.hasValidDimensions)
         return HStack(spacing: Spacing.sm) {
             Button(action: viewModel.onGenerate) {
                 HStack {
@@ -420,6 +413,35 @@ struct ComfyUIGenerationView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+private extension ComfyUIGenerationView {
+    @ViewBuilder
+    var topBarProgress: some View {
+        if viewModel.totalSteps > 0 {
+            ProgressView(value: viewModel.progressFraction)
+                .progressViewStyle(.linear)
+                .frame(maxWidth: .infinity)
+        } else {
+            ProgressView()
+                .progressViewStyle(.linear)
+                .frame(maxWidth: .infinity)
+        }
+    }
+
+    func paramSlider(
+        label: String,
+        value: Binding<Double>,
+        range: ClosedRange<Double>,
+        format: String
+    ) -> some View {
+        HStack {
+            Text("\(label): \(String(format: format, value.wrappedValue))")
+                .font(.civitBodySmall)
+                .frame(width: sliderLabelWidth, alignment: .leading)
+            Slider(value: value, in: range)
         }
     }
 }
