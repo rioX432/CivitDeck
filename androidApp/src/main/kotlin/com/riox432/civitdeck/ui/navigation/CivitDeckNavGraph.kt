@@ -111,6 +111,11 @@ private fun navItemInfoFor(navItem: Any): NavItemInfo? = when (navItem) {
     else -> null
 }
 
+/** Pops the top route unless it is the tab's root; NavDisplay throws on an empty back stack. */
+internal fun MutableList<Any>.popIfNotRoot() {
+    if (size > 1) removeLastOrNull()
+}
+
 private class TabState(
     val backStack: MutableList<Any>,
     scrollTrigger: Int = 0,
@@ -309,7 +314,7 @@ private fun CivitDeckNavDisplay(
 ) {
     NavDisplay(
         backStack = backStack,
-        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
+        onBack = { backStack.popIfNotRoot() },
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
