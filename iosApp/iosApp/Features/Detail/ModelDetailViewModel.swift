@@ -72,7 +72,7 @@ final class ModelDetailViewModelOwner: ObservableObject {
     /// is the sole trigger that turns an enqueued DB row into a running download.
     func observeDownloadEnqueuedEvent() async {
         for await downloadId in vm.downloadEnqueuedEvent {
-            await DownloadService.shared.handleEnqueuedDownload(downloadId: downloadId)
+            await DownloadService.shared.handleEnqueuedDownload(downloadId: downloadId.int64Value)
         }
     }
 
