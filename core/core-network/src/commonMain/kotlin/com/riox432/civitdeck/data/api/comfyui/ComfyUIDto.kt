@@ -68,24 +68,6 @@ data class HistoryStatus(
 )
 
 /**
- * Checkpoint info from GET /object_info/CheckpointLoaderSimple
- */
-@Serializable
-data class CheckpointLoaderInfo(
-    val input: CheckpointInput? = null,
-)
-
-@Serializable
-data class CheckpointInput(
-    val required: CheckpointRequired? = null,
-)
-
-@Serializable
-data class CheckpointRequired(
-    @SerialName("ckpt_name") val ckptName: List<List<String>>? = null,
-)
-
-/**
  * Response from POST /upload/image
  */
 @Serializable
