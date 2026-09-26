@@ -114,6 +114,6 @@ val searchModule = module {
 
     // ViewModels
     viewModel { ModelSearchViewModel(get(), get(), get(), get(), get(), get()) }
-    viewModel { SwipeDiscoveryViewModel(get(), get()) }
+    viewModel { SwipeDiscoveryViewModel(get(), get(), get()) }
     viewModel { BrowsingHistoryViewModel(get(), get(), get()) }
 }

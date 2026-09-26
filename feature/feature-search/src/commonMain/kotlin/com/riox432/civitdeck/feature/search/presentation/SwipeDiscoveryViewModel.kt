@@ -3,12 +3,16 @@ package com.riox432.civitdeck.feature.search.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.filterNsfwImages
+import com.riox432.civitdeck.domain.model.includeNsfwModels
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.feature.search.domain.usecase.GetDiscoveryModelsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -27,6 +31,7 @@ data class DismissedCard(
 class SwipeDiscoveryViewModel(
     private val getDiscoveryModels: GetDiscoveryModelsUseCase,
     private val toggleFavorite: ToggleFavoriteUseCase,
+    private val observeNsfwFilter: ObserveNsfwFilterUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SwipeDiscoveryState())
@@ -48,7 +53,9 @@ class SwipeDiscoveryViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             try {
-                val models = getDiscoveryModels()
+                val nsfwLevel = observeNsfwFilter().first()
+                val models = getDiscoveryModels(nsfw = nsfwLevel.includeNsfwModels())
+                    .filterNsfwImages(nsfwLevel)
                 _state.update { current ->
                     val existingIds = current.cards.map { it.id }.toSet()
                     val allSeenIds = existingIds + sessionDismissedIds.value
