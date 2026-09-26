@@ -38,6 +38,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Swipe discovery now sends the NSFW filter setting with its `/models` requests and filters card images to the chosen level, so users with Soft/All see NSFW models and Off no longer gets blank cards (#1071)
 - iOS ComfyHub browser and workflow detail screens now show their data — both defined `observeUiState()` on their owner but never called it, so the shared ViewModel state (workflows, loading, errors, import/save results) never reached the view (#1029 follow-up)
 - ComfyUI checkpoint picker loads on current ComfyUI servers — the checkpoint names are read from the first element of `ckpt_name` and the appended `{"tooltip": ...}` object is ignored, instead of failing to decode and leaving the built-in generation form without checkpoints (#1023)
+- ComfyUI generation with the default seed no longer fails — a negative seed (the app's -1 "random" sentinel) is resolved to a random non-negative value right before submission, for both the built-in workflow and imported workflows (#1024)
 
 ### Infrastructure
 
