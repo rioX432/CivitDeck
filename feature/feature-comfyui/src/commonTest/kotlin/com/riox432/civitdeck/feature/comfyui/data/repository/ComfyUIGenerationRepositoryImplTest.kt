@@ -21,7 +21,9 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -123,6 +125,30 @@ class ComfyUIGenerationRepositoryImplTest {
         val socketId = wsUrl?.let { Url(it.toString()).parameters["clientId"] }
         assertFalse(submittedId.isNullOrBlank())
         assertEquals(submittedId, socketId)
+    }
+
+    @Test
+    fun submitGeneration_resolves_negative_seed_to_a_random_nonnegative_value() = runTest {
+        suspend fun ksamplerSeed(seed: Long): Long {
+            var promptBody: JsonObject? = null
+            val r = repo { request ->
+                if (request.url.encodedPath == "/prompt") {
+                    promptBody = testJson.decodeFromString(request.body.toByteArray().decodeToString())
+                }
+                okJson("""{"prompt_id":"g-1"}""")
+            }
+
+            r.submitGeneration(ComfyUIGenerationParams(checkpoint = "m", prompt = "p", seed = seed))
+
+            val nodes = promptBody!!["prompt"]!!.jsonObject
+            val ksampler = nodes.values.first {
+                it.jsonObject["class_type"]?.jsonPrimitive?.content == "KSampler"
+            }
+            return ksampler.jsonObject["inputs"]!!.jsonObject["seed"]!!.jsonPrimitive.long
+        }
+
+        assertTrue(ksamplerSeed(-1) >= 0)
+        assertEquals(42L, ksamplerSeed(42))
     }
 
     @Test

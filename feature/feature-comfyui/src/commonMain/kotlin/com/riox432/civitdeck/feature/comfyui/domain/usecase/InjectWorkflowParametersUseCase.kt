@@ -8,6 +8,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
+import kotlin.random.Random
 
 /**
  * Injects modified parameter values back into a ComfyUI workflow JSON before submission.
@@ -83,8 +84,10 @@ class InjectWorkflowParametersUseCase {
         val value = param.currentValue
         return when (param.paramType) {
             ParameterType.SEED -> {
-                val longVal = value.toLongOrNull() ?: -1L
-                JsonPrimitive(longVal)
+                // ComfyUI's KSampler requires seed >= 0; the app's "random" sentinel is -1.
+                val longVal = value.toLongOrNull()
+                val seed = if (longVal == null || longVal < 0) Random.nextLong(0, Long.MAX_VALUE) else longVal
+                JsonPrimitive(seed)
             }
             ParameterType.NUMBER -> {
                 // Try long first (for integer fields like steps, width, height)
