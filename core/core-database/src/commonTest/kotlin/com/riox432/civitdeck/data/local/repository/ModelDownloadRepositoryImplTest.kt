@@ -46,8 +46,12 @@ class ModelDownloadRepositoryImplTest {
         override suspend fun getByFileId(fileId: Long): ModelDownloadEntity? =
             entities.firstOrNull { it.fileId == fileId }
 
-        override suspend fun updateStatus(id: Long, status: String, updatedAt: Long): Int =
-            mutate(id) { it.copy(status = status, updatedAt = updatedAt) }
+        override suspend fun updateStatus(
+            id: Long,
+            status: String,
+            errorMessage: String?,
+            updatedAt: Long,
+        ): Int = mutate(id) { it.copy(status = status, errorMessage = errorMessage, updatedAt = updatedAt) }
 
         override suspend fun updateProgress(id: Long, bytes: Long, updatedAt: Long): Int =
             mutate(id) { it.copy(downloadedBytes = bytes, updatedAt = updatedAt) }
@@ -133,6 +137,19 @@ class ModelDownloadRepositoryImplTest {
         val id = repo.enqueueDownload(sampleDownload())
         repo.updateStatus(id, DownloadStatus.Downloading, null)
         assertEquals(DownloadStatus.Downloading, repo.getDownloadById(id)?.status)
+    }
+
+    @Test
+    fun updateStatus_persists_failure_reason_and_clears_it_on_next_status() = runTest {
+        val dao = FakeDao()
+        val repo = ModelDownloadRepositoryImpl(dao)
+        val id = repo.enqueueDownload(sampleDownload())
+
+        repo.updateStatus(id, DownloadStatus.Failed, "HTTP 401")
+        assertEquals("HTTP 401", repo.getDownloadById(id)?.errorMessage)
+
+        repo.updateStatus(id, DownloadStatus.Pending)
+        assertNull(repo.getDownloadById(id)?.errorMessage)
     }
 
     @Test
