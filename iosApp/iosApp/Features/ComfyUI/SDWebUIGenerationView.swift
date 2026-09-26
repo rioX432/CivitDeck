@@ -20,7 +20,7 @@ struct SDWebUIGenerationView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task { await viewModel.observeUiState() }
         .alert("Error", isPresented: $showError, presenting: viewModel.error) { _ in
-            Button("OK") { viewModel.error = nil }
+            Button("OK") { viewModel.onDismissError() }
         } message: { error in
             Text(error)
         }
@@ -44,11 +44,15 @@ struct SDWebUIGenerationView: View {
     private var modelSection: some View {
         Section("Model & Sampler") {
             if !viewModel.models.isEmpty {
-                Picker("Model", selection: $viewModel.selectedModel) {
+                Picker("Model", selection: Binding(
+                    get: { viewModel.selectedModel }, set: { viewModel.onModelSelected($0) }
+                )) {
                     ForEach(viewModel.models, id: \.self) { Text($0).tag($0) }
                 }
             }
-            Picker("Sampler", selection: $viewModel.selectedSampler) {
+            Picker("Sampler", selection: Binding(
+                get: { viewModel.selectedSampler }, set: { viewModel.onSamplerSelected($0) }
+            )) {
                 ForEach(viewModel.samplers, id: \.self) { Text($0).tag($0) }
             }
         }
@@ -58,12 +62,14 @@ struct SDWebUIGenerationView: View {
         Section("Prompts") {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Prompt").font(.civitBodySmall).foregroundColor(.civitOnSurfaceVariant)
-                TextEditor(text: $viewModel.prompt)
+                TextEditor(text: Binding(get: { viewModel.prompt }, set: { viewModel.onPromptChanged($0) }))
                     .frame(minHeight: promptEditorMinHeight)
             }
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Negative Prompt").font(.civitBodySmall).foregroundColor(.civitOnSurfaceVariant)
-                TextEditor(text: $viewModel.negativePrompt)
+                TextEditor(text: Binding(
+                    get: { viewModel.negativePrompt }, set: { viewModel.onNegativePromptChanged($0) }
+                ))
                     .frame(minHeight: negativePromptEditorMinHeight)
             }
         }
@@ -85,7 +91,11 @@ struct SDWebUIGenerationView: View {
                 Spacer()
                 Text("\(Int(viewModel.steps))").font(.civitBodySmall).foregroundColor(.civitOnSurfaceVariant)
             }
-            Slider(value: $viewModel.steps, in: 1...50, step: 1)
+            Slider(
+                value: Binding(get: { viewModel.steps }, set: { viewModel.onStepsChanged($0) }),
+                in: 1...50,
+                step: 1
+            )
         }
     }
 
@@ -98,17 +108,21 @@ struct SDWebUIGenerationView: View {
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
             }
-            Slider(value: $viewModel.cfgScale, in: 1...20, step: 0.5)
+            Slider(
+                value: Binding(get: { viewModel.cfgScale }, set: { viewModel.onCfgChanged($0) }),
+                in: 1...20,
+                step: 0.5
+            )
         }
     }
 
     private var dimensionRow: some View {
-        let sizes = [256, 512, 768, 1024]
+        let sizes: [Int32] = [256, 512, 768, 1024]
         return Group {
-            Picker("Width", selection: $viewModel.width) {
+            Picker("Width", selection: Binding(get: { viewModel.width }, set: { viewModel.onWidthChanged($0) })) {
                 ForEach(sizes, id: \.self) { Text("\($0)").tag($0) }
             }
-            Picker("Height", selection: $viewModel.height) {
+            Picker("Height", selection: Binding(get: { viewModel.height }, set: { viewModel.onHeightChanged($0) })) {
                 ForEach(sizes, id: \.self) { Text("\($0)").tag($0) }
             }
         }
@@ -118,8 +132,9 @@ struct SDWebUIGenerationView: View {
         HStack {
             Text("Seed (-1 = random)").font(.civitBodyMedium)
             Spacer()
-            TextField("-1", text: $viewModel.seed)
+            TextField("-1", text: Binding(get: { viewModel.seed }, set: { viewModel.onSeedChanged($0) }))
                 .keyboardType(.numbersAndPunctuation)
+                .foregroundColor(viewModel.isSeedValid ? nil : .civitError)
                 .multilineTextAlignment(.trailing)
                 .frame(width: seedFieldWidth)
         }
@@ -139,7 +154,7 @@ struct SDWebUIGenerationView: View {
                 }
             } else {
                 Button("Generate") { viewModel.onGenerate() }
-                    .disabled(viewModel.prompt.isEmpty)
+                    .disabled(!viewModel.canGenerate)
                     .frame(maxWidth: .infinity)
             }
         }

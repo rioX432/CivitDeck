@@ -2,6 +2,9 @@ import Foundation
 import Shared
 import UIKit
 
+/// KMP seed value meaning "random"; shown as an empty seed field.
+private let randomSeed: Int64 = -1
+
 @MainActor
 final class ComfyUIGenerationViewModelOwner: ObservableObject {
     let vm: Feature_comfyuiComfyUIGenerationViewModel
@@ -46,9 +49,20 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
     @Published var previewImage: UIImage?
     @Published var currentNodeName: String = ""
 
+    // KMP values last mirrored into the numeric text fields. A field is rewritten only when KMP
+    // changes its value, so an unrelated emission never snaps a cleared or half-typed field back.
+    private var mirroredWidth: Int32?
+    private var mirroredHeight: Int32?
+    private var mirroredSeed: Int64?
+
     var progressFraction: Float {
         guard totalSteps > 0 else { return 0 }
         return Float(currentStep) / Float(totalSteps)
+    }
+
+    /// Width/height text that does not parse is never forwarded, so KMP would still submit the last valid size.
+    var hasValidDimensions: Bool {
+        Int32(width) != nil && Int32(height) != nil
     }
 
     init() {
@@ -62,6 +76,11 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
         for await state in vm.uiState {
             checkpoints = state.checkpoints as? [String] ?? []
             selectedCheckpoint = state.selectedCheckpoint
+            prompt = state.prompt
+            negativePrompt = state.negativePrompt
+            steps = Double(state.steps)
+            cfgScale = state.cfgScale
+            mirrorNumericFields(width: state.width, height: state.height, seed: state.seed)
             isLoadingCheckpoints = state.isLoadingCheckpoints
             availableLoras = state.availableLoras as? [String] ?? []
             loraSelections = state.loraSelections as? [LoraSelection] ?? []
@@ -98,12 +117,23 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
 
     // MARK: - Actions (delegate to KMP VM)
 
-    func onCheckpointSelected(_ checkpoint: String) { vm.onCheckpointSelected(checkpoint: checkpoint) }
-    func onPromptChanged(_ value: String) { vm.onPromptChanged(prompt: value) }
-    func onNegativePromptChanged(_ value: String) { vm.onNegativePromptChanged(prompt: value) }
+    func onCheckpointSelected(_ checkpoint: String) {
+        selectedCheckpoint = checkpoint
+        vm.onCheckpointSelected(checkpoint: checkpoint)
+    }
+    func onPromptChanged(_ value: String) {
+        prompt = value
+        vm.onPromptChanged(prompt: value)
+    }
+    func onNegativePromptChanged(_ value: String) {
+        negativePrompt = value
+        vm.onNegativePromptChanged(prompt: value)
+    }
+    /// Rounds so the slider, its label and the submitted step count stay the same integer.
     func onStepsChanged(_ steps: Double) {
-        self.steps = steps
-        vm.onStepsChanged(steps: Int32(steps))
+        let rounded = steps.rounded()
+        self.steps = rounded
+        vm.onStepsChanged(steps: Int32(rounded))
     }
     func onCfgScaleChanged(_ cfg: Double) {
         cfgScale = cfg
@@ -117,18 +147,28 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
         self.height = height
         if let h = Int32(height) { vm.onHeightChanged(height: h) }
     }
+    /// Empty or unparseable text means a random seed.
     func onSeedChanged(_ seed: String) {
         self.seed = seed
-        if let s = Int64(seed) { vm.onSeedChanged(seed: s) }
+        vm.onSeedChanged(seed: Int64(seed) ?? randomSeed)
     }
     func onLoraAdded(_ name: String) { vm.onLoraAdded(loraName: name) }
     func onLoraRemoved(_ name: String) { vm.onLoraRemoved(loraName: name) }
     func onLoraStrengthChanged(name: String, strengthModel: Float, strengthClip: Float) {
         vm.onLoraStrengthChanged(loraName: name, strengthModel: strengthModel, strengthClip: strengthClip)
     }
-    func onControlNetToggled(_ enabled: Bool) { vm.onControlNetToggled(enabled: enabled) }
-    func onControlNetSelected(_ model: String) { vm.onControlNetSelected(model: model) }
-    func onControlNetStrengthChanged(_ strength: Float) { vm.onControlNetStrengthChanged(strength: strength) }
+    func onControlNetToggled(_ enabled: Bool) {
+        controlNetEnabled = enabled
+        vm.onControlNetToggled(enabled: enabled)
+    }
+    func onControlNetSelected(_ model: String) {
+        selectedControlNet = model
+        vm.onControlNetSelected(model: model)
+    }
+    func onControlNetStrengthChanged(_ strength: Double) {
+        controlNetStrength = strength
+        vm.onControlNetStrengthChanged(strength: Float(strength))
+    }
     func onImportWorkflow(_ json: String) { vm.onImportWorkflow(jsonInput: json) }
     func onClearCustomWorkflow() { vm.onClearCustomWorkflow() }
     func onParameterValueChanged(nodeId: String, paramName: String, newValue: String) {
@@ -145,6 +185,21 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
     func onSaveImage(url: String) { vm.onSaveImage(imageUrl: url) }
     func onDismissSaveResult() { vm.onDismissSaveResult() }
     func onInterrupt() { vm.onInterrupt() }
+
+    private func mirrorNumericFields(width newWidth: Int32, height newHeight: Int32, seed newSeed: Int64) {
+        if newWidth != mirroredWidth, Int32(width) != newWidth { width = String(newWidth) }
+        if newHeight != mirroredHeight, Int32(height) != newHeight { height = String(newHeight) }
+        if newSeed != mirroredSeed, seedValue(of: seed) != newSeed {
+            seed = newSeed == randomSeed ? "" : String(newSeed)
+        }
+        mirroredWidth = newWidth
+        mirroredHeight = newHeight
+        mirroredSeed = newSeed
+    }
+}
+
+private func seedValue(of text: String) -> Int64? {
+    text.isEmpty ? randomSeed : Int64(text)
 }
 
 /// Convert Kotlin ByteArray to Swift Data

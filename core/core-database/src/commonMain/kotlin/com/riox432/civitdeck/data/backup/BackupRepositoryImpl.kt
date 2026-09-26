@@ -13,6 +13,7 @@ import com.riox432.civitdeck.data.local.dao.SDWebUIConnectionDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
 import com.riox432.civitdeck.data.local.dao.SavedSearchFilterDao
 import com.riox432.civitdeck.data.local.dao.UserPreferencesDao
+import com.riox432.civitdeck.data.local.entity.UserPreferencesEntity
 import com.riox432.civitdeck.domain.model.BackupCategory
 import com.riox432.civitdeck.domain.model.RestoreStrategy
 import com.riox432.civitdeck.domain.repository.BackupRepository
@@ -265,8 +266,9 @@ class BackupRepositoryImpl(
         categories: Set<BackupCategory>,
     ) {
         if (BackupCategory.SETTINGS in categories && backup.userPreferences != null) {
-            // Settings always overwrite (single row)
-            preferenceDaos.userPreferencesDao.upsert(backup.userPreferences.toEntity())
+            val dao = preferenceDaos.userPreferencesDao
+            val existing = dao.getPreferences() ?: UserPreferencesEntity()
+            dao.upsert(backup.userPreferences.applyTo(existing))
         }
         if (BackupCategory.HIDDEN_MODELS in categories) {
             restoreList(

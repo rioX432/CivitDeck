@@ -22,3 +22,17 @@ data class ModelDownload(
     val createdAt: Long = 0,
     val updatedAt: Long = 0,
 )
+
+private val AUTH_REQUIRED_HTTP_FAILURES = setOf("HTTP 401", "HTTP 403")
+
+/**
+ * Whether CivitAI rejected this download for missing or insufficient credentials.
+ *
+ * Writers must record an HTTP failure's [ModelDownload.errorMessage] as `HTTP <status code>`
+ * (for example `HTTP 401`), with nothing before or after it. Only a [DownloadStatus.Failed]
+ * download whose message is exactly `HTTP 401` or `HTTP 403` is classified; any other text,
+ * including `null`, is not. 403 is included because a valid key without access to a paid or
+ * early-access file may be rejected with it.
+ */
+fun ModelDownload.isAuthRequiredFailure(): Boolean =
+    status == DownloadStatus.Failed && errorMessage in AUTH_REQUIRED_HTTP_FAILURES
