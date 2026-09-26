@@ -55,9 +55,15 @@ struct CivitaiLinkSettingsView: View {
         Section {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Link Key").font(.civitBodySmall).foregroundColor(.civitOnSurfaceVariant)
-                TextField("Paste your Civitai Link key here", text: $viewModel.linkKey)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
+                TextField(
+                    "Paste your Civitai Link key here",
+                    text: Binding(
+                        get: { viewModel.linkKey },
+                        set: { viewModel.onKeyChanged($0) }
+                    )
+                )
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
             }
             Button(viewModel.isSaving ? "Connecting..." : "Save & Connect") {
                 viewModel.saveAndConnect()
