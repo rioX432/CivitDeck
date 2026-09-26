@@ -31,6 +31,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 - Download Queue no longer crashes on Android — registered the missing `AndroidDownloadScheduler` Koin binding (`DownloadScheduler` was bound on iOS/Desktop but not Android since #694) (#1003)
 - Bounded the interaction-event query with a limit (#987)
+- iOS External Server gallery now shows the server's images, loading and error states, and its Filter/Generate actions — the screen observes the shared ViewModel state instead of re-requesting page 1, and the Filter/Generate sheets open and close through the shared ViewModel so they no longer reopen or close on their own (#1029)
 
 ### Infrastructure
 
