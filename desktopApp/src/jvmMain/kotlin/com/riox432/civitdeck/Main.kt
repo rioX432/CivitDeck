@@ -24,6 +24,7 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import com.riox432.civitdeck.di.desktopModule
 import com.riox432.civitdeck.di.initKoin
+import com.riox432.civitdeck.di.initializeAuth
 import com.riox432.civitdeck.di.registerExportPlugins
 import com.riox432.civitdeck.di.registerThemePlugins
 import com.riox432.civitdeck.di.registerWorkflowPlugins
@@ -82,6 +83,7 @@ fun main() {
 
 private fun startBackgroundTasks() {
     val applicationScope: ApplicationScope = KoinPlatform.getKoin().get()
+    applicationScope.launch { initializeAuth() }
     applicationScope.launch {
         registerWorkflowPlugins()
         registerExportPlugins()
