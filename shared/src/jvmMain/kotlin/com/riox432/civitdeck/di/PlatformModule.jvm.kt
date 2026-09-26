@@ -10,12 +10,13 @@ import com.riox432.civitdeck.domain.download.DownloadScheduler
 import com.riox432.civitdeck.domain.repository.NetworkRepository
 import com.riox432.civitdeck.download.DesktopDownloadScheduler
 import org.koin.core.module.Module
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 actual val platformModule: Module = module {
     single { getDatabaseBuilder() }
     single<NetworkRepository> { JvmNetworkMonitor() }
-    single<DownloadScheduler> { DesktopDownloadScheduler() }
+    single<DownloadScheduler> { DesktopDownloadScheduler(get(), get(named("modeldownload")), get()) }
     single<DatasetZipWriterFactory> { DatasetZipWriterFactoryImpl() }
     single<ExportPathProvider> { ExportPathProviderImpl() }
 }

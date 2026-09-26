@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,7 +26,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.domain.download.DownloadScheduler
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelFile
 import com.riox432.civitdeck.domain.model.filterByNsfwLevel
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailUiState
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
@@ -33,6 +36,7 @@ import com.riox432.civitdeck.ui.components.ErrorStateView
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.theme.Elevation
 import com.riox432.civitdeck.ui.theme.Spacing
+import org.koin.compose.koinInject
 
 @Composable
 fun DesktopDetailScreen(
@@ -43,6 +47,15 @@ fun DesktopDetailScreen(
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val downloadScheduler = koinInject<DownloadScheduler>()
+
+    // Sole trigger that turns a DB row `downloadFile()` just enqueued as `Pending` into an
+    // actual transfer — mirrors Android's `DownloadEnqueueEffect` in ModelDetailScreen.kt.
+    LaunchedEffect(viewModel) {
+        viewModel.downloadEnqueuedEvent.collect { downloadId ->
+            downloadScheduler.enqueue(downloadId)
+        }
+    }
 
     Column(
         modifier = modifier
@@ -64,6 +77,8 @@ fun DesktopDetailScreen(
                     onVersionSelected = viewModel::onVersionSelected,
                     onImageClick = onImageClick,
                     onCreatorClick = onCreatorClick,
+                    onDownloadFile = viewModel::downloadFile,
+                    onCancelDownload = viewModel::cancelDownload,
                 )
             }
         }
@@ -95,12 +110,16 @@ private fun DetailTopBar(
 }
 
 @Composable
+// Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
+@Suppress("LongParameterList")
 private fun DetailBody(
     model: Model,
     uiState: ModelDetailUiState,
     onVersionSelected: (Int) -> Unit,
     onImageClick: (List<String>, Int) -> Unit,
     onCreatorClick: (String) -> Unit,
+    onDownloadFile: (ModelFile) -> Unit,
+    onCancelDownload: (Long) -> Unit,
 ) {
     val selectedVersion = model.modelVersions.getOrNull(uiState.selectedVersionIndex)
     val images = (selectedVersion?.images ?: emptyList())
@@ -142,6 +161,8 @@ private fun DetailBody(
                 selectedVersion = selectedVersion,
                 onVersionSelected = onVersionSelected,
                 onCreatorClick = onCreatorClick,
+                onDownloadFile = onDownloadFile,
+                onCancelDownload = onCancelDownload,
                 modifier = Modifier.width(panelWidth),
             )
         }
@@ -159,3 +180,5 @@ internal const val DETAIL_GRID_IMAGE_SIZE = 360
 internal const val AVATAR_IMAGE_SIZE = 48
 internal const val MAX_MONOSPACE_LINES = 5
 internal const val MAX_NORMAL_LINES = 2
+internal val DOWNLOAD_INDICATOR_SIZE = 24.dp
+internal val DOWNLOAD_INDICATOR_STROKE = 2.dp

@@ -67,6 +67,15 @@ final class ModelDetailViewModelOwner: ObservableObject {
         }
     }
 
+    /// Starts the actual URLSession transfer for a download just inserted (as `Pending`)
+    /// into the DB by `downloadFile(_:)`. Mirrors Android's `DownloadEnqueueEffect`, which
+    /// is the sole trigger that turns an enqueued DB row into a running download.
+    func observeDownloadEnqueuedEvent() async {
+        for await downloadId in vm.downloadEnqueuedEvent {
+            await DownloadService.shared.handleEnqueuedDownload(downloadId: downloadId.int64Value)
+        }
+    }
+
     // MARK: - Actions
 
     func onFavoriteToggle() { vm.onFavoriteToggle() }
