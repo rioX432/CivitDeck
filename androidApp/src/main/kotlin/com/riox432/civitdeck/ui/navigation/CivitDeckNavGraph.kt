@@ -299,16 +299,16 @@ private fun rememberTabEntries(
     entryInputs: NavEntryInputs,
 ): Map<String, List<NavEntry<Any>>> = tabStates.mapValues { (tabId, tabState) ->
     key(tabId) {
+        val entryProvider = remember(tabState, entryInputs) {
+            tabScopedEntryProvider(tabId, civitDeckEntryProvider(tabState.backStack, entryInputs))
+        }
         rememberDecoratedNavEntries(
             backStack = tabState.backStack,
             entryDecorators = listOf(
                 rememberSaveableStateHolderNavEntryDecorator(),
                 rememberViewModelStoreNavEntryDecorator(viewModelStoreOwner = tabState),
             ),
-            entryProvider = tabScopedEntryProvider(
-                tabId = tabId,
-                entryProvider = civitDeckEntryProvider(tabState.backStack, entryInputs),
-            ),
+            entryProvider = entryProvider,
         )
     }
 }
