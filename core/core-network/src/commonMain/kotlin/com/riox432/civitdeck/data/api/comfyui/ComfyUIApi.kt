@@ -21,7 +21,9 @@ import io.ktor.http.path
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -268,30 +270,20 @@ class ComfyUIApi(
         throw cause
     }
 
-    private fun parseCheckpointNames(responseText: String): List<String> {
-        val root = json.decodeFromString<JsonObject>(responseText)
-        val info = root["CheckpointLoaderSimple"]?.let {
-            json.decodeFromString<CheckpointLoaderInfo>(it.toString())
-        }
-        return info?.input?.required?.ckptName?.firstOrNull() ?: emptyList()
-    }
+    /**
+     * Unlike [parseNodeInputList], decode errors propagate so callers can report a failed
+     * checkpoint fetch instead of showing an empty picker.
+     */
+    private fun parseCheckpointNames(responseText: String): List<String> =
+        requiredInputNames(json.decodeFromString<JsonObject>(responseText), "CheckpointLoaderSimple", "ckpt_name")
 
     /**
      * Generic parser for /object_info nodes that return a list of filenames
      * under `inputs.required.<fieldName>[0]`.
      */
-    @Suppress("ReturnCount")
     private fun parseNodeInputList(responseText: String, nodeType: String, fieldName: String): List<String> {
         return try {
-            val root = json.decodeFromString<JsonObject>(responseText)
-            val nodeInfo = root[nodeType] as? JsonObject ?: return emptyList()
-            val inputObj = nodeInfo["input"] as? JsonObject ?: return emptyList()
-            val requiredObj = inputObj["required"] as? JsonObject ?: return emptyList()
-            val fieldArray = requiredObj[fieldName] as? kotlinx.serialization.json.JsonArray
-                ?: return emptyList()
-            val namesList = fieldArray.firstOrNull() as? kotlinx.serialization.json.JsonArray
-                ?: return emptyList()
-            namesList.mapNotNull { (it as? kotlinx.serialization.json.JsonPrimitive)?.content }
+            requiredInputNames(json.decodeFromString<JsonObject>(responseText), nodeType, fieldName)
         } catch (e: SerializationException) {
             Logger.w(TAG, "Failed to parse node input list ($nodeType/$fieldName): ${e.message}")
             emptyList()
@@ -299,6 +291,21 @@ class ComfyUIApi(
             Logger.w(TAG, "Failed to parse node input list ($nodeType/$fieldName): ${e.message}")
             emptyList()
         }
+    }
+
+    /**
+     * Reads the names at `<nodeType>.input.required.<fieldName>[0]`. Later elements, such as the
+     * `{"tooltip": ...}` options object ComfyUI appends, are ignored. Returns an empty list when
+     * any level is absent or has an unexpected shape.
+     */
+    @Suppress("ReturnCount")
+    private fun requiredInputNames(root: JsonObject, nodeType: String, fieldName: String): List<String> {
+        val nodeInfo = root[nodeType] as? JsonObject ?: return emptyList()
+        val inputObj = nodeInfo["input"] as? JsonObject ?: return emptyList()
+        val requiredObj = inputObj["required"] as? JsonObject ?: return emptyList()
+        val fieldArray = requiredObj[fieldName] as? JsonArray ?: return emptyList()
+        val namesList = fieldArray.firstOrNull() as? JsonArray ?: return emptyList()
+        return namesList.mapNotNull { (it as? JsonPrimitive)?.content }
     }
 
     private companion object {

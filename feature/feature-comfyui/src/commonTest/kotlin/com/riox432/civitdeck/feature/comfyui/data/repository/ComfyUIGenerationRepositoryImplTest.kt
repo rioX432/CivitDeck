@@ -19,6 +19,7 @@ import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
@@ -47,6 +48,29 @@ class ComfyUIGenerationRepositoryImplTest {
     ): ComfyUIGenerationRepositoryImpl {
         val api = ComfyUIApi(mockClient(handler), testJson)
         return ComfyUIGenerationRepositoryImpl(dao, api, wsApi(), testJson)
+    }
+
+    @Test
+    fun fetchCheckpoints_reads_names_from_first_element_of_ckpt_name() = runTest {
+        val withTooltip = """
+            {"CheckpointLoaderSimple":{"input":{"required":{"ckpt_name":[
+                ["a.safetensors","b.ckpt"],
+                {"tooltip":"The name of the checkpoint (model) to load."}
+            ]}}}}
+        """.trimIndent()
+        val legacy = """{"CheckpointLoaderSimple":{"input":{"required":{"ckpt_name":[["a.safetensors","b.ckpt"]]}}}}"""
+        val expected = listOf("a.safetensors", "b.ckpt")
+
+        assertEquals(expected, repo { okJson(withTooltip) }.fetchCheckpoints())
+        assertEquals(expected, repo { okJson(legacy) }.fetchCheckpoints())
+        assertEquals(emptyList(), repo { okJson("{}") }.fetchCheckpoints())
+    }
+
+    @Test
+    fun fetchCheckpoints_throws_on_invalid_json() = runTest {
+        val r = repo { okJson("not json") }
+
+        assertFailsWith<SerializationException> { r.fetchCheckpoints() }
     }
 
     @Test
