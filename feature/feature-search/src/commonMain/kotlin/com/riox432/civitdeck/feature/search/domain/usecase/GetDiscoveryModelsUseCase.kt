@@ -8,12 +8,16 @@ import com.riox432.civitdeck.domain.repository.ModelRepository
 /**
  * Fetches a batch of models for swipe-based discovery.
  * Uses "Newest" sort order to surface fresh content.
+ *
+ * [nsfw] has no default because the `/models` API strips non-PG images when the
+ * parameter is omitted (see `NsfwFilterLevel.includeNsfwModels`).
  */
 class GetDiscoveryModelsUseCase(private val repository: ModelRepository) {
     suspend operator fun invoke(
+        nsfw: Boolean,
         cursor: String? = null,
         limit: Int = 20,
     ): List<Model> = repository.getModels(
-        ModelSearchQuery(sort = SortOrder.Newest, cursor = cursor, limit = limit),
+        ModelSearchQuery(sort = SortOrder.Newest, cursor = cursor, limit = limit, nsfw = nsfw),
     ).items
 }
