@@ -34,7 +34,9 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -43,7 +45,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
@@ -154,12 +158,27 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Discover) {
     val validTabIds = navItems.mapNotNull { navItemInfoFor(it)?.id }.toSet()
     if (selectedTabId !in validTabIds) selectedTabId = Tab.Discover.name
 
-    val activeBackStack = fixedTabStates[selectedTabId]?.backStack
-        ?: shortcutTabStates[selectedTabId]?.backStack
-        ?: fixedTabStates.getValue(Tab.Discover.name).backStack
+    val activeTabId = selectedTabId.takeIf { it in tabStates.all } ?: Tab.Discover.name
 
     var compareModelId by rememberSaveable { mutableStateOf<Long?>(null) }
     var compareModelName by rememberSaveable { mutableStateOf<String?>(null) }
+    val entryInputs = remember(searchViewModel, tabStates) {
+        NavEntryInputs(
+            searchViewModel = searchViewModel,
+            searchScrollTrigger = { fixedTabStates.getValue(Tab.Discover.name).scrollTrigger },
+            settingsScrollTrigger = { fixedTabStates.getValue(Tab.Settings.name).scrollTrigger },
+            compareModelId = { compareModelId },
+            compareModelName = { compareModelName },
+            onCompareModel = { id, name ->
+                compareModelId = id
+                compareModelName = name
+            },
+            onCancelCompare = {
+                compareModelId = null
+                compareModelName = null
+            },
+        )
+    }
 
     NavigationSuiteScaffold(
         layoutType = rememberNavLayoutType(),
@@ -174,23 +193,26 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Discover) {
         },
     ) {
         CivitDeckTabContent(
-            activeBackStack = activeBackStack,
-            searchViewModel = searchViewModel,
-            searchScrollTrigger = fixedTabStates.getValue(Tab.Discover.name).scrollTrigger,
-            settingsScrollTrigger = fixedTabStates.getValue(Tab.Settings.name).scrollTrigger,
-            compareModelId = compareModelId,
-            compareModelName = compareModelName,
-            onCompareModel = { id, name ->
-                compareModelId = id
-                compareModelName = name
-            },
-            onCancelCompare = {
-                compareModelId = null
-                compareModelName = null
-            },
+            tabStates = tabStates,
+            activeTabId = activeTabId,
+            entryInputs = entryInputs,
         )
     }
 }
+
+/**
+ * Graph-level values the entry providers need. Changing values are read through getters because
+ * each tab keeps its [NavEntry]s until its own back stack changes, so a captured value would go stale.
+ */
+private class NavEntryInputs(
+    val searchViewModel: ModelSearchViewModel,
+    val searchScrollTrigger: () -> Int,
+    val settingsScrollTrigger: () -> Int,
+    val compareModelId: () -> Long?,
+    val compareModelName: () -> String?,
+    val onCompareModel: (Long, String) -> Unit,
+    val onCancelCompare: () -> Unit,
+)
 
 private fun androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScope.navSuiteItems(
     navItems: List<Any>,
@@ -225,27 +247,17 @@ private fun androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteS
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun CivitDeckTabContent(
-    activeBackStack: MutableList<Any>,
-    searchViewModel: ModelSearchViewModel,
-    searchScrollTrigger: Int,
-    settingsScrollTrigger: Int,
-    compareModelId: Long?,
-    compareModelName: String?,
-    onCompareModel: (Long, String) -> Unit,
-    onCancelCompare: () -> Unit,
+    tabStates: NavTabStates,
+    activeTabId: String,
+    entryInputs: NavEntryInputs,
 ) {
     Scaffold { padding ->
         SharedTransitionLayout(modifier = Modifier.padding(padding)) {
             CompositionLocalProvider(LocalSharedTransitionScope provides this) {
                 CivitDeckNavDisplay(
-                    backStack = activeBackStack,
-                    searchViewModel = searchViewModel,
-                    searchScrollTrigger = searchScrollTrigger,
-                    settingsScrollTrigger = settingsScrollTrigger,
-                    compareModelId = compareModelId,
-                    compareModelName = compareModelName,
-                    onCompareModel = onCompareModel,
-                    onCancelCompare = onCancelCompare,
+                    tabStates = tabStates,
+                    activeTabId = activeTabId,
+                    entryInputs = entryInputs,
                 )
             }
         }
@@ -260,100 +272,122 @@ private fun slideTransition(enterOffset: (Int) -> Int, exitOffset: (Int) -> Int)
             fadeOut(tween(Duration.normal, easing = Easing.standard)),
     )
 
-@Suppress("UnusedParameter")
 @Composable
 private fun CivitDeckNavDisplay(
-    backStack: MutableList<Any>,
-    searchViewModel: ModelSearchViewModel,
-    searchScrollTrigger: Int = 0,
-    settingsScrollTrigger: Int = 0,
-    compareModelId: Long? = null,
-    compareModelName: String? = null,
-    onCompareModel: (Long, String) -> Unit = { _, _ -> },
-    onCancelCompare: () -> Unit = {},
+    tabStates: NavTabStates,
+    activeTabId: String,
+    entryInputs: NavEntryInputs,
 ) {
+    val tabEntries = rememberTabEntries(tabStates.all, entryInputs)
+    val activeBackStack = tabStates.all.getValue(activeTabId).backStack
     NavDisplay(
-        backStack = backStack,
-        onBack = { backStack.popIfNotRoot() },
-        entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator(),
-        ),
+        entries = tabEntries.getValue(activeTabId),
+        onBack = { activeBackStack.popIfNotRoot() },
         transitionSpec = { slideTransition(enterOffset = { it / 4 }, exitOffset = { -it / 4 }) },
         popTransitionSpec = { slideTransition(enterOffset = { -it / 4 }, exitOffset = { it / 4 }) },
-        entryProvider = entryProvider {
-            searchEntry(
-                backStack = backStack,
-                searchViewModel = searchViewModel,
-                searchScrollTrigger = searchScrollTrigger,
-                compareModelId = compareModelId,
-                compareModelName = compareModelName,
-                onCompareModel = onCompareModel,
-                onCancelCompare = onCancelCompare,
-            )
-            createHubEntry(backStack)
-            collectionsEntry(backStack)
-            collectionDetailEntry(backStack, compareModelId, onCancelCompare)
-            datasetListEntry(backStack)
-            datasetDetailEntry(backStack)
-            batchTagEditorEntry(backStack)
-            duplicateReviewEntry(backStack)
-            detailEntry(backStack)
-            qrScannerEntry(backStack)
-            analyticsEntry(backStack)
-            notificationCenterEntry(backStack)
-            browsingHistoryEntry(backStack)
-            downloadQueueEntry(backStack)
-            feedEntry(backStack)
-            creatorEntry(backStack)
-            galleryEntry(backStack)
-            compareEntry(backStack)
-            discoveryEntry(backStack)
-            browseImagesEntry(backStack)
-            settingsEntry(backStack, settingsScrollTrigger)
-            settingsSubScreenEntries(backStack)
-            comfyUIEntries(backStack)
-            externalServerEntries(backStack)
-        },
     )
+}
+
+/**
+ * Decorates every tab's back stack with that tab's own saveable-state holder and ViewModelStore.
+ * All tabs are decorated on every pass so an entry is popped only when it leaves its own back stack,
+ * never when another tab is selected; only the selected tab's entries are composed.
+ */
+@Composable
+private fun rememberTabEntries(
+    tabStates: Map<String, TabState>,
+    entryInputs: NavEntryInputs,
+): Map<String, List<NavEntry<Any>>> = tabStates.mapValues { (tabId, tabState) ->
+    key(tabId) {
+        val entryProvider = remember(tabState, entryInputs) {
+            tabScopedEntryProvider(tabId, civitDeckEntryProvider(tabState.backStack, entryInputs))
+        }
+        rememberDecoratedNavEntries(
+            backStack = tabState.backStack,
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator(viewModelStoreOwner = tabState),
+            ),
+            entryProvider = entryProvider,
+        )
+    }
+}
+
+/**
+ * Prefixes each content key with the tab id. Entries sharing a content key share NavDisplay content
+ * and decorator state, and the same route can be open in two tabs at once.
+ */
+private fun tabScopedEntryProvider(
+    tabId: String,
+    entryProvider: (Any) -> NavEntry<Any>,
+): (Any) -> NavEntry<Any> = { key ->
+    val entry = entryProvider(key)
+    NavEntry(key = key, contentKey = "$tabId:${entry.contentKey}", metadata = entry.metadata) {
+        entry.Content()
+    }
+}
+
+private fun civitDeckEntryProvider(
+    backStack: MutableList<Any>,
+    inputs: NavEntryInputs,
+): (Any) -> NavEntry<Any> = entryProvider<Any> {
+    searchEntry(backStack, inputs)
+    createHubEntry(backStack)
+    collectionsEntry(backStack)
+    collectionDetailEntry(backStack, inputs.compareModelId, inputs.onCancelCompare)
+    datasetListEntry(backStack)
+    datasetDetailEntry(backStack)
+    batchTagEditorEntry(backStack)
+    duplicateReviewEntry(backStack)
+    detailEntry(backStack)
+    qrScannerEntry(backStack)
+    analyticsEntry(backStack)
+    notificationCenterEntry(backStack)
+    browsingHistoryEntry(backStack)
+    downloadQueueEntry(backStack)
+    feedEntry(backStack)
+    creatorEntry(backStack)
+    galleryEntry(backStack)
+    compareEntry(backStack)
+    discoveryEntry(backStack)
+    browseImagesEntry(backStack)
+    settingsEntry(backStack, inputs.settingsScrollTrigger)
+    settingsSubScreenEntries(backStack)
+    comfyUIEntries(backStack)
+    externalServerEntries(backStack)
 }
 
 private fun EntryProviderScope<Any>.searchEntry(
     backStack: MutableList<Any>,
-    searchViewModel: ModelSearchViewModel,
-    searchScrollTrigger: Int,
-    compareModelId: Long?,
-    compareModelName: String?,
-    onCompareModel: (Long, String) -> Unit,
-    onCancelCompare: () -> Unit,
+    inputs: NavEntryInputs,
 ) {
     entry<SearchRoute> {
         ModelSearchScreen(
-            viewModel = searchViewModel,
+            viewModel = inputs.searchViewModel,
             callbacks = SearchScreenCallbacks(
                 onModelClick = { modelId, thumbnailUrl, suffix ->
-                    val cmpId = compareModelId
+                    val cmpId = inputs.compareModelId()
                     if (cmpId != null) {
                         backStack.add(CompareRoute(cmpId, modelId))
-                        onCancelCompare()
+                        inputs.onCancelCompare()
                     } else {
                         backStack.add(DetailRoute(modelId, thumbnailUrl, suffix))
                     }
                 },
-                onCancelCompare = onCancelCompare,
+                onCancelCompare = inputs.onCancelCompare,
                 onDiscoverClick = { backStack.add(DiscoveryRoute) },
-                onCompareModel = onCompareModel,
+                onCompareModel = inputs.onCompareModel,
                 onScanQRCode = { backStack.add(QRScannerRoute) },
             ),
-            scrollToTopTrigger = searchScrollTrigger,
-            compareModelName = compareModelName,
+            scrollToTopTrigger = inputs.searchScrollTrigger(),
+            compareModelName = inputs.compareModelName(),
         )
     }
 }
 
 private fun EntryProviderScope<Any>.settingsEntry(
     backStack: MutableList<Any>,
-    settingsScrollTrigger: Int,
+    scrollTrigger: () -> Int,
 ) {
     entry<SettingsRoute> {
         val authVm: AuthSettingsViewModel = koinViewModel()
@@ -377,7 +411,7 @@ private fun EntryProviderScope<Any>.settingsEntry(
             onNavigateToDownloadQueue = { backStack.add(DownloadQueueRoute) },
             onNavigateToLicenses = { backStack.add(LicensesRoute) },
             onReplayGestureTutorial = gestureTutorialVm::resetTutorial,
-            scrollToTopTrigger = settingsScrollTrigger,
+            scrollToTopTrigger = scrollTrigger(),
         )
     }
 }
