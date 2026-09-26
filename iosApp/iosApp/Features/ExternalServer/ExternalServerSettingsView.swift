@@ -72,8 +72,9 @@ struct ExternalServerSettingsView: View {
         Section("Servers") {
             ForEach(viewModel.configs, id: \.id) { config in
                 HStack {
-                    Image(systemName: config.id == viewModel.activeConfig?.id ? "checkmark.circle.fill" : "circle")
-                        .foregroundColor(config.id == viewModel.activeConfig?.id ? theme.primary : .civitOnSurfaceVariant)
+                    let isActiveConfig = config.id == viewModel.activeConfig?.id
+                    Image(systemName: isActiveConfig ? "checkmark.circle.fill" : "circle")
+                        .foregroundColor(isActiveConfig ? theme.primary : .civitOnSurfaceVariant)
                         .accessibilityLabel("Activate configuration")
                         .onTapGesture { viewModel.onActivate(id: config.id) }
                     VStack(alignment: .leading, spacing: Spacing.xs) {

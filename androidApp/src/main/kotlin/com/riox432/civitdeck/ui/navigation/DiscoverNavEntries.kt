@@ -32,7 +32,7 @@ internal fun EntryProviderScope<Any>.browseImagesEntry(backStack: MutableList<An
         val shareHashtags by shareVm.hashtags.collectAsStateWithLifecycle()
         ImageGalleryScreen(
             viewModel = viewModel,
-            onBack = { backStack.removeLastOrNull() },
+            onBack = { backStack.popIfNotRoot() },
             shareHashtags = shareHashtags,
             onToggleShareHashtag = shareVm::onToggle,
             onAddShareHashtag = shareVm::onAdd,

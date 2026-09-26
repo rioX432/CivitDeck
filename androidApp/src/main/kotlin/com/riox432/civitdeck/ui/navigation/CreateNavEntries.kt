@@ -89,7 +89,7 @@ internal fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>)
         val viewModel: ComfyUIGenerationViewModel = koinViewModel()
         ComfyUIGenerationScreen(
             viewModel = viewModel,
-            onBack = { backStack.removeLastOrNull() },
+            onBack = { backStack.popIfNotRoot() },
             onLoadTemplate = { backStack.add(WorkflowTemplatePickerRoute) },
             onNavigateToMaskEditor = { url, w, h ->
                 backStack.add(MaskEditorRoute(url, w, h))
@@ -240,7 +240,7 @@ private fun EntryProviderScope<Any>.comfyUIHistoryEntries(backStack: MutableList
         val viewModel: ComfyUIHistoryViewModel = koinViewModel()
         ComfyUIHistoryScreen(
             viewModel = viewModel,
-            onBack = { backStack.removeLastOrNull() },
+            onBack = { backStack.popIfNotRoot() },
             onImageClick = { image -> backStack.add(ComfyUIOutputDetailRoute(image.id)) },
         )
     }
@@ -285,7 +285,7 @@ internal fun EntryProviderScope<Any>.externalServerEntries(backStack: MutableLis
         ExternalServerGalleryScreen(
             viewModel = galleryVm,
             serverName = settingsState.activeConfig?.name ?: "Gallery",
-            onBack = { backStack.removeLastOrNull() },
+            onBack = { backStack.popIfNotRoot() },
             onNavigateToImageDetail = { image ->
                 val index = state.images.indexOf(image)
                 backStack.add(ExternalServerImageDetailRoute(index.coerceAtLeast(0)))
