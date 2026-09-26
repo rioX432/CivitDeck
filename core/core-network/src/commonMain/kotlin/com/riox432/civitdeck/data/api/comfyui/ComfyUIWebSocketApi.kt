@@ -39,8 +39,7 @@ class ComfyUIWebSocketApi(
     /**
      * Opens a WebSocket connection using the provided [baseUrl] scheme (ws/wss).
      * Falls back to plain ws:// when using host+port overload.
-     * Completes when [ComfyUIWebSocketMessage.ExecutionSuccess] or [ComfyUIWebSocketMessage.ExecutionError]
-     * is received for [promptId].
+     * Completes after the message that satisfies [isTerminalMessage] for [promptId] is emitted.
      */
     fun observeProgress(
         baseUrl: String,
@@ -130,7 +129,7 @@ class ComfyUIWebSocketApi(
             val msg = incoming.receive().toRelevantMessage(promptId)
             if (msg != null) {
                 collector.emit(msg)
-                done = isTerminal(msg)
+                done = isTerminalMessage(msg, promptId)
             }
         }
     }
@@ -156,11 +155,7 @@ class ComfyUIWebSocketApi(
         return ComfyUIWebSocketMessage.PreviewImage(imageBytes)
     }
 
-    private fun isTerminal(msg: ComfyUIWebSocketMessage): Boolean =
-        msg is ComfyUIWebSocketMessage.ExecutionSuccess ||
-            msg is ComfyUIWebSocketMessage.ExecutionError
-
-    private fun parseMessage(text: String): ComfyUIWebSocketMessage? {
+    internal fun parseMessage(text: String): ComfyUIWebSocketMessage? {
         return try {
             val envelope = json.decodeFromString<ComfyUIWsEnvelope>(text)
             parseEnvelope(envelope)
@@ -187,8 +182,7 @@ class ComfyUIWebSocketApi(
 
     private fun parseStatus(envelope: ComfyUIWsEnvelope): ComfyUIWebSocketMessage {
         val data = json.decodeFromJsonElement<WsStatusData>(envelope.data)
-        val remaining = data.status?.execInfo?.queueRemaining ?: 0
-        return ComfyUIWebSocketMessage.Status(remaining)
+        return ComfyUIWebSocketMessage.Status(data.status?.execInfo?.queueRemaining)
     }
 
     private fun parseExecutionStart(envelope: ComfyUIWsEnvelope): ComfyUIWebSocketMessage {
@@ -249,4 +243,19 @@ class ComfyUIWebSocketApi(
         is ComfyUIWebSocketMessage.PreviewImage -> true
         is ComfyUIWebSocketMessage.Unknown -> false
     }
+}
+
+/**
+ * True when [msg] shows that [promptId] has left the server queue, which ComfyUI signals only
+ * after writing the prompt's `/history` entry.
+ *
+ * ComfyUI sends `execution_success` before that write. After it, ComfyUI broadcasts a `status`
+ * whose count no longer includes the prompt, then sends `executing` with a null node to the
+ * submitting client. A `status` of 0 cannot predate the write, because the prompt is queued
+ * before the socket opens.
+ */
+internal fun isTerminalMessage(msg: ComfyUIWebSocketMessage, promptId: String): Boolean = when (msg) {
+    is ComfyUIWebSocketMessage.Executing -> msg.promptId == promptId && msg.node == null
+    is ComfyUIWebSocketMessage.Status -> msg.queueRemaining == 0
+    else -> false
 }
