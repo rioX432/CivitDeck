@@ -267,9 +267,15 @@ private fun CompareImagePager(images: List<ModelImage>) {
 
     val pagerState = rememberPagerState { images.size }
     Column {
+        // HorizontalPager is built on SubcomposeLayout (LazyLayout) and cannot answer
+        // intrinsic-measurement queries. ComparePanelsRow sizes itself with IntrinsicSize.Min
+        // to stretch the VerticalDivider, which queries every descendant's intrinsic height.
+        // Fixing this node's height via aspectRatio lets that query fast-return from the ratio
+        // instead of delegating into the pager's SubcomposeLayout, avoiding
+        // "Asking for intrinsic measurements of SubcomposeLayout layouts is not supported".
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().aspectRatio(1f),
         ) { page ->
             CompareCarouselPage(image = images[page])
         }
