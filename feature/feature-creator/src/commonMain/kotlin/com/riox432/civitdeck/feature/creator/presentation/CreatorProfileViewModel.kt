@@ -3,8 +3,11 @@ package com.riox432.civitdeck.feature.creator.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.filterNsfwImages
+import com.riox432.civitdeck.domain.model.includeNsfwModels
 import com.riox432.civitdeck.domain.usecase.FollowCreatorUseCase
 import com.riox432.civitdeck.domain.usecase.IsFollowingCreatorUseCase
+import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.UnfollowCreatorUseCase
 import com.riox432.civitdeck.domain.util.LoadResult
 import com.riox432.civitdeck.domain.util.PaginatedLoader
@@ -13,6 +16,7 @@ import com.riox432.civitdeck.feature.creator.domain.usecase.GetCreatorModelsUseC
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -31,6 +35,7 @@ data class CreatorProfileUiState(
 class CreatorProfileViewModel(
     private val username: String,
     private val getCreatorModelsUseCase: GetCreatorModelsUseCase,
+    private val observeNsfwFilterUseCase: ObserveNsfwFilterUseCase,
     private val isFollowingCreatorUseCase: IsFollowingCreatorUseCase,
     private val followCreatorUseCase: FollowCreatorUseCase,
     private val unfollowCreatorUseCase: UnfollowCreatorUseCase,
@@ -96,15 +101,17 @@ class CreatorProfileViewModel(
     }
 
     private suspend fun loadPage(cursor: String?, limit: Int): LoadResult<Model> {
+        val nsfwFilterLevel = observeNsfwFilterUseCase().first()
         val result = getCreatorModelsUseCase(
             username = username,
+            nsfw = nsfwFilterLevel.includeNsfwModels(),
             cursor = cursor,
             limit = limit,
         )
         // Clear refreshing flag when load completes
         _uiState.update { it.copy(isRefreshing = false) }
         return LoadResult(
-            items = result.items,
+            items = result.items.filterNsfwImages(nsfwFilterLevel),
             nextCursor = result.metadata.nextCursor,
         )
     }

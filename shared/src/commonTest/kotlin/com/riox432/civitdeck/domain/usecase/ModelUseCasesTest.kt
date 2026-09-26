@@ -91,10 +91,11 @@ class ModelUseCasesTest {
     fun getCreatorModels_passes_username() = runTest {
         val repo = fakeRepository()
         val useCase = GetCreatorModelsUseCase(repo)
-        useCase(username = "creator1", cursor = "cur", limit = 10)
+        useCase(username = "creator1", nsfw = true, cursor = "cur", limit = 10)
         val q = repo.lastQuery!!
         assertEquals("creator1", q.username)
         assertEquals("cur", q.cursor)
         assertEquals(10, q.limit)
+        assertEquals(true, q.nsfw)
     }
 }
