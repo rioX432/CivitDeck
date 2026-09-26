@@ -13,6 +13,9 @@ struct ComfyHubBrowserView: View {
         }
         .navigationTitle("ComfyHub Workflows")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await viewModel.observeUiState()
+        }
     }
 
     private var searchBar: some View {

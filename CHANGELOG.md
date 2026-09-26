@@ -33,6 +33,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Download Queue no longer crashes on Android — registered the missing `AndroidDownloadScheduler` Koin binding (`DownloadScheduler` was bound on iOS/Desktop but not Android since #694) (#1003)
 - Bounded the interaction-event query with a limit (#987)
 - ComfyUI generation now reaches Completed/Error over the WebSocket — `/prompt` sends the same `client_id` the progress socket connects with, so ComfyUI delivers `execution_success`/`execution_error` to the app (#1021)
+- iOS ComfyHub browser and workflow detail screens now show their data — both defined `observeUiState()` on their owner but never called it, so the shared ViewModel state (workflows, loading, errors, import/save results) never reached the view (#1029 follow-up)
 
 ### Infrastructure
 

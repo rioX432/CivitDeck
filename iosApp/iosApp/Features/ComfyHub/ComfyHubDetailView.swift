@@ -55,6 +55,9 @@ struct ComfyHubDetailView: View {
                 viewModel.dismissSaveTemplateResult()
             }
         }
+        .task {
+            await viewModel.observeUiState()
+        }
     }
 
     private func detailContent(_ workflow: ComfyHubWorkflow) -> some View {
