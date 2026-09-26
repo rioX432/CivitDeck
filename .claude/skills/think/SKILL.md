@@ -36,7 +36,8 @@ allowed-tools:
 
 Zero-base thinking: discard assumptions, collect facts, synthesize essentials, propose with counter-arguments.
 
-**This is a long-running skill.** Track progress with the task tools when this session has them (`TaskCreate` / `TaskUpdate`; Claude 5 models and background sub-agents do not). Otherwise keep the checklist in your replies and update it as each step completes.
+**This is a long-running skill.** Track progress with the host's task tools when available. Otherwise keep the
+checklist in replies and update it as each step completes.
 
 ## Principles
 
@@ -85,9 +86,9 @@ Zero-base thinking: discard assumptions, collect facts, synthesize essentials, p
 **Goal**: Design research axes and auto-execute deep searches.
 
 1. Decompose the topic into 3-5 MECE research axes
-2. For each axis, execute in parallel:
-   - `mcp__gemini-deepsearch__deep_search` (free, 250/day) — primary
-   - `mcp__perplexity__perplexity_research` — top 1-3 axes only (cost: ~$0.4-1.3/call)
+2. For each axis, use the available deep-research integrations. Start with one broad primary search per axis, then
+   use a second provider only for the highest-risk gaps or cross-validation. Check current product limits before a
+   large fan-out; do not encode remembered price or quota figures as policy.
 3. Track each axis as its own item
 
 ### Phase 2: Research Integration
@@ -193,10 +194,13 @@ Instead of general synthesis, perform:
 
 MCP tools for auto-execution (no manual user action needed):
 
-| MCP | Model | Cost | Usage |
-|-----|-------|------|-------|
-| `mcp__gemini-deepsearch__deep_search` | Gemini Deep Research | Free (250/day) | Primary research |
-| `mcp__perplexity__perplexity_research` | sonar-deep-research | ~$0.4-1.3/call | Supplemental, top axes only |
+| Integration | Usage |
+|---|---|
+| `mcp__gemini-deepsearch__deep_search` | Broad primary research when available |
+| `mcp__perplexity__perplexity_research` | Supplemental research for high-risk gaps when available |
+
+Availability, model names, quotas, and pricing are runtime facts. Discover them from the current integration or
+official documentation when they affect the plan, and record the date checked.
 
 **Cost management**: Run Gemini first for all axes → Perplexity for top 1-3 axes only.
 

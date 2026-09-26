@@ -4,7 +4,7 @@ description: "Stress-test proposals: find counter-arguments, logical leaps, and 
 tools: WebSearch, WebFetch
 model: sonnet
 maxTurns: 15
-permissionMode: bypassPermissions
+permissionMode: plan
 ---
 
 # Counter-Argument Agent

@@ -90,15 +90,18 @@ Set via `/effort xhigh` or per-agent with model selection.
 
 ## Agent Teams (Parallel Development)
 
-Use Claude Code Agent Teams for parallel development when tasks are independent:
+Start with one agent. Use `/orchestrate` or Claude Code Agent Teams only when evaluation or the task structure
+shows that independent lanes will outperform one context. Every lane must have a distinct output, a non-overlapping
+write boundary (or be read-only), and no need for mid-flight coordination.
 
 | Teammate | Scope | File Access |
 |---|---|---|
 | <!-- fill per project --> | | |
 
-- **No file conflicts**: each teammate edits only their assigned directories
-- Shared API changes require Lead coordination
-- Cost: 4-15x token consumption — use for high-value tasks only
+- **No file conflicts**: each teammate edits only its assigned paths
+- Shared API changes require one named contract owner and an integration check
+- Set concurrency, turn, tool, and retry limits; parallelism is a cost/latency trade-off, not a default
+- The lead verifies evidence and integrates results; worker self-reports do not open a completion gate
 
 ## /goal for Autonomous Execution
 
@@ -136,12 +139,16 @@ Anti-patterns (rewrite before use): `make the code better` (no proof), `when the
 
 ## Model Selection for Agents
 
-Match the model tier to the sub-task instead of defaulting everything to one tier. Use aliases (`haiku`/`sonnet`/`opus`) so agents track the latest generation automatically.
+Match model capability to the sub-task instead of defaulting everything to one tier. Use supported aliases where
+the host guarantees them, but record the resolved model and date in eval results. Model behavior, availability,
+latency, and pricing are volatile; check current provider documentation instead of encoding them here.
 
-| Tier | Cost (per MTok, in/out) | Use for |
-|---|---|---|
-| `haiku` | $1 / $5 | Mechanical collection: URL existence checks, web/SNS scans, data gathering with no analysis |
-| `sonnet` | $3 / $15 | Review, analysis, test writing — near-Opus coding quality since Sonnet 5 |
-| `opus` | $5 / $25 | Long-horizon autonomous implementation, architecture decisions |
+| Capability | Use for |
+|---|---|
+| Fast / low-cost | Mechanical extraction, URL checks, and bounded collection with deterministic verification |
+| Balanced | Review, analysis, test generation, and most implementation work |
+| Frontier | Long-horizon implementation, ambiguous architecture, security-sensitive reasoning, and adjudication |
 
-For long autonomous runs (Opus tier): state the full task specification up front in one well-specified prompt and run at high effort — clear goals up front produce more efficient and more accurate output than progressively revealed instructions.
+Prototype with the strongest justified model to establish a baseline, then use evals to determine whether a smaller
+model still meets the accuracy target. For long autonomous runs, state the outcome, boundaries, tools, evidence,
+and stop conditions up front; keep volatile facts and large references retrievable on demand.

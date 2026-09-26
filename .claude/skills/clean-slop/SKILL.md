@@ -12,7 +12,7 @@ Make comments explain the lasting reason or contract. Change comment text only; 
 
 ## Establish the diff
 
-Read the project's `CLAUDE.md` and comment conventions, inspect `git status`, and record the existing changes before editing. Respect project-required documentation, including operational headers such as seed contents, invocation, and expected results.
+Read the project's `AGENTS.md` and any host-specific project override, inspect `git status`, and record the existing changes before editing. Respect project-required documentation, including operational headers such as seed contents, invocation, and expected results.
 
 Choose the scope from the arguments or the calling workflow:
 
@@ -50,7 +50,7 @@ Use narrow edits. For a mixed useful/redundant comment, trim only the redundant 
 
 Review the cleanup delta separately from pre-existing edits and check whitespace with `git diff --check`. Verify that every removed or changed character belongs to a permitted comment or its otherwise empty line, and that no contract or directive was lost.
 
-Run the smallest relevant check from `CLAUDE.md → Commands` (compile, lint, or documentation check for the affected files); run affected tests when project rules or the changed comment syntax warrant them. Report unavailable checks accurately. Correct cleanup-induced failures; do not expand into unrelated fixes.
+Run the smallest relevant check from project guidance → Commands (compile, lint, or documentation check for the affected files); run affected tests when project rules or the changed comment syntax warrant them. Report unavailable checks accurately. Correct cleanup-induced failures; do not expand into unrelated fixes.
 
 Leave changes uncommitted unless the enclosing workflow includes committing. Stage only intended cleanup changes when that workflow authorizes it, preserving unrelated staged content. Scope selection alone never authorizes a commit or push.
 

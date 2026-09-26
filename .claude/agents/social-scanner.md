@@ -4,7 +4,7 @@ description: "Scan X/Reddit/HackerNews/communities for sentiment and reception o
 tools: WebSearch, WebFetch
 model: haiku
 maxTurns: 20
-permissionMode: bypassPermissions
+permissionMode: plan
 ---
 
 # Social Scanner Agent

@@ -24,13 +24,17 @@ allowed-tools:
 
 Monitor project KPIs and propose next actions based on data.
 
+Before analysis, inventory each required source and the observation period. If a source is unavailable, report that
+metric as `unknown` with the missing connection; do not substitute thresholds, industry benchmarks, remembered
+values, or plausible-looking examples for project data. An unavailable source cannot support an issue proposal.
+
 ## Steps
 
 ### 1. Crashlytics Analysis (if Firebase configured)
 
 - Use Firebase MCP to fetch recent crash data
 - Identify top crashes by frequency and user impact
-- For critical crashes (crash-free rate < 99.5%), create GitHub Issues automatically
+- For critical crashes (crash-free rate < 99.5%), prepare a proposal for the issue skill
 
 ### 2. Store Review Analysis (if applicable)
 
@@ -96,11 +100,14 @@ Do **not** call `gh issue create` directly from this skill.
 | Metric | Current | Trend | Status |
 |---|---|---|---|
 
-### Issues Created
-| # | Title | Priority | Rationale |
+### Issue Proposals
+| Title | Priority | Evidence | Target |
 |---|---|---|---|
 
 ### Recommended Next Actions
 1. ...
 2. ...
 ```
+
+If no source is connected, output the source availability table and the minimum setup needed for another run; do
+not emit empty or speculative proposals.

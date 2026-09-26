@@ -4,7 +4,7 @@ description: "Validate all URLs exist and check claim-source consistency"
 tools: WebFetch, WebSearch
 model: haiku
 maxTurns: 30
-permissionMode: bypassPermissions
+permissionMode: plan
 ---
 
 # Source Verifier Agent
