@@ -47,7 +47,7 @@ class ModelDownloadRepositoryImpl(
 
     override suspend fun updateStatus(id: Long, status: DownloadStatus, errorMessage: String?) {
         val now = currentTimeMillis()
-        dao.updateStatus(id, status.name, now)
+        dao.updateStatus(id, status.name, errorMessage, now)
     }
 
     override suspend fun updateProgress(id: Long, downloadedBytes: Long) {
