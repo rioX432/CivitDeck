@@ -32,6 +32,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Restoring a backup with "Merge" no longer deletes or renames an existing collection whose id matches a backup collection; backup collections merge into same-name local collections or are added as new ones (#1019)
 - Download Queue no longer crashes on Android — registered the missing `AndroidDownloadScheduler` Koin binding (`DownloadScheduler` was bound on iOS/Desktop but not Android since #694) (#1003)
 - Bounded the interaction-event query with a limit (#987)
+- ComfyUI generation now reaches Completed/Error over the WebSocket — `/prompt` sends the same `client_id` the progress socket connects with, so ComfyUI delivers `execution_success`/`execution_error` to the app (#1021)
 
 ### Infrastructure
 

@@ -4,7 +4,6 @@ import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIOutputImage
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketMessage
-import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.DomainException
@@ -21,6 +20,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlin.random.Random
 
 class ComfyUIGenerationRepositoryImpl(
     private val dao: ComfyUIConnectionDao,
@@ -28,6 +28,10 @@ class ComfyUIGenerationRepositoryImpl(
     private val webSocketApi: ComfyUIWebSocketApi,
     private val json: Json,
 ) : ComfyUIGenerationRepository {
+
+    // ComfyUI sends a job's completion events only to the socket whose clientId matches the
+    // client_id submitted with the prompt, so submission and progress must share this id.
+    private val clientId = "civitdeck-${Random.nextLong(0, Long.MAX_VALUE)}"
 
     override suspend fun fetchCheckpoints(): List<String> {
         ensureApiConfigured()
@@ -47,7 +51,7 @@ class ComfyUIGenerationRepositoryImpl(
     override suspend fun submitGeneration(params: ComfyUIGenerationParams): String {
         ensureApiConfigured()
         val workflow = buildWorkflow(params)
-        val response = api.submitPrompt(workflow)
+        val response = api.submitPrompt(workflow, clientId)
         return response.promptId
     }
 
@@ -83,7 +87,6 @@ class ComfyUIGenerationRepositoryImpl(
         baseUrl: String,
         wsScheme: String,
     ): Flow<GenerationProgress> {
-        val clientId = "civitdeck-${currentTimeMillis()}"
         return webSocketApi.observeProgress(baseUrl, wsScheme, clientId, promptId).mapNotNull { msg ->
             when (msg) {
                 is ComfyUIWebSocketMessage.Progress -> GenerationProgress(

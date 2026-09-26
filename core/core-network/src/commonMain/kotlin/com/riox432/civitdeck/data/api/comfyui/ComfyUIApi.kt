@@ -104,13 +104,21 @@ class ComfyUIApi(
 
     /**
      * Submit workflow: POST /prompt
+     * @param clientId WebSocket client id that ComfyUI routes this job's non-broadcast events
+     *   (`execution_success`, `execution_error`) to. Omitted from the body when null.
      * @throws ResponseException on HTTP error response
      * @throws SerializationException on deserialization failure
      * @throws HttpRequestTimeoutException on request timeout
      * @throws ConnectTimeoutException on connection timeout
      */
-    suspend fun submitPrompt(workflow: JsonObject): PromptResponse = logAndRethrow("submitPrompt") {
-        val body = buildJsonObject { put("prompt", workflow) }
+    suspend fun submitPrompt(
+        workflow: JsonObject,
+        clientId: String? = null,
+    ): PromptResponse = logAndRethrow("submitPrompt") {
+        val body = buildJsonObject {
+            put("prompt", workflow)
+            if (clientId != null) put("client_id", clientId)
+        }
         client.post("${_baseUrl.value}/prompt") {
             contentType(ContentType.Application.Json)
             setBody(body)
