@@ -309,7 +309,9 @@ class ComfyUIGenerationRepositoryImpl(
         put(
             "inputs",
             buildJsonObject {
-                put("seed", params.seed)
+                // ComfyUI's KSampler requires seed >= 0; the app's "random" sentinel is -1.
+                val seed = if (params.seed < 0) Random.nextLong(0, Long.MAX_VALUE) else params.seed
+                put("seed", seed)
                 put("steps", params.steps)
                 put("cfg", params.cfgScale)
                 put("sampler_name", params.samplerName)

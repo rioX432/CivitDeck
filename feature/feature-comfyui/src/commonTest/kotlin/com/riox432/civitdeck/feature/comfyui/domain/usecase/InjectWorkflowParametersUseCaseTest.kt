@@ -7,6 +7,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -54,6 +55,21 @@ class InjectWorkflowParametersUseCaseTest {
         // SEED and integral NUMBER both serialize as JSON integers (no decimal point).
         assertEquals("999", inputs["seed"]!!.jsonPrimitive.content)
         assertEquals("30", inputs["steps"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun injects_random_nonnegative_seed_when_value_is_negative_or_blank() {
+        val workflow = """{"3":{"inputs":{"seed":1}}}"""
+
+        fun seedOf(currentValue: String): Long {
+            val result = useCase(workflow, listOf(param("3", "seed", ParameterType.SEED, currentValue)))
+            return Json.parseToJsonElement(result).jsonObject["3"]!!
+                .jsonObject["inputs"]!!.jsonObject["seed"]!!.jsonPrimitive.long
+        }
+
+        assertTrue(seedOf("-1") >= 0)
+        assertTrue(seedOf("") >= 0)
+        assertEquals(123L, seedOf("123"))
     }
 
     @Test
