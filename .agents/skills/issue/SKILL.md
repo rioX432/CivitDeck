@@ -47,7 +47,10 @@ If the input is an existing issue number, `gh issue view <n>` and treat its body
 gh issue list --state all --search "{2-4 distinctive keywords}" --limit 20
 ```
 
-Also check `CLAUDE.md → ## Won't Do`. A match there means **do not file** — report the entry instead.
+Where [the product policy](../../policies/core-value-filter.md#when-this-policy-applies) applies — repository
+guidance's `## Product policy` enables it, or, with no such section, the repository has `## Core Values` or
+`## Won't Do` — also check the repository's `## Won't Do`. A match there means **do not file**; report the entry
+instead.
 
 If an open issue already covers it, comment on that issue instead of creating a new one.
 
@@ -109,7 +112,7 @@ Only the children are executable. Never assign an epic to `/dev`.
 - `path/to/file` — {what changes}
 
 ## Core Value Alignment
-{Which Core Value from CLAUDE.md this strengthens, and the one-step reasoning.}
+{Only where the product policy applies: which Core Value this strengthens, and the one-step reasoning.}
 
 ## Risks / Notes
 {Known traps, edge cases, prior art.}
@@ -117,9 +120,9 @@ Only the children are executable. Never assign an epic to `/dev`.
 
 Rules for the body:
 
-- **`Done when` is the contract with the agent.** Resolve the command from `CLAUDE.md → Commands` or CI config — never guess one. It is reused verbatim as the `/goal` completion condition ([rules/ai-ops.md → /goal for Autonomous Execution](../../rules/ai-ops.md)), so an unverifiable `Done when` produces an unfinishable autonomous run.
+- **`Done when` is the contract with the agent.** Resolve the command from `CLAUDE.md → Commands` or CI config — never guess one. It is reused verbatim as the completion proof of an unattended run, so an unverifiable `Done when` produces an unfinishable run.
 - **`Scope: Out` is not optional.** It is what stops an agent from expanding the change.
-- **Core Value Alignment is a gate**, per [rules/ai-ops.md → Core Value Guard](../../rules/ai-ops.md). If the change fails the one-step test, propose a `## Won't Do` entry instead of an issue.
+- **Core Value Alignment is a gate only where [the product policy](../../policies/core-value-filter.md#when-this-policy-applies) applies.** There, a feature that fails the one-step test becomes a proposed `## Won't Do` entry instead of an issue. Elsewhere, omit the section; the sizing gate and `Done when` are the whole contract.
 - No solution design in the body beyond what Step 3 check 4 required. Implementation is `/dev`'s job.
 
 ## Step 6: Confirm
@@ -128,7 +131,7 @@ Present the drafted issues as a table (title, size, files, `Done when`) and use 
 
 **Which issues should be created?** → All / Let me select / None (draft only)
 
-Skip this step in autonomous mode (`/goal`); create everything that passed the gate and print the URLs.
+Skip this step when no user is reachable (an unattended run); create everything that passed the gate and print the URLs.
 
 ## Step 7: Create
 
@@ -187,5 +190,6 @@ When `/dev` or a user finds an issue that is too large:
 |---|---|
 | `gh` not authenticated | Report; output the drafted bodies as markdown so the user can paste them |
 | Label does not exist | Create the issue without it; note the missing label |
-| `CLAUDE.md` has no Core Values | Ask the user to define them before filing feature issues; bug and security issues proceed |
+| Product policy applies but no Core Values are defined | Ask the user to define them before filing feature issues; bug and security issues proceed |
+| No product policy applies | File on the sizing gate alone; do not ask for Core Values |
 | Sizing gate cannot be judged (no codebase access) | State the assumption in `Risks / Notes`; do not silently pass the gate |
