@@ -35,7 +35,13 @@ Resolve Issue $ARGUMENTS from investigation to PR creation.
 
 **Target:** $ARGUMENTS
 
-Sibling skills (`dev-investigate`, `dig`, `decompose`, `clean-slop`, `review`, `pr`, `issue`) are invoked from the same source as this skill: if it runs as `dev` or was read from `.claude/skills/dev/SKILL.md` (synced into the project), use the bare name; otherwise (`ai-dev:dev`, or read from the plugin's copy) use `ai-dev:<name>`. From the plugin, a bare `review` resolves to the built-in `/review` (an alias of `/code-review`), and other installed plugins may ship the same bare names.
+**Standalone composition wrapper.** `/dev` fixes the order of reusable capabilities for one person running one
+issue, and owns the confirmations between them. It is not a capability: a Control Plane such as Buddy resolves the
+individual capabilities from `capabilities/manifest.json` (`coding.investigate`, `coding.clarify`,
+`coding.decompose`, `coding.implement`, `coding.cleanup`, `coding.review`, `github.pr`) and never invokes `/dev`.
+Each phase below delegates its procedure to the owning skill instead of restating it.
+
+Sibling skills (`dev-investigate`, `dig`, `decompose`, `implement-guidance`, `clean-slop`, `review`, `pr`, `issue`) are invoked from the same source as this skill: if it runs as `dev` or was read from `.claude/skills/dev/SKILL.md` (synced into the project), use the bare name; otherwise (`ai-dev:dev`, or read from the plugin's copy) use `ai-dev:<name>`. From the plugin, a bare `review` resolves to the built-in `/review` (an alias of `/code-review`), and other installed plugins may ship the same bare names.
 
 Scratch artifacts for this run go in `workspace/{issue}/` (investigation report, `review.json`). They are never staged or committed.
 
@@ -49,7 +55,7 @@ Create one tracked item per phase. Track progress with the task tools when this 
 4. "Resolve ambiguities (/dig)"
 5. "Decompose into subtasks (/decompose)"
 6. "Implement changes"
-7. "Run quality gate"
+7. "Run verification profile"
 8. "Review changes"
 9. "Commit & create PR"
 
@@ -72,7 +78,7 @@ Phase 4: Task Decomposition (/decompose)
     ↓
 Phase 5: Branch & Implement
     ↓
-Phase 6: Quality Gate (build + test + lint from CLAUDE.md)
+Phase 6: Verification (profile from rules/verification.md)
     ↓
 Phase 7: Review (/review)
     ↓
@@ -230,37 +236,17 @@ git checkout -b {branch-name}
 
 ### 5b. Implement
 
-**TDD mode** (when issue has `tdd` label, or test changes are the primary goal):
+Hand the confirmed task list to the `implement-guidance` capability, which owns the implementation loop, TDD mode,
+per-subtask Verify, and stop conditions:
+
 ```
-LOOP for each subtask:
-  1. Mark in_progress
-  2. Read target code
-  3. Write/update tests FIRST (use test-writer agent if needed)
-  4. Run tests — confirm they FAIL (red)
-  5. Implement the minimal code to pass
-  6. Run tests — confirm they PASS (green)
-  7. Refactor if needed (keep tests passing)
-  8. Mark completed
+Skill("implement-guidance", args: "{task list from Phase 4, with Verify commands and dependencies}. Mode: {tdd | standard}")
 ```
 
-**Standard mode** (default):
-```
-LOOP for each subtask (in dependency order):
-  1. Mark in_progress
-  2. Read target code (MUST read before editing)
-  3. Implement changes (Edit/Write)
-  4. Self-verify (run Verify step from task description)
-  5. Mark completed
-
-INTERRUPT conditions:
-  - Unexpected problem → AskUserQuestion (autonomous: see Stop Conditions)
-  - 3 consecutive failures → STOP and report
-```
-
-Guidelines:
-- Follow existing code patterns (read surrounding code first)
-- Follow CLAUDE.md conventions
-- Keep changes minimal and focused
+Mark each tracked subtask as its Verify step passes. On its stop conditions: ask the user (autonomous mode: see
+Stop Conditions). A `needs-*` status sends the run back to the phase that owns it (investigation, `/dig`, or
+`/decompose`) instead of widening the implementation. When a test needs substantial new coverage, `/dev` may use
+the `test-writer` agent before re-running implement-guidance's Verify step.
 
 ### 5c. Clean Up Comments
 
@@ -274,13 +260,27 @@ Mark task 6 `completed`.
 
 ---
 
-## Phase 6: Quality Gate
+## Phase 6: Verification
 
 Mark task 7 `in_progress`.
 
-Run the project's build, test, and lint commands as defined in CLAUDE.md's Commands section.
+Select and run the verification profile per [rules/verification.md](../../rules/verification.md) (`coding.verify`):
 
-If CLAUDE.md doesn't specify commands, detect from project files:
+1. Classify the change from its semantics and the boundaries it touches — signals such as `docs-only`,
+   `behavior-change`, `crosses-module-boundary`, `auth`, `public-contract` — into `fast`, `standard`, or
+   `highRisk`. Diff size never lowers the profile.
+2. Run the tiers that profile requires (`focused`, `affected-module`, `integration`, `full`) plus the issue's
+   `Done when` commands exactly as written. Delegate a tier to CI only under the rule's delegation contract. No PR
+   exists yet, so a delegated tier is `pending` here; it is settled in Phase 8c, never assumed.
+3. Before each local command, compute its evidence key and consult `workspace/{issue}/evidence.json` per
+   [rules/verification.md → Evidence reuse](../../rules/verification.md) — `verification-gate.py key` and `reuse`
+   when available. Run the command only on `run`; append every passing local run to the store.
+4. Record the result as the rule's verification record, with each check's `evidence_key` and `reuse` decision; when
+   `scripts/verification-gate.py` is available, run its `check` on the record and treat a non-zero exit as a failed
+   gate.
+
+Resolve each tier's command from repository guidance (`AGENTS.md`, then `CLAUDE.md` Commands); repository
+requirements override the profile defaults. If it doesn't specify commands, detect from project files:
 - `build.gradle.kts` / `gradlew` → `./gradlew build`, `./gradlew test`, `./gradlew detekt`
 - `package.json` → `npm test`, `npm run lint`
 - `Cargo.toml` → `cargo build`, `cargo test`, `cargo clippy`
@@ -290,7 +290,7 @@ If CLAUDE.md doesn't specify commands, detect from project files:
 ### Failure Handling
 1. Analyze the failure
 2. Fix the issue
-3. Re-run the failing check
+3. Re-run the failing check and the surface the fix invalidated ([rules/verification.md → Re-verification](../../rules/verification.md))
 4. **Maximum 3 fix attempts** — if still failing, report to user and stop
 
 Mark task 7 `completed`.
@@ -301,7 +301,7 @@ Mark task 7 `completed`.
 
 Mark task 8 `in_progress`.
 
-Use the `/review` skill to run multi-agent parallel review.
+Use the `/review` skill, passing the Phase 6 verification profile and signals so reviewer count follows the same risk classification.
 
 ### Structured Review Output
 
@@ -335,7 +335,7 @@ After the review completes, write `workspace/{issue}/review.json`:
 
 ### Review Result Handling
 - **Critical**: STOP. Report to user. Do NOT proceed.
-- **Warning**: Fix, re-run the comment cleanup (5c) and the Quality Gate (Phase 6). Mark the finding `"resolved": true` and recompute `counts` and `status` from the findings still unresolved.
+- **Warning**: Fix, re-run the comment cleanup (5c), and re-verify only the surface the fix invalidated per [rules/verification.md → Re-verification](../../rules/verification.md) — not the whole Phase 6 gate. Mark the finding `"resolved": true` and recompute `counts` and `status` from the findings still unresolved.
 - **Suggestion**: Note but don't block
 
 Mark task 8 `completed`.
@@ -346,7 +346,7 @@ Mark task 8 `completed`.
 
 Show the user:
 1. Summary of all changes
-2. Quality gate results
+2. Verification profile, signals, and results per tier
 3. Review findings and resolutions
 4. Proposed commit message (single line, no AI stamps)
 
@@ -374,13 +374,23 @@ Skill("pr", args: "Issue #{issue}. Base: {base}. Assumptions: {autonomous-mode d
 
 Report PR URL to the user.
 
+### 8c. Settle CI-delegated tiers
+
+Skip this when Phase 6 delegated nothing. Otherwise run `gh pr checks --required {PR_URL}` and, for each delegated
+tier, find the check named in its verification record:
+
+- Listed as required and passed on the PR's `headRefOid` → mark it `required: true`, set its `head_sha`, and re-run
+  `scripts/verification-gate.py check` when available
+- Pending → report verification as `pending-ci` with the check name; do not call the change verified
+- Failed, absent, or not required → the tier is unmet: run it locally on this head or report the failure
+
 Mark task 9 `completed`.
 
 ---
 
 ## Autonomous Mode (/goal)
 
-When the user invokes `/dev` under a `/goal`, the workflow runs autonomously. **Do not wrap the raw request in `/goal`** — build the condition from the repo per [rules/ai-ops.md → /goal for Autonomous Execution](../../rules/ai-ops.md). The `/goal` evaluator cannot run tools; it only reads what is printed in the transcript, so the condition must name real commands and their exact success output.
+When the user invokes `/dev` under a `/goal`, the workflow runs autonomously. **Do not wrap the raw request in `/goal`** — build the condition from the repo per [standalone/orchestration.md → /goal for Autonomous Execution](../../standalone/orchestration.md) (synced projects: `.claude/rules/standalone-orchestration.md`). The `/goal` evaluator cannot run tools; it only reads what is printed in the transcript, so the condition must name real commands and their exact success output.
 
 Condition template (resolve `{test command}` and `{success signal}` from CLAUDE.md's Commands section — never guess):
 
@@ -401,7 +411,8 @@ In autonomous mode:
 - **Print `review.json` counts as text** after Phase 7 — the evaluator cannot read files
 - After the final commit and PR creation, re-run the issue's proof command against that exact `HEAD`. Record the
   command, exit code, expected success signal, a short output excerpt containing the signal, and `git rev-parse
-  HEAD` in the structured return. A pre-commit or pre-review test run does not verify the PR head.
+  HEAD` in the structured return. Evidence reuse does not apply to this proof: the `/goal` evaluator reads only
+  output printed after the last change.
 - **If the turn cap is reached, stop on that turn** and print the blocker summary; do not keep working past the cap
 
 ### Structured Return Value
@@ -414,11 +425,15 @@ On completion, output a structured result for callers (e.g., `/dev-all`):
   "status": "success | failed | blocked",
   "pr_url": "https://github.com/owner/repo/pull/N",
   "verification": {
+    "profile": "fast | standard | highRisk",
+    "signals": ["{signals from rules/verification.md}"],
+    "checks": ["{verification record checks, each bound to head_sha, with evidence_key and reuse decision}"],
     "command": "{exact command from CLAUDE.md or the issue}",
     "exit_code": 0,
     "success_signal": "{exact observed signal}",
     "output_excerpt": "{bounded excerpt containing the signal}",
-    "head_sha": "{git rev-parse HEAD after the final commit}"
+    "head_sha": "{git rev-parse HEAD after the final commit}",
+    "pending_ci": ["{required check names a delegated tier still waits on; empty when settled}"]
   },
   "review_json": "{absolute path of workspace/{issue}/review.json}",
   "assumptions": ["{question → chosen default, evidence}"],
@@ -453,5 +468,5 @@ Stop and report — never take a default — on:
 | Tests fail (≤3 attempts) | Fix and retry |
 | Tests fail (>3 attempts) | Report to user, stop |
 | Critical review finding | Report to user, stop |
-| Warning review finding | Fix, re-run 5c and the quality gate |
+| Warning review finding | Fix, re-run 5c, re-verify the invalidated surface |
 | Git/PR creation fails | Report error, stop |
