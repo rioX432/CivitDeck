@@ -29,6 +29,11 @@ comes back on evidence, and keep the whole thing resumable from files.
 
 **Arguments:** $ARGUMENTS — a goal, or a path to an existing orchestration directory to resume.
 
+This is a **standalone Control Plane wrapper**. Its admission, ordering, WIP, model, retry, and resume rules
+come from the standalone orchestration policy ([standalone/orchestration.md](../../standalone/orchestration.md);
+synced projects load it as `.claude/rules/standalone-orchestration.md`). When a Control Plane such as Buddy assigns
+the work, it owns those decisions: do not run this skill inside that work.
+
 The session running this skill is the **lead**. It owns the plan, the gates, the synthesis, and every
 authorization decision. It does not do the workers' reading and editing itself; that is the point.
 
@@ -135,7 +140,7 @@ No fixed JSON is required, but the four elements above are not optional.
 Also set per lane:
 
 - **Model tier** — `haiku` for mechanical collection, `sonnet` for review and analysis, `opus` for long-horizon
-  implementation and contract design, per `rules/ai-ops.md → Model Selection for Agents`. Treat provider tier
+  implementation and contract design, per the standalone policy's Model Selection for Agents. Treat provider tier
   names as adapter examples and keep the user's model
   for the lead. Record a model only when the host actually shows it; never infer it from output style.
 - **A turn or tool budget** (`maxTurns`, or a stated cap in the brief) and what to do when it runs out: report the
