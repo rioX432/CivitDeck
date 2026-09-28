@@ -360,7 +360,7 @@ Mark task 9 `completed`.
 
 ## Autonomous Mode (/goal)
 
-When the user invokes `/dev` under a `/goal`, the workflow runs autonomously. **Do not wrap the raw request in `/goal`** — build the condition from the repo per [rules/ai-ops.md → /goal for Autonomous Execution](../../rules/ai-ops.md). The `/goal` evaluator cannot run tools; it only reads what is printed in the transcript, so the condition must name real commands and their exact success output.
+When the user invokes `/dev` under a `/goal`, the workflow runs autonomously. **Do not wrap the raw request in `/goal`** — build the condition from the repo per [standalone/orchestration.md → /goal for Autonomous Execution](../../standalone/orchestration.md) (synced projects: `.claude/rules/standalone-orchestration.md`). The `/goal` evaluator cannot run tools; it only reads what is printed in the transcript, so the condition must name real commands and their exact success output.
 
 Condition template (resolve `{test command}` and `{success signal}` from CLAUDE.md's Commands section — never guess):
 

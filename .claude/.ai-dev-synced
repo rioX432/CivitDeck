@@ -36,7 +36,8 @@
     "coding-conventions.md",
     "design-personality.md",
     "l10n-conventions.md",
-    "mobile-conventions.md"
+    "mobile-conventions.md",
+    "standalone-orchestration.md"
   ],
   "adapters": [
     "claude",
