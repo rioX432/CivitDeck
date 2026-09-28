@@ -15,6 +15,11 @@ Process multiple GitHub Issues sequentially. Each issue runs `/dev` in an isolat
 
 **Arguments:** $ARGUMENTS
 
+This is a **standalone Control Plane wrapper**. Its admission, ordering, WIP, model, retry, and resume rules
+come from the standalone orchestration policy ([standalone/orchestration.md](../../standalone/orchestration.md);
+synced projects load it as `.claude/rules/standalone-orchestration.md`). When a Control Plane such as Buddy assigns
+the work, it owns those decisions: do not run this skill inside that work.
+
 ## Why Per-Issue (not Single Branch)?
 
 Each issue gets its own branch, PR, and merge cycle:
@@ -25,28 +30,38 @@ Each issue gets its own branch, PR, and merge cycle:
 
 ---
 
-## Step 0: Core Value Check (GATE)
+## Step 0: Product Policy Check
 
-1. Read the project's `CLAUDE.md` and look for `## Core Values` section
-2. **If missing**: Warn the user that Core Values are undefined. Ask if they want to:
+Resolve whether [the product policy](../../policies/core-value-filter.md#when-this-policy-applies) applies. If it does
+not, skip this step and every Core Value / Won't Do item below.
+
+1. Read the repository's `## Core Values`
+2. **If the policy applies but Core Values are missing**: warn the user and ask whether to:
    - Define Core Values now (recommended)
-   - Proceed without the filter (not recommended — risk of feature bloat)
+   - Proceed without the filter (feature issues lose the one-step test)
 3. If user chooses to proceed without, log a warning in the final report
 
 ---
 
 ## Step 1: Resolve Target Issues
 
-**If `$ARGUMENTS` is provided:** Extract issue numbers.
-**If empty:** Fetch all open issues:
+Admit only an explicit set, per the standalone policy's Admission section:
+
+**If `$ARGUMENTS` is provided:** Extract issue numbers. Those, and only those, are admitted.
+**If empty:** Admit open issues carrying the ready label — `ready`, or the label named under `## Ready label` in
+`AGENTS.md` / `CLAUDE.md`:
 ```bash
-gh issue list --state open --json number,title,labels,body --limit 100
+gh issue list --state open --label "{ready label}" --json number,title,labels,body --limit 100
 ```
+
+If the label does not exist or no open issue carries it, **stop**: report that nothing is admitted and ask for issue
+IDs or for issues to be labeled. Never fall back to every open issue — an unlabeled backlog is not a work order.
 
 ### 1a. Filter Issues
 
 - **Skip issues labeled `won't`** — these are explicitly decided not to implement
-- **Skip issues listed in CLAUDE.md `## Won't Do`** — cross-reference issue titles
+- **Skip issues labeled `epic`** — work their children instead
+- **Skip issues listed in `## Won't Do`** (where the product policy applies) — cross-reference issue titles
 
 ---
 
@@ -81,7 +96,7 @@ Present:
 2. Dependencies detected
 3. Skipped issues (with reasons — including `won't` label and Won't Do matches)
 4. Estimated scope per issue
-5. **Core Value alignment per issue** (if Core Values are defined)
+5. **Core Value alignment per issue** (where the product policy applies)
 
 Ask user to confirm before proceeding.
 
@@ -147,6 +162,7 @@ After the sub-agent completes, validate the result before proceeding to merge. *
 1. Read the review.json at the absolute path in the sub-agent's return value (`review_json` — it lives in the sub-agent's worktree, not in this checkout). If the worktree is gone, use the review.json contents printed in the return value. Neither present means the issue failed
 2. Confirm the PR independently: `gh pr view {PR_URL} --json state,headRefName,headRefOid` must show an open PR for the issue branch
 3. Validate `verification`: command and success signal are non-empty, exit code is 0, the bounded output excerpt contains the exact signal, and `head_sha` equals the PR's `headRefOid`. Missing or mismatched evidence fails the issue; do not accept narrated test success
+3b. Validate that `verification.checks` satisfy `verification.profile` per [rules/verification.md](../../rules/verification.md) — with `scripts/verification-gate.py check` when available. A `highRisk` change with only focused checks fails the issue; a CI-delegated tier counts only once its required check passes on the same head
 4. Run `gh pr checks --required {PR_URL}`. Failed or pending required checks block merge. If the repository has no required checks, record that fact and rely only on the head-bound proof above; do not call the absence of CI a pass
 5. Parse the sub-agent's return value for review status and cross-check it against review.json; on mismatch, treat the issue as failed
 6. Carry the sub-agent's `assumptions` and verification evidence into the final report
