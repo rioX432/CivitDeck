@@ -15,7 +15,13 @@ Resolve Issue $ARGUMENTS from investigation to PR creation.
 
 **Target:** $ARGUMENTS
 
-Sibling skills (`dev-investigate`, `dig`, `decompose`, `clean-slop`, `review`, `pr`, `issue`) are invoked from the same source as this skill: if it runs as `dev` or was read from `.claude/skills/dev/SKILL.md` (synced into the project), use the bare name; otherwise (`ai-dev:dev`, or read from the plugin's copy) use `ai-dev:<name>`. From the plugin, a bare `review` resolves to the built-in `/review` (an alias of `/code-review`), and other installed plugins may ship the same bare names.
+**Standalone composition wrapper.** `/dev` fixes the order of reusable capabilities for one person running one
+issue, and owns the confirmations between them. It is not a capability: a Control Plane such as Buddy resolves the
+individual capabilities from `capabilities/manifest.json` (`coding.investigate`, `coding.clarify`,
+`coding.decompose`, `coding.implement`, `coding.cleanup`, `coding.review`, `github.pr`) and never invokes `/dev`.
+Each phase below delegates its procedure to the owning skill instead of restating it.
+
+Sibling skills (`dev-investigate`, `dig`, `decompose`, `implement-guidance`, `clean-slop`, `review`, `pr`, `issue`) are invoked from the same source as this skill: if it runs as `dev` or was read from `.claude/skills/dev/SKILL.md` (synced into the project), use the bare name; otherwise (`ai-dev:dev`, or read from the plugin's copy) use `ai-dev:<name>`. From the plugin, a bare `review` resolves to the built-in `/review` (an alias of `/code-review`), and other installed plugins may ship the same bare names.
 
 Scratch artifacts for this run go in `workspace/{issue}/` (investigation report, `review.json`). They are never staged or committed.
 
@@ -210,37 +216,17 @@ git checkout -b {branch-name}
 
 ### 5b. Implement
 
-**TDD mode** (when issue has `tdd` label, or test changes are the primary goal):
+Hand the confirmed task list to the `implement-guidance` capability, which owns the implementation loop, TDD mode,
+per-subtask Verify, and stop conditions:
+
 ```
-LOOP for each subtask:
-  1. Mark in_progress
-  2. Read target code
-  3. Write/update tests FIRST (use test-writer agent if needed)
-  4. Run tests — confirm they FAIL (red)
-  5. Implement the minimal code to pass
-  6. Run tests — confirm they PASS (green)
-  7. Refactor if needed (keep tests passing)
-  8. Mark completed
+Skill("implement-guidance", args: "{task list from Phase 4, with Verify commands and dependencies}. Mode: {tdd | standard}")
 ```
 
-**Standard mode** (default):
-```
-LOOP for each subtask (in dependency order):
-  1. Mark in_progress
-  2. Read target code (MUST read before editing)
-  3. Implement changes (Edit/Write)
-  4. Self-verify (run Verify step from task description)
-  5. Mark completed
-
-INTERRUPT conditions:
-  - Unexpected problem → AskUserQuestion (autonomous: see Stop Conditions)
-  - 3 consecutive failures → STOP and report
-```
-
-Guidelines:
-- Follow existing code patterns (read surrounding code first)
-- Follow CLAUDE.md conventions
-- Keep changes minimal and focused
+Mark each tracked subtask as its Verify step passes. On its stop conditions: ask the user (autonomous mode: see
+Stop Conditions). A `needs-*` status sends the run back to the phase that owns it (investigation, `/dig`, or
+`/decompose`) instead of widening the implementation. When a test needs substantial new coverage, `/dev` may use
+the `test-writer` agent before re-running implement-guidance's Verify step.
 
 ### 5c. Clean Up Comments
 
@@ -360,7 +346,7 @@ Mark task 9 `completed`.
 
 ## Autonomous Mode (/goal)
 
-When the user invokes `/dev` under a `/goal`, the workflow runs autonomously. **Do not wrap the raw request in `/goal`** — build the condition from the repo per [rules/ai-ops.md → /goal for Autonomous Execution](../../rules/ai-ops.md). The `/goal` evaluator cannot run tools; it only reads what is printed in the transcript, so the condition must name real commands and their exact success output.
+When the user invokes `/dev` under a `/goal`, the workflow runs autonomously. **Do not wrap the raw request in `/goal`** — build the condition from the repo per [standalone/orchestration.md → /goal for Autonomous Execution](../../standalone/orchestration.md) (synced projects: `.claude/rules/standalone-orchestration.md`). The `/goal` evaluator cannot run tools; it only reads what is printed in the transcript, so the condition must name real commands and their exact success output.
 
 Condition template (resolve `{test command}` and `{success signal}` from CLAUDE.md's Commands section — never guess):
 

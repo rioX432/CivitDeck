@@ -1,7 +1,7 @@
 ---
 name: dev-all
 description: "Process a batch of issues sequentially: /dev per issue in an isolated sub-agent → review validation → CI wait → conditional merge → next. GitHub-only; requires the gh CLI."
-argument-hint: "[issue numbers, e.g. #42 #43 #44, or empty for all open issues]"
+argument-hint: "[issue numbers, e.g. #42 #43 #44, or empty for open issues labeled ready]"
 user-invocable: true
 disable-model-invocation: true
 allowed-tools:
@@ -33,6 +33,11 @@ Process multiple GitHub Issues sequentially. Each issue runs `/dev` in an isolat
 
 **Arguments:** $ARGUMENTS
 
+This is a **standalone Control Plane wrapper**. Its admission, ordering, WIP, model, retry, and resume rules
+come from the standalone orchestration policy ([standalone/orchestration.md](../../standalone/orchestration.md);
+synced projects load it as `.claude/rules/standalone-orchestration.md`). When a Control Plane such as Buddy assigns
+the work, it owns those decisions: do not run this skill inside that work.
+
 ## Why Per-Issue (not Single Branch)?
 
 Each issue gets its own branch, PR, and merge cycle:
@@ -55,15 +60,22 @@ Each issue gets its own branch, PR, and merge cycle:
 
 ## Step 1: Resolve Target Issues
 
-**If `$ARGUMENTS` is provided:** Extract issue numbers.
-**If empty:** Fetch all open issues:
+Admit only an explicit set, per the standalone policy's Admission section:
+
+**If `$ARGUMENTS` is provided:** Extract issue numbers. Those, and only those, are admitted.
+**If empty:** Admit open issues carrying the ready label — `ready`, or the label named under `## Ready label` in
+`AGENTS.md` / `CLAUDE.md`:
 ```bash
-gh issue list --state open --json number,title,labels,body --limit 100
+gh issue list --state open --label "{ready label}" --json number,title,labels,body --limit 100
 ```
+
+If the label does not exist or no open issue carries it, **stop**: report that nothing is admitted and ask for issue
+IDs or for issues to be labeled. Never fall back to every open issue — an unlabeled backlog is not a work order.
 
 ### 1a. Filter Issues
 
 - **Skip issues labeled `won't`** — these are explicitly decided not to implement
+- **Skip issues labeled `epic`** — work their children instead
 - **Skip issues listed in CLAUDE.md `## Won't Do`** — cross-reference issue titles
 
 ---
