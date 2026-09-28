@@ -50,7 +50,8 @@ Collect and report on key metrics:
 
 ### 4. Feature Prioritization (2-Axis)
 
-Score potential features on two axes:
+Score potential features on two axes (the product policy's
+[2-axis evaluation](../../policies/core-value-filter.md#feature-prioritization-2-axis-evaluation), applied to this app's data):
 
 **Axis 1: User Requests (Qualitative)**
 - Request volume (votes, mentions, reviews)
