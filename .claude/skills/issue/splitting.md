@@ -151,6 +151,6 @@ The remaining 32 low-severity violations stay in the audit report and are never 
 | Epic used as an implementation issue | No single `Done when`; the agent stops at an arbitrary point and calls it done |
 | Body is a checklist of 10 boxes | Each box is a separate outcome; the PR becomes unreviewable |
 | "Refactor `FooManager`" | No observable change means no proof of completion |
-| Splitting into steps that cannot build alone | CI is red between merges; `/dev-all` blocks |
+| Splitting into steps that cannot build alone | CI is red between merges; a batch run blocks |
 | One issue per lint hit | Tracker noise; reviewers stop reading |
 | Solution written as the goal | The agent implements the stated solution even when investigation finds a better one |
