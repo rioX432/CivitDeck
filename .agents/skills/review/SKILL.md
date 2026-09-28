@@ -34,7 +34,7 @@ If both diffs are empty and there are no untracked source files, report "nothing
 
 ## Step 2: Multi-Agent Parallel Review
 
-Launch **two review agents in parallel** (model: sonnet):
+Launch **two review agents in parallel**:
 
 ### Agent A: Bug & Logic + Security
 ```
@@ -77,7 +77,7 @@ Check `.claude/agents/` for project-specific reviewer agents (e.g., `kmp-reviewe
 
 1. Collect findings from all agents
 2. **Deduplicate**: remove findings reported by multiple agents
-3. **Verify every Critical and Warning** before it is reported: re-read the cited code and its callers and confirm the failure scenario actually occurs (concrete input or state → wrong result). Drop a finding the code refutes; downgrade one you cannot confirm to Suggestion and say so. A Critical stops `/dev` and makes `/dev-all` skip the issue, so an unverified Critical costs a whole run
+3. **Verify every Critical and Warning** before it is reported: re-read the cited code and its callers and confirm the failure scenario actually occurs (concrete input or state → wrong result). Drop a finding the code refutes; downgrade one you cannot confirm to Suggestion and say so. A Critical blocks the change for whatever workflow called this review, so an unverified Critical costs a whole run
 4. Assign final severity:
    - **Critical**: crash, data loss, security vulnerability, incorrect behavior
    - **Warning**: potential bug, performance issue, architecture violation

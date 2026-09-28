@@ -117,7 +117,7 @@ Only the children are executable. Never assign an epic to `/dev`.
 
 Rules for the body:
 
-- **`Done when` is the contract with the agent.** Resolve the command from `CLAUDE.md → Commands` or CI config — never guess one. It is reused verbatim as the `/goal` completion condition ([rules/ai-ops.md → /goal for Autonomous Execution](../../rules/ai-ops.md)), so an unverifiable `Done when` produces an unfinishable autonomous run.
+- **`Done when` is the contract with the agent.** Resolve the command from `CLAUDE.md → Commands` or CI config — never guess one. It is reused verbatim as the completion proof of an unattended run, so an unverifiable `Done when` produces an unfinishable run.
 - **`Scope: Out` is not optional.** It is what stops an agent from expanding the change.
 - **Core Value Alignment is a gate**, per [rules/ai-ops.md → Core Value Guard](../../rules/ai-ops.md). If the change fails the one-step test, propose a `## Won't Do` entry instead of an issue.
 - No solution design in the body beyond what Step 3 check 4 required. Implementation is `/dev`'s job.
@@ -128,7 +128,7 @@ Present the drafted issues as a table (title, size, files, `Done when`) and use 
 
 **Which issues should be created?** → All / Let me select / None (draft only)
 
-Skip this step in autonomous mode (`/goal`); create everything that passed the gate and print the URLs.
+Skip this step when no user is reachable (an unattended run); create everything that passed the gate and print the URLs.
 
 ## Step 7: Create
 

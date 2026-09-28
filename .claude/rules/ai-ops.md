@@ -21,27 +21,24 @@ Research flow:
 
 ## Development Flow (Issue-Driven)
 
-**All work is driven by GitHub Issues.** Pick the lowest-numbered unblocked issue and work through it.
+**All work is driven by GitHub Issues.** Work the issue that was admitted to you — by the user, a standalone
+wrapper, or a Control Plane. Choosing which issue comes next, and how many run at once, belongs to whoever admitted
+the work, not to this rule.
 
-**WIP limit: 1 issue at a time.** Finish (merge or close) the current issue before starting the next.
-
-1. `gh issue list` to find unstarted issues
-2. **Skip issues labeled `won't`** and issues labeled `epic` (work their children instead)
-3. Read the issue, understand requirements, plan implementation
-3b. **Run the sizing gate** (`/ai-dev:issue → Step 3`). An issue that fails it gets split before
-   any code is written — an oversized issue produces an unreviewable PR and an unfinishable
-   `/goal` condition
-4. **Verify Core Value alignment** — if the issue lacks a "Core Value Alignment" section, ask the user before proceeding
-5. Confirm design/plan with **Codex** (see rules/behavior.md for usage):
+1. Read the issue, understand requirements, plan implementation
+2. **Run the sizing gate** (`/ai-dev:issue → Step 3`). An issue that fails it gets split before
+   any code is written — an oversized issue produces an unreviewable PR and an unfinishable proof
+3. **Verify Core Value alignment** — if the issue lacks a "Core Value Alignment" section, ask the user before proceeding
+4. Confirm design/plan with **Codex** (see rules/behavior.md for usage):
    - **Required**: architecture changes, new patterns, migrations, security-sensitive design
    - **Optional**: complex trade-offs where existing patterns don't clearly apply
    - **Skip**: existing-pattern implementations, small bug fixes, naming, test strategy (auto-decide from codebase)
    - **Codex unavailable?** Use WebSearch to verify against official docs, document rationale in PR
-6. Implement according to plan
-7. Verify build and lint pass
-8. Run `/ai-dev:review` for self-review
-9. Fix any review findings; extract reusable insights into `docs/claude/review_points.md`
-10. Create PR (`Closes #N` in body)
+5. Implement according to plan
+6. Verify with the profile the change's risk requires ([rules/verification.md](verification.md))
+7. Run `/ai-dev:review` for self-review
+8. Fix any review findings; extract reusable insights into `docs/claude/review_points.md`
+9. Create PR (`Closes #N` in body)
 
 ## review_points.md Workflow
 - Don't copy review comments verbatim — **extract reusable prevention insights**
@@ -75,80 +72,3 @@ Next features are decided by **two axes: "User Requests" and "Metrics"**. No fea
 **Rule:** Features where both axes don't align are not implemented. Exception: crash/security fixes act on metrics alone.
 
 **Additional filter:** Even if both axes align, the feature must pass the Core Value one-step test. A popular request outside Core Value scope goes to `## Won't Do`, not the backlog.
-
-## Effort Level Selection
-
-Match effort level to task complexity:
-
-| Level | Use When |
-|---|---|
-| `high` (default) | Standard development, bug fixes, small features |
-| `xhigh` | Complex refactoring, cross-module changes, architecture decisions |
-| `max` | Critical debugging, security-sensitive code, unfamiliar large codebase |
-
-Set via `/effort xhigh` or per-agent with model selection.
-
-## Agent Teams (Parallel Development)
-
-Start with one agent. Use `/orchestrate` or Claude Code Agent Teams only when evaluation or the task structure
-shows that independent lanes will outperform one context. Every lane must have a distinct output, a non-overlapping
-write boundary (or be read-only), and no need for mid-flight coordination.
-
-| Teammate | Scope | File Access |
-|---|---|---|
-| <!-- fill per project --> | | |
-
-- **No file conflicts**: each teammate edits only its assigned paths
-- Shared API changes require one named contract owner and an integration check
-- Set concurrency, turn, tool, and retry limits; parallelism is a cost/latency trade-off, not a default
-- The lead verifies evidence and integrates results; worker self-reports do not open a completion gate
-
-## /goal for Autonomous Execution
-
-Use `/goal` to set a completion condition for unattended task execution. After each turn, a small fast evaluator model (Haiku by default) reads the condition plus the conversation and returns yes/no. **The evaluator cannot run tools — it judges only what appears as text in the transcript** `[official]`. A condition is only as good as the evidence Claude prints.
-
-Build every condition from 5 elements:
-
-| # | Element | Example fragment |
-|---|---------|------------------|
-| 1 | End state (measurable, true/false) | "every test under tests/auth passes" |
-| 2 | Proof command — must actually exist; resolve from CLAUDE.md Commands / CI config, never guess | "run `./gradlew test`" |
-| 3 | Evidence signal (exact success output) | "the summary line shows `0 failed`" |
-| 4 | Guardrail + its proof | "do not modify test files — show `git diff --stat` each turn" |
-| 5 | Stop clause **as an OR-branch of the condition** | "— or stop after 20 turns, then summarize the blocker" |
-
-Copy-paste template:
-
-```
-/goal <end state>. Prove it by, in the most recent turn, running <command> and
-showing its output contains <exact signal> — or stop after <N> turns or if
-<no-progress signal>, then summarize the blocker. Constraints: <what must not change>.
-```
-
-Rules (verified against the official docs and small evaluator probes):
-
-- **Stop clause must be OR-joined into the condition** ("… shows `0 failed` — or stop after N turns"). Written as a free-standing sentence it is never treated as a completion path and the loop outlives its cap `[tested]`
-- **Stop at the cap, on that turn, and print the blocker summary.** Overshooting the cap and stopping later can prevent the goal from ever completing `[tested]`
-- **Re-run the proof command in the most recent turn after any change.** The evaluator tracks recency on its own — an unverified change stalls the loop with "no" forever `[tested]`
-- **Evidence = actual command output in the transcript.** A narrated "tests pass" without output is not accepted; a printed test summary, `review.json` contents, or a PR URL is `[tested]`
-- Subcommands: `/goal` (status), `/goal clear` (aliases: `stop`/`off`/`reset`/`none`/`cancel`). **There is no `--tokens` flag and no `pause` subcommand**
-- Conditions can be up to 4,000 characters. Headless: `claude -p "/goal <condition>"` runs the loop to completion in one invocation `[official]`
-- `/goal` is a session-scoped Stop-hook wrapper — it is unavailable when `disableAllHooks` is set, and there is no official support for it taking effect inside an `Agent()` sub-agent prompt
-
-Anti-patterns (rewrite before use): `make the code better` (no proof), `when the tests pass` (no command named, no fresh-proof directive), `fix all the bugs` (unbounded, subjective).
-
-## Model Selection for Agents
-
-Match model capability to the sub-task instead of defaulting everything to one tier. Use supported aliases where
-the host guarantees them, but record the resolved model and date in eval results. Model behavior, availability,
-latency, and pricing are volatile; check current provider documentation instead of encoding them here.
-
-| Capability | Use for |
-|---|---|
-| Fast / low-cost | Mechanical extraction, URL checks, and bounded collection with deterministic verification |
-| Balanced | Review, analysis, test generation, and most implementation work |
-| Frontier | Long-horizon implementation, ambiguous architecture, security-sensitive reasoning, and adjudication |
-
-Prototype with the strongest justified model to establish a baseline, then use evals to determine whether a smaller
-model still meets the accuracy target. For long autonomous runs, state the outcome, boundaries, tools, evidence,
-and stop conditions up front; keep volatile facts and large references retrievable on demand.
