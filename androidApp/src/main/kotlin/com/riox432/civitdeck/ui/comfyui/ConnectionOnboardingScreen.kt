@@ -202,7 +202,10 @@ private fun failureMessage(step: OnboardingStep.Failure): String = when (step.ca
     ConnectionFailureCause.LocalNetworkDenied,
     -> stringResource(R.string.comfyui_onboarding_fail_unreachable)
     ConnectionFailureCause.Timeout -> stringResource(R.string.comfyui_onboarding_fail_timeout)
-    ConnectionFailureCause.Tls -> stringResource(R.string.comfyui_onboarding_fail_tls)
+    ConnectionFailureCause.Tls,
+    ConnectionFailureCause.CertificateUnconfirmed,
+    ConnectionFailureCause.CertificateChanged,
+    -> stringResource(R.string.comfyui_onboarding_fail_tls)
     ConnectionFailureCause.Http,
     ConnectionFailureCause.AuthRequired,
     -> stringResource(

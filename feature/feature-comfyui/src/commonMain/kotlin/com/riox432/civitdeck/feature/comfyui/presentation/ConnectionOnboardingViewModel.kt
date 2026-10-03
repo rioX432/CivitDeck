@@ -37,11 +37,15 @@ sealed interface OnboardingStep {
     /** The connection succeeded and was persisted. */
     data class Success(val connection: ComfyUIConnection, val stats: SystemStats?) : OnboardingStep
 
-    /** The connection failed; [cause] gives an actionable hint. */
+    /**
+     * The connection failed; [cause] gives an actionable hint. [presentedSha256] is the
+     * fingerprint the server presented when [cause] asks the user to confirm a certificate.
+     */
     data class Failure(
         val connection: ComfyUIConnection,
         val cause: ConnectionFailureCause,
         val httpStatus: Int?,
+        val presentedSha256: String? = null,
     ) : OnboardingStep
 }
 
@@ -142,6 +146,27 @@ class ConnectionOnboardingViewModel(
         testAndSave(failure.connection)
     }
 
+    /**
+     * Trusts the certificate the server presented in the current certificate failure: tests again
+     * with its fingerprint as the pin and, on success, saves the connection with that pin.
+     * No-op unless the current step is such a failure.
+     */
+    fun onTrustCertificate() {
+        val failure = _uiState.value.step as? OnboardingStep.Failure ?: return
+        if (failure.cause !in CERTIFICATE_CAUSES) return
+        val presented = failure.presentedSha256 ?: return
+        testAndSave(failure.connection.copy(tlsCertSha256 = presented))
+    }
+
+    /**
+     * Re-tests a saved connection with its stored pin, so a changed or unconfirmed certificate
+     * surfaces as a failure the user can confirm with [onTrustCertificate].
+     */
+    fun onReviewCertificate(saved: ComfyUIConnection) {
+        scanJob?.cancel()
+        testAndSave(saved)
+    }
+
     private fun testAndSave(connection: ComfyUIConnection) {
         testJob?.cancel()
         _uiState.update { it.copy(step = OnboardingStep.Testing(connection)) }
@@ -150,7 +175,12 @@ class ConnectionOnboardingViewModel(
                 is ConnectionTestResult.Success -> persist(connection, result.stats)
                 is ConnectionTestResult.Failure -> _uiState.update {
                     it.copy(
-                        step = OnboardingStep.Failure(connection, result.cause, result.httpStatus),
+                        step = OnboardingStep.Failure(
+                            connection = connection,
+                            cause = result.cause,
+                            httpStatus = result.httpStatus,
+                            presentedSha256 = result.presentedSha256,
+                        ),
                     )
                 }
             }
@@ -169,5 +199,12 @@ class ConnectionOnboardingViewModel(
         _uiState.update {
             it.copy(step = OnboardingStep.Failure(connection, ConnectionFailureCause.Unknown, null))
         }
+    }
+
+    private companion object {
+        val CERTIFICATE_CAUSES = setOf(
+            ConnectionFailureCause.CertificateUnconfirmed,
+            ConnectionFailureCause.CertificateChanged,
+        )
     }
 }

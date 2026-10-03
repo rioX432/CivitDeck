@@ -145,6 +145,100 @@ class ConnectionOnboardingViewModelTest {
     }
 
     @Test
+    fun unconfirmed_certificate_then_trust_saves_connection_with_the_presented_pin() = runTest(dispatcher) {
+        val repo = FakeConnectionRepository()
+        val tester = PinningFakeTester(serverSha256 = SERVER_PIN)
+        val vm = createViewModel(repository = repo, tester = tester)
+
+        vm.onManualSubmit("PC", "10.0.0.9", DEFAULT_PORT, useHttps = true, acceptSelfSigned = true)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val failure = vm.uiState.value.step
+        assertIs<OnboardingStep.Failure>(failure)
+        assertEquals(ConnectionFailureCause.CertificateUnconfirmed, failure.cause)
+        assertEquals(SERVER_PIN, failure.presentedSha256)
+        assertTrue(repo.saved.isEmpty())
+
+        vm.onTrustCertificate()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val success = vm.uiState.value.step
+        assertIs<OnboardingStep.Success>(success)
+        assertEquals(SERVER_PIN, tester.tested.last().tlsCertSha256)
+        assertEquals(1, repo.saved.size)
+        assertEquals(SERVER_PIN, repo.saved.single().tlsCertSha256)
+        assertEquals(success.connection.id, repo.activatedId)
+    }
+
+    @Test
+    fun review_of_saved_connection_with_changed_certificate_reports_new_fingerprint() = runTest(dispatcher) {
+        val repo = FakeConnectionRepository()
+        val vm = createViewModel(repository = repo, tester = PinningFakeTester(serverSha256 = NEW_SERVER_PIN))
+        val saved = ComfyUIConnection(
+            id = SAVED_ID,
+            name = "PC",
+            hostname = "10.0.0.9",
+            useHttps = true,
+            acceptSelfSigned = true,
+            tlsCertSha256 = SERVER_PIN,
+        )
+
+        vm.onReviewCertificate(saved)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val failure = vm.uiState.value.step
+        assertIs<OnboardingStep.Failure>(failure)
+        assertEquals(ConnectionFailureCause.CertificateChanged, failure.cause)
+        assertEquals(NEW_SERVER_PIN, failure.presentedSha256)
+        assertTrue(repo.saved.isEmpty())
+
+        vm.onTrustCertificate()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertIs<OnboardingStep.Success>(vm.uiState.value.step)
+        assertEquals(SAVED_ID, repo.saved.single().id)
+        assertEquals(NEW_SERVER_PIN, repo.saved.single().tlsCertSha256)
+    }
+
+    @Test
+    fun review_of_saved_connection_with_matching_pin_succeeds() = runTest(dispatcher) {
+        val repo = FakeConnectionRepository()
+        val vm = createViewModel(repository = repo, tester = PinningFakeTester(serverSha256 = SERVER_PIN))
+        val saved = ComfyUIConnection(
+            id = SAVED_ID,
+            name = "PC",
+            hostname = "10.0.0.9",
+            useHttps = true,
+            acceptSelfSigned = true,
+            tlsCertSha256 = SERVER_PIN,
+        )
+
+        vm.onReviewCertificate(saved)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertIs<OnboardingStep.Success>(vm.uiState.value.step)
+        assertEquals(SERVER_PIN, repo.saved.single().tlsCertSha256)
+    }
+
+    @Test
+    fun trust_certificate_is_ignored_for_other_failures() = runTest(dispatcher) {
+        val tester = FakeTester(ConnectionTestResult.Failure(ConnectionFailureCause.Tls))
+        val repo = FakeConnectionRepository()
+        val vm = createViewModel(repository = repo, tester = tester)
+        vm.onManualSubmit("PC", "10.0.0.9", DEFAULT_PORT, useHttps = true, acceptSelfSigned = true)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        tester.result = ConnectionTestResult.Success(null)
+        vm.onTrustCertificate()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val step = vm.uiState.value.step
+        assertIs<OnboardingStep.Failure>(step)
+        assertEquals(ConnectionFailureCause.Tls, step.cause)
+        assertTrue(repo.saved.isEmpty())
+    }
+
+    @Test
     fun choose_method_resets_step() = runTest(dispatcher) {
         val vm = createViewModel()
         vm.onStartScan()
@@ -183,7 +277,32 @@ class ConnectionOnboardingViewModelTest {
 
     private companion object {
         const val DEFAULT_PORT = 8188
+        const val SAVED_ID = 7L
+        val SERVER_PIN = "a".repeat(64)
+        val NEW_SERVER_PIN = "b".repeat(64)
     }
+}
+
+/**
+ * Answers like the pinned tester against a server presenting [serverSha256]: an unpinned
+ * self-signed HTTPS connection is unconfirmed, a different pin is a changed certificate.
+ */
+private class PinningFakeTester(private val serverSha256: String) : ComfyUIConnectionTester {
+    val tested = mutableListOf<ComfyUIConnection>()
+
+    override suspend fun test(connection: ComfyUIConnection): ConnectionTestResult {
+        tested += connection
+        val pin = connection.tlsCertSha256
+        return when {
+            !(connection.useHttps && connection.acceptSelfSigned) -> ConnectionTestResult.Success(null)
+            pin == null -> certificateFailure(ConnectionFailureCause.CertificateUnconfirmed)
+            pin != serverSha256 -> certificateFailure(ConnectionFailureCause.CertificateChanged)
+            else -> ConnectionTestResult.Success(null)
+        }
+    }
+
+    private fun certificateFailure(cause: ConnectionFailureCause) =
+        ConnectionTestResult.Failure(cause, presentedSha256 = serverSha256)
 }
 
 private class FakeDiscovery(private val servers: List<DiscoveredServer>) : ServerDiscoveryRepository {
