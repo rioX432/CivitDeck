@@ -17,6 +17,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Deterministic QA foundation for the discovery flow — base-URL-injectable E2E seam, recorded CivitAI fixtures, stable discovery test tags, a semantic golden-query top-K test, and a Desktop Compose smoke test (PoC, not CI-gated) (#990, #998)
 - Semantic corpus-index spike decision doc and a `SigLipTokenizer` HF-parity test (#989, #996)
 - `ComfyUIGenerationViewModel.applyPrefill` fills the generation form from `ComfyUIGenerationParams`, selecting the requested checkpoint by file name even when the server list loads afterwards; sampler and scheduler are intentionally not applied (#1038)
+- `ComfyUIServerTrust` and `createComfyUIHttpClient(trust, timeoutConfig)` — Android/JVM ComfyUI clients can accept only the server whose leaf certificate matches a stored SHA-256 pin and record the fingerprint the server presented; iOS keeps system trust for now (#1118)
 
 ### Changed
 
