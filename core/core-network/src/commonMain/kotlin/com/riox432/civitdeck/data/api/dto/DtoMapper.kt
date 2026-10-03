@@ -30,6 +30,7 @@ fun ModelResponse.toDomain(): Model = Model(
     stats = stats?.toDomain() ?: ModelStats(0, 0, 0, 0, 0.0),
     modelVersions = modelVersions.map { it.toDomain() },
     source = ModelSource.CIVITAI,
+    hasActivePaidAccess = hasActivePaidAccess,
 )
 
 fun ModelVersionDto.toDomain(): ModelVersion = ModelVersion(

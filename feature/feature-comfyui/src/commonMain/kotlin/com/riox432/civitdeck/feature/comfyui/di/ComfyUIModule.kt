@@ -239,7 +239,7 @@ val comfyuiModule = module {
     }
 
     // ViewModels
-    viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { ComfyUISettingsViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel {
         ConnectionOnboardingViewModel(
             scanForServers = get(),

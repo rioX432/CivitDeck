@@ -16,6 +16,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnect
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSystemStatsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIConnectionsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ParseConnectionUrlUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ScanForServersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
@@ -59,6 +60,7 @@ class ComfyUISettingsViewModel(
     private val scanForServers: ScanForServersUseCase,
     private val fetchSystemStats: FetchSystemStatsUseCase,
     private val ntfyService: NtfySubscriptionService,
+    private val parseConnectionUrl: ParseConnectionUrlUseCase,
 ) : ViewModel() {
 
     private val _mutableState = MutableStateFlow(ComfyUISettingsUiState())
@@ -90,6 +92,11 @@ class ComfyUISettingsViewModel(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(SUBSCRIBE_TIMEOUT), ComfyUISettingsUiState())
 
+    /**
+     * [hostname] may be a bare host or a pasted URL; a scheme or port written in it wins over
+     * [port] and [useHttps]. Text that cannot be parsed is saved as entered, and the connection
+     * test reports the failure, since the add/edit dialogs have no error state.
+     */
     fun onSaveConnection(
         name: String,
         hostname: String,
@@ -101,12 +108,16 @@ class ComfyUISettingsViewModel(
     ) {
         viewModelScope.launch {
             val editing = _mutableState.value.editingConnection
+            val parsed = parseConnectionUrl.parseManualEntry(hostname, port, useHttps)
+            // A blank name field makes the dialogs pass the raw host text as the name, which
+            // would otherwise list a pasted URL verbatim.
+            val savedName = if (parsed != null && (name.isBlank() || name == hostname)) parsed.hostname else name
             val connection = ComfyUIConnection(
                 id = editing?.id ?: 0,
-                name = name,
-                hostname = hostname,
-                port = port,
-                useHttps = useHttps,
+                name = savedName,
+                hostname = parsed?.hostname ?: hostname,
+                port = parsed?.port ?: port,
+                useHttps = parsed?.useHttps ?: useHttps,
                 acceptSelfSigned = acceptSelfSigned,
                 ntfyServerUrl = ntfyServerUrl?.takeIf { it.isNotBlank() },
                 ntfyTopic = ntfyTopic?.takeIf { it.isNotBlank() },

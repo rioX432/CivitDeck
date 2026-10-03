@@ -20,6 +20,8 @@ data class ModelResponse(
     val creator: ModelCreatorDto? = null,
     val stats: ModelStatsDto? = null,
     val modelVersions: List<ModelVersionDto> = emptyList(),
+    // Not in the public API reference; absent from older responses and cached list JSON.
+    val hasActivePaidAccess: Boolean = false,
 )
 
 @Serializable
