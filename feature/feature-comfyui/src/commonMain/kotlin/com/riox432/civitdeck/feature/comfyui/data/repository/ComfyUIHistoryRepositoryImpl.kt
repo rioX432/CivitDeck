@@ -22,7 +22,7 @@ class ComfyUIHistoryRepositoryImpl(
 
     override fun fetchHistory(): Flow<List<ComfyUIGeneratedImage>> = flow {
         ensureApiConfigured()
-        val historyMap = api.getAllHistory()
+        val historyMap = api.getRecentHistory(HISTORY_PAGE_SIZE)
         val images = historyMap.flatMap { (promptId, entry) ->
             entry.toGeneratedImages(promptId)
         }
@@ -117,5 +117,10 @@ class ComfyUIHistoryRepositoryImpl(
             ?: throw DomainException.ConnectionException("No active ComfyUI connection")
         val scheme = if (active.useHttps) "https" else "http"
         api.setBaseUrl("$scheme://${active.hostname}:${active.port}")
+    }
+
+    private companion object {
+        /** Same page size as ComfyUI's own frontend uses for its history list. */
+        const val HISTORY_PAGE_SIZE = 200
     }
 }

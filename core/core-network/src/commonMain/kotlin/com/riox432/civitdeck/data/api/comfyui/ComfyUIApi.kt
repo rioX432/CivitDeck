@@ -9,6 +9,7 @@ import io.ktor.client.plugins.ResponseException
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
@@ -158,17 +159,21 @@ class ComfyUIApi(
     }
 
     /**
-     * Get all generation history: GET /history
-     * Returns a map of prompt_id -> HistoryEntry for all completed prompts.
+     * Get the newest generation history: GET /history?max_items={maxItems}
+     * Returns a map of prompt_id -> HistoryEntry for the newest [maxItems] prompts, oldest first
+     * among them (ComfyUI counts back from the end when no offset is given).
      * @throws ResponseException on HTTP error response
      * @throws SerializationException on deserialization failure
      * @throws HttpRequestTimeoutException on request timeout
      * @throws ConnectTimeoutException on connection timeout
      */
-    suspend fun getAllHistory(): Map<String, HistoryEntry> = logAndRethrow("getAllHistory") {
-        val text = client.get("${_baseUrl.value}/history").bodyAsText()
-        json.decodeFromString(text)
-    }
+    suspend fun getRecentHistory(maxItems: Int): Map<String, HistoryEntry> =
+        logAndRethrow("getRecentHistory (maxItems=$maxItems)") {
+            val text = client.get("${_baseUrl.value}/history") {
+                parameter("max_items", maxItems)
+            }.bodyAsText()
+            json.decodeFromString(text)
+        }
 
     /**
      * Get generation history: GET /history/{promptId}
