@@ -403,7 +403,8 @@ extension ModelSearchScreen { // MARK: - Filter Chips
     }
     var baseModelFilterChips: some View {
         filterChipRow {
-            ForEach(SearchFilter.baseModelOptions, id: \.self) { baseModel in
+            let options = BaseModel.companion.filterOptions(selected: viewModel.selectedBaseModels)
+            ForEach(options, id: \.self) { baseModel in
                 ChipButton(label: baseModel.displayName, isSelected: viewModel.selectedBaseModels.contains(baseModel)) {
                     viewModel.onBaseModelToggled(baseModel)
                 }

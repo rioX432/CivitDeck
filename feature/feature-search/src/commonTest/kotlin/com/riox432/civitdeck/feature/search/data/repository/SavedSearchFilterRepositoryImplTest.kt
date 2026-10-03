@@ -94,7 +94,7 @@ class SavedSearchFilterRepositoryImplTest {
         assertEquals(ModelType.LORA, result.selectedType)
         assertEquals(SortOrder.Newest, result.selectedSort)
         assertEquals(TimePeriod.Week, result.selectedPeriod)
-        assertEquals(setOf(BaseModel.Pony, BaseModel.SDXL10), result.selectedBaseModels)
+        assertEquals(setOf(BaseModel("Pony"), BaseModel("SDXL 1.0")), result.selectedBaseModels)
         assertEquals(NsfwFilterLevel.Soft, result.nsfwFilterLevel)
         assertTrue(result.isFreshFindEnabled)
         assertEquals(listOf("gore", "violence"), result.excludedTags)
@@ -147,7 +147,7 @@ class SavedSearchFilterRepositoryImplTest {
             selectedType = ModelType.Checkpoint,
             selectedSort = SortOrder.MostDownloaded,
             selectedPeriod = TimePeriod.AllTime,
-            selectedBaseModels = setOf(BaseModel.SD15),
+            selectedBaseModels = setOf(BaseModel("SD 1.5")),
             nsfwFilterLevel = NsfwFilterLevel.Off,
             isFreshFindEnabled = false,
             excludedTags = listOf("gore"),
@@ -177,5 +177,33 @@ class SavedSearchFilterRepositoryImplTest {
         repo.delete(1L)
 
         assertEquals(listOf(2L), dao.entities.map { it.id })
+    }
+
+    @Test
+    fun observeAll_keeps_base_models_outside_the_default_options() = runTest {
+        val dao = FakeDao()
+        dao.entities.add(
+            SavedSearchFilterEntity(id = 1, name = "Krea", selectedBaseModels = "Krea 2,SVD", savedAt = 1L),
+        )
+        val repo = SavedSearchFilterRepositoryImpl(dao)
+
+        val result = repo.observeAll().first().first()
+
+        assertEquals(setOf(BaseModel("Krea 2"), BaseModel("SVD")), result.selectedBaseModels)
+    }
+
+    @Test
+    fun observeAll_skips_blank_base_model_values_and_save_writes_the_rest_back() = runTest {
+        val dao = FakeDao()
+        dao.entities.add(
+            SavedSearchFilterEntity(id = 1, name = "Anima", selectedBaseModels = "Anima, ,", savedAt = 1L),
+        )
+        val repo = SavedSearchFilterRepositoryImpl(dao)
+
+        val loaded = repo.observeAll().first().single()
+        repo.save(loaded.copy(id = 2, savedAt = 2L))
+
+        assertEquals(setOf(BaseModel("Anima")), loaded.selectedBaseModels)
+        assertEquals("Anima", dao.entities.single { it.id == 2L }.selectedBaseModels)
     }
 }

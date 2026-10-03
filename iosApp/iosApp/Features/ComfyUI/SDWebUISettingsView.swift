@@ -45,7 +45,7 @@ struct SDWebUISettingsView: View {
                         Text(statusLabel)
                             .font(.civitTitleMedium)
                         if let active = viewModel.activeConnection {
-                            Text("\(active.hostname):\(active.port)")
+                            Text(verbatim: "\(active.hostname):\(active.port)")
                                 .font(.civitBodySmall)
                                 .foregroundColor(.civitOnSurfaceVariant)
                         }
@@ -96,7 +96,7 @@ struct SDWebUISettingsView: View {
                 .onTapGesture { viewModel.onActivate(id: conn.id) }
             VStack(alignment: .leading) {
                 Text(conn.name).font(.civitBodyMedium)
-                Text("\(conn.hostname):\(conn.port)")
+                Text(verbatim: "\(conn.hostname):\(conn.port)")
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
             }
