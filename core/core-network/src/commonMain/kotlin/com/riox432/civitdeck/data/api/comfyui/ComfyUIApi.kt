@@ -111,6 +111,48 @@ class ComfyUIApi(
     }
 
     /**
+     * Fetch available diffusion-only model files: GET /object_info/UNETLoader (`unet_name`).
+     * Empty on a server without `UNETLoader`.
+     * @throws ResponseException on HTTP error response
+     * @throws HttpRequestTimeoutException on request timeout
+     * @throws ConnectTimeoutException on connection timeout
+     */
+    suspend fun getDiffusionModels(): List<String> = logAndRethrow("getDiffusionModels") {
+        getNodeInputList("UNETLoader", "unet_name")
+    }
+
+    /**
+     * Fetch available text encoder files: GET /object_info/CLIPLoader (`clip_name`).
+     * @throws ResponseException on HTTP error response
+     * @throws HttpRequestTimeoutException on request timeout
+     * @throws ConnectTimeoutException on connection timeout
+     */
+    suspend fun getTextEncoders(): List<String> = logAndRethrow("getTextEncoders") {
+        getNodeInputList("CLIPLoader", "clip_name")
+    }
+
+    /**
+     * Fetch the CLIP `type` values this server's CLIPLoader accepts: GET /object_info/CLIPLoader
+     * (`type`). A model family whose type is absent needs a newer ComfyUI.
+     * @throws ResponseException on HTTP error response
+     * @throws HttpRequestTimeoutException on request timeout
+     * @throws ConnectTimeoutException on connection timeout
+     */
+    suspend fun getClipTypes(): List<String> = logAndRethrow("getClipTypes") {
+        getNodeInputList("CLIPLoader", "type")
+    }
+
+    /**
+     * Fetch available VAE choices: GET /object_info/VAELoader (`vae_name`).
+     * @throws ResponseException on HTTP error response
+     * @throws HttpRequestTimeoutException on request timeout
+     * @throws ConnectTimeoutException on connection timeout
+     */
+    suspend fun getVaes(): List<String> = logAndRethrow("getVaes") {
+        getNodeInputList("VAELoader", "vae_name")
+    }
+
+    /**
      * Fetch the full /object_info response containing schemas for all node types.
      * Used for dynamic parameter extraction (dropdown options, min/max ranges, etc.).
      * @throws ResponseException on HTTP error response
@@ -340,9 +382,15 @@ class ComfyUIApi(
     private fun parseCheckpointNames(responseText: String): List<String> =
         requiredInputNames(json.decodeFromString<JsonObject>(responseText), "CheckpointLoaderSimple", "ckpt_name")
 
+    /** GET /object_info/[nodeType] and read the [fieldName] combo values. */
+    private suspend fun getNodeInputList(nodeType: String, fieldName: String): List<String> {
+        val text = client.get("${_baseUrl.value}/object_info/$nodeType").requireSuccess().bodyAsText()
+        return parseNodeInputList(text, nodeType, fieldName)
+    }
+
     /**
-     * Generic parser for /object_info nodes that return a list of filenames
-     * under `inputs.required.<fieldName>[0]`.
+     * Generic parser for /object_info nodes that return a list of names
+     * under `input.required.<fieldName>`.
      */
     private fun parseNodeInputList(responseText: String, nodeType: String, fieldName: String): List<String> {
         return try {
@@ -357,9 +405,10 @@ class ComfyUIApi(
     }
 
     /**
-     * Reads the names at `<nodeType>.input.required.<fieldName>[0]`. Later elements, such as the
-     * `{"tooltip": ...}` options object ComfyUI appends, are ignored. Returns an empty list when
-     * any level is absent or has an unexpected shape.
+     * Reads the combo names at `<nodeType>.input.required.<fieldName>`. V1 nodes serialise a combo
+     * as `[[names…], {…}]`, where the trailing object (e.g. a tooltip) is ignored; V3 nodes as
+     * `["COMBO", {"options": [names…]}]`. Returns an empty list when any level is absent or has an
+     * unexpected shape.
      */
     @Suppress("ReturnCount")
     private fun requiredInputNames(root: JsonObject, nodeType: String, fieldName: String): List<String> {
@@ -367,11 +416,18 @@ class ComfyUIApi(
         val inputObj = nodeInfo["input"] as? JsonObject ?: return emptyList()
         val requiredObj = inputObj["required"] as? JsonObject ?: return emptyList()
         val fieldArray = requiredObj[fieldName] as? JsonArray ?: return emptyList()
-        val namesList = fieldArray.firstOrNull() as? JsonArray ?: return emptyList()
+        val head = fieldArray.firstOrNull()
+        val namesList = when {
+            head is JsonArray -> head
+            (head as? JsonPrimitive)?.content == V3_COMBO_TYPE ->
+                (fieldArray.getOrNull(1) as? JsonObject)?.get("options") as? JsonArray
+            else -> null
+        } ?: return emptyList()
         return namesList.mapNotNull { (it as? JsonPrimitive)?.content }
     }
 
     private companion object {
         const val TAG = "ComfyUIApi"
+        const val V3_COMBO_TYPE = "COMBO"
     }
 }
