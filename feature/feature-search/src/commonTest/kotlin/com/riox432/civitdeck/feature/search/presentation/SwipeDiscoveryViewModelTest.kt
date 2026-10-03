@@ -3,6 +3,7 @@ package com.riox432.civitdeck.feature.search.presentation
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.NsfwLevel
+import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetDiscoveryModelsUseCase
@@ -25,8 +26,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * Covers how [SwipeDiscoveryViewModel] applies the user's NSFW filter level: the `nsfw`
- * request flag sent to `/models` and the client-side image filtering of loaded cards.
+ * Covers how [SwipeDiscoveryViewModel] applies the user's NSFW filter level (the `nsfw`
+ * request flag sent to `/models` and the client-side image filtering of loaded cards) and
+ * how it pages through results with `nextCursor`.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SwipeDiscoveryViewModelTest {
@@ -45,10 +47,11 @@ class SwipeDiscoveryViewModelTest {
     private fun TestScope.createViewModel(
         level: NsfwFilterLevel,
         models: List<Model> = listOf(testModel(id = SFW_MODEL_ID)),
+        pages: List<PaginatedResult<Model>> = listOf(testPaginatedResult(items = models)),
     ): TestDeps {
         // Defers the init-launched load until the test advances the scheduler.
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
-        val modelRepo = FakeModelRepository(listOf(testPaginatedResult(items = models)))
+        val modelRepo = FakeModelRepository(pages)
         val nsfwPrefs = FakeContentFilterPreferencesRepository(level)
         val vm = SwipeDiscoveryViewModel(
             getDiscoveryModels = GetDiscoveryModelsUseCase(modelRepo),
@@ -104,9 +107,81 @@ class SwipeDiscoveryViewModelTest {
         assertEquals(true, deps.modelRepo.lastQuery!!.nsfw)
     }
 
+    @Test
+    fun prefetch_requestsNextPageWithCursorAndAppendsItsCards() = runTest {
+        val deps = createViewModel(
+            level = NsfwFilterLevel.Off,
+            pages = listOf(
+                testPaginatedResult(items = models(PREFETCH_IDS.take(4)), nextCursor = "c1"),
+                testPaginatedResult(items = models(PREFETCH_IDS.drop(4)), nextCursor = null),
+            ),
+        )
+        advanceUntilIdle()
+
+        // Leaves 3 cards, which reaches the prefetch threshold.
+        deps.vm.onSwipeLeft(deps.vm.state.value.cards.first())
+        advanceUntilIdle()
+
+        assertEquals(2, deps.modelRepo.getModelsCallCount)
+        assertEquals("c1", deps.modelRepo.lastQuery!!.cursor)
+        assertEquals(PREFETCH_IDS.drop(1), deps.vm.state.value.cards.map { it.id })
+    }
+
+    @Test
+    fun pageOfDismissedCards_continuesToNextPageWithinOneLoad() = runTest {
+        val firstPageIds = SKIP_AHEAD_IDS.take(4)
+        val earlier = createViewModel(
+            level = NsfwFilterLevel.Off,
+            pages = listOf(testPaginatedResult(items = models(firstPageIds), nextCursor = null)),
+        )
+        advanceUntilIdle()
+        earlier.vm.state.value.cards.forEach { earlier.vm.onSwipeLeft(it) }
+        advanceUntilIdle()
+        // Without a nextCursor the swipe-triggered prefetches must not refetch page one.
+        assertEquals(1, earlier.modelRepo.getModelsCallCount)
+
+        val deps = createViewModel(
+            level = NsfwFilterLevel.Off,
+            pages = listOf(
+                testPaginatedResult(items = models(firstPageIds), nextCursor = "c1"),
+                testPaginatedResult(items = models(SKIP_AHEAD_IDS.drop(4)), nextCursor = null),
+            ),
+        )
+        advanceUntilIdle()
+
+        assertEquals(2, deps.modelRepo.getModelsCallCount)
+        assertEquals("c1", deps.modelRepo.lastQuery!!.cursor)
+        assertEquals(SKIP_AHEAD_IDS.drop(4), deps.vm.state.value.cards.map { it.id })
+    }
+
+    @Test
+    fun everyPageAlreadySeen_stopsAfterFiveRequests() = runTest {
+        val earlier = createViewModel(NsfwFilterLevel.Off, models = models(listOf(BOUNDED_MODEL_ID)))
+        advanceUntilIdle()
+        earlier.vm.onSwipeLeft(earlier.vm.state.value.cards.single())
+        advanceUntilIdle()
+
+        // The fake serves this page, cursor included, for every request.
+        val deps = createViewModel(
+            level = NsfwFilterLevel.Off,
+            pages = listOf(
+                testPaginatedResult(items = models(listOf(BOUNDED_MODEL_ID)), nextCursor = "c1"),
+            ),
+        )
+        advanceUntilIdle()
+
+        assertEquals(5, deps.modelRepo.getModelsCallCount)
+        assertEquals(emptyList(), deps.vm.state.value.cards)
+    }
+
+    private fun models(ids: List<Long>): List<Model> = ids.map { testModel(id = it) }
+
     private companion object {
         // Distinct from other tests' IDs: the VM keeps dismissed IDs in a process-wide set.
         const val SFW_MODEL_ID = 71_001L
         const val EXPLICIT_MODEL_ID = 71_002L
+        val PREFETCH_IDS = (73_001L..73_008L).toList()
+        val SKIP_AHEAD_IDS = (74_001L..74_008L).toList()
+        const val BOUNDED_MODEL_ID = 75_001L
     }
 }

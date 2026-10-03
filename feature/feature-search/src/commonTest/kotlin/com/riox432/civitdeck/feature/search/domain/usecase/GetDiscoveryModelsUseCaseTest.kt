@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.feature.search.domain.usecase
 
+import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.testing.FakeModelRepository
 import com.riox432.civitdeck.testing.testModel
@@ -10,7 +11,7 @@ import kotlin.test.assertEquals
 
 /**
  * Verifies [GetDiscoveryModelsUseCase] queries with the Newest sort order, forwards the
- * `nsfw` flag, and unwraps the paginated result into a plain list of models.
+ * `nsfw` flag, and returns the page together with its `nextCursor`.
  */
 class GetDiscoveryModelsUseCaseTest {
 
@@ -22,9 +23,18 @@ class GetDiscoveryModelsUseCaseTest {
 
         val result = useCase(nsfw = false)
 
-        // The unwrapped list is returned (not the PaginatedResult wrapper).
-        assertEquals(models, result)
+        assertEquals(models, result.items)
         assertEquals(SortOrder.Newest, repo.lastQuery!!.sort)
+    }
+
+    @Test
+    fun exposesRepositoryNextCursor() = runTest {
+        val repo = FakeModelRepository(listOf(testPaginatedResult<Model>(nextCursor = "c1")))
+        val useCase = GetDiscoveryModelsUseCase(repo)
+
+        val result = useCase(nsfw = false)
+
+        assertEquals("c1", result.metadata.nextCursor)
     }
 
     @Test
