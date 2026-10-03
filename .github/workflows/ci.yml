@@ -81,6 +81,7 @@ jobs:
           :core:core-domain:testAndroidHostTest
           :core:core-network:testAndroidHostTest
           :core:core-data:testAndroidHostTest
+          :core:core-ml:testAndroidHostTest
           :feature:feature-search:testAndroidHostTest
           :feature:feature-detail:testAndroidHostTest
           :feature:feature-gallery:testAndroidHostTest
