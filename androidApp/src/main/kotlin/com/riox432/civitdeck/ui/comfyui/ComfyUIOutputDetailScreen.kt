@@ -107,7 +107,9 @@ fun ComfyUIOutputDetailScreen(
             DetailPage(image = images[page])
         }
     }
-    OutputDetailSheets(state, datasets, hashtags, viewModel, showShareSheet) { showShareSheet = false }
+    OutputDetailSheets(state, datasets, hashtags, viewModel, showShareSheet, currentImage.imageUrl) {
+        showShareSheet = false
+    }
 }
 
 @Composable
@@ -117,6 +119,7 @@ private fun OutputDetailSheets(
     hashtags: List<ShareHashtag>,
     viewModel: ComfyUIHistoryViewModel,
     showShareSheet: Boolean,
+    shareImageUrl: String,
     onDismissShare: () -> Unit,
 ) {
     if (state.showDatasetPicker) {
@@ -134,6 +137,7 @@ private fun OutputDetailSheets(
             onAddHashtag = viewModel::onAddShareHashtag,
             onRemoveHashtag = viewModel::onRemoveShareHashtag,
             onDismiss = onDismissShare,
+            imageUrl = shareImageUrl,
         )
     }
 }

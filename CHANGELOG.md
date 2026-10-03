@@ -31,6 +31,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - iOS ComfyUI settings show a "Review certificate" row for an active HTTPS connection that accepts self-signed certificates (with or without a stored pin). It opens onboarding directly on a re-test of that saved connection via `onReviewCertificate`, so a regenerated server certificate shows its new fingerprint and can be trusted without re-adding the connection (#1131)
 - Android loads ComfyUI images (history, generation result, output detail, mask editor, image viewer) from a server with a confirmed certificate pin: `ComfyUIPinnedFetcherFactory` fetches `https` URLs on a pinned host:port with an OkHttp client that trusts only that certificate (`OkHttpClient.Builder.trustOnlyPinnedLeaf`) and leaves every other URL, CivitAI included, to Coil's default fetcher. Disk-cache entries for those images are keyed by pin, and `ComfyUIImageCacheEvictor` removes a host:port's memory-cache entries when its pin is confirmed, changed or cleared (#1126)
 - `Model.hasActivePaidAccess` — CivitAI models whose download is gated behind an active paid-access purchase are flagged from the `/models` responses' `hasActivePaidAccess` field (defaults to `false` when absent) (#1077)
+- Android and Desktop browse cards show a "Paid" badge next to the model type when `Model.hasActivePaidAccess` is true (content description "Requires purchase on CivitAI"); the type chip now ellipsizes first on narrow cards so the badge stays whole (#1078)
 
 ### Changed
 
@@ -59,6 +60,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 ### Fixed
 
 - Cancelling a running download from the model detail screen stops the background download (Android WorkManager worker, Desktop download job) instead of only marking the row Cancelled, so the transfer ends and is no longer reported as Completed (#1084)
+- Android ComfyUI output detail: Share in the share sheet attaches the output image (downloaded to a FileProvider cache, MIME type from its extension) along with the caption and hashtags; the button shows progress while the image loads, and a failed download keeps the sheet open with an error message. Other share sheets stay text-only (#1046)
 - iOS ComfyUI output detail: Share in the share sheet attaches the output image along with the caption and hashtags (loaded cache-first, with a spinner on the button while loading); if the image cannot be loaded, an alert appears and the sheet stays open. Other share sheets stay text-only (#1047)
 - iOS ComfyUI output detail: tapping the image opens the fullscreen viewer on every page, including after swiping between outputs, and VoiceOver activation opens it too (#1049)
 - Saving a ComfyUI output to the gallery fails when the image request returns a non-2xx status (for example `404` after the output file was deleted) — the save reports failure instead of "Image saved to gallery", and the error body is no longer written to the gallery as a broken image (#1045)
