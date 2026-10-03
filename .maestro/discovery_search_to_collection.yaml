@@ -2,7 +2,7 @@
 # Runs against a debug build assembled with -Pcivitdeck.e2eBaseUrl, whose CivitAI base URL
 # points at the local fixture server so results are deterministic (issue #990).
 # Node ids match DiscoveryTestTags (core-ui) / testTag on Android Compose.
-appId: com.riox432.civitdeck
+appId: com.riox432.civitdeck.debug
 ---
 - launchApp:
     clearState: true

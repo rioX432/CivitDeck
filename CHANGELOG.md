@@ -119,6 +119,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Extracted `core-ml`; network→database→core-data module load order; per-flavor packaging exclusions and manifest permissions (#986, #993)
 - Synced ai-dev-template common + KMP layer files (#980)
 - CI runs the `core-ml` unit tests; the Maestro smoke-test template builds and installs the `githubFull` debug APK from the `androidApp` module (#1002)
+- Android debug builds install as `com.riox432.civitdeck.debug` (`applicationIdSuffix`), so a local debug build and the release-signed GitHub Releases build coexist on one device instead of force-uninstalling each other; the Maestro flows target the debug package (#999)
 
 ## [2.4.0] - 2026-07-11
 

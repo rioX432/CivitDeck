@@ -3,7 +3,7 @@
 # than one long chain). Opens a model's image gallery, reveals metadata, saves the prompt.
 # The nav steps between detail and the metadata sheet are app-specific; tune selectors on
 # device. The save action itself is pinned by test tag (issue #990).
-appId: com.riox432.civitdeck
+appId: com.riox432.civitdeck.debug
 ---
 - launchApp:
     clearState: true
