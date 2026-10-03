@@ -52,6 +52,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 ### Fixed
 
 - Android and Desktop show a plain-HTTP ComfyUI connection to a Tailscale address (`100.64.0.0/10` or a `*.ts.net` MagicDNS name) as LAN instead of "HTTP over internet", since tailnet traffic is WireGuard-encrypted (#1066)
+- iOS ComfyUI settings security badge uses the shared security level, matching Android and Desktop: a Tailscale host shows "LAN", and public `172.x` addresses outside `172.16.0.0/12` (such as `172.217.x.x`) show the "HTTP" warning instead of "LAN" (#1067)
 - iOS ComfyUI connection test reports a self-signed server's certificate as not confirmed yet or changed, with its fingerprint, instead of "unreachable": the pinned client's rejection surfaces on iOS as a cancelled request, so the test now also treats a presented certificate that differs from the pin as a certificate failure (#1203)
 - iOS no longer crashes when opening the Create tab — the shared logger passed a Kotlin string to `NSLog` as a `%@` argument, which faulted with `EXC_BAD_ACCESS`; it now logs the whole line as the format with `%` escaped (#1204)
 - iOS declares `NSLocalNetworkUsageDescription`, so reaching a LAN ComfyUI or SD WebUI server triggers the system Local Network prompt with CivitDeck's reason text (#1056)
