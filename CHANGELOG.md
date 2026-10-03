@@ -52,6 +52,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- ComfyUI generation shows why the server rejected a workflow — a non-2xx `/prompt` response throws `ComfyUIResponseException` whose message is ComfyUI's `error.message: error.details` (for example `Prompt outputs failed validation: Value -1 smaller than min of 0: seed`), an older server's plain-string `error`, or `HTTP <status>` for a non-JSON body, instead of a JSON-decoding error about the missing `prompt_id` (#1030)
 - Android and Desktop show a plain-HTTP ComfyUI connection to a Tailscale address (`100.64.0.0/10` or a `*.ts.net` MagicDNS name) as LAN instead of "HTTP over internet", since tailnet traffic is WireGuard-encrypted (#1066)
 - iOS ComfyUI connection test reports a self-signed server's certificate as not confirmed yet or changed, with its fingerprint, instead of "unreachable": the pinned client's rejection surfaces on iOS as a cancelled request, so the test now also treats a presented certificate that differs from the pin as a certificate failure (#1203)
 - iOS no longer crashes when opening the Create tab — the shared logger passed a Kotlin string to `NSLog` as a `%@` argument, which faulted with `EXC_BAD_ACCESS`; it now logs the whole line as the format with `%` escaped (#1204)
