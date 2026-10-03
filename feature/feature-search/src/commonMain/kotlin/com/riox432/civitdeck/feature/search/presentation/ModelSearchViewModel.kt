@@ -579,7 +579,9 @@ class ModelSearchViewModel(
         }
     }
 
-    internal val updateFilter: (transform: (FilterState) -> FilterState) -> Unit = { transform ->
+    // A function rather than a lambda property: init-launched coroutines (loadExcludedTags) can
+    // call this before construction finishes, while a property declared after `init` is still null.
+    private fun updateFilter(transform: (FilterState) -> FilterState) {
         _filterState.update(transform)
         val f = _filterState.value
         _uiState.update {
