@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.DiffusionLatentNode
 import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.DiffusionModelSelection
 import com.riox432.civitdeck.domain.model.DomainException
@@ -478,6 +479,54 @@ class ComfyUIGenerationRepositoryImplTest {
         assertEquals(link("40", 0), graph.input("7", "clip"))
         assertEquals(link("3", 0), graph.input("4", "model"))
         assertEquals(link("41", 0), graph.input("8", "vae"))
+        assertEquals("EmptyLatentImage", graph.node("5")["class_type"]?.jsonPrimitive?.content)
+        assertFalse(graph.values.any { it.jsonObject["class_type"]?.jsonPrimitive?.content == "ModelSamplingAuraFlow" })
+    }
+
+    private val zImageTurboParams = diffusionParams.copy(
+        width = 1024,
+        height = 768,
+        diffusionModel = DiffusionModelSelection(
+            unetName = "z_image_turbo_bf16.safetensors",
+            textEncoderName = "qwen_3_4b.safetensors",
+            clipType = "lumina2",
+            vaeName = "ae.safetensors",
+            latentNode = DiffusionLatentNode.EMPTY_SD3_LATENT_IMAGE,
+            auraFlowShift = 3.0,
+        ),
+    )
+
+    @Test
+    fun submitGeneration_with_aura_flow_shift_samples_through_model_sampling_aura_flow() = runTest {
+        val graph = submittedGraph(zImageTurboParams)
+
+        assertEquals(
+            testJson.parseToJsonElement("""{"class_type":"ModelSamplingAuraFlow","inputs":{"model":["3",0],"shift":3.0}}"""),
+            graph.node("42"),
+        )
+        assertEquals(link("42", 0), graph.input("4", "model"))
+        assertEquals(
+            testJson.parseToJsonElement(
+                """{"class_type":"EmptySD3LatentImage","inputs":{"width":1024,"height":768,"batch_size":1}}""",
+            ),
+            graph.node("5"),
+        )
+        assertEquals(link("5", 0), graph.input("4", "latent_image"))
+        assertFalse(graph.values.any { it.jsonObject["class_type"]?.jsonPrimitive?.content == "EmptyLatentImage" })
+        assertEquals("lumina2", graph.input("40", "type").jsonPrimitive.content)
+    }
+
+    @Test
+    fun submitGeneration_with_aura_flow_shift_reads_the_model_from_the_end_of_the_lora_chain() = runTest {
+        val params = zImageTurboParams.copy(
+            loraSelections = listOf(LoraSelection("a.safetensors"), LoraSelection("b.safetensors")),
+        )
+
+        val graph = submittedGraph(params)
+
+        assertEquals(link("3", 0), graph.input("10", "model"))
+        assertEquals(link("11", 0), graph.input("42", "model"))
+        assertEquals(link("42", 0), graph.input("4", "model"))
     }
 
     @Test

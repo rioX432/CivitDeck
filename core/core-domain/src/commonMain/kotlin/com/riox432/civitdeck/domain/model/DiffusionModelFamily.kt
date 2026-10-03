@@ -9,6 +9,7 @@ package com.riox432.civitdeck.domain.model
  * preselect a file and never decide the family, which is not guessable from file names.
  * Deliberately separate from [BaseModel], the search-filter enum.
  */
+@Suppress("LongParameterList") // Each entry is one table row; grouping columns would scatter it.
 enum class DiffusionModelFamily(
     val baseModel: String,
     val clipType: String,
@@ -20,6 +21,8 @@ enum class DiffusionModelFamily(
     val scheduler: String,
     val width: Int,
     val height: Int,
+    val latentNode: DiffusionLatentNode = DiffusionLatentNode.EMPTY_LATENT_IMAGE,
+    val auraFlowShift: Double? = null,
 ) {
     KREA_2(
         baseModel = "Krea 2",
@@ -44,6 +47,21 @@ enum class DiffusionModelFamily(
         scheduler = "simple",
         width = 1024,
         height = 1024,
+    ),
+    Z_IMAGE_TURBO(
+        baseModel = "ZImageTurbo",
+        clipType = "lumina2",
+        textEncoderHint = "qwen_3_4b",
+        // The bare name, because a prefix of "ae" alone would match unrelated VAE files.
+        vaeHint = "ae.safetensors",
+        steps = 8,
+        cfgScale = 1.0,
+        samplerName = "res_multistep",
+        scheduler = "simple",
+        width = 1024,
+        height = 1024,
+        latentNode = DiffusionLatentNode.EMPTY_SD3_LATENT_IMAGE,
+        auraFlowShift = 3.0,
     ),
     ;
 

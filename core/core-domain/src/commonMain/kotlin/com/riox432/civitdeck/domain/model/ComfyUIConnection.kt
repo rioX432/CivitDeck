@@ -84,15 +84,25 @@ data class DiffusionModelResources(
     val clipTypes: List<String> = emptyList(),
 )
 
+/** The ComfyUI node that creates the empty latent a diffusion model family samples from. */
+enum class DiffusionLatentNode(val classType: String) {
+    EMPTY_LATENT_IMAGE("EmptyLatentImage"),
+    EMPTY_SD3_LATENT_IMAGE("EmptySD3LatentImage"),
+}
+
 /**
  * Files for a model that ships without a bundled text encoder and VAE, loaded by `UNETLoader`,
  * `CLIPLoader` and `VAELoader`. [clipType] is the CLIPLoader `type` of the model's family.
+ * [latentNode] and [auraFlowShift] follow the family's template; a null shift adds no
+ * `ModelSamplingAuraFlow` node.
  */
 data class DiffusionModelSelection(
     val unetName: String,
     val textEncoderName: String,
     val clipType: String,
     val vaeName: String,
+    val latentNode: DiffusionLatentNode = DiffusionLatentNode.EMPTY_LATENT_IMAGE,
+    val auraFlowShift: Double? = null,
 )
 
 data class ComfyUIGenerationParams(
