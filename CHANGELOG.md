@@ -72,6 +72,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- ComfyUI LAN scan finishes within about 9 seconds on a /24 even when most hosts never answer: each probe is capped at 1.5 s and up to 48 probes run at once. On iOS a silent host previously held its probe for up to 120 s, because Ktor's Darwin engine ignores the 5 s connect timeout, so the batched scan could keep the spinner running for many minutes (#1268)
 - `ModelSearchViewModel` no longer throws a `NullPointerException` during construction when the excluded-tags load started from `init` completes without suspending (an eager dispatcher or a non-suspending repository); no production crash had been observed (#1264)
 - ComfyUI prefill with a checkpoint now switches the shared generation form back to that checkpoint when a diffusion model was selected, instead of keeping generating from the diffusion model (#1150)
 - iOS: the "Images" navigation shortcut tab shows the CivitAI community image gallery instead of a blank screen (#1092)
