@@ -9,5 +9,7 @@ actual fun platformLog(level: LogLevel, tag: String, message: String, throwable:
         LogLevel.ERROR -> "E"
     }
     val suffix = if (throwable != null) "\n${throwable.stackTraceToString()}" else ""
-    NSLog("[$prefix/$tag] %@", message + suffix)
+    // A Kotlin String passed as a variadic NSLog argument does not reach `%@` as an NSString
+    // and crashes with EXC_BAD_ACCESS, so the whole line goes in the format with `%` escaped.
+    NSLog("[$prefix/$tag] $message$suffix".replace("%", "%%"))
 }
