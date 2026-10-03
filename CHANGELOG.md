@@ -34,6 +34,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Android and Desktop browse cards show a "Paid" badge next to the model type when `Model.hasActivePaidAccess` is true (content description "Requires purchase on CivitAI"); the type chip now ellipsizes first on narrow cards so the badge stays whole (#1078)
 - iOS model cards (search, creator page) show a "Paid" chip next to the model type when `Model.hasActivePaidAccess` is true, read by VoiceOver as "Requires purchase on CivitAI"; the type chip truncates first on narrow cards so the chip stays whole (#1079)
 - `ComfyUIGenerationRepository.fetchDiffusionModelResources()` returns the diffusion-model, text-encoder, VAE and CLIP `type` choices of a ComfyUI server from `/object_info/UNETLoader`, `/object_info/CLIPLoader` and `/object_info/VAELoader`; a server without a loader node yields an empty list, and the object_info combo parser also reads the V3 `["COMBO", {"options": […]}]` shape (#1144)
+- Importing a DiT-era ComfyUI workflow (Krea 2, Anima, etc.) without APP mode metadata exposes its `UNETLoader`, `CLIPLoader`, `DualCLIPLoader`, `VAELoader`, `LoraLoaderModelOnly`, `EmptySD3LatentImage`, `RandomNoise`, `BasicScheduler`, `KSamplerSelect` and `CFGGuider` inputs as editable template parameters, and SELECT options are also read from the V3 `["COMBO", {"options": […]}]` object_info shape (#1142)
 
 ### Changed
 
@@ -112,12 +113,14 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Android 13+ asks for the notification permission the first time Generate is tapped on the ComfyUI generation screen (at most once per screen) when generation alerts are on and the permission is not granted, so users on the default settings can receive the completion alert; the generation starts regardless of the answer (#1089)
 - iOS asks for notification permission when "Model Update Alerts" or "Generation Complete Alerts" is turned on in Settings, and the switch turns on only if permission is granted — the app never requested it before, so iOS could not show either alert; turning a switch off needs no permission (#1090)
 - ComfyUI onboarding's LAN scan step records when the scan has finished — `OnboardingStep.Scanning.isComplete` turns true once the scan completes or fails, keeping the servers found so far, while leaving the step or restarting the scan never marks it finished; the Android finished/empty state that uses it is #1069 (#1068)
+- Android ComfyUI onboarding's auto-detect step stops its spinner when the LAN scan ends: found servers stay listed, an empty scan says no ComfyUI answered on port 8188 and suggests starting it with `--listen` or entering the address manually, and a "Scan again" button sits next to Back — it used to spin forever with "No servers found yet" (#1069)
 
 ### Infrastructure
 
 - Extracted `core-ml`; network→database→core-data module load order; per-flavor packaging exclusions and manifest permissions (#986, #993)
 - Synced ai-dev-template common + KMP layer files (#980)
 - CI runs the `core-ml` unit tests; the Maestro smoke-test template builds and installs the `githubFull` debug APK from the `androidApp` module (#1002)
+- Android debug builds install as `com.riox432.civitdeck.debug` (`applicationIdSuffix`), so a local debug build and the release-signed GitHub Releases build coexist on one device instead of force-uninstalling each other; the Maestro flows target the debug package (#999)
 
 ## [2.4.0] - 2026-07-11
 
