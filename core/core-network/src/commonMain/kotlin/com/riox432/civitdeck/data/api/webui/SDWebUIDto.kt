@@ -25,6 +25,8 @@ data class SDWebUITxt2ImgRequest(
     val height: Int = 512,
     @SerialName("sampler_name") val samplerName: String = "Euler",
     val seed: Long = -1,
+    // The client encodes defaults, so this always goes out; A1111 treats {} as "no override".
+    @SerialName("override_settings") val overrideSettings: Map<String, String> = emptyMap(),
 )
 
 @Serializable
@@ -39,6 +41,7 @@ data class SDWebUIImg2ImgRequest(
     val seed: Long = -1,
     @SerialName("init_images") val initImages: List<String> = emptyList(),
     @SerialName("denoising_strength") val denoisingStrength: Double = 0.75,
+    @SerialName("override_settings") val overrideSettings: Map<String, String> = emptyMap(),
 )
 
 @Serializable

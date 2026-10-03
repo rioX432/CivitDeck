@@ -25,7 +25,17 @@ internal class GenerationExecutionDelegate(
     private val uiState: MutableStateFlow<GenerationUiState>,
     private val useCases: GenerationExecutionUseCases,
 ) {
+    /**
+     * One press of Generate. Kept per press so a submission still waiting for its id after Stop
+     * cancels its own prompt, even if Generate was pressed again meanwhile.
+     */
+    private class Submission {
+        var promptId: String? = null
+        var stopped: Boolean = false
+    }
+
     private var progressJob: Job? = null
+    private var submission: Submission? = null
     private var generationStartTimeMs: Long = 0L
     private var notificationsEnabled: Boolean = true
 
@@ -37,6 +47,7 @@ internal class GenerationExecutionDelegate(
 
     fun onGenerate(params: ComfyUIGenerationParams) {
         progressJob?.cancel()
+        val current = Submission().also { submission = it }
         generationStartTimeMs = currentTimeMs()
         uiState.update {
             it.copy(
@@ -52,21 +63,21 @@ internal class GenerationExecutionDelegate(
         launchWithErrorHandling(
             tag = "Generation submission failed",
             onError = { e ->
-                uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
+                // After Stop, only a failed cancel matters (the prompt may still run), and only
+                // while no newer Generate owns the screen. A failed submission queued nothing.
+                val report = !current.stopped || (current.promptId != null && submission === current)
+                if (report) {
+                    uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
+                }
             },
         ) {
             val promptId = useCases.submitGeneration(params)
-            uiState.update { it.copy(generationStatus = GenerationStatus.Running) }
-            val connection = useCases.repository.getActiveConnection()
-            if (connection != null) {
-                useCases.backgroundMonitorStarter.startMonitoring(
-                    promptId,
-                    connection.baseUrl,
-                    connection.wsScheme,
-                )
-                startWebSocketProgress(promptId, connection)
+            current.promptId = promptId
+            if (current.stopped) {
+                useCases.cancelJob(promptId)
             } else {
-                pollForResult(promptId)
+                uiState.update { it.copy(generationStatus = GenerationStatus.Running) }
+                progressJob = trackProgress(promptId)
             }
         }
     }
@@ -74,19 +85,32 @@ internal class GenerationExecutionDelegate(
     fun onInterrupt() {
         progressJob?.cancel()
         useCases.backgroundMonitorStarter.stopMonitoring()
+        val current = submission
+        current?.stopped = true
+        val promptId = current?.promptId
+        if (current == null || promptId == null) {
+            // Still waiting for /prompt: the submission cancels the prompt once its id arrives.
+            resetToIdle()
+            return
+        }
+        // A Generate pressed while this cancel is in flight owns the state, so leave it alone then.
         launchWithErrorHandling(
             tag = "Interrupt failed",
-            onError = { e -> uiState.update { it.copy(error = e.message) } },
+            onError = { e -> if (submission === current) uiState.update { it.copy(error = e.message) } },
         ) {
-            useCases.interruptGeneration()
-            uiState.update {
-                it.copy(
-                    generationStatus = GenerationStatus.Idle,
-                    currentStep = 0,
-                    totalSteps = 0,
-                    previewImageBytes = null,
-                )
-            }
+            useCases.cancelJob(promptId)
+            if (submission === current) resetToIdle()
+        }
+    }
+
+    private fun resetToIdle() {
+        uiState.update {
+            it.copy(
+                generationStatus = GenerationStatus.Idle,
+                currentStep = 0,
+                totalSteps = 0,
+                previewImageBytes = null,
+            )
         }
     }
 
@@ -101,34 +125,52 @@ internal class GenerationExecutionDelegate(
         uiState.update { it.copy(imageSaveSuccess = null) }
     }
 
-    private fun startWebSocketProgress(promptId: String, connection: ComfyUIConnection) {
-        progressJob = scope.launch {
-            useCases.observeProgress(promptId, connection.baseUrl, connection.wsScheme)
-                .catch { pollForResult(promptId) }
-                .collect { progress ->
-                    uiState.update { state ->
-                        state.copy(
-                            currentStep = if (progress.currentStep > 0) {
-                                progress.currentStep
-                            } else {
-                                state.currentStep
-                            },
-                            totalSteps = if (progress.totalSteps > 0) {
-                                progress.totalSteps
-                            } else {
-                                state.totalSteps
-                            },
-                            previewImageBytes = progress.previewImageBytes
-                                ?: state.previewImageBytes,
-                            currentNodeName = progress.currentNode.ifEmpty {
-                                state.currentNodeName
-                            },
-                        )
-                    }
-                }
-            // WebSocket flow completed: fetch final result
-            fetchFinalResult(promptId)
+    /** Polling runs in this job too, so Stop and a new Generate end it. */
+    private fun trackProgress(promptId: String): Job = launchWithErrorHandling(
+        tag = "Generation progress failed",
+        onError = { e ->
+            uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
+        },
+    ) {
+        val connection = useCases.repository.getActiveConnection()
+        if (connection != null) {
+            useCases.backgroundMonitorStarter.startMonitoring(
+                promptId,
+                connection.baseUrl,
+                connection.wsScheme,
+            )
+            observeWebSocketProgress(promptId, connection)
+        } else {
+            pollForResult(promptId)
         }
+    }
+
+    private suspend fun observeWebSocketProgress(promptId: String, connection: ComfyUIConnection) {
+        useCases.observeProgress(promptId, connection.baseUrl, connection.wsScheme)
+            .catch { pollForResult(promptId) }
+            .collect { progress ->
+                uiState.update { state ->
+                    state.copy(
+                        currentStep = if (progress.currentStep > 0) {
+                            progress.currentStep
+                        } else {
+                            state.currentStep
+                        },
+                        totalSteps = if (progress.totalSteps > 0) {
+                            progress.totalSteps
+                        } else {
+                            state.totalSteps
+                        },
+                        previewImageBytes = progress.previewImageBytes
+                            ?: state.previewImageBytes,
+                        currentNodeName = progress.currentNode.ifEmpty {
+                            state.currentNodeName
+                        },
+                    )
+                }
+            }
+        // WebSocket flow completed: fetch final result
+        fetchFinalResult(promptId)
     }
 
     private suspend fun fetchFinalResult(promptId: String) {
@@ -211,8 +253,8 @@ internal class GenerationExecutionDelegate(
         tag: String,
         crossinline onError: (Exception) -> Unit,
         crossinline block: suspend () -> Unit,
-    ) {
-        scope.launch {
+    ): Job {
+        return scope.launch {
             try {
                 block()
             } catch (e: CancellationException) {

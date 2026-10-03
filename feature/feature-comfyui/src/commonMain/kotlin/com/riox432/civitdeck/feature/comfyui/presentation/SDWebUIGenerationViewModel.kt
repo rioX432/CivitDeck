@@ -107,6 +107,7 @@ class SDWebUIGenerationViewModel(
             height = state.height,
             samplerName = state.selectedSampler,
             seed = state.seed,
+            checkpoint = state.selectedModel,
         )
         generationJob = viewModelScope.launch {
             generateImage(params).collect { progress ->
