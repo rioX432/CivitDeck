@@ -6,6 +6,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -116,11 +117,35 @@ data class HistoryEntry(
         get() = prompt?.getOrNull(2) as? JsonObject
 }
 
+/**
+ * [messages] is ComfyUI's list of `[event, data]` pairs. It stays a [JsonElement] because each
+ * pair mixes a string and an object, and an unexpected shape must not fail the whole entry.
+ */
 @Serializable
 data class HistoryStatus(
     @SerialName("status_str") val statusStr: String? = null,
     val completed: Boolean? = null,
-)
+    val messages: JsonElement? = null,
+) {
+    /**
+     * `exception_message` of the last `execution_error` message, or null when there is none
+     * (an interrupted job records `execution_interrupted` instead) or it is blank.
+     */
+    val executionErrorMessage: String?
+        get() = (messages as? JsonArray)
+            ?.mapNotNull { it as? JsonArray }
+            ?.lastOrNull { it.eventName() == EVENT_EXECUTION_ERROR }
+            ?.let { it.getOrNull(1) as? JsonObject }
+            ?.let { it["exception_message"] as? JsonPrimitive }
+            ?.contentOrNull
+            ?.takeIf { it.isNotBlank() }
+
+    private fun JsonArray.eventName(): String? = (getOrNull(0) as? JsonPrimitive)?.contentOrNull
+
+    private companion object {
+        const val EVENT_EXECUTION_ERROR = "execution_error"
+    }
+}
 
 /**
  * Response from POST /upload/image
