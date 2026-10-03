@@ -29,6 +29,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -219,10 +221,15 @@ private fun ModelCardInfoSection(model: Model, isOwned: Boolean = false) {
             horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // The type chip yields width first so the shorter badges after it stay
+            // whole on narrow grid cards (e.g. "TextualInversion" + "Paid").
             Text(
                 text = model.type.name,
                 style = MaterialTheme.typography.labelSmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
+                    .weight(1f, fill = false)
                     .background(
                         color = MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(CornerRadius.chip),
@@ -230,6 +237,9 @@ private fun ModelCardInfoSection(model: Model, isOwned: Boolean = false) {
                     .padding(horizontal = Spacing.sm, vertical = Spacing.xxs),
             )
             SourceBadge(source = model.source)
+            if (model.hasActivePaidAccess) {
+                PaidBadge()
+            }
         }
 
         ModelStatsRow(
@@ -255,6 +265,24 @@ private fun SourceBadge(source: ModelSource) {
         modifier = Modifier
             .background(
                 color = color,
+                shape = RoundedCornerShape(CornerRadius.chip),
+            )
+            .padding(horizontal = Spacing.sm, vertical = Spacing.xxs),
+    )
+}
+
+/** Same label CivitAI puts on its own cards for models with a live paid-access gate. */
+@Composable
+private fun PaidBadge() {
+    Text(
+        text = "Paid",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onTertiaryContainer,
+        maxLines = 1,
+        modifier = Modifier
+            .semantics { contentDescription = "Requires purchase on CivitAI" }
+            .background(
+                color = MaterialTheme.colorScheme.tertiaryContainer,
                 shape = RoundedCornerShape(CornerRadius.chip),
             )
             .padding(horizontal = Spacing.sm, vertical = Spacing.xxs),
