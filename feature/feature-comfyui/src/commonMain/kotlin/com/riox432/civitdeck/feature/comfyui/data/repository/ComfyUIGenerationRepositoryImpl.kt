@@ -55,6 +55,12 @@ class ComfyUIGenerationRepositoryImpl(
         val entry = api.getHistory(promptId)
             ?: return GenerationResult(promptId, GenerationStatus.Running)
 
+        // ComfyUI marks both a failed and an interrupted job `error` with `completed: false`.
+        val status = entry.status
+        if (status?.statusStr == "error") {
+            return GenerationResult(promptId, GenerationStatus.Error, error = status.executionErrorMessage)
+        }
+
         val completed = entry.status?.completed == true ||
             entry.status?.statusStr == "success"
 

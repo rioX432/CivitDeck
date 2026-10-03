@@ -29,6 +29,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -189,6 +190,33 @@ class ComfyUIGenerationRepositoryImplTest {
 
         assertEquals(GenerationStatus.Completed, result.status)
         assertEquals(1, result.imageUrls.size)
+    }
+
+    @Test
+    fun pollGenerationResult_reports_the_exception_message_of_a_failed_job() = runTest {
+        // History entry ComfyUI stores for a job whose node raised during execution.
+        val body = """
+            {"p1":{"status":{"status_str":"error","completed":false,"messages":[["execution_start",{"prompt_id":"p1","timestamp":1}],["execution_error",{"prompt_id":"p1","node_id":"3","node_type":"KSampler","exception_message":"CUDA out of memory","exception_type":"torch.OutOfMemoryError","traceback":[],"current_inputs":{},"current_outputs":[]}]]},"outputs":{}}}
+        """.trimIndent()
+        val r = repo { okJson(body) }
+
+        val result = r.pollGenerationResult("p1")
+
+        assertEquals(GenerationStatus.Error, result.status)
+        assertEquals("CUDA out of memory", result.error)
+    }
+
+    @Test
+    fun pollGenerationResult_reports_an_interrupted_job_as_error_without_a_message() = runTest {
+        val body = """
+            {"p1":{"status":{"status_str":"error","completed":false,"messages":[["execution_interrupted",{"prompt_id":"p1","node_id":"3","node_type":"KSampler","executed":[]}]]},"outputs":{}}}
+        """.trimIndent()
+        val r = repo { okJson(body) }
+
+        val result = r.pollGenerationResult("p1")
+
+        assertEquals(GenerationStatus.Error, result.status)
+        assertNull(result.error)
     }
 
     @Test
