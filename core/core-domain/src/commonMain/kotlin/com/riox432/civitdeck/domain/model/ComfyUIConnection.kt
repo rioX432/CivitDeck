@@ -72,6 +72,18 @@ data class LoraSelection(
     val strengthClip: Float = 1.0f,
 )
 
+/**
+ * Choices the server's split loader nodes (`UNETLoader`, `CLIPLoader`, `VAELoader`) accept.
+ * A list is empty when the server lacks that node. [clipTypes] lists the CLIPLoader `type`
+ * values, which tell which model families the server can run.
+ */
+data class DiffusionModelResources(
+    val diffusionModels: List<String> = emptyList(),
+    val textEncoders: List<String> = emptyList(),
+    val vaes: List<String> = emptyList(),
+    val clipTypes: List<String> = emptyList(),
+)
+
 data class ComfyUIGenerationParams(
     val checkpoint: String,
     val prompt: String,

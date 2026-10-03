@@ -3,6 +3,7 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIOutputImage
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketMessage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
@@ -42,6 +43,16 @@ class ComfyUIGenerationRepositoryImpl(
     override suspend fun fetchLoras(): List<String> = activeEndpoint().api.getLoras()
 
     override suspend fun fetchControlNets(): List<String> = activeEndpoint().api.getControlNets()
+
+    override suspend fun fetchDiffusionModelResources(): DiffusionModelResources {
+        val api = activeEndpoint().api
+        return DiffusionModelResources(
+            diffusionModels = api.getDiffusionModels(),
+            textEncoders = api.getTextEncoders(),
+            vaes = api.getVaes(),
+            clipTypes = api.getClipTypes(),
+        )
+    }
 
     override suspend fun submitGeneration(params: ComfyUIGenerationParams): String {
         val api = activeEndpoint().api
