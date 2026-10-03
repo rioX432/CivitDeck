@@ -3,6 +3,7 @@ package com.riox432.civitdeck.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -44,6 +45,7 @@ import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsScreen
 import com.riox432.civitdeck.ui.comfyui.TemplateParameterScreen
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateEditorScreen
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateScreen
+import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.create.CreateHubCallbacks
 import com.riox432.civitdeck.ui.create.CreateHubScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryScreen
@@ -277,16 +279,8 @@ private fun EntryProviderScope<Any>.workflowTemplateEntries(backStack: MutableLi
         )
     }
     entry<WorkflowTemplateEditorRoute> { key ->
-        val viewModel: WorkflowTemplateViewModel = koinViewModel()
-        val template = if (key.templateId == 0L) {
-            WorkflowTemplateViewModel.emptyTemplate()
-        } else {
-            viewModel.uiState.value.templates.find { it.id == key.templateId }
-                ?: WorkflowTemplateViewModel.emptyTemplate()
-        }
-        WorkflowTemplateEditorScreen(
-            initialTemplate = template,
-            viewModel = viewModel,
+        WorkflowTemplateEditorEntry(
+            templateId = key.templateId,
             onBack = { backStack.removeLastOrNull() },
         )
     }
@@ -302,6 +296,31 @@ private fun EntryProviderScope<Any>.workflowTemplateEntries(backStack: MutableLi
                 backStack.removeLastOrNull()
             },
         )
+    }
+}
+
+// The editor freezes its fields from initialTemplate on first composition, so it is created only
+// after the asynchronously loaded template is found.
+@Composable
+private fun WorkflowTemplateEditorEntry(templateId: Long, onBack: () -> Unit) {
+    val viewModel: WorkflowTemplateViewModel = koinViewModel()
+    if (templateId == 0L) {
+        WorkflowTemplateEditorScreen(
+            initialTemplate = WorkflowTemplateViewModel.emptyTemplate(),
+            viewModel = viewModel,
+            onBack = onBack,
+        )
+        return
+    }
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val template = state.templates.find { it.id == templateId }
+    when {
+        template != null -> key(template.id) {
+            WorkflowTemplateEditorScreen(initialTemplate = template, viewModel = viewModel, onBack = onBack)
+        }
+        state.isLoading -> LoadingStateOverlay()
+        // Deleted meanwhile: a blank editor here would save a new template instead of updating one.
+        else -> LaunchedEffect(Unit) { onBack() }
     }
 }
 
