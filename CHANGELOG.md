@@ -19,10 +19,13 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - `ComfyUIGenerationViewModel.applyPrefill` fills the generation form from `ComfyUIGenerationParams`, selecting the requested checkpoint by file name even when the server list loads afterwards; sampler and scheduler are intentionally not applied (#1038)
 - `ComfyUIGenerationViewModel.onTemplateApplied` applies a workflow template: a template imported from a raw ComfyUI workflow loads as the custom workflow, and any other template clears a loaded custom workflow and fills the form from its variables (#1041)
 - `ComfyUIHistoryViewModel.loadOlder()` re-fetches history with a window one page (200 entries) wider, exposing `canLoadOlder`/`isLoadingOlder`; `refresh()` keeps the widened window and a new fetch cancels the one in flight. No UI button yet (#1053)
+- Android ComfyUI Outputs list shows a "Load older outputs" button at the older end of the list (bottom for Newest, top for Oldest) when more history may exist; it calls `loadOlder()` and shows a spinner while loading (#1054)
 - `ComfyUIServerTrust` and `createComfyUIHttpClient(trust, timeoutConfig)` — Android/JVM ComfyUI clients can accept only the server whose leaf certificate matches a stored SHA-256 pin and record the fingerprint the server presented; iOS keeps system trust for now (#1118)
 - ComfyUI onboarding captures the certificate of a self-signed HTTPS server: the test fails with `CertificateUnconfirmed` (no pin yet) or `CertificateChanged` (different certificate) and the presented SHA-256 fingerprint, and `ConnectionOnboardingViewModel.onTrustCertificate()` tests again with that pin and saves the connection with it; `onReviewCertificate(saved)` re-tests a saved connection. The tester uses a one-off pinned client per test instead of the trust-all client (#1119)
 - Android ComfyUI onboarding shows the server certificate's SHA-256 fingerprint in the `openssl x509 -noout -fingerprint -sha256` format, with a hint to compare it on the server and a "Trust this certificate" button, when the test fails because the certificate is not confirmed yet or differs from the trusted one (#1120)
 - Android ComfyUI settings show a "Review certificate" button next to Test when the active connection uses HTTPS with self-signed certificates accepted; it opens onboarding on the certificate review for that connection, so a regenerated server certificate can be re-confirmed without re-adding the connection (#1127)
+- iOS ComfyUI Outputs list shows a "Load older outputs" button at the older end of the list (below the grid for Newest, above it for Oldest) when more history may exist beyond the loaded window, with a spinner in its place while loading (#1055)
+- iOS ComfyUI clients built with `ComfyUIServerTrust.PinnedLeaf` accept only the server whose leaf certificate matches the SHA-256 pin, for HTTP and WebSocket, and record the presented fingerprint; any other certificate, or no pin, cancels the handshake instead of falling back to system trust. The public `ComfyUIServerTrustEvaluator` makes the same decision for Swift `URLSession` delegates (#1128)
 
 ### Changed
 
@@ -32,6 +35,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - ComfyUI Outputs list requests only the newest 200 history entries (`GET /history?max_items=200`, the same page size as ComfyUI's own frontend) instead of the server's entire history; older outputs are not reachable until history paging lands (#1051)
 - `FetchComfyUIHistoryUseCase(maxItems)` emits a `ComfyUIHistoryPage(images, hasMore)`; `hasMore` is true when `/history` returned the full `maxItems` entries (counting history entries, including failed prompts without images, not images). No user-visible change (#1052)
 - ComfyUI connection test reports `LoopbackHost` when a test against `localhost`, `127.x.x.x` or `0.0.0.0` fails without an HTTP response (unreachable or timed out), so the UI can explain that the address points at this device rather than the PC; HTTP, auth, non-ComfyUI and TLS failures keep their cause (#1061)
+- ComfyUI generation (HTTP and foreground WebSocket progress) and saving a generated image resolve the server URL and TLS trust per call through the new `ComfyUIApiProvider`: a connection with HTTPS and "Accept self-signed certificates" uses a client pinned to its confirmed certificate, every other connection keeps system trust. The provider also keeps a host:port → pin snapshot for image loaders. Queue, history, ComfyHub import and the settings test still use the shared `ComfyUIApi` until #1122/#1123 (#1121)
 - ComfyUI connection test reports `Refused` instead of `Unreachable` when nothing accepts the connection at the host and port (typically ComfyUI started without `--listen`): a `Connection refused` message anywhere in the error's cause chain (JVM, OkHttp) or an iOS `NSURLErrorDomain` `Code=-1004` error; DNS and no-route failures stay `Unreachable`, and `LoopbackHost` still wins for loopback hosts (#1062)
 
 ### Removed
@@ -41,6 +45,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 ### Fixed
 
 - Android ComfyUI output detail opens on the tapped image with exactly the Outputs list's images in the list's sort order — the list hands its snapshot to the detail instead of the detail re-fetching history with the default Newest order, so it no longer shows a blank screen when that fetch fails or is empty (#1050)
+- iOS generation screen's template picker now lists saved templates and applies the picked one to the form; its category and type filter chips now filter the list (#1043)
 - Swipe discovery's right swipe (heart) now only adds to Favorites: a model that is already favorited stays favorited, and Undo removes a favorite only when that swipe added it, including an Undo pressed before the favorite check finishes (#1074)
 - Restoring a backup with "Merge" no longer deletes or renames an existing collection whose id matches a backup collection; backup collections merge into same-name local collections or are added as new ones (#1019)
 - iOS ComfyUI generation form now sends the checkpoint, prompts, sampler settings, size, seed, ControlNet and denoise values to the shared ViewModel, so Generate submits what was entered instead of silently doing nothing (#1025)
@@ -57,6 +62,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - ComfyUI connection test (onboarding and the settings Test button) passes only when `/queue` answers 2xx with ComfyUI's `queue_running` field, so an auth proxy's 401 JSON or another JSON service on the port is no longer reported as "Connected" (#1057)
 - Swipe discovery keeps serving new cards — it follows CivitAI's `nextCursor` instead of refetching page one, skips ahead (up to 5 requests per load) past pages whose cards were all already seen, and stops loading once the API reports no next page (#1073)
 - Android ComfyUI generation now applies the template picked from "Load template" — the picker opens as a full-screen dialog inside the generation screen and fills the form through `onTemplateApplied`, instead of a separate screen that discarded the choice (#1042)
+- Android "Try in ComfyUI" now opens the generation screen with the first sample image's prompt, negative prompt, steps, CFG and seed filled in, and selects the model's primary file as the checkpoint for Checkpoint models; the prefill applies once per screen so edits survive returning from another screen (#1039)
 
 ### Infrastructure
 

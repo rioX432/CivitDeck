@@ -28,6 +28,7 @@ struct WorkflowTemplateView: View {
         }
         .navigationTitle(isPicker ? "Pick Template" : "Workflow Templates")
         .navigationBarTitleDisplayMode(.inline)
+        .task { await viewModel.observeUiState() }
         .toolbar {
             if !isPicker {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -131,14 +132,14 @@ struct WorkflowTemplateView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.xs) {
                 chipButton(title: "All", isSelected: viewModel.selectedCategory == nil) {
-                    viewModel.selectedCategory = nil
+                    viewModel.onCategorySelected(nil)
                 }
                 ForEach(WorkflowTemplateCategory.allCases, id: \.self) { category in
                     chipButton(
                         title: categoryLabel(category),
                         isSelected: viewModel.selectedCategory == category
                     ) {
-                        viewModel.selectedCategory = viewModel.selectedCategory == category ? nil : category
+                        viewModel.onCategorySelected(viewModel.selectedCategory == category ? nil : category)
                     }
                 }
             }
@@ -149,14 +150,14 @@ struct WorkflowTemplateView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.xs) {
                 chipButton(title: "All Types", isSelected: viewModel.selectedType == nil) {
-                    viewModel.selectedType = nil
+                    viewModel.onTypeSelected(nil)
                 }
                 ForEach(WorkflowTemplateType.allCases, id: \.self) { type in
                     chipButton(
                         title: typeLabel(type),
                         isSelected: viewModel.selectedType == type
                     ) {
-                        viewModel.selectedType = viewModel.selectedType == type ? nil : type
+                        viewModel.onTypeSelected(viewModel.selectedType == type ? nil : type)
                     }
                 }
             }

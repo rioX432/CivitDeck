@@ -53,7 +53,7 @@ sealed interface ComfyUIServerTrust {
      * Trust only a server whose leaf certificate has the SHA-256 fingerprint [expectedSha256]
      * (64 lowercase hex characters over the DER bytes). A null pin rejects every server, which is
      * how the fingerprint of a not-yet-confirmed certificate is captured. Hostname and validity
-     * dates are not checked on Android because the pin is the server's identity.
+     * dates are not checked on Android or iOS because the pin is the server's identity.
      *
      * Not a data class: [presentedSha256] is per-client state, so two instances with the same pin
      * must not be treated as interchangeable.
@@ -71,10 +71,7 @@ sealed interface ComfyUIServerTrust {
     }
 }
 
-/**
- * Creates a ComfyUI HttpClient whose TLS validation follows [trust].
- * iOS currently keeps system trust for every [trust] value.
- */
+/** Creates a ComfyUI HttpClient whose TLS validation follows [trust]. */
 expect fun createComfyUIHttpClient(
     trust: ComfyUIServerTrust,
     timeoutConfig: TimeoutConfig = TimeoutConfig.ComfyUI,

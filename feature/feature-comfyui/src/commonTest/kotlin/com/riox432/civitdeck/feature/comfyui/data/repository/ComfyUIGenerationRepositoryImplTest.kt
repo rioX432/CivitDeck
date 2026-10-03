@@ -1,12 +1,10 @@
 package com.riox432.civitdeck.feature.comfyui.data.repository
 
-import com.riox432.civitdeck.data.api.RetryConfig
-import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
-import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.GenerationStatus
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respondError
@@ -38,8 +36,6 @@ import kotlin.test.assertTrue
  */
 class ComfyUIGenerationRepositoryImplTest {
 
-    private fun wsApi() = ComfyUIWebSocketApi(mockClient { okJson("{}") }, testJson)
-
     private fun daoWithActive() = FakeComfyUIConnectionDao().apply {
         rows.add(ComfyUIConnectionEntity(id = 1, name = "A", hostname = "h", port = 8188, isActive = true, createdAt = 1))
     }
@@ -48,8 +44,8 @@ class ComfyUIGenerationRepositoryImplTest {
         dao: FakeComfyUIConnectionDao = daoWithActive(),
         handler: suspend io.ktor.client.engine.mock.MockRequestHandleScope.(HttpRequestData) -> io.ktor.client.request.HttpResponseData,
     ): ComfyUIGenerationRepositoryImpl {
-        val api = ComfyUIApi(mockClient(handler), testJson)
-        return ComfyUIGenerationRepositoryImpl(dao, api, wsApi(), testJson)
+        val provider = ComfyUIApiProvider(dao, mockClient(handler), testJson)
+        return ComfyUIGenerationRepositoryImpl(provider, testJson)
     }
 
     @Test
@@ -109,12 +105,7 @@ class ComfyUIGenerationRepositoryImplTest {
             install(ContentNegotiation) { json(testJson) }
             install(WebSockets)
         }
-        val r = ComfyUIGenerationRepositoryImpl(
-            daoWithActive(),
-            ComfyUIApi(client, testJson),
-            ComfyUIWebSocketApi(client, testJson, RetryConfig(maxRetries = 0)),
-            testJson,
-        )
+        val r = ComfyUIGenerationRepositoryImpl(ComfyUIApiProvider(daoWithActive(), client, testJson), testJson)
 
         r.submitGeneration(ComfyUIGenerationParams(checkpoint = "m", prompt = "p"))
         // The mock cannot complete a WebSocket handshake; only the handshake URL matters here.

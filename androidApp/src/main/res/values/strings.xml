@@ -424,6 +424,7 @@
     <string name="comfyui_result_generating">Generating…</string>
     <string name="comfyui_output_gallery_title">Output Gallery</string>
     <string name="comfyui_add_to_dataset">Add to Dataset</string>
+    <string name="comfyui_load_older_outputs">Load older outputs</string>
     <string name="comfyui_mask_editor_title">Mask Editor</string>
     <string name="comfyui_no_loras">No LoRAs found on server</string>
     <string name="comfyui_loading_parameters">Loading parameters…</string>

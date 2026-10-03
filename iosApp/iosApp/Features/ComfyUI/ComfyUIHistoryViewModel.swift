@@ -16,6 +16,8 @@ final class ComfyUIHistoryViewModelOwner: ObservableObject {
     @Published var addToDatasetSuccess: KotlinBoolean?
     @Published var datasets: [DatasetCollection] = []
     @Published var shareHashtags: [ShareHashtag] = []
+    @Published var canLoadOlder = false
+    @Published var isLoadingOlder = false
 
     init() {
         vm = KoinHelper.shared.createComfyUIHistoryViewModel()
@@ -34,6 +36,8 @@ final class ComfyUIHistoryViewModelOwner: ObservableObject {
             showDatasetPicker = state.showDatasetPicker
             pendingImageForDataset = state.pendingImageForDataset
             addToDatasetSuccess = state.addToDatasetSuccess
+            canLoadOlder = state.canLoadOlder
+            isLoadingOlder = state.isLoadingOlder
         }
     }
 
@@ -54,6 +58,7 @@ final class ComfyUIHistoryViewModelOwner: ObservableObject {
     }
 
     func refresh() { vm.refresh() }
+    func loadOlder() { vm.loadOlder() }
     func onSelectSort(_ sort: Feature_comfyuiHistorySortOrder) { vm.onSelectSort(sort: sort) }
     func onSaveImage(url: String, filename: String) { vm.onSaveImage(imageUrl: url, filename: filename) }
     func onDismissSaveResult() { vm.onDismissSaveResult() }

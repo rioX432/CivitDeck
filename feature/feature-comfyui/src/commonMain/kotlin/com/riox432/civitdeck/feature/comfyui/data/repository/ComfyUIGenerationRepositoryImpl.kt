@@ -1,10 +1,7 @@
 package com.riox432.civitdeck.feature.comfyui.data.repository
 
-import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIOutputImage
-import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketMessage
-import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.GenerationProgress
@@ -12,7 +9,11 @@ import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
 import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIEndpoint
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -20,12 +21,11 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlin.concurrent.Volatile
 import kotlin.random.Random
 
 class ComfyUIGenerationRepositoryImpl(
-    private val dao: ComfyUIConnectionDao,
-    private val api: ComfyUIApi,
-    private val webSocketApi: ComfyUIWebSocketApi,
+    private val apiProvider: ComfyUIApiProvider,
     private val json: Json,
 ) : ComfyUIGenerationRepository {
 
@@ -33,30 +33,25 @@ class ComfyUIGenerationRepositoryImpl(
     // client_id submitted with the prompt, so submission and progress must share this id.
     private val clientId = "civitdeck-${Random.nextLong(0, Long.MAX_VALUE)}"
 
-    override suspend fun fetchCheckpoints(): List<String> {
-        ensureApiConfigured()
-        return api.getCheckpoints()
-    }
+    // Only for getImageUrl, which cannot suspend to read the active row.
+    @Volatile
+    private var lastEndpoint: ComfyUIEndpoint? = null
 
-    override suspend fun fetchLoras(): List<String> {
-        ensureApiConfigured()
-        return api.getLoras()
-    }
+    override suspend fun fetchCheckpoints(): List<String> = activeEndpoint().api.getCheckpoints()
 
-    override suspend fun fetchControlNets(): List<String> {
-        ensureApiConfigured()
-        return api.getControlNets()
-    }
+    override suspend fun fetchLoras(): List<String> = activeEndpoint().api.getLoras()
+
+    override suspend fun fetchControlNets(): List<String> = activeEndpoint().api.getControlNets()
 
     override suspend fun submitGeneration(params: ComfyUIGenerationParams): String {
-        ensureApiConfigured()
+        val api = activeEndpoint().api
         val workflow = buildWorkflow(params)
         val response = api.submitPrompt(workflow, clientId)
         return response.promptId
     }
 
     override suspend fun pollGenerationResult(promptId: String): GenerationResult {
-        ensureApiConfigured()
+        val api = activeEndpoint().api
         val entry = api.getHistory(promptId)
             ?: return GenerationResult(promptId, GenerationStatus.Running)
 
@@ -82,12 +77,17 @@ class ComfyUIGenerationRepositoryImpl(
         port: Int,
     ): Flow<GenerationProgress> = observeGenerationProgress(promptId, "http://$host:$port", "ws")
 
+    /**
+     * [baseUrl] is the URL of the connection the job was submitted on, and its trust is looked
+     * up by host and port. The socket scheme is derived from [baseUrl], which [wsScheme] mirrors.
+     */
     override fun observeGenerationProgress(
         promptId: String,
         baseUrl: String,
         wsScheme: String,
     ): Flow<GenerationProgress> {
-        return webSocketApi.observeProgress(baseUrl, wsScheme, clientId, promptId).mapNotNull { msg ->
+        val messages = flow { emitAll(apiProvider.forUrl(baseUrl).observeProgress(clientId, promptId)) }
+        return messages.mapNotNull { msg ->
             when (msg) {
                 is ComfyUIWebSocketMessage.Progress -> GenerationProgress(
                     promptId = msg.promptId,
@@ -107,12 +107,11 @@ class ComfyUIGenerationRepositoryImpl(
     }
 
     override suspend fun interruptGeneration() {
-        ensureApiConfigured()
-        api.interrupt()
+        activeEndpoint().api.interrupt()
     }
 
     override suspend fun uploadMaskImage(maskPngBytes: ByteArray): String {
-        ensureApiConfigured()
+        val api = activeEndpoint().api
         val filename = "mask_${com.riox432.civitdeck.data.local.currentTimeMillis()}.png"
         val response = api.uploadImage(
             imageBytes = maskPngBytes,
@@ -122,21 +121,17 @@ class ComfyUIGenerationRepositoryImpl(
         return response.name
     }
 
+    /** Builds the URL on the server of this repository's latest call. */
     override fun getImageUrl(filename: String, subfolder: String, type: String): String {
-        return api.getImageUrl(ComfyUIOutputImage(filename, subfolder, type))
-    }
-
-    override suspend fun fetchObjectInfo(): String {
-        ensureApiConfigured()
-        return api.getFullObjectInfo()
-    }
-
-    private suspend fun ensureApiConfigured() {
-        val active = dao.getActive()
+        val endpoint = lastEndpoint
             ?: throw DomainException.ConnectionException("No active ComfyUI connection")
-        val scheme = if (active.useHttps) "https" else "http"
-        api.setBaseUrl("$scheme://${active.hostname}:${active.port}")
+        return endpoint.api.getImageUrl(ComfyUIOutputImage(filename, subfolder, type))
     }
+
+    override suspend fun fetchObjectInfo(): String = activeEndpoint().api.getFullObjectInfo()
+
+    private suspend fun activeEndpoint(): ComfyUIEndpoint =
+        apiProvider.forActive().also { lastEndpoint = it }
 
     private fun buildWorkflow(params: ComfyUIGenerationParams): JsonObject {
         // If custom workflow JSON is provided, use it directly
