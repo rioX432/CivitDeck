@@ -30,7 +30,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -216,8 +215,9 @@ private fun GenerationContent(
         item(key = "prompt") { PromptInputs(state, viewModel) }
         item(key = "parameters") { ParameterControls(state, viewModel) }
         item(key = "lora") { LoraSection(state, viewModel) }
+        // ControlNet stays hidden: the form has no control image input, and the workflow builder
+        // rejects ControlNet without one.
         if (!isDiffusionModel) {
-            item(key = "controlNet") { ControlNetSection(state, viewModel) }
             item(key = "inpainting") {
                 InpaintingSection(state, viewModel, onNavigateToMaskEditor)
             }
@@ -316,46 +316,6 @@ private fun LoraRow(lora: LoraSelection, viewModel: ComfyUIGenerationViewModel) 
             valueRange = 0f..2f,
             onValueChange = { v -> viewModel.onLoraStrengthChanged(lora.name, v, v) },
         )
-    }
-}
-
-@Composable
-private fun ControlNetSection(state: GenerationUiState, viewModel: ComfyUIGenerationViewModel) {
-    var expanded by remember { mutableStateOf(false) }
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(Spacing.md), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    stringResource(R.string.comfyui_controlnet_label),
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.weight(1f)
-                )
-                Switch(checked = state.controlNetEnabled, onCheckedChange = viewModel::onControlNetToggled)
-            }
-            if (state.controlNetEnabled) {
-                TextButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
-                    Text(state.selectedControlNet.ifBlank { "Select ControlNet model..." }, maxLines = 1)
-                }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    state.availableControlNets.forEach { cn ->
-                        DropdownMenuItem(
-                            text = { Text(cn.substringAfterLast('/'), maxLines = 1) },
-                            onClick = {
-                                viewModel.onControlNetSelected(cn)
-                                expanded = false
-                            },
-                        )
-                    }
-                }
-                ParameterSliderRow(
-                    label = "Strength",
-                    valueLabel = "%.2f".format(state.controlNetStrength),
-                    value = state.controlNetStrength,
-                    valueRange = 0f..2f,
-                    onValueChange = { viewModel.onControlNetStrengthChanged(it) },
-                )
-            }
-        }
     }
 }
 

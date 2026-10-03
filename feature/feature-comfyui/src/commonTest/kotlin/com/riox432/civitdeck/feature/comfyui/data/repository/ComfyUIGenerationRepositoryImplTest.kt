@@ -25,6 +25,7 @@ import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
@@ -35,6 +36,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -450,9 +452,6 @@ class ComfyUIGenerationRepositoryImplTest {
         negativePrompt = "blurry",
         seed = 42,
         loraSelections = listOf(LoraSelection("a.safetensors", 0.5f, 0.25f), LoraSelection("b.safetensors")),
-        controlNetEnabled = true,
-        controlNetModel = "canny.pth",
-        controlNetStrength = 0.75f,
     )
 
     @Test
@@ -466,7 +465,6 @@ class ComfyUIGenerationRepositoryImplTest {
     fun submitGeneration_without_diffusion_model_sends_the_inpainting_graph_unchanged() = runTest {
         val params = checkpointParams.copy(
             loraSelections = listOf(LoraSelection("a.safetensors", 0.5f, 0.25f)),
-            controlNetEnabled = false,
             initImageFilename = "init.png",
             maskImageFilename = "mask.png",
             denoiseStrength = 0.5,
@@ -597,7 +595,10 @@ class ComfyUIGenerationRepositoryImplTest {
         val withInpainting = diffusionParams.copy(initImageFilename = "init.png", maskImageFilename = "mask.png")
         val withMaskOnly = diffusionParams.copy(maskImageFilename = "mask.png")
 
-        assertFailsWith<IllegalArgumentException> { r.submitGeneration(withControlNet) }
+        assertEquals(
+            "ControlNet cannot be combined with a diffusion model",
+            assertFailsWith<IllegalArgumentException> { r.submitGeneration(withControlNet) }.message,
+        )
         assertFailsWith<IllegalArgumentException> { r.submitGeneration(withInpainting) }
         assertFailsWith<IllegalArgumentException> { r.submitGeneration(withMaskOnly) }
         assertEquals(0, prompts)
@@ -609,6 +610,57 @@ class ComfyUIGenerationRepositoryImplTest {
         val graph = submittedGraph(diffusionParams.copy(controlNetEnabled = true, controlNetModel = ""))
 
         assertEquals(link("6", 0), graph.input("4", "positive"))
+    }
+
+    private val checkpointWithControlNet = checkpointParams.copy(
+        controlNetEnabled = true,
+        controlNetModel = "canny.pth",
+        controlNetStrength = 0.75f,
+    )
+
+    @Test
+    fun submitGeneration_rejects_controlnet_on_a_checkpoint_without_a_control_image() = runTest {
+        var prompts = 0
+        val r = repo { request ->
+            if (request.url.encodedPath == "/prompt") prompts++
+            okJson("""{"prompt_id":"g-1"}""")
+        }
+        val withInpainting = checkpointWithControlNet.copy(initImageFilename = "init.png", maskImageFilename = "mask.png")
+
+        assertFailsWith<IllegalArgumentException> { r.submitGeneration(checkpointWithControlNet) }
+        assertFailsWith<IllegalArgumentException> { r.submitGeneration(withInpainting) }
+        assertEquals(0, prompts)
+    }
+
+    @Test
+    fun submitGeneration_never_sends_a_controlnet_apply_without_a_linked_image() = runTest {
+        val sentGraphs = mutableListOf<JsonObject>()
+        val r = repo { request ->
+            if (request.url.encodedPath == "/prompt") {
+                val body: JsonObject = testJson.decodeFromString(request.body.toByteArray().decodeToString())
+                sentGraphs += body.getValue("prompt").jsonObject
+            }
+            okJson("""{"prompt_id":"g-1"}""")
+        }
+        val controlNetRequests = listOf(
+            checkpointWithControlNet,
+            checkpointWithControlNet.copy(initImageFilename = "init.png", maskImageFilename = "mask.png"),
+            checkpointWithControlNet.copy(controlNetModel = ""),
+            diffusionParams.copy(controlNetEnabled = true, controlNetModel = "canny.pth"),
+            diffusionParams.copy(controlNetEnabled = true, controlNetModel = ""),
+        )
+
+        controlNetRequests.forEach { params ->
+            runCatching { r.submitGeneration(params) }.onFailure { assertIs<IllegalArgumentException>(it) }
+        }
+
+        val controlNetImages = sentGraphs.flatMap { graph ->
+            graph.values.map { it.jsonObject }
+                .filter { it["class_type"]?.jsonPrimitive?.content == "ControlNetApply" }
+                .map { it.getValue("inputs").jsonObject["image"] }
+        }
+        assertTrue(sentGraphs.isNotEmpty())
+        assertTrue(controlNetImages.all { it is JsonArray && it.size == 2 }, "Unlinked ControlNet image: $controlNetImages")
     }
 
     @Test
@@ -627,7 +679,7 @@ class ComfyUIGenerationRepositoryImplTest {
     }
 
     private companion object {
-        // Graphs the builder sent before diffusion models existed, one node per line.
+        // Checkpoint graphs the builder sends, one node per line.
         val CHECKPOINT_GRAPH = """
             {"3":{"class_type":"CheckpointLoaderSimple","inputs":{"ckpt_name":"sd15.safetensors"}},
             "10":{"class_type":"LoraLoader","inputs":{"lora_name":"a.safetensors","strength_model":0.5,
@@ -636,12 +688,9 @@ class ComfyUIGenerationRepositoryImplTest {
             "strength_clip":1.0,"model":["10",0],"clip":["10",1]}},
             "6":{"class_type":"CLIPTextEncode","inputs":{"text":"a cat","clip":["11",1]}},
             "7":{"class_type":"CLIPTextEncode","inputs":{"text":"blurry","clip":["11",1]}},
-            "20":{"class_type":"ControlNetLoader","inputs":{"control_net_name":"canny.pth"}},
-            "21":{"class_type":"ControlNetApply","inputs":{"conditioning":["6",0],"control_net":["20",0],
-            "image":[],"strength":0.75}},
             "5":{"class_type":"EmptyLatentImage","inputs":{"width":512,"height":512,"batch_size":1}},
             "4":{"class_type":"KSampler","inputs":{"seed":42,"steps":20,"cfg":7.0,"sampler_name":"euler",
-            "scheduler":"normal","denoise":1.0,"model":["11",0],"positive":["21",0],"negative":["7",0],
+            "scheduler":"normal","denoise":1.0,"model":["11",0],"positive":["6",0],"negative":["7",0],
             "latent_image":["5",0]}},
             "8":{"class_type":"VAEDecode","inputs":{"samples":["4",0],"vae":["3",2]}},
             "9":{"class_type":"SaveImage","inputs":{"filename_prefix":"CivitDeck","images":["8",0]}}}

@@ -31,9 +31,10 @@ struct ComfyUIGenerationView: View {
                 promptInputs
                 parameterControls
                 loraSection
-                // The workflow builder supports ControlNet and inpainting only for checkpoints.
+                // The workflow builder supports inpainting only for checkpoints. ControlNet stays
+                // hidden: the form has no control image input, and the builder rejects ControlNet
+                // without one.
                 if !viewModel.isDiffusionModelSelected {
-                    controlNetSection
                     inpaintingSection
                 }
                 customWorkflowSection
@@ -174,30 +175,6 @@ struct ComfyUIGenerationView: View {
                 }
                 ForEach(viewModel.loraSelections, id: \.name) { lora in
                     LoraRow(lora: lora, viewModel: viewModel)
-                }
-            }
-        }
-    }
-
-    private var controlNetSection: some View {
-        GroupBox(label: Label("ControlNet", systemImage: "slider.horizontal.3")) {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Toggle("Enable ControlNet", isOn: Binding(
-                    get: { viewModel.controlNetEnabled }, set: { viewModel.onControlNetToggled($0) }
-                ))
-                if viewModel.controlNetEnabled {
-                    Picker("Model", selection: Binding(
-                        get: { viewModel.selectedControlNet }, set: { viewModel.onControlNetSelected($0) }
-                    )) {
-                        Text("Select...").tag("")
-                        ForEach(viewModel.availableControlNets, id: \.self) { cn in
-                            Text(cn.components(separatedBy: "/").last ?? cn).tag(cn)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    paramSlider(label: "Strength", value: Binding(
-                        get: { viewModel.controlNetStrength }, set: { viewModel.onControlNetStrengthChanged($0) }
-                    ), range: 0...2, format: "%.2f")
                 }
             }
         }
