@@ -11,6 +11,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubBrowserViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubDetailViewModel
@@ -46,6 +47,8 @@ import com.riox432.civitdeck.ui.create.CreateHubScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerImageDetailScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsScreen
+import kotlinx.coroutines.flow.first
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -60,7 +63,7 @@ internal fun EntryProviderScope<Any>.createHubEntry(backStack: MutableList<Any>)
                 onNavigateToComfyUIGeneration = { backStack.add(ComfyUIGenerationRoute) },
                 onNavigateToComfyUIQueue = { backStack.add(ComfyUIQueueRoute) },
                 onNavigateToComfyUIHistory = { backStack.add(ComfyUIHistoryRoute) },
-                onNavigateToOnboarding = { backStack.add(ConnectionOnboardingRoute) },
+                onNavigateToOnboarding = { backStack.add(ConnectionOnboardingRoute()) },
                 onNavigateToSDWebUI = { backStack.add(SDWebUISettingsRoute) },
                 onNavigateToSDWebUIGeneration = { backStack.add(SDWebUIGenerationRoute) },
                 onNavigateToExternalServer = { backStack.add(ExternalServerSettingsRoute) },
@@ -86,7 +89,8 @@ internal fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>)
             onBack = { backStack.removeLastOrNull() },
             onNavigateToGeneration = { backStack.add(ComfyUIGenerationRoute) },
             onNavigateToHistory = { backStack.add(ComfyUIHistoryRoute) },
-            onNavigateToOnboarding = { backStack.add(ConnectionOnboardingRoute) },
+            onNavigateToOnboarding = { backStack.add(ConnectionOnboardingRoute()) },
+            onReviewCertificate = { id -> backStack.add(ConnectionOnboardingRoute(reviewConnectionId = id)) },
         )
     }
     connectionOnboardingEntry(backStack)
@@ -170,13 +174,30 @@ private fun WorkflowTemplatePickerDialog(
 }
 
 private fun EntryProviderScope<Any>.connectionOnboardingEntry(backStack: MutableList<Any>) {
-    entry<ConnectionOnboardingRoute> {
+    entry<ConnectionOnboardingRoute> { key ->
         val viewModel: ConnectionOnboardingViewModel = koinViewModel()
+        key.reviewConnectionId?.let { ReviewCertificateEffect(it, viewModel) }
         ConnectionOnboardingScreen(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
             onConnected = { backStack.removeLastOrNull() },
         )
+    }
+}
+
+// Settings offers the review only for the active connection, so the active row is resolved
+// instead of a lookup by id. If another row became active meanwhile, onboarding stays on the
+// method picker rather than testing the wrong server.
+@Composable
+private fun ReviewCertificateEffect(connectionId: Long, viewModel: ConnectionOnboardingViewModel) {
+    val observeActiveConnection = koinInject<ObserveActiveComfyUIConnectionUseCase>()
+    // Saved across configuration changes so the review is not restarted over the ViewModel's result.
+    var started by rememberSaveable(connectionId) { mutableStateOf(false) }
+    LaunchedEffect(connectionId) {
+        if (started) return@LaunchedEffect
+        val active = observeActiveConnection().first()
+        started = true
+        if (active?.id == connectionId) viewModel.onReviewCertificate(active)
     }
 }
 

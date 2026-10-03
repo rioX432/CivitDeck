@@ -2,6 +2,8 @@ package com.riox432.civitdeck.ui.comfyui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,6 +29,7 @@ import com.riox432.civitdeck.ui.theme.Spacing
 internal fun StatusSection(
     state: ComfyUISettingsUiState,
     onTest: () -> Unit,
+    onReviewCertificate: (Long) -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -41,7 +44,7 @@ internal fun StatusSection(
         ),
     ) {
         Column(modifier = Modifier.padding(Spacing.md)) {
-            StatusHeader(state, onTest)
+            StatusHeader(state, onTest, onReviewCertificate)
             state.testError?.let {
                 Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             }
@@ -49,28 +52,45 @@ internal fun StatusSection(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun StatusHeader(state: ComfyUISettingsUiState, onTest: () -> Unit) {
+private fun StatusHeader(
+    state: ComfyUISettingsUiState,
+    onTest: () -> Unit,
+    onReviewCertificate: (Long) -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        // Weighted so long text wraps instead of pushing the action buttons out of the card. The
+        // badge flows to its own line rather than breaking mid-word when two buttons leave little room.
+        Column(modifier = Modifier.weight(1f)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                 Text(statusLabel(state.connectionStatus), style = MaterialTheme.typography.titleMedium)
                 state.securityLevel?.let { level ->
-                    SecurityBadge(level, modifier = Modifier.padding(start = Spacing.sm))
+                    SecurityBadge(level, modifier = Modifier.align(Alignment.CenterVertically))
                 }
             }
             state.activeConnection?.let {
                 Text(it.baseUrl, style = MaterialTheme.typography.bodySmall)
             }
         }
+        val active = state.activeConnection
         if (state.isTesting) {
             CircularProgressIndicator(modifier = Modifier.size(24.dp))
-        } else if (state.activeConnection != null) {
-            TextButton(onClick = onTest) { Text(stringResource(R.string.action_test)) }
+        } else if (active != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Pinned trust applies to every HTTPS self-signed row, including those with no pin
+                // stored yet, so the review is offered whether or not a fingerprint is saved.
+                if (active.useHttps && active.acceptSelfSigned) {
+                    TextButton(onClick = { onReviewCertificate(active.id) }) {
+                        Text(stringResource(R.string.comfyui_review_certificate))
+                    }
+                }
+                TextButton(onClick = onTest) { Text(stringResource(R.string.action_test)) }
+            }
         }
     }
 }

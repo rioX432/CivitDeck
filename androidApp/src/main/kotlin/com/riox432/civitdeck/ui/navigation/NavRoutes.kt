@@ -32,7 +32,8 @@ data class CompareRoute(val leftModelId: Long, val rightModelId: Long)
 
 data object ComfyUISettingsRoute
 
-data object ConnectionOnboardingRoute
+/** [reviewConnectionId] opens onboarding on the certificate review for that saved connection. */
+data class ConnectionOnboardingRoute(val reviewConnectionId: Long? = null)
 
 data object ComfyUIGenerationRoute
 
