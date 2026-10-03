@@ -26,6 +26,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Android ComfyUI settings show a "Review certificate" button next to Test when the active connection uses HTTPS with self-signed certificates accepted; it opens onboarding on the certificate review for that connection, so a regenerated server certificate can be re-confirmed without re-adding the connection (#1127)
 - iOS ComfyUI Outputs list shows a "Load older outputs" button at the older end of the list (below the grid for Newest, above it for Oldest) when more history may exist beyond the loaded window, with a spinner in its place while loading (#1055)
 - iOS ComfyUI clients built with `ComfyUIServerTrust.PinnedLeaf` accept only the server whose leaf certificate matches the SHA-256 pin, for HTTP and WebSocket, and record the presented fingerprint; any other certificate, or no pin, cancels the handshake instead of falling back to system trust. The public `ComfyUIServerTrustEvaluator` makes the same decision for Swift `URLSession` delegates (#1128)
+- iOS ComfyUI onboarding shows the server certificate's SHA-256 fingerprint in the `openssl x509 -noout -fingerprint -sha256` format, with a hint to compare it on the server and a "Trust this certificate" button that saves the connection with that pin, when the test fails because the certificate is not confirmed yet or differs from the trusted one (#1129)
 
 ### Changed
 
@@ -45,6 +46,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 - Reviews list/submit feature (reads/writes CivitAI's tRPC, conflicts with the "no SNS/community" scope) — `Model.stats.rating` is retained and still shown; the 2 tRPC review requests per model detail are eliminated (#991, #1000)
 - The trust-all ComfyUI HTTP client (`createComfyUIHttpClientWithSelfSignedTls`, `createPlatformComfyUIHttpClient` and their Koin-named client), which accepted every server certificate and, on Android, every hostname. A self-signed server is reached only through a client pinned to its confirmed certificate (#1132)
+- The shared `ComfyUIApi` and `ComfyUIWebSocketApi` Koin singletons — ComfyUI calls build their API per call (`ComfyUIApiProvider`, or a transient instance for the connection test and the LAN scan), so no code can reach the server through a shared instance that ignores the connection's TLS trust. The `named("comfyui")` HTTP client stays for Civitai Link, the LAN scan and ntfy (#1125)
 
 ### Fixed
 
@@ -70,6 +72,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - ComfyHub "import to server" posts the workflow to the active connection — it used the shared `ComfyUIApi` without setting its base URL, so it reached whichever server a queue, history or settings test call had set last, or failed when none had run in the session; with no active connection it now reports "No active ComfyUI connection" (#1122)
 - Android "Try in ComfyUI" now opens the generation screen with the first sample image's prompt, negative prompt, steps, CFG and seed filled in, and selects the model's primary file as the checkpoint for Checkpoint models; the prefill applies once per screen so edits survive returning from another screen (#1039)
 - iOS "Try in ComfyUI" now opens the generation sheet with the first visible sample image's prompt, negative prompt, steps, CFG and seed filled in, and selects the model's primary file as the checkpoint for Checkpoint models when the server has it; the prefill applies once per sheet so it never overwrites edits (#1040)
+- ComfyUI onboarding's manual host field accepts a pasted URL such as `http://192.168.1.5:8188/` or `https://pc.tailnet.ts.net` — a scheme or port in the host text overrides the port field and HTTPS toggle (an `http://`/`https://` URL without a port uses 8188/443), instead of building `http://http://…:8188` and failing as unreachable; an unparseable host such as `host:abc` fails immediately without a network call (#1058)
 
 ### Infrastructure
 
