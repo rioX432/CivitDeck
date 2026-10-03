@@ -1,5 +1,7 @@
 package com.riox432.civitdeck.data.api.comfyui
 
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.isSuccess
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
@@ -23,6 +25,19 @@ data class QueueResponse(
     @SerialName("queue_running") val running: List<kotlinx.serialization.json.JsonElement> = emptyList(),
     @SerialName("queue_pending") val pending: List<kotlinx.serialization.json.JsonElement> = emptyList(),
 )
+
+/**
+ * Outcome of probing GET /queue without deserializing into [QueueResponse], whose all-default
+ * fields would accept any JSON object. [hasQueueRunning] is true only when the body is a JSON
+ * object containing `queue_running`, which real ComfyUI always returns.
+ */
+data class QueueProbe(
+    val status: Int,
+    val hasQueueRunning: Boolean,
+) {
+    val isSuccessStatus: Boolean get() = HttpStatusCode.fromValue(status).isSuccess()
+    val isComfyUIQueue: Boolean get() = isSuccessStatus && hasQueueRunning
+}
 
 /**
  * A single output image reference from ComfyUI history.

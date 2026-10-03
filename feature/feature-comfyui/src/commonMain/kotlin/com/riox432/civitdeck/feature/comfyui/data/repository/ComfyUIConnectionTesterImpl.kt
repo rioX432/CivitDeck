@@ -12,7 +12,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
-import io.ktor.client.plugins.ResponseException
 import kotlinx.serialization.json.Json
 
 private const val TAG = "ComfyUIConnectionTester"
@@ -33,21 +32,25 @@ class ComfyUIConnectionTesterImpl(
         val api = ComfyUIApi(client, json)
         api.setBaseUrl(connection.baseUrl)
         return try {
-            api.getQueue()
-            // Health check passed; fetch optional stats (best-effort, never fails the test).
-            val stats = fetchStats(api)
-            ConnectionTestResult.Success(stats)
+            val probe = api.probeQueue()
+            when {
+                !probe.isSuccessStatus ->
+                    failure(connection, ConnectionFailureCause.Http, "HTTP ${probe.status}", probe.status)
+                // Something other than ComfyUI answered with 2xx (e.g. another JSON service on the port).
+                !probe.hasQueueRunning ->
+                    failure(connection, ConnectionFailureCause.Unknown, "/queue response lacks queue_running")
+                // Health check passed; fetch optional stats (best-effort, never fails the test).
+                else -> ConnectionTestResult.Success(fetchStats(api))
+            }
         } catch (e: ConnectTimeoutException) {
-            failure(connection, ConnectionFailureCause.Timeout, e)
+            failure(connection, ConnectionFailureCause.Timeout, e.message)
         } catch (e: HttpRequestTimeoutException) {
-            failure(connection, ConnectionFailureCause.Timeout, e)
+            failure(connection, ConnectionFailureCause.Timeout, e.message)
         } catch (e: SocketTimeoutException) {
-            failure(connection, ConnectionFailureCause.Timeout, e)
-        } catch (e: ResponseException) {
-            failure(connection, ConnectionFailureCause.Http, e, e.response.status.value)
+            failure(connection, ConnectionFailureCause.Timeout, e.message)
         } catch (@Suppress("TooGenericExceptionCaught") e: Throwable) {
             val cause = if (isTlsFailure(e)) ConnectionFailureCause.Tls else ConnectionFailureCause.Unreachable
-            failure(connection, cause, e)
+            failure(connection, cause, e.message)
         }
     }
 
@@ -57,10 +60,10 @@ class ComfyUIConnectionTesterImpl(
     private fun failure(
         connection: ComfyUIConnection,
         cause: ConnectionFailureCause,
-        error: Throwable,
+        detail: String?,
         httpStatus: Int? = null,
     ): ConnectionTestResult.Failure {
-        Logger.w(TAG, "Test failed for ${connection.baseUrl}: $cause (${error.message})")
+        Logger.w(TAG, "Test failed for ${connection.baseUrl}: $cause ($detail)")
         return ConnectionTestResult.Failure(cause, httpStatus)
     }
 }
