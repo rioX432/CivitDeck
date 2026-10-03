@@ -1,5 +1,7 @@
 package com.riox432.civitdeck.ui.navigation
 
+import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
+
 data object SearchRoute
 
 data object CollectionsRoute
@@ -71,7 +73,8 @@ data object CivitaiLinkSettingsRoute
 
 data object ComfyUIHistoryRoute
 
-data class ComfyUIOutputDetailRoute(val imageId: String)
+// Back stacks hold routes in memory only; if routes become @Serializable NavKeys, hand off by id instead.
+data class ComfyUIOutputDetailRoute(val imageId: String, val images: List<ComfyUIGeneratedImage>)
 
 data object BrowseImagesRoute
 

@@ -171,6 +171,7 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
     }
     func onImportWorkflow(_ json: String) { vm.onImportWorkflow(jsonInput: json) }
     func onClearCustomWorkflow() { vm.onClearCustomWorkflow() }
+    func onTemplateApplied(_ template: WorkflowTemplate) { vm.onTemplateApplied(template: template, values: [:]) }
     func onParameterValueChanged(nodeId: String, paramName: String, newValue: String) {
         vm.onParameterValueChanged(nodeId: nodeId, paramName: paramName, newValue: newValue)
     }
