@@ -46,6 +46,8 @@ data class ComfyUIBridgeRoute(
     val modelName: String,
     /** Null unless the model is a Checkpoint: only those files can be selected as the ComfyUI checkpoint. */
     val checkpointFileName: String?,
+    /** The version's CivitAI base model, which selects a diffusion model family when it names one. */
+    val baseModel: String?,
     val prompt: String?,
     val negativePrompt: String?,
     val steps: Int?,

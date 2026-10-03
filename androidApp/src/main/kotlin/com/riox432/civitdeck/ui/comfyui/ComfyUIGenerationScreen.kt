@@ -68,7 +68,14 @@ fun ComfyUIGenerationScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     SaveResultSnackbar(state.imageSaveSuccess, snackbarHostState, viewModel::onDismissSaveResult)
-    val onGenerate = rememberGenerateWithNotificationPrompt(generationNotificationsEnabled, viewModel::onGenerate)
+    val onGenerate = rememberGenerateWithNotificationPrompt(generationNotificationsEnabled) {
+        dropHiddenCheckpointSettings(
+            state = viewModel.uiState.value,
+            turnOffControlNet = { viewModel.onControlNetToggled(false) },
+            clearMask = viewModel::onClearMask,
+        )
+        viewModel.onGenerate()
+    }
 
     val isGenerating = state.generationStatus == GenerationStatus.Submitting ||
         state.generationStatus == GenerationStatus.Running
@@ -232,6 +239,20 @@ private fun ComfyUIGenerationViewModel.selectDiffusionModelForBuiltInWorkflow(mo
     onControlNetToggled(false)
     onClearMask()
     onDiffusionModelSelected(model)
+}
+
+// A prefill selects its model only once the server's model lists load, so ControlNet or a mask set
+// on the checkpoint form before then survives the switch to a diffusion model, hidden. They are
+// dropped at the Generate tap, which reads the current state synchronously; reacting to the model
+// change instead could run after a tap that was already queued.
+internal fun dropHiddenCheckpointSettings(
+    state: GenerationUiState,
+    turnOffControlNet: () -> Unit,
+    clearMask: () -> Unit,
+) {
+    if (state.modelSource != GenerationModelSource.DIFFUSION_MODEL) return
+    if (state.controlNetEnabled) turnOffControlNet()
+    if (state.maskImageFilename != null) clearMask()
 }
 
 @Composable
