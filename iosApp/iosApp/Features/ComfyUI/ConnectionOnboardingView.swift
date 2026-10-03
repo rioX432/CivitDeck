@@ -3,8 +3,14 @@ import Shared
 import SwiftUI
 
 struct ConnectionOnboardingView: View {
-    @StateObject private var viewModel = ConnectionOnboardingViewModelOwner()
+    @StateObject private var viewModel: ConnectionOnboardingViewModelOwner
     @Environment(\.dismiss) private var dismiss
+
+    /// Passing `reviewConnection` opens onboarding on the certificate review of that saved
+    /// connection instead of the method picker.
+    init(reviewConnection: ComfyUIConnection? = nil) {
+        _viewModel = StateObject(wrappedValue: ConnectionOnboardingViewModelOwner(reviewing: reviewConnection))
+    }
 
     var body: some View {
         Group {
