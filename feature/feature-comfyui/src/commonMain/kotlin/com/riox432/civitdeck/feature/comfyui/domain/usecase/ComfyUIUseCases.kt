@@ -4,6 +4,7 @@ import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.ComfyUIHistoryPage
+import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.QueueJob
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
@@ -61,6 +62,10 @@ class FetchComfyUILorasUseCase(private val repository: ComfyUIGenerationReposito
 
 class FetchComfyUIControlNetsUseCase(private val repository: ComfyUIGenerationRepository) {
     suspend operator fun invoke(): List<String> = repository.fetchControlNets()
+}
+
+class FetchDiffusionModelResourcesUseCase(private val repository: ComfyUIGenerationRepository) {
+    suspend operator fun invoke(): DiffusionModelResources = repository.fetchDiffusionModelResources()
 }
 
 class ImportWorkflowUseCase {

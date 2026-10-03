@@ -8,8 +8,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * Loads ComfyUI server resources (checkpoints, LoRAs, ControlNets) and extracts dynamic
- * workflow parameters. Extracted from [ComfyUIGenerationViewModel] to reduce function count.
+ * Loads ComfyUI server resources (checkpoints, LoRAs, ControlNets, split-loader model files)
+ * and extracts dynamic workflow parameters. Extracted from [ComfyUIGenerationViewModel] to
+ * reduce function count.
  */
 internal class GenerationResourceLoader(
     private val scope: CoroutineScope,
@@ -76,6 +77,24 @@ internal class GenerationResourceLoader(
         ) {
             val list = useCases.fetchControlNets()
             uiState.update { it.copy(availableControlNets = list, isLoadingControlNets = false) }
+        }
+    }
+
+    // Errors are ignored like LoRAs: a server without the split loaders must still run checkpoints.
+    fun loadDiffusionModelResources() {
+        launchWithErrorHandling(
+            tag = "Failed to fetch diffusion model resources",
+            onError = {},
+        ) {
+            val resources = useCases.fetchDiffusionModelResources()
+            uiState.update {
+                it.copy(
+                    diffusionModels = resources.diffusionModels,
+                    textEncoders = resources.textEncoders,
+                    vaes = resources.vaes,
+                    serverClipTypes = resources.clipTypes,
+                )
+            }
         }
     }
 
