@@ -3,6 +3,7 @@ package com.riox432.civitdeck.feature.search.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.filterNsfwImages
 import com.riox432.civitdeck.domain.model.includeNsfwModels
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
@@ -39,9 +40,19 @@ class SwipeDiscoveryViewModel(
 
     private val prefetchThreshold = 3
 
+    private var nextCursor: String? = null
+    private var hasMore = true
+
+    // A cursor only continues the query it was issued for, so paging restarts when the
+    // `nsfw` request flag changes.
+    private var cursorNsfw: Boolean? = null
+
     companion object {
         /** Persists dismissed model IDs across ViewModel recreations within the same session. */
         private val sessionDismissedIds = MutableStateFlow<Set<Long>>(emptySet())
+
+        /** Same bound as `SearchPageLoader`: pages fetched per load while every result is already seen. */
+        private const val MAX_FETCH_ITERATIONS = 5
     }
 
     init {
@@ -50,22 +61,40 @@ class SwipeDiscoveryViewModel(
 
     fun loadModels() {
         if (_state.value.isLoading) return
+        // Set before launching so a swipe-triggered prefetch cannot start a second load
+        // with the same cursor before this one runs.
+        _state.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
             try {
                 val nsfwLevel = observeNsfwFilter().first()
-                val models = getDiscoveryModels(nsfw = nsfwLevel.includeNsfwModels())
-                    .filterNsfwImages(nsfwLevel)
+                val nsfw = nsfwLevel.includeNsfwModels()
+                if (nsfw != cursorNsfw) {
+                    cursorNsfw = nsfw
+                    nextCursor = null
+                    hasMore = true
+                }
+                val newModels = if (hasMore) fetchUnseenModels(nsfwLevel) else emptyList()
                 _state.update { current ->
                     val existingIds = current.cards.map { it.id }.toSet()
-                    val allSeenIds = existingIds + sessionDismissedIds.value
-                    val newModels = models.filterNot { it.id in allSeenIds }
-                    current.copy(cards = current.cards + newModels, isLoading = false)
+                    val added = newModels.filterNot { it.id in existingIds }
+                    current.copy(cards = current.cards + added, isLoading = false)
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = e.message) }
             }
         }
+    }
+
+    private suspend fun fetchUnseenModels(nsfwLevel: NsfwFilterLevel): List<Model> {
+        repeat(MAX_FETCH_ITERATIONS) {
+            val page = getDiscoveryModels(nsfw = nsfwLevel.includeNsfwModels(), cursor = nextCursor)
+            nextCursor = page.metadata.nextCursor
+            hasMore = nextCursor != null
+            val seenIds = _state.value.cards.map { it.id }.toSet() + sessionDismissedIds.value
+            val unseen = page.items.filterNsfwImages(nsfwLevel).filterNot { it.id in seenIds }
+            if (unseen.isNotEmpty() || !hasMore) return unseen
+        }
+        return emptyList()
     }
 
     fun onSwipeRight(model: Model) {
