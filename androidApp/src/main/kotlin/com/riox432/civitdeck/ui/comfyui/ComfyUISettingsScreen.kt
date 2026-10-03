@@ -39,6 +39,7 @@ fun ComfyUISettingsScreen(
     onNavigateToGeneration: () -> Unit,
     onNavigateToHistory: () -> Unit = {},
     onNavigateToOnboarding: () -> Unit = {},
+    onReviewCertificate: (Long) -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -71,6 +72,7 @@ fun ComfyUISettingsScreen(
             settingsItems(
                 state = state,
                 onTestConnection = viewModel::onTestConnection,
+                onReviewCertificate = onReviewCertificate,
                 onNavigateToGeneration = onNavigateToGeneration,
                 onNavigateToHistory = onNavigateToHistory,
                 onActivate = viewModel::onActivateConnection,
@@ -111,6 +113,7 @@ private fun LazyListScope.guidedSetupItem(onNavigateToOnboarding: () -> Unit) {
 private fun LazyListScope.settingsItems(
     state: ComfyUISettingsUiState,
     onTestConnection: () -> Unit,
+    onReviewCertificate: (Long) -> Unit,
     onNavigateToGeneration: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onActivate: (Long) -> Unit,
@@ -121,7 +124,7 @@ private fun LazyListScope.settingsItems(
     onDismissSuggestion: (String) -> Unit,
     onTestNtfy: () -> Unit,
 ) {
-    item { StatusSection(state, onTestConnection) }
+    item { StatusSection(state, onTestConnection, onReviewCertificate) }
 
     // Hardware info section
     state.systemStats?.let { stats ->

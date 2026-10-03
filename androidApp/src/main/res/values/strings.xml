@@ -400,6 +400,7 @@
     <string name="comfyui_onboarding_cert_fingerprint_label">SHA-256 fingerprint</string>
     <string name="comfyui_onboarding_cert_fingerprint_hint">On the server, run \"openssl x509 -noout -fingerprint -sha256 -in &lt;certificate file&gt;\" and check that it prints the same value.</string>
     <string name="comfyui_onboarding_trust_certificate">Trust this certificate</string>
+    <string name="comfyui_review_certificate">Review certificate</string>
     <string name="comfyui_onboarding_fail_http">Server responded with an error (HTTP %1$d).</string>
     <string name="comfyui_onboarding_fail_unknown">Could not connect. Check the address and try again.</string>
     <string name="comfyui_onboarding_name_label">Name (optional)</string>
