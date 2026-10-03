@@ -455,10 +455,11 @@ private fun SearchFilterSheet(
         BaseModelPickerSheet(
             catalog = uiState.baseModelCatalog,
             initialSelection = uiState.selectedBaseModels,
-            onClose = { selection ->
+            onApply = { selection ->
                 showBaseModelPicker = false
                 viewModel.onBaseModelsApplied(selection)
             },
+            onDismiss = { showBaseModelPicker = false },
         )
     }
 }

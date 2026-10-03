@@ -79,15 +79,15 @@ internal fun baseModelMarker(baseModel: BaseModel, catalog: BaseModelCatalog?): 
 internal fun BaseModelPickerSheet(
     catalog: BaseModelCatalog?,
     initialSelection: Set<BaseModel>,
-    onClose: (Set<BaseModel>) -> Unit,
+    onApply: (Set<BaseModel>) -> Unit,
+    onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     var selection by remember { mutableStateOf(initialSelection) }
 
-    // A swipe-down or back press applies the selection too, so closing never silently drops picks.
     ModalBottomSheet(
-        onDismissRequest = { onClose(selection) },
+        onDismissRequest = onDismiss,
         sheetState = sheetState,
     ) {
         BaseModelPickerContent(
@@ -99,7 +99,7 @@ internal fun BaseModelPickerSheet(
             onClear = { selection = emptySet() },
             onDone = {
                 scope.launch { sheetState.hide() }.invokeOnCompletion {
-                    if (!sheetState.isVisible) onClose(selection)
+                    if (!sheetState.isVisible) onApply(selection)
                 }
             },
         )
