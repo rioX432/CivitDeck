@@ -135,6 +135,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - iOS asks for notification permission when "Model Update Alerts" or "Generation Complete Alerts" is turned on in Settings, and the switch turns on only if permission is granted — the app never requested it before, so iOS could not show either alert; turning a switch off needs no permission (#1090)
 - ComfyUI onboarding's LAN scan step records when the scan has finished — `OnboardingStep.Scanning.isComplete` turns true once the scan completes or fails, keeping the servers found so far, while leaving the step or restarting the scan never marks it finished; the Android finished/empty state that uses it is #1069 (#1068)
 - Android ComfyUI onboarding's auto-detect step stops its spinner when the LAN scan ends: found servers stay listed, an empty scan says no ComfyUI answered on port 8188 and suggests starting it with `--listen` or entering the address manually, and a "Scan again" button sits next to Back — it used to spin forever with "No servers found yet" (#1069)
+- CivitAI search stops fetching when the API reports no further page — a short last page without a next cursor (or a next cursor equal to the requested one) was requested again up to five times per load (#1278)
 
 ### Infrastructure
 

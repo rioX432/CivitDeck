@@ -237,6 +237,32 @@ class SearchPageLoaderTest {
         assertEquals(listOf(3L), second)
     }
 
+    @Test
+    fun short_last_page_without_next_cursor_is_fetched_once() = runTest {
+        val modelRepo = FakeModelRepository(
+            pages = listOf(testPaginatedResult(items = modelsWithIds(1L))),
+        )
+        val loader = loaderWith(modelRepo)
+
+        val result = loader.loadPage(FilterState(), cursor = null, limit = SearchPageLoader.PAGE_SIZE)
+
+        assertEquals(listOf(1L), result.items.map { it.id })
+        assertNull(result.nextCursor)
+        assertEquals(1, modelRepo.getModelsCallCount)
+    }
+
+    @Test
+    fun next_cursor_equal_to_requested_cursor_stops_fetching() = runTest {
+        val modelRepo = FakeModelRepository(
+            pages = listOf(testPaginatedResult(items = modelsWithIds(1L), nextCursor = "c1")),
+        )
+        val loader = loaderWith(modelRepo)
+
+        loader.loadPage(FilterState(), cursor = "c1", limit = SearchPageLoader.PAGE_SIZE)
+
+        assertEquals(1, modelRepo.getModelsCallCount)
+    }
+
     private fun modelsWithIds(vararg ids: Long) = ids.map { testModel(id = it) }
 
     private fun modelWith(id: Long, downloads: Int = 100, rating: Double = 4.5) = testModel(
