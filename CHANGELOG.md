@@ -38,6 +38,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - `ComfyUIGenerationParams.diffusionModel` (`DiffusionModelSelection`: diffusion model, text encoder, CLIP `type`, VAE) makes the built-in ComfyUI workflow load the model with `UNETLoader` (node `3`), `CLIPLoader` (node `40`) and `VAELoader` (node `41`) instead of `CheckpointLoaderSimple`, with LoRAs, prompt encoding and VAE decode wired to them; combining it with a ControlNet or an inpainting mask is rejected, and checkpoint workflows are sent unchanged (#1145)
 - The shared ComfyUI generation form loads the server's diffusion-model, text-encoder, VAE and CLIP `type` lists when it opens (`GenerationUiState.diffusionModels`, `textEncoders`, `vaes`, `serverClipTypes`); a failed fetch leaves them empty without showing an error, so checkpoint generation is unaffected (#1146)
 - The shared ComfyUI generation ViewModel can generate from a diffusion model: `onDiffusionModelSelected`, `onModelFamilySelected` (Krea 2 and Anima in the new `DiffusionModelFamily` table), `onTextEncoderSelected` and `onVaeSelected`; picking a family applies its steps, CFG, sampler, scheduler and size and preselects a matching text encoder and VAE, picking a different model clears the family and restores the `euler` / `normal` sampler, and a computed `GenerationUiState.canGenerate` is false until a family the server supports, a text encoder and a VAE are all selected (#1147)
+- ComfyUI prefill takes CivitAI's base model: `PopulateGenerationFromModelUseCase(…, baseModel)` fills steps, CFG and size from the matching `DiffusionModelFamily` where the image metadata has none and always uses the family's sampler and scheduler, and `applyPrefill(params, baseModel)` selects the family and looks the file up in both server lists once both have loaded (a failed diffusion-model load counts as empty): a known family's file in `diffusion_models` is selected as a diffusion model with its text encoder and VAE preselected, in `checkpoints` as a checkpoint with the family's defaults, and on neither list nothing is selected; an unknown base model keeps the checkpoint behavior of #1038 (#1150)
 
 ### Changed
 
@@ -65,6 +66,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- ComfyUI prefill with a checkpoint now switches the shared generation form back to that checkpoint when a diffusion model was selected, instead of keeping generating from the diffusion model (#1150)
 - iOS: the "Images" navigation shortcut tab shows the CivitAI community image gallery instead of a blank screen (#1092)
 - iOS Model Update Alerts: the background model-update check can now be scheduled and run (the app declares the Background fetch mode), and it skips the CivitAI request when Model Update Alerts are off or the check interval is Off (#1091)
 - Cancelling a running download from the model detail screen stops the background download (Android WorkManager worker, Desktop download job) instead of only marking the row Cancelled, so the transfer ends and is no longer reported as Completed (#1084)
