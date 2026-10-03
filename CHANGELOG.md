@@ -21,6 +21,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - `ComfyUIHistoryViewModel.loadOlder()` re-fetches history with a window one page (200 entries) wider, exposing `canLoadOlder`/`isLoadingOlder`; `refresh()` keeps the widened window and a new fetch cancels the one in flight. No UI button yet (#1053)
 - `ComfyUIServerTrust` and `createComfyUIHttpClient(trust, timeoutConfig)` — Android/JVM ComfyUI clients can accept only the server whose leaf certificate matches a stored SHA-256 pin and record the fingerprint the server presented; iOS keeps system trust for now (#1118)
 - ComfyUI onboarding captures the certificate of a self-signed HTTPS server: the test fails with `CertificateUnconfirmed` (no pin yet) or `CertificateChanged` (different certificate) and the presented SHA-256 fingerprint, and `ConnectionOnboardingViewModel.onTrustCertificate()` tests again with that pin and saves the connection with it; `onReviewCertificate(saved)` re-tests a saved connection. The tester uses a one-off pinned client per test instead of the trust-all client (#1119)
+- iOS ComfyUI clients built with `ComfyUIServerTrust.PinnedLeaf` accept only the server whose leaf certificate matches the SHA-256 pin, for HTTP and WebSocket, and record the presented fingerprint; any other certificate, or no pin, cancels the handshake instead of falling back to system trust. The public `ComfyUIServerTrustEvaluator` makes the same decision for Swift `URLSession` delegates (#1128)
 
 ### Changed
 
