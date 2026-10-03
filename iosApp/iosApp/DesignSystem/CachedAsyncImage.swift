@@ -1,6 +1,7 @@
 import SwiftUI
 import ImageIO
 import os
+import Shared
 
 private let imageLogger = Logger(subsystem: "com.riox432.civitdeck", category: "ImageLoading")
 
@@ -112,8 +113,60 @@ enum ImageURLSession {
         let config = URLSessionConfiguration.default
         config.urlCache = cache
         config.requestCachePolicy = .returnCacheDataElseLoad
-        return URLSession(configuration: config)
+        return URLSession(configuration: config, delegate: ImageSessionDelegate(), delegateQueue: nil)
     }()
+
+    private static let cachedComfyUIPinsKey = "imageCache.comfyUIPins"
+
+    /// Clears the cache whenever a ComfyUI server's pinned certificate is confirmed, changed or
+    /// cleared, so an image fetched under the old trust is not served again for the same URL.
+    /// URLCache keys by URL only and cannot remove entries by host, so the whole cache goes;
+    /// pin changes are rare user actions. In-flight tasks to a changed host:port may still be on
+    /// the old trust, and open connections would serve later requests without a new trust
+    /// challenge, so both go too. The pins the cache was filled under are persisted because the
+    /// disk cache outlives the process.
+    static func evictOnComfyUIPinChanges() async {
+        let defaults = UserDefaults.standard
+        for await pins in KoinHelper.shared.observeComfyUIImagePins() {
+            let cachedPins = defaults.dictionary(forKey: cachedComfyUIPinsKey) as? [String: String] ?? [:]
+            guard pins != cachedPins else { continue }
+            let changedHostPorts = Set(pins.keys).union(cachedPins.keys).filter { pins[$0] != cachedPins[$0] }
+            for task in await shared.allTasks {
+                guard let url = task.originalRequest?.url, let host = url.host,
+                      changedHostPorts.contains("\(host.lowercased()):\(url.port ?? 443)") else { continue }
+                task.cancel()
+            }
+            shared.configuration.urlCache?.removeAllCachedResponses()
+            await shared.reset()
+            defaults.set(pins, forKey: cachedComfyUIPinsKey)
+        }
+    }
+}
+
+/// Answers server-trust challenges from a ComfyUI host:port with a confirmed pin through the
+/// shared Kotlin evaluator. Every other challenge gets default handling, so CivitAI images keep
+/// system trust.
+private final class ImageSessionDelegate: NSObject, URLSessionDelegate {
+    func urlSession(
+        _ session: URLSession,
+        didReceive challenge: URLAuthenticationChallenge,
+        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    ) {
+        let space = challenge.protectionSpace
+        guard space.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+              let evaluator = KoinHelper.shared.getComfyUIImageTrustEvaluator(
+                  host: space.host,
+                  port: Int32(clamping: space.port)
+              )
+        else {
+            completionHandler(.performDefaultHandling, nil)
+            return
+        }
+        let decision = evaluator.evaluate(challenge: challenge)
+        let disposition = URLSession.AuthChallengeDisposition(rawValue: Int(decision.disposition))
+            ?? .cancelAuthenticationChallenge
+        completionHandler(disposition, decision.credential)
+    }
 }
 
 // MARK: - Prefetching

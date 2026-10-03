@@ -3,10 +3,13 @@
 
 package com.riox432.civitdeck.di
 
+import com.riox432.civitdeck.data.api.comfyui.ComfyUIServerTrust
+import com.riox432.civitdeck.data.api.comfyui.ComfyUIServerTrustEvaluator
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.usecase.ObserveCivitaiLinkKeyUseCase
 import com.riox432.civitdeck.domain.usecase.SetCivitaiLinkKeyUseCase
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ApplyWorkflowTemplateUseCase
@@ -66,6 +69,7 @@ import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveActive
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.ObserveExternalServerConfigsUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.SaveExternalServerConfigUseCase
 import com.riox432.civitdeck.feature.externalserver.domain.usecase.TestExternalServerConnectionUseCase
+import kotlinx.coroutines.flow.Flow
 
 // ComfyUI
 fun KoinHelper.getObserveComfyUIConnectionsUseCase(): ObserveComfyUIConnectionsUseCase = resolve()
@@ -90,6 +94,19 @@ fun KoinHelper.getPopulateGenerationFromModelUseCase(): PopulateGenerationFromMo
 fun KoinHelper.getSaveGeneratedImageUseCase(): SaveGeneratedImageUseCase = resolve()
 fun KoinHelper.getFetchComfyUIHistoryUseCase(): FetchComfyUIHistoryUseCase = resolve()
 fun KoinHelper.getFetchComfyUIHistoryItemUseCase(): FetchComfyUIHistoryItemUseCase = resolve()
+
+/**
+ * Evaluator for a TLS server-trust challenge from [host]:[port] when a confirmed pin applies
+ * there, or null when the challenge should get system trust. A new evaluator per call, because
+ * each one records the presented fingerprint on its own [ComfyUIServerTrust.PinnedLeaf].
+ */
+fun KoinHelper.getComfyUIImageTrustEvaluator(host: String, port: Int): ComfyUIServerTrustEvaluator? =
+    resolve<ComfyUIApiProvider>().pinnedSha256For(host, port)?.let {
+        ComfyUIServerTrustEvaluator(ComfyUIServerTrust.PinnedLeaf(it))
+    }
+
+fun KoinHelper.observeComfyUIImagePins(): Flow<Map<String, String>> =
+    resolve<ComfyUIApiProvider>().pinnedSha256ByHostPort
 
 // ComfyUI Workflow Templates
 fun KoinHelper.getGetWorkflowTemplatesUseCase(): GetWorkflowTemplatesUseCase = resolve()

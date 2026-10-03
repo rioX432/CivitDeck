@@ -18,6 +18,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -58,7 +61,10 @@ class ComfyUIApiProvider(
     // on it, so it must not be read to attribute a certificate to one request. Clients for a
     // pin that is no longer stored are kept, because closing one cancels calls still on it.
     private val pinnedClients = MutableStateFlow<Map<String?, HttpClient>>(emptyMap())
-    private val snapshot = MutableStateFlow<List<ComfyUIConnectionEntity>>(emptyList())
+
+    // Null until the first read, so pinnedSha256ByHostPort does not report "no pins" before the
+    // stored connections are known.
+    private val snapshot = MutableStateFlow<List<ComfyUIConnectionEntity>?>(null)
 
     /** @throws DomainException.ConnectionException when no connection is active. */
     suspend fun forActive(): ComfyUIEndpoint {
@@ -100,7 +106,24 @@ class ComfyUIApiProvider(
      * Non-suspending pin lookup for callers that only have a URL, such as image loaders.
      * Returns null until [startSnapshot] has delivered the stored connections.
      */
-    fun pinnedSha256For(host: String, port: Int): String? = trustFor(snapshot.value, host, port)?.sha256
+    fun pinnedSha256For(host: String, port: Int): String? =
+        trustFor(snapshot.value.orEmpty(), host, port)?.sha256
+
+    /**
+     * The non-null [pinnedSha256For] results for every stored host:port, keyed `host:port` with
+     * the host lowercased. Emits once the snapshot is loaded, then only when a value changes, and
+     * each emission comes after [pinnedSha256For] already answers with it, so a cache cleared on
+     * emission cannot be refilled under the previous pin.
+     */
+    val pinnedSha256ByHostPort: Flow<Map<String, String>> = snapshot
+        .filterNotNull()
+        .map { rows ->
+            rows.map { it.hostname.lowercase() to it.port }
+                .distinct()
+                .mapNotNull { (host, port) -> trustFor(rows, host, port)?.sha256?.let { "$host:$port" to it } }
+                .toMap()
+        }
+        .distinctUntilChanged()
 
     private fun endpoint(host: String, port: Int, useHttps: Boolean, trust: PinnedTrust?): ComfyUIEndpoint {
         val scheme = if (useHttps) "https" else "http"
