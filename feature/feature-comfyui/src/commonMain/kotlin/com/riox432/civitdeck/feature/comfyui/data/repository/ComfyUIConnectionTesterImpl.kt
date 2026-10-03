@@ -19,6 +19,11 @@ private const val TAG = "ComfyUIConnectionTester"
 
 private val AUTH_REQUIRED_STATUSES = setOf(HttpStatusCode.Unauthorized.value, HttpStatusCode.Forbidden.value)
 
+// Numeric dotted quads only, so a DNS name such as `127.example.com` is not treated as loopback.
+private val IPV4_LOOPBACK = Regex("""^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$""")
+private const val IPV4_UNSPECIFIED = "0.0.0.0"
+private const val LOCALHOST = "localhost"
+
 /**
  * Tests a connection on a transient [ComfyUIApi] wrapping one of the shared, named
  * HttpClients (normal vs self-signed). A fresh [ComfyUIApi] per test avoids the mutable
@@ -48,19 +53,42 @@ class ComfyUIConnectionTesterImpl(
                 else -> ConnectionTestResult.Success(fetchStats(api))
             }
         } catch (e: ConnectTimeoutException) {
-            failure(connection, ConnectionFailureCause.Timeout, e.message)
+            noResponseFailure(connection, ConnectionFailureCause.Timeout, e.message)
         } catch (e: HttpRequestTimeoutException) {
-            failure(connection, ConnectionFailureCause.Timeout, e.message)
+            noResponseFailure(connection, ConnectionFailureCause.Timeout, e.message)
         } catch (e: SocketTimeoutException) {
-            failure(connection, ConnectionFailureCause.Timeout, e.message)
+            noResponseFailure(connection, ConnectionFailureCause.Timeout, e.message)
         } catch (@Suppress("TooGenericExceptionCaught") e: Throwable) {
-            val cause = if (isTlsFailure(e)) ConnectionFailureCause.Tls else ConnectionFailureCause.Unreachable
-            failure(connection, cause, e.message)
+            if (isTlsFailure(e)) {
+                failure(connection, ConnectionFailureCause.Tls, e.message)
+            } else {
+                noResponseFailure(connection, ConnectionFailureCause.Unreachable, e.message)
+            }
         }
     }
 
     private suspend fun fetchStats(api: ComfyUIApi): SystemStats? =
         FetchSystemStatsUseCase(api).invoke()
+
+    /**
+     * A loopback or unspecified host reaches this device rather than the ComfyUI machine (e.g. the
+     * `http://0.0.0.0:8188` line ComfyUI logs with `--listen`), so that explains the failure better
+     * than the transport error does. Loopback is still a valid target on Desktop, so the host is
+     * classified only after a test fails without any HTTP response, never blocked up front.
+     */
+    private fun noResponseFailure(
+        connection: ComfyUIConnection,
+        cause: ConnectionFailureCause,
+        detail: String?,
+    ): ConnectionTestResult.Failure {
+        val effectiveCause = if (isLoopbackHost(connection.hostname)) ConnectionFailureCause.LoopbackHost else cause
+        return failure(connection, effectiveCause, detail)
+    }
+
+    private fun isLoopbackHost(hostname: String): Boolean {
+        val host = hostname.trim()
+        return host.equals(LOCALHOST, ignoreCase = true) || host == IPV4_UNSPECIFIED || IPV4_LOOPBACK.matches(host)
+    }
 
     private fun failure(
         connection: ComfyUIConnection,
