@@ -246,6 +246,16 @@ private struct FailureView: View {
                     .buttonStyle(.borderedProminent)
                 Button("Retry") { viewModel.retry() }
                     .buttonStyle(.bordered)
+            } else if cause == .localNetworkDenied {
+                // iOS cannot read the Local Network permission; its switch is on the app's Settings page.
+                Button("comfyui_onboarding_open_settings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                Button("Retry") { viewModel.retry() }
+                    .buttonStyle(.bordered)
             } else {
                 Button("Retry") { viewModel.retry() }
                     .buttonStyle(.borderedProminent)
@@ -269,8 +279,18 @@ private struct FailureView: View {
         switch cause {
         case .unreachable:
             return "Server unreachable. Check the host, port and that ComfyUI is running."
+        case .refused:
+            return String(localized: "comfyui_onboarding_fail_refused")
         case .timeout:
-            return "Connection timed out. The server may be offline or on a different network."
+            return String(localized: "comfyui_onboarding_fail_timeout")
+        case .authRequired:
+            return String(localized: "comfyui_onboarding_fail_auth \(Int(httpStatus ?? 0))")
+        case .notComfyUi:
+            return String(localized: "comfyui_onboarding_fail_not_comfyui")
+        case .loopbackHost:
+            return String(localized: "comfyui_onboarding_fail_loopback")
+        case .localNetworkDenied:
+            return String(localized: "comfyui_onboarding_fail_local_network_denied")
         case .tls:
             return "TLS error. On iOS, install the certificate or use a trusted tunnel."
         case .certificateUnconfirmed:
