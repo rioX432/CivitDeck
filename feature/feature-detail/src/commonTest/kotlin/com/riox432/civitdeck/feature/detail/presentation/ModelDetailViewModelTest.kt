@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.detail.presentation
 
 import app.cash.turbine.test
+import com.riox432.civitdeck.domain.download.DownloadScheduler
 import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelCollection
@@ -133,17 +134,31 @@ class ModelDetailViewModelTest {
     }
 
     private class FakeDownloadRepo : ModelDownloadRepository {
+        val statuses = mutableMapOf<Long, DownloadStatus>()
+
         override suspend fun enqueueDownload(download: ModelDownload) = 1L
         override fun observeAllDownloads() = flowOf(emptyList<ModelDownload>())
         override fun observeDownloadsForModel(modelId: Long) = flowOf(emptyList<ModelDownload>())
         override suspend fun getDownloadById(id: Long): ModelDownload? = null
         override suspend fun getDownloadByFileId(fileId: Long): ModelDownload? = null
-        override suspend fun updateStatus(id: Long, status: DownloadStatus, errorMessage: String?) = Unit
+        override suspend fun updateStatus(id: Long, status: DownloadStatus, errorMessage: String?) {
+            statuses[id] = status
+        }
         override suspend fun updateProgress(id: Long, downloadedBytes: Long) = Unit
         override suspend fun updateDestinationPath(id: Long, path: String) = Unit
         override suspend fun deleteDownload(id: Long) = Unit
         override suspend fun updateHashVerified(id: Long, verified: Boolean) = Unit
         override suspend fun clearCompletedDownloads() = Unit
+    }
+
+    private class FakeDownloadScheduler : DownloadScheduler {
+        val cancelled = mutableListOf<Long>()
+
+        override fun enqueue(downloadId: Long) = Unit
+
+        override fun cancel(downloadId: Long) {
+            cancelled += downloadId
+        }
     }
 
     private class NoOpEmbeddingRepo : ModelEmbeddingRepository {
@@ -171,6 +186,8 @@ class ModelDetailViewModelTest {
         val modelRepo: FakeModelRepo,
         val favRepo: FakeFavoriteRepository,
         val browsingRepo: FakeBrowsingHistoryRepository,
+        val downloadRepo: FakeDownloadRepo,
+        val downloadScheduler: FakeDownloadScheduler,
     )
 
     private fun createViewModel(
@@ -187,6 +204,7 @@ class ModelDetailViewModelTest {
         val noteRepo = FakeNoteRepo()
         val powerUserRepo = FakeAppBehaviorPreferencesRepository()
         val downloadRepo = FakeDownloadRepo()
+        val downloadScheduler = FakeDownloadScheduler()
 
         val modelUseCases = ModelUseCases(
             getModelDetail = GetModelDetailUseCase(modelRepo),
@@ -221,6 +239,7 @@ class ModelDetailViewModelTest {
             observeModelDownloads = ObserveModelDownloadsUseCase(downloadRepo),
             enqueueDownload = EnqueueDownloadUseCase(downloadRepo),
             cancelDownload = CancelDownloadUseCase(downloadRepo),
+            downloadScheduler = downloadScheduler,
         )
 
         val vm = ModelDetailViewModel(
@@ -232,7 +251,7 @@ class ModelDetailViewModelTest {
             systemStatsProvider = SystemStatsProvider { null },
             appScope = appScope,
         )
-        return TestDeps(vm, modelRepo, favRepo, browsingRepo)
+        return TestDeps(vm, modelRepo, favRepo, browsingRepo, downloadRepo, downloadScheduler)
     }
 
     @Test
@@ -280,6 +299,14 @@ class ModelDetailViewModelTest {
         assertEquals(1L, deps.browsingRepo.endViewModelId)
         assertNotNull(deps.browsingRepo.endViewDurationMs)
         assertTrue(requireNotNull(deps.browsingRepo.endViewDurationMs) >= 0L)
+    }
+
+    @Test
+    fun cancel_download_stops_scheduled_work_and_marks_cancelled() = runTest {
+        val deps = createViewModel(this)
+        deps.vm.cancelDownload(42L)
+        assertEquals(listOf(42L), deps.downloadScheduler.cancelled)
+        assertEquals(DownloadStatus.Cancelled, deps.downloadRepo.statuses[42L])
     }
 
     @Test

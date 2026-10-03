@@ -95,6 +95,7 @@ class ModelDetailViewModel(
         scope = viewModelScope,
         enqueueDownloadUseCase = downloadUseCases.enqueueDownload,
         cancelDownloadUseCase = downloadUseCases.cancelDownload,
+        downloadScheduler = downloadUseCases.downloadScheduler,
         trackModelViewUseCase = modelUseCases.trackModelView,
         downloadEnqueuedEvent = _downloadEnqueuedEvent,
     )

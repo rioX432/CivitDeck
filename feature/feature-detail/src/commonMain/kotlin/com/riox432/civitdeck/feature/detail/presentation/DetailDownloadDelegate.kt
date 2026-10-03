@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.feature.detail.presentation
 
+import com.riox432.civitdeck.domain.download.DownloadScheduler
 import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.InteractionType
 import com.riox432.civitdeck.domain.model.Model
@@ -21,6 +22,7 @@ internal class DetailDownloadDelegate(
     private val scope: CoroutineScope,
     private val enqueueDownloadUseCase: EnqueueDownloadUseCase,
     private val cancelDownloadUseCase: CancelDownloadUseCase,
+    private val downloadScheduler: DownloadScheduler,
     private val trackModelViewUseCase: TrackModelViewUseCase,
     private val downloadEnqueuedEvent: MutableSharedFlow<Long>,
 ) {
@@ -37,7 +39,10 @@ internal class DetailDownloadDelegate(
     }
 
     fun cancelDownload(downloadId: Long) {
-        scope.launchSafe(TAG, "Cancel download") { cancelDownloadUseCase(downloadId) }
+        scope.launchSafe(TAG, "Cancel download") {
+            downloadScheduler.cancel(downloadId)
+            cancelDownloadUseCase(downloadId)
+        }
     }
 
     companion object {
