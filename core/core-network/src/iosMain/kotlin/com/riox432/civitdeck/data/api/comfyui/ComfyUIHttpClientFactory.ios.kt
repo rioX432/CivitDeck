@@ -2,6 +2,7 @@ package com.riox432.civitdeck.data.api.comfyui
 
 import com.riox432.civitdeck.data.api.TimeoutConfig
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.darwin.Darwin
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -26,23 +27,37 @@ actual fun createPlatformComfyUIHttpClient(
     trustSelfSignedCerts: Boolean,
     timeoutConfig: TimeoutConfig,
 ): HttpClient {
-    return HttpClient(Darwin) {
-        install(ContentNegotiation) {
-            json(
-                Json {
-                    ignoreUnknownKeys = true
-                    isLenient = true
-                    coerceInputValues = true
-                },
-            )
-        }
-        install(HttpTimeout) {
-            connectTimeoutMillis = timeoutConfig.connectTimeoutMs
-            requestTimeoutMillis = timeoutConfig.requestTimeoutMs
-            socketTimeoutMillis = timeoutConfig.socketTimeoutMs
-        }
-        install(Logging) { level = LogLevel.NONE }
-        install(WebSockets)
-        defaultRequest { header(HttpHeaders.Accept, "application/json") }
+    return HttpClient(Darwin) { installComfyUIPlugins(timeoutConfig) }
+}
+
+/**
+ * Always uses system trust: [ComfyUIServerTrust.PinnedLeaf] is not enforced on iOS yet, so a
+ * self-signed server fails the handshake and [ComfyUIServerTrust.PinnedLeaf.presentedSha256]
+ * stays null.
+ */
+actual fun createComfyUIHttpClient(
+    trust: ComfyUIServerTrust,
+    timeoutConfig: TimeoutConfig,
+): HttpClient {
+    return HttpClient(Darwin) { installComfyUIPlugins(timeoutConfig) }
+}
+
+private fun HttpClientConfig<*>.installComfyUIPlugins(timeoutConfig: TimeoutConfig) {
+    install(ContentNegotiation) {
+        json(
+            Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+                coerceInputValues = true
+            },
+        )
     }
+    install(HttpTimeout) {
+        connectTimeoutMillis = timeoutConfig.connectTimeoutMs
+        requestTimeoutMillis = timeoutConfig.requestTimeoutMs
+        socketTimeoutMillis = timeoutConfig.socketTimeoutMs
+    }
+    install(Logging) { level = LogLevel.NONE }
+    install(WebSockets)
+    defaultRequest { header(HttpHeaders.Accept, "application/json") }
 }

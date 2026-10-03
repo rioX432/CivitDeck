@@ -39,24 +39,38 @@ class ComfyUIConnectionTesterImplTest {
     }
 
     @Test
-    fun test_returns_http_failure_for_401_with_json_body() = runTest {
+    fun test_returns_auth_required_for_401_with_json_body() = runTest {
         val result = tester(HttpStatusCode.Unauthorized, """{"error":"unauthorized"}""").test(connection)
 
-        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.Http, 401), result)
+        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.AuthRequired, 401), result)
     }
 
     @Test
-    fun test_returns_failure_for_2xx_json_without_queue_running() = runTest {
+    fun test_returns_auth_required_for_403() = runTest {
+        val result = tester(HttpStatusCode.Forbidden, "Forbidden", "text/plain").test(connection)
+
+        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.AuthRequired, 403), result)
+    }
+
+    @Test
+    fun test_returns_not_comfyui_for_2xx_json_without_queue_running() = runTest {
         val result = tester(HttpStatusCode.OK, """{"status":"ok"}""").test(connection)
 
-        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.Unknown), result)
+        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.NotComfyUI), result)
     }
 
     @Test
-    fun test_returns_failure_for_2xx_html_page() = runTest {
+    fun test_returns_not_comfyui_for_2xx_html_page() = runTest {
         val result = tester(HttpStatusCode.OK, "<html><body>Login</body></html>", "text/html").test(connection)
 
-        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.Unknown), result)
+        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.NotComfyUI), result)
+    }
+
+    @Test
+    fun test_returns_http_failure_for_500() = runTest {
+        val result = tester(HttpStatusCode.InternalServerError, """{"error":"boom"}""").test(connection)
+
+        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.Http, 500), result)
     }
 
     @Test
