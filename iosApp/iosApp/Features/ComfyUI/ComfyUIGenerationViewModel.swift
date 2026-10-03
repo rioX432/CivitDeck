@@ -135,6 +135,7 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
             if let result = state.result {
                 resultImageUrls = result.imageUrls
             }
+            dropDiffusionModelConflicts()
         }
     }
 
@@ -145,14 +146,22 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
         selectedCheckpoint = checkpoint
         vm.onCheckpointSelected(checkpoint: checkpoint)
     }
-    /// The workflow builder rejects ControlNet or an inpainting mask combined with a diffusion
-    /// model, and the form hides both sections for one, so they are switched off here.
     func onDiffusionModelSelected(_ model: String) {
         modelSource = .diffusionModel
         selectedDiffusionModel = model
         vm.onDiffusionModelSelected(model: model)
-        if controlNetEnabled { onControlNetToggled(false) }
-        if maskImageFilename != nil { onClearMask() }
+        dropDiffusionModelConflicts()
+    }
+    /// The workflow builder rejects ControlNet or an inpainting mask combined with a diffusion
+    /// model, and the form hides both sections for one, so they are switched off here. A prefill or
+    /// template selects its model only once the server lists load, when either may already be on, so
+    /// this also runs on every state update and before generating, reading KMP's state because the
+    /// mirrored properties can lag it.
+    private func dropDiffusionModelConflicts() {
+        let state = vm.uiState.value
+        guard state.modelSource == .diffusionModel else { return }
+        if state.controlNetEnabled { onControlNetToggled(false) }
+        if state.maskImageFilename != nil { onClearMask() }
     }
     func onModelFamilySelected(_ family: Core_domainDiffusionModelFamily) {
         selectedFamily = family
@@ -200,7 +209,9 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
         self.seed = seed
         vm.onSeedChanged(seed: Int64(seed) ?? randomSeed)
     }
-    func applyPrefill(_ params: ComfyUIGenerationParams) { vm.applyPrefill(params: params) }
+    func applyPrefill(_ params: ComfyUIGenerationParams, baseModel: String?) {
+        vm.applyPrefill(params: params, baseModel: baseModel)
+    }
     func onLoraAdded(_ name: String) { vm.onLoraAdded(loraName: name) }
     func onLoraRemoved(_ name: String) { vm.onLoraRemoved(loraName: name) }
     func onLoraStrengthChanged(name: String, strengthModel: Float, strengthClip: Float) {
@@ -231,7 +242,10 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
         denoiseStrength = strength
         vm.onDenoiseStrengthChanged(strength: strength)
     }
-    func onGenerate() { vm.onGenerate() }
+    func onGenerate() {
+        dropDiffusionModelConflicts()
+        vm.onGenerate()
+    }
     func onSaveImage(url: String) { vm.onSaveImage(imageUrl: url) }
     func onDismissSaveResult() { vm.onDismissSaveResult() }
     func onInterrupt() { vm.onInterrupt() }
