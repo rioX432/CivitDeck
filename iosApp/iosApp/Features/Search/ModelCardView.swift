@@ -32,6 +32,9 @@ struct ModelCardView: View {
                         .background(Color.civitSurfaceVariant)
                         .clipShape(Capsule())
                     SourceBadgeView(source: model.source)
+                    if model.hasActivePaidAccess {
+                        PaidBadgeView()
+                    }
                 }
 
                 statsRow
@@ -90,6 +93,20 @@ struct NsfwBadgeView: View {
             .background(Color.black.opacity(0.6))
             .clipShape(Capsule())
             .accessibilityLabel("NSFW content")
+    }
+}
+
+struct PaidBadgeView: View {
+    var body: some View {
+        Text("model_badge_paid")
+            .font(.civitLabelSmall)
+            .foregroundColor(.civitOnTertiaryContainer)
+            .lineLimit(1)
+            .padding(.horizontal, Spacing.sm)
+            .padding(.vertical, Spacing.xxs)
+            .background(Color.civitTertiaryContainer)
+            .clipShape(Capsule())
+            .accessibilityLabel(Text("model_badge_paid_a11y"))
     }
 }
 

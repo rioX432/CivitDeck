@@ -23,6 +23,28 @@
         }
       }
     },
+    "model_badge_paid" : {
+      "comment" : "Chip on a model card for models whose download requires a paid-access purchase on CivitAI",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paid"
+          }
+        }
+      }
+    },
+    "model_badge_paid_a11y" : {
+      "comment" : "Accessibility label for the Paid chip on a model card",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requires purchase on CivitAI"
+          }
+        }
+      }
+    },
     "settings_title" : {
       "comment" : "Navigation title for the Settings screen",
       "localizations" : {
