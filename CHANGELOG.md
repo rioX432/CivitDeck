@@ -59,6 +59,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- Android ComfyUI output detail: Share in the share sheet attaches the output image (downloaded to a FileProvider cache, MIME type from its extension) along with the caption and hashtags; the button shows progress while the image loads, and a failed download keeps the sheet open with an error message. Other share sheets stay text-only (#1046)
 - iOS ComfyUI output detail: Share in the share sheet attaches the output image along with the caption and hashtags (loaded cache-first, with a spinner on the button while loading); if the image cannot be loaded, an alert appears and the sheet stays open. Other share sheets stay text-only (#1047)
 - iOS ComfyUI output detail: tapping the image opens the fullscreen viewer on every page, including after swiping between outputs, and VoiceOver activation opens it too (#1049)
 - Saving a ComfyUI output to the gallery fails when the image request returns a non-2xx status (for example `404` after the output file was deleted) — the save reports failure instead of "Image saved to gallery", and the error body is no longer written to the gallery as a broken image (#1045)

@@ -647,6 +647,7 @@
     <!-- Share -->
     <string name="share_add_hashtag_label">Add hashtag</string>
     <string name="share_add_tag_label">Add tag</string>
+    <string name="share_image_load_failed">Couldn\'t load the image to share</string>
 
     <!-- VRAM Compatibility -->
     <string name="cd_dismiss">Dismiss</string>
