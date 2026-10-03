@@ -16,12 +16,9 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 /**
- * Creates a Darwin-backed Ktor client with configurable TLS trust.
- * On iOS, full self-signed TLS bypass requires NSURLSessionDelegate configuration
- * which is complex to implement via K/N cinterop. This returns a standard Darwin client
- * regardless of [trustSelfSignedCerts] — users should add the self-signed cert to the iOS
- * trust store via Settings > General > About > Certificate Trust Settings, or use a tunnel
- * (Cloudflare/Tailscale).
+ * Creates a Darwin-backed Ktor client that always uses system trust and ignores
+ * [trustSelfSignedCerts]. A self-signed server is reached through [createComfyUIHttpClient] with
+ * [ComfyUIServerTrust.PinnedLeaf] instead.
  */
 actual fun createPlatformComfyUIHttpClient(
     trustSelfSignedCerts: Boolean,
@@ -31,15 +28,25 @@ actual fun createPlatformComfyUIHttpClient(
 }
 
 /**
- * Always uses system trust: [ComfyUIServerTrust.PinnedLeaf] is not enforced on iOS yet, so a
- * self-signed server fails the handshake and [ComfyUIServerTrust.PinnedLeaf.presentedSha256]
- * stays null.
+ * Ktor's Darwin delegate passes every task's challenges, WebSocket tasks included, to
+ * `handleChallenge`, so the pin covers both HTTP and `wss://` traffic.
  */
 actual fun createComfyUIHttpClient(
     trust: ComfyUIServerTrust,
     timeoutConfig: TimeoutConfig,
 ): HttpClient {
-    return HttpClient(Darwin) { installComfyUIPlugins(timeoutConfig) }
+    return HttpClient(Darwin) {
+        if (trust is ComfyUIServerTrust.PinnedLeaf) {
+            val evaluator = ComfyUIServerTrustEvaluator(trust)
+            engine {
+                handleChallenge { _, _, challenge, completionHandler ->
+                    val decision = evaluator.evaluate(challenge)
+                    completionHandler(decision.disposition, decision.credential)
+                }
+            }
+        }
+        installComfyUIPlugins(timeoutConfig)
+    }
 }
 
 private fun HttpClientConfig<*>.installComfyUIPlugins(timeoutConfig: TimeoutConfig) {
