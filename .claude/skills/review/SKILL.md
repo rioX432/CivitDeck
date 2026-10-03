@@ -20,7 +20,7 @@ Review the current branch's changes against the base branch, spending independen
 
 ## Step 0: Prepare
 
-1. Resolve the base branch: the open PR's base (`gh pr view --json baseRefName`), otherwise the remote default branch (`git symbolic-ref refs/remotes/origin/HEAD`). Do not assume `main`
+1. Resolve the base branch: the open PR's base (`gh pr view --json baseRefName`), otherwise the remote default branch (`git symbolic-ref refs/remotes/origin/HEAD`). Do not assume `main`. The session context's "Main branch" falls back to `main` when `origin/HEAD` is unset, so it is not a resolved base. Never write a branch name the lookup has not returned — not `main`, not the context's "Main branch" — into a later command; until the lookup returns, write `{base}` there
 2. `git log {base}..HEAD` — commits on this branch
 3. Build the changeset from both sources — `/dev` reviews before it commits, so the working tree usually holds most of the change:
    - `git diff {base}...HEAD` — committed changes
@@ -129,6 +129,7 @@ as an independent reviewer for the `highRisk` minimum.
 **Review profile:** fast / standard / highRisk — signals: {signals}
 **Reviewed by:** {coordinator | Agent A (Bug/Security) | Agent B (Arch/Quality) | specialists}
 **Independent reviewers:** {N} — {why each was needed, or "none: fast profile"}
+**Counts:** Critical {n} · Warning {n} · Suggestion {n} · Nit {n}
 
 ### Critical (must fix)
 - [file:line] description
