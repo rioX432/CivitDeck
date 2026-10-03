@@ -23,12 +23,15 @@ struct ComfyUIGenerationView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.md) {
-                checkpointPicker
+                GenerationModelPickers(viewModel: viewModel)
                 promptInputs
                 parameterControls
                 loraSection
-                controlNetSection
-                inpaintingSection
+                // The workflow builder supports ControlNet and inpainting only for checkpoints.
+                if !viewModel.isDiffusionModelSelected {
+                    controlNetSection
+                    inpaintingSection
+                }
                 customWorkflowSection
                 generateButton
                 statusSection
@@ -108,24 +111,6 @@ struct ComfyUIGenerationView: View {
     private var isGenerating: Bool {
         viewModel.generationStatus == .submitting
             || viewModel.generationStatus == .running
-    }
-
-    private var checkpointPicker: some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            Text("Checkpoint").font(.civitLabelMedium)
-            if viewModel.isLoadingCheckpoints {
-                ProgressView()
-            } else {
-                Picker("Checkpoint", selection: Binding(
-                    get: { viewModel.selectedCheckpoint }, set: { viewModel.onCheckpointSelected($0) }
-                )) {
-                    ForEach(viewModel.checkpoints, id: \.self) { ckpt in
-                        Text(ckpt).tag(ckpt).lineLimit(1)
-                    }
-                }
-                .pickerStyle(.menu)
-            }
-        }
     }
 
     private var promptInputs: some View {
@@ -317,8 +302,8 @@ struct ComfyUIGenerationView: View {
     private var generateButton: some View {
         let isGenerating = viewModel.generationStatus == .submitting
             || viewModel.generationStatus == .running
-        let canGenerate = viewModel.customWorkflowJson != nil
-            || (!viewModel.selectedCheckpoint.isEmpty && !viewModel.prompt.isEmpty && viewModel.hasValidDimensions)
+        let canGenerate = viewModel.canGenerate
+            && (viewModel.customWorkflowJson != nil || viewModel.hasValidDimensions)
         return HStack(spacing: Spacing.sm) {
             Button(action: viewModel.onGenerate) {
                 HStack {
