@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -39,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +51,8 @@ import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ShareHashtag
 import com.riox432.civitdeck.ui.theme.Spacing
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 private const val X_CHAR_LIMIT = 280
 
@@ -60,9 +64,9 @@ fun SocialShareSheet(
     onAddHashtag: (String) -> Unit,
     onRemoveHashtag: (String) -> Unit,
     onDismiss: () -> Unit,
+    imageUrl: String? = null,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val context = LocalContext.current
     var caption by remember { mutableStateOf("") }
     var newTagInput by remember { mutableStateOf("") }
 
@@ -100,13 +104,52 @@ fun SocialShareSheet(
                 },
             )
             Spacer(modifier = Modifier.height(Spacing.lg))
-            ActionButtons(
-                context = context,
-                fullText = fullText,
-                onDismiss = onDismiss,
-            )
+            ShareActions(fullText = fullText, imageUrl = imageUrl, onDismiss = onDismiss)
         }
     }
+}
+
+@Composable
+private fun ShareActions(
+    fullText: String,
+    imageUrl: String?,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var isPreparingImage by remember { mutableStateOf(false) }
+    var imageLoadFailed by remember { mutableStateOf(false) }
+    ActionButtons(
+        isPreparingImage = isPreparingImage,
+        onCopy = {
+            copyToClipboard(context, fullText)
+            onDismiss()
+        },
+        onShare = {
+            if (imageUrl == null) {
+                shareText(context, fullText)
+                onDismiss()
+            } else {
+                isPreparingImage = true
+                imageLoadFailed = false
+                scope.launchImageShare(context, imageUrl, fullText) { shared ->
+                    isPreparingImage = false
+                    if (shared) onDismiss() else imageLoadFailed = true
+                }
+            }
+        },
+    )
+    if (imageLoadFailed) ImageLoadFailedMessage()
+}
+
+@Composable
+private fun ImageLoadFailedMessage() {
+    Spacer(modifier = Modifier.height(Spacing.sm))
+    Text(
+        text = stringResource(R.string.share_image_load_failed),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.error,
+    )
 }
 
 @Composable
@@ -202,19 +245,16 @@ private fun AddTagRow(
 
 @Composable
 private fun ActionButtons(
-    context: Context,
-    fullText: String,
-    onDismiss: () -> Unit,
+    isPreparingImage: Boolean,
+    onCopy: () -> Unit,
+    onShare: () -> Unit,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         modifier = Modifier.fillMaxWidth(),
     ) {
         OutlinedButton(
-            onClick = {
-                copyToClipboard(context, fullText)
-                onDismiss()
-            },
+            onClick = onCopy,
             modifier = Modifier.weight(1f),
         ) {
             Icon(Icons.Default.ContentCopy, contentDescription = "Copy to clipboard", modifier = Modifier.size(18.dp))
@@ -222,13 +262,15 @@ private fun ActionButtons(
             Text(stringResource(R.string.action_copy))
         }
         Button(
-            onClick = {
-                shareText(context, fullText)
-                onDismiss()
-            },
+            onClick = onShare,
+            enabled = !isPreparingImage,
             modifier = Modifier.weight(1f),
         ) {
-            Icon(Icons.Default.Share, contentDescription = "Share", modifier = Modifier.size(18.dp))
+            if (isPreparingImage) {
+                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+            } else {
+                Icon(Icons.Default.Share, contentDescription = "Share", modifier = Modifier.size(18.dp))
+            }
             Spacer(modifier = Modifier.width(Spacing.xs))
             Text(stringResource(R.string.action_share))
         }
@@ -253,4 +295,15 @@ private fun shareText(context: Context, text: String) {
         putExtra(Intent.EXTRA_TEXT, text)
     }
     context.startActivity(Intent.createChooser(intent, "Share"))
+}
+
+private fun CoroutineScope.launchImageShare(
+    context: Context,
+    imageUrl: String,
+    text: String,
+    onResult: (shared: Boolean) -> Unit,
+) = launch {
+    val intent = ShareImageIntent.create(context, imageUrl, text)
+    if (intent != null) context.startActivity(intent)
+    onResult(intent != null)
 }
