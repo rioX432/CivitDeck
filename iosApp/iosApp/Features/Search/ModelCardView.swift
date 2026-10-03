@@ -25,8 +25,11 @@ struct ModelCardView: View {
                 }
 
                 HStack(spacing: Spacing.xs) {
+                    // The type chip truncates first so the shorter badges after it stay
+                    // whole on narrow grid cards (e.g. "TextualInversion" + "Paid").
                     Text(model.type.name)
                         .font(.civitLabelSmall)
+                        .lineLimit(1)
                         .padding(.horizontal, Spacing.sm)
                         .padding(.vertical, Spacing.xxs)
                         .background(Color.civitSurfaceVariant)
@@ -96,12 +99,13 @@ struct NsfwBadgeView: View {
     }
 }
 
+/// Same label CivitAI puts on its own cards for models with a live paid-access gate.
 struct PaidBadgeView: View {
     var body: some View {
         Text("model_badge_paid")
             .font(.civitLabelSmall)
             .foregroundColor(.civitOnTertiaryContainer)
-            .lineLimit(1)
+            .fixedSize()
             .padding(.horizontal, Spacing.sm)
             .padding(.vertical, Spacing.xxs)
             .background(Color.civitTertiaryContainer)
