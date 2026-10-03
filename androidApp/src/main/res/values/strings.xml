@@ -393,7 +393,11 @@
     <string name="comfyui_onboarding_retry">Retry</string>
     <string name="comfyui_onboarding_connect">Connect</string>
     <string name="comfyui_onboarding_fail_unreachable">Server unreachable. Check the host, port and that ComfyUI is running.</string>
-    <string name="comfyui_onboarding_fail_timeout">Connection timed out. The server may be offline or on a different network.</string>
+    <string name="comfyui_onboarding_fail_refused">Nothing accepts connections on this port. On the PC, start ComfyUI with --listen (e.g. add it to run_nvidia_gpu.bat) and check the port: 8188 by default, 8000 on older ComfyUI Desktop.</string>
+    <string name="comfyui_onboarding_fail_timeout">Connection timed out. The phone and the PC must be on the same network, and the PC\'s firewall must allow this port.</string>
+    <string name="comfyui_onboarding_fail_auth">The server requires sign-in (HTTP %1$d). Servers behind a login are not supported yet.</string>
+    <string name="comfyui_onboarding_fail_not_comfyui">Something answered on this port, but it is not ComfyUI. Check the port.</string>
+    <string name="comfyui_onboarding_fail_loopback">localhost, 127.0.0.1 and 0.0.0.0 point to this phone. Enter the PC\'s local IP address instead (e.g. 192.168.1.20).</string>
     <string name="comfyui_onboarding_fail_tls">TLS error. Enable \"Accept self-signed certificates\" or install the certificate.</string>
     <string name="comfyui_onboarding_fail_cert_unconfirmed">The server uses a certificate this device has not trusted yet. Trust it only if its fingerprint matches the one on the server.</string>
     <string name="comfyui_onboarding_fail_cert_changed">The server\'s certificate differs from the one you trusted before. If you did not replace it, do not trust it: someone may be intercepting the connection.</string>

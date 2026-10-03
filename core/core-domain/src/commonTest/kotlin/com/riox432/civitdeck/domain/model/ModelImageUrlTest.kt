@@ -61,6 +61,24 @@ class ModelImageUrlTest {
     }
 
     @Test
+    fun cdnThumbnailUrl_replaces_width_inside_a_transform_list() {
+        val url = "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/abc-123/anim=false,transcode=true,width=450/x.jpeg"
+        assertEquals(
+            "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/abc-123/anim=false,transcode=true,width=300/x.jpeg",
+            url.cdnThumbnailUrl(300),
+        )
+    }
+
+    @Test
+    fun cdnThumbnailUrl_appends_width_to_a_transform_list() {
+        val url = "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/abc-123/anim=false,transcode=true/x.jpeg"
+        assertEquals(
+            "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/abc-123/anim=false,transcode=true,width=450/x.jpeg",
+            url.cdnThumbnailUrl(450),
+        )
+    }
+
+    @Test
     fun cdnThumbnailUrl_noop_for_non_civitai_url() {
         val url = "https://example.com/image.png"
         assertEquals(url, url.cdnThumbnailUrl())

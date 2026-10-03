@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.ui.comfyui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -242,28 +243,38 @@ private val CERTIFICATE_CAUSES = setOf(
     ConnectionFailureCause.CertificateChanged,
 )
 
-@Composable
-private fun failureMessage(step: OnboardingStep.Failure): String = when (step.cause) {
-    ConnectionFailureCause.Unreachable,
-    ConnectionFailureCause.Refused,
-    ConnectionFailureCause.LoopbackHost,
-    ConnectionFailureCause.LocalNetworkDenied,
-    -> stringResource(R.string.comfyui_onboarding_fail_unreachable)
-    ConnectionFailureCause.Timeout -> stringResource(R.string.comfyui_onboarding_fail_timeout)
-    ConnectionFailureCause.Tls -> stringResource(R.string.comfyui_onboarding_fail_tls)
-    ConnectionFailureCause.CertificateUnconfirmed ->
-        stringResource(R.string.comfyui_onboarding_fail_cert_unconfirmed)
-    ConnectionFailureCause.CertificateChanged ->
-        stringResource(R.string.comfyui_onboarding_fail_cert_changed)
+/** Causes whose message takes the HTTP status code as its `%1$d` argument. */
+private val HTTP_STATUS_CAUSES = setOf(
     ConnectionFailureCause.Http,
     ConnectionFailureCause.AuthRequired,
-    -> stringResource(
-        R.string.comfyui_onboarding_fail_http,
-        step.httpStatus ?: 0,
-    )
-    ConnectionFailureCause.NotComfyUI,
-    ConnectionFailureCause.Unknown,
-    -> stringResource(R.string.comfyui_onboarding_fail_unknown)
+)
+
+@Composable
+private fun failureMessage(step: OnboardingStep.Failure): String {
+    val resId = failureMessageRes(step.cause)
+    return if (step.cause in HTTP_STATUS_CAUSES) {
+        stringResource(resId, step.httpStatus ?: 0)
+    } else {
+        stringResource(resId)
+    }
+}
+
+@StringRes
+internal fun failureMessageRes(cause: ConnectionFailureCause): Int = when (cause) {
+    // LocalNetworkDenied is only reported on iOS.
+    ConnectionFailureCause.Unreachable,
+    ConnectionFailureCause.LocalNetworkDenied,
+    -> R.string.comfyui_onboarding_fail_unreachable
+    ConnectionFailureCause.Refused -> R.string.comfyui_onboarding_fail_refused
+    ConnectionFailureCause.LoopbackHost -> R.string.comfyui_onboarding_fail_loopback
+    ConnectionFailureCause.Timeout -> R.string.comfyui_onboarding_fail_timeout
+    ConnectionFailureCause.Tls -> R.string.comfyui_onboarding_fail_tls
+    ConnectionFailureCause.CertificateUnconfirmed -> R.string.comfyui_onboarding_fail_cert_unconfirmed
+    ConnectionFailureCause.CertificateChanged -> R.string.comfyui_onboarding_fail_cert_changed
+    ConnectionFailureCause.AuthRequired -> R.string.comfyui_onboarding_fail_auth
+    ConnectionFailureCause.Http -> R.string.comfyui_onboarding_fail_http
+    ConnectionFailureCause.NotComfyUI -> R.string.comfyui_onboarding_fail_not_comfyui
+    ConnectionFailureCause.Unknown -> R.string.comfyui_onboarding_fail_unknown
 }
 
 @Composable
