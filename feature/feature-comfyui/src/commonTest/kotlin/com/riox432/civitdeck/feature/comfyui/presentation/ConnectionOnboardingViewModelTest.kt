@@ -14,6 +14,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectio
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ScanForServersUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -54,6 +55,66 @@ class ConnectionOnboardingViewModelTest {
         val step = vm.uiState.value.step
         assertIs<OnboardingStep.Scanning>(step)
         assertEquals(listOf(server), step.results)
+    }
+
+    @Test
+    fun finished_scan_is_complete_with_emitted_servers() = runTest(dispatcher) {
+        val vm = createViewModel(discovery = FakeDiscovery(listOf(SCANNED_SERVER)))
+
+        vm.onStartScan()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(OnboardingStep.Scanning(listOf(SCANNED_SERVER), isComplete = true), vm.uiState.value.step)
+    }
+
+    @Test
+    fun running_scan_is_not_complete() = runTest(dispatcher) {
+        val vm = createViewModel(discovery = FlowDiscovery(emitThenSuspend()))
+
+        vm.onStartScan()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(OnboardingStep.Scanning(listOf(SCANNED_SERVER), isComplete = false), vm.uiState.value.step)
+        vm.onChooseMethod()
+    }
+
+    @Test
+    fun failed_scan_is_complete_with_servers_found_before_the_error() = runTest(dispatcher) {
+        val failing = flow {
+            emit(listOf(SCANNED_SERVER))
+            throw IllegalStateException("network unreachable")
+        }
+        val vm = createViewModel(discovery = FlowDiscovery(failing))
+
+        vm.onStartScan()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(OnboardingStep.Scanning(listOf(SCANNED_SERVER), isComplete = true), vm.uiState.value.step)
+    }
+
+    @Test
+    fun choose_method_during_scan_stays_on_choose_method() = runTest(dispatcher) {
+        val vm = createViewModel(discovery = FlowDiscovery(emitThenSuspend()))
+        vm.onStartScan()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.onChooseMethod()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertIs<OnboardingStep.ChooseMethod>(vm.uiState.value.step)
+    }
+
+    @Test
+    fun restarting_a_scan_does_not_complete_the_new_scan() = runTest(dispatcher) {
+        val vm = createViewModel(discovery = FlowDiscovery(emitThenSuspend()))
+        vm.onStartScan()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.onStartScan()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(OnboardingStep.Scanning(listOf(SCANNED_SERVER), isComplete = false), vm.uiState.value.step)
+        vm.onChooseMethod()
     }
 
     @Test
@@ -312,6 +373,11 @@ class ConnectionOnboardingViewModelTest {
         lanScanSupported = lanScanSupported,
     )
 
+    private fun emitThenSuspend(): Flow<List<DiscoveredServer>> = flow {
+        emit(listOf(SCANNED_SERVER))
+        awaitCancellation()
+    }
+
     private fun systemStats() = SystemStats(
         gpuName = "RTX 4090",
         gpuType = "cuda",
@@ -330,6 +396,7 @@ class ConnectionOnboardingViewModelTest {
         const val SAVED_ID = 7L
         val SERVER_PIN = "a".repeat(64)
         val NEW_SERVER_PIN = "b".repeat(64)
+        val SCANNED_SERVER = DiscoveredServer("host", "192.168.1.10", DEFAULT_PORT, "ComfyUI @ host")
     }
 }
 
@@ -360,6 +427,10 @@ private class FakeDiscovery(private val servers: List<DiscoveredServer>) : Serve
         emit(emptyList())
         if (servers.isNotEmpty()) emit(servers)
     }
+}
+
+private class FlowDiscovery(private val scan: Flow<List<DiscoveredServer>>) : ServerDiscoveryRepository {
+    override fun scanForServers(): Flow<List<DiscoveredServer>> = scan
 }
 
 private class FakeTester(var result: ConnectionTestResult) : ComfyUIConnectionTester {
