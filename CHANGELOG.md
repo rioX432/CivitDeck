@@ -44,6 +44,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 ### Removed
 
 - Reviews list/submit feature (reads/writes CivitAI's tRPC, conflicts with the "no SNS/community" scope) — `Model.stats.rating` is retained and still shown; the 2 tRPC review requests per model detail are eliminated (#991, #1000)
+- The shared `ComfyUIApi` and `ComfyUIWebSocketApi` Koin singletons — ComfyUI calls build their API per call (`ComfyUIApiProvider`, or a transient instance for the connection test and the LAN scan), so no code can reach the server through a shared instance that ignores the connection's TLS trust. The `named("comfyui")` HTTP client stays for Civitai Link, the LAN scan and ntfy (#1125)
 
 ### Fixed
 
