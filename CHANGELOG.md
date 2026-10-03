@@ -57,6 +57,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- Android ComfyUI output detail: Share in the share sheet attaches the output image (downloaded to a FileProvider cache, MIME type from its extension) along with the caption and hashtags; the button shows progress while the image loads, and a failed download keeps the sheet open with an error message. Other share sheets stay text-only (#1046)
 - Android workflow template library: "Edit" on a user template opens the editor with that template's name, description, type, category and variables (showing a spinner while templates load), and Save updates it instead of creating a blank duplicate; if the template was deleted meanwhile, the editor closes (#1044)
 - SD WebUI (A1111) generation uses the checkpoint chosen in the model picker instead of whatever checkpoint the server has loaded — txt2img and img2img requests send `override_settings.sd_model_checkpoint` with the picked title (an empty picker sends `{}` and keeps the server's model), and A1111 restores its saved checkpoint option after the request (#1035)
 - Android download queue explains a download that failed with HTTP 401/403 — the failed row says CivitAI requires sign-in instead of showing `HTTP 401`, and a "Set API key" button opens the Settings tab at its top, where the API key field is; Retry stays for after the key is saved (#1083)
