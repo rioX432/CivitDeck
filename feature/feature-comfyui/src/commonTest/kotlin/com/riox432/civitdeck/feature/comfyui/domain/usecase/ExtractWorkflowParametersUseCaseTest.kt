@@ -402,6 +402,127 @@ class ExtractWorkflowParametersUseCaseTest {
 
     // endregion
 
+    // region DiT-era nodes
+
+    @Test
+    fun legacyExtractsKrea2SplitLoaderParameters() {
+        val params = useCase(krea2ApiWorkflow(), krea2ObjectInfoV1())
+
+        fun param(name: String) = params.single { it.paramName == name }
+        assertEquals("krea2_turbo_fp8_scaled.safetensors", param("unet_name").currentValue)
+        assertEquals("qwen3vl_4b_fp8_scaled.safetensors", param("clip_name").currentValue)
+        assertEquals("krea2", param("type").currentValue)
+        assertEquals("qwen_image_vae.safetensors", param("vae_name").currentValue)
+        assertEquals("krea2_darkbrush.safetensors", param("lora_name").currentValue)
+        for (name in listOf("unet_name", "clip_name", "type", "vae_name", "lora_name")) {
+            assertEquals(ParameterType.SELECT, param(name).paramType, name)
+        }
+        assertEquals(listOf("stable_diffusion", "krea2"), param("type").options)
+        assertEquals(ParameterType.NUMBER, param("strength_model").paramType)
+        assertEquals("1024", params.single { it.paramName == "width" }.currentValue)
+        assertEquals("1024", params.single { it.paramName == "height" }.currentValue)
+    }
+
+    @Test
+    fun legacyExtractsCustomSamplerSd3LatentAndDualClipParameters() {
+        val workflow = """
+        {
+            "1": {"class_type": "DualCLIPLoader",
+                  "inputs": {"clip_name1": "clip_l.safetensors", "clip_name2": "t5xxl.safetensors", "type": "flux"}},
+            "2": {"class_type": "EmptySD3LatentImage", "inputs": {"width": 1024, "height": 768, "batch_size": 1}},
+            "3": {"class_type": "RandomNoise", "inputs": {"noise_seed": 42}},
+            "4": {"class_type": "BasicScheduler",
+                  "inputs": {"scheduler": "simple", "steps": 8, "denoise": 1.0, "model": ["9", 0]}},
+            "5": {"class_type": "KSamplerSelect", "inputs": {"sampler_name": "euler"}},
+            "6": {"class_type": "CFGGuider",
+                  "inputs": {"cfg": 1.0, "model": ["9", 0], "positive": ["7", 0], "negative": ["8", 0]}}
+        }
+        """.trimIndent()
+
+        val params = useCase(workflow)
+
+        val extracted = params.map { it.nodeClassType to it.paramName }.toSet()
+        val expected = setOf(
+            "DualCLIPLoader" to "clip_name1",
+            "DualCLIPLoader" to "clip_name2",
+            "DualCLIPLoader" to "type",
+            "EmptySD3LatentImage" to "width",
+            "EmptySD3LatentImage" to "height",
+            "EmptySD3LatentImage" to "batch_size",
+            "RandomNoise" to "noise_seed",
+            "BasicScheduler" to "steps",
+            "BasicScheduler" to "scheduler",
+            "KSamplerSelect" to "sampler_name",
+            "CFGGuider" to "cfg",
+        )
+        assertEquals(expected, extracted)
+        assertEquals(ParameterType.SEED, params.single { it.paramName == "noise_seed" }.paramType)
+        assertEquals(ParameterType.NUMBER, params.single { it.paramName == "cfg" }.paramType)
+    }
+
+    @Test
+    fun legacySortsDiTSamplerNodesBeforeLoadersAndLatent() {
+        val workflow = """
+        {
+            "1": {"class_type": "UNETLoader", "inputs": {"unet_name": "model.safetensors"}},
+            "2": {"class_type": "EmptySD3LatentImage", "inputs": {"width": 1024}},
+            "3": {"class_type": "LoraLoaderModelOnly", "inputs": {"lora_name": "style.safetensors"}},
+            "4": {"class_type": "KSamplerSelect", "inputs": {"sampler_name": "euler"}}
+        }
+        """.trimIndent()
+
+        val params = useCase(workflow)
+
+        assertEquals(
+            listOf("KSamplerSelect", "UNETLoader", "LoraLoaderModelOnly", "EmptySD3LatentImage"),
+            params.map { it.nodeClassType },
+        )
+    }
+
+    @Test
+    fun selectOptionsComeFromV3ComboShape() {
+        val workflow = """
+        {
+            "1": {"class_type": "UNETLoader", "inputs": {"unet_name": "a.safetensors"}},
+            "2": {"class_type": "KSamplerSelect", "inputs": {"sampler_name": "euler"}}
+        }
+        """.trimIndent()
+        // Synthetic V3 shape: ["COMBO", {"options": [...]}] (comfy_api/latest/_io.py add_to_dict_v1).
+        val objectInfo = """
+        {
+            "UNETLoader": {"input": {"required": {
+                "unet_name": ["COMBO", {"options": ["a.safetensors", "b.safetensors"], "tooltip": "t"}]
+            }}},
+            "KSamplerSelect": {"input": {"required": {
+                "sampler_name": ["COMBO", {"multiselect": false, "options": ["euler", "res_multistep"]}]
+            }}}
+        }
+        """.trimIndent()
+
+        val params = useCase(workflow, objectInfo)
+
+        val unet = params.single { it.paramName == "unet_name" }
+        assertEquals(ParameterType.SELECT, unet.paramType)
+        assertEquals(listOf("a.safetensors", "b.safetensors"), unet.options)
+        val sampler = params.single { it.paramName == "sampler_name" }
+        assertEquals(ParameterType.SELECT, sampler.paramType)
+        assertEquals(listOf("euler", "res_multistep"), sampler.options)
+    }
+
+    @Test
+    fun v3ComboWithoutOptionsYieldsNoOptions() {
+        val workflow = """{"1": {"class_type": "VAELoader", "inputs": {"vae_name": "ae.safetensors"}}}"""
+        val objectInfo = """{"VAELoader": {"input": {"required": {"vae_name": ["COMBO", {}]}}}}"""
+
+        val params = useCase(workflow, objectInfo)
+
+        val vae = params.single()
+        assertTrue(vae.options.isEmpty())
+        assertEquals(ParameterType.TEXT, vae.paramType)
+    }
+
+    // endregion
+
     // region Error handling
 
     @Test
@@ -417,6 +538,48 @@ class ExtractWorkflowParametersUseCaseTest {
     }
 
     // endregion
+
+    // Node ids and widget values follow the subgraph of Comfy-Org/workflow_templates
+    // image_krea2_turbo_t2i.json (25ff90a5), rewritten as API-format inputs.
+    private fun krea2ApiWorkflow(): String = """
+        {
+            "10": {"class_type": "UNETLoader",
+                   "inputs": {"unet_name": "krea2_turbo_fp8_scaled.safetensors", "weight_dtype": "default"}},
+            "11": {"class_type": "CLIPLoader",
+                   "inputs": {"clip_name": "qwen3vl_4b_fp8_scaled.safetensors", "type": "krea2", "device": "default"}},
+            "12": {"class_type": "VAELoader", "inputs": {"vae_name": "qwen_image_vae.safetensors"}},
+            "15": {"class_type": "LoraLoaderModelOnly",
+                   "inputs": {"lora_name": "krea2_darkbrush.safetensors", "strength_model": 0.8, "model": ["10", 0]}},
+            "6": {"class_type": "CLIPTextEncode", "inputs": {"text": "a martini glass", "clip": ["11", 0]}},
+            "13": {"class_type": "ConditioningZeroOut", "inputs": {"conditioning": ["6", 0]}},
+            "5": {"class_type": "EmptyLatentImage", "inputs": {"width": 1024, "height": 1024, "batch_size": 1}},
+            "3": {"class_type": "KSampler",
+                  "inputs": {"seed": 735915477938686, "steps": 8, "cfg": 1, "sampler_name": "euler",
+                             "scheduler": "simple", "denoise": 1, "model": ["15", 0], "positive": ["6", 0],
+                             "negative": ["13", 0], "latent_image": ["5", 0]}},
+            "8": {"class_type": "VAEDecode", "inputs": {"samples": ["3", 0], "vae": ["12", 0]}},
+            "29": {"class_type": "SaveImage", "inputs": {"filename_prefix": "Krea2_turbo", "images": ["8", 0]}}
+        }
+    """.trimIndent()
+
+    // V1 loader shape [[names...], {...}] as returned by nodes.py INPUT_TYPES.
+    private fun krea2ObjectInfoV1(): String = """
+        {
+            "UNETLoader": {"input": {"required": {
+                "unet_name": [["krea2_turbo_fp8_scaled.safetensors"]],
+                "weight_dtype": [["default", "fp8_e4m3fn"], {"advanced": true}]
+            }}},
+            "CLIPLoader": {"input": {"required": {
+                "clip_name": [["qwen3vl_4b_fp8_scaled.safetensors"]],
+                "type": [["stable_diffusion", "krea2"]]
+            }}},
+            "VAELoader": {"input": {"required": {"vae_name": [["qwen_image_vae.safetensors", "pixel_space"]]}}},
+            "LoraLoaderModelOnly": {"input": {"required": {
+                "lora_name": [["krea2_darkbrush.safetensors"]],
+                "strength_model": ["FLOAT", {"default": 1.0, "min": -100.0, "max": 100.0, "step": 0.01}]
+            }}}
+        }
+    """.trimIndent()
 
     private fun buildAppModeWorkflow(): String = """
         {
