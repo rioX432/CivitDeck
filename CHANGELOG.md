@@ -57,6 +57,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- Android workflow template library: "Edit" on a user template opens the editor with that template's name, description, type, category and variables (showing a spinner while templates load), and Save updates it instead of creating a blank duplicate; if the template was deleted meanwhile, the editor closes (#1044)
 - Android download queue explains a download that failed with HTTP 401/403 — the failed row says CivitAI requires sign-in instead of showing `HTTP 401`, and a "Set API key" button opens the Settings tab at its top, where the API key field is; Retry stays for after the key is saved (#1083)
 - Cancelling the running job from the ComfyUI queue screen now stops it on the server — `cancelJob` reads `/queue` and sends `/interrupt` with that job's `prompt_id` when it is running (ComfyUI's queue delete only removes pending jobs), and still deletes a pending job from the queue; `ComfyUIApi.interrupt(promptId)` sends the targeted body, and without an id it keeps interrupting whatever runs (#1033)
 - ComfyUI generation shows why the server rejected a workflow — a non-2xx `/prompt` response throws `ComfyUIResponseException` whose message is ComfyUI's `error.message: error.details` (for example `Prompt outputs failed validation: Value -1 smaller than min of 0: seed`), an older server's plain-string `error`, or `HTTP <status>` for a non-JSON body, instead of a JSON-decoding error about the missing `prompt_id` (#1030)
