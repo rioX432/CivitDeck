@@ -22,6 +22,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - `ComfyUIServerTrust` and `createComfyUIHttpClient(trust, timeoutConfig)` — Android/JVM ComfyUI clients can accept only the server whose leaf certificate matches a stored SHA-256 pin and record the fingerprint the server presented; iOS keeps system trust for now (#1118)
 - ComfyUI onboarding captures the certificate of a self-signed HTTPS server: the test fails with `CertificateUnconfirmed` (no pin yet) or `CertificateChanged` (different certificate) and the presented SHA-256 fingerprint, and `ConnectionOnboardingViewModel.onTrustCertificate()` tests again with that pin and saves the connection with it; `onReviewCertificate(saved)` re-tests a saved connection. The tester uses a one-off pinned client per test instead of the trust-all client (#1119)
 - Android ComfyUI onboarding shows the server certificate's SHA-256 fingerprint in the `openssl x509 -noout -fingerprint -sha256` format, with a hint to compare it on the server and a "Trust this certificate" button, when the test fails because the certificate is not confirmed yet or differs from the trusted one (#1120)
+- Android ComfyUI settings show a "Review certificate" button next to Test when the active connection uses HTTPS with self-signed certificates accepted; it opens onboarding on the certificate review for that connection, so a regenerated server certificate can be re-confirmed without re-adding the connection (#1127)
 
 ### Changed
 
