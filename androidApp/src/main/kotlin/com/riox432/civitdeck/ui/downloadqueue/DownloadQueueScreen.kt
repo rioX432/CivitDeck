@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.ModelDownload
+import com.riox432.civitdeck.domain.model.isAuthRequiredFailure
 import com.riox432.civitdeck.domain.util.FormatUtils
 import com.riox432.civitdeck.feature.gallery.presentation.DownloadQueueUiState
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
@@ -60,6 +61,7 @@ fun DownloadQueueScreen(
     onRetry: (Long) -> Unit,
     onDelete: (Long) -> Unit,
     onClearCompleted: () -> Unit,
+    onOpenApiKeySettings: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -85,6 +87,7 @@ fun DownloadQueueScreen(
             onRetry = onRetry,
             onDelete = onDelete,
             onClearCompleted = onClearCompleted,
+            onOpenApiKeySettings = onOpenApiKeySettings,
         )
     }
 }
@@ -99,6 +102,7 @@ private fun DownloadQueueContent(
     onRetry: (Long) -> Unit,
     onDelete: (Long) -> Unit,
     onClearCompleted: () -> Unit,
+    onOpenApiKeySettings: () -> Unit,
 ) {
     val isEmpty = uiState.activeDownloads.isEmpty() &&
         uiState.completedDownloads.isEmpty() &&
@@ -130,7 +134,7 @@ private fun DownloadQueueContent(
         if (uiState.failedDownloads.isNotEmpty()) {
             item { SectionHeader(stringResource(R.string.download_queue_failed)) }
             items(uiState.failedDownloads, key = { it.id }) { download ->
-                FailedDownloadItem(download, onRetry, onDelete)
+                FailedDownloadItem(download, onRetry, onDelete, onOpenApiKeySettings)
             }
         }
 
@@ -331,7 +335,9 @@ private fun FailedDownloadItem(
     download: ModelDownload,
     onRetry: (Long) -> Unit,
     onDelete: (Long) -> Unit,
+    onOpenApiKeySettings: () -> Unit,
 ) {
+    val authRequired = download.isAuthRequiredFailure()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -346,12 +352,21 @@ private fun FailedDownloadItem(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = download.errorMessage ?: download.status.name,
+                text = if (authRequired) {
+                    stringResource(R.string.download_queue_auth_required)
+                } else {
+                    download.errorMessage ?: download.status.name
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
-                maxLines = 1,
+                maxLines = if (authRequired) AUTH_MESSAGE_MAX_LINES else 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (authRequired) {
+                TextButton(onClick = onOpenApiKeySettings) {
+                    Text(stringResource(R.string.download_queue_set_api_key))
+                }
+            }
         }
         IconButton(onClick = { onRetry(download.id) }) {
             Icon(
@@ -439,6 +454,7 @@ private fun formatEta(seconds: Long): String = when {
 
 private val INDICATOR_SIZE = 24.dp
 private const val PERCENT_MAX = 100
+private const val AUTH_MESSAGE_MAX_LINES = 3
 private const val KB_DIVISOR = 1024.0
 private const val SPEED_SAMPLE_INTERVAL_MS = 500L
 private const val MS_PER_SECOND_DOUBLE = 1000.0
