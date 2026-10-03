@@ -3,6 +3,7 @@ package com.riox432.civitdeck.ui.navigation
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
+import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.feature.collections.presentation.BatchTagEditorViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionDetailViewModel
 import com.riox432.civitdeck.feature.collections.presentation.CollectionsViewModel
@@ -182,13 +183,19 @@ internal fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {
             },
             onTryInComfyUI = if (uiState.powerUserMode) {
                 { sha256, modelName, meta ->
+                    val model = uiState.model
+                    val selectedVersion = model?.modelVersions?.getOrNull(uiState.selectedVersionIndex)
+                    val primaryFile = selectedVersion?.files?.let { files ->
+                        files.firstOrNull { it.primary } ?: files.firstOrNull()
+                    }
                     backStack.add(
                         ComfyUIBridgeRoute(
                             modelId = key.modelId,
-                            versionId = uiState.model?.modelVersions
-                                ?.getOrNull(uiState.selectedVersionIndex)?.id ?: 0L,
+                            versionId = selectedVersion?.id ?: 0L,
                             sha256Hash = sha256,
                             modelName = modelName,
+                            checkpointFileName = primaryFile?.name
+                                ?.takeIf { model?.type == ModelType.Checkpoint },
                             prompt = meta?.prompt,
                             negativePrompt = meta?.negativePrompt,
                             steps = meta?.steps,
