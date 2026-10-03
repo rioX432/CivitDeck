@@ -27,6 +27,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.ObserveBaseModelCatalogUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
@@ -55,7 +56,8 @@ data class SearchHistoryUseCases(
 )
 
 /**
- * Filter management: excluded tags, hidden models, and saved search filters.
+ * Filter management: excluded tags, hidden models, saved search filters, and the base model
+ * catalog the filter chooses from.
  */
 data class SearchFilterUseCases(
     val getExcludedTags: GetExcludedTagsUseCase,
@@ -66,6 +68,7 @@ data class SearchFilterUseCases(
     val observeSavedSearchFilters: ObserveSavedSearchFiltersUseCase,
     val saveSearchFilter: SaveSearchFilterUseCase,
     val deleteSavedSearchFilter: DeleteSavedSearchFilterUseCase,
+    val observeBaseModelCatalog: ObserveBaseModelCatalogUseCase,
 )
 
 /**
