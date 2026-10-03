@@ -9,6 +9,7 @@ import androidx.work.WorkerParameters
 import com.riox432.civitdeck.data.api.ApiKeyProvider
 import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
+import com.riox432.civitdeck.domain.usecase.VerifyDownloadHashUseCase
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.koin.core.component.KoinComponent
@@ -23,6 +24,7 @@ class ModelDownloadWorker(
 
     private val repository: ModelDownloadRepository by inject()
     private val apiKeyProvider: ApiKeyProvider by inject()
+    private val verifyDownloadHash: VerifyDownloadHashUseCase by inject()
 
     override suspend fun doWork(): Result {
         val downloadId = inputData.getLong(KEY_DOWNLOAD_ID, -1)
@@ -74,8 +76,13 @@ class ModelDownloadWorker(
 
         repository.updateProgress(downloadId, bytes)
         repository.updateDestinationPath(downloadId, destFile.absolutePath)
-        verifyHash(downloadId, download, destFile)
-        repository.updateStatus(downloadId, DownloadStatus.Completed)
+        val completed = verifyDownloadHash(downloadId, computeSha256(download, destFile))
+        if (!completed) {
+            // A mismatched file must not stay usable for local generation, and a row deleted
+            // meanwhile would leave it orphaned.
+            destFile.delete()
+            return Result.failure()
+        }
         DownloadNotificationHelper.showCompleted(applicationContext, downloadId, download.fileName)
         return Result.success()
     }
@@ -156,13 +163,16 @@ class ModelDownloadWorker(
         }
     }
 
-    private suspend fun verifyHash(
-        downloadId: Long,
+    /**
+     * Returns the file's SHA-256 as hex, or null when CivitAI published no hash (hashing a
+     * multi-GB file would be wasted) or the file could not be read.
+     */
+    private fun computeSha256(
         download: com.riox432.civitdeck.domain.model.ModelDownload,
         file: File,
-    ) {
-        val expectedHash = download.expectedSha256 ?: return
-        try {
+    ): String? {
+        if (download.expectedSha256.isNullOrBlank()) return null
+        return try {
             val digest = java.security.MessageDigest.getInstance("SHA-256")
             file.inputStream().use { input ->
                 val buf = ByteArray(BUFFER_SIZE)
@@ -172,11 +182,11 @@ class ModelDownloadWorker(
                 }
             }
             @OptIn(ExperimentalStdlibApi::class)
-            val actualHash = digest.digest().toHexString()
-            repository.updateHashVerified(downloadId, actualHash.equals(expectedHash, ignoreCase = true))
+            digest.digest().toHexString()
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            // Hash verification is non-critical — log and continue
+            // An unreadable file is not evidence of a mismatch, so the download still completes.
             android.util.Log.w(TAG, "Hash verify failed: ${e.message}")
+            null
         }
     }
 
