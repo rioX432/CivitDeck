@@ -103,6 +103,55 @@ class ConnectionOnboardingViewModelTest {
     }
 
     @Test
+    fun manual_submit_with_pasted_http_url_saves_its_host_port_and_scheme() = runTest(dispatcher) {
+        val repo = FakeConnectionRepository()
+        val vm = createViewModel(repository = repo)
+
+        vm.onManualSubmit("", "http://192.168.1.5:8188/", HTTPS_PORT, useHttps = true, acceptSelfSigned = false)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertIs<OnboardingStep.Success>(vm.uiState.value.step)
+        val saved = repo.saved.single()
+        assertEquals("192.168.1.5", saved.hostname)
+        assertEquals("192.168.1.5", saved.name)
+        assertEquals(DEFAULT_PORT, saved.port)
+        assertEquals(false, saved.useHttps)
+    }
+
+    @Test
+    fun manual_submit_with_pasted_https_url_saves_https_default_port() = runTest(dispatcher) {
+        val repo = FakeConnectionRepository()
+        val vm = createViewModel(repository = repo)
+
+        vm.onManualSubmit("PC", "https://pc.tailnet.ts.net", DEFAULT_PORT, useHttps = false, acceptSelfSigned = true)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertIs<OnboardingStep.Success>(vm.uiState.value.step)
+        val saved = repo.saved.single()
+        assertEquals("pc.tailnet.ts.net", saved.hostname)
+        assertEquals("PC", saved.name)
+        assertEquals(HTTPS_PORT, saved.port)
+        assertEquals(true, saved.useHttps)
+        assertEquals(true, saved.acceptSelfSigned)
+    }
+
+    @Test
+    fun manual_submit_with_unparseable_host_fails_unknown_without_testing() = runTest(dispatcher) {
+        val repo = FakeConnectionRepository()
+        val tester = FakeTester(ConnectionTestResult.Success(null))
+        val vm = createViewModel(repository = repo, tester = tester)
+
+        vm.onManualSubmit("PC", "host:abc", DEFAULT_PORT, useHttps = false, acceptSelfSigned = false)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val step = vm.uiState.value.step
+        assertIs<OnboardingStep.Failure>(step)
+        assertEquals(ConnectionFailureCause.Unknown, step.cause)
+        assertTrue(tester.tested.isEmpty())
+        assertTrue(repo.saved.isEmpty())
+    }
+
+    @Test
     fun qr_scan_with_invalid_payload_fails_unknown() = runTest(dispatcher) {
         val vm = createViewModel()
 
@@ -277,6 +326,7 @@ class ConnectionOnboardingViewModelTest {
 
     private companion object {
         const val DEFAULT_PORT = 8188
+        const val HTTPS_PORT = 443
         const val SAVED_ID = 7L
         val SERVER_PIN = "a".repeat(64)
         val NEW_SERVER_PIN = "b".repeat(64)
@@ -313,7 +363,12 @@ private class FakeDiscovery(private val servers: List<DiscoveredServer>) : Serve
 }
 
 private class FakeTester(var result: ConnectionTestResult) : ComfyUIConnectionTester {
-    override suspend fun test(connection: ComfyUIConnection): ConnectionTestResult = result
+    val tested = mutableListOf<ComfyUIConnection>()
+
+    override suspend fun test(connection: ComfyUIConnection): ConnectionTestResult {
+        tested += connection
+        return result
+    }
 }
 
 private class FakeConnectionRepository : ComfyUIConnectionRepository {

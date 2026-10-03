@@ -121,7 +121,10 @@ class ConnectionOnboardingViewModel(
         testAndSave(connection)
     }
 
-    /** Tests and (on success) saves a manually entered connection. */
+    /**
+     * Tests and (on success) saves a manually entered connection. [hostname] may be a bare host or
+     * a pasted URL; a scheme or port written in it wins over [port] and [useHttps].
+     */
     fun onManualSubmit(
         name: String,
         hostname: String,
@@ -129,12 +132,21 @@ class ConnectionOnboardingViewModel(
         useHttps: Boolean,
         acceptSelfSigned: Boolean,
     ) {
+        val parsed = parseConnectionUrl.parseManualEntry(hostname, port, useHttps) ?: run {
+            failWithUnknown(
+                ComfyUIConnection(
+                    name = name.ifBlank { hostname },
+                    hostname = hostname,
+                    port = port,
+                    useHttps = useHttps,
+                    acceptSelfSigned = acceptSelfSigned,
+                ),
+            )
+            return
+        }
         testAndSave(
-            ComfyUIConnection(
-                name = name.ifBlank { hostname },
-                hostname = hostname,
-                port = port,
-                useHttps = useHttps,
+            parsed.copy(
+                name = name.ifBlank { parsed.hostname },
                 acceptSelfSigned = acceptSelfSigned,
             ),
         )
