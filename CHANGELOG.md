@@ -24,6 +24,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - ComfyUI onboarding captures the certificate of a self-signed HTTPS server: the test fails with `CertificateUnconfirmed` (no pin yet) or `CertificateChanged` (different certificate) and the presented SHA-256 fingerprint, and `ConnectionOnboardingViewModel.onTrustCertificate()` tests again with that pin and saves the connection with it; `onReviewCertificate(saved)` re-tests a saved connection. The tester uses a one-off pinned client per test instead of the trust-all client (#1119)
 - Android ComfyUI onboarding shows the server certificate's SHA-256 fingerprint in the `openssl x509 -noout -fingerprint -sha256` format, with a hint to compare it on the server and a "Trust this certificate" button, when the test fails because the certificate is not confirmed yet or differs from the trusted one (#1120)
 - iOS ComfyUI Outputs list shows a "Load older outputs" button at the older end of the list (below the grid for Newest, above it for Oldest) when more history may exist beyond the loaded window, with a spinner in its place while loading (#1055)
+- iOS ComfyUI clients built with `ComfyUIServerTrust.PinnedLeaf` accept only the server whose leaf certificate matches the SHA-256 pin, for HTTP and WebSocket, and record the presented fingerprint; any other certificate, or no pin, cancels the handshake instead of falling back to system trust. The public `ComfyUIServerTrustEvaluator` makes the same decision for Swift `URLSession` delegates (#1128)
 
 ### Changed
 
