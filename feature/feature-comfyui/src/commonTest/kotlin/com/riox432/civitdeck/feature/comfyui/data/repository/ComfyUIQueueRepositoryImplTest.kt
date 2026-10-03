@@ -1,9 +1,10 @@
 package com.riox432.civitdeck.feature.comfyui.data.repository
 
-import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.QueueJob
 import com.riox432.civitdeck.domain.model.QueueJobStatus
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
+import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.respondError
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.Flow
@@ -25,7 +26,10 @@ class ComfyUIQueueRepositoryImplTest {
         rows.add(ComfyUIConnectionEntity(id = 1, name = "A", hostname = "h", port = 8188, isActive = true, createdAt = 1))
     }
 
-    private fun api(body: String) = ComfyUIApi(mockClient { okJson(body) }, testJson)
+    private fun repo(dao: FakeComfyUIConnectionDao, client: HttpClient) =
+        ComfyUIQueueRepositoryImpl(ComfyUIApiProvider(dao, client, testJson))
+
+    private fun repo(dao: FakeComfyUIConnectionDao, body: String) = repo(dao, mockClient { okJson(body) })
 
     /**
      * Captures the first emission of an infinite polling flow without using
@@ -52,7 +56,7 @@ class ComfyUIQueueRepositoryImplTest {
         val body = """
             {"queue_running":[[0,"run-1"]],"queue_pending":[[1,"pend-1"],[2,"pend-2"]]}
         """.trimIndent()
-        val repo = ComfyUIQueueRepositoryImpl(daoWithActive(), api(body))
+        val repo = repo(daoWithActive(), body)
 
         val jobs = firstEmission(repo.observeQueue(intervalMs = 1000))
 
@@ -65,8 +69,8 @@ class ComfyUIQueueRepositoryImplTest {
 
     @Test
     fun observeQueue_emits_empty_when_no_active_connection() = runTest {
-        // No active connection -> ensureApiConfigured throws -> caught -> empty list emitted.
-        val repo = ComfyUIQueueRepositoryImpl(FakeComfyUIConnectionDao(), api("{}"))
+        // No active connection -> forActive() throws -> caught -> empty list emitted.
+        val repo = repo(FakeComfyUIConnectionDao(), "{}")
 
         val jobs = firstEmission(repo.observeQueue(intervalMs = 1000))
 
@@ -75,11 +79,7 @@ class ComfyUIQueueRepositoryImplTest {
 
     @Test
     fun observeQueue_emits_empty_on_api_error() = runTest {
-        val errorApi = ComfyUIApi(
-            mockClient { respondError(HttpStatusCode.InternalServerError) },
-            testJson,
-        )
-        val repo = ComfyUIQueueRepositoryImpl(daoWithActive(), errorApi)
+        val repo = repo(daoWithActive(), mockClient { respondError(HttpStatusCode.InternalServerError) })
 
         val jobs = firstEmission(repo.observeQueue(intervalMs = 1000))
 
@@ -93,10 +93,30 @@ class ComfyUIQueueRepositoryImplTest {
             if (req.url.encodedPath == "/queue") deleteHit = true
             okJson("{}")
         }
-        val repo = ComfyUIQueueRepositoryImpl(daoWithActive(), ComfyUIApi(client, testJson))
+        val repo = repo(daoWithActive(), client)
 
         repo.cancelJob("abc")
 
         assertTrue(deleteHit)
+    }
+
+    @Test
+    fun observeQueue_polls_the_connection_active_at_each_poll() = runTest {
+        val dao = daoWithActive().apply {
+            rows.add(ComfyUIConnectionEntity(id = 2, name = "B", hostname = "b", port = 9000, createdAt = 2))
+        }
+        val hosts = mutableListOf<String>()
+        val client = mockClient {
+            hosts.add("${it.url.host}:${it.url.port}")
+            okJson("{}")
+        }
+        val repo = repo(dao, client)
+
+        firstEmission(repo.observeQueue(intervalMs = 1000))
+        dao.deactivateAll()
+        dao.activate(2)
+        firstEmission(repo.observeQueue(intervalMs = 1000))
+
+        assertEquals(listOf("h:8188", "b:9000"), hosts)
     }
 }
