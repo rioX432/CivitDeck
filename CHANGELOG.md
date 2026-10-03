@@ -51,6 +51,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 ### Fixed
 
 - iOS ComfyUI connection test reports a self-signed server's certificate as not confirmed yet or changed, with its fingerprint, instead of "unreachable": the pinned client's rejection surfaces on iOS as a cancelled request, so the test now also treats a presented certificate that differs from the pin as a certificate failure (#1203)
+- iOS no longer crashes when opening the Create tab — the shared logger passed a Kotlin string to `NSLog` as a `%@` argument, which faulted with `EXC_BAD_ACCESS`; it now logs the whole line as the format with `%` escaped (#1204)
 - iOS declares `NSLocalNetworkUsageDescription`, so reaching a LAN ComfyUI or SD WebUI server triggers the system Local Network prompt with CivitDeck's reason text (#1056)
 - Android ComfyUI output detail opens on the tapped image with exactly the Outputs list's images in the list's sort order — the list hands its snapshot to the detail instead of the detail re-fetching history with the default Newest order, so it no longer shows a blank screen when that fetch fails or is empty (#1050)
 - iOS generation screen's template picker now lists saved templates and applies the picked one to the form; its category and type filter chips now filter the list (#1043)
