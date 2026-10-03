@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.ui.search
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -8,26 +9,33 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.Bookmarks
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.BaseModel
+import com.riox432.civitdeck.domain.model.BaseModelCatalog
 import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
@@ -35,6 +43,8 @@ import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState
 import com.riox432.civitdeck.ui.settings.NsfwLevelChipRow
+import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 /**
@@ -43,6 +53,7 @@ import com.riox432.civitdeck.ui.theme.Spacing
 data class FilterCallbacks(
     val onTypeSelected: (ModelType?) -> Unit,
     val onBaseModelToggled: (BaseModel) -> Unit,
+    val onChooseBaseModels: () -> Unit,
     val onSortSelected: (SortOrder) -> Unit,
     val onPeriodSelected: (TimePeriod) -> Unit,
     val onNsfwLevelSelected: (NsfwFilterLevel) -> Unit,
@@ -120,7 +131,7 @@ private fun FilterSheetContent(
             )
         }
         filterSourceSection(uiState, filterCallbacks.onSourceToggled)
-        filterModelSections(uiState, filterCallbacks.onTypeSelected, filterCallbacks.onBaseModelToggled)
+        filterModelSections(uiState, filterCallbacks)
         filterSortSections(uiState, filterCallbacks.onSortSelected, filterCallbacks.onPeriodSelected)
         filterNsfwSection(uiState, filterCallbacks.onNsfwLevelSelected)
         filterToggleSections(uiState, filterCallbacks.onFreshFindToggled, filterCallbacks.onQualityFilterToggled)
@@ -174,19 +185,20 @@ private fun SourceFilterSection(
 
 private fun androidx.compose.foundation.lazy.LazyListScope.filterModelSections(
     uiState: ModelSearchUiState,
-    onTypeSelected: (ModelType?) -> Unit,
-    onBaseModelToggled: (BaseModel) -> Unit,
+    filterCallbacks: FilterCallbacks,
 ) {
     item {
         TypeFilterSection(
             selectedType = uiState.selectedType,
-            onTypeSelected = onTypeSelected,
+            onTypeSelected = filterCallbacks.onTypeSelected,
         )
     }
     item {
         BaseModelFilterSection(
             selectedBaseModels = uiState.selectedBaseModels,
-            onBaseModelToggled = onBaseModelToggled,
+            catalog = uiState.baseModelCatalog,
+            onBaseModelToggled = filterCallbacks.onBaseModelToggled,
+            onChooseBaseModels = filterCallbacks.onChooseBaseModels,
         )
     }
     item { HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.lg)) }
@@ -335,23 +347,76 @@ private fun TypeFilterSection(
 @Composable
 private fun BaseModelFilterSection(
     selectedBaseModels: Set<BaseModel>,
+    catalog: BaseModelCatalog?,
     onBaseModelToggled: (BaseModel) -> Unit,
+    onChooseBaseModels: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        FilterSectionHeader("Base Model", "(multiple)")
-        FlowRow(
-            modifier = Modifier.padding(horizontal = Spacing.lg),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-        ) {
-            BaseModel.filterOptions(selectedBaseModels).forEach { baseModel ->
-                FilterChipItem(
-                    label = baseModel.displayName,
-                    isSelected = baseModel in selectedBaseModels,
-                    onClick = { onBaseModelToggled(baseModel) },
-                    showCheckmark = true,
-                )
+        FilterSectionHeader(
+            stringResource(R.string.search_filter_base_model),
+            if (selectedBaseModels.isEmpty()) stringResource(R.string.search_filter_base_model_any) else null,
+        )
+        if (selectedBaseModels.isNotEmpty()) {
+            FlowRow(
+                modifier = Modifier.padding(horizontal = Spacing.lg),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+                verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+            ) {
+                orderedBaseModelSelection(selectedBaseModels, catalog).forEach { baseModel ->
+                    key(baseModel.apiValue) {
+                        SelectedBaseModelChip(
+                            label = baseModel.displayName,
+                            marker = baseModelMarker(baseModel, catalog),
+                            onRemove = { onBaseModelToggled(baseModel) },
+                        )
+                    }
+                }
             }
+        }
+        OutlinedButton(
+            onClick = onChooseBaseModels,
+            modifier = Modifier.padding(horizontal = Spacing.lg),
+        ) {
+            Text(
+                if (selectedBaseModels.isEmpty()) {
+                    stringResource(R.string.search_filter_base_model_choose)
+                } else {
+                    stringResource(R.string.search_filter_base_model_choose_count, selectedBaseModels.size)
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun SelectedBaseModelChip(
+    label: String,
+    marker: String?,
+    onRemove: () -> Unit,
+) {
+    val foreground = MaterialTheme.colorScheme.onPrimaryContainer
+    Row(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(CornerRadius.chip))
+            .padding(start = Spacing.md),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+    ) {
+        Text(text = label, style = MaterialTheme.typography.labelMedium, color = foreground)
+        if (marker != null) {
+            Text(
+                text = marker,
+                style = MaterialTheme.typography.labelSmall,
+                color = foreground.copy(alpha = 0.7f),
+            )
+        }
+        IconButton(onClick = onRemove, modifier = Modifier.size(48.dp)) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = stringResource(R.string.cd_remove_base_model, label),
+                modifier = Modifier.size(IconSize.small),
+                tint = foreground,
+            )
         }
     }
 }
