@@ -40,6 +40,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 ### Fixed
 
 - Android ComfyUI output detail opens on the tapped image with exactly the Outputs list's images in the list's sort order — the list hands its snapshot to the detail instead of the detail re-fetching history with the default Newest order, so it no longer shows a blank screen when that fetch fails or is empty (#1050)
+- iOS generation screen's template picker now lists saved templates and applies the picked one to the form; its category and type filter chips now filter the list (#1043)
 - Swipe discovery's right swipe (heart) now only adds to Favorites: a model that is already favorited stays favorited, and Undo removes a favorite only when that swipe added it, including an Undo pressed before the favorite check finishes (#1074)
 - Restoring a backup with "Merge" no longer deletes or renames an existing collection whose id matches a backup collection; backup collections merge into same-name local collections or are added as new ones (#1019)
 - iOS ComfyUI generation form now sends the checkpoint, prompts, sampler settings, size, seed, ControlNet and denoise values to the shared ViewModel, so Generate submits what was entered instead of silently doing nothing (#1025)
