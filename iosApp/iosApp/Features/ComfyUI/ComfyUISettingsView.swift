@@ -103,40 +103,26 @@ struct ComfyUISettingsView: View {
 
     @ViewBuilder
     private var securityBadge: some View {
-        if let active = viewModel.activeConnection {
-            if active.useHttps {
-                if active.acceptSelfSigned {
-                    Label("Self-signed", systemImage: "lock.trianglebadge.exclamationmark")
-                        .font(.civitLabelSmall)
-                        .foregroundColor(.orange)
-                } else {
-                    Label("HTTPS", systemImage: "lock.fill")
-                        .font(.civitLabelSmall)
-                        .foregroundColor(theme.primary)
-                }
-            } else {
-                let isLan = isLanAddress(active.hostname)
-                if isLan {
-                    Label("LAN", systemImage: "wifi")
-                        .font(.civitLabelSmall)
-                        .foregroundColor(.civitOnSurfaceVariant)
-                } else {
-                    Label("HTTP", systemImage: "exclamationmark.triangle")
-                        .font(.civitLabelSmall)
-                        .foregroundColor(.civitError)
-                }
-            }
+        switch viewModel.securityLevel {
+        case .secure:
+            Label("HTTPS", systemImage: "lock.fill")
+                .font(.civitLabelSmall)
+                .foregroundColor(theme.primary)
+        case .selfSigned:
+            Label("Self-signed", systemImage: "lock.trianglebadge.exclamationmark")
+                .font(.civitLabelSmall)
+                .foregroundColor(.orange)
+        case .localInsecure:
+            Label("LAN", systemImage: "wifi")
+                .font(.civitLabelSmall)
+                .foregroundColor(.civitOnSurfaceVariant)
+        case .remoteInsecure:
+            Label("HTTP", systemImage: "exclamationmark.triangle")
+                .font(.civitLabelSmall)
+                .foregroundColor(.civitError)
+        case nil:
+            EmptyView()
         }
-    }
-
-    private func isLanAddress(_ hostname: String) -> Bool {
-        hostname.hasPrefix("192.168.") ||
-        hostname.hasPrefix("10.") ||
-        hostname.hasPrefix("172.16.") || hostname.hasPrefix("172.17.") ||
-        hostname.hasPrefix("172.18.") || hostname.hasPrefix("172.19.") ||
-        hostname.hasPrefix("172.2") || hostname.hasPrefix("172.3") ||
-        hostname.hasPrefix("127.") ||
-        hostname.lowercased() == "localhost"
     }
 
     private var statusLabel: String {

@@ -9,6 +9,7 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
     @Published var connections: [ComfyUIConnection] = []
     @Published var activeConnection: ComfyUIConnection?
     @Published var connectionStatus: Core_domainComfyUIConnectionStatus = .notConfigured
+    @Published var securityLevel: ConnectionSecurityLevel?
     @Published var isTesting = false
     @Published var testError: String?
     @Published var showAddSheet = false
@@ -35,6 +36,7 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
             connections = state.connections as? [ComfyUIConnection] ?? []
             activeConnection = state.activeConnection
             connectionStatus = state.connectionStatus
+            securityLevel = state.securityLevel
             isTesting = state.isTesting
             testError = state.testError
             showAddSheet = state.showAddDialog

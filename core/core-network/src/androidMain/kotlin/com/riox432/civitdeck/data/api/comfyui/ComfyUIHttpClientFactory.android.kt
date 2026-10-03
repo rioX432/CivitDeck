@@ -14,6 +14,7 @@ import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.security.cert.CertificateException
@@ -29,20 +30,28 @@ actual fun createComfyUIHttpClient(
     return HttpClient(OkHttp) {
         engine {
             if (trust is ComfyUIServerTrust.PinnedLeaf) {
-                val trustManager = PinnedLeafTrustManager(trust)
-                val sslContext = SSLContext.getInstance("TLS").apply {
-                    init(null, arrayOf<TrustManager>(trustManager), SecureRandom())
-                }
-                config {
-                    sslSocketFactory(sslContext.socketFactory, trustManager)
-                    // The pin identifies the server, so the certificate need not name the host
-                    // the user typed (a self-signed certificate rarely lists a LAN IP).
-                    hostnameVerifier { _, _ -> true }
-                }
+                config { trustOnlyPinnedLeaf(trust) }
             }
         }
         installComfyUIPlugins(timeoutConfig)
     }
+}
+
+/**
+ * Makes the client accept only a server whose leaf certificate matches [trust]'s pin. The host
+ * name is not checked, so a client built this way must only be sent to the host:port the pin
+ * belongs to.
+ */
+fun OkHttpClient.Builder.trustOnlyPinnedLeaf(trust: ComfyUIServerTrust.PinnedLeaf): OkHttpClient.Builder {
+    val trustManager = PinnedLeafTrustManager(trust)
+    val sslContext = SSLContext.getInstance("TLS").apply {
+        init(null, arrayOf<TrustManager>(trustManager), SecureRandom())
+    }
+    sslSocketFactory(sslContext.socketFactory, trustManager)
+    // The pin identifies the server, so the certificate need not name the host the user typed
+    // (a self-signed certificate rarely lists a LAN IP).
+    hostnameVerifier { _, _ -> true }
+    return this
 }
 
 /**
