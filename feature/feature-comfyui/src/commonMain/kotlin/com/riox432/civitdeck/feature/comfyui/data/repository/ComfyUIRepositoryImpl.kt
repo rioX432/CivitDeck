@@ -9,6 +9,7 @@ import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
@@ -101,6 +102,9 @@ class ComfyUIRepositoryImpl(
         ensureApiConfigured()
         return api.getControlNets()
     }
+
+    // Not registered in Koin; implemented only so the interface compiles.
+    override suspend fun fetchDiffusionModelResources(): DiffusionModelResources = DiffusionModelResources()
 
     override suspend fun submitGeneration(params: ComfyUIGenerationParams): String {
         ensureApiConfigured()

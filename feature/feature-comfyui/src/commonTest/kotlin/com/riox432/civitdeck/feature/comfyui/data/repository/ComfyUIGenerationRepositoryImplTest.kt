@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
@@ -33,7 +34,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * Covers [ComfyUIGenerationRepositoryImpl]'s non-WebSocket surface: asset fetch,
+ * Covers [ComfyUIGenerationRepositoryImpl]'s non-WebSocket surface: asset and loader-list fetch,
  * prompt submission, history-based result polling, mask upload, object-info fetch,
  * image URL building, and the active-connection guard, plus the client id shared by
  * prompt submission and the WebSocket handshake. WebSocket message handling is excluded.
@@ -81,6 +82,92 @@ class ComfyUIGenerationRepositoryImplTest {
         val r = repo { okJson(body) }
 
         assertEquals(listOf("canny.pth"), r.fetchControlNets())
+    }
+
+    private fun loaderRepo(bodies: Map<String, String>) = repo { request ->
+        okJson(bodies[request.url.encodedPath.removePrefix("/object_info/")] ?: "{}")
+    }
+
+    private val expectedResources = DiffusionModelResources(
+        diffusionModels = listOf("krea2_turbo_fp8_scaled.safetensors"),
+        textEncoders = listOf("qwen3vl_4b_fp8_scaled.safetensors"),
+        vaes = listOf("qwen_image_vae.safetensors", "pixel_space"),
+        clipTypes = listOf("stable_diffusion", "krea2"),
+    )
+
+    @Test
+    fun fetchDiffusionModelResources_reads_the_v1_loader_combos() = runTest {
+        // Shapes of ComfyUI's V1 INPUT_TYPES for UNETLoader, CLIPLoader and VAELoader.
+        val r = loaderRepo(
+            mapOf(
+                "UNETLoader" to """
+                    {"UNETLoader":{"input":{"required":{
+                        "unet_name":[["krea2_turbo_fp8_scaled.safetensors"]],
+                        "weight_dtype":[["default","fp8_e4m3fn"],{"advanced":true}]}}}}
+                """.trimIndent(),
+                "CLIPLoader" to """
+                    {"CLIPLoader":{"input":{"required":{
+                        "clip_name":[["qwen3vl_4b_fp8_scaled.safetensors"]],
+                        "type":[["stable_diffusion","krea2"]]},
+                        "optional":{"device":[["default","cpu"],{"advanced":true}]}}}}
+                """.trimIndent(),
+                "VAELoader" to """
+                    {"VAELoader":{"input":{"required":{
+                        "vae_name":[["qwen_image_vae.safetensors","pixel_space"],{"tooltip":"VAE"}]}}}}
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals(expectedResources, r.fetchDiffusionModelResources())
+    }
+
+    @Test
+    fun fetchDiffusionModelResources_reads_the_v3_combo_shape() = runTest {
+        val r = loaderRepo(
+            mapOf(
+                "UNETLoader" to """
+                    {"UNETLoader":{"input":{"required":{
+                        "unet_name":["COMBO",{"options":["krea2_turbo_fp8_scaled.safetensors"]}]}}}}
+                """.trimIndent(),
+                "CLIPLoader" to """
+                    {"CLIPLoader":{"input":{"required":{
+                        "clip_name":["COMBO",{"options":["qwen3vl_4b_fp8_scaled.safetensors"]}],
+                        "type":["COMBO",{"options":["stable_diffusion","krea2"],"tooltip":"type"}]}}}}
+                """.trimIndent(),
+                "VAELoader" to """
+                    {"VAELoader":{"input":{"required":{
+                        "vae_name":["COMBO",{"options":["qwen_image_vae.safetensors","pixel_space"]}]}}}}
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals(expectedResources, r.fetchDiffusionModelResources())
+    }
+
+    @Test
+    fun fetchDiffusionModelResources_gives_an_empty_diffusion_list_without_unet_loader() = runTest {
+        // ComfyUI answers /object_info/<unknown node> with an empty object.
+        val r = loaderRepo(
+            mapOf(
+                "UNETLoader" to "{}",
+                "CLIPLoader" to """{"CLIPLoader":{"input":{"required":{"clip_name":[["te.safetensors"]],"type":[["sd3"]]}}}}""",
+                "VAELoader" to """{"VAELoader":{"input":{"required":{"vae_name":[["ae.safetensors"]]}}}}""",
+            ),
+        )
+
+        val resources = r.fetchDiffusionModelResources()
+
+        assertEquals(emptyList(), resources.diffusionModels)
+        assertEquals(listOf("te.safetensors"), resources.textEncoders)
+        assertEquals(listOf("sd3"), resources.clipTypes)
+        assertEquals(listOf("ae.safetensors"), resources.vaes)
+    }
+
+    @Test
+    fun fetchDiffusionModelResources_throws_on_server_error() = runTest {
+        val r = repo { respondError(HttpStatusCode.InternalServerError) }
+
+        assertFailsWith<ResponseException> { r.fetchDiffusionModelResources() }
     }
 
     @Test

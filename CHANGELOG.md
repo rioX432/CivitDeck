@@ -33,6 +33,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - `Model.hasActivePaidAccess` — CivitAI models whose download is gated behind an active paid-access purchase are flagged from the `/models` responses' `hasActivePaidAccess` field (defaults to `false` when absent) (#1077)
 - Android and Desktop browse cards show a "Paid" badge next to the model type when `Model.hasActivePaidAccess` is true (content description "Requires purchase on CivitAI"); the type chip now ellipsizes first on narrow cards so the badge stays whole (#1078)
 - iOS model cards (search, creator page) show a "Paid" chip next to the model type when `Model.hasActivePaidAccess` is true, read by VoiceOver as "Requires purchase on CivitAI"; the type chip truncates first on narrow cards so the chip stays whole (#1079)
+- `ComfyUIGenerationRepository.fetchDiffusionModelResources()` returns the diffusion-model, text-encoder, VAE and CLIP `type` choices of a ComfyUI server from `/object_info/UNETLoader`, `/object_info/CLIPLoader` and `/object_info/VAELoader`; a server without a loader node yields an empty list, and the object_info combo parser also reads the V3 `["COMBO", {"options": […]}]` shape (#1144)
 
 ### Changed
 
@@ -65,6 +66,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Cancelling a running download from the model detail screen stops the background download (Android WorkManager worker, Desktop download job) instead of only marking the row Cancelled, so the transfer ends and is no longer reported as Completed (#1084)
 - Android ComfyUI output detail: Share in the share sheet attaches the output image (downloaded to a FileProvider cache, MIME type from its extension) along with the caption and hashtags; the button shows progress while the image loads, and a failed download keeps the sheet open with an error message. Other share sheets stay text-only (#1046)
 - iOS ComfyUI output detail: Share in the share sheet attaches the output image along with the caption and hashtags (loaded cache-first, with a spinner on the button while loading); if the image cannot be loaded, an alert appears and the sheet stays open. Other share sheets stay text-only (#1047)
+- Android fullscreen image viewer: Share attaches the image on the current page (video pages stay text-only). Image downloads for sharing use the ComfyUI server's confirmed certificate pin, as image loading does, so outputs from a server with a self-signed certificate can be shared too (#1048)
 - iOS ComfyUI output detail: tapping the image opens the fullscreen viewer on every page, including after swiping between outputs, and VoiceOver activation opens it too (#1049)
 - Saving a ComfyUI output to the gallery fails when the image request returns a non-2xx status (for example `404` after the output file was deleted) — the save reports failure instead of "Image saved to gallery", and the error body is no longer written to the gallery as a broken image (#1045)
 - Android workflow template library: "Edit" on a user template opens the editor with that template's name, description, type, category and variables (showing a spinner while templates load), and Save updates it instead of creating a blank duplicate; if the template was deleted meanwhile, the editor closes (#1044)
@@ -110,6 +112,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Android 13+ asks for the notification permission the first time Generate is tapped on the ComfyUI generation screen (at most once per screen) when generation alerts are on and the permission is not granted, so users on the default settings can receive the completion alert; the generation starts regardless of the answer (#1089)
 - iOS asks for notification permission when "Model Update Alerts" or "Generation Complete Alerts" is turned on in Settings, and the switch turns on only if permission is granted — the app never requested it before, so iOS could not show either alert; turning a switch off needs no permission (#1090)
 - ComfyUI onboarding's LAN scan step records when the scan has finished — `OnboardingStep.Scanning.isComplete` turns true once the scan completes or fails, keeping the servers found so far, while leaving the step or restarting the scan never marks it finished; the Android finished/empty state that uses it is #1069 (#1068)
+- Android ComfyUI onboarding's auto-detect step stops its spinner when the LAN scan ends: found servers stay listed, an empty scan says no ComfyUI answered on port 8188 and suggests starting it with `--listen` or entering the address manually, and a "Scan again" button sits next to Back — it used to spin forever with "No servers found yet" (#1069)
 
 ### Infrastructure
 

@@ -2,6 +2,7 @@ package com.riox432.civitdeck.domain.usecase
 
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
@@ -57,6 +58,7 @@ class ComfyUIUseCasesTest {
         override suspend fun fetchCheckpoints(): List<String> = fetchedCheckpoints
         override suspend fun fetchLoras(): List<String> = emptyList()
         override suspend fun fetchControlNets(): List<String> = emptyList()
+        override suspend fun fetchDiffusionModelResources(): DiffusionModelResources = DiffusionModelResources()
         override suspend fun submitGeneration(params: ComfyUIGenerationParams): String {
             submittedParams = params
             return "prompt-123"
