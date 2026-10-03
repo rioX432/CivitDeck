@@ -34,7 +34,6 @@ import com.riox432.civitdeck.ui.comfyui.SDWebUISettingsScreen
 import com.riox432.civitdeck.ui.comfyui.TemplateParameterScreen
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateEditorScreen
 import com.riox432.civitdeck.ui.comfyui.WorkflowTemplateScreen
-import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.create.CreateHubCallbacks
 import com.riox432.civitdeck.ui.create.CreateHubScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryScreen
@@ -241,23 +240,23 @@ private fun EntryProviderScope<Any>.comfyUIHistoryEntries(backStack: MutableList
         ComfyUIHistoryScreen(
             viewModel = viewModel,
             onBack = { backStack.popIfNotRoot() },
-            onImageClick = { image -> backStack.add(ComfyUIOutputDetailRoute(image.id)) },
+            onImageClick = { image ->
+                // The detail pager indexes into this list, so it must never be empty.
+                val images = viewModel.filteredImages().ifEmpty { listOf(image) }
+                backStack.add(ComfyUIOutputDetailRoute(image.id, images))
+            },
         )
     }
-    entry<ComfyUIOutputDetailRoute> { key ->
-        val historyViewModel: ComfyUIHistoryViewModel = koinViewModel()
-        val state by historyViewModel.uiState.collectAsStateWithLifecycle()
-        val images = historyViewModel.filteredImages()
-        val initialIndex = images.indexOfFirst { it.id == key.imageId }.coerceAtLeast(0)
-        when {
-            state.isLoading && images.isEmpty() -> LoadingStateOverlay()
-            images.isNotEmpty() -> ComfyUIOutputDetailScreen(
-                images = images,
-                initialIndex = initialIndex,
-                viewModel = historyViewModel,
-                onBack = { backStack.removeLastOrNull() },
-            )
-        }
+    // The default content key is the route's toString(), which would serialize the whole list.
+    entry<ComfyUIOutputDetailRoute>(clazzContentKey = { "comfyui_output_${it.imageId}" }) { key ->
+        // Display comes from the route's snapshot; this VM serves only the save, dataset and hashtag actions.
+        val actionsViewModel: ComfyUIHistoryViewModel = koinViewModel()
+        ComfyUIOutputDetailScreen(
+            images = key.images,
+            initialIndex = key.images.indexOfFirst { it.id == key.imageId }.coerceAtLeast(0),
+            viewModel = actionsViewModel,
+            onBack = { backStack.removeLastOrNull() },
+        )
     }
 }
 
