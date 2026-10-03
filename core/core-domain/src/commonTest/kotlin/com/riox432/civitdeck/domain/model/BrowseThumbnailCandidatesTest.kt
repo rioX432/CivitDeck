@@ -89,8 +89,29 @@ class BrowseThumbnailCandidatesTest {
     }
 
     @Test
-    fun video_only_models_have_no_candidates() {
-        val m = model(listOf(image("clip.mp4", contentType = MediaContentType.VIDEO)))
+    fun video_only_models_fall_back_to_a_civitai_still_frame() {
+        val m = model(
+            listOf(
+                image(
+                    "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/abc-123/original=true/143710065.mp4",
+                    level = NsfwLevel.Mature,
+                    contentType = MediaContentType.VIDEO,
+                ),
+            ),
+        )
+        val candidates = m.browseThumbnailCandidates()
+        assertEquals(1, candidates.size)
+        assertEquals(
+            "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/abc-123/anim=false,transcode=true,width=450/143710065.jpeg",
+            candidates.single().thumbnailUrl(450),
+        )
+        assertEquals(MediaContentType.IMAGE, candidates.single().contentType)
+        assertEquals(NsfwLevel.Mature, candidates.single().nsfwLevel)
+    }
+
+    @Test
+    fun videos_outside_the_civitai_cdn_have_no_still_frame() {
+        val m = model(listOf(image("https://example.com/clip.mp4", contentType = MediaContentType.VIDEO)))
         assertTrue(m.browseThumbnailCandidates().isEmpty())
     }
 }
