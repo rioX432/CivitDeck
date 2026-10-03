@@ -46,6 +46,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - ComfyUI settings "Test" (and the workflow plugin's `connect()`) and system stats resolve the server URL and TLS trust per call through `ComfyUIApiProvider`: the test and the stats shown after it use the tested connection's URL and pinned certificate, so a connection whose self-signed certificate was trusted no longer shows "Connection Error"; `FetchSystemStatsUseCase()` (model detail VRAM fit) uses the active connection and returns null when none is active (#1123)
 - Importing a ComfyUI workflow saved with ComfyUI's default Save (UI format, a top-level `nodes` array) now fails at import with a hint to use "Export Workflow (API)", instead of being accepted and failing at generation with a `class_type` error that does not name the wrong format (#1143)
 - Android ComfyUI onboarding failure step shows the fix for the detected cause instead of a generic "check the host": connection refused → start ComfyUI with `--listen` and check the port (8188, or 8000 on older ComfyUI Desktop); timeout → same network and firewall; HTTP 401/403 → servers behind a login are not supported yet; non-ComfyUI response → check the port; localhost/127.0.0.1/0.0.0.0 → enter the PC's local IP (#1064)
+- iOS ComfyUI onboarding failure screen shows the same cause-specific fixes as Android (#1064), plus a denied Local Network permission (reported by iOS as offline) → turn on Wi-Fi or allow Local Network for CivitDeck, with an "Open Settings" button to the app's Settings page (#1065)
 
 ### Removed
 
