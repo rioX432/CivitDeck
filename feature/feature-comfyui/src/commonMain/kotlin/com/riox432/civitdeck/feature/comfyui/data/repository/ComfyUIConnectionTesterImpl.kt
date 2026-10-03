@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.comfyui.data.repository
 
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
+import com.riox432.civitdeck.data.api.comfyui.ComfyUIServerTrust
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ConnectionFailureCause
 import com.riox432.civitdeck.domain.model.ConnectionTestResult
@@ -25,18 +26,38 @@ private const val IPV4_UNSPECIFIED = "0.0.0.0"
 private const val LOCALHOST = "localhost"
 
 /**
- * Tests a connection on a transient [ComfyUIApi] wrapping one of the shared, named
- * HttpClients (normal vs self-signed). A fresh [ComfyUIApi] per test avoids the mutable
- * base-URL state of the singleton [ComfyUIApi], so concurrent tests/probes do not race.
+ * Tests a connection on a transient [ComfyUIApi]. A fresh [ComfyUIApi] per test avoids the
+ * mutable base-URL state of the singleton [ComfyUIApi], so concurrent tests/probes do not race.
+ *
+ * A connection that accepts self-signed certificates over HTTPS is tested on a one-off client
+ * built by [createPinnedClient] with the connection's stored pin. That client both enforces the
+ * pin and records the fingerprint the server presented; the recorded value is per-client state,
+ * so each test builds and closes its own client.
  */
 class ComfyUIConnectionTesterImpl(
     private val normalClient: HttpClient,
-    private val selfSignedClient: HttpClient,
+    private val createPinnedClient: (ComfyUIServerTrust.PinnedLeaf) -> HttpClient,
     private val json: Json,
 ) : ComfyUIConnectionTester {
 
     override suspend fun test(connection: ComfyUIConnection): ConnectionTestResult {
-        val client = if (connection.acceptSelfSigned) selfSignedClient else normalClient
+        if (!(connection.useHttps && connection.acceptSelfSigned)) {
+            return probe(connection, normalClient, trust = null)
+        }
+        val trust = ComfyUIServerTrust.PinnedLeaf(connection.tlsCertSha256)
+        val client = createPinnedClient(trust)
+        return try {
+            probe(connection, client, trust)
+        } finally {
+            client.close()
+        }
+    }
+
+    private suspend fun probe(
+        connection: ComfyUIConnection,
+        client: HttpClient,
+        trust: ComfyUIServerTrust.PinnedLeaf?,
+    ): ConnectionTestResult {
         val api = ComfyUIApi(client, json)
         api.setBaseUrl(connection.baseUrl)
         return try {
@@ -60,11 +81,22 @@ class ComfyUIConnectionTesterImpl(
             noResponseFailure(connection, ConnectionFailureCause.Timeout, e.message)
         } catch (@Suppress("TooGenericExceptionCaught") e: Throwable) {
             if (isTlsFailure(e)) {
-                failure(connection, ConnectionFailureCause.Tls, e.message)
+                tlsFailure(connection, trust, e.message)
             } else {
                 noResponseFailure(connection, transportFailureCause(e), e.message)
             }
         }
+    }
+
+    private fun tlsFailure(
+        connection: ComfyUIConnection,
+        trust: ComfyUIServerTrust.PinnedLeaf?,
+        detail: String?,
+    ): ConnectionTestResult.Failure {
+        val presented = trust?.presentedSha256
+        val cause = pinFailureCause(expected = connection.tlsCertSha256, presented = presented)
+        val fingerprint = presented.takeIf { cause != ConnectionFailureCause.Tls }
+        return failure(connection, cause, detail, presentedSha256 = fingerprint)
     }
 
     private suspend fun fetchStats(api: ComfyUIApi): SystemStats? =
@@ -95,8 +127,22 @@ class ComfyUIConnectionTesterImpl(
         cause: ConnectionFailureCause,
         detail: String?,
         httpStatus: Int? = null,
+        presentedSha256: String? = null,
     ): ConnectionTestResult.Failure {
         Logger.w(TAG, "Test failed for ${connection.baseUrl}: $cause ($detail)")
-        return ConnectionTestResult.Failure(cause, httpStatus)
+        return ConnectionTestResult.Failure(cause, httpStatus, presentedSha256)
     }
+}
+
+/**
+ * Classifies a TLS failure from a pinned client. [presented] is null when the handshake failed
+ * before the certificate was checked (or the engine does not record it, as on iOS), and a
+ * presented certificate equal to the pin means the handshake failed for another reason; both stay
+ * a plain [ConnectionFailureCause.Tls].
+ */
+internal fun pinFailureCause(expected: String?, presented: String?): ConnectionFailureCause = when {
+    presented == null -> ConnectionFailureCause.Tls
+    expected == null -> ConnectionFailureCause.CertificateUnconfirmed
+    presented != expected -> ConnectionFailureCause.CertificateChanged
+    else -> ConnectionFailureCause.Tls
 }
