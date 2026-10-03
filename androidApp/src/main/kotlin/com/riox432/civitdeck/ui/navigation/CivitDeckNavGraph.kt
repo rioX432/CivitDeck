@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -160,25 +161,11 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Discover) {
 
     val activeTabId = selectedTabId.takeIf { it in tabStates.all } ?: Tab.Discover.name
 
-    var compareModelId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var compareModelName by rememberSaveable { mutableStateOf<String?>(null) }
-    val entryInputs = remember(searchViewModel, tabStates) {
-        NavEntryInputs(
-            searchViewModel = searchViewModel,
-            searchScrollTrigger = { fixedTabStates.getValue(Tab.Discover.name).scrollTrigger },
-            settingsScrollTrigger = { fixedTabStates.getValue(Tab.Settings.name).scrollTrigger },
-            compareModelId = { compareModelId },
-            compareModelName = { compareModelName },
-            onCompareModel = { id, name ->
-                compareModelId = id
-                compareModelName = name
-            },
-            onCancelCompare = {
-                compareModelId = null
-                compareModelName = null
-            },
-        )
-    }
+    val entryInputs = rememberNavEntryInputs(
+        searchViewModel = searchViewModel,
+        tabStates = tabStates,
+        onSelectTab = { selectedTabId = it },
+    )
 
     NavigationSuiteScaffold(
         layoutType = rememberNavLayoutType(),
@@ -200,6 +187,39 @@ internal fun CivitDeckNavGraph(initialTab: Tab = Tab.Discover) {
     }
 }
 
+@Composable
+private fun rememberNavEntryInputs(
+    searchViewModel: ModelSearchViewModel,
+    tabStates: NavTabStates,
+    onSelectTab: (String) -> Unit,
+): NavEntryInputs {
+    var compareModelId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var compareModelName by rememberSaveable { mutableStateOf<String?>(null) }
+    val currentOnSelectTab by rememberUpdatedState(onSelectTab)
+    return remember(searchViewModel, tabStates) {
+        NavEntryInputs(
+            searchViewModel = searchViewModel,
+            searchScrollTrigger = { tabStates.fixed.getValue(Tab.Discover.name).scrollTrigger },
+            settingsScrollTrigger = { tabStates.fixed.getValue(Tab.Settings.name).scrollTrigger },
+            compareModelId = { compareModelId },
+            compareModelName = { compareModelName },
+            onCompareModel = { id, name ->
+                compareModelId = id
+                compareModelName = name
+            },
+            onCancelCompare = {
+                compareModelId = null
+                compareModelName = null
+            },
+            onOpenApiKeySettings = {
+                // The API key field is the first section of the Settings root; there is no separate route.
+                tabStates.fixed.getValue(Tab.Settings.name).showRootTop()
+                currentOnSelectTab(Tab.Settings.name)
+            },
+        )
+    }
+}
+
 /**
  * Graph-level values the entry providers need. Changing values are read through getters because
  * each tab keeps its [NavEntry]s until its own back stack changes, so a captured value would go stale.
@@ -212,6 +232,7 @@ private class NavEntryInputs(
     val compareModelName: () -> String?,
     val onCompareModel: (Long, String) -> Unit,
     val onCancelCompare: () -> Unit,
+    val onOpenApiKeySettings: () -> Unit,
 )
 
 private fun androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScope.navSuiteItems(
@@ -344,7 +365,7 @@ private fun civitDeckEntryProvider(
     analyticsEntry(backStack)
     notificationCenterEntry(backStack)
     browsingHistoryEntry(backStack)
-    downloadQueueEntry(backStack)
+    downloadQueueEntry(backStack, inputs.onOpenApiKeySettings)
     feedEntry(backStack)
     creatorEntry(backStack)
     galleryEntry(backStack)

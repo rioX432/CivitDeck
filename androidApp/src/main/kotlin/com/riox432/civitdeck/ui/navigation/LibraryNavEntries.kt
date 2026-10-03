@@ -314,7 +314,10 @@ internal fun EntryProviderScope<Any>.browsingHistoryEntry(backStack: MutableList
     }
 }
 
-internal fun EntryProviderScope<Any>.downloadQueueEntry(backStack: MutableList<Any>) {
+internal fun EntryProviderScope<Any>.downloadQueueEntry(
+    backStack: MutableList<Any>,
+    onOpenApiKeySettings: () -> Unit,
+) {
     entry<DownloadQueueRoute> {
         val viewModel: DownloadQueueViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -327,6 +330,7 @@ internal fun EntryProviderScope<Any>.downloadQueueEntry(backStack: MutableList<A
             onRetry = viewModel::retryDownload,
             onDelete = viewModel::deleteDownload,
             onClearCompleted = viewModel::clearCompleted,
+            onOpenApiKeySettings = onOpenApiKeySettings,
         )
     }
 }

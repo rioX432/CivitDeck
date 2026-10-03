@@ -23,11 +23,20 @@ internal class TabState(
     override val viewModelStore = ViewModelStore()
 
     fun onReselected() {
-        if (backStack.size > 1) {
-            while (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-        } else {
-            scrollTrigger++
-        }
+        if (backStack.size > 1) popToRoot() else scrollTrigger++
+    }
+
+    /**
+     * Shows the root scrolled to its top from any depth. Popping alone would restore the root's
+     * saved scroll offset, which can hide the content at the top that the caller wants shown.
+     */
+    fun showRootTop() {
+        popToRoot()
+        scrollTrigger++
+    }
+
+    private fun popToRoot() {
+        while (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
     }
 }
 

@@ -1,5 +1,6 @@
 import SwiftUI
 import Shared
+import UserNotifications
 
 struct ContentFilterSettingsView: View {
     let viewModel: ContentFilterSettingsViewModel
@@ -148,7 +149,11 @@ struct ContentFilterSettingsView: View {
     private func notificationsToggle(state: AppBehaviorSettingsUiState) -> some View {
         Toggle(isOn: Binding(
             get: { state.notificationsEnabled },
-            set: { appBehaviorViewModel.onNotificationsEnabledChanged(enabled: $0) }
+            set: { enabled in
+                setNotificationSwitch(enabled) {
+                    appBehaviorViewModel.onNotificationsEnabledChanged(enabled: $0)
+                }
+            }
         )) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Model Update Alerts")
@@ -163,7 +168,11 @@ struct ContentFilterSettingsView: View {
     private func generationNotificationsToggle(state: AppBehaviorSettingsUiState) -> some View {
         Toggle(isOn: Binding(
             get: { state.generationNotificationsEnabled },
-            set: { appBehaviorViewModel.onGenerationNotificationsEnabledChanged(enabled: $0) }
+            set: { enabled in
+                setNotificationSwitch(enabled) {
+                    appBehaviorViewModel.onGenerationNotificationsEnabledChanged(enabled: $0)
+                }
+            }
         )) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Generation Complete Alerts")
@@ -171,6 +180,22 @@ struct ContentFilterSettingsView: View {
                 Text("Notify when ComfyUI generation finishes while app is in background")
                     .font(.civitBodySmall)
                     .foregroundColor(.civitOnSurfaceVariant)
+            }
+        }
+    }
+
+    // The switch renders the KMP state, so it keeps its old value while the prompt is open
+    // and flips only after the setting flow emits.
+    private func setNotificationSwitch(_ enabled: Bool, apply: @escaping (Bool) -> Void) {
+        guard enabled else {
+            apply(false)
+            return
+        }
+        Task { @MainActor in
+            let granted = (try? await UNUserNotificationCenter.current()
+                .requestAuthorization(options: [.alert, .sound])) ?? false
+            if granted {
+                apply(true)
             }
         }
     }

@@ -28,8 +28,14 @@ sealed interface OnboardingStep {
     /** Entry point: the user picks detect / QR / manual. */
     data object ChooseMethod : OnboardingStep
 
-    /** LAN scan in progress (Android/Desktop only); [results] grows as servers respond. */
-    data class Scanning(val results: List<DiscoveredServer>) : OnboardingStep
+    /**
+     * LAN scan (Android/Desktop only); [results] grows as servers respond. [isComplete] turns true
+     * once the scan has finished or failed, keeping the results found so far.
+     */
+    data class Scanning(
+        val results: List<DiscoveredServer>,
+        val isComplete: Boolean = false,
+    ) : OnboardingStep
 
     /** A connection is being verified against the live server. */
     data class Testing(val connection: ComfyUIConnection) : OnboardingStep
@@ -87,16 +93,12 @@ class ConnectionOnboardingViewModel(
         _uiState.update { it.copy(step = OnboardingStep.Scanning(emptyList())) }
         scanJob = viewModelScope.launch {
             scanForServers()
-                .catch { /* scan finished or failed; keep last results */ }
-                .collect { servers ->
-                    _uiState.update { state ->
-                        if (state.step is OnboardingStep.Scanning) {
-                            state.copy(step = OnboardingStep.Scanning(servers))
-                        } else {
-                            state
-                        }
-                    }
-                }
+                .catch { /* a failed scan counts as finished; keep last results */ }
+                .collect { servers -> updateScanning { it.copy(results = servers) } }
+            // Skipped when scanJob is cancelled (catch rethrows the job's own cancellation): the user
+            // has left this step. Any other upstream failure, even a foreign CancellationException,
+            // ends the scan while the user still waits on it, so it counts as finished.
+            updateScanning { it.copy(isComplete = true) }
         }
     }
 
@@ -204,6 +206,14 @@ class ConnectionOnboardingViewModel(
         activateConnection(id)
         _uiState.update {
             it.copy(step = OnboardingStep.Success(connection.copy(id = id), stats))
+        }
+    }
+
+    /** Applies [transform] only while the step is still [OnboardingStep.Scanning]. */
+    private fun updateScanning(transform: (OnboardingStep.Scanning) -> OnboardingStep.Scanning) {
+        _uiState.update { state ->
+            val step = state.step
+            if (step is OnboardingStep.Scanning) state.copy(step = transform(step)) else state
         }
     }
 
