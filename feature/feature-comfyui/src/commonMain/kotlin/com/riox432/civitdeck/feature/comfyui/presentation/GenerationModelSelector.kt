@@ -29,8 +29,20 @@ internal class GenerationModelSelector(
         uiState.update { it.withCheckpoint(checkpoint) }
     }
 
+    /**
+     * Also switches ControlNet off and clears the inpainting images: the built-in workflow has
+     * no ControlNet or inpainting graph for a diffusion model and rejects either setting.
+     */
     fun selectDiffusionModel(model: String) {
-        uiState.update { it.withDiffusionModel(model) }
+        uiState.update { state ->
+            val selected = state.withDiffusionModel(model)
+            val hasInpaintingImage = selected.initImageFilename != null || selected.maskImageFilename != null
+            if (selected.controlNetEnabled || hasInpaintingImage) {
+                selected.copy(controlNetEnabled = false, initImageFilename = null, maskImageFilename = null)
+            } else {
+                selected
+            }
+        }
     }
 
     /**
@@ -148,5 +160,7 @@ internal fun GenerationUiState.diffusionModelSelection(): DiffusionModelSelectio
         textEncoderName = selectedTextEncoder,
         clipType = family.clipType,
         vaeName = selectedVae,
+        latentNode = family.latentNode,
+        auraFlowShift = family.auraFlowShift,
     )
 }

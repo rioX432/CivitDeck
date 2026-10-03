@@ -12,6 +12,7 @@ class DiffusionModelFamilyTest {
     fun base_model_matches_exactly_after_trimming_and_ignoring_case() {
         assertEquals(DiffusionModelFamily.KREA_2, DiffusionModelFamily.forBaseModel(" krea 2 "))
         assertEquals(DiffusionModelFamily.ANIMA, DiffusionModelFamily.forBaseModel("Anima"))
+        assertEquals(DiffusionModelFamily.Z_IMAGE_TURBO, DiffusionModelFamily.forBaseModel("ZImageTurbo"))
     }
 
     @Test
