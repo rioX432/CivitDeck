@@ -31,6 +31,7 @@ class ComfyUIConnectionTesterImplTest {
 
     private val connection = ComfyUIConnection(name = "Home", hostname = "192.168.0.10")
     private val loopbackConnection = ComfyUIConnection(name = "Home", hostname = "127.0.0.1")
+    private val lanConnection = ComfyUIConnection(name = "Home", hostname = "192.168.1.5")
 
     private fun tester(status: HttpStatusCode, body: String, contentType: String = "application/json") =
         mockClient { request ->
@@ -119,6 +120,44 @@ class ComfyUIConnectionTesterImplTest {
             assertIs<ConnectionTestResult.Failure>(result)
             assertNotEquals(ConnectionFailureCause.LoopbackHost, result.cause, host)
         }
+    }
+
+    @Test
+    fun test_returns_refused_for_jvm_connection_refused() = runTest {
+        val result = throwingTester(IOException("Connection refused")).test(lanConnection)
+
+        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.Refused), result)
+    }
+
+    @Test
+    fun test_returns_refused_for_okhttp_econnrefused_in_cause() = runTest {
+        val cause = IOException(
+            "failed to connect to /192.168.1.5 (port 8188) after 10000ms: isConnected failed: " +
+                "ECONNREFUSED (Connection refused)",
+        )
+        val error = IOException("Failed to connect to /192.168.1.5:8188", cause)
+
+        val result = throwingTester(error).test(lanConnection)
+
+        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.Refused), result)
+    }
+
+    @Test
+    fun test_returns_refused_for_darwin_cannot_connect_to_host() = runTest {
+        val error = IOException(
+            "Exception in http request: Error Domain=NSURLErrorDomain Code=-1004 \"Could not connect to the server.\"",
+        )
+
+        val result = throwingTester(error).test(lanConnection)
+
+        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.Refused), result)
+    }
+
+    @Test
+    fun test_returns_unreachable_for_dns_failure() = runTest {
+        val result = throwingTester(IOException("Unable to resolve host")).test(lanConnection)
+
+        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.Unreachable), result)
     }
 
     @Test
