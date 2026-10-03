@@ -1,20 +1,86 @@
 package com.riox432.civitdeck.data.repository
 
+import com.riox432.civitdeck.data.api.CivitAiApi
+import com.riox432.civitdeck.data.api.dto.EnumsResponse
+import com.riox432.civitdeck.data.local.LocalCacheDataSource
 import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.BaseModelCatalog
 import com.riox432.civitdeck.domain.repository.BaseModelCatalogRepository
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
+import kotlin.coroutines.cancellation.CancellationException
 
-class BaseModelCatalogRepositoryImpl : BaseModelCatalogRepository {
+/**
+ * Serves CivitAI's base model catalog from a pinned 24 h cache of `/api/v1/enums`, refreshed when
+ * it is missing or older than 24 h each time the catalog is observed. While offline it falls back
+ * to the last cached copy of any age, then to the bundled snapshot.
+ */
+class BaseModelCatalogRepositoryImpl(
+    private val api: CivitAiApi,
+    private val localCache: LocalCacheDataSource,
+    private val json: Json,
+) : BaseModelCatalogRepository {
 
     private val bundledCatalog = buildBaseModelCatalog(
         activeValues = BUNDLED_ACTIVE_BASE_MODELS,
         allValues = BUNDLED_ALL_BASE_MODELS,
     )
 
-    override fun observeCatalog(): Flow<BaseModelCatalog> = flowOf(bundledCatalog)
+    private val refreshMutex = Mutex()
+
+    // The fallback is emitted before fetching because the client retries with backoff, so an
+    // offline fetch can take many seconds and the picker must not wait for it.
+    override fun observeCatalog(): Flow<BaseModelCatalog> = flow {
+        val fresh = localCache.getCached(CACHE_KEY, CACHE_TTL_MILLIS)?.decodeCatalogOrNull()
+        if (fresh != null) {
+            emit(fresh)
+            return@flow
+        }
+        emit(localCache.getCachedIgnoringTtl(CACHE_KEY)?.decodeCatalogOrNull() ?: bundledCatalog)
+        refreshIfStale()?.let { emit(it) }
+    }
+
+    /** Returns the refreshed catalog, or null when the refresh failed and the current list stays. */
+    private suspend fun refreshIfStale(): BaseModelCatalog? = refreshMutex.withLock {
+        // Another collector may have refreshed while this one waited for the lock.
+        localCache.getCached(CACHE_KEY, CACHE_TTL_MILLIS)?.decodeCatalogOrNull()?.let { return@withLock it }
+        try {
+            val response = api.getEnums()
+            val catalog = response.toCatalog()
+            if (catalog.active.isEmpty()) {
+                Logger.w(TAG, "Enums response has no usable ActiveBaseModel values; keeping the current list")
+                return@withLock null
+            }
+            localCache.putCache(CACHE_KEY, json.encodeToString(EnumsResponse.serializer(), response))
+            localCache.pinForOffline(CACHE_KEY)
+            catalog
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Logger.w(TAG, "Base model catalog refresh failed; keeping the current list: ${e.message}")
+            null
+        }
+    }
+
+    private fun String.decodeCatalogOrNull(): BaseModelCatalog? = try {
+        json.decodeFromString(EnumsResponse.serializer(), this).toCatalog()
+    } catch (e: SerializationException) {
+        Logger.w(TAG, "Ignoring unreadable cached enums: ${e.message}")
+        null
+    }
+
+    private fun EnumsResponse.toCatalog(): BaseModelCatalog =
+        buildBaseModelCatalog(activeValues = activeBaseModels, allValues = baseModels)
+
+    private companion object {
+        const val CACHE_KEY = "civitai:enums"
+        const val CACHE_TTL_MILLIS = 24L * 60L * 60L * 1000L
+    }
 }
 
 private const val TAG = "BaseModelCatalogRepository"
