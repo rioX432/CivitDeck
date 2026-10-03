@@ -353,6 +353,83 @@
         }
       }
     },
+    "comfyui_onboarding_fail_refused" : {
+      "comment" : "Onboarding failure message when nothing accepts connections on the server's port",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing accepts connections on this port. On the PC, start ComfyUI with --listen (e.g. add it to run_nvidia_gpu.bat) and check the port: 8188 by default, 8000 on older ComfyUI Desktop."
+          }
+        }
+      }
+    },
+    "comfyui_onboarding_fail_timeout" : {
+      "comment" : "Onboarding failure message when the connection to the server timed out",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection timed out. This device and the PC must be on the same Wi-Fi network, and the PC's firewall must allow this port."
+          }
+        }
+      }
+    },
+    "comfyui_onboarding_fail_auth %lld" : {
+      "comment" : "Onboarding failure message when the server answers HTTP 401 or 403; the argument is the HTTP status code",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The server requires sign-in (HTTP %lld). Servers behind a login are not supported yet."
+          }
+        }
+      }
+    },
+    "comfyui_onboarding_fail_not_comfyui" : {
+      "comment" : "Onboarding failure message when a service other than ComfyUI answered on the port",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Something answered on this port, but it is not ComfyUI. Check the port."
+          }
+        }
+      }
+    },
+    "comfyui_onboarding_fail_loopback" : {
+      "comment" : "Onboarding failure message when the host is a loopback address such as localhost or 127.0.0.1",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "localhost, 127.0.0.1 and 0.0.0.0 point to this device. Enter the PC's local IP address instead (e.g. 192.168.1.20)."
+          }
+        }
+      }
+    },
+    "comfyui_onboarding_fail_local_network_denied" : {
+      "comment" : "Onboarding failure message when iOS blocks access to the local network (Wi-Fi off or Local Network permission denied)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This device cannot reach the local network. Turn on Wi-Fi, or allow Local Network access for CivitDeck in Settings."
+          }
+        }
+      }
+    },
+    "comfyui_onboarding_open_settings" : {
+      "comment" : "Button on the onboarding failure screen that opens CivitDeck's page in the iOS Settings app",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings"
+          }
+        }
+      }
+    },
     "comfyui_onboarding_cert_fingerprint_label" : {
       "comment" : "Heading above the server certificate's SHA-256 fingerprint",
       "localizations" : {
