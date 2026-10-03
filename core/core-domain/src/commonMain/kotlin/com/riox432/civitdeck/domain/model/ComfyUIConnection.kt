@@ -84,6 +84,17 @@ data class DiffusionModelResources(
     val clipTypes: List<String> = emptyList(),
 )
 
+/**
+ * Files for a model that ships without a bundled text encoder and VAE, loaded by `UNETLoader`,
+ * `CLIPLoader` and `VAELoader`. [clipType] is the CLIPLoader `type` of the model's family.
+ */
+data class DiffusionModelSelection(
+    val unetName: String,
+    val textEncoderName: String,
+    val clipType: String,
+    val vaeName: String,
+)
+
 data class ComfyUIGenerationParams(
     val checkpoint: String,
     val prompt: String,
@@ -109,6 +120,8 @@ data class ComfyUIGenerationParams(
     val maskImageFilename: String? = null,
     // Inpainting: denoise strength (lower = more of original image preserved)
     val denoiseStrength: Double = DEFAULT_DENOISE,
+    // Replaces [checkpoint] with split loaders when non-null; ControlNet and inpainting stay checkpoint-only
+    val diffusionModel: DiffusionModelSelection? = null,
 ) {
     companion object {
         const val DEFAULT_STEPS = 20
