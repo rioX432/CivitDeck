@@ -32,9 +32,16 @@ final class ConnectionOnboardingViewModelOwner: ObservableObject {
     @Published var stage: OnboardingStage = .chooseMethod
     @Published var lanScanSupported = false
 
-    init() {
+    /// Starting the review here rather than from the view's `.task` runs it once per owner, so the
+    /// review is not restarted over its result when the view reappears, and the method picker never
+    /// flashes before the test begins.
+    init(reviewing saved: ComfyUIConnection? = nil) {
         vm = KoinHelper.shared.createConnectionOnboardingViewModel()
         store.put(key: "ConnectionOnboardingViewModel", viewModel: vm)
+        if let saved {
+            stage = .testing(hostname: saved.hostname)
+            vm.onReviewCertificate(saved: saved)
+        }
     }
 
     deinit { store.clear() }

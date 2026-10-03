@@ -89,6 +89,15 @@ struct ComfyUISettingsView: View {
                         .foregroundColor(.civitError)
                 }
             }
+            // A row of its own: a NavigationLink inside the status row would take over taps meant
+            // for the Test button.
+            if let pinned = viewModel.activePinnedTrustConnection {
+                NavigationLink {
+                    ConnectionOnboardingView(reviewConnection: pinned)
+                } label: {
+                    Label("comfyui_review_certificate", systemImage: "checkmark.shield")
+                }
+            }
         }
     }
 

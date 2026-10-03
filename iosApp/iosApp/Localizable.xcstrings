@@ -385,6 +385,17 @@
           }
         }
       }
+    },
+    "comfyui_review_certificate" : {
+      "comment" : "ComfyUI settings action that re-tests the active self-signed connection so a changed server certificate can be confirmed",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review certificate"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
