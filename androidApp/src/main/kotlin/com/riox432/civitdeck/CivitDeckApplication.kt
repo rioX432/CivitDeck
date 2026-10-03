@@ -28,6 +28,7 @@ import com.riox432.civitdeck.domain.usecase.ObserveNotificationsEnabledUseCase
 import com.riox432.civitdeck.domain.usecase.ObservePollingIntervalUseCase
 import com.riox432.civitdeck.domain.util.ApplicationScope
 import com.riox432.civitdeck.download.AndroidDownloadScheduler
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import com.riox432.civitdeck.feature.detail.presentation.ModelDetailViewModel
 import com.riox432.civitdeck.notification.ModelUpdateScheduler
 import com.riox432.civitdeck.ui.dataset.DuplicateReviewViewModel
@@ -48,6 +49,7 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
     private val observeNotificationsEnabled: ObserveNotificationsEnabledUseCase by inject()
     private val observePollingInterval: ObservePollingIntervalUseCase by inject()
     private val cleanupBrowsingHistory: CleanupBrowsingHistoryUseCase by inject()
+    private val comfyUIApiProvider: ComfyUIApiProvider by inject()
 
     override fun onCreate() {
         super.onCreate()
@@ -71,6 +73,9 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
         applicationScope.launch { initializeAuth() }
         initializeFrontDoor()
         applicationScope.launch { cleanupBrowsingHistory(System.currentTimeMillis()) }
+        ComfyUIImageCacheEvictor(comfyUIApiProvider.pinnedSha256ByHostPort) {
+            SingletonImageLoader.get(this).memoryCache
+        }.start(applicationScope)
         observeAndScheduleNotifications()
         scheduleWidgetRefresh()
     }
@@ -117,6 +122,9 @@ class CivitDeckApplication : Application(), SingletonImageLoader.Factory, KoinCo
                     .directory(cacheDir.resolve("image_cache"))
                     .maxSizePercent(0.02)
                     .build()
+            }
+            .components {
+                add(ComfyUIPinnedFetcherFactory(comfyUIApiProvider::pinnedSha256For))
             }
             .crossfade(true)
             .build()
