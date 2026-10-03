@@ -13,6 +13,8 @@ import com.riox432.civitdeck.domain.repository.ComfyUIQueueRepository
 import com.riox432.civitdeck.domain.repository.ModelFileHashRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
 
 // -- Connection management --
 
@@ -63,8 +65,8 @@ class FetchComfyUIControlNetsUseCase(private val repository: ComfyUIGenerationRe
 
 class ImportWorkflowUseCase {
     /**
-     * Validates that the given JSON string is a valid ComfyUI workflow (a JSON object with
-     * at least one node entry). Returns the cleaned JSON on success, or throws on invalid input.
+     * Validates that the given JSON string is a valid ComfyUI API-format workflow (a JSON object
+     * with at least one node entry). Returns the cleaned JSON on success, or throws on invalid input.
      */
     operator fun invoke(jsonString: String): String {
         val trimmed = jsonString.trim()
@@ -74,10 +76,19 @@ class ImportWorkflowUseCase {
         } catch (e: Exception) {
             error("Invalid JSON: ${e.message}")
         }
-        if (decoded !is kotlinx.serialization.json.JsonObject) {
+        if (decoded !is JsonObject) {
             error("Workflow must be a JSON object")
         }
         if (decoded.isEmpty()) error("Workflow JSON has no nodes")
+        // ComfyUI's default Save writes the UI graph ({"nodes": [...], "links": [...]}), which
+        // /prompt rejects only at submission with an error that doesn't name the wrong format.
+        // API-format node entries are objects, so a top-level "nodes" array is unambiguous.
+        if (decoded["nodes"] is JsonArray) {
+            error(
+                "This is a UI-format workflow, which ComfyUI cannot run from the API. " +
+                    "In ComfyUI, use \"Export Workflow (API)\" and import that file instead.",
+            )
+        }
         return trimmed
     }
 }

@@ -59,7 +59,7 @@ enum class ConnectionSecurityLevel {
     /** HTTPS but accepting self-signed certificates. */
     SelfSigned,
 
-    /** Plaintext HTTP on a LAN address (10.x, 192.168.x, 172.16-31.x, localhost). */
+    /** Plaintext HTTP on a private network (RFC1918, loopback, Tailscale). */
     LocalInsecure,
 
     /** Plaintext HTTP on a non-LAN address (internet-facing, risky). */
