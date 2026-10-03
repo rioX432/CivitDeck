@@ -2,7 +2,6 @@ import SwiftUI
 import Shared
 
 enum SearchFilter {
-    static let baseModelOptions: [BaseModel] = [.sd15, .sdxl10, .pony, .flux1D, .flux1S, .sd21, .svd]
     static let sortOptions: [CivitSortOrder] = [.mostDownloaded, .highestRated, .newest, .quality]
     static let periodOptions: [TimePeriod] = [.allTime, .year, .month, .week, .day]
 
