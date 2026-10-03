@@ -12,6 +12,8 @@ data class Model(
     val stats: ModelStats,
     val modelVersions: List<ModelVersion>,
     val source: ModelSource = ModelSource.CIVITAI,
+    /** True when at least one version is behind a live CivitAI paid-access gate (download needs a purchase). */
+    val hasActivePaidAccess: Boolean = false,
 )
 
 data class ModelStats(
