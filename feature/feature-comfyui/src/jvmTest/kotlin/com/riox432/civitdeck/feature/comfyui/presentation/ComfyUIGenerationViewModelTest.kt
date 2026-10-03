@@ -18,6 +18,8 @@ import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
 import com.riox432.civitdeck.domain.service.AppLifecycleTracker
 import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter
 import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
+import com.riox432.civitdeck.feature.comfyui.data.repository.FakeComfyUIConnectionDao
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ApplyWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExtractWorkflowParametersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
@@ -49,6 +51,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.serialization.json.Json
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -144,7 +147,10 @@ class ComfyUIGenerationViewModelTest {
                 pollResult = PollComfyUIResultUseCase(repo),
                 observeProgress = ObserveGenerationProgressUseCase(repo),
                 interruptGeneration = InterruptComfyUIGenerationUseCase(repo),
-                saveImage = SaveGeneratedImageUseCase(httpClient, NoOpImageSaver),
+                saveImage = SaveGeneratedImageUseCase(
+                    ComfyUIApiProvider(FakeComfyUIConnectionDao(), httpClient, Json),
+                    NoOpImageSaver,
+                ),
                 observeGenNotifEnabled = ObserveGenerationNotificationsEnabledUseCase(
                     FakeAppBehaviorPreferencesRepository(),
                 ),

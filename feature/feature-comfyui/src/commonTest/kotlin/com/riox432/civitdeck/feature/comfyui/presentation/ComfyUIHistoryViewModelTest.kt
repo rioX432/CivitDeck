@@ -19,6 +19,9 @@ import com.riox432.civitdeck.domain.usecase.ObserveDatasetCollectionsUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveShareHashtagsUseCase
 import com.riox432.civitdeck.domain.usecase.RemoveShareHashtagUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleShareHashtagUseCase
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
+import com.riox432.civitdeck.feature.comfyui.data.repository.FakeComfyUIConnectionDao
+import com.riox432.civitdeck.feature.comfyui.data.repository.testJson
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
@@ -168,7 +171,10 @@ class ComfyUIHistoryViewModelTest {
         val hashtags = UnusedHashtagRepository()
         return ComfyUIHistoryViewModel(
             fetchHistory = FetchComfyUIHistoryUseCase(repo),
-            saveImage = SaveGeneratedImageUseCase(HttpClient(MockEngine { respondOk() }), NoOpImageSaver),
+            saveImage = SaveGeneratedImageUseCase(
+                ComfyUIApiProvider(FakeComfyUIConnectionDao(), HttpClient(MockEngine { respondOk() }), testJson),
+                NoOpImageSaver,
+            ),
             observeDatasetCollections = ObserveDatasetCollectionsUseCase(datasets),
             addImageToDataset = AddImageToDatasetUseCase(datasets),
             createDatasetCollection = CreateDatasetCollectionUseCase(datasets),
