@@ -196,14 +196,22 @@ private fun FailureStep(step: OnboardingStep.Failure, viewModel: ConnectionOnboa
 
 @Composable
 private fun failureMessage(step: OnboardingStep.Failure): String = when (step.cause) {
-    ConnectionFailureCause.Unreachable -> stringResource(R.string.comfyui_onboarding_fail_unreachable)
+    ConnectionFailureCause.Unreachable,
+    ConnectionFailureCause.Refused,
+    ConnectionFailureCause.LoopbackHost,
+    ConnectionFailureCause.LocalNetworkDenied,
+    -> stringResource(R.string.comfyui_onboarding_fail_unreachable)
     ConnectionFailureCause.Timeout -> stringResource(R.string.comfyui_onboarding_fail_timeout)
     ConnectionFailureCause.Tls -> stringResource(R.string.comfyui_onboarding_fail_tls)
-    ConnectionFailureCause.Http -> stringResource(
+    ConnectionFailureCause.Http,
+    ConnectionFailureCause.AuthRequired,
+    -> stringResource(
         R.string.comfyui_onboarding_fail_http,
         step.httpStatus ?: 0,
     )
-    ConnectionFailureCause.Unknown -> stringResource(R.string.comfyui_onboarding_fail_unknown)
+    ConnectionFailureCause.NotComfyUI,
+    ConnectionFailureCause.Unknown,
+    -> stringResource(R.string.comfyui_onboarding_fail_unknown)
 }
 
 @Composable

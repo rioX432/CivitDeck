@@ -12,9 +12,12 @@ import io.ktor.client.HttpClient
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.http.HttpStatusCode
 import kotlinx.serialization.json.Json
 
 private const val TAG = "ComfyUIConnectionTester"
+
+private val AUTH_REQUIRED_STATUSES = setOf(HttpStatusCode.Unauthorized.value, HttpStatusCode.Forbidden.value)
 
 /**
  * Tests a connection on a transient [ComfyUIApi] wrapping one of the shared, named
@@ -34,11 +37,13 @@ class ComfyUIConnectionTesterImpl(
         return try {
             val probe = api.probeQueue()
             when {
+                probe.status in AUTH_REQUIRED_STATUSES ->
+                    failure(connection, ConnectionFailureCause.AuthRequired, "HTTP ${probe.status}", probe.status)
                 !probe.isSuccessStatus ->
                     failure(connection, ConnectionFailureCause.Http, "HTTP ${probe.status}", probe.status)
                 // Something other than ComfyUI answered with 2xx (e.g. another JSON service on the port).
                 !probe.hasQueueRunning ->
-                    failure(connection, ConnectionFailureCause.Unknown, "/queue response lacks queue_running")
+                    failure(connection, ConnectionFailureCause.NotComfyUI, "/queue response lacks queue_running")
                 // Health check passed; fetch optional stats (best-effort, never fails the test).
                 else -> ConnectionTestResult.Success(fetchStats(api))
             }
