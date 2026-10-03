@@ -22,6 +22,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Android ComfyUI Outputs list shows a "Load older outputs" button at the older end of the list (bottom for Newest, top for Oldest) when more history may exist; it calls `loadOlder()` and shows a spinner while loading (#1054)
 - `ComfyUIServerTrust` and `createComfyUIHttpClient(trust, timeoutConfig)` — Android/JVM ComfyUI clients can accept only the server whose leaf certificate matches a stored SHA-256 pin and record the fingerprint the server presented; iOS keeps system trust for now (#1118)
 - ComfyUI onboarding captures the certificate of a self-signed HTTPS server: the test fails with `CertificateUnconfirmed` (no pin yet) or `CertificateChanged` (different certificate) and the presented SHA-256 fingerprint, and `ConnectionOnboardingViewModel.onTrustCertificate()` tests again with that pin and saves the connection with it; `onReviewCertificate(saved)` re-tests a saved connection. The tester uses a one-off pinned client per test instead of the trust-all client (#1119)
+- Android ComfyUI onboarding shows the server certificate's SHA-256 fingerprint in the `openssl x509 -noout -fingerprint -sha256` format, with a hint to compare it on the server and a "Trust this certificate" button, when the test fails because the certificate is not confirmed yet or differs from the trusted one (#1120)
 
 ### Changed
 
@@ -40,6 +41,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 ### Fixed
 
 - Android ComfyUI output detail opens on the tapped image with exactly the Outputs list's images in the list's sort order — the list hands its snapshot to the detail instead of the detail re-fetching history with the default Newest order, so it no longer shows a blank screen when that fetch fails or is empty (#1050)
+- iOS generation screen's template picker now lists saved templates and applies the picked one to the form; its category and type filter chips now filter the list (#1043)
 - Swipe discovery's right swipe (heart) now only adds to Favorites: a model that is already favorited stays favorited, and Undo removes a favorite only when that swipe added it, including an Undo pressed before the favorite check finishes (#1074)
 - Restoring a backup with "Merge" no longer deletes or renames an existing collection whose id matches a backup collection; backup collections merge into same-name local collections or are added as new ones (#1019)
 - iOS ComfyUI generation form now sends the checkpoint, prompts, sampler settings, size, seed, ControlNet and denoise values to the shared ViewModel, so Generate submits what was entered instead of silently doing nothing (#1025)

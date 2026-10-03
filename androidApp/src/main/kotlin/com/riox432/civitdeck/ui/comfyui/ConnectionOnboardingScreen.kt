@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
@@ -186,13 +187,60 @@ private fun SuccessStep(step: OnboardingStep.Success, onConnected: () -> Unit) {
 @Composable
 private fun FailureStep(step: OnboardingStep.Failure, viewModel: ConnectionOnboardingViewModel) {
     Text(failureMessage(step), style = MaterialTheme.typography.bodyMedium)
-    Button(onClick = viewModel::onRetry, modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.comfyui_onboarding_retry))
+    val fingerprint = step.presentedSha256?.takeIf { step.cause in CERTIFICATE_CAUSES }
+    if (fingerprint != null) {
+        CertificateFingerprint(fingerprint)
+        Button(onClick = viewModel::onTrustCertificate, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.comfyui_onboarding_trust_certificate))
+        }
+        OutlinedButton(onClick = viewModel::onRetry, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.comfyui_onboarding_retry))
+        }
+    } else {
+        Button(onClick = viewModel::onRetry, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.comfyui_onboarding_retry))
+        }
     }
     OutlinedButton(onClick = viewModel::onChooseMethod, modifier = Modifier.fillMaxWidth()) {
         Text(stringResource(R.string.cd_navigate_back))
     }
 }
+
+@Composable
+private fun CertificateFingerprint(sha256Hex: String) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            Text(
+                stringResource(R.string.comfyui_onboarding_cert_fingerprint_label),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            // Wraps instead of truncating so every byte stays comparable with the server's output.
+            Text(
+                formatSha256Fingerprint(sha256Hex),
+                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+            )
+            Text(
+                stringResource(R.string.comfyui_onboarding_cert_fingerprint_hint),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+}
+
+/**
+ * Formats a lowercase hex SHA-256 digest the way `openssl x509 -noout -fingerprint -sha256`
+ * prints it (colon-separated uppercase byte pairs), so the user can compare the two directly.
+ */
+internal fun formatSha256Fingerprint(sha256Hex: String): String =
+    sha256Hex.uppercase().chunked(2).joinToString(":")
+
+private val CERTIFICATE_CAUSES = setOf(
+    ConnectionFailureCause.CertificateUnconfirmed,
+    ConnectionFailureCause.CertificateChanged,
+)
 
 @Composable
 private fun failureMessage(step: OnboardingStep.Failure): String = when (step.cause) {
@@ -202,10 +250,11 @@ private fun failureMessage(step: OnboardingStep.Failure): String = when (step.ca
     ConnectionFailureCause.LocalNetworkDenied,
     -> stringResource(R.string.comfyui_onboarding_fail_unreachable)
     ConnectionFailureCause.Timeout -> stringResource(R.string.comfyui_onboarding_fail_timeout)
-    ConnectionFailureCause.Tls,
-    ConnectionFailureCause.CertificateUnconfirmed,
-    ConnectionFailureCause.CertificateChanged,
-    -> stringResource(R.string.comfyui_onboarding_fail_tls)
+    ConnectionFailureCause.Tls -> stringResource(R.string.comfyui_onboarding_fail_tls)
+    ConnectionFailureCause.CertificateUnconfirmed ->
+        stringResource(R.string.comfyui_onboarding_fail_cert_unconfirmed)
+    ConnectionFailureCause.CertificateChanged ->
+        stringResource(R.string.comfyui_onboarding_fail_cert_changed)
     ConnectionFailureCause.Http,
     ConnectionFailureCause.AuthRequired,
     -> stringResource(

@@ -52,7 +52,8 @@ struct ComfyUIGenerationView: View {
         .task { await viewModel.observeUiState() }
         .sheet(isPresented: $showTemplatePicker) {
             NavigationStack {
-                WorkflowTemplateView(isPicker: true, onSelect: { _ in
+                WorkflowTemplateView(isPicker: true, onSelect: { template in
+                    viewModel.onTemplateApplied(template)
                     showTemplatePicker = false
                 })
             }
