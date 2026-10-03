@@ -51,6 +51,7 @@ import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.GenerationModelSource
 import com.riox432.civitdeck.feature.comfyui.presentation.GenerationUiState
 import com.riox432.civitdeck.ui.components.comfyui.ParameterSliderRow
 import com.riox432.civitdeck.ui.theme.Spacing
@@ -192,22 +193,45 @@ private fun GenerationContent(
         contentPadding = PaddingValues(Spacing.lg),
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
-        item { CheckpointSelector(state, viewModel::onCheckpointSelected) }
-        item { PromptInputs(state, viewModel) }
-        item { ParameterControls(state, viewModel) }
-        item { LoraSection(state, viewModel) }
-        item { ControlNetSection(state, viewModel) }
-        item {
-            InpaintingSection(state, viewModel, onNavigateToMaskEditor)
+        // Keyed because the diffusion-model items come and go; with positional keys, every section
+        // that shifts would lose its remembered state, such as the workflow JSON draft.
+        item(key = "model") {
+            ModelSelector(
+                state = state,
+                onCheckpointSelected = viewModel::onCheckpointSelected,
+                onDiffusionModelSelected = viewModel::selectDiffusionModelForBuiltInWorkflow,
+            )
         }
-        item { CustomWorkflowSection(state, viewModel) }
-        item { GenerateButton(state, onGenerate, viewModel::onInterrupt) }
-        item { GenerationStatusSection(state) }
+        val isDiffusionModel = state.modelSource == GenerationModelSource.DIFFUSION_MODEL
+        if (isDiffusionModel) {
+            item(key = "diffusionModel") { DiffusionModelSelector(state, viewModel) }
+        }
+        item(key = "prompt") { PromptInputs(state, viewModel) }
+        item(key = "parameters") { ParameterControls(state, viewModel) }
+        item(key = "lora") { LoraSection(state, viewModel) }
+        if (!isDiffusionModel) {
+            item(key = "controlNet") { ControlNetSection(state, viewModel) }
+            item(key = "inpainting") {
+                InpaintingSection(state, viewModel, onNavigateToMaskEditor)
+            }
+        }
+        item(key = "customWorkflow") { CustomWorkflowSection(state, viewModel) }
+        item(key = "generate") { GenerateButton(state, onGenerate, viewModel::onInterrupt) }
+        item(key = "status") { GenerationStatusSection(state) }
         val result = state.result
         if (result?.imageUrls?.isNotEmpty() == true) {
-            item { ResultGrid(result.imageUrls, viewModel::onSaveImage) }
+            item(key = "result") { ResultGrid(result.imageUrls, viewModel::onSaveImage) }
         }
     }
+}
+
+// The built-in workflow has no ControlNet or inpainting graph for a diffusion model and rejects the
+// request, and both sections are hidden while one is selected, so a setting left over from a
+// checkpoint would make Generate fail with no visible way to undo it.
+private fun ComfyUIGenerationViewModel.selectDiffusionModelForBuiltInWorkflow(model: String) {
+    onControlNetToggled(false)
+    onClearMask()
+    onDiffusionModelSelected(model)
 }
 
 @Composable

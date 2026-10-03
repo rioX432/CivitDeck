@@ -45,15 +45,13 @@ internal fun GenerateButton(
 ) {
     val isGenerating = state.generationStatus == GenerationStatus.Submitting ||
         state.generationStatus == GenerationStatus.Running
-    val canGenerate = state.customWorkflowJson != null ||
-        (state.selectedCheckpoint.isNotBlank() && state.prompt.isNotBlank())
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
         Button(
             onClick = onGenerate,
-            enabled = !isGenerating && canGenerate,
+            enabled = !isGenerating && state.canGenerate,
             modifier = Modifier.weight(1f),
         ) {
             if (isGenerating) {
