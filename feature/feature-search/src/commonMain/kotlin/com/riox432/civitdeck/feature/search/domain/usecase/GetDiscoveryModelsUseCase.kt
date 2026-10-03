@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.search.domain.usecase
 
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelSearchQuery
+import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.repository.ModelRepository
 
@@ -17,7 +18,7 @@ class GetDiscoveryModelsUseCase(private val repository: ModelRepository) {
         nsfw: Boolean,
         cursor: String? = null,
         limit: Int = 20,
-    ): List<Model> = repository.getModels(
+    ): PaginatedResult<Model> = repository.getModels(
         ModelSearchQuery(sort = SortOrder.Newest, cursor = cursor, limit = limit, nsfw = nsfw),
-    ).items
+    )
 }
