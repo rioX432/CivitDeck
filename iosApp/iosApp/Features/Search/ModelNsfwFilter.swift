@@ -96,7 +96,8 @@ extension Array where Element == Model {
                 creator: model.creator,
                 stats: model.stats,
                 modelVersions: filteredVersions,
-                source: model.source
+                source: model.source,
+                hasActivePaidAccess: model.hasActivePaidAccess
             )
         }
     }
