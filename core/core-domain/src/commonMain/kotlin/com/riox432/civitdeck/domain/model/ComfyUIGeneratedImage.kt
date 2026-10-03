@@ -17,6 +17,17 @@ data class ComfyUIGeneratedImage(
 )
 
 /**
+ * The newest ComfyUI history entries, flattened into [images].
+ * [hasMore] is true when the server returned as many history entries as were requested:
+ * `/history` reports no total, so a full window is the only signal that older entries may exist.
+ * It counts history entries, not [images] — an entry can hold zero or several images.
+ */
+data class ComfyUIHistoryPage(
+    val images: List<ComfyUIGeneratedImage>,
+    val hasMore: Boolean,
+)
+
+/**
  * Generation metadata extracted from a ComfyUI history prompt entry.
  */
 data class ComfyUIGenerationMeta(

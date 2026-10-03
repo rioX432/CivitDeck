@@ -10,6 +10,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import com.riox432.civitdeck.domain.model.DomainException
@@ -49,7 +50,7 @@ class ComfyUIHistoryRepositoryImplTest {
     fun fetchHistory_maps_output_image_with_url_and_id() = runTest {
         val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api(historyBody))
 
-        val images = repo.fetchHistory().first()
+        val images = repo.fetchHistory(PAGE_SIZE).first().images
 
         assertEquals(1, images.size)
         val image = images.first()
@@ -64,7 +65,7 @@ class ComfyUIHistoryRepositoryImplTest {
     fun fetchHistory_extracts_generation_meta_from_prompt_nodes() = runTest {
         val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api(historyBody))
 
-        val meta = repo.fetchHistory().first().first().meta
+        val meta = repo.fetchHistory(PAGE_SIZE).first().images.first().meta
 
         assertEquals("a cat", meta.positivePrompt)
         assertEquals(123L, meta.seed)
@@ -75,7 +76,7 @@ class ComfyUIHistoryRepositoryImplTest {
     }
 
     @Test
-    fun fetchHistory_requests_only_the_newest_200_entries() = runTest {
+    fun fetchHistory_requests_only_the_newest_maxItems_entries() = runTest {
         var request: HttpRequestData? = null
         val capturingApi = ComfyUIApi(
             mockClient {
@@ -86,18 +87,54 @@ class ComfyUIHistoryRepositoryImplTest {
         )
         val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), capturingApi)
 
-        repo.fetchHistory().first()
+        repo.fetchHistory(PAGE_SIZE).first()
 
         val url = assertNotNull(request).url
         assertTrue(url.encodedPath.endsWith("/history"))
-        assertEquals("200", url.parameters["max_items"])
+        assertEquals(PAGE_SIZE.toString(), url.parameters["max_items"])
+    }
+
+    @Test
+    fun fetchHistory_hasMore_when_server_returns_exactly_maxItems_entries() = runTest {
+        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api(historyOf("p1", "p2")))
+
+        val page = repo.fetchHistory(maxItems = 2).first()
+
+        assertTrue(page.hasMore)
+        assertEquals(2, page.images.size)
+    }
+
+    @Test
+    fun fetchHistory_no_more_when_server_returns_fewer_than_maxItems_entries() = runTest {
+        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api(historyOf("p1")))
+
+        val page = repo.fetchHistory(maxItems = 2).first()
+
+        assertFalse(page.hasMore)
+        assertEquals(1, page.images.size)
+    }
+
+    @Test
+    fun fetchHistory_counts_entry_without_outputs_toward_maxItems_but_adds_no_image() = runTest {
+        val body = """
+            {
+              "failed": {"status": {"status_str": "error", "completed": false}, "outputs": {}},
+              "p1": {"outputs": {"9": {"images": [{"filename": "p1.png", "subfolder": "", "type": "output"}]}}}
+            }
+        """.trimIndent()
+        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api(body))
+
+        val page = repo.fetchHistory(maxItems = 2).first()
+
+        assertTrue(page.hasMore)
+        assertEquals(listOf("p1/p1.png"), page.images.map { it.id })
     }
 
     @Test
     fun fetchHistory_returns_empty_when_history_is_empty() = runTest {
         val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api("{}"))
 
-        val images = repo.fetchHistory().first()
+        val images = repo.fetchHistory(PAGE_SIZE).first().images
 
         assertTrue(images.isEmpty())
     }
@@ -126,7 +163,7 @@ class ComfyUIHistoryRepositoryImplTest {
         val repo = ComfyUIHistoryRepositoryImpl(FakeComfyUIConnectionDao(), api(historyBody))
 
         assertFailsWith<DomainException.ConnectionException> {
-            repo.fetchHistory().first()
+            repo.fetchHistory(PAGE_SIZE).first()
         }
     }
 
@@ -138,6 +175,17 @@ class ComfyUIHistoryRepositoryImplTest {
         )
         val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), errorApi)
 
-        assertFailsWith<Exception> { repo.fetchHistory().first() }
+        assertFailsWith<Exception> { repo.fetchHistory(PAGE_SIZE).first() }
+    }
+
+    private fun historyOf(vararg promptIds: String): String = promptIds.joinToString(
+        prefix = "{",
+        postfix = "}",
+    ) { id ->
+        """"$id": {"outputs": {"9": {"images": [{"filename": "$id.png", "subfolder": "", "type": "output"}]}}}"""
+    }
+
+    private companion object {
+        const val PAGE_SIZE = 200
     }
 }
