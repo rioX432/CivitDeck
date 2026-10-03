@@ -20,6 +20,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - `ComfyUIGenerationViewModel.onTemplateApplied` applies a workflow template: a template imported from a raw ComfyUI workflow loads as the custom workflow, and any other template clears a loaded custom workflow and fills the form from its variables (#1041)
 - `ComfyUIHistoryViewModel.loadOlder()` re-fetches history with a window one page (200 entries) wider, exposing `canLoadOlder`/`isLoadingOlder`; `refresh()` keeps the widened window and a new fetch cancels the one in flight. No UI button yet (#1053)
 - `ComfyUIServerTrust` and `createComfyUIHttpClient(trust, timeoutConfig)` — Android/JVM ComfyUI clients can accept only the server whose leaf certificate matches a stored SHA-256 pin and record the fingerprint the server presented; iOS keeps system trust for now (#1118)
+- ComfyUI onboarding captures the certificate of a self-signed HTTPS server: the test fails with `CertificateUnconfirmed` (no pin yet) or `CertificateChanged` (different certificate) and the presented SHA-256 fingerprint, and `ConnectionOnboardingViewModel.onTrustCertificate()` tests again with that pin and saves the connection with it; `onReviewCertificate(saved)` re-tests a saved connection. The tester uses a one-off pinned client per test instead of the trust-all client (#1119)
 
 ### Changed
 
@@ -51,6 +52,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - ComfyUI generation with the default seed no longer fails — a negative seed (the app's -1 "random" sentinel) is resolved to a random non-negative value right before submission, for both the built-in workflow and imported workflows (#1024)
 - ComfyUI connection test (onboarding and the settings Test button) passes only when `/queue` answers 2xx with ComfyUI's `queue_running` field, so an auth proxy's 401 JSON or another JSON service on the port is no longer reported as "Connected" (#1057)
 - Swipe discovery keeps serving new cards — it follows CivitAI's `nextCursor` instead of refetching page one, skips ahead (up to 5 requests per load) past pages whose cards were all already seen, and stops loading once the API reports no next page (#1073)
+- Android ComfyUI generation now applies the template picked from "Load template" — the picker opens as a full-screen dialog inside the generation screen and fills the form through `onTemplateApplied`, instead of a separate screen that discarded the choice (#1042)
 
 ### Infrastructure
 

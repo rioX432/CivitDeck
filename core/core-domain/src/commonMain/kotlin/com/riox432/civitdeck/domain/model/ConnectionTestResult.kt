@@ -18,6 +18,16 @@ enum class ConnectionFailureCause {
     Tls,
 
     /**
+     * A connection that accepts self-signed certificates has no confirmed fingerprint yet. The
+     * handshake was rejected before any request was sent; the user has to confirm the presented
+     * fingerprint first.
+     */
+    CertificateUnconfirmed,
+
+    /** The server presented a certificate whose fingerprint differs from the confirmed one. */
+    CertificateChanged,
+
+    /**
      * Server answered HTTP 401 or 403. ComfyUI itself has no authentication, so a proxy or auth
      * layer in front of it is rejecting the request.
      */
@@ -52,9 +62,12 @@ sealed interface ConnectionTestResult {
     /**
      * The health check failed; [cause] describes why. [httpStatus] is set for
      * [ConnectionFailureCause.Http] and [ConnectionFailureCause.AuthRequired].
+     * [presentedSha256] (64 lowercase hex characters) is set for
+     * [ConnectionFailureCause.CertificateUnconfirmed] and [ConnectionFailureCause.CertificateChanged].
      */
     data class Failure(
         val cause: ConnectionFailureCause,
         val httpStatus: Int? = null,
+        val presentedSha256: String? = null,
     ) : ConnectionTestResult
 }
