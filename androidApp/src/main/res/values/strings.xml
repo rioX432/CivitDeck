@@ -388,6 +388,8 @@
     <string name="comfyui_onboarding_method_manual_desc">Type the host, port and security options</string>
     <string name="comfyui_onboarding_scanning">Scanning your network…</string>
     <string name="comfyui_onboarding_no_servers">No servers found yet. Make sure ComfyUI is running with --listen.</string>
+    <string name="comfyui_onboarding_scan_none">No ComfyUI server answered on port 8188 on this network. On the PC, start ComfyUI with --listen, or go back and enter its address manually.</string>
+    <string name="comfyui_onboarding_scan_again">Scan again</string>
     <string name="comfyui_onboarding_testing">Testing connection to %1$s…</string>
     <string name="comfyui_onboarding_connected">Connected</string>
     <string name="comfyui_onboarding_connected_desc">%1$s is connected and ready.</string>

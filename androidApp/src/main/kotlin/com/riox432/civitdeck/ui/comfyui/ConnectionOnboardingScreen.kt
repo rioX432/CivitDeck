@@ -3,6 +3,7 @@ package com.riox432.civitdeck.ui.comfyui
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -125,6 +126,15 @@ private fun MethodCard(title: String, description: String, onClick: () -> Unit) 
 
 @Composable
 private fun ScanningStep(step: OnboardingStep.Scanning, viewModel: ConnectionOnboardingViewModel) {
+    if (step.isComplete) {
+        ScanFinishedContent(step, viewModel)
+    } else {
+        ScanInProgressContent(step, viewModel)
+    }
+}
+
+@Composable
+private fun ScanInProgressContent(step: OnboardingStep.Scanning, viewModel: ConnectionOnboardingViewModel) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -139,16 +149,45 @@ private fun ScanningStep(step: OnboardingStep.Scanning, viewModel: ConnectionOnb
             style = MaterialTheme.typography.bodySmall,
         )
     } else {
-        step.results.forEach { server ->
-            MethodCard(
-                title = server.displayName,
-                description = "${server.ip}:${server.port}",
-                onClick = { viewModel.onSelectDiscoveredServer(server) },
-            )
-        }
+        DiscoveredServerCards(step, viewModel)
     }
     OutlinedButton(onClick = viewModel::onChooseMethod) {
         Text(stringResource(R.string.cd_navigate_back))
+    }
+}
+
+@Composable
+private fun ScanFinishedContent(step: OnboardingStep.Scanning, viewModel: ConnectionOnboardingViewModel) {
+    if (step.results.isEmpty()) {
+        Text(
+            stringResource(R.string.comfyui_onboarding_scan_none),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    } else {
+        DiscoveredServerCards(step, viewModel)
+    }
+    // Equal weights let a label wrap instead of pushing the other button off-screen at large font scales.
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        OutlinedButton(onClick = viewModel::onChooseMethod, modifier = Modifier.weight(1f)) {
+            Text(stringResource(R.string.cd_navigate_back))
+        }
+        Button(onClick = viewModel::onStartScan, modifier = Modifier.weight(1f)) {
+            Text(stringResource(R.string.comfyui_onboarding_scan_again))
+        }
+    }
+}
+
+@Composable
+private fun DiscoveredServerCards(step: OnboardingStep.Scanning, viewModel: ConnectionOnboardingViewModel) {
+    step.results.forEach { server ->
+        MethodCard(
+            title = server.displayName,
+            description = "${server.ip}:${server.port}",
+            onClick = { viewModel.onSelectDiscoveredServer(server) },
+        )
     }
 }
 
