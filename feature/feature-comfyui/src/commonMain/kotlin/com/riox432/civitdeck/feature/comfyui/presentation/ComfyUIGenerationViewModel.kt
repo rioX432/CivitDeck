@@ -3,6 +3,7 @@ package com.riox432.civitdeck.feature.comfyui.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.DiffusionModelFamily
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
@@ -43,6 +44,12 @@ data class GenerationUiState(
     val textEncoders: List<String> = emptyList(),
     val vaes: List<String> = emptyList(),
     val serverClipTypes: List<String> = emptyList(),
+    // Model selection (GenerationModelSelector)
+    val modelSource: GenerationModelSource = GenerationModelSource.CHECKPOINT,
+    val selectedDiffusionModel: String = "",
+    val selectedFamily: DiffusionModelFamily? = null,
+    val selectedTextEncoder: String = "",
+    val selectedVae: String = "",
     // Custom workflow
     val customWorkflowJson: String? = null,
     val workflowImportError: String? = null,
@@ -67,8 +74,25 @@ data class GenerationUiState(
     /** Progress fraction in [0f, 1f]. Returns 0 when totalSteps is unknown. */
     val progressFraction: Float
         get() = if (totalSteps > 0) currentStep.toFloat() / totalSteps.toFloat() else 0f
+
+    /** Whether Generate can submit; platforms use this instead of their own checks. */
+    val canGenerate: Boolean
+        get() = customWorkflowJson != null || (prompt.isNotBlank() && hasCompleteModelSelection)
+
+    private val hasCompleteModelSelection: Boolean
+        get() = when (modelSource) {
+            GenerationModelSource.CHECKPOINT -> selectedCheckpoint.isNotBlank()
+            GenerationModelSource.DIFFUSION_MODEL ->
+                selectedDiffusionModel.isNotBlank() &&
+                    selectedFamily?.isSupportedBy(serverClipTypes) == true &&
+                    selectedTextEncoder.isNotBlank() &&
+                    selectedVae.isNotBlank()
+        }
 }
 
+// Android and iOS call every form action on the VM directly, so model selection keeps thin
+// forwarding functions here instead of exposing GenerationModelSelector as a second call style.
+@Suppress("TooManyFunctions")
 class ComfyUIGenerationViewModel(
     executionUseCases: GenerationExecutionUseCases,
     resourceUseCases: GenerationResourceUseCases,
@@ -92,6 +116,8 @@ class ComfyUIGenerationViewModel(
         useCases = resourceUseCases,
     )
 
+    private val modelSelector = GenerationModelSelector(_uiState)
+
     init {
         resourceLoader.loadCheckpoints()
         resourceLoader.loadLoras()
@@ -99,9 +125,15 @@ class ComfyUIGenerationViewModel(
         resourceLoader.loadDiffusionModelResources()
     }
 
-    fun onCheckpointSelected(checkpoint: String) {
-        _uiState.update { it.copy(selectedCheckpoint = checkpoint) }
-    }
+    fun onCheckpointSelected(checkpoint: String) = modelSelector.selectCheckpoint(checkpoint)
+
+    fun onDiffusionModelSelected(model: String) = modelSelector.selectDiffusionModel(model)
+
+    fun onModelFamilySelected(family: DiffusionModelFamily) = modelSelector.selectFamily(family)
+
+    fun onTextEncoderSelected(textEncoder: String) = modelSelector.selectTextEncoder(textEncoder)
+
+    fun onVaeSelected(vae: String) = modelSelector.selectVae(vae)
 
     fun onPromptChanged(prompt: String) {
         _uiState.update { it.copy(prompt = prompt) }
@@ -277,8 +309,7 @@ class ComfyUIGenerationViewModel(
 
     fun onGenerate() {
         val state = _uiState.value
-        val hasCustomWorkflow = state.customWorkflowJson != null
-        if (!hasCustomWorkflow && (state.selectedCheckpoint.isBlank() || state.prompt.isBlank())) return
+        if (!state.canGenerate) return
         generationDelegate.onGenerate(buildParams(state))
     }
 
@@ -296,8 +327,9 @@ class ComfyUIGenerationViewModel(
             state.customWorkflowJson
         }
 
+        val diffusionModel = state.diffusionModelSelection()
         return ComfyUIGenerationParams(
-            checkpoint = state.selectedCheckpoint,
+            checkpoint = if (diffusionModel == null) state.selectedCheckpoint else "",
             prompt = state.prompt,
             negativePrompt = state.negativePrompt,
             steps = state.steps,
@@ -315,6 +347,7 @@ class ComfyUIGenerationViewModel(
             initImageFilename = state.initImageFilename,
             maskImageFilename = state.maskImageFilename,
             denoiseStrength = state.denoiseStrength,
+            diffusionModel = diffusionModel,
         )
     }
 }

@@ -139,9 +139,9 @@ internal class GenerationResourceLoader(
  */
 internal fun findCheckpoint(available: List<String>, requested: String): String? {
     available.firstOrNull { it.equals(requested, ignoreCase = true) }?.let { return it }
-    val requestedName = checkpointFileName(requested)
-    return available.firstOrNull { checkpointFileName(it).equals(requestedName, ignoreCase = true) }
+    val requestedName = modelFileName(requested)
+    return available.firstOrNull { modelFileName(it).equals(requestedName, ignoreCase = true) }
 }
 
-private fun checkpointFileName(path: String): String =
+internal fun modelFileName(path: String): String =
     path.substringAfterLast('/').substringAfterLast('\\')
