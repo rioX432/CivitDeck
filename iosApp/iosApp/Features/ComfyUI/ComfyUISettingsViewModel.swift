@@ -112,4 +112,11 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
     var isConnected: Bool {
         activeConnection?.lastTestSuccess?.boolValue == true
     }
+
+    /// The active connection when its certificate can be reviewed. Pinned trust applies to every
+    /// HTTPS self-signed connection, including one with no pin stored yet.
+    var activePinnedTrustConnection: ComfyUIConnection? {
+        guard let active = activeConnection, active.useHttps, active.acceptSelfSigned else { return nil }
+        return active
+    }
 }
