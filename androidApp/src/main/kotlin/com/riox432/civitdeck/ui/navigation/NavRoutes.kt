@@ -43,6 +43,8 @@ data class ComfyUIBridgeRoute(
     val versionId: Long,
     val sha256Hash: String,
     val modelName: String,
+    /** Null unless the model is a Checkpoint: only those files can be selected as the ComfyUI checkpoint. */
+    val checkpointFileName: String?,
     val prompt: String?,
     val negativePrompt: String?,
     val steps: Int?,

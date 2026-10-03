@@ -59,6 +59,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - ComfyUI connection test (onboarding and the settings Test button) passes only when `/queue` answers 2xx with ComfyUI's `queue_running` field, so an auth proxy's 401 JSON or another JSON service on the port is no longer reported as "Connected" (#1057)
 - Swipe discovery keeps serving new cards — it follows CivitAI's `nextCursor` instead of refetching page one, skips ahead (up to 5 requests per load) past pages whose cards were all already seen, and stops loading once the API reports no next page (#1073)
 - Android ComfyUI generation now applies the template picked from "Load template" — the picker opens as a full-screen dialog inside the generation screen and fills the form through `onTemplateApplied`, instead of a separate screen that discarded the choice (#1042)
+- Android "Try in ComfyUI" now opens the generation screen with the first sample image's prompt, negative prompt, steps, CFG and seed filled in, and selects the model's primary file as the checkpoint for Checkpoint models; the prefill applies once per screen so edits survive returning from another screen (#1039)
 
 ### Infrastructure
 
