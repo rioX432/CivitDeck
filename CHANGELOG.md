@@ -73,6 +73,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- The ComfyUI generation form no longer offers ControlNet on Android or iOS, and the built-in workflow builder rejects a ControlNet request instead of sending a `ControlNetApply` node with an empty `image` input, which ComfyUI refuses at validation. The form has no control image input yet; adding one is a follow-up (#1265)
 - `ModelSearchViewModel` no longer throws a `NullPointerException` during construction when the excluded-tags load started from `init` completes without suspending (an eager dispatcher or a non-suspending repository); no production crash had been observed (#1264)
 - ComfyUI prefill with a checkpoint now switches the shared generation form back to that checkpoint when a diffusion model was selected, instead of keeping generating from the diffusion model (#1150)
 - iOS: the "Images" navigation shortcut tab shows the CivitAI community image gallery instead of a blank screen (#1092)
