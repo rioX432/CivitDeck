@@ -1,11 +1,9 @@
 package com.riox432.civitdeck.feature.comfyui.data.repository
 
-import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
-import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
-import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.QueueJob
 import com.riox432.civitdeck.domain.model.QueueJobStatus
 import com.riox432.civitdeck.domain.repository.ComfyUIQueueRepository
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -18,15 +16,14 @@ import kotlinx.serialization.json.jsonPrimitive
 private const val TAG = "ComfyUIQueueRepo"
 
 class ComfyUIQueueRepositoryImpl(
-    private val dao: ComfyUIConnectionDao,
-    private val api: ComfyUIApi,
+    private val apiProvider: ComfyUIApiProvider,
 ) : ComfyUIQueueRepository {
 
     override fun observeQueue(intervalMs: Long): Flow<List<QueueJob>> = flow {
         while (true) {
             try {
-                ensureApiConfigured()
-                val response = api.getQueue()
+                // Resolved on every poll so a connection switch moves polling to the new server.
+                val response = apiProvider.forActive().api.getQueue()
                 val jobs = mutableListOf<QueueJob>()
                 response.running.forEachIndexed { index, entry ->
                     jobs.add(QueueJob(extractPromptId(entry), index, QueueJobStatus.Running))
@@ -44,8 +41,7 @@ class ComfyUIQueueRepositoryImpl(
     }
 
     override suspend fun cancelJob(promptId: String) {
-        ensureApiConfigured()
-        api.deleteQueue(listOf(promptId))
+        apiProvider.forActive().api.deleteQueue(listOf(promptId))
     }
 
     /**
@@ -63,12 +59,5 @@ class ComfyUIQueueRepositoryImpl(
             Logger.w(TAG, "Failed to extract prompt ID: ${e.message}")
             ""
         }
-    }
-
-    private suspend fun ensureApiConfigured() {
-        val active = dao.getActive()
-            ?: throw DomainException.ConnectionException("No active ComfyUI connection")
-        val scheme = if (active.useHttps) "https" else "http"
-        api.setBaseUrl("$scheme://${active.hostname}:${active.port}")
     }
 }
