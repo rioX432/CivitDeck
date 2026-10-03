@@ -7,6 +7,7 @@ import com.riox432.civitdeck.data.local.dao.CachedApiResponseDao
 import com.riox432.civitdeck.data.local.entity.CachedApiResponseEntity
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.DiffusionLatentNode
 import com.riox432.civitdeck.domain.model.DiffusionModelFamily
 import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.DiffusionModelSelection
@@ -511,6 +512,69 @@ class ComfyUIGenerationViewModelTest {
         assertEquals(8, params.steps)
         assertEquals(1.0, params.cfgScale)
         assertEquals("simple", params.scheduler)
+    }
+
+    @Test
+    fun generate_with_z_image_turbo_submits_its_latent_node_and_aura_flow_shift() = runTest {
+        val submitted = mutableListOf<ComfyUIGenerationParams>()
+        val vm = createDiffusionViewModel(
+            clipTypes = listOf("stable_diffusion", "lumina2"),
+            textEncoders = listOf("qwen3vl_4b_fp8_scaled.safetensors", "qwen_3_4b.safetensors"),
+            submitted = submitted,
+        )
+        vm.onDiffusionModelSelected(KREA_MODEL)
+        vm.onModelFamilySelected(DiffusionModelFamily.Z_IMAGE_TURBO)
+
+        vm.onGenerate()
+        advanceUntilIdle()
+
+        val params = submitted.single()
+        assertEquals(
+            DiffusionModelSelection(
+                unetName = KREA_MODEL,
+                textEncoderName = "qwen_3_4b.safetensors",
+                clipType = "lumina2",
+                vaeName = "ae.safetensors",
+                latentNode = DiffusionLatentNode.EMPTY_SD3_LATENT_IMAGE,
+                auraFlowShift = 3.0,
+            ),
+            params.diffusionModel,
+        )
+        assertEquals(8, params.steps)
+        assertEquals(1.0, params.cfgScale)
+        assertEquals("res_multistep", params.samplerName)
+        assertEquals("simple", params.scheduler)
+        assertEquals(1024, params.width)
+        assertEquals(1024, params.height)
+    }
+
+    @Test
+    fun picking_a_diffusion_model_turns_controlnet_off_and_clears_the_inpainting_images() = runTest {
+        val vm = createDiffusionViewModel()
+        vm.onControlNetToggled(true)
+        vm.onInitImageUploaded("init.png")
+        vm.onMaskUploaded("mask.png")
+
+        vm.onDiffusionModelSelected(KREA_MODEL)
+
+        val state = vm.uiState.value
+        assertFalse(state.controlNetEnabled)
+        assertNull(state.initImageFilename)
+        assertNull(state.maskImageFilename)
+    }
+
+    @Test
+    fun reselecting_the_diffusion_model_clears_controlnet_or_a_mask_set_on_its_own() = runTest {
+        val vm = createDiffusionViewModel()
+        vm.onDiffusionModelSelected(KREA_MODEL)
+
+        vm.onControlNetToggled(true)
+        vm.onDiffusionModelSelected(KREA_MODEL)
+        assertFalse(vm.uiState.value.controlNetEnabled)
+
+        vm.onMaskUploaded("mask.png")
+        vm.onDiffusionModelSelected(KREA_MODEL)
+        assertNull(vm.uiState.value.maskImageFilename)
     }
 
     @Test

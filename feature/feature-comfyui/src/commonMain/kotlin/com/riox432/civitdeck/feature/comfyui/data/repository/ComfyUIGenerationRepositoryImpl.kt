@@ -3,6 +3,7 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIOutputImage
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketMessage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.DiffusionLatentNode
 import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.GenerationProgress
@@ -160,12 +161,7 @@ class ComfyUIGenerationRepositoryImpl(
         }
 
         val hasControlNet = params.controlNetEnabled && params.controlNetModel.isNotBlank()
-        if (params.diffusionModel != null) {
-            // The ControlNet and inpainting graphs exist only for checkpoints; building either
-            // without its nodes would submit a different generation than the user asked for.
-            require(!hasControlNet) { "ControlNet cannot be combined with a diffusion model" }
-            require(params.maskImageFilename == null) { "Inpainting cannot be combined with a diffusion model" }
-        }
+        requireCheckpointOnlyInputsUnset(params, hasControlNet)
 
         // Use inpainting workflow when both init image and mask are provided
         val isInpainting = params.initImageFilename != null &&
@@ -178,6 +174,7 @@ class ComfyUIGenerationRepositoryImpl(
         val loraChain = buildLoraChain(params.loraSelections, loaders)
         val finalModel = loraChain.lastOrNull()?.let { nodeLink(it.nodeId, 0) } ?: loaders.model
         val finalClip = loraChain.lastOrNull()?.let { nodeLink(it.nodeId, 1) } ?: loaders.clip
+        val latentNode = params.diffusionModel?.latentNode ?: DiffusionLatentNode.EMPTY_LATENT_IMAGE
 
         // Positive conditioning source
         val positiveCondId = if (hasControlNet) "21" else "6"
@@ -187,18 +184,19 @@ class ComfyUIGenerationRepositoryImpl(
             loraChain.forEach { loraNode ->
                 put(loraNode.nodeId, loraNode.jsonNode)
             }
+            val samplerModel = putModelSampling(params.diffusionModel?.auraFlowShift, finalModel)
             put("6", buildClipEncode(params.prompt, finalClip))
             put("7", buildClipEncode(params.negativePrompt, finalClip))
             if (hasControlNet) {
                 put("20", buildControlNetLoader(params.controlNetModel))
                 put("21", buildControlNetApply(params.controlNetStrength))
             }
-            put("5", buildEmptyLatent(params.width, params.height))
+            put("5", buildEmptyLatent(latentNode, params.width, params.height))
             put(
                 "4",
                 buildKSampler(
                     params = params,
-                    model = finalModel,
+                    model = samplerModel,
                     positiveCondId = positiveCondId,
                     latentNodeId = "5",
                     denoise = 1.0,
@@ -353,8 +351,32 @@ class ComfyUIGenerationRepositoryImpl(
         )
     }
 
-    private fun buildEmptyLatent(width: Int, height: Int) = buildJsonObject {
-        put("class_type", "EmptyLatentImage")
+    /**
+     * Adds `ModelSamplingAuraFlow` between [model] and the KSampler when [auraFlowShift] is set,
+     * and returns the MODEL link the KSampler reads. It is fed by the end of the LoRA chain, so
+     * the chain still starts at the UNET in node "3".
+     */
+    private fun JsonObjectBuilder.putModelSampling(auraFlowShift: Double?, model: JsonArray): JsonArray {
+        if (auraFlowShift == null) return model
+        put(
+            "42",
+            buildJsonObject {
+                put("class_type", "ModelSamplingAuraFlow")
+                put(
+                    "inputs",
+                    buildJsonObject {
+                        put("model", model)
+                        put("shift", auraFlowShift)
+                    }
+                )
+            },
+        )
+        return nodeLink("42", 0)
+    }
+
+    // Both latent nodes take the same width, height and batch_size inputs.
+    private fun buildEmptyLatent(node: DiffusionLatentNode, width: Int, height: Int) = buildJsonObject {
+        put("class_type", node.classType)
         put(
             "inputs",
             buildJsonObject {
@@ -446,4 +468,12 @@ class ComfyUIGenerationRepositoryImpl(
         add(JsonPrimitive(nodeId))
         add(JsonPrimitive(outputIndex))
     }
+}
+
+private fun requireCheckpointOnlyInputsUnset(params: ComfyUIGenerationParams, hasControlNet: Boolean) {
+    if (params.diffusionModel == null) return
+    // The ControlNet and inpainting graphs exist only for checkpoints; building either
+    // without its nodes would submit a different generation than the user asked for.
+    require(!hasControlNet) { "ControlNet cannot be combined with a diffusion model" }
+    require(params.maskImageFilename == null) { "Inpainting cannot be combined with a diffusion model" }
 }
