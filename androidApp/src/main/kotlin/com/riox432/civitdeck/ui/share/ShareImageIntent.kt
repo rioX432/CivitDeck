@@ -6,6 +6,8 @@ import android.net.Uri
 import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
+import com.riox432.civitdeck.data.api.comfyui.ComfyUIServerTrust
+import com.riox432.civitdeck.data.api.comfyui.trustOnlyPinnedLeaf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
@@ -26,15 +28,26 @@ object ShareImageIntent {
     private const val SHARED_IMAGES_DIR = "shared_images"
     private const val FALLBACK_FILE_NAME = "shared_image"
     private const val FALLBACK_MIME_TYPE = "image/*"
+    private const val HTTPS = "https"
+    private const val HTTPS_PORT = 443
     private const val MAX_FILE_NAME_LENGTH = 100
     private val UNSAFE_FILE_NAME_CHARS = Regex("[^A-Za-z0-9._-]")
     private val httpClient = OkHttpClient()
 
-    /** Returns the chooser intent, or null when the image could not be downloaded or stored. */
-    suspend fun create(context: Context, imageUrl: String, text: String): Intent? =
+    /**
+     * Returns the chooser intent, or null when the image could not be downloaded or stored.
+     * [pinnedSha256For] supplies the confirmed certificate pin of a ComfyUI host:port.
+     */
+    suspend fun create(
+        context: Context,
+        imageUrl: String,
+        text: String,
+        pinnedSha256For: (host: String, port: Int) -> String?,
+    ): Intent? =
         withContext(Dispatchers.IO) {
             try {
-                val file = downloadToCache(context, imageUrl) ?: return@withContext null
+                val client = clientFor(imageUrl, pinnedSha256For)
+                val file = downloadToCache(context, client, imageUrl) ?: return@withContext null
                 val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
                 buildChooser(uri, mimeTypeOf(file.name), text)
             } catch (e: IOException) {
@@ -47,9 +60,22 @@ object ShareImageIntent {
             }
         }
 
-    private fun CoroutineScope.downloadToCache(context: Context, imageUrl: String): File? {
+    // Same host:port lookup as ComfyUIPinnedFetcherFactory, so an image the viewer could load from
+    // a server with a self-signed certificate can also be downloaded for sharing.
+    private fun clientFor(imageUrl: String, pinnedSha256For: (host: String, port: Int) -> String?): OkHttpClient {
+        val uri = Uri.parse(imageUrl)
+        val host = uri.host
+        if (uri.scheme != HTTPS || host == null) return httpClient
+        val port = uri.port.takeIf { it != -1 } ?: HTTPS_PORT
+        val pin = pinnedSha256For(host, port) ?: return httpClient
+        return httpClient.newBuilder()
+            .trustOnlyPinnedLeaf(ComfyUIServerTrust.PinnedLeaf(pin))
+            .build()
+    }
+
+    private fun CoroutineScope.downloadToCache(context: Context, client: OkHttpClient, imageUrl: String): File? {
         val request = Request.Builder().url(imageUrl).build()
-        httpClient.newCall(request).execute().use { response ->
+        client.newCall(request).execute().use { response ->
             val body = response.body
             if (!response.isSuccessful || body == null) {
                 Log.w(TAG, "Image request returned HTTP ${response.code}: $imageUrl")
