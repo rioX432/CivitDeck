@@ -6,6 +6,8 @@ import com.riox432.civitdeck.domain.model.QueueJobStatus
 import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.respondError
+import io.ktor.client.engine.mock.toByteArray
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
@@ -18,7 +20,8 @@ import kotlin.test.assertTrue
 /**
  * Covers [ComfyUIQueueRepositoryImpl]: queue polling maps running/pending entries
  * to [com.riox432.civitdeck.domain.model.QueueJob]s, the guard requiring an active
- * connection, and the error branch emitting an empty list.
+ * connection, the error branch emitting an empty list, and cancelJob choosing between
+ * a targeted interrupt (running job) and a queue delete (pending job).
  */
 class ComfyUIQueueRepositoryImplTest {
 
@@ -86,18 +89,56 @@ class ComfyUIQueueRepositoryImplTest {
         assertTrue(jobs.isEmpty())
     }
 
+    private data class SentRequest(val method: HttpMethod, val path: String, val body: String)
+
+    /** Answers GET /queue with [queueBody] and records every request with its body. */
+    private fun recordingClient(queueBody: String, sent: MutableList<SentRequest>) = mockClient { req ->
+        sent.add(SentRequest(req.method, req.url.encodedPath, req.body.toByteArray().decodeToString()))
+        okJson(if (req.method == HttpMethod.Get && req.url.encodedPath == "/queue") queueBody else "{}")
+    }
+
+    private fun List<SentRequest>.posts(path: String) = filter { it.method == HttpMethod.Post && it.path == path }
+
+    private fun json(text: String) = testJson.parseToJsonElement(text)
+
     @Test
     fun cancelJob_posts_delete_request_for_prompt_id() = runTest {
-        var deleteHit = false
-        val client = mockClient { req ->
-            if (req.url.encodedPath == "/queue") deleteHit = true
-            okJson("{}")
-        }
-        val repo = repo(daoWithActive(), client)
+        val sent = mutableListOf<SentRequest>()
+        val repo = repo(daoWithActive(), recordingClient("{}", sent))
 
         repo.cancelJob("abc")
 
-        assertTrue(deleteHit)
+        val deletes = sent.posts("/queue")
+        assertEquals(1, deletes.size)
+        assertEquals(json("""{"delete":["abc"]}"""), json(deletes.single().body))
+    }
+
+    @Test
+    fun cancelJob_interrupts_only_the_running_prompt_when_it_is_running() = runTest {
+        val sent = mutableListOf<SentRequest>()
+        val queue = """{"queue_running":[[0,"abc"]],"queue_pending":[[1,"other"]]}"""
+        val repo = repo(daoWithActive(), recordingClient(queue, sent))
+
+        repo.cancelJob("abc")
+
+        val interrupts = sent.posts("/interrupt")
+        assertEquals(1, interrupts.size)
+        assertEquals(json("""{"prompt_id":"abc"}"""), json(interrupts.single().body))
+        assertTrue(sent.posts("/queue").isEmpty())
+    }
+
+    @Test
+    fun cancelJob_deletes_a_pending_prompt_without_interrupting() = runTest {
+        val sent = mutableListOf<SentRequest>()
+        val queue = """{"queue_running":[[0,"other"]],"queue_pending":[[1,"abc"]]}"""
+        val repo = repo(daoWithActive(), recordingClient(queue, sent))
+
+        repo.cancelJob("abc")
+
+        val deletes = sent.posts("/queue")
+        assertEquals(1, deletes.size)
+        assertEquals(json("""{"delete":["abc"]}"""), json(deletes.single().body))
+        assertTrue(sent.posts("/interrupt").isEmpty())
     }
 
     @Test

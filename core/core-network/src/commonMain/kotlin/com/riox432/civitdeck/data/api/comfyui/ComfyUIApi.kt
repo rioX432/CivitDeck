@@ -147,12 +147,21 @@ class ComfyUIApi(
 
     /**
      * Interrupt the currently running generation: POST /interrupt
+     * @param promptId when set, sent as `{"prompt_id": ...}` so ComfyUI interrupts only if that
+     *   prompt is the one running. When null, no body is sent and ComfyUI interrupts whatever runs.
+     *   Servers that predate targeted interrupts ignore the body and interrupt globally.
      * @throws ResponseException on HTTP error response
      * @throws HttpRequestTimeoutException on request timeout
      * @throws ConnectTimeoutException on connection timeout
      */
-    suspend fun interrupt(): Unit =
-        logAndRethrow("interrupt") { client.post("${_baseUrl.value}/interrupt").requireSuccess() }
+    suspend fun interrupt(promptId: String? = null): Unit = logAndRethrow("interrupt") {
+        client.post("${_baseUrl.value}/interrupt") {
+            if (promptId != null) {
+                contentType(ContentType.Application.Json)
+                setBody(buildJsonObject { put("prompt_id", promptId) })
+            }
+        }.requireSuccess()
+    }
 
     /**
      * Delete (cancel) queued prompts: POST /queue with {"delete": [...promptIds]}
