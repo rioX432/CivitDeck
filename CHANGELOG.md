@@ -60,6 +60,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- iOS: the "Images" navigation shortcut tab shows the CivitAI community image gallery instead of a blank screen (#1092)
 - iOS Model Update Alerts: the background model-update check can now be scheduled and run (the app declares the Background fetch mode), and it skips the CivitAI request when Model Update Alerts are off or the check interval is Off (#1091)
 - Cancelling a running download from the model detail screen stops the background download (Android WorkManager worker, Desktop download job) instead of only marking the row Cancelled, so the transfer ends and is no longer reported as Completed (#1084)
 - Android ComfyUI output detail: Share in the share sheet attaches the output image (downloaded to a FileProvider cache, MIME type from its extension) along with the caption and hashtags; the button shows progress while the image loads, and a failed download keeps the sheet open with an error message. Other share sheets stay text-only (#1046)
