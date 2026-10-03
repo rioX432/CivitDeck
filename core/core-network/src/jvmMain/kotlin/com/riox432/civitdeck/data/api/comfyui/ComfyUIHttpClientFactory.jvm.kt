@@ -20,43 +20,6 @@ import java.security.cert.X509Certificate
 import javax.net.ssl.X509TrustManager
 
 /**
- * Creates a CIO-backed Ktor client with configurable TLS trust.
- * When [trustSelfSignedCerts] is `true`, bypasses certificate validation for self-signed setups.
- * When `false`, uses the platform default trust manager (standard CA validation).
- */
-@Suppress("EmptyFunctionBlock", "TrustAllX509TrustManager", "CustomX509TrustManager")
-actual fun createPlatformComfyUIHttpClient(
-    trustSelfSignedCerts: Boolean,
-    timeoutConfig: TimeoutConfig,
-): HttpClient {
-    return HttpClient(CIO) {
-        engine {
-            if (trustSelfSignedCerts) {
-                val trustAllManager = object : X509TrustManager {
-                    override fun checkClientTrusted(
-                        chain: Array<out X509Certificate>?,
-                        authType: String?,
-                    ) {
-                        // Intentionally empty — trust all client certificates
-                    }
-                    override fun checkServerTrusted(
-                        chain: Array<out X509Certificate>?,
-                        authType: String?,
-                    ) {
-                        // Intentionally empty — trust all server certificates for self-signed setups
-                    }
-                    override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
-                }
-                https {
-                    trustManager = trustAllManager
-                }
-            }
-        }
-        installComfyUIPlugins(timeoutConfig)
-    }
-}
-
-/**
  * For [ComfyUIServerTrust.PinnedLeaf], CIO still verifies the hostname against the certificate
  * after the trust manager accepts it, so a pinned certificate must also name the host. Desktop
  * has no self-signed toggle, so this is not worked around.

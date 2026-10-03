@@ -44,6 +44,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 ### Removed
 
 - Reviews list/submit feature (reads/writes CivitAI's tRPC, conflicts with the "no SNS/community" scope) — `Model.stats.rating` is retained and still shown; the 2 tRPC review requests per model detail are eliminated (#991, #1000)
+- The trust-all ComfyUI HTTP client (`createComfyUIHttpClientWithSelfSignedTls`, `createPlatformComfyUIHttpClient` and their Koin-named client), which accepted every server certificate and, on Android, every hostname. A self-signed server is reached only through a client pinned to its confirmed certificate (#1132)
 
 ### Fixed
 

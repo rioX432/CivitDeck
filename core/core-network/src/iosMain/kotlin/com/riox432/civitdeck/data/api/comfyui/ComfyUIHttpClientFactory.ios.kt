@@ -16,18 +16,6 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 /**
- * Creates a Darwin-backed Ktor client that always uses system trust and ignores
- * [trustSelfSignedCerts]. A self-signed server is reached through [createComfyUIHttpClient] with
- * [ComfyUIServerTrust.PinnedLeaf] instead.
- */
-actual fun createPlatformComfyUIHttpClient(
-    trustSelfSignedCerts: Boolean,
-    timeoutConfig: TimeoutConfig,
-): HttpClient {
-    return HttpClient(Darwin) { installComfyUIPlugins(timeoutConfig) }
-}
-
-/**
  * Ktor's Darwin delegate passes every task's challenges, WebSocket tasks included, to
  * `handleChallenge`, so the pin covers both HTTP and `wss://` traffic.
  */
