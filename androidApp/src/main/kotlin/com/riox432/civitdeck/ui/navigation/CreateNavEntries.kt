@@ -1,9 +1,16 @@
 package com.riox432.civitdeck.ui.navigation
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
+import com.riox432.civitdeck.domain.model.WorkflowTemplate
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubBrowserViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubDetailViewModel
@@ -87,10 +94,9 @@ internal fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>)
     sdWebUIEntries(backStack)
     entry<ComfyUIGenerationRoute> {
         val viewModel: ComfyUIGenerationViewModel = koinViewModel()
-        ComfyUIGenerationScreen(
+        ComfyUIGenerationWithTemplatePicker(
             viewModel = viewModel,
             onBack = { backStack.popIfNotRoot() },
-            onLoadTemplate = { backStack.add(WorkflowTemplatePickerRoute) },
             onNavigateToMaskEditor = { url, w, h ->
                 backStack.add(MaskEditorRoute(url, w, h))
             },
@@ -104,10 +110,9 @@ internal fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>)
         val viewModel: ComfyUIGenerationViewModel = koinViewModel(
             key = "bridge_${key.modelId}_${key.versionId}",
         )
-        ComfyUIGenerationScreen(
+        ComfyUIGenerationWithTemplatePicker(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
-            onLoadTemplate = { backStack.add(WorkflowTemplatePickerRoute) },
             onNavigateToMaskEditor = { url, w, h ->
                 backStack.add(MaskEditorRoute(url, w, h))
             },
@@ -117,6 +122,52 @@ internal fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>)
     workflowTemplateEntries(backStack)
     comfyHubEntries(backStack)
     comfyUIHistoryEntries(backStack)
+}
+
+// The picker lives inside the generation entry because Navigation3 1.0.0 has no way to return a
+// result from another entry, and separate entries do not share a ViewModelStore.
+@Composable
+private fun ComfyUIGenerationWithTemplatePicker(
+    viewModel: ComfyUIGenerationViewModel,
+    onBack: () -> Unit,
+    onNavigateToMaskEditor: (String, Int, Int) -> Unit,
+) {
+    var showTemplatePicker by rememberSaveable { mutableStateOf(false) }
+    ComfyUIGenerationScreen(
+        viewModel = viewModel,
+        onBack = onBack,
+        onLoadTemplate = { showTemplatePicker = true },
+        onNavigateToMaskEditor = onNavigateToMaskEditor,
+    )
+    if (showTemplatePicker) {
+        WorkflowTemplatePickerDialog(
+            onSelectTemplate = { template ->
+                viewModel.onTemplateApplied(template, emptyMap())
+                showTemplatePicker = false
+            },
+            onDismiss = { showTemplatePicker = false },
+        )
+    }
+}
+
+@Composable
+private fun WorkflowTemplatePickerDialog(
+    onSelectTemplate: (WorkflowTemplate) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        val templateViewModel: WorkflowTemplateViewModel = koinViewModel()
+        WorkflowTemplateScreen(
+            viewModel = templateViewModel,
+            onBack = onDismiss,
+            onCreateTemplate = {},
+            onEditTemplate = {},
+            onSelectTemplate = onSelectTemplate,
+        )
+    }
 }
 
 private fun EntryProviderScope<Any>.connectionOnboardingEntry(backStack: MutableList<Any>) {
@@ -174,16 +225,6 @@ private fun EntryProviderScope<Any>.workflowTemplateEntries(backStack: MutableLi
             onCreateTemplate = { backStack.add(WorkflowTemplateEditorRoute(templateId = 0L)) },
             onEditTemplate = { template -> backStack.add(WorkflowTemplateEditorRoute(templateId = template.id)) },
             onSelectTemplate = { template -> backStack.add(TemplateParameterRoute(templateId = template.id)) },
-        )
-    }
-    entry<WorkflowTemplatePickerRoute> {
-        val viewModel: WorkflowTemplateViewModel = koinViewModel()
-        WorkflowTemplateScreen(
-            viewModel = viewModel,
-            onBack = { backStack.removeLastOrNull() },
-            onCreateTemplate = {},
-            onEditTemplate = {},
-            onSelectTemplate = { backStack.removeLastOrNull() },
         )
     }
     entry<WorkflowTemplateEditorRoute> { key ->
