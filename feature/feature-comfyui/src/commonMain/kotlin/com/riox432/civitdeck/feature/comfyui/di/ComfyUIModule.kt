@@ -247,6 +247,7 @@ val comfyuiModule = module {
             resourceUseCases = get(),
             importWorkflow = get(),
             injectParameters = get(),
+            applyTemplate = get(),
         )
     }
     viewModel { ComfyUIHistoryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }

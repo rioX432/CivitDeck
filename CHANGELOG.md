@@ -17,6 +17,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Deterministic QA foundation for the discovery flow — base-URL-injectable E2E seam, recorded CivitAI fixtures, stable discovery test tags, a semantic golden-query top-K test, and a Desktop Compose smoke test (PoC, not CI-gated) (#990, #998)
 - Semantic corpus-index spike decision doc and a `SigLipTokenizer` HF-parity test (#989, #996)
 - `ComfyUIGenerationViewModel.applyPrefill` fills the generation form from `ComfyUIGenerationParams`, selecting the requested checkpoint by file name even when the server list loads afterwards; sampler and scheduler are intentionally not applied (#1038)
+- `ComfyUIGenerationViewModel.onTemplateApplied` applies a workflow template: a template imported from a raw ComfyUI workflow loads as the custom workflow, and any other template clears a loaded custom workflow and fills the form from its variables (#1041)
 - `ComfyUIServerTrust` and `createComfyUIHttpClient(trust, timeoutConfig)` — Android/JVM ComfyUI clients can accept only the server whose leaf certificate matches a stored SHA-256 pin and record the fingerprint the server presented; iOS keeps system trust for now (#1118)
 
 ### Changed
@@ -25,6 +26,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - "Send to PC" (CV2) demoted to show only with a compatible connection; detail-screen Share/QR moved into an overflow menu; Analytics/Backup/Compare/Dataset/Hardware peripherals moved off the discovery-primary surface (kept, reversible) (#991, #1000)
 - Docs & positioning — README now leads with the single discovery promise, the ViewModel count is unified to the measured 42, and ROADMAP is reframed as a forward-looking compass (#992, #1001)
 - ComfyUI Outputs list requests only the newest 200 history entries (`GET /history?max_items=200`, the same page size as ComfyUI's own frontend) instead of the server's entire history; older outputs are not reachable until history paging lands (#1051)
+- `FetchComfyUIHistoryUseCase(maxItems)` emits a `ComfyUIHistoryPage(images, hasMore)`; `hasMore` is true when `/history` returned the full `maxItems` entries (counting history entries, including failed prompts without images, not images). No user-visible change (#1052)
 
 ### Removed
 

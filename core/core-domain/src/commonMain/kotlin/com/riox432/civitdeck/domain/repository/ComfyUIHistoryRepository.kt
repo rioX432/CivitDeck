@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.domain.repository
 
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
+import com.riox432.civitdeck.domain.model.ComfyUIHistoryPage
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -9,10 +10,10 @@ import kotlinx.coroutines.flow.Flow
  */
 interface ComfyUIHistoryRepository {
     /**
-     * Returns all generated images across all completed prompts.
-     * Emits a fresh list on each call.
+     * Returns the generated images of the newest [maxItems] history entries.
+     * Emits a fresh page on each call.
      */
-    fun fetchHistory(): Flow<List<ComfyUIGeneratedImage>>
+    fun fetchHistory(maxItems: Int): Flow<ComfyUIHistoryPage>
 
     /**
      * Returns generated images for a single prompt by [promptId].

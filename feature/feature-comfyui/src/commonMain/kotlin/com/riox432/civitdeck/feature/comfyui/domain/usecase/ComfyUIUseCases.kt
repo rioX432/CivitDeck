@@ -3,6 +3,7 @@ package com.riox432.civitdeck.feature.comfyui.domain.usecase
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.ComfyUIHistoryPage
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.QueueJob
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
@@ -98,7 +99,13 @@ class InterruptComfyUIGenerationUseCase(private val repository: ComfyUIGeneratio
 // -- History --
 
 class FetchComfyUIHistoryUseCase(private val repository: ComfyUIHistoryRepository) {
-    operator fun invoke(): Flow<List<ComfyUIGeneratedImage>> = repository.fetchHistory()
+    operator fun invoke(maxItems: Int = HISTORY_PAGE_SIZE): Flow<ComfyUIHistoryPage> =
+        repository.fetchHistory(maxItems)
+
+    companion object {
+        /** Same page size as ComfyUI's own frontend uses for its history list. */
+        const val HISTORY_PAGE_SIZE = 200
+    }
 }
 
 class FetchComfyUIHistoryItemUseCase(private val repository: ComfyUIHistoryRepository) {

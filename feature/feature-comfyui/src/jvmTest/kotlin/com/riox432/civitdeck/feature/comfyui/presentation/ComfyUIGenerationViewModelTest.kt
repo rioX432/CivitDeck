@@ -9,11 +9,16 @@ import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
+import com.riox432.civitdeck.domain.model.TemplateVariable
+import com.riox432.civitdeck.domain.model.TemplateVariableType
+import com.riox432.civitdeck.domain.model.WorkflowTemplate
+import com.riox432.civitdeck.domain.model.WorkflowTemplateType
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
 import com.riox432.civitdeck.domain.service.AppLifecycleTracker
 import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter
 import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ApplyWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExtractWorkflowParametersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
@@ -47,10 +52,13 @@ import kotlinx.coroutines.test.setMain
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 /**
  * Covers [ComfyUIGenerationViewModel.applyPrefill], including the race between a requested
- * checkpoint and the server checkpoint list loaded from `init`.
+ * checkpoint and the server checkpoint list loaded from `init`, and
+ * [ComfyUIGenerationViewModel.onTemplateApplied].
  *
  * Lives in jvmTest because the loader logs through `Logger`, which needs `android.util.Log`
  * unmocked on the Android host target.
@@ -154,6 +162,7 @@ class ComfyUIGenerationViewModelTest {
             ),
             importWorkflow = ImportWorkflowUseCase(),
             injectParameters = InjectWorkflowParametersUseCase(),
+            applyTemplate = ApplyWorkflowTemplateUseCase(),
         )
     }
 
@@ -263,5 +272,67 @@ class ComfyUIGenerationViewModelTest {
 
         assertEquals("euler", vm.uiState.value.samplerName)
         assertEquals("normal", vm.uiState.value.scheduler)
+    }
+
+    private fun template(
+        vararg variableNames: String,
+        rawWorkflowJson: String? = null,
+    ) = WorkflowTemplate(
+        id = 1L,
+        name = "t",
+        type = WorkflowTemplateType.TXT2IMG,
+        variables = variableNames.map {
+            TemplateVariable(name = it, type = TemplateVariableType.TEXT, defaultValue = "")
+        },
+        isBuiltIn = false,
+        createdAt = 0L,
+        rawWorkflowJson = rawWorkflowJson,
+    )
+
+    @Test
+    fun template_values_fill_the_form() = runTest {
+        val vm = createViewModel(loaded("a.safetensors"))
+        advanceUntilIdle()
+
+        vm.onTemplateApplied(
+            template("positive_prompt", "steps", "width"),
+            mapOf("positive_prompt" to "cat", "steps" to "30", "width" to "768"),
+        )
+
+        val state = vm.uiState.value
+        assertEquals("cat", state.prompt)
+        assertEquals(30, state.steps)
+        assertEquals(768, state.width)
+        assertNull(state.customWorkflowJson)
+    }
+
+    @Test
+    fun raw_workflow_template_loads_it_as_the_custom_workflow() = runTest {
+        val vm = createViewModel(loaded("a.safetensors"))
+        advanceUntilIdle()
+
+        vm.onTemplateApplied(template(rawWorkflowJson = RAW_WORKFLOW))
+        advanceUntilIdle()
+
+        assertEquals(RAW_WORKFLOW, vm.uiState.value.customWorkflowJson)
+    }
+
+    @Test
+    fun variables_template_clears_a_loaded_custom_workflow() = runTest {
+        val vm = createViewModel(loaded("a.safetensors"))
+        advanceUntilIdle()
+        vm.onImportWorkflow(RAW_WORKFLOW)
+        advanceUntilIdle()
+        assertNotNull(vm.uiState.value.customWorkflowJson)
+
+        vm.onTemplateApplied(template("positive_prompt"), mapOf("positive_prompt" to "cat"))
+
+        assertNull(vm.uiState.value.customWorkflowJson)
+        assertEquals("cat", vm.uiState.value.prompt)
+    }
+
+    private companion object {
+        const val RAW_WORKFLOW =
+            """{"3":{"class_type":"KSampler","inputs":{"seed":1,"steps":20}}}"""
     }
 }

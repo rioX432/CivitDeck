@@ -6,7 +6,9 @@ import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
+import com.riox432.civitdeck.domain.model.WorkflowTemplate
 import com.riox432.civitdeck.feature.comfyui.domain.model.ExtractedParameter
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ApplyWorkflowTemplateUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InjectWorkflowParametersUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -67,6 +69,7 @@ class ComfyUIGenerationViewModel(
     resourceUseCases: GenerationResourceUseCases,
     private val importWorkflow: ImportWorkflowUseCase,
     private val injectParameters: InjectWorkflowParametersUseCase,
+    private val applyTemplate: ApplyWorkflowTemplateUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GenerationUiState())
@@ -140,6 +143,22 @@ class ComfyUIGenerationViewModel(
             )
         }
         if (params.checkpoint.isNotBlank()) resourceLoader.requestCheckpoint(params.checkpoint)
+    }
+
+    /**
+     * Loads [template] into the form. A template imported from a raw ComfyUI workflow is
+     * loaded as a custom workflow, and [values] are ignored because its variables are node
+     * parameters edited after import. Any other template clears a loaded custom workflow,
+     * since that workflow would otherwise be submitted instead of the form values.
+     */
+    fun onTemplateApplied(template: WorkflowTemplate, values: Map<String, String> = emptyMap()) {
+        val rawWorkflowJson = template.rawWorkflowJson
+        if (rawWorkflowJson != null) {
+            onImportWorkflow(rawWorkflowJson)
+        } else {
+            onClearCustomWorkflow()
+            applyPrefill(applyTemplate(template, values))
+        }
     }
 
     // -- LoRA --
