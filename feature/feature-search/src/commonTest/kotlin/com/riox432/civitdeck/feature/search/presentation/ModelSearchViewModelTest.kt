@@ -1,9 +1,12 @@
 package com.riox432.civitdeck.feature.search.presentation
 
+import com.riox432.civitdeck.domain.model.BaseModel
+import com.riox432.civitdeck.domain.model.BaseModelCatalog
 import com.riox432.civitdeck.domain.model.HiddenModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.SavedSearchFilter
+import com.riox432.civitdeck.domain.repository.BaseModelCatalogRepository
 import com.riox432.civitdeck.domain.repository.ExcludedTagRepository
 import com.riox432.civitdeck.domain.repository.HiddenModelRepository
 import com.riox432.civitdeck.domain.repository.HuggingFaceRepository
@@ -39,6 +42,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.ObserveBaseModelCatalogUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
@@ -110,6 +114,11 @@ class ModelSearchViewModelTest {
         override suspend fun delete(id: Long) = Unit
     }
 
+    private class FakeBaseModelCatalogRepo : BaseModelCatalogRepository {
+        val catalog = MutableStateFlow(catalogOf(active = listOf("Krea 2"), retired = listOf("SVD")))
+        override fun observeCatalog(): Flow<BaseModelCatalog> = catalog
+    }
+
     private class FakeSearchHistoryRepo : SearchHistoryRepository {
         override fun observeRecentSearches(): Flow<List<String>> = MutableStateFlow(emptyList())
         override suspend fun addSearch(query: String) = Unit
@@ -164,6 +173,7 @@ class ModelSearchViewModelTest {
         val modelRepo: FakeModelRepository,
         val favRepo: FakeFavoriteRepository,
         val nsfwPrefs: FakeContentFilterPreferencesRepository,
+        val catalogRepo: FakeBaseModelCatalogRepo,
     )
 
     private fun TestScope.createViewModel(
@@ -171,10 +181,13 @@ class ModelSearchViewModelTest {
         // scheduler is advanced, so each test decides when init work runs.
         mainDispatcher: TestDispatcher = StandardTestDispatcher(testScheduler),
         excludedTags: List<String> = emptyList(),
+        // A page shorter than PAGE_SIZE makes one page load call getModels several times
+        // while it tries to fill the page; a full page keeps it at one call.
+        pageItemCount: Int = 1,
     ): TestDeps {
         Dispatchers.setMain(mainDispatcher)
         val modelRepo = FakeModelRepository(
-            pages = listOf(testPaginatedResult(items = listOf(testModel(id = 1L)))),
+            pages = listOf(testPaginatedResult(items = List(pageItemCount) { testModel(id = it + 1L) })),
         )
         val favRepo = FakeFavoriteRepository()
         val browsingRepo = FakeBrowsingHistoryRepository()
@@ -189,6 +202,7 @@ class ModelSearchViewModelTest {
         val hashRepo = FakeModelFileHashRepo()
         val displayRepo = FakeDisplayPrefsRepo()
         val embeddingRepo = FakeModelEmbeddingRepo()
+        val catalogRepo = FakeBaseModelCatalogRepo()
 
         val multiSource = MultiSourceSearchUseCase(modelRepo, hfRepo, taRepo)
 
@@ -221,6 +235,7 @@ class ModelSearchViewModelTest {
                 observeSavedSearchFilters = ObserveSavedSearchFiltersUseCase(savedFilterRepo),
                 saveSearchFilter = SaveSearchFilterUseCase(savedFilterRepo),
                 deleteSavedSearchFilter = DeleteSavedSearchFilterUseCase(savedFilterRepo),
+                observeBaseModelCatalog = ObserveBaseModelCatalogUseCase(catalogRepo),
             ),
             preferencesUseCases = SearchPreferencesUseCases(
                 observeNsfwFilter = ObserveNsfwFilterUseCase(nsfwPrefs),
@@ -245,7 +260,7 @@ class ModelSearchViewModelTest {
                 embeddingRepository = embeddingRepo,
             ),
         )
-        return TestDeps(vm, modelRepo, favRepo, nsfwPrefs)
+        return TestDeps(vm, modelRepo, favRepo, nsfwPrefs, catalogRepo)
     }
 
     @Test
@@ -476,4 +491,77 @@ class ModelSearchViewModelTest {
     }
 
     // endregion
+
+    // region Base model catalog & selection
+
+    @Test
+    fun applying_three_base_models_makes_exactly_one_model_request() = runTest {
+        // Eager, so a refresh per value would run each load instead of cancelling the earlier ones.
+        val deps = createViewModel(
+            mainDispatcher = UnconfinedTestDispatcher(testScheduler),
+            pageItemCount = SearchPageLoader.PAGE_SIZE,
+        )
+        advanceUntilIdle()
+        val callsAfterInit = deps.modelRepo.getModelsCallCount
+        val selection = setOf("Krea 2", "Anima", "SVD").map(::BaseModel).toSet()
+
+        deps.vm.onBaseModelsApplied(selection)
+        advanceUntilIdle()
+
+        assertEquals(callsAfterInit + 1, deps.modelRepo.getModelsCallCount)
+        assertEquals(selection, deps.modelRepo.lastQuery?.baseModels?.toSet())
+        assertEquals(selection, deps.vm.uiState.value.selectedBaseModels)
+        assertTrue(deps.vm.uiState.value.hasActiveSearch)
+    }
+
+    @Test
+    fun reapplying_the_current_base_models_makes_no_request() = runTest {
+        val deps = createViewModel(pageItemCount = SearchPageLoader.PAGE_SIZE)
+        advanceUntilIdle()
+        val selection = setOf(BaseModel("Krea 2"))
+        deps.vm.onBaseModelsApplied(selection)
+        advanceUntilIdle()
+        val callsAfterApply = deps.modelRepo.getModelsCallCount
+
+        deps.vm.onBaseModelsApplied(setOf(BaseModel("Krea 2")))
+        advanceUntilIdle()
+
+        assertEquals(callsAfterApply, deps.modelRepo.getModelsCallCount)
+    }
+
+    @Test
+    fun applying_an_empty_selection_clears_base_models_with_one_request() = runTest {
+        val deps = createViewModel(pageItemCount = SearchPageLoader.PAGE_SIZE)
+        advanceUntilIdle()
+        deps.vm.onBaseModelsApplied(setOf(BaseModel("Krea 2")))
+        advanceUntilIdle()
+        val callsAfterApply = deps.modelRepo.getModelsCallCount
+
+        deps.vm.onBaseModelsApplied(emptySet())
+        advanceUntilIdle()
+
+        assertEquals(callsAfterApply + 1, deps.modelRepo.getModelsCallCount)
+        assertEquals(null, deps.modelRepo.lastQuery?.baseModels)
+        assertTrue(deps.vm.uiState.value.selectedBaseModels.isEmpty())
+    }
+
+    @Test
+    fun ui_state_follows_the_observed_base_model_catalog() = runTest {
+        val deps = createViewModel()
+        advanceUntilIdle()
+        assertEquals(deps.catalogRepo.catalog.value, deps.vm.uiState.value.baseModelCatalog)
+
+        val refreshed = catalogOf(active = listOf("Krea 2", "Anima"), retired = listOf("SVD"))
+        deps.catalogRepo.catalog.value = refreshed
+        advanceUntilIdle()
+
+        assertEquals(refreshed, deps.vm.uiState.value.baseModelCatalog)
+    }
+
+    // endregion
 }
+
+private fun catalogOf(active: List<String>, retired: List<String>) = BaseModelCatalog(
+    active = active.map(::BaseModel),
+    retired = retired.map(::BaseModel),
+)

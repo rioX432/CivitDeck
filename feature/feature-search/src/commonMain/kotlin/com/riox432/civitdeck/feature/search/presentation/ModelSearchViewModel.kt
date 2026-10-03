@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.ml.EmbeddingModels
 import com.riox432.civitdeck.domain.model.BaseModel
+import com.riox432.civitdeck.domain.model.BaseModelCatalog
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelType
@@ -40,6 +41,9 @@ data class ModelSearchUiState(
     val selectedSort: SortOrder = SortOrder.MostDownloaded,
     val selectedPeriod: TimePeriod = TimePeriod.AllTime,
     val selectedBaseModels: Set<BaseModel> = emptySet(),
+    // Null only before the repository's first emission: it always emits a catalog (live,
+    // cached or bundled), so null means "not loaded yet", never "no base models".
+    val baseModelCatalog: BaseModelCatalog? = null,
     val nsfwFilterLevel: NsfwFilterLevel = NsfwFilterLevel.Off,
     val isFreshFindEnabled: Boolean = false,
     val isQualityFilterEnabled: Boolean = false,
@@ -213,6 +217,7 @@ class ModelSearchViewModel(
             )
         }
         observePreferences()
+        observeBaseModelCatalog()
         filterDelegate.loadExcludedTags()
         loadDefaults(preferencesUseCases.observeDefaultSortOrder, preferencesUseCases.observeDefaultTimePeriod)
         refreshRecommendations()
@@ -308,6 +313,17 @@ class ModelSearchViewModel(
             }.toSet()
             it.copy(selectedBaseModels = updated)
         }
+        refresh()
+    }
+
+    /**
+     * Replaces the whole base model selection with one search request, as the picker does when
+     * it closes. Re-applying the current selection makes no request.
+     */
+    fun onBaseModelsApplied(baseModels: Set<BaseModel>) {
+        val selection = baseModels.toSet()
+        if (selection == _filterState.value.selectedBaseModels) return
+        updateFilter { it.copy(selectedBaseModels = selection) }
         refresh()
     }
 
@@ -555,6 +571,16 @@ class ModelSearchViewModel(
         viewModelScope.launch {
             preferencesUseCases.observeQualityThreshold().collect { threshold ->
                 _filterState.update { it.copy(qualityThreshold = threshold) }
+            }
+        }
+    }
+
+    // Collecting is what makes the repository check the catalog's age, so no timer or
+    // "already fetched" flag lives here.
+    private fun observeBaseModelCatalog() {
+        viewModelScope.launch {
+            filterUseCases.observeBaseModelCatalog().collect { catalog ->
+                _uiState.update { it.copy(baseModelCatalog = catalog) }
             }
         }
     }

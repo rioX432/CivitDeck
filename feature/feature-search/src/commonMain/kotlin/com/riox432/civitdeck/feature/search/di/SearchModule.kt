@@ -17,6 +17,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetRecommendationsUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.HideModelUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.ObserveBaseModelCatalogUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSavedSearchFiltersUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.ObserveSearchHistoryUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.SaveSearchFilterUseCase
@@ -53,6 +54,7 @@ val searchModule = module {
     factory { ObserveSavedSearchFiltersUseCase(get()) }
     factory { SaveSearchFilterUseCase(get()) }
     factory { DeleteSavedSearchFilterUseCase(get()) }
+    factory { ObserveBaseModelCatalogUseCase(get()) }
     factory { TrackRecommendationClickUseCase(get()) }
 
     // Use-case bundles (grouped to keep ModelSearchViewModel constructor small)
@@ -83,6 +85,7 @@ val searchModule = module {
             observeSavedSearchFilters = get(),
             saveSearchFilter = get(),
             deleteSavedSearchFilter = get(),
+            observeBaseModelCatalog = get(),
         )
     }
     factory {
