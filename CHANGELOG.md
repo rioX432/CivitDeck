@@ -60,10 +60,12 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- iOS: the "Images" navigation shortcut tab shows the CivitAI community image gallery instead of a blank screen (#1092)
 - iOS Model Update Alerts: the background model-update check can now be scheduled and run (the app declares the Background fetch mode), and it skips the CivitAI request when Model Update Alerts are off or the check interval is Off (#1091)
 - Cancelling a running download from the model detail screen stops the background download (Android WorkManager worker, Desktop download job) instead of only marking the row Cancelled, so the transfer ends and is no longer reported as Completed (#1084)
 - Android ComfyUI output detail: Share in the share sheet attaches the output image (downloaded to a FileProvider cache, MIME type from its extension) along with the caption and hashtags; the button shows progress while the image loads, and a failed download keeps the sheet open with an error message. Other share sheets stay text-only (#1046)
 - iOS ComfyUI output detail: Share in the share sheet attaches the output image along with the caption and hashtags (loaded cache-first, with a spinner on the button while loading); if the image cannot be loaded, an alert appears and the sheet stays open. Other share sheets stay text-only (#1047)
+- Android fullscreen image viewer: Share attaches the image on the current page (video pages stay text-only). Image downloads for sharing use the ComfyUI server's confirmed certificate pin, as image loading does, so outputs from a server with a self-signed certificate can be shared too (#1048)
 - iOS ComfyUI output detail: tapping the image opens the fullscreen viewer on every page, including after swiping between outputs, and VoiceOver activation opens it too (#1049)
 - Saving a ComfyUI output to the gallery fails when the image request returns a non-2xx status (for example `404` after the output file was deleted) — the save reports failure instead of "Image saved to gallery", and the error body is no longer written to the gallery as a broken image (#1045)
 - Android workflow template library: "Edit" on a user template opens the editor with that template's name, description, type, category and variables (showing a spinner while templates load), and Save updates it instead of creating a blank duplicate; if the template was deleted meanwhile, the editor closes (#1044)

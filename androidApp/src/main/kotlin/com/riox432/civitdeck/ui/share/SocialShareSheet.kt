@@ -50,9 +50,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ShareHashtag
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import com.riox432.civitdeck.ui.theme.Spacing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 private const val X_CHAR_LIMIT = 280
 
@@ -117,6 +119,7 @@ private fun ShareActions(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val comfyUIApiProvider: ComfyUIApiProvider = koinInject()
     var isPreparingImage by remember { mutableStateOf(false) }
     var imageLoadFailed by remember { mutableStateOf(false) }
     ActionButtons(
@@ -132,7 +135,7 @@ private fun ShareActions(
             } else {
                 isPreparingImage = true
                 imageLoadFailed = false
-                scope.launchImageShare(context, imageUrl, fullText) { shared ->
+                scope.launchImageShare(context, imageUrl, fullText, comfyUIApiProvider::pinnedSha256For) { shared ->
                     isPreparingImage = false
                     if (shared) onDismiss() else imageLoadFailed = true
                 }
@@ -301,9 +304,10 @@ private fun CoroutineScope.launchImageShare(
     context: Context,
     imageUrl: String,
     text: String,
+    pinnedSha256For: (host: String, port: Int) -> String?,
     onResult: (shared: Boolean) -> Unit,
 ) = launch {
-    val intent = ShareImageIntent.create(context, imageUrl, text)
+    val intent = ShareImageIntent.create(context, imageUrl, text, pinnedSha256For)
     if (intent != null) context.startActivity(intent)
     onResult(intent != null)
 }

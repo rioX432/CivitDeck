@@ -170,6 +170,9 @@ private fun ImageViewerContent(
             onAddHashtag = onAddShareHashtag,
             onRemoveHashtag = onRemoveShareHashtag,
             onDismiss = { showShareSheet = false },
+            imageUrl = images.getOrNull(pagerState.currentPage)
+                ?.takeIf { it.contentType != MediaContentType.VIDEO }
+                ?.url,
         )
     }
 }
