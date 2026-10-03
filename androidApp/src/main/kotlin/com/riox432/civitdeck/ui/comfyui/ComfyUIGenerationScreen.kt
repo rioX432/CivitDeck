@@ -1,5 +1,10 @@
 package com.riox432.civitdeck.ui.comfyui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,10 +39,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.GenerationStatus
@@ -52,12 +60,14 @@ import com.riox432.civitdeck.ui.theme.Spacing
 fun ComfyUIGenerationScreen(
     viewModel: ComfyUIGenerationViewModel,
     onBack: () -> Unit,
+    generationNotificationsEnabled: Boolean,
     onLoadTemplate: (() -> Unit)? = null,
     onNavigateToMaskEditor: ((String, Int, Int) -> Unit)? = null,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     SaveResultSnackbar(state.imageSaveSuccess, snackbarHostState, viewModel::onDismissSaveResult)
+    val onGenerate = rememberGenerateWithNotificationPrompt(generationNotificationsEnabled, viewModel::onGenerate)
 
     val isGenerating = state.generationStatus == GenerationStatus.Submitting ||
         state.generationStatus == GenerationStatus.Running
@@ -68,9 +78,47 @@ fun ComfyUIGenerationScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        GenerationContent(padding, state, viewModel, onNavigateToMaskEditor)
+        GenerationContent(padding, state, viewModel, onGenerate, onNavigateToMaskEditor)
     }
 }
+
+// Generation alerts are on by default, so most users never flip the settings switch that requests
+// POST_NOTIFICATIONS and the completion alert is silently dropped on Android 13+. Starting a job is
+// the in-context moment Android recommends for the prompt; the result never gates the generation.
+// Asking at most once per screen avoids nagging, since the system makes a second denial final.
+@Composable
+private fun rememberGenerateWithNotificationPrompt(
+    generationNotificationsEnabled: Boolean,
+    onGenerate: () -> Unit,
+): () -> Unit {
+    val context = LocalContext.current
+    var permissionPrompted by rememberSaveable { mutableStateOf(false) }
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+    return {
+        onGenerate()
+        val shouldPrompt = shouldPromptForGenerationNotifications(
+            generationNotificationsEnabled = generationNotificationsEnabled,
+            alreadyPrompted = permissionPrompted,
+            sdkInt = Build.VERSION.SDK_INT,
+            permissionGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED,
+        )
+        if (shouldPrompt) {
+            permissionPrompted = true
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+}
+
+internal fun shouldPromptForGenerationNotifications(
+    generationNotificationsEnabled: Boolean,
+    alreadyPrompted: Boolean,
+    sdkInt: Int,
+    permissionGranted: Boolean,
+): Boolean = generationNotificationsEnabled &&
+    !alreadyPrompted &&
+    sdkInt >= Build.VERSION_CODES.TIRAMISU &&
+    !permissionGranted
 
 @Composable
 private fun SaveResultSnackbar(
@@ -136,6 +184,7 @@ private fun GenerationContent(
     padding: PaddingValues,
     state: GenerationUiState,
     viewModel: ComfyUIGenerationViewModel,
+    onGenerate: () -> Unit,
     onNavigateToMaskEditor: ((String, Int, Int) -> Unit)?,
 ) {
     LazyColumn(
@@ -152,7 +201,7 @@ private fun GenerationContent(
             InpaintingSection(state, viewModel, onNavigateToMaskEditor)
         }
         item { CustomWorkflowSection(state, viewModel) }
-        item { GenerateButton(state, viewModel::onGenerate, viewModel::onInterrupt) }
+        item { GenerateButton(state, onGenerate, viewModel::onInterrupt) }
         item { GenerationStatusSection(state) }
         val result = state.result
         if (result?.imageUrls?.isNotEmpty() == true) {

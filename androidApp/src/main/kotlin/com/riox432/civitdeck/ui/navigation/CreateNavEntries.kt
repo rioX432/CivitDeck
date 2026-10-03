@@ -28,6 +28,7 @@ import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewMo
 import com.riox432.civitdeck.feature.externalserver.domain.model.ServerImage
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerGalleryViewModel
 import com.riox432.civitdeck.feature.externalserver.presentation.ExternalServerSettingsViewModel
+import com.riox432.civitdeck.feature.settings.presentation.AppBehaviorSettingsViewModel
 import com.riox432.civitdeck.ui.comfyhub.ComfyHubBrowserScreen
 import com.riox432.civitdeck.ui.comfyhub.ComfyHubDetailScreen
 import com.riox432.civitdeck.ui.comfyui.CivitaiLinkSettingsScreen
@@ -161,9 +162,12 @@ private fun ComfyUIGenerationWithTemplatePicker(
     onNavigateToMaskEditor: (String, Int, Int) -> Unit,
 ) {
     var showTemplatePicker by rememberSaveable { mutableStateOf(false) }
+    val behaviorViewModel: AppBehaviorSettingsViewModel = koinViewModel()
+    val behaviorState by behaviorViewModel.uiState.collectAsStateWithLifecycle()
     ComfyUIGenerationScreen(
         viewModel = viewModel,
         onBack = onBack,
+        generationNotificationsEnabled = behaviorState.generationNotificationsEnabled,
         onLoadTemplate = { showTemplatePicker = true },
         onNavigateToMaskEditor = onNavigateToMaskEditor,
     )
