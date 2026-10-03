@@ -17,7 +17,9 @@ import com.riox432.civitdeck.domain.usecase.ToggleShareHashtagUseCase
 import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.domain.util.suspendRunCatching
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase.Companion.HISTORY_PAGE_SIZE
 import com.riox432.civitdeck.util.Logger
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -40,6 +42,8 @@ data class ComfyUIHistoryUiState(
     val showDatasetPicker: Boolean = false,
     val pendingImageForDataset: ComfyUIGeneratedImage? = null,
     val addToDatasetSuccess: Boolean? = null,
+    val canLoadOlder: Boolean = false,
+    val isLoadingOlder: Boolean = false,
 ) : UiLoadingState
 
 class ComfyUIHistoryViewModel(
@@ -65,20 +69,47 @@ class ComfyUIHistoryViewModel(
         observeShareHashtags()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), emptyList())
 
+    // Number of newest history entries currently loaded. `/history` cannot page backwards
+    // from the newest end, so older entries are reached by re-fetching a wider window.
+    private var historyWindow = HISTORY_PAGE_SIZE
+    private var fetchJob: Job? = null
+
     init {
         refresh()
     }
 
     fun refresh() {
-        _uiState.update { it.copy(isLoading = true, error = null) }
-        viewModelScope.launch {
-            fetchHistory()
+        _uiState.update { it.copy(isLoading = true, isLoadingOlder = false, error = null) }
+        fetch(historyWindow)
+    }
+
+    fun loadOlder() {
+        val state = _uiState.value
+        if (!state.canLoadOlder || state.isLoading || state.isLoadingOlder) return
+        _uiState.update { it.copy(isLoadingOlder = true, error = null) }
+        fetch(historyWindow + HISTORY_PAGE_SIZE)
+    }
+
+    // The window is committed only on success, so a failed or cancelled loadOlder()
+    // leaves refresh() re-fetching what is already on screen.
+    private fun fetch(window: Int) {
+        fetchJob?.cancel()
+        fetchJob = viewModelScope.launch {
+            fetchHistory(window)
                 .catch { e ->
-                    _uiState.update { it.copy(isLoading = false, error = e.message ?: e.toString()) }
+                    _uiState.update {
+                        it.copy(isLoading = false, isLoadingOlder = false, error = e.message ?: e.toString())
+                    }
                 }
                 .collect { page ->
+                    historyWindow = window
                     _uiState.update {
-                        it.copy(isLoading = false, images = page.images)
+                        it.copy(
+                            isLoading = false,
+                            isLoadingOlder = false,
+                            images = page.images,
+                            canLoadOlder = page.hasMore,
+                        )
                     }
                 }
         }
