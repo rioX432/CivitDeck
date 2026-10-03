@@ -130,7 +130,7 @@ class ComfyUISettingsViewModel(
         viewModelScope.launch {
             val success = testConnection(active)
             if (success) {
-                val stats = fetchSystemStats()
+                val stats = fetchSystemStats(active)
                 val suggestions = stats?.let { generateOptimizationSuggestions(it) } ?: emptyList()
                 _mutableState.update {
                     it.copy(
