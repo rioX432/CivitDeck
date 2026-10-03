@@ -122,6 +122,26 @@ class ComfyUIGenerationViewModel(
         _uiState.update { it.copy(seed = seed) }
     }
 
+    /**
+     * Fills the form from [params]. A blank prompt or negative prompt keeps what the user
+     * typed. Sampler and scheduler are not applied: producers emit A1111-style names that
+     * ComfyUI rejects, and the form has no control to correct them.
+     */
+    fun applyPrefill(params: ComfyUIGenerationParams) {
+        _uiState.update { state ->
+            state.copy(
+                prompt = params.prompt.ifBlank { state.prompt },
+                negativePrompt = params.negativePrompt.ifBlank { state.negativePrompt },
+                steps = params.steps,
+                cfgScale = params.cfgScale,
+                seed = params.seed,
+                width = params.width,
+                height = params.height,
+            )
+        }
+        if (params.checkpoint.isNotBlank()) resourceLoader.requestCheckpoint(params.checkpoint)
+    }
+
     // -- LoRA --
 
     fun onLoraAdded(loraName: String) {

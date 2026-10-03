@@ -17,6 +17,9 @@ internal class GenerationResourceLoader(
     private val useCases: GenerationResourceUseCases,
 ) {
 
+    // A checkpoint requested before the server list arrives; consumed by loadCheckpoints().
+    private var pendingCheckpoint: String? = null
+
     fun loadCheckpoints() {
         uiState.update { it.copy(isLoadingCheckpoints = true) }
         launchWithErrorHandling(
@@ -24,14 +27,34 @@ internal class GenerationResourceLoader(
             onError = { e -> uiState.update { it.copy(isLoadingCheckpoints = false, error = e.message) } },
         ) {
             val list = useCases.fetchCheckpoints()
+            val requested = pendingCheckpoint
+            pendingCheckpoint = null
             uiState.update {
                 it.copy(
                     checkpoints = list,
-                    selectedCheckpoint = list.firstOrNull() ?: "",
+                    selectedCheckpoint = requested?.let { name -> findCheckpoint(list, name) }
+                        ?: list.firstOrNull()
+                        ?: "",
                     isLoadingCheckpoints = false,
                 )
             }
         }
+    }
+
+    /**
+     * Selects the server checkpoint matching [requested]. Before the list has loaded, the
+     * request is kept and applied when it arrives. A request with no match selects the
+     * first entry, as a fresh load does.
+     */
+    fun requestCheckpoint(requested: String) {
+        val loaded = uiState.value.checkpoints
+        if (loaded.isEmpty()) {
+            pendingCheckpoint = requested
+            return
+        }
+        pendingCheckpoint = null
+        val selected = findCheckpoint(loaded, requested) ?: loaded.first()
+        uiState.update { it.copy(selectedCheckpoint = selected) }
     }
 
     fun loadLoras() {
@@ -89,3 +112,17 @@ internal class GenerationResourceLoader(
         private const val TAG = "GenerationResourceLoader"
     }
 }
+
+/**
+ * ComfyUI lists checkpoints with their subfolder (`SDXL/foo.safetensors`), while CivitAI
+ * metadata and templates carry a bare file name, so a full-path match is tried first and
+ * then the file name alone, ignoring case.
+ */
+internal fun findCheckpoint(available: List<String>, requested: String): String? {
+    available.firstOrNull { it.equals(requested, ignoreCase = true) }?.let { return it }
+    val requestedName = checkpointFileName(requested)
+    return available.firstOrNull { checkpointFileName(it).equals(requestedName, ignoreCase = true) }
+}
+
+private fun checkpointFileName(path: String): String =
+    path.substringAfterLast('/').substringAfterLast('\\')
