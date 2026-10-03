@@ -6,22 +6,33 @@ import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.SDWebUIConnection
 import com.riox432.civitdeck.domain.model.SDWebUIGenerationParams
 import com.riox432.civitdeck.domain.model.SDWebUIGenerationProgress
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respondError
+import io.ktor.client.engine.mock.toByteArray
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
  * Covers [SDWebUIRepositoryImpl]: DAO-backed connection CRUD/mapping, asset fetch
  * mapping (models/samplers/vaes), the test-connection paths, the active-connection
- * guard, and the txt2img generation flow happy/error branches.
+ * guard, the txt2img generation flow happy/error branches, and the checkpoint override
+ * sent in the generation request body.
  */
 class SDWebUIRepositoryImplTest {
 
@@ -129,5 +140,55 @@ class SDWebUIRepositoryImplTest {
         val emissions = repo.generateImage(SDWebUIGenerationParams(prompt = "cat")).toList()
 
         assertIs<SDWebUIGenerationProgress.Error>(emissions.last())
+    }
+
+    @Test
+    fun generateImage_sends_selected_checkpoint_as_override_settings() = runTest {
+        val params = SDWebUIGenerationParams(prompt = "cat", checkpoint = "model A [abc123]")
+        val body = capturedGenerationBody("/txt2img", params)
+
+        val overrides = assertNotNull(body["override_settings"]).jsonObject
+        assertEquals("model A [abc123]", overrides["sd_model_checkpoint"]?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun generateImage_sends_empty_override_settings_for_blank_checkpoint() = runTest {
+        val body = capturedGenerationBody("/txt2img", SDWebUIGenerationParams(prompt = "cat"))
+
+        assertEquals(JsonObject(emptyMap()), body["override_settings"])
+    }
+
+    @Test
+    fun generateImage_img2img_sends_selected_checkpoint_as_override_settings() = runTest {
+        val params = SDWebUIGenerationParams(prompt = "cat", initImageBase64 = "img", checkpoint = "model B")
+        val body = capturedGenerationBody("/img2img", params)
+
+        val overrides = assertNotNull(body["override_settings"]).jsonObject
+        assertEquals("model B", overrides["sd_model_checkpoint"]?.jsonPrimitive?.content)
+    }
+
+    private suspend fun capturedGenerationBody(path: String, params: SDWebUIGenerationParams): JsonObject {
+        var body: JsonObject? = null
+        // encodeDefaults mirrors createSDWebUIHttpClient, so an empty override map is still sent.
+        val json = Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
+        val client = HttpClient(
+            MockEngine { req ->
+                if (req.url.encodedPath.endsWith(path)) {
+                    body = json.decodeFromString(req.body.toByteArray().decodeToString())
+                    okJson("""{"images":["base64data"]}""")
+                } else {
+                    okJson("""{"progress":0.0,"state":{"sampling_step":0,"sampling_steps":0}}""")
+                }
+            },
+        ) {
+            install(ContentNegotiation) { json(json) }
+        }
+        val repo = SDWebUIRepositoryImpl(daoWithActive(), SDWebUIApi(client))
+
+        assertIs<SDWebUIGenerationProgress.Completed>(repo.generateImage(params).toList().last())
+        return assertNotNull(body)
     }
 }
