@@ -80,10 +80,15 @@ class ComfyUIConnectionTesterImpl(
         } catch (e: SocketTimeoutException) {
             noResponseFailure(connection, ConnectionFailureCause.Timeout, e.message)
         } catch (@Suppress("TooGenericExceptionCaught") e: Throwable) {
-            if (isTlsFailure(e) || isPinRejection(connection.tlsCertSha256, trust?.presentedSha256)) {
+            val transportCause = transportFailureCause(e, connection.hostname)
+            // A denied local network stops the request before any handshake. The iOS TLS keyword match
+            // would otherwise also hit the failing URL that Darwin embeds in the NSError description.
+            val isTls = transportCause != ConnectionFailureCause.LocalNetworkDenied &&
+                (isTlsFailure(e) || isPinRejection(connection.tlsCertSha256, trust?.presentedSha256))
+            if (isTls) {
                 tlsFailure(connection, trust, e.message)
             } else {
-                noResponseFailure(connection, transportFailureCause(e), e.message)
+                noResponseFailure(connection, transportCause, e.message)
             }
         }
     }
