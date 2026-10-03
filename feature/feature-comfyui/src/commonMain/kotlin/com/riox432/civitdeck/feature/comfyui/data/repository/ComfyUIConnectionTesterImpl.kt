@@ -7,7 +7,7 @@ import com.riox432.civitdeck.domain.model.ConnectionFailureCause
 import com.riox432.civitdeck.domain.model.ConnectionTestResult
 import com.riox432.civitdeck.domain.model.SystemStats
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionTester
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSystemStatsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.fetchSystemStats
 import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.network.sockets.ConnectTimeoutException
@@ -99,8 +99,9 @@ class ComfyUIConnectionTesterImpl(
         return failure(connection, cause, detail, presentedSha256 = fingerprint)
     }
 
-    private suspend fun fetchStats(api: ComfyUIApi): SystemStats? =
-        FetchSystemStatsUseCase(api).invoke()
+    // Reuses this test's client, which already enforces the pin under test, instead of
+    // adding a client for that pin to ComfyUIApiProvider's cache.
+    private suspend fun fetchStats(api: ComfyUIApi): SystemStats? = fetchSystemStats(api)
 
     /**
      * A loopback or unspecified host reaches this device rather than the ComfyUI machine (e.g. the

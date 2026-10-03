@@ -1,12 +1,13 @@
 package com.riox432.civitdeck.feature.comfyui.presentation
 
-import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIConnectionStatus
 import com.riox432.civitdeck.domain.model.DiscoveredServer
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.ServerDiscoveryRepository
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import com.riox432.civitdeck.feature.comfyui.data.NtfySubscriptionService
+import com.riox432.civitdeck.feature.comfyui.data.repository.FakeComfyUIConnectionDao
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ActivateComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSystemStatsUseCase
@@ -103,11 +104,11 @@ class ComfyUISettingsViewModelTest {
         }
     }
 
-    private fun mockApi(): ComfyUIApi {
+    private fun mockProvider(): ComfyUIApiProvider {
         // System stats endpoint returns an error so fetchSystemStats() yields null,
         // keeping the focus on test/save/scan state transitions.
         val engine = MockEngine { respondError(HttpStatusCode.NotFound) }
-        return ComfyUIApi(HttpClient(engine), Json { ignoreUnknownKeys = true })
+        return ComfyUIApiProvider(FakeComfyUIConnectionDao(), HttpClient(engine), Json { ignoreUnknownKeys = true })
     }
 
     private fun TestScope.ntfyService(): NtfySubscriptionService {
@@ -132,7 +133,7 @@ class ComfyUISettingsViewModelTest {
             activateConnection = ActivateComfyUIConnectionUseCase(connectionRepo),
             testConnection = TestComfyUIConnectionUseCase(connectionRepo),
             scanForServers = ScanForServersUseCase(discoveryRepo),
-            fetchSystemStats = FetchSystemStatsUseCase(mockApi()),
+            fetchSystemStats = FetchSystemStatsUseCase(mockProvider()),
             ntfyService = ntfyService(),
         )
     }

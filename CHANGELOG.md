@@ -39,6 +39,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - The Android background generation monitor opens its WebSocket through `ComfyUIApiProvider.forUrl(baseUrl)` instead of the shared `ComfyUIWebSocketApi`, so its progress notification uses the same TLS trust as the foreground progress and advances against a server with a pinned self-signed certificate (#1124)
 - ComfyUI connection test reports `Refused` instead of `Unreachable` when nothing accepts the connection at the host and port (typically ComfyUI started without `--listen`): a `Connection refused` message anywhere in the error's cause chain (JVM, OkHttp) or an iOS `NSURLErrorDomain` `Code=-1004` error; DNS and no-route failures stay `Unreachable`, and `LoopbackHost` still wins for loopback hosts (#1062)
 - ComfyUI queue polling and cancel, history (including its `/view` image URLs) and ComfyHub "import to server" resolve the server URL and TLS trust per call through `ComfyUIApiProvider.forActive()`, so they reach the active connection with its pinned certificate; queue polling re-resolves the active connection on every poll. The settings test and system stats still use the shared `ComfyUIApi` until #1123 (#1122)
+- ComfyUI settings "Test" (and the workflow plugin's `connect()`) and system stats resolve the server URL and TLS trust per call through `ComfyUIApiProvider`: the test and the stats shown after it use the tested connection's URL and pinned certificate, so a connection whose self-signed certificate was trusted no longer shows "Connection Error"; `FetchSystemStatsUseCase()` (model detail VRAM fit) uses the active connection and returns null when none is active (#1123)
 
 ### Removed
 
@@ -46,6 +47,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- iOS declares `NSLocalNetworkUsageDescription`, so reaching a LAN ComfyUI or SD WebUI server triggers the system Local Network prompt with CivitDeck's reason text (#1056)
 - Android ComfyUI output detail opens on the tapped image with exactly the Outputs list's images in the list's sort order — the list hands its snapshot to the detail instead of the detail re-fetching history with the default Newest order, so it no longer shows a blank screen when that fetch fails or is empty (#1050)
 - iOS generation screen's template picker now lists saved templates and applies the picked one to the form; its category and type filter chips now filter the list (#1043)
 - Swipe discovery's right swipe (heart) now only adds to Favorites: a model that is already favorited stays favorited, and Undo removes a favorite only when that swipe added it, including an Undo pressed before the favorite check finishes (#1074)

@@ -1,27 +1,45 @@
 package com.riox432.civitdeck.feature.comfyui.domain.usecase
 
-import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
+import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
+import com.riox432.civitdeck.domain.model.ComfyUIConnection
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
+import com.riox432.civitdeck.feature.comfyui.data.repository.FakeComfyUIConnectionDao
 import com.riox432.civitdeck.feature.comfyui.data.repository.mockClient
 import com.riox432.civitdeck.feature.comfyui.data.repository.okJson
 import com.riox432.civitdeck.feature.comfyui.data.repository.testJson
 import io.ktor.client.engine.mock.respondError
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.Url
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Covers [FetchSystemStatsUseCase]: it maps the /system_stats response into a
  * [com.riox432.civitdeck.domain.model.SystemStats] domain model (first device,
  * bytes -> MB), substitutes defaults when no device is present, and returns null
- * when the request fails.
+ * when the request fails or no connection is active.
  */
 class FetchSystemStatsUseCaseTest {
 
-    private fun api(
+    private val activeRow = ComfyUIConnectionEntity(
+        id = 1,
+        name = "Local",
+        hostname = "localhost",
+        port = 8188,
+        isActive = true,
+        createdAt = 1,
+    )
+
+    private fun provider(
         handler: suspend io.ktor.client.engine.mock.MockRequestHandleScope.(io.ktor.client.request.HttpRequestData) -> io.ktor.client.request.HttpResponseData,
-    ): ComfyUIApi = ComfyUIApi(mockClient(handler), testJson).apply { setBaseUrl("http://localhost:8188") }
+    ): ComfyUIApiProvider {
+        val dao = FakeComfyUIConnectionDao().apply { rows.add(activeRow) }
+        return ComfyUIApiProvider(dao, mockClient(handler), testJson)
+    }
 
     @Test
     fun maps_first_device_and_converts_bytes_to_megabytes() = runTest {
@@ -41,7 +59,7 @@ class FetchSystemStatsUseCaseTest {
               ]
             }
         """.trimIndent()
-        val useCase = FetchSystemStatsUseCase(api { okJson(body) })
+        val useCase = FetchSystemStatsUseCase(provider { okJson(body) })
 
         val stats = useCase()
 
@@ -63,7 +81,7 @@ class FetchSystemStatsUseCaseTest {
         val body = """
             {"system": {"os": "Windows", "ram_total": 1048576, "ram_free": 0}, "devices": []}
         """.trimIndent()
-        val useCase = FetchSystemStatsUseCase(api { okJson(body) })
+        val useCase = FetchSystemStatsUseCase(provider { okJson(body) })
 
         val stats = useCase()
 
@@ -78,9 +96,49 @@ class FetchSystemStatsUseCaseTest {
     @Test
     fun returns_null_when_request_fails() = runTest {
         val useCase = FetchSystemStatsUseCase(
-            api { respondError(HttpStatusCode.NotFound) },
+            provider { respondError(HttpStatusCode.NotFound) },
         )
 
         assertNull(useCase())
+    }
+
+    @Test
+    fun returns_null_when_no_connection_is_active() = runTest {
+        val provider = ComfyUIApiProvider(FakeComfyUIConnectionDao(), mockClient { okJson(STATS_BODY) }, testJson)
+
+        assertNull(FetchSystemStatsUseCase(provider)())
+    }
+
+    @Test
+    fun connection_overload_uses_that_connections_url_and_pinned_client() = runTest {
+        val sharedRequests = mutableListOf<Url>()
+        val pinnedRequests = mutableListOf<Url>()
+        val createdPins = mutableListOf<String?>()
+        val dao = FakeComfyUIConnectionDao().apply { rows.add(activeRow) }
+        val provider = ComfyUIApiProvider(dao, mockClient { sharedRequests += it.url; okJson(STATS_BODY) }, testJson) {
+            createdPins += it.expectedSha256
+            mockClient { request -> pinnedRequests += request.url; okJson(STATS_BODY) }
+        }
+        val connection = ComfyUIConnection(
+            id = 2,
+            name = "Pinned",
+            hostname = "10.0.0.1",
+            port = 8443,
+            useHttps = true,
+            acceptSelfSigned = true,
+            tlsCertSha256 = PIN,
+        )
+
+        val stats = FetchSystemStatsUseCase(provider)(connection)
+
+        assertNotNull(stats)
+        assertEquals(listOf<String?>(PIN), createdPins)
+        assertEquals("https://10.0.0.1:8443/system_stats", pinnedRequests.single().toString())
+        assertTrue(sharedRequests.isEmpty())
+    }
+
+    private companion object {
+        const val PIN = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        const val STATS_BODY = """{"system": {"os": "Linux", "ram_total": 0, "ram_free": 0}, "devices": []}"""
     }
 }
