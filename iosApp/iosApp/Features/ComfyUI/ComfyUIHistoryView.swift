@@ -69,16 +69,43 @@ struct ComfyUIHistoryView: View {
     private var imageGrid: some View {
         let columns = AdaptiveGrid.columns(sizeClass: sizeClass)
         let filtered = viewModel.filteredImages
+        let showsLoadOlder = viewModel.canLoadOlder || viewModel.isLoadingOlder
         return ScrollView {
-            LazyVGrid(columns: columns, spacing: Spacing.sm) {
-                ForEach(Array(filtered.enumerated()), id: \.element.id) { idx, image in
-                    imageCell(image: image, allImages: filtered, index: idx)
+            VStack(spacing: 0) {
+                if showsLoadOlder && viewModel.selectedSort == .oldest {
+                    loadOlderControl
+                        .padding([.horizontal, .top], Spacing.sm)
+                }
+                LazyVGrid(columns: columns, spacing: Spacing.sm) {
+                    ForEach(Array(filtered.enumerated()), id: \.element.id) { idx, image in
+                        imageCell(image: image, allImages: filtered, index: idx)
+                    }
+                }
+                .padding(Spacing.sm)
+                if showsLoadOlder && viewModel.selectedSort == .newest {
+                    loadOlderControl
+                        .padding([.horizontal, .bottom], Spacing.sm)
                 }
             }
-            .padding(Spacing.sm)
         }
         .refreshable {
             viewModel.refresh()
+        }
+    }
+
+    @ViewBuilder
+    private var loadOlderControl: some View {
+        if viewModel.isLoadingOlder {
+            ProgressView()
+                .frame(maxWidth: .infinity, minHeight: 44)
+        } else {
+            Button {
+                viewModel.loadOlder()
+            } label: {
+                Text("Load older outputs")
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.bordered)
         }
     }
 
