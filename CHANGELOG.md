@@ -24,6 +24,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - "Send to PC" (CV2) demoted to show only with a compatible connection; detail-screen Share/QR moved into an overflow menu; Analytics/Backup/Compare/Dataset/Hardware peripherals moved off the discovery-primary surface (kept, reversible) (#991, #1000)
 - Docs & positioning — README now leads with the single discovery promise, the ViewModel count is unified to the measured 42, and ROADMAP is reframed as a forward-looking compass (#992, #1001)
 - ComfyUI Outputs list requests only the newest 200 history entries (`GET /history?max_items=200`, the same page size as ComfyUI's own frontend) instead of the server's entire history; older outputs are not reachable until history paging lands (#1051)
+- `FetchComfyUIHistoryUseCase(maxItems)` emits a `ComfyUIHistoryPage(images, hasMore)`; `hasMore` is true when `/history` returned the full `maxItems` entries (counting history entries, including failed prompts without images, not images). No user-visible change (#1052)
 
 ### Removed
 
