@@ -11,6 +11,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.PopulateGenerationFromModelUseCase
 import com.riox432.civitdeck.feature.comfyui.presentation.CivitaiLinkSettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubBrowserViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyHubDetailViewModel
@@ -46,6 +47,7 @@ import com.riox432.civitdeck.ui.create.CreateHubScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerGalleryScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerImageDetailScreen
 import com.riox432.civitdeck.ui.externalserver.ExternalServerSettingsScreen
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -109,6 +111,7 @@ internal fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>)
         val viewModel: ComfyUIGenerationViewModel = koinViewModel(
             key = "bridge_${key.modelId}_${key.versionId}",
         )
+        ApplyBridgePrefillOnce(route = key, viewModel = viewModel)
         ComfyUIGenerationWithTemplatePicker(
             viewModel = viewModel,
             onBack = { backStack.removeLastOrNull() },
@@ -121,6 +124,29 @@ internal fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>)
     workflowTemplateEntries(backStack)
     comfyHubEntries(backStack)
     comfyUIHistoryEntries(backStack)
+}
+
+// The entry recomposes when the user returns from a pushed screen, so the flag is saveable to keep
+// a second prefill from overwriting their edits.
+@Composable
+private fun ApplyBridgePrefillOnce(route: ComfyUIBridgeRoute, viewModel: ComfyUIGenerationViewModel) {
+    val populateFromModel: PopulateGenerationFromModelUseCase = koinInject()
+    var prefillApplied by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (prefillApplied) return@LaunchedEffect
+        viewModel.applyPrefill(
+            populateFromModel(
+                prompt = route.prompt,
+                negativePrompt = route.negativePrompt,
+                steps = route.steps,
+                cfgScale = route.cfgScale,
+                seed = route.seed,
+                sampler = route.sampler,
+                checkpointName = route.checkpointFileName ?: "",
+            ),
+        )
+        prefillApplied = true
+    }
 }
 
 // The picker lives inside the generation entry because Navigation3 1.0.0 has no way to return a
