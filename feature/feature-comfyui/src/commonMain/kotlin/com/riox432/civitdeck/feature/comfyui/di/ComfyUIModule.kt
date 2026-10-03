@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.feature.comfyui.di
 
+import com.riox432.civitdeck.data.api.comfyui.createComfyUIHttpClient
 import com.riox432.civitdeck.data.image.SaveGeneratedImageUseCase
 import com.riox432.civitdeck.domain.repository.CivitaiLinkRepository
 import com.riox432.civitdeck.domain.repository.ComfyHubRepository
@@ -106,7 +107,7 @@ val comfyuiModule = module {
     single<ComfyUIConnectionTester> {
         ComfyUIConnectionTesterImpl(
             normalClient = get(named("comfyui")),
-            selfSignedClient = get(named("comfyui-selfsigned")),
+            createPinnedClient = { trust -> createComfyUIHttpClient(trust) },
             json = get(),
         )
     }
