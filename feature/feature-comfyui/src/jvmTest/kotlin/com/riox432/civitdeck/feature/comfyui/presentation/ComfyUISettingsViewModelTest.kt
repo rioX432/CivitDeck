@@ -13,6 +13,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.DeleteComfyUIConnect
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSystemStatsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveActiveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveComfyUIConnectionsUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ParseConnectionUrlUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ScanForServersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.TestComfyUIConnectionUseCase
@@ -135,6 +136,7 @@ class ComfyUISettingsViewModelTest {
             scanForServers = ScanForServersUseCase(discoveryRepo),
             fetchSystemStats = FetchSystemStatsUseCase(mockProvider()),
             ntfyService = ntfyService(),
+            parseConnectionUrl = ParseConnectionUrlUseCase(),
         )
     }
 
@@ -149,7 +151,106 @@ class ComfyUISettingsViewModelTest {
 
         assertEquals("Remote", repo.savedConnection?.name)
         assertEquals("10.0.0.5", repo.savedConnection?.hostname)
+        assertEquals(8188, repo.savedConnection?.port)
+        assertEquals(false, repo.savedConnection?.useHttps)
         assertFalse(vm.uiState.value.showAddDialog)
+    }
+
+    @Test
+    fun save_connection_parses_pasted_http_url() = runTest {
+        val repo = FakeConnectionRepo()
+        val vm = createViewModel(repo)
+
+        vm.onSaveConnection(name = "PC", hostname = "http://10.0.0.5:8188/", port = 8188)
+        advanceUntilIdle()
+
+        assertEquals("PC", repo.savedConnection?.name)
+        assertEquals("10.0.0.5", repo.savedConnection?.hostname)
+        assertEquals(8188, repo.savedConnection?.port)
+        assertEquals(false, repo.savedConnection?.useHttps)
+    }
+
+    @Test
+    fun save_connection_pasted_https_url_without_port_uses_443() = runTest {
+        val repo = FakeConnectionRepo()
+        val vm = createViewModel(repo)
+
+        vm.onSaveConnection(name = "PC", hostname = "https://pc.tailnet.ts.net", port = 8188)
+        advanceUntilIdle()
+
+        assertEquals("pc.tailnet.ts.net", repo.savedConnection?.hostname)
+        assertEquals(443, repo.savedConnection?.port)
+        assertEquals(true, repo.savedConnection?.useHttps)
+    }
+
+    @Test
+    fun save_connection_port_in_host_text_overrides_port_field() = runTest {
+        val repo = FakeConnectionRepo()
+        val vm = createViewModel(repo)
+
+        vm.onSaveConnection(name = "PC", hostname = "192.168.1.5:8189", port = 8188, useHttps = true)
+        advanceUntilIdle()
+
+        assertEquals("192.168.1.5", repo.savedConnection?.hostname)
+        assertEquals(8189, repo.savedConnection?.port)
+        // No scheme in the text, so the HTTPS toggle still applies.
+        assertEquals(true, repo.savedConnection?.useHttps)
+    }
+
+    @Test
+    fun save_connection_with_name_defaulted_to_pasted_url_uses_parsed_host_as_name() = runTest {
+        val repo = FakeConnectionRepo()
+        val vm = createViewModel(repo)
+        val pasted = "http://10.0.0.5:8188/"
+
+        // The dialogs pass the host text as the name when the name field is left blank.
+        vm.onSaveConnection(name = pasted, hostname = pasted, port = 8188)
+        advanceUntilIdle()
+
+        assertEquals("10.0.0.5", repo.savedConnection?.name)
+    }
+
+    @Test
+    fun save_connection_keeps_unparseable_host_as_entered() = runTest {
+        val repo = FakeConnectionRepo()
+        val vm = createViewModel(repo)
+
+        vm.onSaveConnection(name = "PC", hostname = "host:abc", port = 8190, useHttps = true)
+        advanceUntilIdle()
+
+        assertEquals("host:abc", repo.savedConnection?.hostname)
+        assertEquals(8190, repo.savedConnection?.port)
+        assertEquals(true, repo.savedConnection?.useHttps)
+        assertFalse(vm.uiState.value.showAddDialog)
+    }
+
+    @Test
+    fun save_edited_connection_keeps_id_and_bare_host_settings() = runTest {
+        val existing = ComfyUIConnection(id = 7L, name = "PC", hostname = "10.0.0.5", port = 8190, useHttps = true)
+        val repo = FakeConnectionRepo(connections = listOf(existing))
+        val vm = createViewModel(repo)
+        vm.onEditConnection(existing)
+
+        vm.onSaveConnection(name = "PC", hostname = "10.0.0.5", port = 8190, useHttps = true)
+        advanceUntilIdle()
+
+        assertEquals(existing, repo.savedConnection)
+    }
+
+    @Test
+    fun selecting_discovered_server_saves_its_ip_and_port() = runTest {
+        val repo = FakeConnectionRepo()
+        val vm = createViewModel(repo)
+
+        vm.onSelectDiscoveredServer(
+            DiscoveredServer(hostname = "comfy", ip = "192.168.1.10", port = 8190, displayName = "comfy"),
+        )
+        advanceUntilIdle()
+
+        assertEquals("comfy", repo.savedConnection?.name)
+        assertEquals("192.168.1.10", repo.savedConnection?.hostname)
+        assertEquals(8190, repo.savedConnection?.port)
+        assertEquals(false, repo.savedConnection?.useHttps)
     }
 
     @Test
