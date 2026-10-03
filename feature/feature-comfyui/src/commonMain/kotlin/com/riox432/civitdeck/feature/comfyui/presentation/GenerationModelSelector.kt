@@ -26,29 +26,11 @@ internal class GenerationModelSelector(
 ) {
 
     fun selectCheckpoint(checkpoint: String) {
-        uiState.update { state ->
-            if (state.modelSource == GenerationModelSource.CHECKPOINT && state.selectedCheckpoint == checkpoint) {
-                state
-            } else {
-                state.withoutFamily().copy(
-                    modelSource = GenerationModelSource.CHECKPOINT,
-                    selectedCheckpoint = checkpoint,
-                )
-            }
-        }
+        uiState.update { it.withCheckpoint(checkpoint) }
     }
 
     fun selectDiffusionModel(model: String) {
-        uiState.update { state ->
-            if (state.modelSource == GenerationModelSource.DIFFUSION_MODEL && state.selectedDiffusionModel == model) {
-                state
-            } else {
-                state.withoutFamily().copy(
-                    modelSource = GenerationModelSource.DIFFUSION_MODEL,
-                    selectedDiffusionModel = model,
-                )
-            }
-        }
+        uiState.update { it.withDiffusionModel(model) }
     }
 
     /**
@@ -61,18 +43,43 @@ internal class GenerationModelSelector(
             if (state.selectedFamily == family) {
                 state
             } else {
-                state.copy(
-                    selectedFamily = family,
+                state.withFamily(family).copy(
                     steps = family.steps,
                     cfgScale = family.cfgScale,
-                    samplerName = family.samplerName,
-                    scheduler = family.scheduler,
                     width = family.width,
                     height = family.height,
-                    selectedTextEncoder = state.textEncoders.firstWithPrefix(family.textEncoderHint)
-                        ?: state.selectedTextEncoder,
-                    selectedVae = state.vaes.firstWithPrefix(family.vaeHint) ?: state.selectedVae,
                 )
+            }
+        }
+    }
+
+    /**
+     * Selects the server file matching [fileName] for a prefill, from the list its folder
+     * decides, and sets [family]. Steps, CFG and size are left alone: the prefill has already
+     * set them, with the family's values only where the CivitAI metadata had none.
+     *
+     * With no family, a file in both lists counts as a checkpoint and a file in neither falls
+     * back to the first checkpoint, as before families existed. With a family, a file in both
+     * lists counts as a diffusion model, and a file in neither selects nothing, because the
+     * family's defaults would be wrong for an arbitrary checkpoint.
+     */
+    fun selectPrefilledModel(fileName: String, family: DiffusionModelFamily?) {
+        uiState.update { state ->
+            val checkpoint = findModelFile(state.checkpoints, fileName)
+            val diffusionModel = findModelFile(state.diffusionModels, fileName)
+            if (family == null) {
+                when {
+                    checkpoint != null -> state.withCheckpoint(checkpoint)
+                    diffusionModel != null -> state.withDiffusionModel(diffusionModel)
+                    else -> state.withCheckpoint(state.checkpoints.firstOrNull().orEmpty())
+                }
+            } else {
+                val selected = when {
+                    diffusionModel != null -> state.withDiffusionModel(diffusionModel)
+                    checkpoint != null -> state.withCheckpoint(checkpoint)
+                    else -> state.withCheckpoint("").copy(selectedDiffusionModel = "")
+                }
+                if (selected.selectedFamily == family) selected else selected.withFamily(family)
             }
         }
     }
@@ -85,6 +92,28 @@ internal class GenerationModelSelector(
         uiState.update { it.copy(selectedVae = vae) }
     }
 
+    private fun GenerationUiState.withCheckpoint(checkpoint: String) =
+        if (modelSource == GenerationModelSource.CHECKPOINT && selectedCheckpoint == checkpoint) {
+            this
+        } else {
+            withoutFamily().copy(modelSource = GenerationModelSource.CHECKPOINT, selectedCheckpoint = checkpoint)
+        }
+
+    private fun GenerationUiState.withDiffusionModel(model: String) =
+        if (modelSource == GenerationModelSource.DIFFUSION_MODEL && selectedDiffusionModel == model) {
+            this
+        } else {
+            withoutFamily().copy(modelSource = GenerationModelSource.DIFFUSION_MODEL, selectedDiffusionModel = model)
+        }
+
+    private fun GenerationUiState.withFamily(family: DiffusionModelFamily) = copy(
+        selectedFamily = family,
+        samplerName = family.samplerName,
+        scheduler = family.scheduler,
+        selectedTextEncoder = textEncoders.firstWithPrefix(family.textEncoderHint) ?: selectedTextEncoder,
+        selectedVae = vaes.firstWithPrefix(family.vaeHint) ?: selectedVae,
+    )
+
     // Visible fields (steps, CFG, size) stay as the user left them.
     private fun GenerationUiState.withoutFamily() = copy(
         selectedFamily = null,
@@ -95,6 +124,20 @@ internal class GenerationModelSelector(
     private fun List<String>.firstWithPrefix(hint: String): String? =
         firstOrNull { modelFileName(it).startsWith(hint, ignoreCase = true) }
 }
+
+/**
+ * ComfyUI lists model files with their subfolder (`SDXL/foo.safetensors`), while CivitAI
+ * metadata and templates carry a bare file name, so a full-path match is tried first and
+ * then the file name alone, ignoring case.
+ */
+internal fun findModelFile(available: List<String>, requested: String): String? {
+    available.firstOrNull { it.equals(requested, ignoreCase = true) }?.let { return it }
+    val requestedName = modelFileName(requested)
+    return available.firstOrNull { modelFileName(it).equals(requestedName, ignoreCase = true) }
+}
+
+internal fun modelFileName(path: String): String =
+    path.substringAfterLast('/').substringAfterLast('\\')
 
 /** The split-loader files to submit, or null when the form generates from a checkpoint. */
 internal fun GenerationUiState.diffusionModelSelection(): DiffusionModelSelection? {

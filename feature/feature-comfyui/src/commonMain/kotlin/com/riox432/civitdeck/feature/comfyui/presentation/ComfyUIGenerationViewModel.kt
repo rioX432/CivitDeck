@@ -110,13 +110,14 @@ class ComfyUIGenerationViewModel(
         useCases = executionUseCases,
     )
 
+    private val modelSelector = GenerationModelSelector(_uiState)
+
     private val resourceLoader = GenerationResourceLoader(
         scope = viewModelScope,
         uiState = _uiState,
         useCases = resourceUseCases,
+        modelSelector = modelSelector,
     )
-
-    private val modelSelector = GenerationModelSelector(_uiState)
 
     init {
         resourceLoader.loadCheckpoints()
@@ -163,12 +164,20 @@ class ComfyUIGenerationViewModel(
         _uiState.update { it.copy(seed = seed) }
     }
 
+    // Swift does not see Kotlin default arguments (SKIE's default-argument interop is off), so
+    // the iOS call site without a base model needs this overload.
+    fun applyPrefill(params: ComfyUIGenerationParams) = applyPrefill(params, baseModel = null)
+
     /**
      * Fills the form from [params]. A blank prompt or negative prompt keeps what the user
-     * typed. Sampler and scheduler are not applied: producers emit A1111-style names that
-     * ComfyUI rejects, and the form has no control to correct them.
+     * typed. Sampler and scheduler in [params] are not applied: producers emit A1111-style
+     * names that ComfyUI rejects, and the form has no control to correct them.
+     *
+     * [baseModel] is CivitAI's base model of the prefilled file. When it names a
+     * [DiffusionModelFamily], that family is selected with its sampler and scheduler, and the
+     * file is looked up among diffusion models as well as checkpoints.
      */
-    fun applyPrefill(params: ComfyUIGenerationParams) {
+    fun applyPrefill(params: ComfyUIGenerationParams, baseModel: String?) {
         _uiState.update { state ->
             state.copy(
                 prompt = params.prompt.ifBlank { state.prompt },
@@ -180,7 +189,10 @@ class ComfyUIGenerationViewModel(
                 height = params.height,
             )
         }
-        if (params.checkpoint.isNotBlank()) resourceLoader.requestCheckpoint(params.checkpoint)
+        val family = DiffusionModelFamily.forBaseModel(baseModel)
+        if (family != null || params.checkpoint.isNotBlank()) {
+            resourceLoader.requestModel(params.checkpoint, family)
+        }
     }
 
     /**

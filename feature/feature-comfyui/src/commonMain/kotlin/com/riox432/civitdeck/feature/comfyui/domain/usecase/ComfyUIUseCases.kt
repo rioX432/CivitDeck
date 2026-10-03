@@ -4,6 +4,7 @@ import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.ComfyUIHistoryPage
+import com.riox432.civitdeck.domain.model.DiffusionModelFamily
 import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.QueueJob
@@ -157,9 +158,24 @@ class FindMatchingLocalModelUseCase(private val localModelFileRepository: ModelF
 }
 
 class PopulateGenerationFromModelUseCase {
+    // Swift does not see Kotlin default arguments (SKIE's default-argument interop is off), so
+    // the iOS call site without a base model needs this overload.
+    operator fun invoke(
+        prompt: String?,
+        negativePrompt: String?,
+        steps: Int?,
+        cfgScale: Double?,
+        seed: Long?,
+        sampler: String?,
+        checkpointName: String,
+    ): ComfyUIGenerationParams =
+        invoke(prompt, negativePrompt, steps, cfgScale, seed, sampler, checkpointName, baseModel = null)
+
     /**
-     * Maps CivitAI image generation metadata to [ComfyUIGenerationParams].
-     * Falls back to defaults when metadata is absent.
+     * Maps CivitAI image generation metadata to [ComfyUIGenerationParams]. Metadata wins where
+     * it has a value; the family of [baseModel] fills in the rest, and the generic defaults
+     * apply when the family is unknown. A known family always sets sampler and scheduler,
+     * because the metadata uses A1111 names that ComfyUI rejects.
      */
     operator fun invoke(
         prompt: String?,
@@ -169,15 +185,22 @@ class PopulateGenerationFromModelUseCase {
         seed: Long?,
         sampler: String?,
         checkpointName: String,
-    ): ComfyUIGenerationParams = ComfyUIGenerationParams(
-        checkpoint = checkpointName,
-        prompt = prompt ?: "",
-        negativePrompt = negativePrompt ?: "",
-        steps = steps ?: ComfyUIGenerationParams.DEFAULT_STEPS,
-        cfgScale = cfgScale ?: ComfyUIGenerationParams.DEFAULT_CFG,
-        seed = seed ?: -1L,
-        samplerName = normalizeSamplerName(sampler),
-    )
+        baseModel: String?,
+    ): ComfyUIGenerationParams {
+        val family = DiffusionModelFamily.forBaseModel(baseModel)
+        return ComfyUIGenerationParams(
+            checkpoint = checkpointName,
+            prompt = prompt ?: "",
+            negativePrompt = negativePrompt ?: "",
+            steps = steps ?: family?.steps ?: ComfyUIGenerationParams.DEFAULT_STEPS,
+            cfgScale = cfgScale ?: family?.cfgScale ?: ComfyUIGenerationParams.DEFAULT_CFG,
+            seed = seed ?: -1L,
+            width = family?.width ?: ComfyUIGenerationParams.DEFAULT_DIMENSION,
+            height = family?.height ?: ComfyUIGenerationParams.DEFAULT_DIMENSION,
+            samplerName = family?.samplerName ?: normalizeSamplerName(sampler),
+            scheduler = family?.scheduler ?: ComfyUIGenerationParams.DEFAULT_SCHEDULER,
+        )
+    }
 
     private fun normalizeSamplerName(sampler: String?): String {
         if (sampler == null) return ComfyUIGenerationParams.DEFAULT_SAMPLER

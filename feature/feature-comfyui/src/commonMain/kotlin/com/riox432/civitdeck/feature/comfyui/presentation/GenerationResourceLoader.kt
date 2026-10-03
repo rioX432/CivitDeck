@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.feature.comfyui.presentation
 
+import com.riox432.civitdeck.domain.model.DiffusionModelFamily
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -16,46 +17,53 @@ internal class GenerationResourceLoader(
     private val scope: CoroutineScope,
     private val uiState: MutableStateFlow<GenerationUiState>,
     private val useCases: GenerationResourceUseCases,
+    private val modelSelector: GenerationModelSelector,
 ) {
 
-    // A checkpoint requested before the server list arrives; consumed by loadCheckpoints().
-    private var pendingCheckpoint: String? = null
+    // A prefill model requested before both server lists have settled; a failed load settles
+    // its list as empty, so the request is never held forever.
+    private var pendingModel: PendingModel? = null
+    private var checkpointsSettled = false
+    private var diffusionModelsSettled = false
 
     fun loadCheckpoints() {
         uiState.update { it.copy(isLoadingCheckpoints = true) }
         launchWithErrorHandling(
             tag = "Failed to load checkpoints",
-            onError = { e -> uiState.update { it.copy(isLoadingCheckpoints = false, error = e.message) } },
+            onError = { e ->
+                uiState.update { it.copy(isLoadingCheckpoints = false, error = e.message) }
+                checkpointsSettled = true
+                selectPendingModel()
+            },
         ) {
             val list = useCases.fetchCheckpoints()
-            val requested = pendingCheckpoint
-            pendingCheckpoint = null
             uiState.update {
                 it.copy(
                     checkpoints = list,
-                    selectedCheckpoint = requested?.let { name -> findCheckpoint(list, name) }
-                        ?: list.firstOrNull()
-                        ?: "",
+                    selectedCheckpoint = list.firstOrNull() ?: "",
                     isLoadingCheckpoints = false,
                 )
             }
+            checkpointsSettled = true
+            selectPendingModel()
         }
     }
 
     /**
-     * Selects the server checkpoint matching [requested]. Before the list has loaded, the
-     * request is kept and applied when it arrives. A request with no match selects the
-     * first entry, as a fresh load does.
+     * Selects the prefill file [fileName] for [family] through
+     * [GenerationModelSelector.selectPrefilledModel]. The checkpoint and diffusion model lists
+     * decide which loader opens the file, so the request waits until both have settled.
      */
-    fun requestCheckpoint(requested: String) {
-        val loaded = uiState.value.checkpoints
-        if (loaded.isEmpty()) {
-            pendingCheckpoint = requested
-            return
-        }
-        pendingCheckpoint = null
-        val selected = findCheckpoint(loaded, requested) ?: loaded.first()
-        uiState.update { it.copy(selectedCheckpoint = selected) }
+    fun requestModel(fileName: String, family: DiffusionModelFamily?) {
+        pendingModel = PendingModel(fileName, family)
+        selectPendingModel()
+    }
+
+    private fun selectPendingModel() {
+        val request = pendingModel ?: return
+        if (!checkpointsSettled || !diffusionModelsSettled) return
+        pendingModel = null
+        modelSelector.selectPrefilledModel(request.fileName, request.family)
     }
 
     fun loadLoras() {
@@ -84,7 +92,10 @@ internal class GenerationResourceLoader(
     fun loadDiffusionModelResources() {
         launchWithErrorHandling(
             tag = "Failed to fetch diffusion model resources",
-            onError = {},
+            onError = {
+                diffusionModelsSettled = true
+                selectPendingModel()
+            },
         ) {
             val resources = useCases.fetchDiffusionModelResources()
             uiState.update {
@@ -95,6 +106,8 @@ internal class GenerationResourceLoader(
                     serverClipTypes = resources.clipTypes,
                 )
             }
+            diffusionModelsSettled = true
+            selectPendingModel()
         }
     }
 
@@ -127,21 +140,9 @@ internal class GenerationResourceLoader(
         }
     }
 
+    private class PendingModel(val fileName: String, val family: DiffusionModelFamily?)
+
     companion object {
         private const val TAG = "GenerationResourceLoader"
     }
 }
-
-/**
- * ComfyUI lists checkpoints with their subfolder (`SDXL/foo.safetensors`), while CivitAI
- * metadata and templates carry a bare file name, so a full-path match is tried first and
- * then the file name alone, ignoring case.
- */
-internal fun findCheckpoint(available: List<String>, requested: String): String? {
-    available.firstOrNull { it.equals(requested, ignoreCase = true) }?.let { return it }
-    val requestedName = modelFileName(requested)
-    return available.firstOrNull { modelFileName(it).equals(requestedName, ignoreCase = true) }
-}
-
-internal fun modelFileName(path: String): String =
-    path.substringAfterLast('/').substringAfterLast('\\')
