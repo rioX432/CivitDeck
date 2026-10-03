@@ -32,6 +32,7 @@ struct iOSApp: App {
                     ShortcutsRouter.shared.navigationRouter = router
                 }
                 .task { await frontDoorManager.observeFrontDoor() }
+                .task { await ImageURLSession.evictOnComfyUIPinChanges() }
                 .task { await themeManager.observeAccentColor() }
                 .task { await themeManager.observeAmoledDarkMode() }
                 .task { await themeManager.observeThemeMode() }
