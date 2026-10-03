@@ -57,6 +57,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- iOS ComfyUI output detail: tapping the image opens the fullscreen viewer on every page, including after swiping between outputs, and VoiceOver activation opens it too (#1049)
 - Saving a ComfyUI output to the gallery fails when the image request returns a non-2xx status (for example `404` after the output file was deleted) — the save reports failure instead of "Image saved to gallery", and the error body is no longer written to the gallery as a broken image (#1045)
 - Android workflow template library: "Edit" on a user template opens the editor with that template's name, description, type, category and variables (showing a spinner while templates load), and Save updates it instead of creating a blank duplicate; if the template was deleted meanwhile, the editor closes (#1044)
 - SD WebUI (A1111) generation uses the checkpoint chosen in the model picker instead of whatever checkpoint the server has loaded — txt2img and img2img requests send `override_settings.sd_model_checkpoint` with the picked title (an empty picker sends `{}` and keeps the server's model), and A1111 restores its saved checkpoint option after the request (#1035)
