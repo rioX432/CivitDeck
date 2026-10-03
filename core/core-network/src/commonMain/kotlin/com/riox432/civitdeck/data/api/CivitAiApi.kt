@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.data.api
 
 import com.riox432.civitdeck.data.api.dto.CreatorListResponse
+import com.riox432.civitdeck.data.api.dto.EnumsResponse
 import com.riox432.civitdeck.data.api.dto.ImageListResponse
 import com.riox432.civitdeck.data.api.dto.ModelListResponse
 import com.riox432.civitdeck.data.api.dto.ModelResponse
@@ -134,6 +135,14 @@ class CivitAiApi(
             page?.let { parameter("page", it) }
             limit?.let { parameter("limit", it) }
         }.body()
+    }
+
+    suspend fun getEnums(): EnumsResponse {
+        return try {
+            client.get("${endpoints.apiBaseUrl}/enums").body()
+        } catch (e: ContentConvertException) {
+            throw DataParseException(e.message, e)
+        }
     }
 
     suspend fun getMe(apiKey: String): UserMeResponse {
