@@ -32,7 +32,8 @@ data class CompareRoute(val leftModelId: Long, val rightModelId: Long)
 
 data object ComfyUISettingsRoute
 
-data object ConnectionOnboardingRoute
+/** [reviewConnectionId] opens onboarding on the certificate review for that saved connection. */
+data class ConnectionOnboardingRoute(val reviewConnectionId: Long? = null)
 
 data object ComfyUIGenerationRoute
 
@@ -43,6 +44,8 @@ data class ComfyUIBridgeRoute(
     val versionId: Long,
     val sha256Hash: String,
     val modelName: String,
+    /** Null unless the model is a Checkpoint: only those files can be selected as the ComfyUI checkpoint. */
+    val checkpointFileName: String?,
     val prompt: String?,
     val negativePrompt: String?,
     val steps: Int?,

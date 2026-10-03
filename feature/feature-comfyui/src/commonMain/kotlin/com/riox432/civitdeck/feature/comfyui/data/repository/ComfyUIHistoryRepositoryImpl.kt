@@ -2,12 +2,11 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.api.comfyui.HistoryEntry
-import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationMeta
 import com.riox432.civitdeck.domain.model.ComfyUIHistoryPage
-import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.repository.ComfyUIHistoryRepository
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.JsonObject
@@ -17,27 +16,27 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.long
 
 class ComfyUIHistoryRepositoryImpl(
-    private val dao: ComfyUIConnectionDao,
-    private val api: ComfyUIApi,
+    private val apiProvider: ComfyUIApiProvider,
 ) : ComfyUIHistoryRepository {
 
     override fun fetchHistory(maxItems: Int): Flow<ComfyUIHistoryPage> = flow {
-        ensureApiConfigured()
+        val api = apiProvider.forActive().api
         val historyMap = api.getRecentHistory(maxItems)
         val images = historyMap.flatMap { (promptId, entry) ->
-            entry.toGeneratedImages(promptId)
+            entry.toGeneratedImages(api, promptId)
         }
         emit(ComfyUIHistoryPage(images = images, hasMore = historyMap.size >= maxItems))
     }
 
     override fun fetchHistoryItem(promptId: String): Flow<List<ComfyUIGeneratedImage>> = flow {
-        ensureApiConfigured()
+        val api = apiProvider.forActive().api
         val entry = api.getHistory(promptId)
-        val images = entry?.toGeneratedImages(promptId) ?: emptyList()
+        val images = entry?.toGeneratedImages(api, promptId) ?: emptyList()
         emit(images)
     }
 
-    private fun HistoryEntry.toGeneratedImages(promptId: String): List<ComfyUIGeneratedImage> {
+    // The /view URLs come from the same endpoint as the entry, so they point at that server.
+    private fun HistoryEntry.toGeneratedImages(api: ComfyUIApi, promptId: String): List<ComfyUIGeneratedImage> {
         val meta = extractMeta(this)
         return outputs.values.flatMap { nodeOutput ->
             (nodeOutput.images ?: emptyList()).map { imgRef ->
@@ -111,12 +110,5 @@ class ComfyUIHistoryRepositoryImpl(
         if ((node["class_type"] as? JsonPrimitive)?.content != "LoraLoader") return null
         val inputs = node["inputs"] as? JsonObject ?: return null
         return (inputs["lora_name"] as? JsonPrimitive)?.content
-    }
-
-    private suspend fun ensureApiConfigured() {
-        val active = dao.getActive()
-            ?: throw DomainException.ConnectionException("No active ComfyUI connection")
-        val scheme = if (active.useHttps) "https" else "http"
-        api.setBaseUrl("$scheme://${active.hostname}:${active.port}")
     }
 }

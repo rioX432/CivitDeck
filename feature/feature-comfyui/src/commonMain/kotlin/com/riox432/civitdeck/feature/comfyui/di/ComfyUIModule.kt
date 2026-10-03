@@ -126,8 +126,8 @@ val comfyuiModule = module {
         }
     }
     single<ComfyUIGenerationRepository> { ComfyUIGenerationRepositoryImpl(get(), get()) }
-    single<ComfyUIQueueRepository> { ComfyUIQueueRepositoryImpl(get(), get()) }
-    single<ComfyUIHistoryRepository> { ComfyUIHistoryRepositoryImpl(get(), get()) }
+    single<ComfyUIQueueRepository> { ComfyUIQueueRepositoryImpl(get()) }
+    single<ComfyUIHistoryRepository> { ComfyUIHistoryRepositoryImpl(get()) }
     factory { FetchComfyUIHistoryUseCase(get()) }
     factory { FetchComfyUIHistoryItemUseCase(get()) }
     factory { ObserveComfyUIConnectionsUseCase(get()) }
