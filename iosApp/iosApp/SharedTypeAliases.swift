@@ -424,15 +424,35 @@ extension Core_domainModelImage {
     /// CivitAI CDN format: .../xG1nkqKTMzGDvpLrqFT7WA/{uuid}/width={size}/{filename}
     func thumbnailUrl(width: Int) -> String? {
         guard !url.isEmpty else { return nil }
-        guard url.contains("image.civitai.com") else { return url }
+        guard url.contains(civitaiImageHost) else { return url }
         var parts = url.split(separator: "/", omittingEmptySubsequences: false).map(String.init)
-        if let widthIdx = parts.firstIndex(where: { $0.hasPrefix("width=") }) {
-            parts[widthIdx] = "width=\(width)"
+        // The last segment is the file name, never a transform.
+        let transforms = parts.dropLast().map { $0.split(separator: ",", omittingEmptySubsequences: false) }
+        // A comma-separated transform (e.g. a video still frame) must stay one segment:
+        // a second width segment in front of it makes the CDN return the original video.
+        if let idx = transforms.firstIndex(where: { $0.contains { $0.hasPrefix("width=") } }) {
+            parts[idx] = transforms[idx].map { $0.hasPrefix("width=") ? "width=\(width)" : String($0) }.joined(separator: ",")
+        } else if let idx = transforms.firstIndex(where: { $0.count > 1 && $0.allSatisfy { $0.contains("=") } }) {
+            parts[idx] += ",width=\(width)"
         } else if parts.count > 5 {
             parts.insert("width=\(width)", at: 5)
         }
         return parts.joined(separator: "/")
     }
+}
+
+private let civitaiImageHost = "image.civitai.com"
+
+/// Still-frame JPEG URL for a video on the CivitAI image CDN, or nil for any other host. The CDN transcodes
+/// to a still only for `anim=false,transcode=true` with a `.jpeg` file name; the video's own transforms are dropped.
+private func civitaiVideoStillUrl(_ videoUrl: String) -> String? {
+    let url = videoUrl.split(separator: "?", maxSplits: 1, omittingEmptySubsequences: false)[0]
+    guard url.hasPrefix("https://\(civitaiImageHost)/") else { return nil }
+    let parts = url.split(separator: "/", omittingEmptySubsequences: false)
+    guard parts.count > 5, let fileName = parts.last else { return nil }
+    let baseName = fileName.lastIndex(of: ".").map { fileName[..<$0] } ?? fileName
+    guard !parts[3].isEmpty, !parts[4].isEmpty, !baseName.isEmpty else { return nil }
+    return "https://\(civitaiImageHost)/\(parts[3])/\(parts[4])/anim=false,transcode=true/\(baseName).jpeg"
 }
 
 // MARK: - NsfwLevel ordering
@@ -451,16 +471,23 @@ extension Core_domainNsfwLevel {
 }
 
 // MARK: - Model browse-thumbnail selection
-// Mirrors the Kotlin `Model.browseThumbnailCandidates()` extension (not exported
-// to Swift): static images only (never a video URL, which image loaders can't
-// decode and which rendered NSFW models as broken cards), safest first.
+// Mirrors the Kotlin `Model.browseThumbnailCandidates()` extension (not exported to Swift): never a raw video URL,
+// which image loaders can't decode and which rendered NSFW models as broken cards. When the latest version has no
+// static image, its CivitAI-hosted videos are offered as still frames instead. Safest first.
 extension Core_domainModel {
     func browseThumbnailCandidates() -> [Core_domainModelImage] {
-        let images = modelVersions.first?.images ?? []
+        let previews = modelVersions.first?.images ?? []
+        var candidates = previews.filter { $0.contentType == .image }
+        if candidates.isEmpty {
+            candidates = previews.compactMap { video in
+                guard video.contentType == .video, let stillUrl = civitaiVideoStillUrl(video.url) else { return nil }
+                return video.doCopy(url: stillUrl, nsfw: video.nsfw, nsfwLevel: video.nsfwLevel, width: video.width,
+                                    height: video.height, hash: video.hash_, meta: video.meta, contentType: .image)
+            }
+        }
         // Stable sort by severity (Swift's `sorted` is not guaranteed stable):
         // keep original order within the same level via the enumerated index.
-        return images
-            .filter { $0.contentType == .image }
+        return candidates
             .enumerated()
             .sorted { lhs, rhs in
                 if lhs.element.nsfwLevel.severity != rhs.element.nsfwLevel.severity {
