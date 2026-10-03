@@ -30,6 +30,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - ComfyUI Outputs list requests only the newest 200 history entries (`GET /history?max_items=200`, the same page size as ComfyUI's own frontend) instead of the server's entire history; older outputs are not reachable until history paging lands (#1051)
 - `FetchComfyUIHistoryUseCase(maxItems)` emits a `ComfyUIHistoryPage(images, hasMore)`; `hasMore` is true when `/history` returned the full `maxItems` entries (counting history entries, including failed prompts without images, not images). No user-visible change (#1052)
 - ComfyUI connection test reports `LoopbackHost` when a test against `localhost`, `127.x.x.x` or `0.0.0.0` fails without an HTTP response (unreachable or timed out), so the UI can explain that the address points at this device rather than the PC; HTTP, auth, non-ComfyUI and TLS failures keep their cause (#1061)
+- ComfyUI generation (HTTP and foreground WebSocket progress) and saving a generated image resolve the server URL and TLS trust per call through the new `ComfyUIApiProvider`: a connection with HTTPS and "Accept self-signed certificates" uses a client pinned to its confirmed certificate, every other connection keeps system trust. The provider also keeps a host:port → pin snapshot for image loaders. Queue, history, ComfyHub import and the settings test still use the shared `ComfyUIApi` until #1122/#1123 (#1121)
 
 ### Removed
 
