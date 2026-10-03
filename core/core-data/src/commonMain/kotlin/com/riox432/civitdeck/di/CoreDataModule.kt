@@ -1,12 +1,14 @@
 package com.riox432.civitdeck.di
 
 import com.riox432.civitdeck.data.repository.AuthRepositoryImpl
+import com.riox432.civitdeck.data.repository.BaseModelCatalogRepositoryImpl
 import com.riox432.civitdeck.data.repository.CreatorFollowRepositoryImpl
 import com.riox432.civitdeck.data.repository.LocalModelFileRepositoryImpl
 import com.riox432.civitdeck.data.repository.ModelRepositoryImpl
 import com.riox432.civitdeck.data.repository.TagRepositoryImpl
 import com.riox432.civitdeck.data.repository.UpdateRepositoryImpl
 import com.riox432.civitdeck.domain.repository.AuthRepository
+import com.riox432.civitdeck.domain.repository.BaseModelCatalogRepository
 import com.riox432.civitdeck.domain.repository.CreatorFollowRepository
 import com.riox432.civitdeck.domain.repository.ModelDirectoryRepository
 import com.riox432.civitdeck.domain.repository.ModelFileHashRepository
@@ -35,6 +37,7 @@ val coreDataModule = module {
     }
     single<CreatorFollowRepository> { CreatorFollowRepositoryImpl(get(), get(), get()) }
     single<UpdateRepository> { UpdateRepositoryImpl(get(), get(), get()) }
+    single<BaseModelCatalogRepository> { BaseModelCatalogRepositoryImpl() }
 
     // CivitAI network-only repositories (moved from networkModule for organizational consistency)
     single<AuthRepository> { AuthRepositoryImpl(get()) }
