@@ -3,8 +3,10 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.DiffusionModelResources
+import com.riox432.civitdeck.domain.model.DiffusionModelSelection
 import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.GenerationStatus
+import com.riox432.civitdeck.domain.model.LoraSelection
 import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
@@ -23,6 +25,8 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
@@ -379,6 +383,147 @@ class ComfyUIGenerationRepositoryImplTest {
         }
     }
 
+    /** Submits [params] and returns the `prompt` graph sent to `/prompt`. */
+    private suspend fun submittedGraph(params: ComfyUIGenerationParams): JsonObject {
+        var promptBody: JsonObject? = null
+        val r = repo { request ->
+            if (request.url.encodedPath == "/prompt") {
+                promptBody = testJson.decodeFromString(request.body.toByteArray().decodeToString())
+            }
+            okJson("""{"prompt_id":"g-1"}""")
+        }
+        r.submitGeneration(params)
+        return requireNotNull(promptBody)["prompt"]!!.jsonObject
+    }
+
+    private fun JsonObject.node(id: String) = getValue(id).jsonObject
+
+    private fun JsonObject.input(id: String, name: String) = node(id)["inputs"]!!.jsonObject.getValue(name)
+
+    private fun link(nodeId: String, output: Int) = buildJsonArray {
+        add(JsonPrimitive(nodeId))
+        add(JsonPrimitive(output))
+    }
+
+    private val checkpointParams = ComfyUIGenerationParams(
+        checkpoint = "sd15.safetensors",
+        prompt = "a cat",
+        negativePrompt = "blurry",
+        seed = 42,
+        loraSelections = listOf(LoraSelection("a.safetensors", 0.5f, 0.25f), LoraSelection("b.safetensors")),
+        controlNetEnabled = true,
+        controlNetModel = "canny.pth",
+        controlNetStrength = 0.75f,
+    )
+
+    @Test
+    fun submitGeneration_without_diffusion_model_sends_the_checkpoint_graph_unchanged() = runTest {
+        val graph = submittedGraph(checkpointParams)
+
+        assertEquals(CHECKPOINT_GRAPH, testJson.encodeToString(JsonObject.serializer(), graph))
+    }
+
+    @Test
+    fun submitGeneration_without_diffusion_model_sends_the_inpainting_graph_unchanged() = runTest {
+        val params = checkpointParams.copy(
+            loraSelections = listOf(LoraSelection("a.safetensors", 0.5f, 0.25f)),
+            controlNetEnabled = false,
+            initImageFilename = "init.png",
+            maskImageFilename = "mask.png",
+            denoiseStrength = 0.5,
+        )
+
+        val graph = submittedGraph(params)
+
+        assertEquals(INPAINTING_GRAPH, testJson.encodeToString(JsonObject.serializer(), graph))
+    }
+
+    private val krea2 = DiffusionModelSelection(
+        unetName = "krea2_turbo_fp8_scaled.safetensors",
+        textEncoderName = "qwen3vl_4b_fp8_scaled.safetensors",
+        clipType = "krea2",
+        vaeName = "qwen_image_vae.safetensors",
+    )
+
+    private val diffusionParams = ComfyUIGenerationParams(
+        checkpoint = "",
+        prompt = "a cat",
+        negativePrompt = "blurry",
+        seed = 42,
+        diffusionModel = krea2,
+    )
+
+    @Test
+    fun submitGeneration_with_diffusion_model_loads_unet_text_encoder_and_vae_separately() = runTest {
+        val graph = submittedGraph(diffusionParams)
+
+        assertEquals(
+            testJson.parseToJsonElement(
+                """{"class_type":"UNETLoader","inputs":{"unet_name":"krea2_turbo_fp8_scaled.safetensors","weight_dtype":"default"}}""",
+            ),
+            graph.node("3"),
+        )
+        assertEquals(
+            testJson.parseToJsonElement(
+                """{"class_type":"CLIPLoader","inputs":{"clip_name":"qwen3vl_4b_fp8_scaled.safetensors","type":"krea2"}}""",
+            ),
+            graph.node("40"),
+        )
+        assertEquals(
+            testJson.parseToJsonElement("""{"class_type":"VAELoader","inputs":{"vae_name":"qwen_image_vae.safetensors"}}"""),
+            graph.node("41"),
+        )
+        assertFalse(graph.values.any { it.jsonObject["class_type"]?.jsonPrimitive?.content == "CheckpointLoaderSimple" })
+        assertEquals(link("40", 0), graph.input("6", "clip"))
+        assertEquals(link("40", 0), graph.input("7", "clip"))
+        assertEquals(link("3", 0), graph.input("4", "model"))
+        assertEquals(link("41", 0), graph.input("8", "vae"))
+    }
+
+    @Test
+    fun submitGeneration_with_diffusion_model_chains_loras_from_the_split_loaders() = runTest {
+        val params = diffusionParams.copy(
+            loraSelections = listOf(LoraSelection("a.safetensors", 0.5f, 0.25f), LoraSelection("b.safetensors")),
+        )
+
+        val graph = submittedGraph(params)
+
+        assertEquals("LoraLoader", graph.node("10")["class_type"]?.jsonPrimitive?.content)
+        assertEquals(link("3", 0), graph.input("10", "model"))
+        assertEquals(link("40", 0), graph.input("10", "clip"))
+        assertEquals(link("10", 0), graph.input("11", "model"))
+        assertEquals(link("10", 1), graph.input("11", "clip"))
+        assertEquals(link("11", 1), graph.input("6", "clip"))
+        assertEquals(link("11", 1), graph.input("7", "clip"))
+        assertEquals(link("11", 0), graph.input("4", "model"))
+        assertEquals(link("41", 0), graph.input("8", "vae"))
+    }
+
+    @Test
+    fun submitGeneration_rejects_a_diffusion_model_combined_with_controlnet_or_mask() = runTest {
+        var prompts = 0
+        val r = repo { request ->
+            if (request.url.encodedPath == "/prompt") prompts++
+            okJson("""{"prompt_id":"g-1"}""")
+        }
+        val withControlNet = diffusionParams.copy(controlNetEnabled = true, controlNetModel = "canny.pth")
+        val withInpainting = diffusionParams.copy(initImageFilename = "init.png", maskImageFilename = "mask.png")
+        val withMaskOnly = diffusionParams.copy(maskImageFilename = "mask.png")
+
+        assertFailsWith<IllegalArgumentException> { r.submitGeneration(withControlNet) }
+        assertFailsWith<IllegalArgumentException> { r.submitGeneration(withInpainting) }
+        assertFailsWith<IllegalArgumentException> { r.submitGeneration(withMaskOnly) }
+        assertEquals(0, prompts)
+    }
+
+    @Test
+    fun submitGeneration_with_diffusion_model_ignores_a_controlnet_toggle_without_a_model() = runTest {
+        // The builder adds no ControlNet nodes for a blank model, so nothing would be dropped.
+        val graph = submittedGraph(diffusionParams.copy(controlNetEnabled = true, controlNetModel = ""))
+
+        assertEquals(link("6", 0), graph.input("4", "positive"))
+    }
+
     @Test
     fun fetchControlNets_returns_empty_on_unparseable_response() = runTest {
         // getControlNets swallows parse errors of a 200 body and returns an empty list rather than throwing.
@@ -392,5 +537,44 @@ class ComfyUIGenerationRepositoryImplTest {
         val r = repo { respondError(HttpStatusCode.InternalServerError) }
 
         assertFailsWith<ResponseException> { r.fetchControlNets() }
+    }
+
+    private companion object {
+        // Graphs the builder sent before diffusion models existed, one node per line.
+        val CHECKPOINT_GRAPH = """
+            {"3":{"class_type":"CheckpointLoaderSimple","inputs":{"ckpt_name":"sd15.safetensors"}},
+            "10":{"class_type":"LoraLoader","inputs":{"lora_name":"a.safetensors","strength_model":0.5,
+            "strength_clip":0.25,"model":["3",0],"clip":["3",1]}},
+            "11":{"class_type":"LoraLoader","inputs":{"lora_name":"b.safetensors","strength_model":1.0,
+            "strength_clip":1.0,"model":["10",0],"clip":["10",1]}},
+            "6":{"class_type":"CLIPTextEncode","inputs":{"text":"a cat","clip":["11",1]}},
+            "7":{"class_type":"CLIPTextEncode","inputs":{"text":"blurry","clip":["11",1]}},
+            "20":{"class_type":"ControlNetLoader","inputs":{"control_net_name":"canny.pth"}},
+            "21":{"class_type":"ControlNetApply","inputs":{"conditioning":["6",0],"control_net":["20",0],
+            "image":[],"strength":0.75}},
+            "5":{"class_type":"EmptyLatentImage","inputs":{"width":512,"height":512,"batch_size":1}},
+            "4":{"class_type":"KSampler","inputs":{"seed":42,"steps":20,"cfg":7.0,"sampler_name":"euler",
+            "scheduler":"normal","denoise":1.0,"model":["11",0],"positive":["21",0],"negative":["7",0],
+            "latent_image":["5",0]}},
+            "8":{"class_type":"VAEDecode","inputs":{"samples":["4",0],"vae":["3",2]}},
+            "9":{"class_type":"SaveImage","inputs":{"filename_prefix":"CivitDeck","images":["8",0]}}}
+        """.trimIndent().replace("\n", "")
+
+        val INPAINTING_GRAPH = """
+            {"3":{"class_type":"CheckpointLoaderSimple","inputs":{"ckpt_name":"sd15.safetensors"}},
+            "10":{"class_type":"LoraLoader","inputs":{"lora_name":"a.safetensors","strength_model":0.5,
+            "strength_clip":0.25,"model":["3",0],"clip":["3",1]}},
+            "30":{"class_type":"LoadImage","inputs":{"image":"init.png"}},
+            "31":{"class_type":"LoadImage","inputs":{"image":"mask.png"}},
+            "32":{"class_type":"VAEEncodeForInpaint","inputs":{"pixels":["30",0],"vae":["3",2],"mask":["31",0],
+            "grow_mask_by":6}},
+            "6":{"class_type":"CLIPTextEncode","inputs":{"text":"a cat","clip":["10",1]}},
+            "7":{"class_type":"CLIPTextEncode","inputs":{"text":"blurry","clip":["10",1]}},
+            "4":{"class_type":"KSampler","inputs":{"seed":42,"steps":20,"cfg":7.0,"sampler_name":"euler",
+            "scheduler":"normal","denoise":0.5,"model":["10",0],"positive":["6",0],"negative":["7",0],
+            "latent_image":["32",0]}},
+            "8":{"class_type":"VAEDecode","inputs":{"samples":["4",0],"vae":["3",2]}},
+            "9":{"class_type":"SaveImage","inputs":{"filename_prefix":"CivitDeck","images":["8",0]}}}
+        """.trimIndent().replace("\n", "")
     }
 }

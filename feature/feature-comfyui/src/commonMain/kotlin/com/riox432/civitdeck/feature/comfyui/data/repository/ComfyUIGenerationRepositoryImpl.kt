@@ -17,7 +17,9 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
@@ -157,6 +159,14 @@ class ComfyUIGenerationRepositoryImpl(
             return json.decodeFromString(customJson)
         }
 
+        val hasControlNet = params.controlNetEnabled && params.controlNetModel.isNotBlank()
+        if (params.diffusionModel != null) {
+            // The ControlNet and inpainting graphs exist only for checkpoints; building either
+            // without its nodes would submit a different generation than the user asked for.
+            require(!hasControlNet) { "ControlNet cannot be combined with a diffusion model" }
+            require(params.maskImageFilename == null) { "Inpainting cannot be combined with a diffusion model" }
+        }
+
         // Use inpainting workflow when both init image and mask are provided
         val isInpainting = params.initImageFilename != null &&
             params.maskImageFilename != null
@@ -164,23 +174,22 @@ class ComfyUIGenerationRepositoryImpl(
             return buildInpaintingWorkflow(params)
         }
 
-        val loraChain = buildLoraChain(params.loraSelections)
-        val finalModelNodeId = loraChain.lastOrNull()?.nodeId ?: "3"
-        val finalClipNodeId = loraChain.lastOrNull()?.nodeId ?: "3"
-        val finalModelOutput = 0 // MODEL output index
-        val finalClipOutput = 1 // CLIP output index
+        val loaders = if (params.diffusionModel != null) splitLoaderOutputs else checkpointOutputs
+        val loraChain = buildLoraChain(params.loraSelections, loaders)
+        val finalModel = loraChain.lastOrNull()?.let { nodeLink(it.nodeId, 0) } ?: loaders.model
+        val finalClip = loraChain.lastOrNull()?.let { nodeLink(it.nodeId, 1) } ?: loaders.clip
 
         // Positive conditioning source
-        val positiveCondId = if (params.controlNetEnabled && params.controlNetModel.isNotBlank()) "21" else "6"
+        val positiveCondId = if (hasControlNet) "21" else "6"
 
         return buildJsonObject {
-            put("3", buildCheckpointNode(params.checkpoint))
+            putLoaders(params)
             loraChain.forEach { loraNode ->
                 put(loraNode.nodeId, loraNode.jsonNode)
             }
-            put("6", buildClipEncode(params.prompt, finalClipNodeId, finalClipOutput))
-            put("7", buildClipEncode(params.negativePrompt, finalClipNodeId, finalClipOutput))
-            if (params.controlNetEnabled && params.controlNetModel.isNotBlank()) {
+            put("6", buildClipEncode(params.prompt, finalClip))
+            put("7", buildClipEncode(params.negativePrompt, finalClip))
+            if (hasControlNet) {
                 put("20", buildControlNetLoader(params.controlNetModel))
                 put("21", buildControlNetApply(params.controlNetStrength))
             }
@@ -189,24 +198,21 @@ class ComfyUIGenerationRepositoryImpl(
                 "4",
                 buildKSampler(
                     params = params,
-                    modelNodeId = finalModelNodeId,
-                    modelOutput = finalModelOutput,
+                    model = finalModel,
                     positiveCondId = positiveCondId,
                     latentNodeId = "5",
                     denoise = 1.0,
                 ),
             )
-            put("8", buildVaeDecode(samplerNodeId = "4", vaeSourceId = "3"))
+            put("8", buildVaeDecode(samplerNodeId = "4", vae = loaders.vae))
             put("9", buildSaveImage(imageNodeId = "8"))
         }
     }
 
     private fun buildInpaintingWorkflow(params: ComfyUIGenerationParams): JsonObject {
-        val loraChain = buildLoraChain(params.loraSelections)
-        val finalModelNodeId = loraChain.lastOrNull()?.nodeId ?: "3"
-        val finalClipNodeId = loraChain.lastOrNull()?.nodeId ?: "3"
-        val finalModelOutput = 0
-        val finalClipOutput = 1
+        val loraChain = buildLoraChain(params.loraSelections, checkpointOutputs)
+        val finalModel = loraChain.lastOrNull()?.let { nodeLink(it.nodeId, 0) } ?: checkpointOutputs.model
+        val finalClip = loraChain.lastOrNull()?.let { nodeLink(it.nodeId, 1) } ?: checkpointOutputs.clip
 
         return buildJsonObject {
             // Checkpoint loader
@@ -221,28 +227,78 @@ class ComfyUIGenerationRepositoryImpl(
             // Set latent via VAEEncode with mask
             put("32", buildVaeEncodeForInpaint())
             // Conditioning
-            put("6", buildClipEncode(params.prompt, finalClipNodeId, finalClipOutput))
-            put("7", buildClipEncode(params.negativePrompt, finalClipNodeId, finalClipOutput))
+            put("6", buildClipEncode(params.prompt, finalClip))
+            put("7", buildClipEncode(params.negativePrompt, finalClip))
             // KSampler with lower denoise for inpainting
             put(
                 "4",
                 buildKSampler(
                     params = params,
-                    modelNodeId = finalModelNodeId,
-                    modelOutput = finalModelOutput,
+                    model = finalModel,
                     positiveCondId = "6",
                     latentNodeId = "32",
                     denoise = params.denoiseStrength,
                 ),
             )
             // VAE Decode
-            put("8", buildVaeDecode(samplerNodeId = "4", vaeSourceId = "3"))
+            put("8", buildVaeDecode(samplerNodeId = "4", vae = checkpointOutputs.vae))
             // Save
             put("9", buildSaveImage(imageNodeId = "8"))
         }
     }
 
     // -- Workflow node builder helpers --
+
+    /** MODEL, CLIP and VAE outputs the graph reads before any LoRA is applied. */
+    private class LoaderOutputs(val model: JsonArray, val clip: JsonArray, val vae: JsonArray)
+
+    private val checkpointOutputs = LoaderOutputs(nodeLink("3", 0), nodeLink("3", 1), nodeLink("3", 2))
+
+    // The model stays at node "3" so the LoRA chain and KSampler wiring match the checkpoint graph.
+    private val splitLoaderOutputs = LoaderOutputs(nodeLink("3", 0), nodeLink("40", 0), nodeLink("41", 0))
+
+    private fun JsonObjectBuilder.putLoaders(params: ComfyUIGenerationParams) {
+        val diffusionModel = params.diffusionModel
+        if (diffusionModel == null) {
+            put("3", buildCheckpointNode(params.checkpoint))
+            return
+        }
+        put(
+            "3",
+            buildJsonObject {
+                put("class_type", "UNETLoader")
+                put(
+                    "inputs",
+                    buildJsonObject {
+                        put("unet_name", diffusionModel.unetName)
+                        // Both official Krea 2 templates, int8 included, use "default": ComfyUI
+                        // detects quantized weights from the file.
+                        put("weight_dtype", "default")
+                    },
+                )
+            },
+        )
+        put(
+            "40",
+            buildJsonObject {
+                put("class_type", "CLIPLoader")
+                put(
+                    "inputs",
+                    buildJsonObject {
+                        put("clip_name", diffusionModel.textEncoderName)
+                        put("type", diffusionModel.clipType)
+                    },
+                )
+            },
+        )
+        put(
+            "41",
+            buildJsonObject {
+                put("class_type", "VAELoader")
+                put("inputs", buildJsonObject { put("vae_name", diffusionModel.vaeName) })
+            },
+        )
+    }
 
     private fun buildCheckpointNode(checkpoint: String) = buildJsonObject {
         put("class_type", "CheckpointLoaderSimple")
@@ -267,14 +323,14 @@ class ComfyUIGenerationRepositoryImpl(
         )
     }
 
-    private fun buildClipEncode(text: String, clipNodeId: String, clipOutput: Int) =
+    private fun buildClipEncode(text: String, clip: JsonArray) =
         buildJsonObject {
             put("class_type", "CLIPTextEncode")
             put(
                 "inputs",
                 buildJsonObject {
                     put("text", text)
-                    put("clip", nodeLink(clipNodeId, clipOutput))
+                    put("clip", clip)
                 }
             )
         }
@@ -311,8 +367,7 @@ class ComfyUIGenerationRepositoryImpl(
 
     private fun buildKSampler(
         params: ComfyUIGenerationParams,
-        modelNodeId: String,
-        modelOutput: Int,
+        model: JsonArray,
         positiveCondId: String,
         latentNodeId: String,
         denoise: Double,
@@ -329,7 +384,7 @@ class ComfyUIGenerationRepositoryImpl(
                 put("sampler_name", params.samplerName)
                 put("scheduler", params.scheduler)
                 put("denoise", denoise)
-                put("model", nodeLink(modelNodeId, modelOutput))
+                put("model", model)
                 put("positive", nodeLink(positiveCondId, 0))
                 put("negative", nodeLink("7", 0))
                 put("latent_image", nodeLink(latentNodeId, 0))
@@ -337,14 +392,14 @@ class ComfyUIGenerationRepositoryImpl(
         )
     }
 
-    private fun buildVaeDecode(samplerNodeId: String, vaeSourceId: String) =
+    private fun buildVaeDecode(samplerNodeId: String, vae: JsonArray) =
         buildJsonObject {
             put("class_type", "VAEDecode")
             put(
                 "inputs",
                 buildJsonObject {
                     put("samples", nodeLink(samplerNodeId, 0))
-                    put("vae", nodeLink(vaeSourceId, 2))
+                    put("vae", vae)
                 }
             )
         }
@@ -362,12 +417,13 @@ class ComfyUIGenerationRepositoryImpl(
 
     private data class LoraNodeEntry(val nodeId: String, val jsonNode: JsonObject)
 
-    private fun buildLoraChain(loras: List<LoraSelection>): List<LoraNodeEntry> {
+    /** The first LoRA reads [loaders]; each later one reads the LoRA before it. */
+    private fun buildLoraChain(loras: List<LoraSelection>, loaders: LoaderOutputs): List<LoraNodeEntry> {
         if (loras.isEmpty()) return emptyList()
         val entries = mutableListOf<LoraNodeEntry>()
         loras.forEachIndexed { index, lora ->
             val nodeId = (10 + index).toString()
-            val prevNodeId = if (index == 0) "3" else (10 + index - 1).toString()
+            val prevNodeId = entries.lastOrNull()?.nodeId
             val node = buildJsonObject {
                 put("class_type", "LoraLoader")
                 put(
@@ -376,8 +432,8 @@ class ComfyUIGenerationRepositoryImpl(
                         put("lora_name", lora.name)
                         put("strength_model", lora.strengthModel.toDouble())
                         put("strength_clip", lora.strengthClip.toDouble())
-                        put("model", nodeLink(prevNodeId, 0))
-                        put("clip", nodeLink(prevNodeId, 1))
+                        put("model", prevNodeId?.let { nodeLink(it, 0) } ?: loaders.model)
+                        put("clip", prevNodeId?.let { nodeLink(it, 1) } ?: loaders.clip)
                     }
                 )
             }
