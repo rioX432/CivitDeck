@@ -330,6 +330,61 @@
           }
         }
       }
+    },
+    "comfyui_onboarding_fail_cert_unconfirmed" : {
+      "comment" : "Onboarding failure message when the server presents a certificate that has not been trusted yet",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The server uses a certificate this device has not trusted yet. Trust it only if its fingerprint matches the one on the server."
+          }
+        }
+      }
+    },
+    "comfyui_onboarding_fail_cert_changed" : {
+      "comment" : "Onboarding failure message when the server's certificate differs from the one trusted before",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The server's certificate differs from the one you trusted before. If you did not replace it, do not trust it: someone may be intercepting the connection."
+          }
+        }
+      }
+    },
+    "comfyui_onboarding_cert_fingerprint_label" : {
+      "comment" : "Heading above the server certificate's SHA-256 fingerprint",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SHA-256 fingerprint"
+          }
+        }
+      }
+    },
+    "comfyui_onboarding_cert_fingerprint_hint" : {
+      "comment" : "Hint telling the user how to compare the fingerprint with the one printed on the server",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the server, run \"openssl x509 -noout -fingerprint -sha256 -in <certificate file>\" and check that it prints the same value."
+          }
+        }
+      }
+    },
+    "comfyui_onboarding_trust_certificate" : {
+      "comment" : "Button that trusts the server certificate shown and saves the connection with it",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trust this certificate"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

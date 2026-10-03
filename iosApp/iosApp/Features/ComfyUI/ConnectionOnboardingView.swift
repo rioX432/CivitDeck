@@ -17,8 +17,13 @@ struct ConnectionOnboardingView: View {
                 TestingView(hostname: hostname)
             case let .success(name, gpu, vramMB):
                 SuccessView(name: name, gpu: gpu, vramMB: vramMB) { dismiss() }
-            case let .failure(cause, httpStatus):
-                FailureView(viewModel: viewModel, cause: cause, httpStatus: httpStatus)
+            case let .failure(cause, httpStatus, presentedSha256):
+                FailureView(
+                    viewModel: viewModel,
+                    cause: cause,
+                    httpStatus: httpStatus,
+                    presentedSha256: presentedSha256
+                )
             }
         }
         .navigationTitle("Connect to ComfyUI")
@@ -206,8 +211,21 @@ private struct FailureView: View {
     @ObservedObject var viewModel: ConnectionOnboardingViewModelOwner
     let cause: ConnectionFailureCause
     let httpStatus: Int32?
+    let presentedSha256: String?
 
     var body: some View {
+        // Scrolls so the fingerprint and its buttons stay reachable at large Dynamic Type sizes,
+        // while the minimum height keeps short messages vertically centered.
+        GeometryReader { proxy in
+            ScrollView {
+                content
+                    .padding(Spacing.lg)
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height)
+            }
+        }
+    }
+
+    private var content: some View {
         VStack(spacing: Spacing.md) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.civitIconExtraLarge)
@@ -216,12 +234,29 @@ private struct FailureView: View {
             Text(message)
                 .font(.civitBodyMedium)
                 .multilineTextAlignment(.center)
-            Button("Retry") { viewModel.retry() }
-                .buttonStyle(.borderedProminent)
+            if let fingerprint = confirmableFingerprint {
+                CertificateFingerprintView(sha256Hex: fingerprint)
+                Button("comfyui_onboarding_trust_certificate") { viewModel.trustCertificate() }
+                    .buttonStyle(.borderedProminent)
+                Button("Retry") { viewModel.retry() }
+                    .buttonStyle(.bordered)
+            } else {
+                Button("Retry") { viewModel.retry() }
+                    .buttonStyle(.borderedProminent)
+            }
             Button("Back") { viewModel.chooseMethod() }
         }
-        .padding(Spacing.lg)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // The regular size renders bordered buttons shorter than the 44pt minimum touch target.
+        .controlSize(.large)
+    }
+
+    private var confirmableFingerprint: String? {
+        switch cause {
+        case .certificateUnconfirmed, .certificateChanged:
+            return presentedSha256
+        default:
+            return nil
+        }
     }
 
     private var message: String {
@@ -232,6 +267,10 @@ private struct FailureView: View {
             return "Connection timed out. The server may be offline or on a different network."
         case .tls:
             return "TLS error. On iOS, install the certificate or use a trusted tunnel."
+        case .certificateUnconfirmed:
+            return String(localized: "comfyui_onboarding_fail_cert_unconfirmed")
+        case .certificateChanged:
+            return String(localized: "comfyui_onboarding_fail_cert_changed")
         case .http:
             return "Server responded with an error (HTTP \(httpStatus ?? 0))."
         case .unknown:
@@ -239,6 +278,38 @@ private struct FailureView: View {
         default:
             return "Could not connect. Check the address and try again."
         }
+    }
+}
+
+private struct CertificateFingerprintView: View {
+    let sha256Hex: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("comfyui_onboarding_cert_fingerprint_label")
+                .font(.civitTitleSmall)
+            // Wraps instead of truncating so every byte stays comparable with the server's output.
+            Text(Self.format(sha256Hex))
+                .font(.civitMonoCaption)
+                .fixedSize(horizontal: false, vertical: true)
+                .textSelection(.enabled)
+            Text("comfyui_onboarding_cert_fingerprint_hint")
+                .font(.civitBodySmall)
+                .foregroundColor(.civitOnSurfaceVariant)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.md)
+        .background(Color.civitSurfaceContainer)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.card))
+    }
+
+    /// Formats a lowercase hex SHA-256 digest the way `openssl x509 -noout -fingerprint -sha256`
+    /// prints it (colon-separated uppercase byte pairs), so the user can compare the two directly.
+    static func format(_ sha256Hex: String) -> String {
+        let hex = Array(sha256Hex.uppercased())
+        return stride(from: 0, to: hex.count, by: 2)
+            .map { String(hex[$0..<min($0 + 2, hex.count)]) }
+            .joined(separator: ":")
     }
 }
 
