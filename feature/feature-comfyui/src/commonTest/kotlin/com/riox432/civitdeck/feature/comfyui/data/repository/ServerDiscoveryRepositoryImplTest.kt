@@ -6,6 +6,7 @@ import io.ktor.client.engine.mock.respondError
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -56,6 +57,7 @@ class ServerDiscoveryRepositoryImplTest {
         assertTrue(emissions.single().isEmpty())
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun scanForServers_completes_in_bounded_time_when_all_other_hosts_hang() = runTest {
         // The engine runs on the test scheduler so probe timeouts elapse in virtual time.
