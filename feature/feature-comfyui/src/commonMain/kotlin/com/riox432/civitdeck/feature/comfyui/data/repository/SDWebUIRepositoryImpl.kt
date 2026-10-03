@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.comfyui.data.repository
 
 import com.riox432.civitdeck.data.api.webui.SDWebUIApi
+import com.riox432.civitdeck.data.api.webui.SDWebUIGenerationResponse
 import com.riox432.civitdeck.data.api.webui.SDWebUIImg2ImgRequest
 import com.riox432.civitdeck.data.api.webui.SDWebUITxt2ImgRequest
 import com.riox432.civitdeck.data.local.currentTimeMillis
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.map
 
 private const val TAG = "SDWebUIRepositoryImpl"
 private const val PROGRESS_POLL_MS = 500L
+private const val SD_MODEL_CHECKPOINT_OPTION = "sd_model_checkpoint"
 
 class SDWebUIRepositoryImpl(
     private val dao: SDWebUIConnectionDao,
@@ -131,8 +133,15 @@ class SDWebUIRepositoryImpl(
         }
     }
 
-    private suspend fun callGenerationApi(params: SDWebUIGenerationParams) =
-        if (params.isImg2Img) {
+    // override_settings_restore_afterwards is left at A1111's default (true), so the
+    // server's saved checkpoint option is restored after each request.
+    private suspend fun callGenerationApi(params: SDWebUIGenerationParams): SDWebUIGenerationResponse {
+        val overrideSettings = if (params.checkpoint.isBlank()) {
+            emptyMap()
+        } else {
+            mapOf(SD_MODEL_CHECKPOINT_OPTION to params.checkpoint)
+        }
+        return if (params.isImg2Img) {
             api.img2img(
                 SDWebUIImg2ImgRequest(
                     prompt = params.prompt,
@@ -145,6 +154,7 @@ class SDWebUIRepositoryImpl(
                     seed = params.seed,
                     initImages = listOfNotNull(params.initImageBase64),
                     denoisingStrength = params.denoisingStrength,
+                    overrideSettings = overrideSettings,
                 ),
             )
         } else {
@@ -158,9 +168,11 @@ class SDWebUIRepositoryImpl(
                     height = params.height,
                     samplerName = params.samplerName,
                     seed = params.seed,
+                    overrideSettings = overrideSettings,
                 ),
             )
         }
+    }
 
     private suspend fun ensureApiConfigured() {
         val active = dao.getActive()

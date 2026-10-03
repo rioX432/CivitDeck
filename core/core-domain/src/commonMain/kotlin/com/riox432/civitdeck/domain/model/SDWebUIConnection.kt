@@ -35,6 +35,8 @@ data class SDWebUIGenerationParams(
     val seed: Long = -1,
     val initImageBase64: String? = null,
     val denoisingStrength: Double = DEFAULT_DENOISING,
+    /** Checkpoint title from `/sdapi/v1/sd-models`; blank keeps the checkpoint the server has loaded. */
+    val checkpoint: String = "",
 ) {
     val isImg2Img: Boolean get() = initImageBase64 != null
 
