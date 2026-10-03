@@ -26,6 +26,8 @@
 	<string>CivitDeck needs access to save images to your photo library.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>CivitDeck uses the camera to scan QR codes for model sharing.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>CivitDeck connects to your ComfyUI or Stable Diffusion WebUI server on your local network.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
