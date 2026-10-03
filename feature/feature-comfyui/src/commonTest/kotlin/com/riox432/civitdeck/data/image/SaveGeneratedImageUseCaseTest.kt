@@ -17,7 +17,8 @@ import kotlin.test.assertTrue
 
 /**
  * Verifies [SaveGeneratedImageUseCase] downloads bytes and forwards them to [ImageSaver],
- * returning the saver's result, and returns false (without throwing) when the download fails.
+ * returning the saver's result, and returns false (without throwing) when the download fails
+ * or answers with a non-2xx status.
  */
 class SaveGeneratedImageUseCaseTest {
 
@@ -83,6 +84,18 @@ class SaveGeneratedImageUseCaseTest {
         val success = useCase(url = "https://example.com/img.png")
 
         assertFalse(success)
+    }
+
+    @Test
+    fun returnsFalseWithoutSaving_whenResponseIsNotSuccessful() = runTest {
+        val client = HttpClient(MockEngine { respond(ByteReadChannel(byteArrayOf(1)), HttpStatusCode.NotFound) })
+        val saver = RecordingImageSaver()
+        val useCase = SaveGeneratedImageUseCase(provider(client), saver)
+
+        val success = useCase(url = "https://example.com/view?filename=gone.png&type=output")
+
+        assertFalse(success)
+        assertEquals(null, saver.lastBytes)
     }
 
     @Test
