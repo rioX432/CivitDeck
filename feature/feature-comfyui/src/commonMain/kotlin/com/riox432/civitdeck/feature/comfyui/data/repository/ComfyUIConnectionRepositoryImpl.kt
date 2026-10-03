@@ -36,9 +36,23 @@ class ComfyUIConnectionRepositoryImpl(
             }
             id
         } else {
-            dao.update(entity)
+            val stored = dao.getById(connection.id)
+            dao.update(entity.copy(tlsCertSha256 = pinForUpdate(stored, connection)))
             connection.id
         }
+    }
+
+    /**
+     * A pin identifies one endpoint: editing hostname, port or scheme drops it, even when the
+     * caller copied the old pin along. Callers that do not know the pin (settings edits pass
+     * null) keep the stored one; a new pin for the same endpoint replaces it.
+     */
+    private fun pinForUpdate(stored: ComfyUIConnectionEntity?, incoming: ComfyUIConnection): String? {
+        if (stored == null) return incoming.tlsCertSha256
+        val sameEndpoint = stored.hostname == incoming.hostname &&
+            stored.port == incoming.port &&
+            stored.useHttps == incoming.useHttps
+        return if (sameEndpoint) incoming.tlsCertSha256 ?: stored.tlsCertSha256 else null
     }
 
     override suspend fun deleteConnection(id: Long) { dao.deleteById(id) }
@@ -75,6 +89,7 @@ class ComfyUIConnectionRepositoryImpl(
         acceptSelfSigned = acceptSelfSigned,
         ntfyServerUrl = ntfyServerUrl,
         ntfyTopic = ntfyTopic,
+        tlsCertSha256 = tlsCertSha256,
     )
 
     private fun ComfyUIConnection.toEntity() = ComfyUIConnectionEntity(
@@ -90,5 +105,6 @@ class ComfyUIConnectionRepositoryImpl(
         acceptSelfSigned = acceptSelfSigned,
         ntfyServerUrl = ntfyServerUrl,
         ntfyTopic = ntfyTopic,
+        tlsCertSha256 = tlsCertSha256,
     )
 }
