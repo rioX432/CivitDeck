@@ -63,9 +63,9 @@ internal class SearchPageLoader(
         val watermarkKey = sortKey.takeIf { filter.selectedSort == SortOrder.MostDownloaded }
         val pageWatermark = sortWatermark
 
-        repeat(MAX_FETCH_ITERATIONS) {
-            if (accumulated.size >= limit) return@repeat
-
+        var fetches = 0
+        while (fetches < MAX_FETCH_ITERATIONS && accumulated.size < limit) {
+            fetches++
             val remaining = limit - accumulated.size
             val result = getModelsUseCase(
                 query = filter.query.ifBlank { null },
@@ -89,7 +89,7 @@ internal class SearchPageLoader(
                 }
             }
             nextCursor = result.metadata.nextCursor
-            if (nextCursor == null || nextCursor == currentCursor) return@repeat
+            if (nextCursor == null || nextCursor == currentCursor) break
             currentCursor = nextCursor
         }
 
