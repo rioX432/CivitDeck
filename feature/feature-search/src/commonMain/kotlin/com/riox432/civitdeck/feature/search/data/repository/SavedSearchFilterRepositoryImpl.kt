@@ -35,13 +35,12 @@ class SavedSearchFilterRepositoryImpl(
             .getOrElse { SortOrder.MostDownloaded },
         selectedPeriod = runCatching { TimePeriod.valueOf(selectedPeriod) }
             .getOrElse { TimePeriod.AllTime },
-        selectedBaseModels = if (selectedBaseModels.isBlank()) {
-            emptySet()
-        } else {
-            selectedBaseModels.split(",").mapNotNull { apiValue ->
-                BaseModel.entries.find { it.apiValue == apiValue }
-            }.toSet()
-        },
+        // Every stored value is kept, including ones outside BaseModel.DEFAULT_OPTIONS: dropping
+        // them would silently widen the saved filter to "any base model".
+        selectedBaseModels = selectedBaseModels.split(",")
+            .filter { it.isNotBlank() }
+            .map(::BaseModel)
+            .toSet(),
         nsfwFilterLevel = runCatching { NsfwFilterLevel.valueOf(nsfwFilterLevel) }
             .getOrElse { NsfwFilterLevel.Off },
         isFreshFindEnabled = isFreshFindEnabled != 0,

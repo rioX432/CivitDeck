@@ -344,7 +344,7 @@ private fun BaseModelFilterSection(
             horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
             verticalArrangement = Arrangement.spacedBy(Spacing.sm),
         ) {
-            BaseModel.entries.forEach { baseModel ->
+            BaseModel.filterOptions(selectedBaseModels).forEach { baseModel ->
                 FilterChipItem(
                     label = baseModel.displayName,
                     isSelected = baseModel in selectedBaseModels,
