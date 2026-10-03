@@ -72,6 +72,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- A saved search filter keeps every stored base model value, including values outside the built-in 7 (e.g. `Krea 2`), instead of dropping them and silently widening to any base model; `BaseModel` is now a `data class` over the CivitAI API string, Android and iOS show a kept value as an extra selected chip that can be deselected, and chip labels are the API strings (`SDXL 1.0` instead of `SDXL`) (#1257)
 - ComfyUI prefill with a checkpoint now switches the shared generation form back to that checkpoint when a diffusion model was selected, instead of keeping generating from the diffusion model (#1150)
 - iOS: the "Images" navigation shortcut tab shows the CivitAI community image gallery instead of a blank screen (#1092)
 - iOS Model Update Alerts: the background model-update check can now be scheduled and run (the app declares the Background fetch mode), and it skips the CivitAI request when Model Update Alerts are off or the check interval is Off (#1091)
