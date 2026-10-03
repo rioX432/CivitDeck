@@ -90,6 +90,11 @@ android {
 
     buildTypes {
         debug {
+            // Debug builds are signed with the local debug key, so they need their own package to
+            // install beside the release-signed GitHub Releases build (#999).
+            // No versionNameSuffix: UpdateRepositoryImpl.compareVersions reads "2.4.1-debug" as
+            // 2.4.0 and would offer the 2.4.1 release as an update.
+            applicationIdSuffix = ".debug"
             // E2E QA seam (issue #990): when -Pcivitdeck.e2eBaseUrl is passed, point the debug
             // build's CivitAI URLs at the local fixture server so the discovery flow is
             // deterministic under Maestro. Gated on the property, and only on debug, so a plain
