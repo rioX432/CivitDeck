@@ -50,6 +50,34 @@ class ComfyUIBridgeUseCasesTest {
         assertTrue(error.message!!.contains("no nodes"))
     }
 
+    @Test
+    fun importWorkflow_throwsWithApiExportHint_forUiFormatWorkflow() {
+        val json = """
+            {
+                "last_node_id": 9,
+                "nodes": [{"id": 3, "type": "KSampler", "widgets_values": [42, "fixed", 20]}],
+                "links": [[1, 4, 0, 3, 0, "MODEL"]],
+                "version": 0.4
+            }
+        """.trimIndent()
+
+        val error = assertFailsWith<IllegalStateException> { ImportWorkflowUseCase()(json) }
+
+        assertTrue(error.message!!.contains("Export Workflow (API)"))
+    }
+
+    @Test
+    fun importWorkflow_acceptsAppModeWorkflow_withTopLevelExtraBlock() {
+        val json = """
+            {
+                "6": {"class_type": "CLIPTextEncode", "inputs": {"text": "a photo"}},
+                "extra": {"linearData": {"inputs": [["6", "text"]], "outputs": []}, "linearMode": true}
+            }
+        """.trimIndent()
+
+        assertEquals(json, ImportWorkflowUseCase()(json))
+    }
+
     // endregion
 
     // region FindMatchingLocalModelUseCase
