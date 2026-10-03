@@ -5,6 +5,7 @@ import com.riox432.civitdeck.data.api.comfyui.HistoryEntry
 import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationMeta
+import com.riox432.civitdeck.domain.model.ComfyUIHistoryPage
 import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.repository.ComfyUIHistoryRepository
 import kotlinx.coroutines.flow.Flow
@@ -20,13 +21,13 @@ class ComfyUIHistoryRepositoryImpl(
     private val api: ComfyUIApi,
 ) : ComfyUIHistoryRepository {
 
-    override fun fetchHistory(): Flow<List<ComfyUIGeneratedImage>> = flow {
+    override fun fetchHistory(maxItems: Int): Flow<ComfyUIHistoryPage> = flow {
         ensureApiConfigured()
-        val historyMap = api.getRecentHistory(HISTORY_PAGE_SIZE)
+        val historyMap = api.getRecentHistory(maxItems)
         val images = historyMap.flatMap { (promptId, entry) ->
             entry.toGeneratedImages(promptId)
         }
-        emit(images)
+        emit(ComfyUIHistoryPage(images = images, hasMore = historyMap.size >= maxItems))
     }
 
     override fun fetchHistoryItem(promptId: String): Flow<List<ComfyUIGeneratedImage>> = flow {
@@ -117,10 +118,5 @@ class ComfyUIHistoryRepositoryImpl(
             ?: throw DomainException.ConnectionException("No active ComfyUI connection")
         val scheme = if (active.useHttps) "https" else "http"
         api.setBaseUrl("$scheme://${active.hostname}:${active.port}")
-    }
-
-    private companion object {
-        /** Same page size as ComfyUI's own frontend uses for its history list. */
-        const val HISTORY_PAGE_SIZE = 200
     }
 }

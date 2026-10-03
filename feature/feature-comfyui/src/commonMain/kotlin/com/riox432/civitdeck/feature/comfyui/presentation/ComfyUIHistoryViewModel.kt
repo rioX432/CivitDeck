@@ -76,9 +76,9 @@ class ComfyUIHistoryViewModel(
                 .catch { e ->
                     _uiState.update { it.copy(isLoading = false, error = e.message ?: e.toString()) }
                 }
-                .collect { images ->
+                .collect { page ->
                     _uiState.update {
-                        it.copy(isLoading = false, images = images)
+                        it.copy(isLoading = false, images = page.images)
                     }
                 }
         }

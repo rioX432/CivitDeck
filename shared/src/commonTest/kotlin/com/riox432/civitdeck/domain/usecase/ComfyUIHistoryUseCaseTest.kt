@@ -5,6 +5,7 @@ import com.riox432.civitdeck.data.api.comfyui.HistoryEntry
 import com.riox432.civitdeck.data.api.comfyui.HistoryNodeOutput
 import com.riox432.civitdeck.data.api.comfyui.HistoryStatus
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
+import com.riox432.civitdeck.domain.model.ComfyUIHistoryPage
 import com.riox432.civitdeck.domain.repository.ComfyUIHistoryRepository
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryItemUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
@@ -50,7 +51,13 @@ class ComfyUIHistoryUseCaseTest {
         private val allImages: List<ComfyUIGeneratedImage>,
         private val itemImages: List<ComfyUIGeneratedImage>,
     ) : ComfyUIHistoryRepository {
-        override fun fetchHistory(): Flow<List<ComfyUIGeneratedImage>> = flowOf(allImages)
+        var requestedMaxItems: Int? = null
+
+        override fun fetchHistory(maxItems: Int): Flow<ComfyUIHistoryPage> {
+            requestedMaxItems = maxItems
+            return flowOf(ComfyUIHistoryPage(images = allImages, hasMore = false))
+        }
+
         override fun fetchHistoryItem(promptId: String): Flow<List<ComfyUIGeneratedImage>> =
             flowOf(itemImages)
     }
@@ -60,7 +67,7 @@ class ComfyUIHistoryUseCaseTest {
         val repo = FakeComfyUIHistoryRepository(allImages = fakeImages, itemImages = emptyList())
         val useCase = FetchComfyUIHistoryUseCase(repo)
 
-        val result = useCase().first()
+        val result = useCase().first().images
 
         assertEquals(1, result.size)
         assertEquals(testPromptId, result[0].promptId)
@@ -69,11 +76,20 @@ class ComfyUIHistoryUseCaseTest {
     }
 
     @Test
+    fun fetchHistory_requests_default_page_size() = runTest {
+        val repo = FakeComfyUIHistoryRepository(allImages = fakeImages, itemImages = emptyList())
+
+        FetchComfyUIHistoryUseCase(repo)().first()
+
+        assertEquals(FetchComfyUIHistoryUseCase.HISTORY_PAGE_SIZE, repo.requestedMaxItems)
+    }
+
+    @Test
     fun fetchHistory_emits_empty_when_no_history() = runTest {
         val repo = FakeComfyUIHistoryRepository(allImages = emptyList(), itemImages = emptyList())
         val useCase = FetchComfyUIHistoryUseCase(repo)
 
-        val result = useCase().first()
+        val result = useCase().first().images
 
         assertTrue(result.isEmpty())
     }
@@ -104,7 +120,7 @@ class ComfyUIHistoryUseCaseTest {
         val repo = FakeComfyUIHistoryRepository(allImages = fakeImages, itemImages = emptyList())
         val useCase = FetchComfyUIHistoryUseCase(repo)
 
-        val images = useCase().first()
+        val images = useCase().first().images
         val meta = images.first().meta
 
         assertEquals("a cat", meta.positivePrompt)
