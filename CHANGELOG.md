@@ -22,6 +22,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - SigLIP-2 semantic search relabeled as **Android-only, experimental, off by default** and kept off the default retrieval path (keyword/tag stays primary); iOS/Desktop have no working encoder (#989, #996)
 - "Send to PC" (CV2) demoted to show only with a compatible connection; detail-screen Share/QR moved into an overflow menu; Analytics/Backup/Compare/Dataset/Hardware peripherals moved off the discovery-primary surface (kept, reversible) (#991, #1000)
 - Docs & positioning — README now leads with the single discovery promise, the ViewModel count is unified to the measured 42, and ROADMAP is reframed as a forward-looking compass (#992, #1001)
+- ComfyUI Outputs list requests only the newest 200 history entries (`GET /history?max_items=200`, the same page size as ComfyUI's own frontend) instead of the server's entire history; older outputs are not reachable until history paging lands (#1051)
 
 ### Removed
 
