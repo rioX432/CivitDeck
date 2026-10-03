@@ -26,7 +26,8 @@ import kotlin.test.assertTrue
 /**
  * Covers [ComfyUIConnectionTesterImpl]: only a 2xx `/queue` response with ComfyUI's queue shape
  * counts as connected; other servers answering on the port must not. A loopback host that gets no
- * HTTP response is reported as [ConnectionFailureCause.LoopbackHost].
+ * HTTP response is reported as [ConnectionFailureCause.LoopbackHost], and Darwin's -1009 against a
+ * LAN host as [ConnectionFailureCause.LocalNetworkDenied].
  */
 class ComfyUIConnectionTesterImplTest {
 
@@ -155,6 +156,55 @@ class ComfyUIConnectionTesterImplTest {
     }
 
     @Test
+    fun test_returns_local_network_denied_for_darwin_not_connected_on_lan_hosts() = runTest {
+        for (host in listOf("192.168.1.5", "10.0.0.9", "172.20.0.2", "studio.local", "169.254.10.20")) {
+            val result = throwingTester(darwinNotConnectedError()).test(connectionTo(host))
+
+            assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.LocalNetworkDenied), result, host)
+        }
+    }
+
+    @Test
+    fun test_returns_unreachable_for_darwin_not_connected_on_non_lan_hosts() = runTest {
+        val hosts = listOf("100.101.102.103", "pc.tailnet.ts.net", "172.32.0.2", "172.15.0.2", "example.com", "8.8.8.8")
+        for (host in hosts) {
+            val result = throwingTester(darwinNotConnectedError()).test(connectionTo(host))
+
+            assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.Unreachable), result, host)
+        }
+    }
+
+    @Test
+    fun test_returns_local_network_denied_for_darwin_not_connected_in_cause() = runTest {
+        val error = IllegalStateException("Request failed", darwinNotConnectedError())
+
+        val result = throwingTester(error).test(lanConnection)
+
+        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.LocalNetworkDenied), result)
+    }
+
+    // On iOS the TLS classifier matches keywords anywhere in the message, including the failing URL.
+    @Test
+    fun test_returns_local_network_denied_when_the_failing_url_contains_a_tls_keyword() = runTest {
+        val error = IOException(
+            "Exception in http request: Error Domain=NSURLErrorDomain Code=-1009 " +
+                "\"The Internet connection appears to be offline.\" " +
+                "UserInfo={NSErrorFailingURLStringKey=http://trust-nas.local:8188/queue}",
+        )
+
+        val result = throwingTester(error).test(connectionTo("trust-nas.local"))
+
+        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.LocalNetworkDenied), result)
+    }
+
+    @Test
+    fun test_returns_loopback_host_for_darwin_not_connected_on_loopback_host() = runTest {
+        val result = throwingTester(darwinNotConnectedError()).test(loopbackConnection)
+
+        assertEquals(ConnectionTestResult.Failure(ConnectionFailureCause.LoopbackHost), result)
+    }
+
+    @Test
     fun test_returns_unreachable_for_dns_failure() = runTest {
         val result = throwingTester(IOException("Unable to resolve host")).test(lanConnection)
 
@@ -246,6 +296,11 @@ class ComfyUIConnectionTesterImplTest {
         assertFalse(isPinRejection(expected = PIN, presented = null))
         assertFalse(isPinRejection(expected = PIN, presented = PIN))
     }
+
+    private fun darwinNotConnectedError() = IOException(
+        "Exception in http request: Error Domain=NSURLErrorDomain Code=-1009 " +
+            "\"The Internet connection appears to be offline.\"",
+    )
 
     private companion object {
         const val QUEUE_BODY = """{"queue_running":[],"queue_pending":[]}"""

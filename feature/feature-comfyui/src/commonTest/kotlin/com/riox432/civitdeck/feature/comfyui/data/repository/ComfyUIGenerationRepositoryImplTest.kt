@@ -266,9 +266,16 @@ class ComfyUIGenerationRepositoryImplTest {
 
     @Test
     fun fetchControlNets_returns_empty_on_unparseable_response() = runTest {
-        // getControlNets swallows parse errors and returns an empty list rather than throwing.
-        val r = repo { respondError(HttpStatusCode.InternalServerError) }
+        // getControlNets swallows parse errors of a 200 body and returns an empty list rather than throwing.
+        val r = repo { okJson("not json") }
 
         assertEquals(emptyList(), r.fetchControlNets())
+    }
+
+    @Test
+    fun fetchControlNets_throws_on_server_error() = runTest {
+        val r = repo { respondError(HttpStatusCode.InternalServerError) }
+
+        assertFailsWith<ResponseException> { r.fetchControlNets() }
     }
 }
