@@ -41,12 +41,14 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - iOS ComfyHub browser and workflow detail screens now show their data — both defined `observeUiState()` on their owner but never called it, so the shared ViewModel state (workflows, loading, errors, import/save results) never reached the view (#1029 follow-up)
 - ComfyUI checkpoint picker loads on current ComfyUI servers — the checkpoint names are read from the first element of `ckpt_name` and the appended `{"tooltip": ...}` object is ignored, instead of failing to decode and leaving the built-in generation form without checkpoints (#1023)
 - Creator profile now sends the NSFW filter setting with its `/models` requests and filters card images to the chosen level, so users with Soft/All see a creator's NSFW models and Off no longer gets blank cards (#1072)
+- Tagged releases publish the Android APK again — the release workflow builds the signed `githubFull` flavor and copies it from its flavored output path, which the product-flavor split (#986) had broken (#1002)
 - ComfyUI generation with the default seed no longer fails — a negative seed (the app's -1 "random" sentinel) is resolved to a random non-negative value right before submission, for both the built-in workflow and imported workflows (#1024)
 
 ### Infrastructure
 
 - Extracted `core-ml`; network→database→core-data module load order; per-flavor packaging exclusions and manifest permissions (#986, #993)
 - Synced ai-dev-template common + KMP layer files (#980)
+- CI runs the `core-ml` unit tests; the Maestro smoke-test template builds and installs the `githubFull` debug APK from the `androidApp` module (#1002)
 
 ## [2.4.0] - 2026-07-11
 

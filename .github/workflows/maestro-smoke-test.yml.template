@@ -29,8 +29,12 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Build Debug APK
-        run: ./gradlew :androidApp:assembleDebug
+      # Build the debug APK with the E2E base URL pointing at the local fixture server
+      # (10.0.2.2 = host loopback from the emulator). Start a static server that serves the
+      # recorded fixtures under /api/v1/... on :8080 before running the flows.
+      # The -Pcivitdeck.e2eBaseUrl override only applies to debug — release always hits civitai.com.
+      - name: Build E2E Debug APK
+        run: ./gradlew :androidApp:assembleGithubFullDebug -Pcivitdeck.e2eBaseUrl=http://10.0.2.2:8080
 
       - name: Enable KVM
         run: |
@@ -52,7 +56,7 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           script: |
-            adb install app/build/outputs/apk/debug/app-debug.apk
+            adb install androidApp/build/outputs/apk/githubFull/debug/androidApp-githubFull-debug.apk
             $HOME/.maestro/bin/maestro test .maestro/
 
       - name: Upload Maestro Artifacts
