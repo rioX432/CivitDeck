@@ -605,6 +605,182 @@
           }
         }
       }
+    },
+    "action_clear" : {
+      "comment" : "Generic button that clears a selection",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear"
+          }
+        }
+      }
+    },
+    "action_done" : {
+      "comment" : "Generic button that confirms and closes a sheet",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "search_base_model_title" : {
+      "comment" : "Label of the base model row in the search filter sheet",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base model"
+          }
+        }
+      }
+    },
+    "search_base_model_any" : {
+      "comment" : "Shown in the base model filter row when no base model is selected",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any"
+          }
+        }
+      }
+    },
+    "search_base_model_choose" : {
+      "comment" : "Button that opens the base model picker when nothing is selected",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose base models"
+          }
+        }
+      }
+    },
+    "search_base_model_choose_count %lld" : {
+      "comment" : "Button that opens the base model picker; the argument is how many base models are selected",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose base models (%lld)"
+          }
+        }
+      }
+    },
+    "search_base_model_remove_a11y %@" : {
+      "comment" : "Accessibility label of a selected base model chip that removes it; the argument is the base model name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove %@"
+          }
+        }
+      }
+    },
+    "search_base_model_marker_retired" : {
+      "comment" : "Marker next to a base model that CivitAI no longer offers for new uploads",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "retired"
+          }
+        }
+      }
+    },
+    "search_base_model_marker_unknown" : {
+      "comment" : "Marker next to a selected base model that is not in CivitAI's base model list",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "unknown"
+          }
+        }
+      }
+    },
+    "base_model_picker_title" : {
+      "comment" : "Title of the sheet for choosing base models",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base models"
+          }
+        }
+      }
+    },
+    "base_model_picker_search_prompt" : {
+      "comment" : "Placeholder of the search field in the base model picker",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search base models"
+          }
+        }
+      }
+    },
+    "base_model_picker_section_selected" : {
+      "comment" : "Base model picker section listing the chosen base models",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected"
+          }
+        }
+      }
+    },
+    "base_model_picker_section_current" : {
+      "comment" : "Base model picker section listing base models CivitAI currently offers",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current"
+          }
+        }
+      }
+    },
+    "base_model_picker_section_older" : {
+      "comment" : "Collapsible base model picker section listing base models CivitAI no longer offers for new uploads",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Older"
+          }
+        }
+      }
+    },
+    "base_model_picker_loading" : {
+      "comment" : "Shown in the base model picker while the base model list loads",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading base models…"
+          }
+        }
+      }
+    },
+    "base_model_picker_no_results" : {
+      "comment" : "Shown in the base model picker when no base model matches the search",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No matching base models"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -14,6 +14,7 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var query: String = ""
     @Published var selectedType: ModelType?
     @Published var selectedBaseModels: Set<BaseModel> = []
+    @Published var baseModelCatalog: Core_domainBaseModelCatalog?
     @Published var nsfwFilterLevel: NsfwFilterLevel = .off
     @Published var selectedSort: CivitSortOrder = .mostDownloaded
     @Published var selectedPeriod: TimePeriod = .allTime
@@ -61,6 +62,7 @@ final class ModelSearchViewModel: ObservableObject {
             query = state.query
             selectedType = state.selectedType
             selectedBaseModels = Set(state.selectedBaseModels.compactMap { $0 as? BaseModel })
+            baseModelCatalog = state.baseModelCatalog
             nsfwFilterLevel = state.nsfwFilterLevel
             selectedSort = state.selectedSort
             selectedPeriod = state.selectedPeriod
@@ -147,8 +149,10 @@ final class ModelSearchViewModel: ObservableObject {
         vm.onTypeSelected(type: type)
     }
 
-    func onBaseModelToggled(_ baseModel: BaseModel) {
-        vm.onBaseModelToggled(baseModel: baseModel)
+    func onBaseModelsApplied(_ baseModels: Set<BaseModel>) {
+        // Set first so the filter row shows the new chips before the KMP state round-trips.
+        selectedBaseModels = baseModels
+        vm.onBaseModelsApplied(baseModels: baseModels)
     }
 
     func onSortSelected(_ sort: CivitSortOrder) {
