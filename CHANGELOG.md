@@ -53,6 +53,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- Android and Desktop browse cards (Discover grid, swipe cards, recommendation rows, creator page) show a still frame for models whose latest version has only CivitAI-hosted video previews, instead of an empty thumbnail; a resized thumbnail URL now sets its width inside an existing comma-separated CDN transform instead of adding a second segment, which made the CDN return the video (#1075)
 - Android and Desktop show a plain-HTTP ComfyUI connection to a Tailscale address (`100.64.0.0/10` or a `*.ts.net` MagicDNS name) as LAN instead of "HTTP over internet", since tailnet traffic is WireGuard-encrypted (#1066)
 - iOS ComfyUI connection test reports a self-signed server's certificate as not confirmed yet or changed, with its fingerprint, instead of "unreachable": the pinned client's rejection surfaces on iOS as a cancelled request, so the test now also treats a presented certificate that differs from the pin as a certificate failure (#1203)
 - iOS no longer crashes when opening the Create tab — the shared logger passed a Kotlin string to `NSLog` as a `%@` argument, which faulted with `EXC_BAD_ACCESS`; it now logs the whole line as the format with `%` escaped (#1204)
