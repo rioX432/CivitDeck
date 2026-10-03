@@ -28,6 +28,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExtractWorkflowParam
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchDiffusionModelResourcesUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchObjectInfoUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InjectWorkflowParametersUseCase
@@ -62,8 +63,8 @@ import kotlin.test.assertNull
 
 /**
  * Covers [ComfyUIGenerationViewModel.applyPrefill], including the race between a requested
- * checkpoint and the server checkpoint list loaded from `init`, and
- * [ComfyUIGenerationViewModel.onTemplateApplied].
+ * checkpoint and the server checkpoint list loaded from `init`,
+ * [ComfyUIGenerationViewModel.onTemplateApplied], and the split-loader lists loaded from `init`.
  *
  * Lives in jvmTest because the loader logs through `Logger`, which needs `android.util.Log`
  * unmocked on the Android host target.
@@ -78,11 +79,12 @@ class ComfyUIGenerationViewModelTest {
 
     private class FakeGenerationRepo(
         private val checkpoints: CompletableDeferred<List<String>>,
+        private val diffusionModelResources: () -> DiffusionModelResources,
     ) : ComfyUIGenerationRepository {
         override suspend fun fetchCheckpoints(): List<String> = checkpoints.await()
         override suspend fun fetchLoras(): List<String> = emptyList()
         override suspend fun fetchControlNets(): List<String> = emptyList()
-        override suspend fun fetchDiffusionModelResources(): DiffusionModelResources = DiffusionModelResources()
+        override suspend fun fetchDiffusionModelResources(): DiffusionModelResources = diffusionModelResources()
         override suspend fun submitGeneration(params: ComfyUIGenerationParams): String = ""
         override suspend fun pollGenerationResult(promptId: String): GenerationResult =
             error("not used")
@@ -140,9 +142,10 @@ class ComfyUIGenerationViewModelTest {
 
     private fun TestScope.createViewModel(
         checkpoints: CompletableDeferred<List<String>>,
+        diffusionModelResources: () -> DiffusionModelResources = { DiffusionModelResources() },
     ): ComfyUIGenerationViewModel {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
-        val repo = FakeGenerationRepo(checkpoints)
+        val repo = FakeGenerationRepo(checkpoints, diffusionModelResources)
         val httpClient = HttpClient(MockEngine { respondError(HttpStatusCode.NotFound) })
         return ComfyUIGenerationViewModel(
             executionUseCases = GenerationExecutionUseCases(
@@ -168,6 +171,7 @@ class ComfyUIGenerationViewModelTest {
                 fetchCheckpoints = FetchComfyUICheckpointsUseCase(repo),
                 fetchLoras = FetchComfyUILorasUseCase(repo),
                 fetchControlNets = FetchComfyUIControlNetsUseCase(repo),
+                fetchDiffusionModelResources = FetchDiffusionModelResourcesUseCase(repo),
                 fetchObjectInfo = FetchObjectInfoUseCase(repo, LocalCacheDataSource(NoCacheDao())),
                 extractParameters = ExtractWorkflowParametersUseCase(ParseAppModeMetadataUseCase()),
             ),
@@ -283,6 +287,47 @@ class ComfyUIGenerationViewModelTest {
 
         assertEquals("euler", vm.uiState.value.samplerName)
         assertEquals("normal", vm.uiState.value.scheduler)
+    }
+
+    @Test
+    fun diffusion_model_lists_load_into_state() = runTest {
+        val vm = createViewModel(
+            loaded("SD15/bar.safetensors", "SDXL/foo.safetensors"),
+            diffusionModelResources = {
+                DiffusionModelResources(
+                    diffusionModels = listOf("flux1-dev.safetensors"),
+                    textEncoders = listOf("t5xxl_fp16.safetensors", "clip_l.safetensors"),
+                    vaes = listOf("ae.safetensors"),
+                    clipTypes = listOf("stable_diffusion", "flux"),
+                )
+            },
+        )
+        advanceUntilIdle()
+
+        val state = vm.uiState.value
+        assertEquals(listOf("flux1-dev.safetensors"), state.diffusionModels)
+        assertEquals(listOf("t5xxl_fp16.safetensors", "clip_l.safetensors"), state.textEncoders)
+        assertEquals(listOf("ae.safetensors"), state.vaes)
+        assertEquals(listOf("stable_diffusion", "flux"), state.serverClipTypes)
+        assertEquals("SD15/bar.safetensors", state.selectedCheckpoint)
+    }
+
+    @Test
+    fun failing_diffusion_model_fetch_leaves_lists_empty_without_error() = runTest {
+        val vm = createViewModel(
+            loaded("SD15/bar.safetensors", "SDXL/foo.safetensors"),
+            diffusionModelResources = { error("server unreachable") },
+        )
+        advanceUntilIdle()
+
+        val state = vm.uiState.value
+        assertEquals(emptyList(), state.diffusionModels)
+        assertEquals(emptyList(), state.textEncoders)
+        assertEquals(emptyList(), state.vaes)
+        assertEquals(emptyList(), state.serverClipTypes)
+        assertNull(state.error)
+        assertEquals(listOf("SD15/bar.safetensors", "SDXL/foo.safetensors"), state.checkpoints)
+        assertEquals("SD15/bar.safetensors", state.selectedCheckpoint)
     }
 
     private fun template(

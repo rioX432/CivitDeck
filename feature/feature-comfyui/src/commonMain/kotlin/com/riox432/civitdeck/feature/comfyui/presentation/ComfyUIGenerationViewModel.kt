@@ -38,6 +38,11 @@ data class GenerationUiState(
     val controlNetEnabled: Boolean = false,
     val selectedControlNet: String = "",
     val controlNetStrength: Float = 1.0f,
+    // Split-loader model files (UNETLoader / CLIPLoader / VAELoader)
+    val diffusionModels: List<String> = emptyList(),
+    val textEncoders: List<String> = emptyList(),
+    val vaes: List<String> = emptyList(),
+    val serverClipTypes: List<String> = emptyList(),
     // Custom workflow
     val customWorkflowJson: String? = null,
     val workflowImportError: String? = null,
@@ -91,6 +96,7 @@ class ComfyUIGenerationViewModel(
         resourceLoader.loadCheckpoints()
         resourceLoader.loadLoras()
         resourceLoader.loadControlNets()
+        resourceLoader.loadDiffusionModelResources()
     }
 
     fun onCheckpointSelected(checkpoint: String) {

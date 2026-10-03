@@ -44,6 +44,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlN
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryItemUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIHistoryUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchDiffusionModelResourcesUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchObjectInfoUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUIModelsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchSDWebUISamplersUseCase
@@ -144,6 +145,7 @@ val comfyuiModule = module {
     factory { FetchComfyUICheckpointsUseCase(get()) }
     factory { FetchComfyUILorasUseCase(get()) }
     factory { FetchComfyUIControlNetsUseCase(get()) }
+    factory { FetchDiffusionModelResourcesUseCase(get()) }
     factory { ImportWorkflowUseCase() }
     factory { ParseAppModeMetadataUseCase() }
     factory { ExtractWorkflowParametersUseCase(get()) }
@@ -219,6 +221,7 @@ val comfyuiModule = module {
             fetchCheckpoints = get(),
             fetchLoras = get(),
             fetchControlNets = get(),
+            fetchDiffusionModelResources = get(),
             fetchObjectInfo = get(),
             extractParameters = get(),
         )

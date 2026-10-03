@@ -11,19 +11,21 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExtractWorkflowParam
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchDiffusionModelResourcesUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchObjectInfoUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 
 /**
- * Server resource loading: checkpoints, LoRAs, ControlNets, object info, and dynamic
- * workflow parameter extraction. Consumed by [GenerationResourceLoader].
+ * Server resource loading: checkpoints, LoRAs, ControlNets, split-loader model files, object
+ * info, and dynamic workflow parameter extraction. Consumed by [GenerationResourceLoader].
  */
 data class GenerationResourceUseCases(
     val fetchCheckpoints: FetchComfyUICheckpointsUseCase,
     val fetchLoras: FetchComfyUILorasUseCase,
     val fetchControlNets: FetchComfyUIControlNetsUseCase,
+    val fetchDiffusionModelResources: FetchDiffusionModelResourcesUseCase,
     val fetchObjectInfo: FetchObjectInfoUseCase,
     val extractParameters: ExtractWorkflowParametersUseCase,
 )
