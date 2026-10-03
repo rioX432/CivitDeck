@@ -60,7 +60,7 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun getQueue(): QueueResponse =
-        logAndRethrow("getQueue") { client.get("${_baseUrl.value}/queue").body() }
+        logAndRethrow("getQueue") { client.get("${_baseUrl.value}/queue").requireSuccess().body() }
 
     /**
      * Connection probe: GET /queue, reporting the status and whether the body has ComfyUI's
@@ -82,7 +82,7 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun getCheckpoints(): List<String> = logAndRethrow("getCheckpoints") {
-        val text = client.get("${_baseUrl.value}/object_info/CheckpointLoaderSimple").bodyAsText()
+        val text = client.get("${_baseUrl.value}/object_info/CheckpointLoaderSimple").requireSuccess().bodyAsText()
         parseCheckpointNames(text)
     }
 
@@ -94,7 +94,7 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun getLoras(): List<String> = logAndRethrow("getLoras") {
-        val text = client.get("${_baseUrl.value}/object_info/LoraLoader").bodyAsText()
+        val text = client.get("${_baseUrl.value}/object_info/LoraLoader").requireSuccess().bodyAsText()
         parseNodeInputList(text, "LoraLoader", "lora_name")
     }
 
@@ -106,7 +106,7 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun getControlNets(): List<String> = logAndRethrow("getControlNets") {
-        val text = client.get("${_baseUrl.value}/object_info/ControlNetLoader").bodyAsText()
+        val text = client.get("${_baseUrl.value}/object_info/ControlNetLoader").requireSuccess().bodyAsText()
         parseNodeInputList(text, "ControlNetLoader", "control_net_name")
     }
 
@@ -118,7 +118,9 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun getFullObjectInfo(): String =
-        logAndRethrow("getFullObjectInfo") { client.get("${_baseUrl.value}/object_info").bodyAsText() }
+        logAndRethrow("getFullObjectInfo") {
+            client.get("${_baseUrl.value}/object_info").requireSuccess().bodyAsText()
+        }
 
     /**
      * Submit workflow: POST /prompt
@@ -137,13 +139,10 @@ class ComfyUIApi(
             put("prompt", workflow)
             if (clientId != null) put("client_id", clientId)
         }
-        val response = client.post("${_baseUrl.value}/prompt") {
+        client.post("${_baseUrl.value}/prompt") {
             contentType(ContentType.Application.Json)
             setBody(body)
-        }
-        // A rejection body has no prompt_id, so decoding it would hide the server's reason.
-        if (!response.status.isSuccess()) throw responseException(response)
-        response.body()
+        }.requireSuccess().body()
     }
 
     /**
@@ -153,7 +152,7 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun interrupt(): Unit =
-        logAndRethrow("interrupt") { client.post("${_baseUrl.value}/interrupt") }
+        logAndRethrow("interrupt") { client.post("${_baseUrl.value}/interrupt").requireSuccess() }
 
     /**
      * Delete (cancel) queued prompts: POST /queue with {"delete": [...promptIds]}
@@ -173,7 +172,7 @@ class ComfyUIApi(
         client.post("${_baseUrl.value}/queue") {
             contentType(ContentType.Application.Json)
             setBody(body)
-        }
+        }.requireSuccess()
     }
 
     /**
@@ -189,7 +188,7 @@ class ComfyUIApi(
         logAndRethrow("getRecentHistory (maxItems=$maxItems)") {
             val text = client.get("${_baseUrl.value}/history") {
                 parameter("max_items", maxItems)
-            }.bodyAsText()
+            }.requireSuccess().bodyAsText()
             json.decodeFromString(text)
         }
 
@@ -202,7 +201,7 @@ class ComfyUIApi(
      */
     suspend fun getHistory(promptId: String): HistoryEntry? =
         logAndRethrow("getHistory (promptId=$promptId)") {
-            val text = client.get("${_baseUrl.value}/history/$promptId").bodyAsText()
+            val text = client.get("${_baseUrl.value}/history/$promptId").requireSuccess().bodyAsText()
             val root = json.decodeFromString<Map<String, HistoryEntry>>(text)
             root[promptId]
         }
@@ -238,7 +237,7 @@ class ComfyUIApi(
                 append("subfolder", subfolder)
                 append("type", imageType)
             },
-        ).body()
+        ).requireSuccess().body()
     }
 
     /**
@@ -251,7 +250,7 @@ class ComfyUIApi(
      * @throws ConnectTimeoutException on connection timeout
      */
     suspend fun getSystemStats(): SystemStatsResponse =
-        logAndRethrow("getSystemStats") { client.get("${_baseUrl.value}/system_stats").body() }
+        logAndRethrow("getSystemStats") { client.get("${_baseUrl.value}/system_stats").requireSuccess().body() }
 
     /**
      * Build image URL for viewing: GET /view?filename=...&type=output[&subfolder=...]
@@ -291,6 +290,16 @@ class ComfyUIApi(
     private fun logApiError(operation: String, cause: Throwable): Nothing {
         Logger.e(TAG, "$operation failed: ${cause.message}", cause)
         throw cause
+    }
+
+    /**
+     * The client leaves `expectSuccess` off, so an error body would otherwise be decoded as data.
+     * Throwing [ComfyUIResponseException] rather than enabling `expectSuccess` keeps the server's
+     * reason as the message instead of Ktor's dump of the URL and body.
+     */
+    private suspend fun HttpResponse.requireSuccess(): HttpResponse {
+        if (!status.isSuccess()) throw responseException(this)
+        return this
     }
 
     private suspend fun responseException(response: HttpResponse): ComfyUIResponseException {
