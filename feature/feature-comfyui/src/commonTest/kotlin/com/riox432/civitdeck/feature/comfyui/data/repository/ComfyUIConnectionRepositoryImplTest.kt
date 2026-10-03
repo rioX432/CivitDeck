@@ -3,8 +3,10 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
+import io.ktor.client.engine.mock.respond
 import io.ktor.client.engine.mock.respondError
 import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -192,6 +194,18 @@ class ComfyUIConnectionRepositoryImplTest {
     @Test
     fun testConnection_returns_false_when_queue_fails() = runTest {
         val repo = ComfyUIConnectionRepositoryImpl(FakeComfyUIConnectionDao(), api { false })
+
+        val ok = repo.testConnection(ComfyUIConnection(name = "n", hostname = "h"))
+
+        assertFalse(ok)
+    }
+
+    @Test
+    fun testConnection_returns_false_for_401_with_json_body() = runTest {
+        val client = mockClient {
+            respond(ByteReadChannel("""{"error":"unauthorized"}"""), HttpStatusCode.Unauthorized, jsonHeaders)
+        }
+        val repo = ComfyUIConnectionRepositoryImpl(FakeComfyUIConnectionDao(), ComfyUIApi(client, testJson))
 
         val ok = repo.testConnection(ComfyUIConnection(name = "n", hostname = "h"))
 
