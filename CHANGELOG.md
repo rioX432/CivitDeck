@@ -92,6 +92,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - iOS "Try in ComfyUI" now opens the generation sheet with the first visible sample image's prompt, negative prompt, steps, CFG and seed filled in, and selects the model's primary file as the checkpoint for Checkpoint models when the server has it; the prefill applies once per sheet so it never overwrites edits (#1040)
 - ComfyUI onboarding's manual host field accepts a pasted URL such as `http://192.168.1.5:8188/` or `https://pc.tailnet.ts.net` — a scheme or port in the host text overrides the port field and HTTPS toggle (an `http://`/`https://` URL without a port uses 8188/443), instead of building `http://http://…:8188` and failing as unreachable; an unparseable host such as `host:abc` fails immediately without a network call (#1058)
 - Android 13+ asks for the notification permission the first time Generate is tapped on the ComfyUI generation screen (at most once per screen) when generation alerts are on and the permission is not granted, so users on the default settings can receive the completion alert; the generation starts regardless of the answer (#1089)
+- iOS asks for notification permission when "Model Update Alerts" or "Generation Complete Alerts" is turned on in Settings, and the switch turns on only if permission is granted — the app never requested it before, so iOS could not show either alert; turning a switch off needs no permission (#1090)
 
 ### Infrastructure
 
