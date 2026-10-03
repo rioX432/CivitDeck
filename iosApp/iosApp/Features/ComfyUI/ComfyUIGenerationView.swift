@@ -16,9 +16,13 @@ struct ComfyUIGenerationView: View {
     @State private var showMaskEditor = false
     @State private var showParameterEditor = false
     private let prefill: ComfyUIGenerationParams?
+    private let prefillBaseModel: String?
     // `.task` re-runs whenever the view reappears; applying again would overwrite the user's edits.
     @State private var prefillApplied = false
-    init(prefill: ComfyUIGenerationParams? = nil) { self.prefill = prefill }
+    init(prefill: ComfyUIGenerationParams? = nil, prefillBaseModel: String? = nil) {
+        self.prefill = prefill
+        self.prefillBaseModel = prefillBaseModel
+    }
 
     var body: some View {
         ScrollView {
@@ -414,7 +418,7 @@ private extension ComfyUIGenerationView {
     func applyPrefillOnce() {
         guard let prefill, !prefillApplied else { return }
         prefillApplied = true
-        viewModel.applyPrefill(prefill)
+        viewModel.applyPrefill(prefill, baseModel: prefillBaseModel)
     }
     @ViewBuilder
     var topBarProgress: some View {
