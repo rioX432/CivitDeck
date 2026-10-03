@@ -11,15 +11,15 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import com.riox432.civitdeck.R
-import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketApi
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketMessage
 import com.riox432.civitdeck.domain.service.BackgroundMonitorStarterImpl.Companion.ACTION_START
 import com.riox432.civitdeck.domain.service.BackgroundMonitorStarterImpl.Companion.ACTION_STOP
 import com.riox432.civitdeck.domain.service.BackgroundMonitorStarterImpl.Companion.EXTRA_BASE_URL
 import com.riox432.civitdeck.domain.service.BackgroundMonitorStarterImpl.Companion.EXTRA_PROMPT_ID
-import com.riox432.civitdeck.domain.service.BackgroundMonitorStarterImpl.Companion.EXTRA_WS_SCHEME
 import com.riox432.civitdeck.domain.service.GenerationNotificationService
 import com.riox432.civitdeck.domain.util.currentTimeMillis
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIEndpoint
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,12 +36,12 @@ import org.koin.android.ext.android.inject
  *
  * Lifecycle:
  * - Started by [BackgroundMonitorStarter] after generation is submitted
- * - Stops itself when the [ComfyUIWebSocketApi.observeProgress] flow completes or fails
+ * - Stops itself when the [ComfyUIEndpoint.observeProgress] flow completes or fails
  * - Can be stopped externally via [ACTION_STOP] intent
  */
 class GenerationMonitorService : Service() {
 
-    private val webSocketApi: ComfyUIWebSocketApi by inject()
+    private val apiProvider: ComfyUIApiProvider by inject()
     private val notificationService: GenerationNotificationService by inject()
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -73,7 +73,6 @@ class GenerationMonitorService : Service() {
     private fun handleStart(intent: Intent) {
         val promptId = intent.getStringExtra(EXTRA_PROMPT_ID) ?: return stopSelfCleanly()
         val baseUrl = intent.getStringExtra(EXTRA_BASE_URL) ?: return stopSelfCleanly()
-        val wsScheme = intent.getStringExtra(EXTRA_WS_SCHEME) ?: "ws"
 
         startTimeMs = currentTimeMillis()
 
@@ -82,7 +81,7 @@ class GenerationMonitorService : Service() {
 
         startForegroundNotification()
         monitorJob = serviceScope.launch {
-            collectWebSocket(promptId, baseUrl, wsScheme)
+            collectWebSocket(promptId, baseUrl)
         }
     }
 
@@ -109,14 +108,11 @@ class GenerationMonitorService : Service() {
         }
     }
 
-    private suspend fun collectWebSocket(
-        promptId: String,
-        baseUrl: String,
-        wsScheme: String,
-    ) {
+    private suspend fun collectWebSocket(promptId: String, baseUrl: String) {
         val clientId = "civitdeck-monitor-${currentTimeMillis()}"
         try {
-            webSocketApi.observeProgress(baseUrl, wsScheme, clientId, promptId)
+            // The socket scheme follows baseUrl, so the starter's ws-scheme extra is not read.
+            apiProvider.forUrl(baseUrl).observeProgress(clientId, promptId)
                 .collect { message -> handleMessage(message, promptId) }
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Logger.e(TAG, "WebSocket monitor failed: ${e.message}")
