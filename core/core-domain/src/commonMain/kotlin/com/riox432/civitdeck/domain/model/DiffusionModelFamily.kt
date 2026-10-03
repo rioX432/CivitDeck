@@ -7,7 +7,7 @@ package com.riox432.civitdeck.domain.model
  * [baseModel] is CivitAI's `baseModel` for the family and doubles as its display name. The
  * text encoder and VAE hints are case-insensitive prefixes of a file's base name; they only
  * preselect a file and never decide the family, which is not guessable from file names.
- * Deliberately separate from [BaseModel], the search-filter enum.
+ * Deliberately separate from [BaseModel], the search-filter value.
  */
 @Suppress("LongParameterList") // Each entry is one table row; grouping columns would scatter it.
 enum class DiffusionModelFamily(

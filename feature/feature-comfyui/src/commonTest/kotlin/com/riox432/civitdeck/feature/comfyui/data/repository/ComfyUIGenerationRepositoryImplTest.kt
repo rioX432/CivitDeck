@@ -89,6 +89,14 @@ class ComfyUIGenerationRepositoryImplTest {
         assertEquals(listOf("canny.pth"), r.fetchControlNets())
     }
 
+    @Test
+    fun fetchLoras_parses_object_info_list() = runTest {
+        val body = """{"LoraLoader":{"input":{"required":{"lora_name":[["lora1.safetensors"]]}}}}"""
+        val r = repo { okJson(body) }
+
+        assertEquals(listOf("lora1.safetensors"), r.fetchLoras())
+    }
+
     private fun loaderRepo(bodies: Map<String, String>) = repo { request ->
         okJson(bodies[request.url.encodedPath.removePrefix("/object_info/")] ?: "{}")
     }
@@ -272,6 +280,24 @@ class ComfyUIGenerationRepositoryImplTest {
     }
 
     @Test
+    fun pollGenerationResult_running_when_history_absent() = runTest {
+        val r = repo { okJson("{}") }
+
+        assertEquals(GenerationStatus.Running, r.pollGenerationResult("missing").status)
+    }
+
+    @Test
+    fun pollGenerationResult_error_when_completed_without_images() = runTest {
+        val body = """{"p1":{"status":{"completed":true},"outputs":{}}}"""
+        val r = repo { okJson(body) }
+
+        val result = r.pollGenerationResult("p1")
+
+        assertEquals(GenerationStatus.Error, result.status)
+        assertEquals("No images generated", result.error)
+    }
+
+    @Test
     fun pollGenerationResult_completed_with_images() = runTest {
         val body = """
             {"p1":{"status":{"status_str":"success"},"outputs":{"9":{"images":[{"filename":"a.png","type":"output"}]}}}}
@@ -336,6 +362,18 @@ class ComfyUIGenerationRepositoryImplTest {
 
         assertTrue(url.startsWith("http://h:8188/view"))
         assertTrue(url.contains("filename=o.png"))
+    }
+
+    @Test
+    fun getImageUrl_includes_a_non_empty_subfolder() = runTest {
+        val r = repo { okJson("{}") }
+        r.fetchObjectInfo() // configures base URL
+
+        val url = r.getImageUrl("img.png", subfolder = "sub", type = "output")
+
+        assertTrue(url.startsWith("http://h:8188/view"))
+        assertTrue(url.contains("filename=img.png"))
+        assertTrue(url.contains("subfolder=sub"))
     }
 
     @Test
