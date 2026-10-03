@@ -32,6 +32,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Android loads ComfyUI images (history, generation result, output detail, mask editor, image viewer) from a server with a confirmed certificate pin: `ComfyUIPinnedFetcherFactory` fetches `https` URLs on a pinned host:port with an OkHttp client that trusts only that certificate (`OkHttpClient.Builder.trustOnlyPinnedLeaf`) and leaves every other URL, CivitAI included, to Coil's default fetcher. Disk-cache entries for those images are keyed by pin, and `ComfyUIImageCacheEvictor` removes a host:port's memory-cache entries when its pin is confirmed, changed or cleared (#1126)
 - `Model.hasActivePaidAccess` — CivitAI models whose download is gated behind an active paid-access purchase are flagged from the `/models` responses' `hasActivePaidAccess` field (defaults to `false` when absent) (#1077)
 - Android and Desktop browse cards show a "Paid" badge next to the model type when `Model.hasActivePaidAccess` is true (content description "Requires purchase on CivitAI"); the type chip now ellipsizes first on narrow cards so the badge stays whole (#1078)
+- iOS model cards (search, creator page) show a "Paid" chip next to the model type when `Model.hasActivePaidAccess` is true, read by VoiceOver as "Requires purchase on CivitAI"; the type chip truncates first on narrow cards so the chip stays whole (#1079)
 
 ### Changed
 

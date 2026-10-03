@@ -25,13 +25,19 @@ struct ModelCardView: View {
                 }
 
                 HStack(spacing: Spacing.xs) {
+                    // The type chip truncates first so the shorter badges after it stay
+                    // whole on narrow grid cards (e.g. "TextualInversion" + "Paid").
                     Text(model.type.name)
                         .font(.civitLabelSmall)
+                        .lineLimit(1)
                         .padding(.horizontal, Spacing.sm)
                         .padding(.vertical, Spacing.xxs)
                         .background(Color.civitSurfaceVariant)
                         .clipShape(Capsule())
                     SourceBadgeView(source: model.source)
+                    if model.hasActivePaidAccess {
+                        PaidBadgeView()
+                    }
                 }
 
                 statsRow
@@ -90,6 +96,21 @@ struct NsfwBadgeView: View {
             .background(Color.black.opacity(0.6))
             .clipShape(Capsule())
             .accessibilityLabel("NSFW content")
+    }
+}
+
+/// Same label CivitAI puts on its own cards for models with a live paid-access gate.
+struct PaidBadgeView: View {
+    var body: some View {
+        Text("model_badge_paid")
+            .font(.civitLabelSmall)
+            .foregroundColor(.civitOnTertiaryContainer)
+            .fixedSize()
+            .padding(.horizontal, Spacing.sm)
+            .padding(.vertical, Spacing.xxs)
+            .background(Color.civitTertiaryContainer)
+            .clipShape(Capsule())
+            .accessibilityLabel(Text("model_badge_paid_a11y"))
     }
 }
 
