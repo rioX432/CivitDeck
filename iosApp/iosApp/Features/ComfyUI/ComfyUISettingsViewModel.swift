@@ -9,6 +9,7 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
     @Published var connections: [ComfyUIConnection] = []
     @Published var activeConnection: ComfyUIConnection?
     @Published var connectionStatus: Core_domainComfyUIConnectionStatus = .notConfigured
+    @Published var securityLevel: ConnectionSecurityLevel?
     @Published var isTesting = false
     @Published var testError: String?
     @Published var showAddSheet = false
@@ -35,6 +36,7 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
             connections = state.connections as? [ComfyUIConnection] ?? []
             activeConnection = state.activeConnection
             connectionStatus = state.connectionStatus
+            securityLevel = state.securityLevel
             isTesting = state.isTesting
             testError = state.testError
             showAddSheet = state.showAddDialog
@@ -111,5 +113,12 @@ final class ComfyUISettingsViewModelOwner: ObservableObject {
 
     var isConnected: Bool {
         activeConnection?.lastTestSuccess?.boolValue == true
+    }
+
+    /// The active connection when its certificate can be reviewed. Pinned trust applies to every
+    /// HTTPS self-signed connection, including one with no pin stored yet.
+    var activePinnedTrustConnection: ComfyUIConnection? {
+        guard let active = activeConnection, active.useHttps, active.acceptSelfSigned else { return nil }
+        return active
     }
 }

@@ -89,45 +89,40 @@ struct ComfyUISettingsView: View {
                         .foregroundColor(.civitError)
                 }
             }
-        }
-    }
-
-    @ViewBuilder
-    private var securityBadge: some View {
-        if let active = viewModel.activeConnection {
-            if active.useHttps {
-                if active.acceptSelfSigned {
-                    Label("Self-signed", systemImage: "lock.trianglebadge.exclamationmark")
-                        .font(.civitLabelSmall)
-                        .foregroundColor(.orange)
-                } else {
-                    Label("HTTPS", systemImage: "lock.fill")
-                        .font(.civitLabelSmall)
-                        .foregroundColor(theme.primary)
-                }
-            } else {
-                let isLan = isLanAddress(active.hostname)
-                if isLan {
-                    Label("LAN", systemImage: "wifi")
-                        .font(.civitLabelSmall)
-                        .foregroundColor(.civitOnSurfaceVariant)
-                } else {
-                    Label("HTTP", systemImage: "exclamationmark.triangle")
-                        .font(.civitLabelSmall)
-                        .foregroundColor(.civitError)
+            // A row of its own: a NavigationLink inside the status row would take over taps meant
+            // for the Test button.
+            if let pinned = viewModel.activePinnedTrustConnection {
+                NavigationLink {
+                    ConnectionOnboardingView(reviewConnection: pinned)
+                } label: {
+                    Label("comfyui_review_certificate", systemImage: "checkmark.shield")
                 }
             }
         }
     }
 
-    private func isLanAddress(_ hostname: String) -> Bool {
-        hostname.hasPrefix("192.168.") ||
-        hostname.hasPrefix("10.") ||
-        hostname.hasPrefix("172.16.") || hostname.hasPrefix("172.17.") ||
-        hostname.hasPrefix("172.18.") || hostname.hasPrefix("172.19.") ||
-        hostname.hasPrefix("172.2") || hostname.hasPrefix("172.3") ||
-        hostname.hasPrefix("127.") ||
-        hostname.lowercased() == "localhost"
+    @ViewBuilder
+    private var securityBadge: some View {
+        switch viewModel.securityLevel {
+        case .secure:
+            Label("HTTPS", systemImage: "lock.fill")
+                .font(.civitLabelSmall)
+                .foregroundColor(theme.primary)
+        case .selfSigned:
+            Label("Self-signed", systemImage: "lock.trianglebadge.exclamationmark")
+                .font(.civitLabelSmall)
+                .foregroundColor(.orange)
+        case .localInsecure:
+            Label("LAN", systemImage: "wifi")
+                .font(.civitLabelSmall)
+                .foregroundColor(.civitOnSurfaceVariant)
+        case .remoteInsecure:
+            Label("HTTP", systemImage: "exclamationmark.triangle")
+                .font(.civitLabelSmall)
+                .foregroundColor(.civitError)
+        case nil:
+            EmptyView()
+        }
     }
 
     private var statusLabel: String {
