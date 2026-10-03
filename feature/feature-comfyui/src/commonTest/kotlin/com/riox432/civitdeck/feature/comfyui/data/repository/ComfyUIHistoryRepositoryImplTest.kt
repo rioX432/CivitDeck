@@ -3,12 +3,14 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import io.ktor.client.engine.mock.respondError
+import io.ktor.client.request.HttpRequestData
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import com.riox432.civitdeck.domain.model.DomainException
 
@@ -70,6 +72,25 @@ class ComfyUIHistoryRepositoryImplTest {
         assertEquals(25, meta.steps)
         assertEquals("euler", meta.samplerName)
         assertEquals(listOf("myLora.safetensors"), meta.loraNames)
+    }
+
+    @Test
+    fun fetchHistory_requests_only_the_newest_200_entries() = runTest {
+        var request: HttpRequestData? = null
+        val capturingApi = ComfyUIApi(
+            mockClient {
+                request = it
+                okJson(historyBody)
+            },
+            testJson,
+        )
+        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), capturingApi)
+
+        repo.fetchHistory().first()
+
+        val url = assertNotNull(request).url
+        assertTrue(url.encodedPath.endsWith("/history"))
+        assertEquals("200", url.parameters["max_items"])
     }
 
     @Test
