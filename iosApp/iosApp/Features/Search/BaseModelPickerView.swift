@@ -89,9 +89,9 @@ struct BaseModelFilterRow: View {
     }
 }
 
-/// Searchable multi-select over CivitAI's base model catalog. The selection stays local and is
-/// handed to `onApply` once when the sheet closes, however it is closed, so the search runs one
-/// request per change of selection instead of one per tap.
+/// Searchable multi-select over CivitAI's base model catalog. The selection stays local until
+/// "Done", so the search runs one request per picker session instead of one per tap; "Cancel" and
+/// swiping the sheet down discard it, as on Desktop.
 struct BaseModelPickerView: View {
     let catalog: Core_domainBaseModelCatalog?
     let onApply: (Set<BaseModel>) -> Void
@@ -136,16 +136,21 @@ struct BaseModelPickerView: View {
                 .textInputAutocapitalization(.never)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button("action_clear") { selection = [] }
-                            .disabled(selection.isEmpty)
+                        Button("action_cancel") { dismiss() }
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("action_done") { dismiss() }
+                        HStack(spacing: Spacing.xs) {
+                            Button("action_clear") { selection = [] }
+                                .disabled(selection.isEmpty)
+                            Button("action_done") {
+                                onApply(selection)
+                                dismiss()
+                            }
                             .fontWeight(.semibold)
+                        }
                     }
                 }
         }
-        .onDisappear { onApply(selection) }
     }
 
     private var pickerList: some View {
