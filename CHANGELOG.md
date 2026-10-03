@@ -40,6 +40,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - ComfyUI checkpoint picker loads on current ComfyUI servers — the checkpoint names are read from the first element of `ckpt_name` and the appended `{"tooltip": ...}` object is ignored, instead of failing to decode and leaving the built-in generation form without checkpoints (#1023)
 - Creator profile now sends the NSFW filter setting with its `/models` requests and filters card images to the chosen level, so users with Soft/All see a creator's NSFW models and Off no longer gets blank cards (#1072)
 - ComfyUI generation with the default seed no longer fails — a negative seed (the app's -1 "random" sentinel) is resolved to a random non-negative value right before submission, for both the built-in workflow and imported workflows (#1024)
+- ComfyUI connection test (onboarding and the settings Test button) passes only when `/queue` answers 2xx with ComfyUI's `queue_running` field, so an auth proxy's 401 JSON or another JSON service on the port is no longer reported as "Connected" (#1057)
 
 ### Infrastructure
 
