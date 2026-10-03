@@ -1,16 +1,26 @@
 package com.riox432.civitdeck.feature.comfyui.data.repository
 
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respondError
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+private const val HOST_COUNT = 254
+
 /**
  * Covers [ServerDiscoveryRepositoryImpl]: a successful LAN scan surfaces the host
- * answering on port 8188, the no-subnet path emits only the initial empty list, and
+ * answering on port 8188, the scan finishes within the probe-timeout bound when every
+ * other host hangs, the no-subnet path emits only the initial empty list, and
  * a fully-unreachable subnet yields no discovered servers.
  */
 class ServerDiscoveryRepositoryImplTest {
@@ -45,6 +55,30 @@ class ServerDiscoveryRepositoryImplTest {
 
         assertEquals(1, emissions.size)
         assertTrue(emissions.single().isEmpty())
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun scanForServers_completes_in_bounded_time_when_all_other_hosts_hang() = runTest {
+        // The engine runs on the test scheduler so probe timeouts elapse in virtual time.
+        val engine = MockEngine.create {
+            dispatcher = StandardTestDispatcher(testScheduler)
+            addHandler { req ->
+                if (req.url.host == "192.168.10.12") okJson("""{"queue_running":[],"queue_pending":[]}""")
+                else awaitCancellation()
+            }
+        }
+        val client = HttpClient(engine) { install(ContentNegotiation) { json(testJson) } }
+        val repo = ServerDiscoveryRepositoryImpl(client, testJson, FakeLocalIpProvider("192.168.10"))
+
+        val emissions = repo.scanForServers().toList()
+
+        assertEquals(listOf("192.168.10.12"), emissions.last().map { it.ip })
+        val rounds = (HOST_COUNT + PROBE_CONCURRENCY - 1) / PROBE_CONCURRENCY
+        assertTrue(
+            testScheduler.currentTime <= rounds * PROBE_TIMEOUT_MS,
+            "scan took ${testScheduler.currentTime}ms of virtual time, bound is ${rounds * PROBE_TIMEOUT_MS}ms",
+        )
     }
 
     @Test

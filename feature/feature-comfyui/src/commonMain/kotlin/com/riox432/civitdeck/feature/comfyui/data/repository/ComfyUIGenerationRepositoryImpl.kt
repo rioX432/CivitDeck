@@ -162,6 +162,9 @@ class ComfyUIGenerationRepositoryImpl(
 
         val hasControlNet = params.controlNetEnabled && params.controlNetModel.isNotBlank()
         requireCheckpointOnlyInputsUnset(params, hasControlNet)
+        // ControlNetApply needs a control image linked into its `image` input and the params carry
+        // none; ComfyUI rejects a prompt without that link at validation (bad_linked_input).
+        require(!hasControlNet) { "ControlNet needs a control image, which cannot be sent yet" }
 
         // Use inpainting workflow when both init image and mask are provided
         val isInpainting = params.initImageFilename != null &&
@@ -176,9 +179,6 @@ class ComfyUIGenerationRepositoryImpl(
         val finalClip = loraChain.lastOrNull()?.let { nodeLink(it.nodeId, 1) } ?: loaders.clip
         val latentNode = params.diffusionModel?.latentNode ?: DiffusionLatentNode.EMPTY_LATENT_IMAGE
 
-        // Positive conditioning source
-        val positiveCondId = if (hasControlNet) "21" else "6"
-
         return buildJsonObject {
             putLoaders(params)
             loraChain.forEach { loraNode ->
@@ -187,17 +187,13 @@ class ComfyUIGenerationRepositoryImpl(
             val samplerModel = putModelSampling(params.diffusionModel?.auraFlowShift, finalModel)
             put("6", buildClipEncode(params.prompt, finalClip))
             put("7", buildClipEncode(params.negativePrompt, finalClip))
-            if (hasControlNet) {
-                put("20", buildControlNetLoader(params.controlNetModel))
-                put("21", buildControlNetApply(params.controlNetStrength))
-            }
             put("5", buildEmptyLatent(latentNode, params.width, params.height))
             put(
                 "4",
                 buildKSampler(
                     params = params,
                     model = samplerModel,
-                    positiveCondId = positiveCondId,
+                    positiveCondId = "6",
                     latentNodeId = "5",
                     denoise = 1.0,
                 ),
@@ -332,24 +328,6 @@ class ComfyUIGenerationRepositoryImpl(
                 }
             )
         }
-
-    private fun buildControlNetLoader(model: String) = buildJsonObject {
-        put("class_type", "ControlNetLoader")
-        put("inputs", buildJsonObject { put("control_net_name", model) })
-    }
-
-    private fun buildControlNetApply(strength: Float) = buildJsonObject {
-        put("class_type", "ControlNetApply")
-        put(
-            "inputs",
-            buildJsonObject {
-                put("conditioning", nodeLink("6", 0))
-                put("control_net", nodeLink("20", 0))
-                put("image", buildJsonArray { })
-                put("strength", strength.toDouble())
-            }
-        )
-    }
 
     /**
      * Adds `ModelSamplingAuraFlow` between [model] and the KSampler when [auraFlowShift] is set,

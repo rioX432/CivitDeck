@@ -73,6 +73,8 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- The ComfyUI generation form no longer offers ControlNet on Android or iOS, and the built-in workflow builder rejects a ControlNet request instead of sending a `ControlNetApply` node with an empty `image` input, which ComfyUI refuses at validation. The form has no control image input yet; adding one is a follow-up (#1265)
+- ComfyUI LAN scan finishes within about 9 seconds on a /24 even when most hosts never answer: each probe is capped at 1.5 s and up to 48 probes run at once. On iOS a silent host previously held its probe for up to 120 s, because Ktor's Darwin engine ignores the 5 s connect timeout, so the batched scan could keep the spinner running for many minutes (#1268)
 - A saved search filter keeps every stored base model value, including values outside the built-in 7 (e.g. `Krea 2`), instead of dropping them and silently widening to any base model; `BaseModel` is now a `data class` over the CivitAI API string, Android and iOS show a kept value as an extra selected chip that can be deselected, and chip labels are the API strings (`SDXL 1.0` instead of `SDXL`) (#1257)
 - iOS: the discovered ComfyUI server row and the SD WebUI connection rows show the port without a thousands separator (`192.168.10.12:8188`, not `8,188`) (#1267)
 - `ModelSearchViewModel` no longer throws a `NullPointerException` during construction when the excluded-tags load started from `init` completes without suspending (an eager dispatcher or a non-suspending repository); no production crash had been observed (#1264)
