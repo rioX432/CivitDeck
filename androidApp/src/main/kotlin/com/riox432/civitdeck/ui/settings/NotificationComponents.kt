@@ -20,11 +20,25 @@ import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.PollingInterval
 import com.riox432.civitdeck.ui.theme.Spacing
 
+// On Android 13+ notifications stay blocked until POST_NOTIFICATIONS is granted, so enabling a
+// notification preference without the grant would silently post nothing.
 @Composable
-internal fun NotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+private fun rememberNotificationPermissionToggle(onToggle: (Boolean) -> Unit): (Boolean) -> Unit {
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted -> if (granted) onToggle(true) }
+    return { newValue ->
+        if (newValue && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            onToggle(newValue)
+        }
+    }
+}
+
+@Composable
+internal fun NotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    val onCheckedChange = rememberNotificationPermissionToggle(onToggle)
 
     Row(
         modifier = Modifier
@@ -41,21 +55,14 @@ internal fun NotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Uni
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Switch(
-            checked = enabled,
-            onCheckedChange = { newValue ->
-                if (newValue && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                } else {
-                    onToggle(newValue)
-                }
-            },
-        )
+        Switch(checked = enabled, onCheckedChange = onCheckedChange)
     }
 }
 
 @Composable
 internal fun GenerationNotificationsToggleRow(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    val onCheckedChange = rememberNotificationPermissionToggle(onToggle)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,7 +81,7 @@ internal fun GenerationNotificationsToggleRow(enabled: Boolean, onToggle: (Boole
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Switch(checked = enabled, onCheckedChange = onToggle)
+        Switch(checked = enabled, onCheckedChange = onCheckedChange)
     }
 }
 
