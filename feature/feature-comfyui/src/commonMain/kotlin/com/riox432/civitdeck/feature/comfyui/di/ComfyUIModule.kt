@@ -13,7 +13,9 @@ import com.riox432.civitdeck.domain.repository.SDWebUIAssetRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.SDWebUIGenerationRepository
 import com.riox432.civitdeck.domain.repository.ServerDiscoveryRepository
+import com.riox432.civitdeck.domain.util.ApplicationScope
 import com.riox432.civitdeck.domain.util.SystemStatsProvider
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import com.riox432.civitdeck.feature.comfyui.data.NtfySubscriptionService
 import com.riox432.civitdeck.feature.comfyui.data.repository.CivitaiLinkRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyHubRepositoryImpl
@@ -117,7 +119,13 @@ val comfyuiModule = module {
     }
     factory { ScanForServersUseCase(get()) }
     factory { ParseConnectionUrlUseCase() }
-    single<ComfyUIGenerationRepository> { ComfyUIGenerationRepositoryImpl(get(), get(), get(), get()) }
+    // Created at start so the host:port pin snapshot is loaded before image loaders ask for it.
+    single(createdAtStart = true) {
+        ComfyUIApiProvider(get(), get(named("comfyui")), get()).apply {
+            startSnapshot(get<ApplicationScope>())
+        }
+    }
+    single<ComfyUIGenerationRepository> { ComfyUIGenerationRepositoryImpl(get(), get()) }
     single<ComfyUIQueueRepository> { ComfyUIQueueRepositoryImpl(get(), get()) }
     single<ComfyUIHistoryRepository> { ComfyUIHistoryRepositoryImpl(get(), get()) }
     factory { FetchComfyUIHistoryUseCase(get()) }
@@ -151,7 +159,7 @@ val comfyuiModule = module {
     // MaskPngEncoder is registered in comfyuiPlatformModule (interface + platform impl)
     factory { FindMatchingLocalModelUseCase(get()) }
     factory { PopulateGenerationFromModelUseCase() }
-    factory { SaveGeneratedImageUseCase(get(named("comfyui")), get()) }
+    factory { SaveGeneratedImageUseCase(get(), get()) }
     // ComfyHub
     single<ComfyHubRepository> { ComfyHubRepositoryImpl(get(), get(), get()) }
     factory { SearchComfyHubWorkflowsUseCase(get()) }
