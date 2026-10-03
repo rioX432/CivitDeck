@@ -1,7 +1,8 @@
 package com.riox432.civitdeck.feature.comfyui.data.repository
 
-import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
+import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.respondError
 import io.ktor.client.request.HttpRequestData
 import io.ktor.http.HttpStatusCode
@@ -26,7 +27,10 @@ class ComfyUIHistoryRepositoryImplTest {
         rows.add(ComfyUIConnectionEntity(id = 1, name = "A", hostname = "h", port = 8188, isActive = true, createdAt = 1))
     }
 
-    private fun api(body: String) = ComfyUIApi(mockClient { okJson(body) }, testJson)
+    private fun repo(dao: FakeComfyUIConnectionDao, client: HttpClient) =
+        ComfyUIHistoryRepositoryImpl(ComfyUIApiProvider(dao, client, testJson))
+
+    private fun repo(dao: FakeComfyUIConnectionDao, body: String) = repo(dao, mockClient { okJson(body) })
 
     // History entry with one output image and a prompt graph carrying KSampler/CLIP/Lora nodes.
     private val historyBody = """
@@ -48,7 +52,7 @@ class ComfyUIHistoryRepositoryImplTest {
 
     @Test
     fun fetchHistory_maps_output_image_with_url_and_id() = runTest {
-        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api(historyBody))
+        val repo = repo(daoWithActive(), historyBody)
 
         val images = repo.fetchHistory(PAGE_SIZE).first().images
 
@@ -62,8 +66,37 @@ class ComfyUIHistoryRepositoryImplTest {
     }
 
     @Test
+    fun fetchHistory_requests_and_builds_view_urls_on_the_active_connection() = runTest {
+        val dao = FakeComfyUIConnectionDao().apply {
+            rows.add(ComfyUIConnectionEntity(id = 1, name = "Old", hostname = "old", port = 8188, createdAt = 1))
+            rows.add(
+                ComfyUIConnectionEntity(
+                    id = 2,
+                    name = "Home",
+                    hostname = "home.local",
+                    port = 8443,
+                    useHttps = true,
+                    isActive = true,
+                    createdAt = 2,
+                ),
+            )
+        }
+        var request: HttpRequestData? = null
+        val client = mockClient {
+            request = it
+            okJson(historyBody)
+        }
+
+        val image = repo(dao, client).fetchHistory(PAGE_SIZE).first().images.single()
+
+        val url = assertNotNull(request).url
+        assertEquals("home.local:8443", "${url.host}:${url.port}")
+        assertTrue(image.imageUrl.startsWith("https://home.local:8443/view?"))
+    }
+
+    @Test
     fun fetchHistory_extracts_generation_meta_from_prompt_nodes() = runTest {
-        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api(historyBody))
+        val repo = repo(daoWithActive(), historyBody)
 
         val meta = repo.fetchHistory(PAGE_SIZE).first().images.first().meta
 
@@ -78,14 +111,11 @@ class ComfyUIHistoryRepositoryImplTest {
     @Test
     fun fetchHistory_requests_only_the_newest_maxItems_entries() = runTest {
         var request: HttpRequestData? = null
-        val capturingApi = ComfyUIApi(
-            mockClient {
-                request = it
-                okJson(historyBody)
-            },
-            testJson,
-        )
-        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), capturingApi)
+        val client = mockClient {
+            request = it
+            okJson(historyBody)
+        }
+        val repo = repo(daoWithActive(), client)
 
         repo.fetchHistory(PAGE_SIZE).first()
 
@@ -96,7 +126,7 @@ class ComfyUIHistoryRepositoryImplTest {
 
     @Test
     fun fetchHistory_hasMore_when_server_returns_exactly_maxItems_entries() = runTest {
-        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api(historyOf("p1", "p2")))
+        val repo = repo(daoWithActive(), historyOf("p1", "p2"))
 
         val page = repo.fetchHistory(maxItems = 2).first()
 
@@ -106,7 +136,7 @@ class ComfyUIHistoryRepositoryImplTest {
 
     @Test
     fun fetchHistory_no_more_when_server_returns_fewer_than_maxItems_entries() = runTest {
-        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api(historyOf("p1")))
+        val repo = repo(daoWithActive(), historyOf("p1"))
 
         val page = repo.fetchHistory(maxItems = 2).first()
 
@@ -122,7 +152,7 @@ class ComfyUIHistoryRepositoryImplTest {
               "p1": {"outputs": {"9": {"images": [{"filename": "p1.png", "subfolder": "", "type": "output"}]}}}
             }
         """.trimIndent()
-        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api(body))
+        val repo = repo(daoWithActive(), body)
 
         val page = repo.fetchHistory(maxItems = 2).first()
 
@@ -132,7 +162,7 @@ class ComfyUIHistoryRepositoryImplTest {
 
     @Test
     fun fetchHistory_returns_empty_when_history_is_empty() = runTest {
-        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api("{}"))
+        val repo = repo(daoWithActive(), "{}")
 
         val images = repo.fetchHistory(PAGE_SIZE).first().images
 
@@ -141,7 +171,7 @@ class ComfyUIHistoryRepositoryImplTest {
 
     @Test
     fun fetchHistoryItem_returns_images_for_single_prompt() = runTest {
-        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api(historyBody))
+        val repo = repo(daoWithActive(), historyBody)
 
         val images = repo.fetchHistoryItem("p1").first()
 
@@ -151,7 +181,7 @@ class ComfyUIHistoryRepositoryImplTest {
 
     @Test
     fun fetchHistoryItem_returns_empty_when_prompt_absent() = runTest {
-        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), api("{}"))
+        val repo = repo(daoWithActive(), "{}")
 
         val images = repo.fetchHistoryItem("missing").first()
 
@@ -160,7 +190,7 @@ class ComfyUIHistoryRepositoryImplTest {
 
     @Test
     fun fetchHistory_throws_ConnectionException_without_active_connection() = runTest {
-        val repo = ComfyUIHistoryRepositoryImpl(FakeComfyUIConnectionDao(), api(historyBody))
+        val repo = repo(FakeComfyUIConnectionDao(), historyBody)
 
         assertFailsWith<DomainException.ConnectionException> {
             repo.fetchHistory(PAGE_SIZE).first()
@@ -169,11 +199,7 @@ class ComfyUIHistoryRepositoryImplTest {
 
     @Test
     fun fetchHistory_propagates_api_error() = runTest {
-        val errorApi = ComfyUIApi(
-            mockClient { respondError(HttpStatusCode.InternalServerError) },
-            testJson,
-        )
-        val repo = ComfyUIHistoryRepositoryImpl(daoWithActive(), errorApi)
+        val repo = repo(daoWithActive(), mockClient { respondError(HttpStatusCode.InternalServerError) })
 
         assertFailsWith<Exception> { repo.fetchHistory(PAGE_SIZE).first() }
     }
