@@ -12,6 +12,11 @@ data class ComfyUIConnection(
     val acceptSelfSigned: Boolean = false,
     val ntfyServerUrl: String? = null,
     val ntfyTopic: String? = null,
+    /**
+     * Lowercase hex SHA-256 of the server leaf certificate (DER) the user confirmed, or null
+     * when none is confirmed. Valid only for this hostname, port and [useHttps].
+     */
+    val tlsCertSha256: String? = null,
 ) {
     /** HTTP base URL with the correct scheme. */
     val baseUrl: String get() {

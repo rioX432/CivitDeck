@@ -65,6 +65,76 @@ class ComfyUIConnectionRepositoryImplTest {
     }
 
     @Test
+    fun saveConnection_round_trips_tls_fingerprint() = runTest {
+        val dao = FakeComfyUIConnectionDao()
+        val repo = ComfyUIConnectionRepositoryImpl(dao, api { true })
+
+        val id = repo.saveConnection(pinnedConnection())
+
+        assertEquals(PIN, dao.rows.first().tlsCertSha256)
+        assertEquals(PIN, repo.observeConnections().first().single { it.id == id }.tlsCertSha256)
+    }
+
+    @Test
+    fun saveConnection_rename_without_pin_keeps_stored_fingerprint() = runTest {
+        val dao = FakeComfyUIConnectionDao()
+        val repo = ComfyUIConnectionRepositoryImpl(dao, api { true })
+        val id = repo.saveConnection(pinnedConnection())
+
+        // Settings edits rebuild the connection without knowing the pin.
+        repo.saveConnection(pinnedConnection().copy(id = id, name = "Renamed", tlsCertSha256 = null))
+
+        assertEquals("Renamed", dao.rows.first().name)
+        assertEquals(PIN, dao.rows.first().tlsCertSha256)
+    }
+
+    @Test
+    fun saveConnection_new_pin_for_same_endpoint_replaces_stored_fingerprint() = runTest {
+        val dao = FakeComfyUIConnectionDao()
+        val repo = ComfyUIConnectionRepositoryImpl(dao, api { true })
+        val id = repo.saveConnection(pinnedConnection())
+
+        repo.saveConnection(pinnedConnection().copy(id = id, tlsCertSha256 = OTHER_PIN))
+
+        assertEquals(OTHER_PIN, dao.rows.first().tlsCertSha256)
+    }
+
+    @Test
+    fun saveConnection_port_change_clears_fingerprint() = runTest {
+        val dao = FakeComfyUIConnectionDao()
+        val repo = ComfyUIConnectionRepositoryImpl(dao, api { true })
+        val id = repo.saveConnection(pinnedConnection())
+
+        repo.saveConnection(pinnedConnection().copy(id = id, port = 8443))
+
+        assertEquals(8443, dao.rows.first().port)
+        assertNull(dao.rows.first().tlsCertSha256)
+    }
+
+    @Test
+    fun saveConnection_hostname_or_scheme_change_clears_fingerprint() = runTest {
+        val dao = FakeComfyUIConnectionDao()
+        val repo = ComfyUIConnectionRepositoryImpl(dao, api { true })
+        val hostId = repo.saveConnection(pinnedConnection())
+        val schemeId = repo.saveConnection(pinnedConnection())
+
+        repo.saveConnection(pinnedConnection().copy(id = hostId, hostname = "10.0.0.2"))
+        repo.saveConnection(pinnedConnection().copy(id = schemeId, useHttps = false))
+
+        assertNull(dao.rows.first { it.id == hostId }.tlsCertSha256)
+        assertNull(dao.rows.first { it.id == schemeId }.tlsCertSha256)
+    }
+
+    private fun pinnedConnection() = ComfyUIConnection(
+        name = "Home",
+        hostname = "10.0.0.1",
+        port = 8188,
+        useHttps = true,
+        acceptSelfSigned = true,
+        tlsCertSha256 = PIN,
+    )
+
+    @Test
     fun activateConnection_deactivates_others_then_activates_target() = runTest {
         val dao = FakeComfyUIConnectionDao()
         dao.rows.add(ComfyUIConnectionEntity(id = 1, name = "A", hostname = "h", isActive = true, createdAt = 1))
@@ -138,5 +208,10 @@ class ComfyUIConnectionRepositoryImplTest {
 
         assertEquals(true, dao.rows.first().lastTestSuccess)
         assertTrue(dao.rows.first().lastTestedAt != null)
+    }
+
+    private companion object {
+        const val PIN = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        const val OTHER_PIN = "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
     }
 }
