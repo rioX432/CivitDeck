@@ -41,7 +41,14 @@ class ComfyUIQueueRepositoryImpl(
     }
 
     override suspend fun cancelJob(promptId: String) {
-        apiProvider.forActive().api.deleteQueue(listOf(promptId))
+        val api = apiProvider.forActive().api
+        // ComfyUI's queue delete only searches pending jobs, so the running job needs an interrupt.
+        // The id keeps that interrupt from stopping a different job if this one finished meanwhile.
+        if (api.getQueue().running.any { extractPromptId(it) == promptId }) {
+            api.interrupt(promptId)
+        } else {
+            api.deleteQueue(listOf(promptId))
+        }
     }
 
     /**
