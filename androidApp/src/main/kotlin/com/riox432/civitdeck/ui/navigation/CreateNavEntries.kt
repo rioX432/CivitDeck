@@ -149,7 +149,9 @@ private fun ApplyBridgePrefillOnce(route: ComfyUIBridgeRoute, viewModel: ComfyUI
                 seed = route.seed,
                 sampler = route.sampler,
                 checkpointName = route.checkpointFileName ?: "",
+                baseModel = route.baseModel,
             ),
+            baseModel = route.baseModel,
         )
         prefillApplied = true
     }

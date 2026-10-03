@@ -196,6 +196,7 @@ internal fun EntryProviderScope<Any>.detailEntry(backStack: MutableList<Any>) {
                             modelName = modelName,
                             checkpointFileName = primaryFile?.name
                                 ?.takeIf { model?.type == ModelType.Checkpoint },
+                            baseModel = selectedVersion?.baseModel,
                             prompt = meta?.prompt,
                             negativePrompt = meta?.negativePrompt,
                             steps = meta?.steps,
