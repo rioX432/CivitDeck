@@ -34,6 +34,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Android and Desktop browse cards show a "Paid" badge next to the model type when `Model.hasActivePaidAccess` is true (content description "Requires purchase on CivitAI"); the type chip now ellipsizes first on narrow cards so the badge stays whole (#1078)
 - iOS model cards (search, creator page) show a "Paid" chip next to the model type when `Model.hasActivePaidAccess` is true, read by VoiceOver as "Requires purchase on CivitAI"; the type chip truncates first on narrow cards so the chip stays whole (#1079)
 - `ComfyUIGenerationRepository.fetchDiffusionModelResources()` returns the diffusion-model, text-encoder, VAE and CLIP `type` choices of a ComfyUI server from `/object_info/UNETLoader`, `/object_info/CLIPLoader` and `/object_info/VAELoader`; a server without a loader node yields an empty list, and the object_info combo parser also reads the V3 `["COMBO", {"options": […]}]` shape (#1144)
+- Importing a DiT-era ComfyUI workflow (Krea 2, Anima, etc.) without APP mode metadata exposes its `UNETLoader`, `CLIPLoader`, `DualCLIPLoader`, `VAELoader`, `LoraLoaderModelOnly`, `EmptySD3LatentImage`, `RandomNoise`, `BasicScheduler`, `KSamplerSelect` and `CFGGuider` inputs as editable template parameters, and SELECT options are also read from the V3 `["COMBO", {"options": […]}]` object_info shape (#1142)
 
 ### Changed
 

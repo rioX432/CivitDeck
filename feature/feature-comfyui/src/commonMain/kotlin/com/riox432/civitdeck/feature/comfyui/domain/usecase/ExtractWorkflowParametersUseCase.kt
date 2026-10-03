@@ -272,6 +272,14 @@ class ExtractWorkflowParametersUseCase(
             val typeStr = first.content
             val isBoolean = typeStr.equals("BOOLEAN", ignoreCase = true)
             val constraints = if (paramDef.size > 1) paramDef[1] as? JsonObject else null
+            // V3 nodes (e.g. BasicScheduler, KSamplerSelect) serialise a combo as
+            // ["COMBO", {"options": [...]}] instead of the V1 [[...], {...}] shape.
+            if (typeStr == V3_COMBO_TYPE) {
+                val options = (constraints?.get("options") as? JsonArray)
+                    ?.mapNotNull { (it as? JsonPrimitive)?.content }
+                    .orEmpty()
+                return SchemaInfo(options = options)
+            }
             return SchemaInfo(
                 min = constraints?.get("min")?.jsonPrimitive?.doubleOrNull,
                 max = constraints?.get("max")?.jsonPrimitive?.doubleOrNull,
@@ -284,11 +292,13 @@ class ExtractWorkflowParametersUseCase(
     }
 
     private fun priorityOrder(classType: String): Int = when (classType) {
-        "KSampler", "KSamplerAdvanced" -> 0
+        "KSampler", "KSamplerAdvanced",
+        "RandomNoise", "BasicScheduler", "KSamplerSelect", "CFGGuider",
+        -> 0
         "CLIPTextEncode" -> 1
-        "CheckpointLoaderSimple" -> 2
-        "LoraLoader" -> 3
-        "EmptyLatentImage" -> 4
+        "CheckpointLoaderSimple", "UNETLoader", "CLIPLoader", "DualCLIPLoader", "VAELoader" -> 2
+        "LoraLoader", "LoraLoaderModelOnly" -> 3
+        "EmptyLatentImage", "EmptySD3LatentImage" -> 4
         else -> 5
     }
 
@@ -312,7 +322,20 @@ class ExtractWorkflowParametersUseCase(
                 "lora_name", "strength_model", "strength_clip",
             ),
             "EmptyLatentImage" to listOf("width", "height", "batch_size"),
+            // DiT-era split loaders and the custom-sampler nodes their templates use.
+            "UNETLoader" to listOf("unet_name"),
+            "CLIPLoader" to listOf("clip_name", "type"),
+            "DualCLIPLoader" to listOf("clip_name1", "clip_name2", "type"),
+            "VAELoader" to listOf("vae_name"),
+            "LoraLoaderModelOnly" to listOf("lora_name", "strength_model"),
+            "EmptySD3LatentImage" to listOf("width", "height", "batch_size"),
+            "RandomNoise" to listOf("noise_seed"),
+            "BasicScheduler" to listOf("steps", "scheduler"),
+            "KSamplerSelect" to listOf("sampler_name"),
+            "CFGGuider" to listOf("cfg"),
         )
+
+        private const val V3_COMBO_TYPE = "COMBO"
 
         private val KNOWN_NUMERIC_PARAMS = setOf(
             "steps", "cfg", "denoise", "strength_model", "strength_clip",
