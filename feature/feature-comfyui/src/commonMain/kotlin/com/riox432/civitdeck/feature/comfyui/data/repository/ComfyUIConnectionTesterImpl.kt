@@ -80,7 +80,7 @@ class ComfyUIConnectionTesterImpl(
         } catch (e: SocketTimeoutException) {
             noResponseFailure(connection, ConnectionFailureCause.Timeout, e.message)
         } catch (@Suppress("TooGenericExceptionCaught") e: Throwable) {
-            if (isTlsFailure(e)) {
+            if (isTlsFailure(e) || isPinRejection(connection.tlsCertSha256, trust?.presentedSha256)) {
                 tlsFailure(connection, trust, e.message)
             } else {
                 noResponseFailure(connection, transportFailureCause(e), e.message)
@@ -136,10 +136,17 @@ class ComfyUIConnectionTesterImpl(
 }
 
 /**
+ * True when the pinned client saw a certificate other than the pin and so rejected the handshake.
+ * Darwin reports that rejection as `NSURLErrorCancelled` (-999), whose message has nothing for
+ * [isTlsFailure] to match; the JVM and Android engines already raise an `SSLException` for it.
+ */
+internal fun isPinRejection(expected: String?, presented: String?): Boolean =
+    presented != null && presented != expected
+
+/**
  * Classifies a TLS failure from a pinned client. [presented] is null when the handshake failed
- * before the certificate was checked (or the engine does not record it, as on iOS), and a
- * presented certificate equal to the pin means the handshake failed for another reason; both stay
- * a plain [ConnectionFailureCause.Tls].
+ * before the certificate was checked, and a presented certificate equal to the pin means the
+ * handshake failed for another reason; both stay a plain [ConnectionFailureCause.Tls].
  */
 internal fun pinFailureCause(expected: String?, presented: String?): ConnectionFailureCause = when {
     presented == null -> ConnectionFailureCause.Tls
