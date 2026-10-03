@@ -15,6 +15,10 @@ struct ComfyUIGenerationView: View {
     @State private var showTemplatePicker = false
     @State private var showMaskEditor = false
     @State private var showParameterEditor = false
+    private let prefill: ComfyUIGenerationParams?
+    // `.task` re-runs whenever the view reappears; applying again would overwrite the user's edits.
+    @State private var prefillApplied = false
+    init(prefill: ComfyUIGenerationParams? = nil) { self.prefill = prefill }
 
     var body: some View {
         ScrollView {
@@ -49,7 +53,10 @@ struct ComfyUIGenerationView: View {
                 }
             }
         }
-        .task { await viewModel.observeUiState() }
+        .task {
+            applyPrefillOnce()
+            await viewModel.observeUiState()
+        }
         .sheet(isPresented: $showTemplatePicker) {
             NavigationStack {
                 WorkflowTemplateView(isPicker: true, onSelect: { template in
@@ -419,6 +426,11 @@ struct ComfyUIGenerationView: View {
 }
 
 private extension ComfyUIGenerationView {
+    func applyPrefillOnce() {
+        guard let prefill, !prefillApplied else { return }
+        prefillApplied = true
+        viewModel.applyPrefill(prefill)
+    }
     @ViewBuilder
     var topBarProgress: some View {
         if viewModel.totalSteps > 0 {

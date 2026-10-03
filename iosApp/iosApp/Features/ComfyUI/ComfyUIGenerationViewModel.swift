@@ -152,6 +152,7 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
         self.seed = seed
         vm.onSeedChanged(seed: Int64(seed) ?? randomSeed)
     }
+    func applyPrefill(_ params: ComfyUIGenerationParams) { vm.applyPrefill(params: params) }
     func onLoraAdded(_ name: String) { vm.onLoraAdded(loraName: name) }
     func onLoraRemoved(_ name: String) { vm.onLoraRemoved(loraName: name) }
     func onLoraStrengthChanged(name: String, strengthModel: Float, strengthClip: Float) {
