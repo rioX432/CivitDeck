@@ -21,6 +21,17 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
     @Published var height: String = "512"
     @Published var seed: String = ""
     @Published var isLoadingCheckpoints = false
+    // Diffusion models (split UNET / text encoder / VAE loaders)
+    @Published var diffusionModels: [String] = []
+    @Published var textEncoders: [String] = []
+    @Published var vaes: [String] = []
+    @Published var serverClipTypes: [String] = []
+    @Published var modelSource: Feature_comfyuiGenerationModelSource = .checkpoint
+    @Published var selectedDiffusionModel = ""
+    @Published var selectedFamily: Core_domainDiffusionModelFamily?
+    @Published var selectedTextEncoder = ""
+    @Published var selectedVae = ""
+    @Published var canGenerate = false
     // LoRA
     @Published var availableLoras: [String] = []
     @Published var loraSelections: [LoraSelection] = []
@@ -65,6 +76,8 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
         Int32(width) != nil && Int32(height) != nil
     }
 
+    var isDiffusionModelSelected: Bool { modelSource == .diffusionModel }
+
     init() {
         vm = KoinHelper.shared.createComfyUIGenerationViewModel()
         store.put(key: "ComfyUIGenerationViewModel", viewModel: vm)
@@ -82,6 +95,16 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
             cfgScale = state.cfgScale
             mirrorNumericFields(width: state.width, height: state.height, seed: state.seed)
             isLoadingCheckpoints = state.isLoadingCheckpoints
+            diffusionModels = state.diffusionModels
+            textEncoders = state.textEncoders
+            vaes = state.vaes
+            serverClipTypes = state.serverClipTypes
+            modelSource = state.modelSource
+            selectedDiffusionModel = state.selectedDiffusionModel
+            selectedFamily = state.selectedFamily
+            selectedTextEncoder = state.selectedTextEncoder
+            selectedVae = state.selectedVae
+            canGenerate = state.canGenerate
             availableLoras = state.availableLoras as? [String] ?? []
             loraSelections = state.loraSelections as? [LoraSelection] ?? []
             availableControlNets = state.availableControlNets as? [String] ?? []
@@ -118,8 +141,33 @@ final class ComfyUIGenerationViewModelOwner: ObservableObject {
     // MARK: - Actions (delegate to KMP VM)
 
     func onCheckpointSelected(_ checkpoint: String) {
+        modelSource = .checkpoint
         selectedCheckpoint = checkpoint
         vm.onCheckpointSelected(checkpoint: checkpoint)
+    }
+    /// The workflow builder rejects ControlNet or an inpainting mask combined with a diffusion
+    /// model, and the form hides both sections for one, so they are switched off here.
+    func onDiffusionModelSelected(_ model: String) {
+        modelSource = .diffusionModel
+        selectedDiffusionModel = model
+        vm.onDiffusionModelSelected(model: model)
+        if controlNetEnabled { onControlNetToggled(false) }
+        if maskImageFilename != nil { onClearMask() }
+    }
+    func onModelFamilySelected(_ family: Core_domainDiffusionModelFamily) {
+        selectedFamily = family
+        vm.onModelFamilySelected(family: family)
+    }
+    func onTextEncoderSelected(_ textEncoder: String) {
+        selectedTextEncoder = textEncoder
+        vm.onTextEncoderSelected(textEncoder: textEncoder)
+    }
+    func onVaeSelected(_ vae: String) {
+        selectedVae = vae
+        vm.onVaeSelected(vae: vae)
+    }
+    func isFamilySupported(_ family: Core_domainDiffusionModelFamily) -> Bool {
+        family.isSupportedBy(serverClipTypes: serverClipTypes)
     }
     func onPromptChanged(_ value: String) {
         prompt = value

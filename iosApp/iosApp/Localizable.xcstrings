@@ -495,6 +495,116 @@
           }
         }
       }
+    },
+    "comfyui_checkpoint" : {
+      "comment" : "Label above the generation form's model picker when the server has no diffusion models",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checkpoint"
+          }
+        }
+      }
+    },
+    "comfyui_model" : {
+      "comment" : "Label above the generation form's model picker when the server has both checkpoints and diffusion models",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Model"
+          }
+        }
+      }
+    },
+    "comfyui_select_placeholder" : {
+      "comment" : "Placeholder shown in a generation form picker while nothing is selected",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select..."
+          }
+        }
+      }
+    },
+    "comfyui_model_section_checkpoints" : {
+      "comment" : "Section header in the generation form's model picker for checkpoint files",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checkpoints"
+          }
+        }
+      }
+    },
+    "comfyui_model_section_diffusion_models" : {
+      "comment" : "Section header in the generation form's model picker for diffusion model files",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diffusion models"
+          }
+        }
+      }
+    },
+    "comfyui_model_family" : {
+      "comment" : "Label above the picker for a diffusion model's family (for example Krea 2)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Model family"
+          }
+        }
+      }
+    },
+    "comfyui_model_family_unsupported %@" : {
+      "comment" : "Disabled model family option when the ComfyUI server is too old to load it; the argument is the family name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ — Needs a newer ComfyUI"
+          }
+        }
+      }
+    },
+    "comfyui_text_encoder" : {
+      "comment" : "Label above the picker for the text encoder file a diffusion model uses",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text encoder"
+          }
+        }
+      }
+    },
+    "comfyui_vae" : {
+      "comment" : "Label above the picker for the VAE file a diffusion model uses",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VAE"
+          }
+        }
+      }
+    },
+    "comfyui_no_files_on_server" : {
+      "comment" : "Shown instead of a text encoder or VAE picker when the ComfyUI server has no such files",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None found on the server"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

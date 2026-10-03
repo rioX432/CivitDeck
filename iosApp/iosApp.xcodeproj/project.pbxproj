@@ -115,6 +115,7 @@
 		CD00ON012D8CC001000CD001 /* ConnectionOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00ON002D8CC001000CD001 /* ConnectionOnboardingView.swift */; };
 		CD00ON032D8CC001000CD001 /* ConnectionOnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00ON022D8CC001000CD001 /* ConnectionOnboardingViewModel.swift */; };
 		CD00CU052D8CC001000CD001 /* ComfyUIGenerationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */; };
+		CDGP11492FA00002000CD001 /* GenerationModelPickers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDGP11492FA00001000CD001 /* GenerationModelPickers.swift */; };
 		CD00CU072D8CC001000CD001 /* ComfyUIGenerationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */; };
 		CDME01012F930001000CD001 /* MaskEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDME01002F930001000CD001 /* MaskEditorView.swift */; };
 		CDME02012F930002000CD001 /* MaskEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDME02002F930002000CD001 /* MaskEditorViewModel.swift */; };
@@ -297,6 +298,7 @@
 		CD00ON002D8CC001000CD001 /* ConnectionOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionOnboardingView.swift; sourceTree = "<group>"; };
 		CD00ON022D8CC001000CD001 /* ConnectionOnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionOnboardingViewModel.swift; sourceTree = "<group>"; };
 		CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIGenerationView.swift; sourceTree = "<group>"; };
+		CDGP11492FA00001000CD001 /* GenerationModelPickers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerationModelPickers.swift; sourceTree = "<group>"; };
 		CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfyUIGenerationViewModel.swift; sourceTree = "<group>"; };
 		CDME01002F930001000CD001 /* MaskEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskEditorView.swift; sourceTree = "<group>"; };
 		CDME02002F930002000CD001 /* MaskEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskEditorViewModel.swift; sourceTree = "<group>"; };
@@ -819,6 +821,7 @@
 				CD00ON022D8CC001000CD001 /* ConnectionOnboardingViewModel.swift */,
 				CD00CU042D8CC001000CD001 /* ComfyUIGenerationView.swift */,
 				CD00CU062D8CC001000CD001 /* ComfyUIGenerationViewModel.swift */,
+				CDGP11492FA00001000CD001 /* GenerationModelPickers.swift */,
 				CDME01002F930001000CD001 /* MaskEditorView.swift */,
 				CDME02002F930002000CD001 /* MaskEditorViewModel.swift */,
 				CDME03002F930003000CD001 /* MaskPaintCanvasView.swift */,
@@ -1076,6 +1079,7 @@
 				CD00ON012D8CC001000CD001 /* ConnectionOnboardingView.swift in Sources */,
 				CD00ON032D8CC001000CD001 /* ConnectionOnboardingViewModel.swift in Sources */,
 				CD00CU052D8CC001000CD001 /* ComfyUIGenerationView.swift in Sources */,
+				CDGP11492FA00002000CD001 /* GenerationModelPickers.swift in Sources */,
 				CD00CU072D8CC001000CD001 /* ComfyUIGenerationViewModel.swift in Sources */,
 				CDME01012F930001000CD001 /* MaskEditorView.swift in Sources */,
 				CDME02012F930002000CD001 /* MaskEditorViewModel.swift in Sources */,
