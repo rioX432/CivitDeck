@@ -6,6 +6,7 @@ import io.ktor.client.call.body
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.ResponseException
+import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
@@ -57,6 +58,18 @@ class ComfyUIApi(
      */
     suspend fun getQueue(): QueueResponse =
         logAndRethrow("getQueue") { client.get("${_baseUrl.value}/queue").body() }
+
+    /**
+     * Connection probe: GET /queue, reporting the status and whether the body has ComfyUI's
+     * queue shape. Never throws on a non-2xx status or a non-JSON body (e.g. an HTML login
+     * page reached through a redirect); transport failures still propagate.
+     * @throws HttpRequestTimeoutException on request timeout
+     * @throws ConnectTimeoutException on connection timeout
+     */
+    suspend fun probeQueue(): QueueProbe = logAndRethrow("probeQueue") {
+        val response = client.get("${_baseUrl.value}/queue") { expectSuccess = false }
+        QueueProbe(status = response.status.value, hasQueueRunning = hasQueueRunning(response.bodyAsText()))
+    }
 
     /**
      * Fetch available checkpoints: GET /object_info/CheckpointLoaderSimple
@@ -268,6 +281,14 @@ class ComfyUIApi(
     private fun logApiError(operation: String, cause: Throwable): Nothing {
         Logger.e(TAG, "$operation failed: ${cause.message}", cause)
         throw cause
+    }
+
+    private fun hasQueueRunning(responseText: String): Boolean = try {
+        val root = json.parseToJsonElement(responseText) as? JsonObject
+        root?.containsKey("queue_running") == true
+    } catch (e: SerializationException) {
+        Logger.w(TAG, "Unparseable /queue response: ${e.message}")
+        false
     }
 
     /**

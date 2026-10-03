@@ -51,8 +51,11 @@ class ComfyUIConnectionRepositoryImpl(
     override suspend fun testConnection(connection: ComfyUIConnection): Boolean {
         api.setBaseUrl(connection.baseUrl)
         return try {
-            api.getQueue()
-            true
+            val probe = api.probeQueue()
+            if (!probe.isComfyUIQueue) {
+                Logger.w(TAG, "Connection test failed: HTTP ${probe.status}, queue_running=${probe.hasQueueRunning}")
+            }
+            probe.isComfyUIQueue
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Logger.w(TAG, "Connection test failed: ${e.message}")
             false
