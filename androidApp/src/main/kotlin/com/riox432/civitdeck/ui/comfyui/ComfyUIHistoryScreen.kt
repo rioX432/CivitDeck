@@ -8,9 +8,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -19,11 +22,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -42,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
@@ -56,9 +62,11 @@ import com.riox432.civitdeck.ui.components.FilterChipRow
 import com.riox432.civitdeck.ui.components.LoadingStateOverlay
 import com.riox432.civitdeck.ui.dataset.AddToDatasetSheet
 import com.riox432.civitdeck.ui.theme.CornerRadius
+import com.riox432.civitdeck.ui.theme.IconSize
 import com.riox432.civitdeck.ui.theme.Spacing
 
 private const val IMAGE_ASPECT_RATIO = 1f
+private val LOAD_OLDER_MIN_HEIGHT = 48.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,6 +117,7 @@ fun ComfyUIHistoryScreen(
             onImageClick = onImageClick,
             onRetry = viewModel::refresh,
             onSortSelected = viewModel::onSelectSort,
+            onLoadOlder = viewModel::loadOlder,
             onAddToDataset = viewModel::onAddToDatasetTap,
             gridState = gridState,
             modifier = Modifier.padding(padding),
@@ -167,6 +176,7 @@ private fun HistoryBody(
     onImageClick: (ComfyUIGeneratedImage) -> Unit,
     onRetry: () -> Unit,
     onSortSelected: (HistorySortOrder) -> Unit,
+    onLoadOlder: () -> Unit,
     onAddToDataset: (ComfyUIGeneratedImage) -> Unit,
     gridState: LazyGridState = rememberLazyGridState(),
     modifier: Modifier = Modifier,
@@ -193,30 +203,82 @@ private fun HistoryBody(
                     isRefreshing = state.isLoading,
                     onRefresh = onRetry,
                 ) {
-                    val gridColumns = adaptiveGridColumns()
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(gridColumns),
-                        contentPadding = PaddingValues(Spacing.sm),
-                        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-                        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-                        state = gridState,
-                        modifier = Modifier.fillMaxSize(),
-                    ) {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            FilterHeader(
-                                selectedSort = state.selectedSort,
-                                onSortSelected = onSortSelected,
-                            )
-                        }
-                        items(images, key = { it.id }) { image ->
-                            HistoryImageItem(
-                                image = image,
-                                onClick = { onImageClick(image) },
-                                onAddToDataset = { onAddToDataset(image) },
-                            )
-                        }
-                    }
+                    HistoryGrid(
+                        state = state,
+                        images = images,
+                        onImageClick = onImageClick,
+                        onSortSelected = onSortSelected,
+                        onLoadOlder = onLoadOlder,
+                        onAddToDataset = onAddToDataset,
+                        gridState = gridState,
+                    )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HistoryGrid(
+    state: ComfyUIHistoryUiState,
+    images: List<ComfyUIGeneratedImage>,
+    onImageClick: (ComfyUIGeneratedImage) -> Unit,
+    onSortSelected: (HistorySortOrder) -> Unit,
+    onLoadOlder: () -> Unit,
+    onAddToDataset: (ComfyUIGeneratedImage) -> Unit,
+    gridState: LazyGridState,
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(adaptiveGridColumns()),
+        contentPadding = PaddingValues(Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        state = gridState,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            FilterHeader(
+                selectedSort = state.selectedSort,
+                onSortSelected = onSortSelected,
+            )
+        }
+        // The control belongs at the older end of the list, which flips with the sort order.
+        if (state.canLoadOlder && state.selectedSort == HistorySortOrder.Oldest) {
+            loadOlderItem(isLoading = state.isLoadingOlder, onLoadOlder = onLoadOlder)
+        }
+        items(images, key = { it.id }) { image ->
+            HistoryImageItem(
+                image = image,
+                onClick = { onImageClick(image) },
+                onAddToDataset = { onAddToDataset(image) },
+            )
+        }
+        if (state.canLoadOlder && state.selectedSort == HistorySortOrder.Newest) {
+            loadOlderItem(isLoading = state.isLoadingOlder, onLoadOlder = onLoadOlder)
+        }
+    }
+}
+
+private fun LazyGridScope.loadOlderItem(isLoading: Boolean, onLoadOlder: () -> Unit) {
+    item(span = { GridItemSpan(maxLineSpan) }) {
+        LoadOlderControl(isLoading = isLoading, onClick = onLoadOlder)
+    }
+}
+
+@Composable
+private fun LoadOlderControl(isLoading: Boolean, onClick: () -> Unit) {
+    // Matches the button's 48dp touch target so the row keeps its height when the spinner replaces it.
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = LOAD_OLDER_MIN_HEIGHT),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.size(IconSize.medium))
+        } else {
+            OutlinedButton(onClick = onClick) {
+                Text(stringResource(R.string.comfyui_load_older_outputs))
             }
         }
     }
