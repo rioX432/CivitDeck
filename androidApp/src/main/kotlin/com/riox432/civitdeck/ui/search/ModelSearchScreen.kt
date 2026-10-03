@@ -386,26 +386,12 @@ private fun SearchScreenSheets(
     onDismissSaveDialog: () -> Unit,
 ) {
     if (showFilterSheet) {
-        FilterBottomSheet(
+        SearchFilterSheet(
             uiState = uiState,
+            viewModel = viewModel,
             onDismiss = onDismissFilterSheet,
             onShowSavedFilters = onShowSavedFilters,
             onSaveFilter = onShowSaveDialog,
-            onResetFilters = viewModel::resetFilters,
-            filterCallbacks = FilterCallbacks(
-                onTypeSelected = viewModel::onTypeSelected,
-                onBaseModelToggled = viewModel::onBaseModelToggled,
-                onSortSelected = viewModel::onSortSelected,
-                onPeriodSelected = viewModel::onPeriodSelected,
-                onNsfwLevelSelected = viewModel::onNsfwFilterLevelSelected,
-                onFreshFindToggled = viewModel::onFreshFindToggled,
-                onQualityFilterToggled = viewModel::onQualityFilterToggled,
-                onAddIncludedTag = viewModel::onAddIncludedTag,
-                onRemoveIncludedTag = viewModel::onRemoveIncludedTag,
-                onAddExcludedTag = viewModel::onAddExcludedTag,
-                onRemoveExcludedTag = viewModel::onRemoveExcludedTag,
-                onSourceToggled = viewModel::toggleSource,
-            ),
         )
     }
     if (showSavedFiltersSheet) {
@@ -430,6 +416,49 @@ private fun SearchScreenSheets(
                 onDismissSaveDialog()
             },
             onDismiss = onDismissSaveDialog,
+        )
+    }
+}
+
+@Composable
+private fun SearchFilterSheet(
+    uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
+    viewModel: ModelSearchViewModel,
+    onDismiss: () -> Unit,
+    onShowSavedFilters: () -> Unit,
+    onSaveFilter: () -> Unit,
+) {
+    var showBaseModelPicker by remember { mutableStateOf(false) }
+    FilterBottomSheet(
+        uiState = uiState,
+        onDismiss = onDismiss,
+        onShowSavedFilters = onShowSavedFilters,
+        onSaveFilter = onSaveFilter,
+        onResetFilters = viewModel::resetFilters,
+        filterCallbacks = FilterCallbacks(
+            onTypeSelected = viewModel::onTypeSelected,
+            onBaseModelToggled = viewModel::onBaseModelToggled,
+            onChooseBaseModels = { showBaseModelPicker = true },
+            onSortSelected = viewModel::onSortSelected,
+            onPeriodSelected = viewModel::onPeriodSelected,
+            onNsfwLevelSelected = viewModel::onNsfwFilterLevelSelected,
+            onFreshFindToggled = viewModel::onFreshFindToggled,
+            onQualityFilterToggled = viewModel::onQualityFilterToggled,
+            onAddIncludedTag = viewModel::onAddIncludedTag,
+            onRemoveIncludedTag = viewModel::onRemoveIncludedTag,
+            onAddExcludedTag = viewModel::onAddExcludedTag,
+            onRemoveExcludedTag = viewModel::onRemoveExcludedTag,
+            onSourceToggled = viewModel::toggleSource,
+        ),
+    )
+    if (showBaseModelPicker) {
+        BaseModelPickerSheet(
+            catalog = uiState.baseModelCatalog,
+            initialSelection = uiState.selectedBaseModels,
+            onClose = { selection ->
+                showBaseModelPicker = false
+                viewModel.onBaseModelsApplied(selection)
+            },
         )
     }
 }

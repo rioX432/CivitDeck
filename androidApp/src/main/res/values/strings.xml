@@ -591,6 +591,20 @@
     <string name="search_fresh_only">Fresh Only</string>
     <string name="search_quality_filter_title">Quality Filter</string>
     <string name="search_quality_filter_subtitle">Hide low-quality results</string>
+    <string name="search_filter_base_model">Base model</string>
+    <string name="search_filter_base_model_any">Any</string>
+    <string name="search_filter_base_model_choose">Choose base models</string>
+    <string name="search_filter_base_model_choose_count">Choose base models (%1$d)</string>
+    <string name="base_model_picker_title">Base models</string>
+    <string name="base_model_picker_search_hint">Search base models</string>
+    <string name="base_model_picker_section_selected">Selected</string>
+    <string name="base_model_picker_section_current">Current</string>
+    <string name="base_model_picker_section_older">Older</string>
+    <string name="base_model_picker_section_count">(%1$d)</string>
+    <string name="base_model_picker_marker_retired">retired</string>
+    <string name="base_model_picker_marker_unknown">unknown</string>
+    <string name="base_model_picker_no_match">No base models match \"%1$s\"</string>
+    <string name="cd_remove_base_model">Remove %1$s</string>
 
     <!-- Detail -->
     <string name="detail_find_similar">Find similar</string>
