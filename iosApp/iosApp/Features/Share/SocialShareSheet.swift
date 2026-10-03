@@ -6,11 +6,15 @@ struct SocialShareSheet: View {
     let onToggle: (String, Bool) -> Void
     let onAdd: (String) -> Void
     let onRemove: (String) -> Void
+    var imageURL: String?
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.civitTheme) private var theme
     @State private var caption = ""
     @State private var newTagInput = ""
+    @State private var isLoadingImage = false
+    @State private var showImageLoadError = false
+    @State private var shareTask: Task<Void, Never>?
 
     private let charLimit = 280
 
@@ -47,7 +51,11 @@ struct SocialShareSheet: View {
                     Button("Cancel") { dismiss() }
                 }
             }
+            .alert("Couldn't load the image to share", isPresented: $showImageLoadError) {
+                Button("OK", role: .cancel) {}
+            }
         }
+        .onDisappear { shareTask?.cancel() }
     }
 
     // MARK: - Caption
@@ -160,17 +168,58 @@ struct SocialShareSheet: View {
             .buttonStyle(.bordered)
 
             Button {
-                presentShareSheet()
+                share()
             } label: {
-                Label("Share", systemImage: "square.and.arrow.up")
-                    .frame(maxWidth: .infinity)
+                ZStack {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                        .opacity(isLoadingImage ? 0 : 1)
+                    if isLoadingImage {
+                        ProgressView()
+                            .tint(.white)
+                    }
+                }
+                .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .disabled(isLoadingImage)
         }
     }
 
-    private func presentShareSheet() {
-        let items: [Any] = [fullText]
+    private func share() {
+        guard let imageURL else {
+            presentShareSheet(items: [fullText])
+            return
+        }
+        isLoadingImage = true
+        shareTask = Task {
+            let image = await Self.loadShareImage(from: imageURL)
+            isLoadingImage = false
+            // The sheet may have been dismissed while the image was loading.
+            guard !Task.isCancelled else { return }
+            if let image {
+                presentShareSheet(items: [image, fullText])
+            } else {
+                showImageLoadError = true
+            }
+        }
+    }
+
+    private static func loadShareImage(from urlString: String) async -> UIImage? {
+        guard let url = URL(string: urlString) else { return nil }
+        // Cache-first so an image already shown on screen is not downloaded again.
+        let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
+        do {
+            let (data, response) = try await ImageURLSession.shared.data(for: request)
+            if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+                return nil
+            }
+            return UIImage(data: data)
+        } catch {
+            return nil
+        }
+    }
+
+    private func presentShareSheet(items: [Any]) {
         let activityVC = UIActivityViewController(
             activityItems: items,
             applicationActivities: nil
