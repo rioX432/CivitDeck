@@ -6,10 +6,12 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.filterNsfwImages
 import com.riox432.civitdeck.domain.model.includeNsfwModels
+import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.domain.util.UiLoadingState
 import com.riox432.civitdeck.feature.search.domain.usecase.GetDiscoveryModelsUseCase
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,12 +28,12 @@ data class SwipeDiscoveryState(
 
 data class DismissedCard(
     val model: Model,
-    val wasFavorited: Boolean,
 )
 
 class SwipeDiscoveryViewModel(
     private val getDiscoveryModels: GetDiscoveryModelsUseCase,
     private val toggleFavorite: ToggleFavoriteUseCase,
+    private val observeIsFavorite: ObserveIsFavoriteUseCase,
     private val observeNsfwFilter: ObserveNsfwFilterUseCase,
 ) : ViewModel() {
 
@@ -47,12 +49,24 @@ class SwipeDiscoveryViewModel(
     // `nsfw` request flag changes.
     private var cursorNsfw: Boolean? = null
 
+    // Favorite writes run one after another so that Undo, or a second swipe on the same model,
+    // reads the favorite state only after the earlier swipe's check-and-add has finished.
+    private var favoriteWork: Job? = null
+
+    // Null when the last swipe was not a right swipe or was already undone.
+    private var lastRightSwipe: RightSwipeResult? = null
+
     companion object {
         /** Persists dismissed model IDs across ViewModel recreations within the same session. */
         private val sessionDismissedIds = MutableStateFlow<Set<Long>>(emptySet())
 
         /** Same bound as `SearchPageLoader`: pages fetched per load while every result is already seen. */
         private const val MAX_FETCH_ITERATIONS = 5
+    }
+
+    /** Filled in by the swipe's favorite work; read only by favorite work queued after it. */
+    private class RightSwipeResult {
+        var addedFavorite = false
     }
 
     init {
@@ -97,17 +111,26 @@ class SwipeDiscoveryViewModel(
         return emptyList()
     }
 
+    // Right swipe only adds: toggling would remove a model the user had already favorited.
     fun onSwipeRight(model: Model) {
-        removeTopCard(model, wasFavorited = true)
-        viewModelScope.launch { toggleFavorite(model) }
+        removeTopCard(model)
+        val result = RightSwipeResult()
+        lastRightSwipe = result
+        runFavoriteWork {
+            val alreadyFavorite = observeIsFavorite(model.id).first()
+            if (!alreadyFavorite) {
+                toggleFavorite(model)
+                result.addedFavorite = true
+            }
+        }
     }
 
     fun onSwipeLeft(model: Model) {
-        removeTopCard(model, wasFavorited = false)
+        removeTopCard(model)
     }
 
     fun onSwipeUp(model: Model): Long {
-        removeTopCard(model, wasFavorited = false)
+        removeTopCard(model)
         return model.id
     }
 
@@ -119,17 +142,28 @@ class SwipeDiscoveryViewModel(
                 lastDismissed = null,
             )
         }
-        if (dismissed.wasFavorited) {
-            viewModelScope.launch { toggleFavorite(dismissed.model) }
+        val rightSwipe = lastRightSwipe ?: return
+        lastRightSwipe = null
+        runFavoriteWork {
+            if (rightSwipe.addedFavorite) toggleFavorite(dismissed.model)
         }
     }
 
-    private fun removeTopCard(model: Model, wasFavorited: Boolean) {
+    private fun runFavoriteWork(block: suspend () -> Unit) {
+        val previous = favoriteWork
+        favoriteWork = viewModelScope.launch {
+            previous?.join()
+            block()
+        }
+    }
+
+    private fun removeTopCard(model: Model) {
+        lastRightSwipe = null
         sessionDismissedIds.update { it + model.id }
         _state.update {
             it.copy(
                 cards = it.cards.filterNot { card -> card.id == model.id },
-                lastDismissed = DismissedCard(model, wasFavorited),
+                lastDismissed = DismissedCard(model),
             )
         }
         if (_state.value.cards.size <= prefetchThreshold) {

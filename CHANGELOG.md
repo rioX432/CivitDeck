@@ -18,6 +18,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Semantic corpus-index spike decision doc and a `SigLipTokenizer` HF-parity test (#989, #996)
 - `ComfyUIGenerationViewModel.applyPrefill` fills the generation form from `ComfyUIGenerationParams`, selecting the requested checkpoint by file name even when the server list loads afterwards; sampler and scheduler are intentionally not applied (#1038)
 - `ComfyUIGenerationViewModel.onTemplateApplied` applies a workflow template: a template imported from a raw ComfyUI workflow loads as the custom workflow, and any other template clears a loaded custom workflow and fills the form from its variables (#1041)
+- `ComfyUIHistoryViewModel.loadOlder()` re-fetches history with a window one page (200 entries) wider, exposing `canLoadOlder`/`isLoadingOlder`; `refresh()` keeps the widened window and a new fetch cancels the one in flight. No UI button yet (#1053)
 - `ComfyUIServerTrust` and `createComfyUIHttpClient(trust, timeoutConfig)` — Android/JVM ComfyUI clients can accept only the server whose leaf certificate matches a stored SHA-256 pin and record the fingerprint the server presented; iOS keeps system trust for now (#1118)
 - ComfyUI onboarding captures the certificate of a self-signed HTTPS server: the test fails with `CertificateUnconfirmed` (no pin yet) or `CertificateChanged` (different certificate) and the presented SHA-256 fingerprint, and `ConnectionOnboardingViewModel.onTrustCertificate()` tests again with that pin and saves the connection with it; `onReviewCertificate(saved)` re-tests a saved connection. The tester uses a one-off pinned client per test instead of the trust-all client (#1119)
 
@@ -28,6 +29,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Docs & positioning — README now leads with the single discovery promise, the ViewModel count is unified to the measured 42, and ROADMAP is reframed as a forward-looking compass (#992, #1001)
 - ComfyUI Outputs list requests only the newest 200 history entries (`GET /history?max_items=200`, the same page size as ComfyUI's own frontend) instead of the server's entire history; older outputs are not reachable until history paging lands (#1051)
 - `FetchComfyUIHistoryUseCase(maxItems)` emits a `ComfyUIHistoryPage(images, hasMore)`; `hasMore` is true when `/history` returned the full `maxItems` entries (counting history entries, including failed prompts without images, not images). No user-visible change (#1052)
+- ComfyUI connection test reports `LoopbackHost` when a test against `localhost`, `127.x.x.x` or `0.0.0.0` fails without an HTTP response (unreachable or timed out), so the UI can explain that the address points at this device rather than the PC; HTTP, auth, non-ComfyUI and TLS failures keep their cause (#1061)
 
 ### Removed
 
@@ -35,6 +37,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- Swipe discovery's right swipe (heart) now only adds to Favorites: a model that is already favorited stays favorited, and Undo removes a favorite only when that swipe added it, including an Undo pressed before the favorite check finishes (#1074)
 - Restoring a backup with "Merge" no longer deletes or renames an existing collection whose id matches a backup collection; backup collections merge into same-name local collections or are added as new ones (#1019)
 - iOS ComfyUI generation form now sends the checkpoint, prompts, sampler settings, size, seed, ControlNet and denoise values to the shared ViewModel, so Generate submits what was entered instead of silently doing nothing (#1025)
 - Download Queue no longer crashes on Android — registered the missing `AndroidDownloadScheduler` Koin binding (`DownloadScheduler` was bound on iOS/Desktop but not Android since #694) (#1003)
