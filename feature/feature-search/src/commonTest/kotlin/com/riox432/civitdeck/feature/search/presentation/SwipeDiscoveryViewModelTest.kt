@@ -4,6 +4,7 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.domain.model.PaginatedResult
+import com.riox432.civitdeck.domain.usecase.ObserveIsFavoriteUseCase
 import com.riox432.civitdeck.domain.usecase.ObserveNsfwFilterUseCase
 import com.riox432.civitdeck.domain.usecase.ToggleFavoriteUseCase
 import com.riox432.civitdeck.feature.search.domain.usecase.GetDiscoveryModelsUseCase
@@ -24,11 +25,13 @@ import kotlinx.coroutines.test.setMain
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * Covers how [SwipeDiscoveryViewModel] applies the user's NSFW filter level (the `nsfw`
  * request flag sent to `/models` and the client-side image filtering of loaded cards) and
- * how it pages through results with `nextCursor`.
+ * how it pages through results with `nextCursor`, and how right swipes and Undo change Favorites.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SwipeDiscoveryViewModelTest {
@@ -42,12 +45,14 @@ class SwipeDiscoveryViewModelTest {
         val vm: SwipeDiscoveryViewModel,
         val modelRepo: FakeModelRepository,
         val nsfwPrefs: FakeContentFilterPreferencesRepository,
+        val favoriteRepo: FakeFavoriteRepository,
     )
 
     private fun TestScope.createViewModel(
         level: NsfwFilterLevel,
         models: List<Model> = listOf(testModel(id = SFW_MODEL_ID)),
         pages: List<PaginatedResult<Model>> = listOf(testPaginatedResult(items = models)),
+        favoriteRepo: FakeFavoriteRepository = FakeFavoriteRepository(),
     ): TestDeps {
         // Defers the init-launched load until the test advances the scheduler.
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
@@ -55,10 +60,11 @@ class SwipeDiscoveryViewModelTest {
         val nsfwPrefs = FakeContentFilterPreferencesRepository(level)
         val vm = SwipeDiscoveryViewModel(
             getDiscoveryModels = GetDiscoveryModelsUseCase(modelRepo),
-            toggleFavorite = ToggleFavoriteUseCase(FakeFavoriteRepository()),
+            toggleFavorite = ToggleFavoriteUseCase(favoriteRepo),
+            observeIsFavorite = ObserveIsFavoriteUseCase(favoriteRepo),
             observeNsfwFilter = ObserveNsfwFilterUseCase(nsfwPrefs),
         )
-        return TestDeps(vm, modelRepo, nsfwPrefs)
+        return TestDeps(vm, modelRepo, nsfwPrefs, favoriteRepo)
     }
 
     @Test
@@ -174,6 +180,72 @@ class SwipeDiscoveryViewModelTest {
         assertEquals(emptyList(), deps.vm.state.value.cards)
     }
 
+    @Test
+    fun swipeRightOnFavorite_keepsItFavoritedThroughUndo() = runTest {
+        val deps = createViewModel(
+            level = NsfwFilterLevel.Off,
+            models = models(listOf(ALREADY_FAVORITE_MODEL_ID)),
+            favoriteRepo = FakeFavoriteRepository(isFavorite = true),
+        )
+        advanceUntilIdle()
+
+        deps.vm.onSwipeRight(deps.vm.state.value.cards.single())
+        advanceUntilIdle()
+        assertEquals(0, deps.favoriteRepo.toggleCount)
+
+        deps.vm.undoLastSwipe()
+        advanceUntilIdle()
+        assertEquals(0, deps.favoriteRepo.toggleCount)
+        assertTrue(deps.favoriteRepo.isFavoriteFlow.value)
+    }
+
+    @Test
+    fun swipeRightOnNonFavorite_addsItAndUndoRemovesIt() = runTest {
+        val ids = listOf(ADDED_FAVORITE_MODEL_ID, ADDED_FAVORITE_MODEL_ID + 1)
+        val deps = createViewModel(level = NsfwFilterLevel.Off, models = models(ids))
+        advanceUntilIdle()
+
+        deps.vm.onSwipeRight(deps.vm.state.value.cards.first())
+        advanceUntilIdle()
+        assertEquals(1, deps.favoriteRepo.toggleCount)
+        assertTrue(deps.favoriteRepo.isFavoriteFlow.value)
+
+        deps.vm.undoLastSwipe()
+        advanceUntilIdle()
+        assertEquals(2, deps.favoriteRepo.toggleCount)
+        assertFalse(deps.favoriteRepo.isFavoriteFlow.value)
+        assertEquals(ids, deps.vm.state.value.cards.map { it.id })
+    }
+
+    @Test
+    fun undoBeforeFavoriteCheckCompletes_stillRemovesTheAddedFavorite() = runTest {
+        val deps = createViewModel(level = NsfwFilterLevel.Off, models = models(listOf(IMMEDIATE_UNDO_MODEL_ID)))
+        advanceUntilIdle()
+
+        deps.vm.onSwipeRight(deps.vm.state.value.cards.single())
+        deps.vm.undoLastSwipe()
+        advanceUntilIdle()
+
+        assertEquals(2, deps.favoriteRepo.toggleCount)
+        assertFalse(deps.favoriteRepo.isFavoriteFlow.value)
+    }
+
+    @Test
+    fun undoOfLeftSwipeAfterRightSwipe_keepsTheEarlierFavorite() = runTest {
+        val ids = listOf(LEFT_SWIPE_MODEL_ID, LEFT_SWIPE_MODEL_ID + 1)
+        val deps = createViewModel(level = NsfwFilterLevel.Off, models = models(ids))
+        advanceUntilIdle()
+
+        deps.vm.onSwipeRight(deps.vm.state.value.cards.first())
+        deps.vm.onSwipeLeft(deps.vm.state.value.cards.first())
+        deps.vm.undoLastSwipe()
+        advanceUntilIdle()
+
+        assertEquals(1, deps.favoriteRepo.toggleCount)
+        assertTrue(deps.favoriteRepo.isFavoriteFlow.value)
+        assertEquals(ids.drop(1), deps.vm.state.value.cards.map { it.id })
+    }
+
     private fun models(ids: List<Long>): List<Model> = ids.map { testModel(id = it) }
 
     private companion object {
@@ -183,5 +255,9 @@ class SwipeDiscoveryViewModelTest {
         val PREFETCH_IDS = (73_001L..73_008L).toList()
         val SKIP_AHEAD_IDS = (74_001L..74_008L).toList()
         const val BOUNDED_MODEL_ID = 75_001L
+        const val ALREADY_FAVORITE_MODEL_ID = 76_001L
+        const val ADDED_FAVORITE_MODEL_ID = 76_101L
+        const val IMMEDIATE_UNDO_MODEL_ID = 76_201L
+        const val LEFT_SWIPE_MODEL_ID = 76_301L
     }
 }
