@@ -37,6 +37,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.InjectWorkflowParame
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ParseAppModeMetadataUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.PopulateGenerationFromModelUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.testing.FakeAppBehaviorPreferencesRepository
 import com.riox432.civitdeck.testing.FakeGenerationNotificationService
@@ -85,7 +86,7 @@ class ComfyUIGenerationViewModelTest {
 
     private class FakeGenerationRepo(
         private val checkpoints: CompletableDeferred<List<String>>,
-        private val diffusionModelResources: () -> DiffusionModelResources,
+        private val diffusionModelResources: suspend () -> DiffusionModelResources,
         private val submitted: MutableList<ComfyUIGenerationParams>,
     ) : ComfyUIGenerationRepository {
         override suspend fun fetchCheckpoints(): List<String> = checkpoints.await()
@@ -152,7 +153,7 @@ class ComfyUIGenerationViewModelTest {
 
     private fun TestScope.createViewModel(
         checkpoints: CompletableDeferred<List<String>>,
-        diffusionModelResources: () -> DiffusionModelResources = { DiffusionModelResources() },
+        diffusionModelResources: suspend () -> DiffusionModelResources = { DiffusionModelResources() },
         submitted: MutableList<ComfyUIGenerationParams> = mutableListOf(),
     ): ComfyUIGenerationViewModel {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
@@ -585,7 +586,190 @@ class ComfyUIGenerationViewModelTest {
         assertEquals("simple", vm.uiState.value.scheduler)
     }
 
+    // -- Prefill with a CivitAI base model --
+
+    private fun bridgePrefill(fileName: String, baseModel: String, steps: Int? = null) =
+        PopulateGenerationFromModelUseCase()(
+            prompt = "a cat",
+            negativePrompt = null,
+            steps = steps,
+            cfgScale = null,
+            seed = null,
+            sampler = "DPM++ 2M Karras",
+            checkpointName = fileName,
+            baseModel = baseModel,
+        )
+
+    private fun ComfyUIGenerationViewModel.prefill(fileName: String, baseModel: String, steps: Int? = null) =
+        applyPrefill(bridgePrefill(fileName, baseModel, steps), baseModel)
+
+    @Test
+    fun krea_2_file_in_diffusion_models_is_selected_with_the_family_and_its_defaults() = runTest {
+        val vm = createDiffusionViewModel()
+
+        vm.prefill(KREA_MODEL, KREA_BASE_MODEL)
+
+        val state = vm.uiState.value
+        assertEquals(GenerationModelSource.DIFFUSION_MODEL, state.modelSource)
+        assertEquals(KREA_MODEL, state.selectedDiffusionModel)
+        assertEquals(DiffusionModelFamily.KREA_2, state.selectedFamily)
+        assertEquals(8, state.steps)
+        assertEquals(1.0, state.cfgScale)
+        assertEquals(1024, state.width)
+        assertEquals("euler", state.samplerName)
+        assertEquals("simple", state.scheduler)
+        assertEquals("qwen3vl_4b_fp8_scaled.safetensors", state.selectedTextEncoder)
+        assertEquals("qwen_image_vae.safetensors", state.selectedVae)
+        assertTrue(state.canGenerate)
+    }
+
+    @Test
+    fun metadata_steps_win_over_the_family_default() = runTest {
+        val vm = createDiffusionViewModel()
+
+        vm.prefill(KREA_MODEL, KREA_BASE_MODEL, steps = 12)
+
+        assertEquals(12, vm.uiState.value.steps)
+        assertEquals(1.0, vm.uiState.value.cfgScale)
+        assertEquals(DiffusionModelFamily.KREA_2, vm.uiState.value.selectedFamily)
+    }
+
+    @Test
+    fun krea_2_file_only_in_checkpoints_is_generated_as_a_checkpoint_with_the_family_defaults() = runTest {
+        val submitted = mutableListOf<ComfyUIGenerationParams>()
+        val vm = createDiffusionViewModel(submitted = submitted)
+
+        vm.prefill("foo.safetensors", KREA_BASE_MODEL)
+        vm.onGenerate()
+        advanceUntilIdle()
+
+        val state = vm.uiState.value
+        assertEquals(GenerationModelSource.CHECKPOINT, state.modelSource)
+        assertEquals("SDXL/foo.safetensors", state.selectedCheckpoint)
+        assertEquals(DiffusionModelFamily.KREA_2, state.selectedFamily)
+        val params = submitted.single()
+        assertEquals("SDXL/foo.safetensors", params.checkpoint)
+        assertNull(params.diffusionModel)
+        assertEquals(8, params.steps)
+        assertEquals(1.0, params.cfgScale)
+        assertEquals("simple", params.scheduler)
+    }
+
+    @Test
+    fun krea_2_file_on_neither_list_selects_no_model() = runTest {
+        val vm = createDiffusionViewModel()
+        vm.onDiffusionModelSelected(ANIMA_MODEL)
+
+        vm.prefill("missing.safetensors", KREA_BASE_MODEL)
+
+        val state = vm.uiState.value
+        assertEquals("", state.selectedCheckpoint)
+        assertEquals("", state.selectedDiffusionModel)
+        assertEquals(DiffusionModelFamily.KREA_2, state.selectedFamily)
+        assertFalse(state.canGenerate)
+    }
+
+    @Test
+    fun unknown_base_model_with_a_requested_checkpoint_is_matched_after_load() = runTest {
+        val checkpoints = CompletableDeferred<List<String>>()
+        val vm = createViewModel(checkpoints)
+        advanceUntilIdle()
+
+        vm.prefill("FOO.safetensors", SDXL_BASE_MODEL)
+        checkpoints.complete(listOf("SD15/bar.safetensors", "SDXL/foo.safetensors"))
+        advanceUntilIdle()
+
+        assertEquals("SDXL/foo.safetensors", vm.uiState.value.selectedCheckpoint)
+        assertNull(vm.uiState.value.selectedFamily)
+        assertEquals("normal", vm.uiState.value.scheduler)
+        assertEquals(20, vm.uiState.value.steps)
+    }
+
+    @Test
+    fun unknown_base_model_with_an_unknown_checkpoint_falls_back_to_first_entry() = runTest {
+        val vm = createDiffusionViewModel()
+        vm.onCheckpointSelected("SDXL/foo.safetensors")
+
+        vm.prefill("missing.safetensors", SDXL_BASE_MODEL)
+
+        assertEquals(GenerationModelSource.CHECKPOINT, vm.uiState.value.modelSource)
+        assertEquals("SD15/bar.safetensors", vm.uiState.value.selectedCheckpoint)
+    }
+
+    @Test
+    fun unknown_base_model_file_in_diffusion_models_is_selected_without_a_family() = runTest {
+        val vm = createDiffusionViewModel()
+
+        vm.prefill(ANIMA_MODEL, "Illustrious")
+
+        val state = vm.uiState.value
+        assertEquals(GenerationModelSource.DIFFUSION_MODEL, state.modelSource)
+        assertEquals(ANIMA_MODEL, state.selectedDiffusionModel)
+        assertNull(state.selectedFamily)
+        assertFalse(state.canGenerate)
+    }
+
+    @Test
+    fun checkpoint_prefill_switches_away_from_a_selected_diffusion_model() = runTest {
+        val submitted = mutableListOf<ComfyUIGenerationParams>()
+        val vm = createDiffusionViewModel(submitted = submitted)
+        vm.onDiffusionModelSelected(KREA_MODEL)
+        vm.onModelFamilySelected(DiffusionModelFamily.KREA_2)
+
+        vm.applyPrefill(ComfyUIGenerationParams(checkpoint = "foo.safetensors", prompt = "p"))
+        vm.onGenerate()
+        advanceUntilIdle()
+
+        val state = vm.uiState.value
+        assertEquals(GenerationModelSource.CHECKPOINT, state.modelSource)
+        assertNull(state.selectedFamily)
+        assertEquals("normal", state.scheduler)
+        assertEquals("SDXL/foo.safetensors", submitted.single().checkpoint)
+        assertNull(submitted.single().diffusionModel)
+    }
+
+    @Test
+    fun prefill_waits_for_the_diffusion_model_list() = runTest {
+        val resources = CompletableDeferred<DiffusionModelResources>()
+        val vm = createViewModel(
+            loaded("SD15/bar.safetensors", "SDXL/foo.safetensors"),
+            diffusionModelResources = { resources.await() },
+        )
+        advanceUntilIdle()
+
+        vm.prefill(KREA_MODEL, KREA_BASE_MODEL)
+        assertEquals(GenerationModelSource.CHECKPOINT, vm.uiState.value.modelSource)
+        assertNull(vm.uiState.value.selectedFamily)
+
+        resources.complete(
+            DiffusionModelResources(diffusionModels = listOf(KREA_MODEL), clipTypes = listOf("krea2")),
+        )
+        advanceUntilIdle()
+
+        assertEquals(GenerationModelSource.DIFFUSION_MODEL, vm.uiState.value.modelSource)
+        assertEquals(KREA_MODEL, vm.uiState.value.selectedDiffusionModel)
+        assertEquals(DiffusionModelFamily.KREA_2, vm.uiState.value.selectedFamily)
+    }
+
+    @Test
+    fun failed_diffusion_model_load_counts_as_an_empty_list() = runTest {
+        val checkpoints = CompletableDeferred<List<String>>()
+        val vm = createViewModel(checkpoints, diffusionModelResources = { error("server unreachable") })
+        advanceUntilIdle()
+
+        vm.prefill("foo.safetensors", KREA_BASE_MODEL)
+        checkpoints.complete(listOf("SD15/bar.safetensors", "SDXL/foo.safetensors"))
+        advanceUntilIdle()
+
+        val state = vm.uiState.value
+        assertEquals(GenerationModelSource.CHECKPOINT, state.modelSource)
+        assertEquals("SDXL/foo.safetensors", state.selectedCheckpoint)
+        assertEquals(DiffusionModelFamily.KREA_2, state.selectedFamily)
+    }
+
     private companion object {
+        const val KREA_BASE_MODEL = "Krea 2"
+        const val SDXL_BASE_MODEL = "SDXL 1.0"
         const val KREA_MODEL = "krea2_turbo_fp8_scaled.safetensors"
         const val ANIMA_MODEL = "novaAnimeAM_v5029B.safetensors"
         const val RAW_WORKFLOW =

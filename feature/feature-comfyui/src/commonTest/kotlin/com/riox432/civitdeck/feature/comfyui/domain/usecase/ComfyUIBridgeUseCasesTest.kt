@@ -144,6 +144,59 @@ class ComfyUIBridgeUseCasesTest {
         assertEquals(42L, params.seed)
     }
 
+    @Test
+    fun populateGeneration_knownFamilyFillsWhatTheMetadataLacks() {
+        val params = populateKrea2(steps = null, cfgScale = null)
+
+        assertEquals(8, params.steps)
+        assertEquals(1.0, params.cfgScale)
+        assertEquals(1024, params.width)
+        assertEquals(1024, params.height)
+        assertEquals("euler", params.samplerName)
+        assertEquals("simple", params.scheduler)
+    }
+
+    @Test
+    fun populateGeneration_metadataWinsOverTheFamilyExceptSamplerAndScheduler() {
+        val params = populateKrea2(steps = 12, cfgScale = 2.5)
+
+        assertEquals(12, params.steps)
+        assertEquals(2.5, params.cfgScale)
+        assertEquals("euler", params.samplerName)
+        assertEquals("simple", params.scheduler)
+    }
+
+    @Test
+    fun populateGeneration_unknownBaseModelKeepsTheGenericDefaults() {
+        val params = PopulateGenerationFromModelUseCase()(
+            prompt = "a cat",
+            negativePrompt = null,
+            steps = null,
+            cfgScale = null,
+            seed = null,
+            sampler = "DPM++ 2M Karras",
+            checkpointName = "ckpt",
+            baseModel = "SDXL 1.0",
+        )
+
+        assertEquals(ComfyUIGenerationParams.DEFAULT_STEPS, params.steps)
+        assertEquals(ComfyUIGenerationParams.DEFAULT_CFG, params.cfgScale)
+        assertEquals(ComfyUIGenerationParams.DEFAULT_DIMENSION, params.width)
+        assertEquals("dpm++_2m_karras", params.samplerName)
+        assertEquals(ComfyUIGenerationParams.DEFAULT_SCHEDULER, params.scheduler)
+    }
+
+    private fun populateKrea2(steps: Int?, cfgScale: Double?) = PopulateGenerationFromModelUseCase()(
+        prompt = "a cat",
+        negativePrompt = null,
+        steps = steps,
+        cfgScale = cfgScale,
+        seed = null,
+        sampler = "DPM++ 2M Karras",
+        checkpointName = "krea2_turbo_fp8_scaled.safetensors",
+        baseModel = " krea 2 ",
+    )
+
     // endregion
 
     private class FakeHashRepo(private val owned: Set<String>) : ModelFileHashRepository {
