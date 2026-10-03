@@ -10,6 +10,12 @@ object SecurityLevelHelper {
         Regex("^192\\.168\\..*"),
         Regex("^127\\..*"),
         Regex("^localhost$", RegexOption.IGNORE_CASE),
+        // Tailscale traffic is WireGuard-encrypted, so plain HTTP to a tailnet peer is not
+        // internet-exposed. 100.64.0.0/10 is shared with carrier-grade NAT, but a home ComfyUI is
+        // not served from a CGNAT address, so treating the whole range as private is low-risk.
+        Regex("^100\\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\\..*"),
+        // The leading dot keeps look-alike domains such as evil-ts.net remote.
+        Regex("^.+\\.ts\\.net$", RegexOption.IGNORE_CASE),
     )
 
     fun getSecurityLevel(connection: ComfyUIConnection): ConnectionSecurityLevel {
