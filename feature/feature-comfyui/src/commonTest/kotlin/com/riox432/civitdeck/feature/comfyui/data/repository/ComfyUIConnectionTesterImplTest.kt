@@ -17,6 +17,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotSame
@@ -227,6 +228,23 @@ class ComfyUIConnectionTesterImplTest {
     fun pin_failure_cause_stays_tls_without_a_presented_certificate_or_on_a_match() {
         assertEquals(ConnectionFailureCause.Tls, pinFailureCause(expected = null, presented = null))
         assertEquals(ConnectionFailureCause.Tls, pinFailureCause(expected = PIN, presented = PIN))
+    }
+
+    @Test
+    fun pin_rejection_when_a_certificate_was_presented_without_a_stored_pin() {
+        assertTrue(isPinRejection(expected = null, presented = PIN))
+    }
+
+    @Test
+    fun pin_rejection_when_the_presented_certificate_differs_from_the_pin() {
+        assertTrue(isPinRejection(expected = PIN, presented = OTHER_PIN))
+    }
+
+    @Test
+    fun no_pin_rejection_without_a_presented_certificate_or_on_a_match() {
+        assertFalse(isPinRejection(expected = null, presented = null))
+        assertFalse(isPinRejection(expected = PIN, presented = null))
+        assertFalse(isPinRejection(expected = PIN, presented = PIN))
     }
 
     private companion object {
