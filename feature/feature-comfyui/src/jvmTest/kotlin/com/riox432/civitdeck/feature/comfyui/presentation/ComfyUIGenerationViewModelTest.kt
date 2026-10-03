@@ -19,8 +19,10 @@ import com.riox432.civitdeck.domain.service.AppLifecycleTracker
 import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter
 import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
 import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
+import com.riox432.civitdeck.feature.comfyui.data.repository.ComfyUIQueueRepositoryImpl
 import com.riox432.civitdeck.feature.comfyui.data.repository.FakeComfyUIConnectionDao
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ApplyWorkflowTemplateUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.CancelComfyUIJobUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExtractWorkflowParametersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
@@ -28,7 +30,6 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUse
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchObjectInfoUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ImportWorkflowUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.InjectWorkflowParametersUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ParseAppModeMetadataUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
@@ -146,7 +147,9 @@ class ComfyUIGenerationViewModelTest {
                 submitGeneration = SubmitComfyUIGenerationUseCase(repo),
                 pollResult = PollComfyUIResultUseCase(repo),
                 observeProgress = ObserveGenerationProgressUseCase(repo),
-                interruptGeneration = InterruptComfyUIGenerationUseCase(repo),
+                cancelJob = CancelComfyUIJobUseCase(
+                    ComfyUIQueueRepositoryImpl(ComfyUIApiProvider(FakeComfyUIConnectionDao(), httpClient, Json)),
+                ),
                 saveImage = SaveGeneratedImageUseCase(
                     ComfyUIApiProvider(FakeComfyUIConnectionDao(), httpClient, Json),
                     NoOpImageSaver,

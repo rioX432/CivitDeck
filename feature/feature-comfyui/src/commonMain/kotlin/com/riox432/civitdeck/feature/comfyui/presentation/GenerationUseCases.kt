@@ -6,12 +6,12 @@ import com.riox432.civitdeck.domain.service.AppLifecycleTracker
 import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter
 import com.riox432.civitdeck.domain.service.GenerationNotificationService
 import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.CancelComfyUIJobUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ExtractWorkflowParametersUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUICheckpointsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUIControlNetsUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchComfyUILorasUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.FetchObjectInfoUseCase
-import com.riox432.civitdeck.feature.comfyui.domain.usecase.InterruptComfyUIGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationProgressUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
@@ -29,7 +29,7 @@ data class GenerationResourceUseCases(
 )
 
 /**
- * Generation execution: submitting, polling/progress, interruption, image saving, plus the
+ * Generation execution: submitting, polling/progress, cancelling, image saving, plus the
  * connection repository and notification/lifecycle services. Consumed by
  * [GenerationExecutionDelegate].
  */
@@ -37,7 +37,7 @@ data class GenerationExecutionUseCases(
     val submitGeneration: SubmitComfyUIGenerationUseCase,
     val pollResult: PollComfyUIResultUseCase,
     val observeProgress: ObserveGenerationProgressUseCase,
-    val interruptGeneration: InterruptComfyUIGenerationUseCase,
+    val cancelJob: CancelComfyUIJobUseCase,
     val saveImage: SaveGeneratedImageUseCase,
     val observeGenNotifEnabled: ObserveGenerationNotificationsEnabledUseCase,
     val repository: ComfyUIConnectionRepository,
