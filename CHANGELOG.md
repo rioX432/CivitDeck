@@ -62,6 +62,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Swipe discovery keeps serving new cards — it follows CivitAI's `nextCursor` instead of refetching page one, skips ahead (up to 5 requests per load) past pages whose cards were all already seen, and stops loading once the API reports no next page (#1073)
 - Android ComfyUI generation now applies the template picked from "Load template" — the picker opens as a full-screen dialog inside the generation screen and fills the form through `onTemplateApplied`, instead of a separate screen that discarded the choice (#1042)
 - Android "Try in ComfyUI" now opens the generation screen with the first sample image's prompt, negative prompt, steps, CFG and seed filled in, and selects the model's primary file as the checkpoint for Checkpoint models; the prefill applies once per screen so edits survive returning from another screen (#1039)
+- iOS "Try in ComfyUI" now opens the generation sheet with the first visible sample image's prompt, negative prompt, steps, CFG and seed filled in, and selects the model's primary file as the checkpoint for Checkpoint models when the server has it; the prefill applies once per sheet so it never overwrites edits (#1040)
 
 ### Infrastructure
 

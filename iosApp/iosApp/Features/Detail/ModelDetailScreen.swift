@@ -127,7 +127,7 @@ struct ModelDetailScreen: View {
         }
         .sheet(isPresented: $showComfyUIGeneration) {
             NavigationView {
-                ComfyUIGenerationView()
+                ComfyUIGenerationView(prefill: comfyUIPrefill())
             }
         }
         .sheet(isPresented: $showLinkSheet) {
@@ -396,5 +396,29 @@ struct ModelDetailScreen: View {
                 onCancelDownload: { viewModel.cancelDownload($0) }
             )
         }
+    }
+}
+
+// MARK: - Try in ComfyUI
+private extension ModelDetailScreen {
+    /// Reads the first image that passes the NSFW filter, so the prompt comes from a sample the user can see.
+    func comfyUIPrefill() -> ComfyUIGenerationParams {
+        let meta = filteredImages.first?.meta
+        return KoinHelper.shared.getPopulateGenerationFromModelUseCase().invoke(
+            prompt: meta?.prompt,
+            negativePrompt: meta?.negativePrompt,
+            steps: meta?.steps,
+            cfgScale: meta?.cfgScale,
+            seed: meta?.seed,
+            sampler: meta?.sampler,
+            checkpointName: checkpointFileName ?? ""
+        )
+    }
+
+    /// Nil unless the model is a Checkpoint: only those files can be selected as the ComfyUI checkpoint.
+    var checkpointFileName: String? {
+        guard viewModel.model?.type == .checkpoint,
+              let files = viewModel.selectedVersion?.files else { return nil }
+        return (files.first { $0.primary } ?? files.first)?.name
     }
 }
