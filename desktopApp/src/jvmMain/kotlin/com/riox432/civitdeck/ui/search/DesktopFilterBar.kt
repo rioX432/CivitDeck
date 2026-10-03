@@ -4,13 +4,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.riox432.civitdeck.domain.model.BaseModel
+import com.riox432.civitdeck.domain.model.BaseModelCatalog
 import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
@@ -20,7 +23,7 @@ import com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState
 import com.riox432.civitdeck.ui.theme.Spacing
 
 // Compose UI: state/callback params are an intrinsic UI contract; a param object only hides them.
-@Suppress("UnusedParameter", "LongParameterList")
+@Suppress("LongParameterList")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DesktopFilterBar(
@@ -29,6 +32,7 @@ fun DesktopFilterBar(
     onSortSelected: (SortOrder) -> Unit,
     onPeriodSelected: (TimePeriod) -> Unit,
     onBaseModelToggled: (BaseModel) -> Unit,
+    onChooseBaseModels: () -> Unit,
     onQualityFilterToggled: () -> Unit,
     onSourceToggled: (ModelSource) -> Unit,
     onNsfwLevelSelected: (NsfwFilterLevel) -> Unit,
@@ -75,6 +79,13 @@ fun DesktopFilterBar(
             ) { onPeriodSelected(period) }
         }
 
+        BaseModelFilterGroup(
+            selected = orderedBaseModelSelection(uiState.selectedBaseModels, uiState.baseModelCatalog),
+            catalog = uiState.baseModelCatalog,
+            onRemove = onBaseModelToggled,
+            onChoose = onChooseBaseModels,
+        )
+
         // Quality filter toggle
         QualityToggle(
             checked = uiState.isQualityFilterEnabled,
@@ -107,6 +118,41 @@ private fun TypeChip(
         onClick = onClick,
         label = { Text(label, style = MaterialTheme.typography.labelSmall) },
     )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun BaseModelFilterGroup(
+    selected: List<BaseModel>,
+    catalog: BaseModelCatalog?,
+    onRemove: (BaseModel) -> Unit,
+    onChoose: () -> Unit,
+) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+        itemVerticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = if (selected.isEmpty()) "Base model: Any" else "Base model:",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        selected.forEach { model ->
+            RemovableBaseModelChip(
+                label = baseModelChipLabel(model, catalog),
+                onRemove = { onRemove(model) },
+            )
+        }
+        AssistChip(
+            onClick = onChoose,
+            label = {
+                Text(
+                    text = if (selected.isEmpty()) "Choose base models" else "Choose base models (${selected.size})",
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            },
+        )
+    }
 }
 
 @Composable
