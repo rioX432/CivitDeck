@@ -352,10 +352,10 @@ private fun FailedDownloadItem(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = if (authRequired) {
-                    stringResource(R.string.download_queue_auth_required)
-                } else {
-                    download.errorMessage ?: download.status.name
+                text = when {
+                    authRequired -> stringResource(R.string.download_queue_auth_required)
+                    download.isHashMismatchFailure() -> stringResource(R.string.download_queue_hash_mismatch)
+                    else -> download.errorMessage ?: download.status.name
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
@@ -384,6 +384,11 @@ private fun FailedDownloadItem(
         }
     }
 }
+
+// A retry keeps the old `hashVerified = false`, and a mismatch is the only failure that stores
+// no error message, so a later HTTP or I/O failure still shows its own message.
+private fun ModelDownload.isHashMismatchFailure(): Boolean =
+    hashVerified == false && errorMessage == null
 
 @Composable
 private fun CompletedDownloadItem(

@@ -40,7 +40,14 @@ val detailModule = module {
             removePersonalTag = get(),
         )
     }
-    factory { DownloadUseCases(observeModelDownloads = get(), enqueueDownload = get(), cancelDownload = get()) }
+    factory {
+        DownloadUseCases(
+            observeModelDownloads = get(),
+            enqueueDownload = get(),
+            cancelDownload = get(),
+            downloadScheduler = get(),
+        )
+    }
     viewModel { params ->
         ModelDetailViewModel(params.get(), get(), get(), get(), get(), get(), get())
     }

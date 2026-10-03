@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.feature.detail.presentation
 
+import com.riox432.civitdeck.domain.download.DownloadScheduler
 import com.riox432.civitdeck.domain.usecase.AddModelToCollectionUseCase
 import com.riox432.civitdeck.domain.usecase.AddPersonalTagUseCase
 import com.riox432.civitdeck.domain.usecase.CancelDownloadUseCase
@@ -67,4 +68,5 @@ data class DownloadUseCases(
     val observeModelDownloads: ObserveModelDownloadsUseCase,
     val enqueueDownload: EnqueueDownloadUseCase,
     val cancelDownload: CancelDownloadUseCase,
+    val downloadScheduler: DownloadScheduler,
 )

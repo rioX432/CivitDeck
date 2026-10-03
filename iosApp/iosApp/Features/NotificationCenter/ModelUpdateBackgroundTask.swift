@@ -29,6 +29,11 @@ enum ModelUpdateBackgroundTask {
         schedule()
 
         let workTask = Task {
+            guard await isUpdateCheckEnabled() else {
+                // SKIE ends a cancelled for-await loop without values, so an expired task lands here too.
+                task.setTaskCompleted(success: !Task.isCancelled)
+                return
+            }
             do {
                 let useCase = KoinHelper.shared.getCheckAndStoreModelUpdatesUseCase()
                 let updates = try await useCase.invoke()
@@ -46,6 +51,24 @@ enum ModelUpdateBackgroundTask {
         task.expirationHandler = {
             workTask.cancel()
         }
+    }
+
+    // The task stays scheduled at every launch, so the user's settings gate the network call
+    // here, mirroring Android scheduling its worker only when alerts are on and the interval is not Off.
+    private static func isUpdateCheckEnabled() async -> Bool {
+        var alertsEnabled = false
+        for await value in KoinHelper.shared.getObserveNotificationsEnabledUseCase().invoke() {
+            alertsEnabled = value.boolValue
+            break
+        }
+        guard alertsEnabled else { return false }
+
+        var interval = PollingInterval.off
+        for await value in KoinHelper.shared.getObservePollingIntervalUseCase().invoke() {
+            interval = value
+            break
+        }
+        return interval != .off
     }
 
     private static func sendLocalNotification(updates: [ModelUpdate]) async {
