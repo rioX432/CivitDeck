@@ -94,7 +94,8 @@ private struct ComfyUIOutputDetailPage: View {
                 hashtags: shareHashtagVM.hashtags,
                 onToggle: { tag, enabled in shareHashtagVM.toggle(tag: tag, isEnabled: enabled) },
                 onAdd: { tag in shareHashtagVM.add(tag: tag) },
-                onRemove: { tag in shareHashtagVM.remove(tag: tag) }
+                onRemove: { tag in shareHashtagVM.remove(tag: tag) },
+                imageURL: image.imageUrl
             )
             .presentationDetents([.medium, .large])
         }
