@@ -67,6 +67,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - ComfyHub "import to server" posts the workflow to the active connection — it used the shared `ComfyUIApi` without setting its base URL, so it reached whichever server a queue, history or settings test call had set last, or failed when none had run in the session; with no active connection it now reports "No active ComfyUI connection" (#1122)
 - Android "Try in ComfyUI" now opens the generation screen with the first sample image's prompt, negative prompt, steps, CFG and seed filled in, and selects the model's primary file as the checkpoint for Checkpoint models; the prefill applies once per screen so edits survive returning from another screen (#1039)
 - iOS "Try in ComfyUI" now opens the generation sheet with the first visible sample image's prompt, negative prompt, steps, CFG and seed filled in, and selects the model's primary file as the checkpoint for Checkpoint models when the server has it; the prefill applies once per sheet so it never overwrites edits (#1040)
+- ComfyUI onboarding's manual host field accepts a pasted URL such as `http://192.168.1.5:8188/` or `https://pc.tailnet.ts.net` — a scheme or port in the host text overrides the port field and HTTPS toggle (an `http://`/`https://` URL without a port uses 8188/443), instead of building `http://http://…:8188` and failing as unreachable; an unparseable host such as `host:abc` fails immediately without a network call (#1058)
 
 ### Infrastructure
 
