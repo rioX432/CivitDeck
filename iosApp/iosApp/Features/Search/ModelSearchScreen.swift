@@ -402,14 +402,11 @@ extension ModelSearchScreen { // MARK: - Filter Chips
         }
     }
     var baseModelFilterChips: some View {
-        filterChipRow {
-            let options = BaseModel.companion.filterOptions(selected: viewModel.selectedBaseModels)
-            ForEach(options, id: \.self) { baseModel in
-                ChipButton(label: baseModel.displayName, isSelected: viewModel.selectedBaseModels.contains(baseModel)) {
-                    viewModel.onBaseModelToggled(baseModel)
-                }
-            }
-        }
+        BaseModelFilterRow(
+            selection: viewModel.selectedBaseModels,
+            catalog: viewModel.baseModelCatalog,
+            onApply: { viewModel.onBaseModelsApplied($0) }
+        )
     }
     private func filterChipRow<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
