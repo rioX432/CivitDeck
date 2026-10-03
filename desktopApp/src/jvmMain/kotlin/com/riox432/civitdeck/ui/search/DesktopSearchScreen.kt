@@ -26,6 +26,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +55,7 @@ fun DesktopSearchScreen(
     val displayViewModel: DisplaySettingsViewModel = koinViewModel()
     val displayState by displayViewModel.uiState.collectAsState()
     val gridState = rememberLazyGridState()
+    var showBaseModelPicker by remember { mutableStateOf(false) }
 
     // Trigger load more near the end
     LaunchedEffect(gridState) {
@@ -81,6 +85,7 @@ fun DesktopSearchScreen(
             onSortSelected = viewModel::onSortSelected,
             onPeriodSelected = viewModel::onPeriodSelected,
             onBaseModelToggled = viewModel::onBaseModelToggled,
+            onChooseBaseModels = { showBaseModelPicker = true },
             onQualityFilterToggled = viewModel::onQualityFilterToggled,
             onSourceToggled = viewModel::toggleSource,
             onNsfwLevelSelected = viewModel::onNsfwFilterLevelSelected,
@@ -93,6 +98,18 @@ fun DesktopSearchScreen(
             gridState = gridState,
             onModelClick = onModelClick,
             onRetry = viewModel::onSearch,
+        )
+    }
+
+    if (showBaseModelPicker) {
+        DesktopBaseModelPicker(
+            catalog = uiState.baseModelCatalog,
+            initialSelection = uiState.selectedBaseModels,
+            onApply = { selection ->
+                viewModel.onBaseModelsApplied(selection)
+                showBaseModelPicker = false
+            },
+            onDismiss = { showBaseModelPicker = false },
         )
     }
 }
