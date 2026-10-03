@@ -127,7 +127,7 @@ struct ModelDetailScreen: View {
         }
         .sheet(isPresented: $showComfyUIGeneration) {
             NavigationView {
-                ComfyUIGenerationView(prefill: comfyUIPrefill())
+                ComfyUIGenerationView(prefill: comfyUIPrefill(), prefillBaseModel: viewModel.selectedVersion?.baseModel)
             }
         }
         .sheet(isPresented: $showLinkSheet) {
@@ -411,7 +411,8 @@ private extension ModelDetailScreen {
             cfgScale: meta?.cfgScale,
             seed: meta?.seed,
             sampler: meta?.sampler,
-            checkpointName: checkpointFileName ?? ""
+            checkpointName: checkpointFileName ?? "",
+            baseModel: viewModel.selectedVersion?.baseModel
         )
     }
 
