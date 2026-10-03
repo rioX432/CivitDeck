@@ -37,7 +37,7 @@ val coreDataModule = module {
     }
     single<CreatorFollowRepository> { CreatorFollowRepositoryImpl(get(), get(), get()) }
     single<UpdateRepository> { UpdateRepositoryImpl(get(), get(), get()) }
-    single<BaseModelCatalogRepository> { BaseModelCatalogRepositoryImpl() }
+    single<BaseModelCatalogRepository> { BaseModelCatalogRepositoryImpl(get(), get(), get()) }
 
     // CivitAI network-only repositories (moved from networkModule for organizational consistency)
     single<AuthRepository> { AuthRepositoryImpl(get()) }
