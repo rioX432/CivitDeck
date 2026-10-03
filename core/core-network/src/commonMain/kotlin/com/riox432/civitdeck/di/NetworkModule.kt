@@ -7,7 +7,6 @@ import com.riox432.civitdeck.data.api.ThumbnailDownloaderImpl
 import com.riox432.civitdeck.data.api.civitailink.CivitaiLinkApi
 import com.riox432.civitdeck.data.api.comfyhub.ComfyHubApi
 import com.riox432.civitdeck.data.api.comfyui.createComfyUIHttpClient
-import com.riox432.civitdeck.data.api.comfyui.createComfyUIHttpClientWithSelfSignedTls
 import com.riox432.civitdeck.data.api.createHttpClient
 import com.riox432.civitdeck.data.api.download.createModelDownloadHttpClient
 import com.riox432.civitdeck.data.api.externalserver.ExternalServerApi
@@ -49,7 +48,6 @@ val networkModule = module {
 
     // ComfyUI
     single(named("comfyui")) { createComfyUIHttpClient() }
-    single(named("comfyui-selfsigned")) { createComfyUIHttpClientWithSelfSignedTls() }
 
     // SDWebUI
     single(named("sdwebui")) { createSDWebUIHttpClient() }
