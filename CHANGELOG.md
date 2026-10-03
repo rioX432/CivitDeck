@@ -73,6 +73,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- iOS: the discovered ComfyUI server row and the SD WebUI connection rows show the port without a thousands separator (`192.168.10.12:8188`, not `8,188`) (#1267)
 - `ModelSearchViewModel` no longer throws a `NullPointerException` during construction when the excluded-tags load started from `init` completes without suspending (an eager dispatcher or a non-suspending repository); no production crash had been observed (#1264)
 - ComfyUI prefill with a checkpoint now switches the shared generation form back to that checkpoint when a diffusion model was selected, instead of keeping generating from the diffusion model (#1150)
 - iOS: the "Images" navigation shortcut tab shows the CivitAI community image gallery instead of a blank screen (#1092)

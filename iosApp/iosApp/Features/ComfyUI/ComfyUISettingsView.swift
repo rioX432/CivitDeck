@@ -274,7 +274,7 @@ struct ComfyUISettingsView: View {
                         VStack(alignment: .leading) {
                             Text(server.displayName)
                                 .font(.civitBodyMedium)
-                            Text("\(server.ip):\(server.port)")
+                            Text(verbatim: "\(server.ip):\(server.port)")
                                 .font(.civitBodySmall)
                                 .foregroundColor(.civitOnSurfaceVariant)
                         }
