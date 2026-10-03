@@ -426,6 +426,18 @@
     <string name="comfyui_add_mask">Add Mask</string>
     <string name="comfyui_inpainting_mask">Inpainting Mask</string>
     <string name="comfyui_checkpoint_label">Checkpoint</string>
+    <string name="comfyui_select_checkpoint">Select checkpoint…</string>
+    <string name="comfyui_model_label">Model</string>
+    <string name="comfyui_select_model">Select model…</string>
+    <string name="comfyui_checkpoints_header">Checkpoints</string>
+    <string name="comfyui_diffusion_models_header">Diffusion models</string>
+    <string name="comfyui_model_family_label">Model family</string>
+    <string name="comfyui_select_model_family">Select model family…</string>
+    <string name="comfyui_model_family_needs_newer_server">Needs a newer ComfyUI</string>
+    <string name="comfyui_text_encoder_label">Text encoder</string>
+    <string name="comfyui_select_text_encoder">Select text encoder…</string>
+    <string name="comfyui_vae_label">VAE</string>
+    <string name="comfyui_select_vae">Select VAE…</string>
     <string name="comfyui_seed_label">Seed (-1 = random)</string>
     <string name="comfyui_width_label">Width</string>
     <string name="comfyui_height_label">Height</string>
