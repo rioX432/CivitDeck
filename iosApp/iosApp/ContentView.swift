@@ -75,8 +75,8 @@ struct ContentView: View {
             NavigationStack { ComfyUIGenerationView() }
         case .externalServerGallery:
             NavigationStack { ExternalServerGalleryView(serverName: "Server") }
+        // CivitAI /images treats modelVersionId=0 as unset and returns the community feed.
         case .imageGallery:
-            // CivitAI /images treats modelVersionId=0 as unset and returns the community feed.
             ImageGalleryScreen(modelVersionId: 0)
         }
     }
