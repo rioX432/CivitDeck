@@ -8,7 +8,9 @@ enum OnboardingStage: Equatable {
     case scanning(results: [DiscoveredServer])
     case testing(hostname: String)
     case success(name: String, gpu: String?, vramMB: Int64)
-    case failure(cause: ConnectionFailureCause, httpStatus: Int32?)
+    /// `presentedSha256` is the lowercase hex fingerprint the server presented, set only for the
+    /// certificate causes the user can confirm.
+    case failure(cause: ConnectionFailureCause, httpStatus: Int32?, presentedSha256: String?)
 
     static func == (lhs: OnboardingStage, rhs: OnboardingStage) -> Bool {
         switch (lhs, rhs) {
@@ -16,7 +18,7 @@ enum OnboardingStage: Equatable {
         case let (.scanning(l), .scanning(r)): return l.count == r.count
         case let (.testing(l), .testing(r)): return l == r
         case let (.success(ln, _, _), .success(rn, _, _)): return ln == rn
-        case let (.failure(lc, _), .failure(rc, _)): return lc == rc
+        case let (.failure(lc, _, lf), .failure(rc, _, rf)): return lc == rc && lf == rf
         default: return false
         }
     }
@@ -59,7 +61,11 @@ final class ConnectionOnboardingViewModelOwner: ObservableObject {
             )
         }
         if let failure = step as? OnboardingStepFailure {
-            return .failure(cause: failure.cause, httpStatus: failure.httpStatus?.int32Value)
+            return .failure(
+                cause: failure.cause,
+                httpStatus: failure.httpStatus?.int32Value,
+                presentedSha256: failure.presentedSha256
+            )
         }
         return .chooseMethod
     }
@@ -69,6 +75,7 @@ final class ConnectionOnboardingViewModelOwner: ObservableObject {
     func selectServer(_ server: DiscoveredServer) { vm.onSelectDiscoveredServer(server: server) }
     func qrScanned(_ raw: String) { vm.onQrScanned(raw: raw) }
     func retry() { vm.onRetry() }
+    func trustCertificate() { vm.onTrustCertificate() }
 
     func manualSubmit(
         name: String,
