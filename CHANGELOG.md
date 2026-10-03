@@ -43,6 +43,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - ComfyUI connection test reports `Refused` instead of `Unreachable` when nothing accepts the connection at the host and port (typically ComfyUI started without `--listen`): a `Connection refused` message anywhere in the error's cause chain (JVM, OkHttp) or an iOS `NSURLErrorDomain` `Code=-1004` error; DNS and no-route failures stay `Unreachable`, and `LoopbackHost` still wins for loopback hosts (#1062)
 - ComfyUI queue polling and cancel, history (including its `/view` image URLs) and ComfyHub "import to server" resolve the server URL and TLS trust per call through `ComfyUIApiProvider.forActive()`, so they reach the active connection with its pinned certificate; queue polling re-resolves the active connection on every poll. The settings test and system stats still use the shared `ComfyUIApi` until #1123 (#1122)
 - ComfyUI settings "Test" (and the workflow plugin's `connect()`) and system stats resolve the server URL and TLS trust per call through `ComfyUIApiProvider`: the test and the stats shown after it use the tested connection's URL and pinned certificate, so a connection whose self-signed certificate was trusted no longer shows "Connection Error"; `FetchSystemStatsUseCase()` (model detail VRAM fit) uses the active connection and returns null when none is active (#1123)
+- Importing a ComfyUI workflow saved with ComfyUI's default Save (UI format, a top-level `nodes` array) now fails at import with a hint to use "Export Workflow (API)", instead of being accepted and failing at generation with a `class_type` error that does not name the wrong format (#1143)
 
 ### Removed
 
@@ -52,6 +53,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 
 ### Fixed
 
+- Android and Desktop show a plain-HTTP ComfyUI connection to a Tailscale address (`100.64.0.0/10` or a `*.ts.net` MagicDNS name) as LAN instead of "HTTP over internet", since tailnet traffic is WireGuard-encrypted (#1066)
 - iOS ComfyUI connection test reports a self-signed server's certificate as not confirmed yet or changed, with its fingerprint, instead of "unreachable": the pinned client's rejection surfaces on iOS as a cancelled request, so the test now also treats a presented certificate that differs from the pin as a certificate failure (#1203)
 - iOS no longer crashes when opening the Create tab — the shared logger passed a Kotlin string to `NSLog` as a `%@` argument, which faulted with `EXC_BAD_ACCESS`; it now logs the whole line as the format with `%` escaped (#1204)
 - iOS declares `NSLocalNetworkUsageDescription`, so reaching a LAN ComfyUI or SD WebUI server triggers the system Local Network prompt with CivitDeck's reason text (#1056)
