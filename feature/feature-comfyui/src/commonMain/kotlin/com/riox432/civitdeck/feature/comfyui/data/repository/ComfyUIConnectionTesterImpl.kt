@@ -62,7 +62,7 @@ class ComfyUIConnectionTesterImpl(
             if (isTlsFailure(e)) {
                 failure(connection, ConnectionFailureCause.Tls, e.message)
             } else {
-                noResponseFailure(connection, ConnectionFailureCause.Unreachable, e.message)
+                noResponseFailure(connection, transportFailureCause(e), e.message)
             }
         }
     }
