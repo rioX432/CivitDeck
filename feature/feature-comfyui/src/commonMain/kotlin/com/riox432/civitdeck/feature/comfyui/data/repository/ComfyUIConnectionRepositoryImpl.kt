@@ -1,11 +1,11 @@
 package com.riox432.civitdeck.feature.comfyui.data.repository
 
-import com.riox432.civitdeck.data.api.comfyui.ComfyUIApi
 import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -14,7 +14,7 @@ private const val TAG = "ComfyUIConnectionRepo"
 
 class ComfyUIConnectionRepositoryImpl(
     private val dao: ComfyUIConnectionDao,
-    private val api: ComfyUIApi,
+    private val provider: ComfyUIApiProvider,
 ) : ComfyUIConnectionRepository {
 
     override fun observeConnections(): Flow<List<ComfyUIConnection>> =
@@ -63,9 +63,8 @@ class ComfyUIConnectionRepositoryImpl(
     }
 
     override suspend fun testConnection(connection: ComfyUIConnection): Boolean {
-        api.setBaseUrl(connection.baseUrl)
         return try {
-            val probe = api.probeQueue()
+            val probe = provider.forConnection(connection).api.probeQueue()
             if (!probe.isComfyUIQueue) {
                 Logger.w(TAG, "Connection test failed: HTTP ${probe.status}, queue_running=${probe.hasQueueRunning}")
             }
