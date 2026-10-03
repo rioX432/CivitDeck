@@ -33,6 +33,7 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - `Model.hasActivePaidAccess` — CivitAI models whose download is gated behind an active paid-access purchase are flagged from the `/models` responses' `hasActivePaidAccess` field (defaults to `false` when absent) (#1077)
 - Android and Desktop browse cards show a "Paid" badge next to the model type when `Model.hasActivePaidAccess` is true (content description "Requires purchase on CivitAI"); the type chip now ellipsizes first on narrow cards so the badge stays whole (#1078)
 - iOS model cards (search, creator page) show a "Paid" chip next to the model type when `Model.hasActivePaidAccess` is true, read by VoiceOver as "Requires purchase on CivitAI"; the type chip truncates first on narrow cards so the chip stays whole (#1079)
+- `ComfyUIGenerationRepository.fetchDiffusionModelResources()` returns the diffusion-model, text-encoder, VAE and CLIP `type` choices of a ComfyUI server from `/object_info/UNETLoader`, `/object_info/CLIPLoader` and `/object_info/VAELoader`; a server without a loader node yields an empty list, and the object_info combo parser also reads the V3 `["COMBO", {"options": […]}]` shape (#1144)
 
 ### Changed
 

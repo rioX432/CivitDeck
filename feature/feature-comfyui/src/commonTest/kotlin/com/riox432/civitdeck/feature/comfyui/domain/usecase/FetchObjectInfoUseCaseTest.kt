@@ -4,6 +4,7 @@ import com.riox432.civitdeck.data.local.LocalCacheDataSource
 import com.riox432.civitdeck.data.local.dao.CachedApiResponseDao
 import com.riox432.civitdeck.data.local.entity.CachedApiResponseEntity
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
 import com.riox432.civitdeck.domain.util.currentTimeMillis
@@ -149,6 +150,7 @@ class FetchObjectInfoUseCaseTest {
         override suspend fun fetchCheckpoints(): List<String> = emptyList()
         override suspend fun fetchLoras(): List<String> = emptyList()
         override suspend fun fetchControlNets(): List<String> = emptyList()
+        override suspend fun fetchDiffusionModelResources(): DiffusionModelResources = DiffusionModelResources()
         override suspend fun submitGeneration(params: ComfyUIGenerationParams): String = ""
         override suspend fun pollGenerationResult(promptId: String): GenerationResult =
             error("not used")
