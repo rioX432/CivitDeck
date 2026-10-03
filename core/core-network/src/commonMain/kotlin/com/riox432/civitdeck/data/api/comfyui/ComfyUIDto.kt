@@ -1,10 +1,15 @@
 package com.riox432.civitdeck.data.api.comfyui
 
+import io.ktor.client.plugins.ResponseException
+import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 
 /**
  * Response from POST /prompt
@@ -14,6 +19,41 @@ data class PromptResponse(
     @SerialName("prompt_id") val promptId: String,
     @SerialName("number") val number: Int? = null,
 )
+
+/**
+ * Error body of a rejected ComfyUI request. [error] stays a [JsonElement] because current servers
+ * send an object (`type`, `message`, `details`, `extra_info`) and older ones a plain string.
+ */
+@Serializable
+data class ComfyUIErrorResponse(
+    val error: JsonElement? = null,
+) {
+    /**
+     * `"<message>: <details>"`, or whichever of the two is not blank; the string itself for the
+     * string form; null when the body carries no usable reason.
+     */
+    val reason: String?
+        get() = when (val e = error) {
+            is JsonObject -> listOfNotNull(e.nonBlankString("message"), e.nonBlankString("details"))
+                .joinToString(": ")
+                .ifEmpty { null }
+            is JsonPrimitive -> e.contentOrNull?.takeIf { it.isNotBlank() }
+            else -> null
+        }
+
+    private fun JsonObject.nonBlankString(key: String): String? =
+        (get(key) as? JsonPrimitive)?.contentOrNull?.takeIf { it.isNotBlank() }
+}
+
+/**
+ * A non-2xx ComfyUI response whose [message] is the server's own reason (or `HTTP <status>`
+ * when the body has none), so callers that show `e.message` display it as-is.
+ */
+class ComfyUIResponseException(
+    response: HttpResponse,
+    cachedResponseText: String,
+    override val message: String,
+) : ResponseException(response, cachedResponseText)
 
 /**
  * Response from GET /queue.

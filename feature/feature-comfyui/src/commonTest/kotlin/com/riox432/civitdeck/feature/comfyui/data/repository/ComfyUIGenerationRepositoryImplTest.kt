@@ -7,14 +7,17 @@ import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
 import io.ktor.client.engine.mock.respondError
 import io.ktor.client.engine.mock.toByteArray
+import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.HttpRequestData
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerializationException
@@ -216,8 +219,44 @@ class ComfyUIGenerationRepositoryImplTest {
     }
 
     @Test
+    fun submitGeneration_reports_the_validation_reason_from_a_rejected_prompt() = runTest {
+        // Body shape of ComfyUI's /prompt 400 for a workflow that fails validation.
+        val body = """
+            {"error":{"type":"prompt_outputs_failed_validation","message":"Prompt outputs failed validation",
+            "details":"Value -1 smaller than min of 0: seed","extra_info":{}},
+            "node_errors":{"3":{"errors":[{"type":"value_smaller_than_min","message":"Value -1 smaller than min of 0",
+            "details":"seed","extra_info":{"input_name":"seed"}}],"dependent_outputs":["9"],"class_type":"KSampler"}}}
+        """.trimIndent()
+        val r = repo { respond(ByteReadChannel(body), HttpStatusCode.BadRequest, jsonHeaders) }
+
+        val e = assertFailsWith<ResponseException> {
+            r.submitGeneration(ComfyUIGenerationParams(checkpoint = "m", prompt = "p"))
+        }
+
+        val message = e.message.orEmpty()
+        assertTrue(message.contains("Value -1 smaller than min of 0"), message)
+        assertFalse(message.contains("prompt_id"), message)
+    }
+
+    @Test
+    fun submitGeneration_reports_a_string_error_or_the_status_for_other_rejections() = runTest {
+        suspend fun rejectionMessage(status: HttpStatusCode, body: String): String? {
+            val r = repo { respond(ByteReadChannel(body), status, jsonHeaders) }
+            return assertFailsWith<ResponseException> {
+                r.submitGeneration(ComfyUIGenerationParams(checkpoint = "m", prompt = "p"))
+            }.message
+        }
+
+        assertEquals(
+            "No prompt provided",
+            rejectionMessage(HttpStatusCode.BadRequest, """{"error":"No prompt provided"}"""),
+        )
+        assertEquals("HTTP 502", rejectionMessage(HttpStatusCode.BadGateway, "<html>Bad Gateway</html>"))
+    }
+
+    @Test
     fun submitGeneration_propagates_server_error() = runTest {
-        // submitPrompt deserializes the response via .body(); an unparseable error body fails.
+        // A non-2xx response fails before its body is decoded into PromptResponse.
         val r = repo { respondError(HttpStatusCode.InternalServerError) }
 
         assertFailsWith<Exception> {

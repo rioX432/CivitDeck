@@ -13,12 +13,14 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import io.ktor.http.path
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.SerializationException
@@ -122,7 +124,7 @@ class ComfyUIApi(
      * Submit workflow: POST /prompt
      * @param clientId WebSocket client id that ComfyUI routes this job's non-broadcast events
      *   (`execution_success`, `execution_error`) to. Omitted from the body when null.
-     * @throws ResponseException on HTTP error response
+     * @throws ComfyUIResponseException on a non-2xx response, e.g. a workflow that failed validation
      * @throws SerializationException on deserialization failure
      * @throws HttpRequestTimeoutException on request timeout
      * @throws ConnectTimeoutException on connection timeout
@@ -135,10 +137,13 @@ class ComfyUIApi(
             put("prompt", workflow)
             if (clientId != null) put("client_id", clientId)
         }
-        client.post("${_baseUrl.value}/prompt") {
+        val response = client.post("${_baseUrl.value}/prompt") {
             contentType(ContentType.Application.Json)
             setBody(body)
-        }.body()
+        }
+        // A rejection body has no prompt_id, so decoding it would hide the server's reason.
+        if (!response.status.isSuccess()) throw responseException(response)
+        response.body()
     }
 
     /**
@@ -286,6 +291,20 @@ class ComfyUIApi(
     private fun logApiError(operation: String, cause: Throwable): Nothing {
         Logger.e(TAG, "$operation failed: ${cause.message}", cause)
         throw cause
+    }
+
+    private suspend fun responseException(response: HttpResponse): ComfyUIResponseException {
+        val text = response.bodyAsText()
+        val reason = try {
+            json.decodeFromString<ComfyUIErrorResponse>(text).reason
+        } catch (e: SerializationException) {
+            Logger.w(TAG, "Unparseable error body (HTTP ${response.status.value}): ${e.message}")
+            null
+        } catch (e: IllegalArgumentException) {
+            Logger.w(TAG, "Unexpected error body (HTTP ${response.status.value}): ${e.message}")
+            null
+        }
+        return ComfyUIResponseException(response, text, reason ?: "HTTP ${response.status.value}")
     }
 
     private fun hasQueueRunning(responseText: String): Boolean = try {
