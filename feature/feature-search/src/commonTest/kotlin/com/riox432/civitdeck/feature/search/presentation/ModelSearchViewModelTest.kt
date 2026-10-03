@@ -57,7 +57,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -89,8 +91,8 @@ class ModelSearchViewModelTest {
         override suspend fun searchModels(query: String, page: Int, pageSize: Int) = emptyList<Model>()
     }
 
-    private class FakeExcludedTagRepo : ExcludedTagRepository {
-        override suspend fun getExcludedTags() = emptyList<String>()
+    private class FakeExcludedTagRepo(private val tags: List<String>) : ExcludedTagRepository {
+        override suspend fun getExcludedTags() = tags
         override suspend fun addExcludedTag(tag: String) = Unit
         override suspend fun removeExcludedTag(tag: String) = Unit
     }
@@ -164,11 +166,13 @@ class ModelSearchViewModelTest {
         val nsfwPrefs: FakeContentFilterPreferencesRepository,
     )
 
-    private fun TestScope.createViewModel(): TestDeps {
+    private fun TestScope.createViewModel(
         // StandardTestDispatcher defers the ViewModel's init coroutines until the
-        // scheduler is advanced — this avoids the eager-construction NPE where
-        // init-launched work references properties declared after `init`.
-        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        // scheduler is advanced, so each test decides when init work runs.
+        mainDispatcher: TestDispatcher = StandardTestDispatcher(testScheduler),
+        excludedTags: List<String> = emptyList(),
+    ): TestDeps {
+        Dispatchers.setMain(mainDispatcher)
         val modelRepo = FakeModelRepository(
             pages = listOf(testPaginatedResult(items = listOf(testModel(id = 1L)))),
         )
@@ -178,7 +182,7 @@ class ModelSearchViewModelTest {
         val appBehavior = FakeAppBehaviorPreferencesRepository()
         val hfRepo = NoOpHuggingFaceRepo()
         val taRepo = NoOpTensorArtRepo()
-        val excludedTagRepo = FakeExcludedTagRepo()
+        val excludedTagRepo = FakeExcludedTagRepo(excludedTags)
         val hiddenRepo = FakeHiddenModelRepo()
         val savedFilterRepo = FakeSavedSearchFilterRepo()
         val searchHistoryRepo = FakeSearchHistoryRepo()
@@ -251,6 +255,18 @@ class ModelSearchViewModelTest {
         // loadDefaults() -> loadFirst() performs an initial CivitAI page load.
         assertTrue(deps.modelRepo.getModelsCallCount >= 1)
         assertEquals(NsfwFilterLevel.Off, deps.vm.uiState.value.nsfwFilterLevel)
+    }
+
+    @Test
+    fun construction_with_eager_dispatcher_applies_excluded_tags() = runTest {
+        // An eager dispatcher runs init-launched coroutines inline, before construction
+        // finishes, so any member they reach must already be initialized.
+        val deps = createViewModel(
+            mainDispatcher = UnconfinedTestDispatcher(testScheduler),
+            excludedTags = listOf("nsfw", "gore"),
+        )
+
+        assertEquals(listOf("nsfw", "gore"), deps.vm.uiState.value.excludedTags)
     }
 
     @Test

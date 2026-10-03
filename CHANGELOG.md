@@ -69,10 +69,13 @@ Discovery-engine refocus: sharpen the app around native CivitAI discovery and op
 - Reviews list/submit feature (reads/writes CivitAI's tRPC, conflicts with the "no SNS/community" scope) — `Model.stats.rating` is retained and still shown; the 2 tRPC review requests per model detail are eliminated (#991, #1000)
 - The trust-all ComfyUI HTTP client (`createComfyUIHttpClientWithSelfSignedTls`, `createPlatformComfyUIHttpClient` and their Koin-named client), which accepted every server certificate and, on Android, every hostname. A self-signed server is reached only through a client pinned to its confirmed certificate (#1132)
 - The shared `ComfyUIApi` and `ComfyUIWebSocketApi` Koin singletons — ComfyUI calls build their API per call (`ComfyUIApiProvider`, or a transient instance for the connection test and the LAN scan), so no code can reach the server through a shared instance that ignores the connection's TLS trust. The `named("comfyui")` HTTP client stays for Civitai Link, the LAN scan and ntfy (#1125)
+- The unregistered legacy `ComfyUIRepositoryImpl` and its `ComfyUIWorkflowBuilder`, superseded by the connection, generation and queue repositories since #498; `SaveGeneratedImageUseCase` reads the image with `readRawBytes()` instead of Ktor's deprecated `readBytes()` (same raw payload) (#1266)
 
 ### Fixed
 
 - A saved search filter keeps every stored base model value, including values outside the built-in 7 (e.g. `Krea 2`), instead of dropping them and silently widening to any base model; `BaseModel` is now a `data class` over the CivitAI API string, Android and iOS show a kept value as an extra selected chip that can be deselected, and chip labels are the API strings (`SDXL 1.0` instead of `SDXL`) (#1257)
+- iOS: the discovered ComfyUI server row and the SD WebUI connection rows show the port without a thousands separator (`192.168.10.12:8188`, not `8,188`) (#1267)
+- `ModelSearchViewModel` no longer throws a `NullPointerException` during construction when the excluded-tags load started from `init` completes without suspending (an eager dispatcher or a non-suspending repository); no production crash had been observed (#1264)
 - ComfyUI prefill with a checkpoint now switches the shared generation form back to that checkpoint when a diffusion model was selected, instead of keeping generating from the diffusion model (#1150)
 - iOS: the "Images" navigation shortcut tab shows the CivitAI community image gallery instead of a blank screen (#1092)
 - iOS Model Update Alerts: the background model-update check can now be scheduled and run (the app declares the Background fetch mode), and it skips the CivitAI request when Model Update Alerts are off or the check interval is Off (#1091)
