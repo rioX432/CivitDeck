@@ -4,37 +4,9 @@ Thank you for your interest in contributing to CivitDeck! This guide will help y
 
 ## Getting Started
 
-### Prerequisites
+Follow the [Development Guide](DEVELOPMENT.md) for the current toolchain, setup, Android flavors, Desktop and iOS commands, and CI-equivalent checks.
 
-- Android Studio Ladybug or later
-- Xcode 15+ (for iOS development)
-- JDK 17+
-- Git
-
-### Setup
-
-```bash
-git clone https://github.com/rioX432/CivitDeck.git
-cd CivitDeck
-```
-
-### Build
-
-```bash
-# Android
-./gradlew :androidApp:installDebug
-
-# iOS
-open iosApp/iosApp.xcodeproj
-# Build & run from Xcode (select iOS Simulator target)
-```
-
-### Run Tests
-
-```bash
-# Shared module unit tests
-./gradlew :shared:testDebugUnitTest
-```
+Choose a small change and run the checks for the modules and platforms it affects. The guide also explains which source set to use for shared logic and tests.
 
 ## Development Workflow
 
@@ -79,7 +51,7 @@ Auto-correct is enabled, so most formatting issues will be fixed automatically.
 1. Create a branch from `master`
 2. Make your changes
 3. Run `./gradlew detekt` and fix any issues
-4. Run `./gradlew :shared:testDebugUnitTest` to ensure tests pass
+4. Run the applicable [tests and app builds](DEVELOPMENT.md#checks-before-a-pull-request), and report any checks you could not run
 5. Push your branch and open a PR against `master`
 6. Fill in the PR template
 
@@ -93,10 +65,11 @@ PRs should:
 
 ### Architecture
 
-- All shared logic goes in `shared/commonMain/` — platform-specific code only when necessary
-- DTOs (`data/api/`) are separate from domain entities (`domain/model/`)
-- Use cases are single-responsibility (one public function, returns `Flow`)
-- ViewModels live in platform modules, not in shared
+- Keep domain contracts, network DTOs, and repository implementations in their respective `core/` modules
+- Put shared feature ViewModels and use cases in `feature/feature-*/src/commonMain/`
+- Use `shared/src/commonMain/` for cross-module wiring and shared integration code
+- Use platform source sets only for platform-specific APIs and implementations
+- Keep use cases single-responsibility and follow the surrounding module's patterns
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for details.
 
@@ -111,7 +84,7 @@ All written content must be in **English**, including:
 ## Finding Issues to Work On
 
 - Look for issues labeled [`good first issue`](https://github.com/rioX432/CivitDeck/labels/good%20first%20issue) — these are beginner-friendly
-- Check the [Roadmap](README.md#roadmap) for upcoming features
+- Check the [Roadmap](ROADMAP.md) for upcoming features
 - Feel free to open a new issue if you have an idea
 
 ## Code of Conduct
