@@ -8,9 +8,19 @@ import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 private const val TAG = "ExportRepositoryImpl"
 
@@ -47,10 +57,11 @@ class ExportRepositoryImpl(
         val outputPath = "$outputDir/$datasetDir.zip"
 
         val zipWriter = zipWriterFactory.create(outputPath)
+        var closeAttempted = false
         try {
             exportable.forEachIndexed { index, image ->
                 emit(ExportProgress.Downloading(index + 1, exportable.size))
-                val imageBytes = httpClient.get(image.imageUrl).bodyAsBytes()
+                val imageBytes = downloadImageBytes(image.imageUrl)
                 val ext = extractExtension(image.imageUrl)
                 val baseName = buildEntryName(index + 1, image.caption?.text)
 
@@ -65,13 +76,36 @@ class ExportRepositoryImpl(
             val manifest = buildManifest(exportable, datasetDir)
             zipWriter.addEntry("$datasetDir/manifest.jsonl", manifest.encodeToByteArray())
 
+            closeAttempted = true
+            zipWriter.close()
             emit(ExportProgress.Completed(outputPath, warningCount))
+        } catch (e: CancellationException) {
+            throw e
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Logger.e(TAG, "Export failed for dataset $datasetId: ${e.message}")
             emit(ExportProgress.Failed(e.message ?: "Export failed"))
         } finally {
-            zipWriter.close()
+            if (!closeAttempted) {
+                try {
+                    zipWriter.close()
+                } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                    Logger.e(TAG, "Export cleanup failed for dataset $datasetId: ${e.message}")
+                }
+            }
         }
+    }
+
+    private suspend fun downloadImageBytes(url: String): ByteArray {
+        val response = httpClient.get(url)
+        check(response.status.isSuccess()) {
+            "Image download failed: HTTP ${response.status.value}"
+        }
+        check(response.contentType()?.match(ContentType.Text.Html) != true) {
+            "Expected image bytes but received HTML"
+        }
+        val imageBytes = response.bodyAsBytes()
+        check(imageBytes.isNotEmpty()) { "Downloaded image is empty" }
+        return imageBytes
     }
 }
 
@@ -102,19 +136,16 @@ private fun buildManifest(
     images.forEachIndexed { index, image ->
         val ext = extractExtension(image.imageUrl)
         val baseName = buildEntryName(index + 1, image.caption?.text)
-        val tags = image.tags.joinToString(",") { "\"${escapeJson(it.tag)}\"" }
-        appendLine(
-            """{"image_path":"$datasetDir/images/$baseName.$ext",""" +
-                """"caption":"${escapeJson(image.caption?.text ?: "")}",""" +
-                """"tags":[$tags],""" +
-                """"source":"${image.sourceType.name}",""" +
-                """"trainable":${image.trainable}}""",
-        )
+        val manifestEntry = buildJsonObject {
+            put("image_path", "$datasetDir/images/$baseName.$ext")
+            put("caption", image.caption?.text ?: "")
+            put("tags", buildJsonArray { image.tags.forEach { add(it.tag) } })
+            put("source", image.sourceType.name)
+            put("trainable", image.trainable)
+        }
+        appendLine(Json.encodeToString(JsonObject.serializer(), manifestEntry))
     }
 }
-
-private fun escapeJson(value: String): String =
-    value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
 
 private val SUPPORTED_EXTENSIONS = setOf("png", "jpg", "jpeg", "webp")
 private const val MAX_DIR_NAME_LENGTH = 64
