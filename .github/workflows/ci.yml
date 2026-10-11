@@ -203,9 +203,15 @@ jobs:
               root = ET.parse(report).getroot()
               assert root.tag == "testsuite", f"Unexpected report format: {suite}"
               expected_name = f"com.riox432.civitdeck.data.export.{suite}"
-              assert root.attrib["name"] == expected_name, f"Unexpected suite: {suite}"
+              # Gradle may customize testsuite@name; testcase@classname identifies the class.
+              cases = list(root.iter("testcase"))
+              assert cases, f"No test cases reported: {suite}"
+              assert all(case.attrib["classname"] == expected_name for case in cases), suite
               tests = int(root.attrib["tests"])
               assert tests > 0, f"No tests executed: {suite}"
+              assert tests == len(cases), f"Test count mismatch: {suite}"
+              bad_results = {"failure", "error", "skipped"}
+              assert not any(node.tag in bad_results for case in cases for node in case.iter()), suite
               for outcome in ("failures", "errors", "skipped"):
                   assert int(root.attrib[outcome]) == 0, f"{suite}: {outcome} is nonzero"
               print(f"{suite}: {tests} tests passed")
