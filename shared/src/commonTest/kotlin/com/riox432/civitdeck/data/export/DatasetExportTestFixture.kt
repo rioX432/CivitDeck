@@ -51,6 +51,8 @@ abstract class DatasetExportTestFixture {
     protected class Writer(val failClose: Boolean = false) : DatasetZipWriter {
         val entries = linkedMapOf<String, ByteArray>()
         var closed = false
+        var aborted = false
+        override fun abort() { if (!closed) aborted = true }
         override fun addEntry(name: String, data: ByteArray) { entries[name] = data }
         override fun close() {
             if (failClose) error("synthetic-close-failure")

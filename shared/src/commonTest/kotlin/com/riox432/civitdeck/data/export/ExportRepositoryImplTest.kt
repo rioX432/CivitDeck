@@ -28,6 +28,7 @@ import kotlin.test.assertTrue
 class ExportRepositoryImplTest {
 
     /** Fake repo returning a fixed collection list and per-dataset image list. */
+    @Suppress("EmptyFunctionBlock") // Unused mutations in this read-only fake.
     private class FakeDatasetRepo(
         private val collections: List<DatasetCollection>,
         private val images: List<DatasetImage>,
@@ -58,6 +59,8 @@ class ExportRepositoryImplTest {
     private class RecordingZipWriter : DatasetZipWriter {
         val entries = mutableListOf<String>()
         var closed = false
+        var aborted = false
+        override fun abort() { if (!closed) aborted = true }
         override fun addEntry(name: String, data: ByteArray) { entries.add(name) }
         override fun close() { closed = true }
     }
