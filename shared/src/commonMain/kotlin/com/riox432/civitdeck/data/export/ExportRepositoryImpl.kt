@@ -12,6 +12,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
@@ -56,17 +58,18 @@ class ExportRepositoryImpl(
         val outputDir = exportPathProvider.getExportCacheDirectory()
         val outputPath = "$outputDir/$datasetDir.zip"
 
-        val zipWriter = zipWriterFactory.create(outputPath)
-        var closeAttempted = false
+        var zipWriter: DatasetZipWriter? = null
         try {
+            val writer = zipWriterFactory.create(outputPath)
+            zipWriter = writer
             exportable.forEachIndexed { index, image ->
                 emit(ExportProgress.Downloading(index + 1, exportable.size))
                 val imageBytes = downloadImageBytes(image.imageUrl)
                 val ext = extractExtension(image.imageUrl)
                 val baseName = buildEntryName(index + 1, image.caption?.text)
 
-                zipWriter.addEntry("$datasetDir/images/$baseName.$ext", imageBytes)
-                zipWriter.addEntry(
+                writer.addEntry("$datasetDir/images/$baseName.$ext", imageBytes)
+                writer.addEntry(
                     "$datasetDir/images/$baseName.txt",
                     (image.caption?.text ?: "").encodeToByteArray(),
                 )
@@ -74,10 +77,12 @@ class ExportRepositoryImpl(
 
             emit(ExportProgress.WritingManifest)
             val manifest = buildManifest(exportable, datasetDir)
-            zipWriter.addEntry("$datasetDir/manifest.jsonl", manifest.encodeToByteArray())
+            writer.addEntry("$datasetDir/manifest.jsonl", manifest.encodeToByteArray())
 
-            closeAttempted = true
-            zipWriter.close()
+            // Publication is synchronous once close starts. Cancellation after that point
+            // may suppress Completed, but must not roll back an already published archive.
+            currentCoroutineContext().ensureActive()
+            writer.close()
             emit(ExportProgress.Completed(outputPath, warningCount))
         } catch (e: CancellationException) {
             throw e
@@ -85,12 +90,10 @@ class ExportRepositoryImpl(
             Logger.e(TAG, "Export failed for dataset $datasetId: ${e.message}")
             emit(ExportProgress.Failed(e.message ?: "Export failed"))
         } finally {
-            if (!closeAttempted) {
-                try {
-                    zipWriter.close()
-                } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                    Logger.e(TAG, "Export cleanup failed for dataset $datasetId: ${e.message}")
-                }
+            try {
+                zipWriter?.abort()
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                Logger.e(TAG, "Export cleanup failed for dataset $datasetId: ${e.message}")
             }
         }
     }

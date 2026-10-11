@@ -290,7 +290,7 @@ class DatasetExportValidationTest : DatasetExportTestFixture() {
     }
 
     @Test
-    fun regression_cancellationPropagatesAndStillClosesWriter() = runTest {
+    fun regression_cancellationPropagatesAndAbortsWriter() = runTest {
         val writer = Writer()
         val httpClient = createDatasetMediaHttpClient(
             MockEngine {
@@ -303,7 +303,8 @@ class DatasetExportValidationTest : DatasetExportTestFixture() {
                 repo(it, writer).exportDataset(1, ExportFormat.ZIP).toList(events)
             }
         }
-        assertTrue(writer.closed)
+        assertTrue(writer.aborted)
+        assertFalse(writer.closed)
         assertTrue(events.none { it is ExportProgress.Completed || it is ExportProgress.Failed })
     }
 

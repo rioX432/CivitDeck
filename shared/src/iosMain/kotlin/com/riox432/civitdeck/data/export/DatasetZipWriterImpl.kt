@@ -17,7 +17,12 @@ class DatasetZipWriterImpl(outputPath: String) : DatasetZipWriter {
     private val filePath = outputPath
     private var offset: Long = 0
 
-    override fun addEntry(name: String, data: ByteArray) {
+    private val transaction = DatasetZipTransaction(
+        publish = { publishArchive() },
+        discard = { clearArchive() },
+    )
+
+    override fun addEntry(name: String, data: ByteArray) = transaction.write {
         val nameBytes = name.encodeToByteArray()
         val crc = Crc32.compute(data)
 
@@ -35,7 +40,16 @@ class DatasetZipWriterImpl(outputPath: String) : DatasetZipWriter {
         appendBytes(data)
     }
 
-    override fun close() {
+    override fun close() = transaction.close()
+
+    override fun abort() = transaction.abort()
+
+    private fun clearArchive() {
+        chunks.clear()
+        entries.clear()
+    }
+
+    private fun publishArchive() {
         val centralDirOffset = offset
         for (entry in entries) {
             appendCentralDirectoryEntry(entry)
@@ -52,9 +66,9 @@ class DatasetZipWriterImpl(outputPath: String) : DatasetZipWriter {
         }
         result.usePinned { pinned ->
             val nsData = NSData.create(bytes = pinned.addressOf(0), length = result.size.toULong())
-            nsData.writeToFile(filePath, atomically = true)
+            check(nsData.writeToFile(filePath, atomically = true)) { "Could not publish dataset ZIP" }
         }
-        chunks.clear()
+        clearArchive()
     }
 
     private fun appendLocalFileHeader(nameBytes: ByteArray, size: Int, crc: Int) {
