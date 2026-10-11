@@ -184,3 +184,31 @@ jobs:
           --tests '*DatasetExportZipReadinessTest'
           --tests 'com.riox432.civitdeck.data.export.DatasetZipTransactionTest'
           --tests 'com.riox432.civitdeck.data.export.DatasetZipLifecycleTest'
+
+      - name: Verify dataset ZIP test coverage
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+          reports = Path("shared/build/test-results/jvmTest")
+          suites = (
+              "DatasetExportZipReadinessTest",
+              "DatasetZipTransactionTest",
+              "DatasetZipLifecycleTest",
+          )
+          total = 0
+          for suite in suites:
+              report = reports / f"TEST-com.riox432.civitdeck.data.export.{suite}.xml"
+              root = ET.parse(report).getroot()
+              assert root.tag == "testsuite", f"Unexpected report format: {suite}"
+              expected_name = f"com.riox432.civitdeck.data.export.{suite}"
+              assert root.attrib["name"] == expected_name, f"Unexpected suite: {suite}"
+              tests = int(root.attrib["tests"])
+              assert tests > 0, f"No tests executed: {suite}"
+              for outcome in ("failures", "errors", "skipped"):
+                  assert int(root.attrib[outcome]) == 0, f"{suite}: {outcome} is nonzero"
+              print(f"{suite}: {tests} tests passed")
+              total += tests
+          print(f"Dataset ZIP coverage: {total} tests passed across {len(suites)} suites")
+          PY
