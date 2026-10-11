@@ -114,28 +114,12 @@ graph TB
 
 ## Getting Started
 
-### Prerequisites
+To build from source, follow the [Development Guide](docs/DEVELOPMENT.md). It covers the current JDK, Android Studio/SDK and Xcode toolchains, explicit Android build flavors, Desktop and iOS setup, and the checks used in CI.
 
-- Android Studio Ladybug or later
-- Xcode 15+ (for iOS)
-- JDK 17+
-
-### Build & Run
-
-```bash
-# Clone
-git clone https://github.com/rioX432/CivitDeck.git
-cd CivitDeck
-
-# Android
-./gradlew :androidApp:installDebug
-
-# Desktop (macOS / Windows / Linux)
-./gradlew :desktopApp:run
-
-# iOS
-open iosApp/iosApp.xcodeproj
-```
+- [Android build and run](docs/DEVELOPMENT.md#android)
+- [Desktop build and run](docs/DEVELOPMENT.md#desktop)
+- [iOS build and run](docs/DEVELOPMENT.md#ios)
+- [Checks before a pull request](docs/DEVELOPMENT.md#checks-before-a-pull-request)
 
 ## Changelog
 

@@ -8,26 +8,13 @@ CivitDeck is a power-user client for [CivitAI](https://civitai.com/) — the lar
 
 ## Commands
 
-```bash
-# Android
-./gradlew :androidApp:installDebug    # Build & install Android debug
-./gradlew :androidApp:assembleDebug   # Build Android debug APK
-./gradlew :androidApp:assembleRelease # Build Android release APK
-./gradlew :shared:testDebugUnitTest   # Run shared module tests
+Use [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the maintained toolchain, per-platform build/run commands, and CI-equivalent checks. Inspect [.github/workflows/ci.yml](.github/workflows/ci.yml) when changing test coverage.
 
-# Desktop (Compose Desktop / JVM)
-./gradlew :desktopApp:run             # Run desktop app
-./gradlew :desktopApp:packageDmg      # Package macOS .dmg
-./gradlew :desktopApp:packageMsi      # Package Windows .msi
-./gradlew :desktopApp:packageDeb      # Package Linux .deb
-
-# iOS (no CocoaPods — uses Kotlin/Native framework directly)
-open iosApp/iosApp.xcodeproj          # Open in Xcode
-
-# Code Quality
-./gradlew detekt                      # Static analysis + auto-format (autoCorrect enabled in build.gradle.kts)
-cd iosApp && swiftlint --strict       # SwiftLint (config: iosApp/.swiftlint.yml)
-```
+- Select explicit Android distribution flavors for install tasks (`installGithubFullDebug` or `installFdroidDebug`)
+- Shared Android unit tests use `:shared:testAndroidHostTest`
+- JVM ZIP readiness, transaction, and lifecycle tests use `:shared:jvmTest` with the test selection in the development guide
+- Run `./gradlew detekt` for Kotlin changes and `cd iosApp && swiftlint --strict` for Swift changes
+- Report skipped or unavailable checks separately from passing checks
 
 ## Architecture
 
