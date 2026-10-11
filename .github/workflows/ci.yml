@@ -178,5 +178,9 @@ jobs:
       - name: Compile Desktop
         run: ./gradlew :desktopApp:compileKotlinJvm
 
-      - name: Test dataset ZIP readiness
-        run: ./gradlew :shared:jvmTest --tests '*DatasetExportZipReadinessTest'
+      - name: Test dataset ZIP readiness and transactions
+        run: >-
+          ./gradlew :shared:jvmTest
+          --tests '*DatasetExportZipReadinessTest'
+          --tests 'com.riox432.civitdeck.data.export.DatasetZipTransactionTest'
+          --tests 'com.riox432.civitdeck.data.export.DatasetZipLifecycleTest'
