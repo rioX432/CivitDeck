@@ -177,3 +177,6 @@ jobs:
 
       - name: Compile Desktop
         run: ./gradlew :desktopApp:compileKotlinJvm
+
+      - name: Test dataset ZIP readiness
+        run: ./gradlew :shared:jvmTest --tests '*DatasetExportZipReadinessTest'
