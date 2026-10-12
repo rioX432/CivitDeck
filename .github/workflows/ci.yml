@@ -37,6 +37,8 @@ jobs:
             android:
               - 'androidApp/**'
               - 'config/detekt/**'
+              - 'scripts/check_android_update_channels.py'
+              - 'scripts/tests/test_android_update_channels.py'
             ios:
               - 'iosApp/**'
             desktop:
@@ -63,6 +65,15 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      - name: Verify Android update channels
+        run: |
+          python3 -m unittest discover -s scripts/tests -p 'test_android_update_channels.py' -v
+          ./gradlew :androidApp:generateGithubFullDebugBuildConfig \
+            :androidApp:generateGithubFullReleaseBuildConfig \
+            :androidApp:generateFdroidDebugBuildConfig \
+            :androidApp:generateFdroidReleaseBuildConfig
+          python3 scripts/check_android_update_channels.py
 
       - name: Test, Lint & Build
         # Feature/core ViewModel tests run via testAndroidHostTest (the Android host

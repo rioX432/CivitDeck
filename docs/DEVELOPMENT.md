@@ -39,6 +39,23 @@ Choose an explicit distribution flavor to avoid an ambiguous install task:
 ./gradlew :shared:testAndroidHostTest
 ```
 
+Debug builds install as `com.riox432.civitdeck.debug` and appear as **CivitDeck Debug**.
+They intentionally coexist with the release app and keep separate app data. GitHub Releases
+use `com.riox432.civitdeck`; only `githubFullRelease` offers in-app self-update. A release APK
+cannot update a debug install, so the debug build does not offer that flow. Do not change the
+release application ID or remove the debug suffix to work around signing incompatibility.
+
+To verify the resolved update flags and package IDs without building or signing APKs:
+
+```bash
+./gradlew :androidApp:generateGithubFullDebugBuildConfig \
+  :androidApp:generateGithubFullReleaseBuildConfig \
+  :androidApp:generateFdroidDebugBuildConfig \
+  :androidApp:generateFdroidReleaseBuildConfig
+python3 scripts/check_android_update_channels.py
+python3 -m unittest discover -s scripts/tests -p 'test_android_update_channels.py' -v
+```
+
 Flavor definitions are in [androidApp/build.gradle.kts](../androidApp/build.gradle.kts). The `fdroid` build flavor is not itself evidence of an available store listing. Similarity search is experimental and off by default in `githubFull`; no feature flag is needed for ordinary contributions.
 
 ## Desktop
