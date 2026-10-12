@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-10-13
+
 Discovery-engine refocus: sharpen the app around native CivitAI discovery and open the FOSS distribution channel.
 
 ### Added
@@ -846,7 +848,8 @@ Initial release of CivitDeck.
 - Clean Architecture + MVVM with Koin dependency injection
 - GitHub Actions CI (Android + iOS)
 
-[Unreleased]: https://github.com/rioX432/CivitDeck/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/rioX432/CivitDeck/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/rioX432/CivitDeck/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/rioX432/CivitDeck/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/rioX432/CivitDeck/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/rioX432/CivitDeck/compare/v2.1.0...v2.2.0

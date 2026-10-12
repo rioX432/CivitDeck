@@ -53,7 +53,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "CivitDeck"
-            packageVersion = "2.4.0"
+            packageVersion = "2.5.0"
             description = "Browse and manage CivitAI models from your desktop"
             vendor = "riox432"
 
