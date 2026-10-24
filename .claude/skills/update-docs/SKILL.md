@@ -1,7 +1,7 @@
 ---
 name: update-docs
-description: "Audit and update project docs — ARCHITECTURE.md, CHANGELOG.md, README cross-references, and missing OSS docs"
-argument-hint: "[target: all | architecture | changelog | readme | oss]"
+description: "Audit docs for active-vs-stale authority, reconcile outdated instructions, and update architecture, changelog, README, or OSS docs"
+argument-hint: "[all | architecture | changelog | readme | oss | hygiene [path]]"
 user-invocable: true
 disable-model-invocation: true
 allowed-tools:
@@ -38,6 +38,7 @@ Parse `$ARGUMENTS` (case-insensitive):
 - `changelog` → generate/update CHANGELOG.md only
 - `readme` → update README cross-references only
 - `oss` → create missing OSS docs (SECURITY.md, CONTRIBUTING.md) + add README links
+- `hygiene [path]` → source-of-truth and stale-document audit, scoped to one project/app when supplied; run Procedure H below instead of the other phases
 - `all` or empty → run all phases
 
 If `$ARGUMENTS` is empty or unrecognized, use `AskUserQuestion`:
@@ -48,6 +49,41 @@ If `$ARGUMENTS` is empty or unrecognized, use `AskUserQuestion`:
 - CHANGELOG.md — generate from git history
 - README.md — update cross-references and features
 - OSS docs — create SECURITY.md, add README links
+
+---
+
+## Procedure H: Source-of-truth and stale-document hygiene
+
+This branch is used only for `/update-docs hygiene [path]`. Do not run the architecture/changelog/OSS phases implicitly.
+The job is to stop an AI agent from mistaking historical instructions for the current product contract.
+
+1. **Define the boundary.** Read `git status`, root `AGENTS.md` / `CLAUDE.md`, then nearest project/app-specific
+   guidance and any declared source-of-truth index. Respect higher-priority user instructions and repository rules.
+   Scope the audit to the requested app or feature; do not sweep all unrelated apps by default.
+2. **Inventory evidence.** Enumerate relevant README, docs, PRDs, design prompts, mocks, ADRs, code/tests and linked
+   GitHub Issues/PRs when available. Read only the subset touching the current contract; include references leading
+   agents to old files. Dates and closed state are clues, not proof that content is wrong.
+3. **Classify each document** as `current-contract`, `current-reference`, `proposal`, `historical`,
+   `superseded`, or `uncertain`. Contrast claims with maintained product guidance and actual code/tests.
+   Distinguish implemented behavior from future intent; never infer product decisions from a closed Issue alone.
+4. **Make a conflict table**: `claim | source (path/line) | conflicting evidence | status | safe resolution`.
+   Prioritize contradictions that would change functionality, permissions, privacy, pricing, or the user flow.
+5. **Present the conflict table and edit plan first.** If the user requested an audit only, ask for approval before
+   writing. If the user's current request explicitly authorizes a bounded cleanup, do not ask again.\n   **Apply only safe, bounded documentation changes once authorized**: repair incorrect facts; add explicit
+   `SUPERSEDED — DO NOT USE FOR IMPLEMENTATION` headers linking to the replacement; update entrypoint pointers;
+   remove obsolete links to unapproved specs. Preserve the former text through Git history. For unresolved product
+   questions, label `needs decision` and leave executable instructions unchanged. Never automatically delete
+   directories, rewrite application behavior, or close/reopen Issues in bulk.
+6. **Verify discoverability**: check relative links, README/guidance references, stale terms in active instructions,
+   and whether the primary agent's normal reading path resolves to the intended canonical document. A PRD or mock
+   does not outrank runtime behavior by accident; differences must be explicit. Report code/test checks as `not run`
+   for doc-only edits.
+
+Output: a short `Current sources` map, `Conflicts resolved`, `Historical references retained`,
+`Unresolved decisions`, and `Verification` with precise paths. When GitHub Issues need triage, recommend
+`keep / clarify / supersede / close as not planned` with a rationale and links; do not erase their history.
+If there is no reliable canonical document, propose the smallest new current-contract index and clearly mark it
+as requiring a product decision rather than inventing one.
 
 ---
 
