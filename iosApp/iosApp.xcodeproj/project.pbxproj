@@ -172,6 +172,7 @@
 		CDES05012F400005000CD001 /* ExternalServerFilterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES05002F400005000CD001 /* ExternalServerFilterSheet.swift */; };
 		CDES06012F400006000CD001 /* ExternalServerImageDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES06002F400006000CD001 /* ExternalServerImageDetailView.swift */; };
 		CDES07012F400007000CD001 /* ExternalServerGenerationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDES07002F400007000CD001 /* ExternalServerGenerationSheet.swift */; };
+		CDDL04012FBB0004000CD001 /* DownloadHashWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDL04002FBB0004000CD001 /* DownloadHashWorker.swift */; };
 		CDDL01012FBB0001000CD001 /* DownloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDL01002FBB0001000CD001 /* DownloadService.swift */; };
 		CDDL02012FBB0002000CD001 /* DownloadQueueViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDL02002FBB0002000CD001 /* DownloadQueueViewModel.swift */; };
 		CDDL03012FBB0003000CD001 /* DownloadQueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDL03002FBB0003000CD001 /* DownloadQueueView.swift */; };
@@ -181,6 +182,7 @@
 		CDHY02012FEE0002000CD001 /* BrowsingHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDHY02002FEE0002000CD001 /* BrowsingHistoryViewModel.swift */; };
 		CDCR01013300001000CD001 /* CreateHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCR01003300001000CD001 /* CreateHubView.swift */; };
 		CDLB01013300002000CD001 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDLB01003300002000CD001 /* LibraryView.swift */; };
+		CD131102000000000000A001 /* DownloadHashWorkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD131101000000000000A001 /* DownloadHashWorkerTests.swift */; };
 		CD131002000000000000A001 /* DownloadServiceRetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD131001000000000000A001 /* DownloadServiceRetryTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -195,6 +197,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CD131101000000000000A001 /* DownloadHashWorkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadHashWorkerTests.swift; sourceTree = "<group>"; };
 		CD131001000000000000A001 /* DownloadServiceRetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadServiceRetryTests.swift; sourceTree = "<group>"; };
 		CD131003000000000000A001 /* iosAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iosAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		058557BA273AAA24004C7B11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -368,6 +371,7 @@
 		CDES05002F400005000CD001 /* ExternalServerFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerFilterSheet.swift; sourceTree = "<group>"; };
 		CDES06002F400006000CD001 /* ExternalServerImageDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerImageDetailView.swift; sourceTree = "<group>"; };
 		CDES07002F400007000CD001 /* ExternalServerGenerationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServerGenerationSheet.swift; sourceTree = "<group>"; };
+		CDDL04002FBB0004000CD001 /* DownloadHashWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadHashWorker.swift; sourceTree = "<group>"; };
 		CDDL01002FBB0001000CD001 /* DownloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadService.swift; sourceTree = "<group>"; };
 		CDDL02002FBB0002000CD001 /* DownloadQueueViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadQueueViewModel.swift; sourceTree = "<group>"; };
 		CDDL03002FBB0003000CD001 /* DownloadQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadQueueView.swift; sourceTree = "<group>"; };
@@ -436,6 +440,7 @@
 		CD131004000000000000A001 /* iosAppTests */ = {
 			isa = PBXGroup;
 			children = (
+				CD131101000000000000A001 /* DownloadHashWorkerTests.swift */,
 				CD131001000000000000A001 /* DownloadServiceRetryTests.swift */,
 			);
 			path = iosAppTests;
@@ -578,6 +583,7 @@
 			isa = PBXGroup;
 			children = (
 				CDDL01002FBB0001000CD001 /* DownloadService.swift */,
+				CDDL04002FBB0004000CD001 /* DownloadHashWorker.swift */,
 				CDDL02002FBB0002000CD001 /* DownloadQueueViewModel.swift */,
 				CDDL03002FBB0003000CD001 /* DownloadQueueView.swift */,
 			);
@@ -1199,6 +1205,7 @@
 			CDES06012F400006000CD001 /* ExternalServerImageDetailView.swift in Sources */,
 			CDES07012F400007000CD001 /* ExternalServerGenerationSheet.swift in Sources */,
 			CDDL01012FBB0001000CD001 /* DownloadService.swift in Sources */,
+			CDDL04012FBB0004000CD001 /* DownloadHashWorker.swift in Sources */,
 			CDDL02012FBB0002000CD001 /* DownloadQueueViewModel.swift in Sources */,
 			CDDL03012FBB0003000CD001 /* DownloadQueueView.swift in Sources */,
 			CDPL01012FCC0001000CD001 /* PluginListView.swift in Sources */,
@@ -1218,6 +1225,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD131102000000000000A001 /* DownloadHashWorkerTests.swift in Sources */,
 				CD131002000000000000A001 /* DownloadServiceRetryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

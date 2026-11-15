@@ -1,4 +1,3 @@
-import CryptoKit
 import Foundation
 import Shared
 
@@ -20,6 +19,11 @@ protocol DownloadTaskHandle: AnyObject {
 protocol DownloadTaskFactory: AnyObject {
     func makeTask(request: URLRequest, downloadId: Int64) -> DownloadTaskHandle
     func makeTask(resumeData: Data, downloadId: Int64) -> DownloadTaskHandle
+}
+
+/// Records the final status for a finished file and decides whether it may replace the destination.
+protocol DownloadHashVerifier: AnyObject {
+    func verify(downloadId: Int64, actualSha256: String?) async throws -> Bool
 }
 
 extension URLSessionDownloadTask: DownloadTaskHandle {
@@ -48,6 +52,16 @@ private final class KoinDownloadRecordStore: DownloadRecordStore {
 
     func updateDestinationPath(id: Int64, path: String) async throws {
         try await repository.updateDestinationPath(id: id, path: path)
+    }
+}
+
+private final class KoinDownloadHashVerifier: DownloadHashVerifier {
+    private lazy var useCase: VerifyDownloadHashUseCase = {
+        KoinHelper.shared.getVerifyDownloadHashUseCase()
+    }()
+
+    func verify(downloadId: Int64, actualSha256: String?) async throws -> Bool {
+        try await useCase.invoke(downloadId: downloadId, actualSha256: actualSha256).boolValue
     }
 }
 
@@ -88,33 +102,36 @@ final class DownloadService: NSObject, ObservableObject {
     private var activeTasks: [Int64: DownloadTaskHandle] = [:]
     /// IDs whose transfer is being prepared across an `await`, before a task exists in `activeTasks`.
     private var startingIds: Set<Int64> = []
-    /// IDs whose finished file is still being verified and moved, so no new transfer races that step.
-    private var completingIds: Set<Int64> = []
+    /// Finished files still being hashed, verified and moved, so no new transfer races that step and
+    /// Cancel can stop it. The token keeps a cancelled completion from removing a newer one's entry.
+    private var completions: [Int64: (token: UUID, task: Task<Void, Never>)] = [:]
     private let downloadDelegate: DownloadSessionDelegate
     private let repository: DownloadRecordStore
     private let apiKeyProvider: () -> String?
     private let taskFactory: DownloadTaskFactory
-
-    private lazy var verifyDownloadHash: VerifyDownloadHashUseCase = {
-        KoinHelper.shared.getVerifyDownloadHashUseCase()
-    }()
+    private let hashVerifier: DownloadHashVerifier
+    private let hashWorker: DownloadHashWorker
 
     init(
         repository: DownloadRecordStore? = nil,
         apiKeyProvider: (() -> String?)? = nil,
-        taskFactory: DownloadTaskFactory? = nil
+        taskFactory: DownloadTaskFactory? = nil,
+        hashVerifier: DownloadHashVerifier? = nil,
+        hashWorker: DownloadHashWorker = DownloadHashWorker()
     ) {
         let delegate = DownloadSessionDelegate()
         downloadDelegate = delegate
         self.repository = repository ?? KoinDownloadRecordStore()
         self.apiKeyProvider = apiKeyProvider ?? { KoinHelper.shared.getApiKeyProvider().apiKey }
         self.taskFactory = taskFactory ?? BackgroundSessionTaskFactory(delegate: delegate)
+        self.hashVerifier = hashVerifier ?? KoinDownloadHashVerifier()
+        self.hashWorker = hashWorker
         super.init()
         delegate.service = self
     }
 
     private func isTransferInFlight(_ downloadId: Int64) -> Bool {
-        startingIds.contains(downloadId) || completingIds.contains(downloadId) || activeTasks[downloadId] != nil
+        startingIds.contains(downloadId) || completions[downloadId] != nil || activeTasks[downloadId] != nil
     }
 
     func startDownload(downloadId: Int64, url: String, apiKey: String?) {
@@ -201,6 +218,7 @@ final class DownloadService: NSObject, ObservableObject {
             }
         }
         activeTasks.removeValue(forKey: downloadId)
+        completions.removeValue(forKey: downloadId)?.task.cancel()
     }
 
     func resumeDownload(downloadId: Int64, url: String, apiKey: String?) {
@@ -215,7 +233,7 @@ final class DownloadService: NSObject, ObservableObject {
     /// A callback from a task that is no longer the one tracked for its ID (cancelled, or
     /// replaced by a retry) must not touch the newer transfer's state.
     private func isStaleCallback(downloadId: Int64, taskIdentifier: Int) -> Bool {
-        if startingIds.contains(downloadId) { return true }
+        if startingIds.contains(downloadId) || completions[downloadId] != nil { return true }
         guard let current = activeTasks[downloadId] else { return false }
         return current.taskIdentifier != taskIdentifier
     }
@@ -257,11 +275,14 @@ final class DownloadService: NSObject, ObservableObject {
             return
         }
         guard let location else { return }
-        completingIds.insert(downloadId)
-        Task {
+        let token = UUID()
+        let task = Task {
             await moveCompletedDownload(downloadId: downloadId, location: location)
-            completingIds.remove(downloadId)
+            if completions[downloadId]?.token == token {
+                completions.removeValue(forKey: downloadId)
+            }
         }
+        completions[downloadId] = (token, task)
     }
 
     private func moveCompletedDownload(downloadId: Int64, location: URL) async {
@@ -278,6 +299,55 @@ final class DownloadService: NSObject, ObservableObject {
             try? FileManager.default.removeItem(at: location)
             return
         }
+        guard !Task.isCancelled else {
+            try? FileManager.default.removeItem(at: location)
+            return
+        }
+        let destFile = prepareDestination(for: download)
+        do {
+            try await repository.updateDestinationPath(id: downloadId, path: destFile.path)
+        } catch {
+            print("DownloadService: failed to update destination path: \(error)")
+        }
+        let actualSha256: String?
+        do {
+            actualSha256 = try await computeSha256(of: location, expectedSha256: download.expectedSha256)
+            try Task.checkCancellation()
+        } catch {
+            // Only cancellation throws here: a cancelled attempt must not reach the verifier, which
+            // would record a status for a transfer the user stopped or has since restarted.
+            try? FileManager.default.removeItem(at: location)
+            return
+        }
+        // The shared use case writes the final status; the downloaded file replaces an existing
+        // destination only after it passes, so a rejected download never displaces a good file.
+        let accepted: Bool
+        do {
+            accepted = try await hashVerifier.verify(downloadId: downloadId, actualSha256: actualSha256)
+        } catch {
+            try? FileManager.default.removeItem(at: location)
+            guard !Task.isCancelled else { return }
+            await markFailed(downloadId: downloadId, message: "Failed to verify file: \(error.localizedDescription)")
+            return
+        }
+        guard accepted else {
+            try? FileManager.default.removeItem(at: location)
+            return
+        }
+        // Cancelled while verifying: a newer attempt may already own the destination.
+        guard !Task.isCancelled else {
+            try? FileManager.default.removeItem(at: location)
+            return
+        }
+        do {
+            try replaceItem(at: destFile, with: location)
+        } catch {
+            try? FileManager.default.removeItem(at: location)
+            await markFailed(downloadId: downloadId, message: "Failed to move file: \(error.localizedDescription)")
+        }
+    }
+
+    private func prepareDestination(for download: ModelDownload) -> URL {
         let documentsDir = FileManager.default.urls(
             for: .documentDirectory, in: .userDomainMask
         ).first!
@@ -291,35 +361,7 @@ final class DownloadService: NSObject, ObservableObject {
         } catch {
             print("DownloadService: failed to create directory: \(error)")
         }
-        let destFile = typeDir.appendingPathComponent(download.fileName)
-        do {
-            try await repository.updateDestinationPath(id: downloadId, path: destFile.path)
-        } catch {
-            print("DownloadService: failed to update destination path: \(error)")
-        }
-        // The shared use case writes the final status; the downloaded file replaces an existing
-        // destination only after it passes, so a rejected download never displaces a good file.
-        let accepted: Bool
-        do {
-            accepted = try await verifyDownloadHash.invoke(
-                downloadId: downloadId,
-                actualSha256: computeSha256(of: location, expectedSha256: download.expectedSha256)
-            ).boolValue
-        } catch {
-            try? FileManager.default.removeItem(at: location)
-            await markFailed(downloadId: downloadId, message: "Failed to verify file: \(error.localizedDescription)")
-            return
-        }
-        guard accepted else {
-            try? FileManager.default.removeItem(at: location)
-            return
-        }
-        do {
-            try replaceItem(at: destFile, with: location)
-        } catch {
-            try? FileManager.default.removeItem(at: location)
-            await markFailed(downloadId: downloadId, message: "Failed to move file: \(error.localizedDescription)")
-        }
+        return typeDir.appendingPathComponent(download.fileName)
     }
 
     private func replaceItem(at destination: URL, with source: URL) throws {
@@ -339,17 +381,11 @@ final class DownloadService: NSObject, ObservableObject {
     }
 
     /// Returns nil when CivitAI published no hash or the file could not be read; the shared
-    /// use case treats nil as unverified rather than as a mismatch.
-    private func computeSha256(of filePath: URL, expectedSha256: String?) -> String? {
-        guard let expectedSha256, !expectedSha256.isEmpty else { return nil }
-        let fileData: Data
-        do {
-            fileData = try Data(contentsOf: filePath)
-        } catch {
-            print("DownloadService: failed to read file for hash verification: \(error)")
-            return nil
-        }
-        return SHA256.hash(data: fileData).map { String(format: "%02x", $0) }.joined()
+    /// use case treats nil as unverified rather than as a mismatch. Throws only on cancellation.
+    private func computeSha256(of filePath: URL, expectedSha256: String?) async throws -> String? {
+        guard let expectedSha256,
+              !expectedSha256.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+        return try await hashWorker.sha256(of: filePath)
     }
 }
 
