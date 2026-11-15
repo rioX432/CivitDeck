@@ -20,6 +20,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,16 +30,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsViewModel
 import com.riox432.civitdeck.ui.desktopFocusRing
 import com.riox432.civitdeck.ui.theme.Spacing
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @Suppress("CyclomaticComplexMethod", "UnusedParameter")
@@ -98,6 +104,7 @@ fun DesktopSearchScreen(
             gridState = gridState,
             onModelClick = onModelClick,
             onRetry = viewModel::onSearch,
+            onRefresh = viewModel::refresh,
         )
     }
 
@@ -120,6 +127,53 @@ private fun SearchResultsArea(
     displayState: com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsUiState,
     gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
     onModelClick: (Long) -> Unit,
+    onRetry: () -> Unit,
+    onRefresh: () -> Unit,
+) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val uriHandler = LocalUriHandler.current
+    val openModel: (Model) -> Unit = { model ->
+        val detailId = model.reference.nativeDetailId
+        if (detailId != null) {
+            onModelClick(detailId)
+        } else {
+            // External IDs are synthetic, so they never enter native detail. openUri throws when
+            // the OS has no handler for the link.
+            val url = model.reference.canonicalUrl
+            val opened = url != null && runCatching { uriHandler.openUri(url) }.isSuccess
+            if (!opened) scope.launch { snackbarHostState.showSnackbar(EXTERNAL_LINK_UNAVAILABLE) }
+        }
+    }
+    Box(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            if (uiState.sourceNotices.isNotEmpty()) {
+                DesktopSearchSourceNotices(
+                    notices = uiState.sourceNotices,
+                    onRefresh = onRefresh,
+                    modifier = Modifier.padding(start = Spacing.md, end = Spacing.md, top = Spacing.sm),
+                )
+            }
+            Box(Modifier.weight(1f)) {
+                SearchResultsState(
+                    uiState = uiState,
+                    displayState = displayState,
+                    gridState = gridState,
+                    onModelClick = openModel,
+                    onRetry = onRetry,
+                )
+            }
+        }
+        SnackbarHost(snackbarHostState, Modifier.align(Alignment.BottomCenter))
+    }
+}
+
+@Composable
+private fun SearchResultsState(
+    uiState: com.riox432.civitdeck.feature.search.presentation.ModelSearchUiState,
+    displayState: com.riox432.civitdeck.feature.settings.presentation.DisplaySettingsUiState,
+    gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
+    onModelClick: (Model) -> Unit,
     onRetry: () -> Unit,
 ) {
     when {
@@ -209,11 +263,11 @@ private fun SearchErrorState(
 
 @Composable
 private fun SearchResultsGrid(
-    models: List<com.riox432.civitdeck.domain.model.Model>,
+    models: List<Model>,
     columns: Int,
     isLoadingMore: Boolean,
     gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
-    onModelClick: (Long) -> Unit,
+    onModelClick: (Model) -> Unit,
 ) {
     LazyVerticalGrid(
         columns = if (columns > 0) {
@@ -231,11 +285,11 @@ private fun SearchResultsGrid(
     ) {
         itemsIndexed(
             items = models,
-            key = { _, model -> model.id },
+            key = { index, model -> model.gridKey(index) },
         ) { _, model ->
             DesktopModelCard(
                 model = model,
-                onClick = { onModelClick(model.id) },
+                onClick = { onModelClick(model) },
             )
         }
         if (isLoadingMore) {
@@ -251,5 +305,13 @@ private fun SearchResultsGrid(
     }
 }
 
+/**
+ * Lazy-grid key unique across providers: external providers' numeric IDs are synthetic and can
+ * equal a CivitAI ID. A legacy external model has no exact identity, so its position stands in.
+ */
+private fun Model.gridKey(index: Int): String =
+    reference.stableKey ?: "legacy:${source.name}:$index"
+
 private val CARD_MIN_WIDTH = 256.dp
 private const val LOAD_MORE_THRESHOLD = 5
+private const val EXTERNAL_LINK_UNAVAILABLE = "This model has no web page to open."

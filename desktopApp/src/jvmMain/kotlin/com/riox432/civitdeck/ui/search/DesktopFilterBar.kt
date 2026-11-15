@@ -200,7 +200,7 @@ private fun TimePeriod.displayLabel(): String = when (this) {
     else -> name
 }
 
-private fun ModelSource.displayLabel(): String = when (this) {
+internal fun ModelSource.displayLabel(): String = when (this) {
     ModelSource.CIVITAI -> "CivitAI"
     ModelSource.HUGGING_FACE -> "HuggingFace"
     ModelSource.TENSOR_ART -> "TensorArt"
