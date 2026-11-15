@@ -9,7 +9,11 @@ import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
 import com.riox432.civitdeck.domain.usecase.QualityScoreCalculator
 import com.riox432.civitdeck.domain.util.LoadResult
 import com.riox432.civitdeck.feature.search.domain.usecase.GetModelsUseCase
+import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchContinuation
 import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseCase
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -22,11 +26,28 @@ internal class SearchPageLoader(
     private val hiddenModelIds: StateFlow<Set<Long>>,
 ) {
     var sortWatermark: Double? = null
-    var multiSourcePage: Int = 1
+
+    // Multi-source session state. PaginatedLoader only carries one opaque cursor, so the
+    // per-provider continuation lives here and the cursor merely names the session page it
+    // belongs to.
+    private var multiSourceSession = 0L
+    private var multiSourcePageCount = 0
+    private var multiSourceToken: String? = null
+    private var multiSourceSeenKeys: Set<String> = emptySet()
+    internal var multiSourceContinuation: MultiSourceSearchContinuation? = null
+        private set
 
     fun resetPagination() {
         sortWatermark = null
-        multiSourcePage = 1
+        clearMultiSourceSession()
+    }
+
+    private fun clearMultiSourceSession() {
+        multiSourceSession++
+        multiSourcePageCount = 0
+        multiSourceToken = null
+        multiSourceSeenKeys = emptySet()
+        multiSourceContinuation = null
     }
 
     suspend fun loadPage(
@@ -113,19 +134,53 @@ internal class SearchPageLoader(
             emptySet()
         }
 
-        if (cursor == null) multiSourcePage = 1
-        val result = multiSourceSearchUseCase(
-            query = filter.query.ifBlank { null },
-            selectedSources = filter.selectedSources,
-            cursor = cursor,
-            page = multiSourcePage,
-            limit = limit.coerceAtLeast(PAGE_SIZE),
-        )
+        if (cursor == null) clearMultiSourceSession()
+        // PaginatedLoader only hands back the token this session issued, so a mismatch is a bug;
+        // failing visibly lets Refresh recover, where cancelling would leave it stuck loading.
+        check(cursor == multiSourceToken) { "Unknown multi-source cursor" }
+        val session = multiSourceSession
+        val result = try {
+            multiSourceSearchUseCase(
+                query = filter.query.ifBlank { null },
+                selectedSources = filter.selectedSources,
+                continuation = multiSourceContinuation,
+                limit = limit.coerceAtLeast(PAGE_SIZE),
+            )
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            ensureCurrentSession(session)
+            throw e
+        }
+        ensureCurrentSession(session)
 
-        val filtered = applyClientFilters(result.models, filter, viewedIds)
-        multiSourcePage++
+        val seenKeys = multiSourceSeenKeys.toMutableSet()
+        // A model without a stable key has no exact identity, so it can never be proven a duplicate.
+        val items = applyClientFilters(result.models, filter, viewedIds).filter { model ->
+            model.reference.stableKey?.let(seenKeys::add) ?: true
+        }
+        val nextToken = if (result.hasMore) {
+            multiSourcePageCount++
+            "$MULTI_SOURCE_TOKEN_PREFIX$session:$multiSourcePageCount"
+        } else {
+            null
+        }
+        multiSourceContinuation = result.continuation
+        multiSourceSeenKeys = seenKeys
+        multiSourceToken = nextToken
 
-        return LoadResult(items = filtered, nextCursor = result.nextCursor)
+        return LoadResult(items = items, nextCursor = nextToken)
+    }
+
+    /**
+     * Cancels a request whose session was reset while it ran. PaginatedLoader applies any
+     * returned page or error to its current state, so a stale outcome must never reach it.
+     */
+    private suspend fun ensureCurrentSession(session: Long) {
+        currentCoroutineContext().ensureActive()
+        if (session != multiSourceSession) {
+            throw CancellationException("Multi-source session was reset")
+        }
     }
 
     private fun applyClientFilters(
@@ -165,6 +220,7 @@ internal class SearchPageLoader(
     companion object {
         internal const val PAGE_SIZE = 20
         private const val MAX_FETCH_ITERATIONS = 5
+        private const val MULTI_SOURCE_TOKEN_PREFIX = "multi-source:"
     }
 }
 

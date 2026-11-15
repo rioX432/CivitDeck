@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.search.domain.usecase
 
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelReference
 import com.riox432.civitdeck.domain.model.ModelSearchQuery
 import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.PageMetadata
@@ -10,9 +11,11 @@ import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.domain.repository.TensorArtRepository
 import com.riox432.civitdeck.testing.testModel
 import com.riox432.civitdeck.testing.testPaginatedResult
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -45,26 +48,32 @@ class MultiSourceSearchUseCaseTest {
     private class FakeHuggingFaceRepository(
         private val result: List<Model> = emptyList(),
         private val error: Throwable? = null,
+        private val pages: ((offset: Int) -> List<Model>)? = null,
     ) : HuggingFaceRepository {
         var callCount = 0
+        val requestedOffsets = mutableListOf<Int>()
 
         override suspend fun searchModels(query: String?, limit: Int, offset: Int): List<Model> {
             callCount++
+            requestedOffsets += offset
             error?.let { throw it }
-            return result
+            return pages?.invoke(offset) ?: result
         }
     }
 
     private class FakeTensorArtRepository(
         private val result: List<Model> = emptyList(),
         private val error: Throwable? = null,
+        private val pages: ((page: Int) -> List<Model>)? = null,
     ) : TensorArtRepository {
         var callCount = 0
+        val requestedPages = mutableListOf<Int>()
 
         override suspend fun searchModels(query: String, page: Int, pageSize: Int): List<Model> {
             callCount++
+            requestedPages += page
             error?.let { throw it }
-            return result
+            return pages?.invoke(page) ?: result
         }
     }
 
@@ -168,7 +177,7 @@ class MultiSourceSearchUseCaseTest {
         assertTrue(result.hasPartialFailure)
         // Reference identity is not preserved across the coroutine boundary; match on message.
         assertEquals(civitaiError.message, result.sourceErrors[ModelSource.CIVITAI]?.message)
-        assertNull(result.nextCursor) // no cursor when CivitAI fails
+        assertTrue(ModelSource.CIVITAI in result.continuation.failedSources)
     }
 
     @Test
@@ -189,7 +198,7 @@ class MultiSourceSearchUseCaseTest {
         // Assert: CivitAI is never called; secondary results are interleaved
         assertEquals(0, civitaiRepo.callCount)
         assertEquals(listOf(10L, 20L), result.models.map { it.id })
-        assertNull(result.nextCursor) // cursor is always sourced from CivitAI
+        assertFalse(result.hasMore) // both secondary pages were short
         assertFalse(result.hasPartialFailure)
     }
 
@@ -227,8 +236,9 @@ class MultiSourceSearchUseCaseTest {
         // Act
         val result = useCase(selectedSources = setOf(ModelSource.CIVITAI))
 
-        // Assert: cursor from CivitAI metadata is forwarded
-        assertEquals("cursor-abc", result.nextCursor)
+        // Assert: cursor from CivitAI metadata is carried in the continuation
+        assertEquals("cursor-abc", result.continuation.civitaiCursor)
+        assertTrue(result.hasMore)
     }
 
     @Test
@@ -243,7 +253,7 @@ class MultiSourceSearchUseCaseTest {
         useCase(
             query = "checkpoint",
             selectedSources = setOf(ModelSource.CIVITAI),
-            cursor = "cursor-xyz",
+            continuation = MultiSourceSearchContinuation(civitaiCursor = "cursor-xyz"),
             limit = 10,
         )
 
@@ -255,7 +265,7 @@ class MultiSourceSearchUseCaseTest {
     }
 
     @Test
-    fun invoke_allSourcesFail_resultHasAllErrorsAndEmptyModels() = runTest {
+    fun invoke_allSourcesFail_throwsAggregateError() = runTest {
         // Arrange: every source throws
         val civitaiError = RuntimeException("CivitAI error")
         val hfError = RuntimeException("HF error")
@@ -266,17 +276,17 @@ class MultiSourceSearchUseCaseTest {
         val useCase = MultiSourceSearchUseCase(civitaiRepo, hfRepo, taRepo)
 
         // Act
-        val result = useCase(
-            selectedSources = setOf(ModelSource.CIVITAI, ModelSource.HUGGING_FACE, ModelSource.TENSOR_ART),
-        )
+        val error = assertFailsWith<MultiSourceSearchException> {
+            useCase(
+                selectedSources = setOf(ModelSource.CIVITAI, ModelSource.HUGGING_FACE, ModelSource.TENSOR_ART),
+            )
+        }
 
-        // Assert: models list is empty; all three errors are captured
-        assertTrue(result.models.isEmpty())
-        assertTrue(result.hasPartialFailure)
+        // Assert: the aggregate error carries all three failures.
         // Reference identity is not preserved across coroutine boundaries; match on message.
-        assertEquals(civitaiError.message, result.sourceErrors[ModelSource.CIVITAI]?.message)
-        assertEquals(hfError.message, result.sourceErrors[ModelSource.HUGGING_FACE]?.message)
-        assertEquals(taError.message, result.sourceErrors[ModelSource.TENSOR_ART]?.message)
+        assertEquals(civitaiError.message, error.sourceErrors[ModelSource.CIVITAI]?.message)
+        assertEquals(hfError.message, error.sourceErrors[ModelSource.HUGGING_FACE]?.message)
+        assertEquals(taError.message, error.sourceErrors[ModelSource.TENSOR_ART]?.message)
     }
 
     @Test
@@ -296,5 +306,150 @@ class MultiSourceSearchUseCaseTest {
 
         // Assert: interleave produces HF[0], TA[0], HF[1], HF[2] (remainder of longer list appended)
         assertEquals(listOf(10L, 20L, 11L, 12L), result.models.map { it.id })
+    }
+
+    // --- Independent continuation ---
+
+    @Test
+    fun invoke_huggingFaceOnly_loadsSecondPageByOffset() = runTest {
+        val hfRepo = FakeHuggingFaceRepository(pages = { offset -> hfModels(offset, count = PAGE) })
+        val useCase = MultiSourceSearchUseCase(FakeModelRepository(), hfRepo, FakeTensorArtRepository())
+        val sources = setOf(ModelSource.HUGGING_FACE)
+
+        val first = useCase(selectedSources = sources, limit = PAGE)
+        val second = useCase(selectedSources = sources, continuation = first.continuation, limit = PAGE)
+
+        assertTrue(first.hasMore)
+        assertEquals(listOf(0, PAGE), hfRepo.requestedOffsets)
+        assertEquals(listOf("HUGGING_FACE:owner/m2", "HUGGING_FACE:owner/m3"), second.models.keys())
+    }
+
+    @Test
+    fun invoke_tensorArtOnly_loadsSecondPageByPageNumber() = runTest {
+        val taRepo = FakeTensorArtRepository(pages = { page -> taModels(page * PAGE, count = PAGE) })
+        val useCase = MultiSourceSearchUseCase(FakeModelRepository(), FakeHuggingFaceRepository(), taRepo)
+        val sources = setOf(ModelSource.TENSOR_ART)
+
+        val first = useCase(selectedSources = sources, limit = PAGE)
+        val second = useCase(selectedSources = sources, continuation = first.continuation, limit = PAGE)
+
+        assertTrue(first.hasMore)
+        assertEquals(listOf(1, 2), taRepo.requestedPages)
+        assertEquals(listOf("TENSOR_ART:4", "TENSOR_ART:5"), second.models.keys())
+    }
+
+    @Test
+    fun invoke_civitaiExhausted_secondarySourcesKeepPaging() = runTest {
+        val civitaiRepo = FakeModelRepository(testPaginatedResult(items = listOf(testModel(id = 1L))))
+        val hfRepo = FakeHuggingFaceRepository(pages = { offset -> hfModels(offset, count = PAGE) })
+        val taRepo = FakeTensorArtRepository(pages = { page -> taModels(page * PAGE, count = PAGE) })
+        val useCase = MultiSourceSearchUseCase(civitaiRepo, hfRepo, taRepo)
+        val sources = setOf(ModelSource.CIVITAI, ModelSource.HUGGING_FACE, ModelSource.TENSOR_ART)
+
+        val first = useCase(selectedSources = sources, limit = PAGE)
+        val second = useCase(selectedSources = sources, continuation = first.continuation, limit = PAGE)
+
+        assertTrue(first.continuation.civitaiExhausted)
+        assertTrue(first.hasMore)
+        assertEquals(1, civitaiRepo.callCount) // an exhausted provider is not fetched again
+        assertEquals(listOf(0, PAGE), hfRepo.requestedOffsets)
+        assertEquals(listOf(1, 2), taRepo.requestedPages)
+        assertEquals(PAGE * 2, second.models.size)
+    }
+
+    @Test
+    fun invoke_fullThenEmptyPage_terminatesAndIsNotFetchedAgain() = runTest {
+        val hfRepo = FakeHuggingFaceRepository(
+            pages = { offset -> if (offset == 0) hfModels(0, count = PAGE) else emptyList() },
+        )
+        val useCase = MultiSourceSearchUseCase(FakeModelRepository(), hfRepo, FakeTensorArtRepository())
+        val sources = setOf(ModelSource.HUGGING_FACE)
+
+        val first = useCase(selectedSources = sources, limit = PAGE)
+        val second = useCase(selectedSources = sources, continuation = first.continuation, limit = PAGE)
+        val third = useCase(selectedSources = sources, continuation = second.continuation, limit = PAGE)
+
+        assertTrue(first.hasMore) // an exactly full page allows one more fetch
+        assertFalse(second.hasMore)
+        assertTrue(second.continuation.huggingFaceExhausted)
+        assertTrue(third.models.isEmpty())
+        assertEquals(2, hfRepo.callCount)
+    }
+
+    @Test
+    fun invoke_shortPage_marksSourceExhausted() = runTest {
+        val taRepo = FakeTensorArtRepository(result = taModels(0, count = PAGE - 1))
+        val useCase = MultiSourceSearchUseCase(FakeModelRepository(), FakeHuggingFaceRepository(), taRepo)
+
+        val result = useCase(selectedSources = setOf(ModelSource.TENSOR_ART), limit = PAGE)
+
+        assertTrue(result.continuation.tensorArtExhausted)
+        assertFalse(result.hasMore)
+    }
+
+    @Test
+    fun invoke_failedSource_isSkippedWhileOthersContinue_andRetriedByNewSession() = runTest {
+        val hfRepo = FakeHuggingFaceRepository(error = RuntimeException("HF down"))
+        val taRepo = FakeTensorArtRepository(pages = { page -> taModels(page * PAGE, count = PAGE) })
+        val useCase = MultiSourceSearchUseCase(FakeModelRepository(), hfRepo, taRepo)
+        val sources = setOf(ModelSource.HUGGING_FACE, ModelSource.TENSOR_ART)
+
+        val first = useCase(selectedSources = sources, limit = PAGE)
+        val second = useCase(selectedSources = sources, continuation = first.continuation, limit = PAGE)
+        useCase(selectedSources = sources, continuation = null, limit = PAGE) // Refresh
+
+        assertEquals(listOf("TENSOR_ART:2", "TENSOR_ART:3"), first.models.keys())
+        assertTrue(ModelSource.HUGGING_FACE in first.continuation.failedSources)
+        assertEquals(2, first.continuation.tensorArtPage)
+        assertTrue(first.hasMore)
+        assertEquals(listOf("TENSOR_ART:4", "TENSOR_ART:5"), second.models.keys())
+        assertEquals(2, hfRepo.callCount) // skipped on page 2, retried by the new session
+    }
+
+    @Test
+    fun invoke_everyRequestedSourceFails_throwsEvenWhenAnotherSelectedSourceIsExhausted() = runTest {
+        val civitaiRepo = FakeModelRepository(error = RuntimeException("CivitAI 503"))
+        val hfRepo = FakeHuggingFaceRepository(error = RuntimeException("HF down"))
+        val taRepo = FakeTensorArtRepository()
+        val useCase = MultiSourceSearchUseCase(civitaiRepo, hfRepo, taRepo)
+
+        assertFailsWith<MultiSourceSearchException> {
+            useCase(
+                selectedSources = setOf(ModelSource.CIVITAI, ModelSource.HUGGING_FACE, ModelSource.TENSOR_ART),
+                continuation = MultiSourceSearchContinuation(tensorArtExhausted = true),
+            )
+        }
+        assertEquals(0, taRepo.callCount)
+    }
+
+    @Test
+    fun invoke_sourceCancellation_isRethrownNotRecordedAsSourceError() = runTest {
+        val hfRepo = FakeHuggingFaceRepository(error = CancellationException("cancelled"))
+        val taRepo = FakeTensorArtRepository(result = taModels(0, count = 1))
+        val useCase = MultiSourceSearchUseCase(FakeModelRepository(), hfRepo, taRepo)
+
+        assertFailsWith<CancellationException> {
+            useCase(selectedSources = setOf(ModelSource.HUGGING_FACE, ModelSource.TENSOR_ART))
+        }
+    }
+
+    private fun hfModels(offset: Int, count: Int): List<Model> = (offset until offset + count).map { n ->
+        testModel(id = n.toLong()).copy(
+            source = ModelSource.HUGGING_FACE,
+            reference = ModelReference(ModelSource.HUGGING_FACE, "owner/m$n", null),
+        )
+    }
+
+    private fun taModels(offset: Int, count: Int): List<Model> = (offset until offset + count).map { n ->
+        testModel(id = n.toLong()).copy(
+            source = ModelSource.TENSOR_ART,
+            reference = ModelReference(ModelSource.TENSOR_ART, n.toString(), null),
+        )
+    }
+
+    private fun List<Model>.keys(): List<String?> = map { it.reference.stableKey }
+
+    private companion object {
+        const val PAGE = 2
     }
 }

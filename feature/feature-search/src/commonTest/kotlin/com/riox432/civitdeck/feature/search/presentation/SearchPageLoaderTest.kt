@@ -1,6 +1,8 @@
 package com.riox432.civitdeck.feature.search.presentation
 
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelReference
+import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelStats
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
 import com.riox432.civitdeck.domain.model.SortOrder
@@ -14,10 +16,18 @@ import com.riox432.civitdeck.testing.FakeBrowsingHistoryRepository
 import com.riox432.civitdeck.testing.FakeModelRepository
 import com.riox432.civitdeck.testing.testModel
 import com.riox432.civitdeck.testing.testPaginatedResult
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -29,7 +39,11 @@ import kotlin.test.assertTrue
  *
  * Also covers per-sort paging: only Most Downloaded has a client key that follows the
  * API order, so only it keeps the cross-page sort watermark.
+ *
+ * Multi-source tests cover per-provider continuation, cross-page dedup, and that a reset or
+ * cancelled request never commits its session state.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class SearchPageLoaderTest {
 
     private class NoOpHuggingFaceRepo : HuggingFaceRepository {
@@ -42,14 +56,36 @@ class SearchPageLoaderTest {
             emptyList()
     }
 
-    private fun loaderWith(modelRepo: FakeModelRepository): SearchPageLoader {
+    private class PagedHuggingFaceRepo(
+        private val gate: CompletableDeferred<Unit>? = null,
+        private val pages: (offset: Int) -> List<Model>,
+    ) : HuggingFaceRepository {
+        val requestedOffsets = mutableListOf<Int>()
+
+        override suspend fun searchModels(query: String?, limit: Int, offset: Int): List<Model> {
+            requestedOffsets += offset
+            gate?.await()
+            return pages(offset)
+        }
+    }
+
+    private class FixedTensorArtRepo(private val models: List<Model>) : TensorArtRepository {
+        override suspend fun searchModels(query: String, page: Int, pageSize: Int): List<Model> =
+            if (page == 1) models else emptyList()
+    }
+
+    private fun loaderWith(
+        modelRepo: FakeModelRepository,
+        huggingFaceRepo: HuggingFaceRepository = NoOpHuggingFaceRepo(),
+        tensorArtRepo: TensorArtRepository = NoOpTensorArtRepo(),
+    ): SearchPageLoader {
         val browsingRepo = FakeBrowsingHistoryRepository()
         return SearchPageLoader(
             getModelsUseCase = GetModelsUseCase(modelRepo),
             multiSourceSearchUseCase = MultiSourceSearchUseCase(
                 modelRepository = modelRepo,
-                huggingFaceRepository = NoOpHuggingFaceRepo(),
-                tensorArtRepository = NoOpTensorArtRepo(),
+                huggingFaceRepository = huggingFaceRepo,
+                tensorArtRepository = tensorArtRepo,
             ),
             getViewedModelIdsUseCase = GetViewedModelIdsUseCase(browsingRepo),
             hiddenModelIds = MutableStateFlow(emptySet()),
@@ -139,7 +175,7 @@ class SearchPageLoaderTest {
         loader.loadPage(FilterState(), cursor = null, limit = 20)
         loader.resetPagination()
         assertNull(loader.sortWatermark)
-        assertEquals(1, loader.multiSourcePage)
+        assertNull(loader.multiSourceContinuation)
     }
 
     // FakeModelRepository serves pages by call count, not by cursor, so each load passes
@@ -263,6 +299,108 @@ class SearchPageLoaderTest {
         assertEquals(1, modelRepo.getModelsCallCount)
     }
 
+    // --- Multi-source sessions ---
+
+    @Test
+    fun multiSource_sameNumberFromDifferentProviders_allSurvive_andRepeatedReferenceIsDropped() = runTest {
+        val modelRepo = FakeModelRepository(pages = listOf(testPaginatedResult(items = listOf(testModel(id = 1L)))))
+        val hfRepo = PagedHuggingFaceRepo { offset ->
+            when (offset) {
+                0 -> listOf(hfModel(1L, "owner/x")) + (2..PAGE).map { hfModel(it.toLong(), "owner/m$it") }
+                else -> listOf(hfModel(1L, "owner/x"), hfModel(99L, "owner/new"))
+            }
+        }
+        val taRepo = FixedTensorArtRepo(listOf(taModel(1L)))
+        val loader = loaderWith(modelRepo, hfRepo, taRepo)
+        val filter = FilterState(selectedSources = ALL_SOURCES)
+
+        val first = loader.loadPage(filter, cursor = null, limit = PAGE)
+        val second = loader.loadPage(filter, cursor = first.nextCursor, limit = PAGE)
+
+        val firstKeys = first.items.map { it.reference.stableKey }
+        assertTrue("CIVITAI:1" in firstKeys)
+        assertTrue("HUGGING_FACE:owner/x" in firstKeys)
+        assertTrue("TENSOR_ART:1" in firstKeys)
+        assertEquals(listOf("HUGGING_FACE:owner/new"), second.items.map { it.reference.stableKey })
+    }
+
+    @Test
+    fun multiSource_fullyFilteredRawPage_stillContinuesFromRawOffset() = runTest {
+        val hfRepo = PagedHuggingFaceRepo { offset ->
+            (offset until offset + PAGE).map { hfModel(it.toLong(), "owner/m$it", tags = listOf("bad")) }
+        }
+        val loader = loaderWith(FakeModelRepository(), hfRepo)
+        val filter = FilterState(selectedSources = setOf(ModelSource.HUGGING_FACE), excludedTags = listOf("bad"))
+
+        val first = loader.loadPage(filter, cursor = null, limit = PAGE)
+        loader.loadPage(filter, cursor = first.nextCursor, limit = PAGE)
+
+        assertTrue(first.items.isEmpty())
+        assertNotNull(first.nextCursor)
+        assertEquals(listOf(0, PAGE), hfRepo.requestedOffsets)
+    }
+
+    @Test
+    fun multiSource_reset_startsNewSessionFromFirstOffset() = runTest {
+        val hfRepo = PagedHuggingFaceRepo { offset ->
+            (offset until offset + PAGE).map { hfModel(it.toLong(), "owner/m$it") }
+        }
+        val loader = loaderWith(FakeModelRepository(), hfRepo)
+        val filter = FilterState(selectedSources = setOf(ModelSource.HUGGING_FACE))
+
+        val first = loader.loadPage(filter, cursor = null, limit = PAGE)
+        loader.loadPage(filter, cursor = first.nextCursor, limit = PAGE)
+        loader.resetPagination()
+        val refreshed = loader.loadPage(filter, cursor = null, limit = PAGE)
+
+        assertEquals(listOf(0, PAGE, 0), hfRepo.requestedOffsets)
+        // Seen keys were cleared with the session, so the first page shows again.
+        assertEquals(first.items.map { it.id }, refreshed.items.map { it.id })
+    }
+
+    @Test
+    fun multiSource_resultFinishingAfterReset_isCancelledAndNotCommitted() = runTest {
+        val gate = CompletableDeferred<Unit>()
+        val hfRepo = PagedHuggingFaceRepo(gate) { listOf(hfModel(1L, "owner/stale")) }
+        val loader = loaderWith(FakeModelRepository(), hfRepo)
+        val filter = FilterState(selectedSources = setOf(ModelSource.HUGGING_FACE))
+
+        val load = async { loader.loadPage(filter, cursor = null, limit = PAGE) }
+        runCurrent()
+        loader.resetPagination()
+        gate.complete(Unit)
+
+        assertFailsWith<CancellationException> { load.await() }
+        assertNull(loader.multiSourceContinuation)
+    }
+
+    @Test
+    fun multiSource_cancelledLoad_commitsNothing() = runTest {
+        val gate = CompletableDeferred<Unit>()
+        val hfRepo = PagedHuggingFaceRepo(gate) { listOf(hfModel(1L, "owner/stale")) }
+        val loader = loaderWith(FakeModelRepository(), hfRepo)
+        val filter = FilterState(selectedSources = setOf(ModelSource.HUGGING_FACE))
+
+        val load = launch { loader.loadPage(filter, cursor = null, limit = PAGE) }
+        runCurrent()
+        load.cancel()
+        gate.complete(Unit)
+        load.join()
+
+        assertNull(loader.multiSourceContinuation)
+    }
+
+    private fun hfModel(id: Long, nativeId: String, tags: List<String> = emptyList()) =
+        testModel(id = id, tags = tags).copy(
+            source = ModelSource.HUGGING_FACE,
+            reference = ModelReference(ModelSource.HUGGING_FACE, nativeId, null),
+        )
+
+    private fun taModel(id: Long) = testModel(id = id).copy(
+        source = ModelSource.TENSOR_ART,
+        reference = ModelReference(ModelSource.TENSOR_ART, id.toString(), null),
+    )
+
     private fun modelsWithIds(vararg ids: Long) = ids.map { testModel(id = it) }
 
     private fun modelWith(id: Long, downloads: Int = 100, rating: Double = 4.5) = testModel(
@@ -278,4 +416,10 @@ class SearchPageLoaderTest {
 
     private suspend fun SearchPageLoader.loadIds(sort: SortOrder, cursor: String?, limit: Int): List<Long> =
         loadPage(FilterState(selectedSort = sort), cursor, limit).items.map { it.id }
+
+    private companion object {
+        // The loader requests at least PAGE_SIZE per provider, so a full raw page has this many models.
+        const val PAGE = SearchPageLoader.PAGE_SIZE
+        val ALL_SOURCES = setOf(ModelSource.CIVITAI, ModelSource.HUGGING_FACE, ModelSource.TENSOR_ART)
+    }
 }
