@@ -5,7 +5,6 @@ struct CollectionDetailScreen: View {
     @StateObject private var viewModel: CollectionDetailViewModelOwner
     @EnvironmentObject private var comparisonState: ComparisonState
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @State private var navigationPath = NavigationPath()
     @State private var showMoveSheet = false
 
     private var columns: [GridItem] {
@@ -18,31 +17,22 @@ struct CollectionDetailScreen: View {
         )
     }
 
+    // Always pushed onto an existing stack; a NavigationStack of its own here would nest
+    // inside that one and its destinations would not resolve reliably.
     var body: some View {
-        NavigationStack(path: $navigationPath) {
-            VStack(spacing: 0) {
-                sortFilterBar
-                if viewModel.displayModels.isEmpty {
-                    emptyView
-                } else {
-                    modelsGrid
-                }
-            }
-            .navigationTitle(viewModel.isSelectionMode
-                ? "\(viewModel.selectedIds.count) selected"
-                : "Collection")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { toolbarContent }
-            .navigationDestination(for: Int64.self) { modelId in
-                ModelDetailScreen(modelId: modelId)
-            }
-            .navigationDestination(for: CompareDestination.self) { dest in
-                ModelCompareScreen(
-                    leftModelId: dest.leftModelId,
-                    rightModelId: dest.rightModelId
-                )
+        VStack(spacing: 0) {
+            sortFilterBar
+            if viewModel.displayModels.isEmpty {
+                emptyView
+            } else {
+                modelsGrid
             }
         }
+        .navigationTitle(viewModel.isSelectionMode
+            ? "\(viewModel.selectedIds.count) selected"
+            : "Collection")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar { toolbarContent }
         .overlay(alignment: .bottom) {
             if viewModel.isSelectionMode && !viewModel.selectedIds.isEmpty {
                 selectionBar
@@ -153,26 +143,23 @@ struct CollectionDetailScreen: View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: Spacing.sm) {
                 ForEach(viewModel.displayModels, id: \.id) { model in
-                    Button {
+                    let card = CollectionModelCard(
+                        model: model,
+                        isSelected: viewModel.selectedIds.contains(model.id),
+                        isSelectionMode: viewModel.isSelectionMode
+                    )
+                    // Pushes go through NavigationLink so they land on whichever stack is
+                    // ambient; on iPhone Collections sits inside the Library stack.
+                    Group {
                         if viewModel.isSelectionMode {
-                            viewModel.toggleSelection(model.id)
+                            Button { viewModel.toggleSelection(model.id) } label: { card }
                         } else if let cmpId = comparisonState.selectedModelId {
-                            navigationPath.append(
-                                CompareDestination(
-                                    leftModelId: cmpId,
-                                    rightModelId: model.id
-                                )
-                            )
-                            comparisonState.cancel()
+                            NavigationLink(
+                                value: CompareDestination(leftModelId: cmpId, rightModelId: model.id)
+                            ) { card }
                         } else {
-                            navigationPath.append(model.id)
+                            NavigationLink(value: model.id) { card }
                         }
-                    } label: {
-                        CollectionModelCard(
-                            model: model,
-                            isSelected: viewModel.selectedIds.contains(model.id),
-                            isSelectionMode: viewModel.isSelectionMode
-                        )
                     }
                     .buttonStyle(.plain)
                     .contextMenu {

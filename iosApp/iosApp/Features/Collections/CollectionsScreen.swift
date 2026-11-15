@@ -9,6 +9,7 @@ private enum CollectionsScreenTab {
 
 struct CollectionsScreen: View {
     @StateObject private var viewModel = CollectionsViewModelOwner()
+    @EnvironmentObject private var comparisonState: ComparisonState
     @State private var selectedTab: CollectionsScreenTab = .collections
     @State private var showCreateSheet = false
     @State private var newCollectionName = ""
@@ -62,11 +63,17 @@ struct CollectionsScreen: View {
             .navigationDestination(for: Int64.self) { modelId in
                 ModelDetailScreen(modelId: modelId)
             }
+            .navigationDestination(for: String.self) { username in
+                CreatorProfileScreen(username: username)
+            }
             .navigationDestination(for: CompareDestination.self) { dest in
                 ModelCompareScreen(
                     leftModelId: dest.leftModelId,
                     rightModelId: dest.rightModelId
                 )
+                // Cleared on arrival, not on tap: clearing on tap swaps the tapped
+                // NavigationLink out of the grid before its push is applied.
+                .onAppear { comparisonState.cancel() }
             }
             .alert("New Collection", isPresented: $showCreateSheet) {
                 TextField("Collection name", text: $newCollectionName)
