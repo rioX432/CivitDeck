@@ -7,39 +7,52 @@ import com.riox432.civitdeck.domain.model.PaginatedResult
 import com.riox432.civitdeck.domain.repository.HuggingFaceRepository
 import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.domain.repository.TensorArtRepository
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
 
 /**
  * Aggregates search results from multiple model sources (CivitAI, HuggingFace, TensorArt)
  * with parallel fetching and graceful per-source error handling.
+ *
+ * Each source pages independently through [MultiSourceSearchContinuation]; a source is fetched
+ * only while it is selected, not exhausted, and has not failed in this session.
  */
 class MultiSourceSearchUseCase(
     private val modelRepository: ModelRepository,
     private val huggingFaceRepository: HuggingFaceRepository,
     private val tensorArtRepository: TensorArtRepository,
 ) {
+    /**
+     * Fetches the next page of every fetchable source in [selectedSources].
+     *
+     * @param continuation where each source continues from; null starts every source at its first page.
+     * @throws MultiSourceSearchException when every source fetched by this call failed.
+     */
     suspend operator fun invoke(
         query: String? = null,
         selectedSources: Set<ModelSource> = setOf(ModelSource.CIVITAI),
-        cursor: String? = null,
-        page: Int = 1,
+        continuation: MultiSourceSearchContinuation? = null,
         limit: Int = 20,
     ): MultiSourceSearchResult = supervisorScope {
-        val civitaiDeferred = if (ModelSource.CIVITAI in selectedSources) {
-            async { fetchCivitai(query, cursor, limit) }
+        val current = continuation ?: MultiSourceSearchContinuation()
+        fun shouldFetch(source: ModelSource) = source in selectedSources && current.canFetch(source)
+
+        val civitaiDeferred = if (shouldFetch(ModelSource.CIVITAI)) {
+            async { fetchCivitai(query, current.civitaiCursor, limit) }
         } else {
             null
         }
 
-        val huggingFaceDeferred = if (ModelSource.HUGGING_FACE in selectedSources) {
-            async { fetchHuggingFace(query, page, limit) }
+        val huggingFaceDeferred = if (shouldFetch(ModelSource.HUGGING_FACE)) {
+            async { fetchHuggingFace(query, current.huggingFaceOffset, limit) }
         } else {
             null
         }
 
-        val tensorArtDeferred = if (ModelSource.TENSOR_ART in selectedSources) {
-            async { fetchTensorArt(query, page, limit) }
+        val tensorArtDeferred = if (shouldFetch(ModelSource.TENSOR_ART)) {
+            async { fetchTensorArt(query, current.tensorArtPage, limit) }
         } else {
             null
         }
@@ -48,22 +61,32 @@ class MultiSourceSearchUseCase(
         val huggingFaceResult = huggingFaceDeferred?.awaitCatching()
         val tensorArtResult = tensorArtDeferred?.awaitCatching()
 
-        val civitaiModels = civitaiResult?.getOrNull()?.items.orEmpty()
-        val huggingFaceModels = huggingFaceResult?.getOrNull().orEmpty()
-        val tensorArtModels = tensorArtResult?.getOrNull().orEmpty()
-
         val errors = buildMap {
             civitaiResult?.exceptionOrNull()?.let { put(ModelSource.CIVITAI, it) }
             huggingFaceResult?.exceptionOrNull()?.let { put(ModelSource.HUGGING_FACE, it) }
             tensorArtResult?.exceptionOrNull()?.let { put(ModelSource.TENSOR_ART, it) }
         }
+        val fetchedCount = listOfNotNull(civitaiResult, huggingFaceResult, tensorArtResult).size
+        if (fetchedCount > 0 && errors.size == fetchedCount) {
+            throw MultiSourceSearchException(errors)
+        }
 
-        val merged = mergeResults(civitaiModels, huggingFaceModels, tensorArtModels)
-        val nextCursor = civitaiResult?.getOrNull()?.metadata?.nextCursor
+        val civitaiPage = civitaiResult?.getOrNull()
+        val huggingFaceModels = huggingFaceResult?.getOrNull()
+        val tensorArtModels = tensorArtResult?.getOrNull()
+
+        val next = current
+            .copy(failedSources = current.failedSources + errors.keys)
+            .advance(civitaiPage, huggingFaceModels, tensorArtModels, limit)
 
         MultiSourceSearchResult(
-            models = merged,
-            nextCursor = nextCursor,
+            models = mergeResults(
+                civitaiPage?.items.orEmpty(),
+                huggingFaceModels.orEmpty(),
+                tensorArtModels.orEmpty(),
+            ),
+            continuation = next,
+            hasMore = next.canContinue(selectedSources),
             sourceErrors = errors,
         )
     }
@@ -78,12 +101,12 @@ class MultiSourceSearchUseCase(
 
     private suspend fun fetchHuggingFace(
         query: String?,
-        page: Int,
+        offset: Int,
         limit: Int,
     ): List<Model> = huggingFaceRepository.searchModels(
         query = query,
         limit = limit,
-        offset = (page - 1) * limit,
+        offset = offset,
     )
 
     private suspend fun fetchTensorArt(
@@ -95,6 +118,37 @@ class MultiSourceSearchUseCase(
         page = page,
         pageSize = limit,
     )
+}
+
+/** Moves each source that returned a page (non-null) past it; the others keep their position. */
+private fun MultiSourceSearchContinuation.advance(
+    civitaiPage: PaginatedResult<Model>?,
+    huggingFaceModels: List<Model>?,
+    tensorArtModels: List<Model>?,
+    limit: Int,
+): MultiSourceSearchContinuation {
+    var next = this
+    if (civitaiPage != null) {
+        val nextCursor = civitaiPage.metadata.nextCursor
+        next = next.copy(
+            civitaiCursor = nextCursor,
+            civitaiExhausted = nextCursor == null || nextCursor == civitaiCursor,
+        )
+    }
+    // A short raw page is the provider's last; a full one may be followed by an empty page.
+    if (huggingFaceModels != null) {
+        next = next.copy(
+            huggingFaceOffset = huggingFaceOffset + limit,
+            huggingFaceExhausted = huggingFaceModels.size < limit,
+        )
+    }
+    if (tensorArtModels != null) {
+        next = next.copy(
+            tensorArtPage = tensorArtPage + 1,
+            tensorArtExhausted = tensorArtModels.size < limit,
+        )
+    }
+    return next
 }
 
 /**
@@ -122,12 +176,15 @@ private fun interleave(a: List<Model>, b: List<Model>): List<Model> {
 }
 
 /**
- * Awaits a [kotlinx.coroutines.Deferred] and wraps the result in [Result],
- * catching any exception so that other sources are not affected.
+ * Awaits a [Deferred] and wraps the result in [Result], catching any exception so that other
+ * sources are not affected. Cancellation is rethrown so a cancelled search never reports it as a
+ * source failure.
  */
-private suspend fun <T> kotlinx.coroutines.Deferred<T>.awaitCatching(): Result<T> =
+private suspend fun <T> Deferred<T>.awaitCatching(): Result<T> =
     try {
         Result.success(await())
+    } catch (e: CancellationException) {
+        throw e
     } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
         Result.failure(e)
     }
@@ -135,8 +192,18 @@ private suspend fun <T> kotlinx.coroutines.Deferred<T>.awaitCatching(): Result<T
 /** Result of a multi-source search operation. */
 data class MultiSourceSearchResult(
     val models: List<Model>,
-    val nextCursor: String?,
+    val continuation: MultiSourceSearchContinuation,
+    /** Whether any selected source can still return another page in this session. */
+    val hasMore: Boolean,
     val sourceErrors: Map<ModelSource, Throwable>,
 ) {
     val hasPartialFailure: Boolean get() = sourceErrors.isNotEmpty()
 }
+
+/** Thrown when every source a multi-source search fetched failed; [sourceErrors] holds each failure. */
+class MultiSourceSearchException(
+    val sourceErrors: Map<ModelSource, Throwable>,
+) : Exception(
+    sourceErrors.values.mapNotNull { it.message }.distinct().joinToString("; ").ifEmpty { null },
+    sourceErrors.values.firstOrNull(),
+)
