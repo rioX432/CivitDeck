@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "v*"
+  # A manual run only builds the unsigned iOS IPA as an Actions artifact; it never publishes.
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -11,6 +13,7 @@ permissions:
 jobs:
   # Build signed Android APK
   build-android:
+    if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -60,6 +63,7 @@ jobs:
 
   # Build macOS DMG
   build-macos:
+    if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -97,6 +101,7 @@ jobs:
 
   # Build Windows MSI
   build-windows:
+    if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -128,6 +133,7 @@ jobs:
 
   # Build Linux DEB
   build-linux:
+    if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -156,10 +162,140 @@ jobs:
           name: linux-deb
           path: CivitDeck-*-linux.deb
 
+  # Build unsigned iOS device IPA (no Apple account or certificates).
+  # Adapted from bpawnzZ/CivitDeck commits 9530081 and 1d24997.
+  build-ios:
+    if: (github.event_name == 'push' && github.ref_type == 'tag') || github.event_name == 'workflow_dispatch'
+    runs-on: macos-26
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      # The app uses Swift 6.1+ syntax, so it needs Xcode 26.x (Swift 6.2), as in CI.
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Cache Kotlin/Native
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: konan-
+
+      # CFBundleShortVersionString and CFBundleVersion accept only numbers and dots, so
+      # prerelease tags are rejected rather than published with a truncated version.
+      # The build triple (1+n/10000).((n/100)%100).(n%100) increases with every run number n.
+      - name: Resolve version
+        id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          n="$GITHUB_RUN_NUMBER"
+          run_number_pattern='^[1-9][0-9]{0,11}$'
+          tag_pattern='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
+          if ! [[ "$n" =~ $run_number_pattern ]]; then
+            echo "::error::GITHUB_RUN_NUMBER must be a positive integer, got '$n'"
+            exit 1
+          fi
+          major=$((1 + n / 10000))
+          if [ "$major" -gt 999999999 ]; then
+            echo "::error::build number component $major is out of range"
+            exit 1
+          fi
+          build="$major.$(((n / 100) % 100)).$((n % 100))"
+          if [ "$EVENT_NAME" = "push" ]; then
+            if ! [[ "$GITHUB_REF_NAME" =~ $tag_pattern ]]; then
+              echo "::error::release tags must be vMAJOR.MINOR.PATCH, got '$GITHUB_REF_NAME'"
+              exit 1
+            fi
+            version="${GITHUB_REF_NAME#v}"
+            ipa="CivitDeck-${version}-ios-unsigned.ipa"
+          else
+            version="0.0.0"
+            ipa="CivitDeck-${version}-run${n}.${GITHUB_RUN_ATTEMPT}-ios-unsigned.ipa"
+          fi
+          echo "Version $version, build $build, file $ipa"
+          {
+            echo "version=$version"
+            echo "build=$build"
+            echo "ipa=$ipa"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        run: cd iosApp && swiftlint --strict
+
+      - name: Test IPA packaging script
+        run: |
+          bash -n scripts/package_unsigned_ipa.sh
+          python3 -m unittest discover -s scripts/tests -p 'test_unsigned_ipa.py' -v
+
+      - name: Build unsigned device app
+        run: |
+          xcodebuild build \
+            -project iosApp/iosApp.xcodeproj \
+            -scheme iosApp \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY='' \
+            CODE_SIGN_ENTITLEMENTS='' \
+            DEVELOPMENT_TEAM='' \
+            ONLY_ACTIVE_ARCH=NO
+
+      - name: Package unsigned IPA
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          BUILD: ${{ steps.version.outputs.build }}
+          IPA: ${{ steps.version.outputs.ipa }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          bash scripts/package_unsigned_ipa.sh \
+            "$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos" \
+            "dist/$IPA" "$VERSION" "$BUILD"
+          (cd dist && shasum -a 256 -c "$IPA.sha256")
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          if-no-files-found: error
+          path: |
+            dist/CivitDeck-*-ios-unsigned.ipa
+            dist/CivitDeck-*-ios-unsigned.ipa.sha256
+
   # Create GitHub Release with all artifacts
   create-release:
+    # Publishing needs a tag push and an explicit success from every platform, so a failed,
+    # cancelled or skipped build (including every manual run) can never publish a partial release.
+    if: >-
+      github.event_name == 'push' && github.ref_type == 'tag' &&
+      needs.build-android.result == 'success' &&
+      needs.build-macos.result == 'success' &&
+      needs.build-windows.result == 'success' &&
+      needs.build-linux.result == 'success' &&
+      needs.build-ios.result == 'success'
     runs-on: ubuntu-latest
-    needs: [build-android, build-macos, build-windows, build-linux]
+    needs: [build-android, build-macos, build-windows, build-linux, build-ios]
     steps:
       - uses: actions/checkout@v4
 
