@@ -16,7 +16,7 @@ import org.koin.dsl.module
 actual val platformModule: Module = module {
     single { getDatabaseBuilder() }
     single<NetworkRepository> { JvmNetworkMonitor() }
-    single<DownloadScheduler> { DesktopDownloadScheduler(get(), get(named("modeldownload")), get()) }
+    single<DownloadScheduler> { DesktopDownloadScheduler(get(), get(named("modeldownload")), get(), get()) }
     single<DatasetZipWriterFactory> { DatasetZipWriterFactoryImpl() }
     single<ExportPathProvider> { ExportPathProviderImpl() }
 }
