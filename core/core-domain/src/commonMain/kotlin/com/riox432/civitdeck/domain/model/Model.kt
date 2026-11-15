@@ -14,7 +14,16 @@ data class Model(
     val source: ModelSource = ModelSource.CIVITAI,
     /** True when at least one version is behind a live CivitAI paid-access gate (download needs a purchase). */
     val hasActivePaidAccess: Boolean = false,
-)
+    val reference: ModelReference = ModelReference.legacy(source, id),
+) {
+    init {
+        require(reference.source == source) { "reference.source must match source" }
+    }
+
+    /** Whether CivitAI-ID-keyed actions (detail, favorites, history, hide, compare) apply. */
+    val nativeActionsSupported: Boolean
+        get() = reference.nativeActionsSupported
+}
 
 data class ModelStats(
     val downloadCount: Int,

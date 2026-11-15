@@ -3,11 +3,13 @@ package com.riox432.civitdeck.data.api.tensorart
 import com.riox432.civitdeck.domain.model.Creator
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelImage
+import com.riox432.civitdeck.domain.model.ModelReference
 import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelStats
 import com.riox432.civitdeck.domain.model.ModelType
 import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.NsfwLevel
+import io.ktor.http.encodeURLPathPart
 
 /**
  * Maps TensorArt DTOs to domain models.
@@ -24,7 +26,19 @@ fun TensorArtModelDto.toDomain(): Model = Model(
     stats = stats?.toDomain() ?: ModelStats(0, 0, 0, 0, 0.0),
     modelVersions = buildCoverImageVersion(),
     source = ModelSource.TENSOR_ART,
+    reference = tensorArtReference(),
 )
+
+private fun TensorArtModelDto.tensorArtReference(): ModelReference =
+    if (id.isBlank()) {
+        ModelReference.legacy(ModelSource.TENSOR_ART, id.tensorArtIdToLong())
+    } else {
+        ModelReference(
+            source = ModelSource.TENSOR_ART,
+            nativeId = id,
+            canonicalUrl = "$TENSOR_ART_MODEL_URL${id.encodeURLPathPart()}",
+        )
+    }
 
 private fun TensorArtAuthorDto.toDomain(): Creator = Creator(
     username = name ?: "Unknown",
@@ -106,3 +120,4 @@ private fun String.tensorArtIdToLong(): Long {
 
 private const val TENSOR_ART_ID_PREFIX = 3_000_000_000L
 private const val ID_MASK = 0x7FFFFFFFL
+private const val TENSOR_ART_MODEL_URL = "https://tensor.art/models/"
