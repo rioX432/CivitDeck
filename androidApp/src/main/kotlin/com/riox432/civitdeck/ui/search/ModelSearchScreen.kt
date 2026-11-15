@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.Style
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -38,6 +40,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -62,7 +65,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.riox432.civitdeck.R
+import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
+import com.riox432.civitdeck.feature.search.presentation.SearchSourceNotice
+import com.riox432.civitdeck.feature.search.presentation.SearchSourceNoticeReason
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.theme.Duration
 import com.riox432.civitdeck.ui.theme.Easing
@@ -281,6 +287,7 @@ private fun SearchScreenContentBox(
             ownedHashes = ownedHashes,
             favoriteIds = favoriteIds,
             isComparing = compareModelName != null,
+            sourceNotices = uiState.sourceNotices,
         )
 
         SearchScreenForeground(
@@ -680,6 +687,63 @@ private fun SpeedDialItems(
         enter = enterAnim,
         exit = exitAnim,
     )
+}
+
+/**
+ * Non-blocking provider notices shown above the results: at most one line per kind for each
+ * provider, so a provider with several unsupported filters still takes one line for them.
+ */
+@Composable
+internal fun SearchSourceNotices(notices: List<SearchSourceNotice>, modifier: Modifier = Modifier) {
+    val bySource = notices.groupBy { it.source }
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(Spacing.md),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            Icon(Icons.Outlined.Info, contentDescription = null)
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                bySource.forEach { (source, sourceNotices) ->
+                    sourceNoticeLines(source, sourceNotices.map { it.reason }.toSet()).forEach { line ->
+                        Text(text = line, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun sourceNoticeLines(source: ModelSource, reasons: Set<SearchSourceNoticeReason>): List<String> {
+    val label = source.displayLabel()
+    val unsupported = reasons.mapNotNull { it.unsupportedFilterLabelRes() }.map { stringResource(it) }
+    return buildList {
+        if (SearchSourceNoticeReason.SOURCE_FAILED in reasons) {
+            add(stringResource(R.string.search_notice_source_failed, label))
+        }
+        if (unsupported.isNotEmpty()) {
+            add(stringResource(R.string.search_notice_unsupported_filters, label, unsupported.joinToString(", ")))
+        }
+        if (SearchSourceNoticeReason.UNRATED_PREVIEWS_HIDDEN in reasons) {
+            add(stringResource(R.string.search_notice_previews_hidden, label))
+        }
+    }
+}
+
+private fun SearchSourceNoticeReason.unsupportedFilterLabelRes(): Int? = when (this) {
+    SearchSourceNoticeReason.UNSUPPORTED_SORT -> R.string.search_notice_filter_sort
+    SearchSourceNoticeReason.UNSUPPORTED_PERIOD -> R.string.search_notice_filter_period
+    SearchSourceNoticeReason.UNSUPPORTED_BASE_MODEL -> R.string.search_notice_filter_base_model
+    SearchSourceNoticeReason.UNSUPPORTED_FRESH_FIND -> R.string.search_notice_filter_fresh_only
+    SearchSourceNoticeReason.UNSUPPORTED_QUALITY_FILTER -> R.string.search_notice_filter_quality
+    SearchSourceNoticeReason.SOURCE_FAILED,
+    SearchSourceNoticeReason.UNRATED_PREVIEWS_HIDDEN,
+    -> null
 }
 
 @Composable

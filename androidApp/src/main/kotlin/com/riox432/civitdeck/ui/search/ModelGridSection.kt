@@ -41,6 +41,7 @@ import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.RecommendationSection
 import com.riox432.civitdeck.domain.model.browseThumbnailCandidates
 import com.riox432.civitdeck.domain.model.thumbnailUrl
+import com.riox432.civitdeck.feature.search.presentation.SearchSourceNotice
 import com.riox432.civitdeck.ui.components.LaunchStaggerAnimation
 import com.riox432.civitdeck.ui.components.isReducedMotionEnabled
 import com.riox432.civitdeck.ui.testing.DiscoveryTestTags
@@ -80,6 +81,7 @@ internal fun ModelSearchContent(
     ownedHashes: Set<String> = emptySet(),
     favoriteIds: Set<Long> = emptySet(),
     isComparing: Boolean = false,
+    sourceNotices: List<SearchSourceNotice> = emptyList(),
 ) {
     val stateKey = when {
         isLoading && models.isEmpty() -> "loading"
@@ -104,6 +106,7 @@ internal fun ModelSearchContent(
         ownedHashes = ownedHashes,
         favoriteIds = favoriteIds,
         isComparing = isComparing,
+        sourceNotices = sourceNotices,
     )
 }
 
@@ -128,6 +131,7 @@ private fun SearchContentPullToRefresh(
     ownedHashes: Set<String>,
     favoriteIds: Set<Long>,
     isComparing: Boolean,
+    sourceNotices: List<SearchSourceNotice>,
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
 
@@ -161,6 +165,7 @@ private fun SearchContentPullToRefresh(
             ownedHashes = ownedHashes,
             favoriteIds = favoriteIds,
             isComparing = isComparing,
+            sourceNotices = sourceNotices,
         )
     }
 }
@@ -183,6 +188,7 @@ private fun SearchContentCrossfade(
     ownedHashes: Set<String>,
     favoriteIds: Set<Long>,
     isComparing: Boolean,
+    sourceNotices: List<SearchSourceNotice>,
 ) {
     Crossfade(
         targetState = stateKey,
@@ -217,6 +223,7 @@ private fun SearchContentCrossfade(
                     ownedHashes = ownedHashes,
                     favoriteIds = favoriteIds,
                     isComparing = isComparing,
+                    sourceNotices = sourceNotices,
                 )
             }
         }
@@ -239,6 +246,7 @@ private fun ModelGrid(
     ownedHashes: Set<String> = emptySet(),
     favoriteIds: Set<Long> = emptySet(),
     isComparing: Boolean = false,
+    sourceNotices: List<SearchSourceNotice> = emptyList(),
 ) {
     val reducedMotion = isReducedMotionEnabled()
 
@@ -283,6 +291,7 @@ private fun ModelGrid(
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
         recommendationItems(recommendations, callbacks.onRecommendationClick)
+        sourceNoticeItem(sourceNotices)
         modelItems(
             models,
             ownedHashes,
@@ -323,12 +332,13 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.modelItems(
 ) {
     items(
         count = models.size,
-        key = { models[it].id },
+        key = { models[it].gridKey(it) },
         contentType = { "model" },
     ) { index ->
         val model = models[index]
+        val isNative = model.nativeActionsSupported
         val thumbnailUrl = model.browseThumbnailCandidates().firstOrNull()?.thumbnailUrl()
-        val isOwned = ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
+        val isOwned = isNative && ownedHashes.isNotEmpty() && model.isOwnedBy(ownedHashes)
 
         // Track whether this item has already played its entrance animation.
         // rememberSaveable survives back-navigation recomposition (Navigation 3
@@ -347,13 +357,30 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.modelItems(
         }
         ModelGridItem(
             model = model,
-            isFavorite = model.id in favoriteIds,
+            isFavorite = isNative && model.id in favoriteIds,
             thumbnailUrl = thumbnailUrl,
             isOwned = isOwned,
             isComparing = isComparing,
             callbacks = callbacks,
+            externalSharedElementSuffix = "ext:${model.gridKey(index)}",
             modifier = Modifier.animateItem(),
         )
+    }
+}
+
+/**
+ * Lazy-grid key unique across providers: external providers' numeric IDs are synthetic and can
+ * equal a CivitAI ID. A legacy external model has no exact identity, so its position stands in.
+ */
+private fun Model.gridKey(index: Int): String =
+    reference.stableKey ?: "legacy:${source.name}:$index"
+
+private fun androidx.compose.foundation.lazy.grid.LazyGridScope.sourceNoticeItem(
+    notices: List<SearchSourceNotice>,
+) {
+    if (notices.isEmpty()) return
+    item(key = "source_notices", span = { GridItemSpan(maxLineSpan) }, contentType = "source_notices") {
+        SearchSourceNotices(notices = notices)
     }
 }
 

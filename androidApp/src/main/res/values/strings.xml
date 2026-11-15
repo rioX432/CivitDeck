@@ -586,6 +586,15 @@
     <string name="search_filter_name_label">Filter name</string>
     <string name="search_compare">Compare</string>
     <string name="search_hide_model">Hide model</string>
+    <string name="search_external_link_unavailable">This model has no web page to open.</string>
+    <string name="search_notice_source_failed">Couldn\'t load %1$s results. Pull down to refresh and retry.</string>
+    <string name="search_notice_unsupported_filters">%1$s ignores: %2$s</string>
+    <string name="search_notice_previews_hidden">%1$s previews are unrated, so they\'re hidden at your NSFW level.</string>
+    <string name="search_notice_filter_sort">sort order</string>
+    <string name="search_notice_filter_period">time period</string>
+    <string name="search_notice_filter_base_model">base model</string>
+    <string name="search_notice_filter_fresh_only">Fresh Only</string>
+    <string name="search_notice_filter_quality">quality filter</string>
     <string name="search_placeholder">Search models…</string>
     <string name="search_filters_title">Filters</string>
     <string name="search_fresh_only">Fresh Only</string>
