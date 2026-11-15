@@ -291,45 +291,19 @@ struct ModelSearchScreen: View {
                     recommendationSections
                 }
 
+                SearchSourceNoticesView(notices: viewModel.sourceNotices)
                 LazyVGrid(columns: columns, spacing: Spacing.sm) {
-                    ForEach(Array(viewModel.models.enumerated()), id: \.element.id) { index, model in
-                        SwipeableModelCardView(
-                            model: model,
-                            isFavorite: viewModel.favoriteIds.contains(model.id),
-                            onFavoriteToggle: { viewModel.toggleFavorite(model) },
-                            onHide: { viewModel.hideModel(model.id, name: model.name) },
-                            isOwned: viewModel.isModelOwned(model),
-                            heroNamespace: heroNamespace
-                        )
-                        .accessibilityIdentifier("discovery_model_card")
-                        .onTapGesture {
-                            if let cmpId = comparisonState.selectedModelId {
-                                navigationPath.append(
-                                    CompareDestination(leftModelId: cmpId, rightModelId: model.id)
-                                )
-                                comparisonState.cancel()
+                    ForEach(viewModel.gridItems) { item in
+                        Group {
+                            if item.model.nativeActionsSupported {
+                                civitaiModelCard(item.model)
                             } else {
-                                navigationPath.append(model.id)
+                                ExternalModelCardView(model: item.model)
                             }
                         }
-                        .contextMenu {
-                            Button {
-                                comparisonState.startCompare(
-                                    modelId: model.id, name: model.name
-                                )
-                            } label: {
-                                Label("Compare", systemImage: "rectangle.split.2x1")
-                            }
-                            Button(role: .destructive) {
-                                viewModel.hideModel(model.id, name: model.name)
-                            } label: {
-                                Label("Hide model", systemImage: "eye.slash")
-                            }
-                        }
-                        .staggeredEntrance(index: index)
-                        .task {
-                            viewModel.onModelAppear(model.id)
-                        }
+                        .accessibilityIdentifier("discovery_model_card")
+                        .staggeredEntrance(index: item.index)
+                        .task { viewModel.onModelAppear(index: item.index) }
                     }
                 }
                 .padding(.horizontal, Spacing.md)
@@ -378,7 +352,38 @@ struct ModelSearchScreen: View {
         }
     }
     private var emptyView: some View {
-        EmptyStateView(icon: "magnifyingglass", title: "No models found")
+        VStack(spacing: 0) {
+            SearchSourceNoticesView(notices: viewModel.sourceNotices)
+            EmptyStateView(icon: "magnifyingglass", title: "No models found")
+        }
+    }
+}
+extension ModelSearchScreen { // MARK: - CivitAI card (native detail, compare, favorite, hide)
+    private func civitaiModelCard(_ model: Model) -> some View {
+        SwipeableModelCardView(
+            model: model,
+            isFavorite: viewModel.favoriteIds.contains(model.id),
+            onFavoriteToggle: { viewModel.toggleFavorite(model) },
+            onHide: { viewModel.hideModel(model.id, name: model.name) },
+            isOwned: viewModel.isModelOwned(model),
+            heroNamespace: heroNamespace
+        )
+        .onTapGesture {
+            if let cmpId = comparisonState.selectedModelId {
+                navigationPath.append(CompareDestination(leftModelId: cmpId, rightModelId: model.id))
+                comparisonState.cancel()
+            } else {
+                navigationPath.append(model.id)
+            }
+        }
+        .contextMenu {
+            Button { comparisonState.startCompare(modelId: model.id, name: model.name) } label: {
+                Label("Compare", systemImage: "rectangle.split.2x1")
+            }
+            Button(role: .destructive) { viewModel.hideModel(model.id, name: model.name) } label: {
+                Label("Hide model", systemImage: "eye.slash")
+            }
+        }
     }
 }
 extension ModelSearchScreen { // MARK: - Filter Chips

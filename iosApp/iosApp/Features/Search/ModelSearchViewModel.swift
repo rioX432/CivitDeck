@@ -33,6 +33,19 @@ final class ModelSearchViewModel: ObservableObject {
     @Published var favoriteIds: Set<Int64> = []
     @Published var savedFilters: [SavedSearchFilter] = []
     @Published var selectedSources: Set<Core_domainModelSource> = [.civitai]
+    @Published var sourceNotices: [Feature_searchSearchSourceNotice] = []
+
+    /// Grid entries keyed across providers: an external provider's numeric ID is synthetic and can
+    /// equal a CivitAI ID. A legacy external model has no exact identity, so its position stands in.
+    var gridItems: [SearchGridItem] {
+        models.enumerated().map { index, model in
+            SearchGridItem(
+                id: model.reference.stableKey ?? "legacy:\(model.source.name):\(index)",
+                index: index,
+                model: model
+            )
+        }
+    }
 
     private var memoryWarningToken: NSObjectProtocol?
 
@@ -76,6 +89,7 @@ final class ModelSearchViewModel: ObservableObject {
             excludedTags = state.excludedTags.compactMap { $0 as? String }
             recommendations = state.recommendations as? [RecommendationSection] ?? []
             selectedSources = Set(state.selectedSources.compactMap { $0 as? Core_domainModelSource })
+            sourceNotices = state.sourceNotices as? [Feature_searchSearchSourceNotice] ?? []
             // Use the full recommendation set, not the gated `recommendations` (which is empty
             // while editing/showing results), so the widget keeps its trending model.
             WidgetDataWriter.writeTrendingModel(
@@ -203,14 +217,15 @@ final class ModelSearchViewModel: ObservableObject {
 
     func hideModel(_ modelId: Int64, name: String) {
         vm.onHideModel(modelId: modelId, modelName: name)
-        // Also remove from local list for immediate UI feedback
-        models.removeAll { $0.id == modelId }
+        // Also remove from local list for immediate UI feedback. Only CivitAI models carry this
+        // ID; an external model with the same synthetic numeric ID stays.
+        models.removeAll { $0.nativeActionsSupported && $0.id == modelId }
     }
 
     // MARK: - Pagination
 
-    func onModelAppear(_ modelId: Int64) {
-        guard let index = models.firstIndex(where: { $0.id == modelId }) else { return }
+    // Takes the grid position because numeric IDs collide across providers.
+    func onModelAppear(index: Int) {
         if index >= models.count - 10 {
             vm.loadMore()
         }
@@ -267,4 +282,10 @@ final class ModelSearchViewModel: ObservableObject {
     func refreshRecommendations() {
         vm.refreshRecommendations()
     }
+}
+
+struct SearchGridItem: Identifiable {
+    let id: String
+    let index: Int
+    let model: Model
 }
