@@ -67,6 +67,9 @@ data class ModelSearchUiState(
     val isLoadingMore: Boolean = false,
     override val error: String? = null,
     val hasMore: Boolean = true,
+    // Provider limitations and partial failures of the keyword search; successful results stay in
+    // [models]. A failure of every provider is reported through [error] instead.
+    val sourceNotices: List<SearchSourceNotice> = emptyList(),
 ) : UiLoadingState {
 
     /**
@@ -156,6 +159,11 @@ class ModelSearchViewModel(
         multiSourceSearchUseCase = coreUseCases.multiSourceSearch,
         getViewedModelIdsUseCase = coreUseCases.getViewedModelIds,
         hiddenModelIds = _hiddenModelIds,
+        onSourceNoticesChanged = { notices ->
+            if (currentSource == SearchSource.Keyword) {
+                _uiState.update { it.copy(sourceNotices = notices) }
+            }
+        },
     )
 
     private val filterDelegate = SearchFilterDelegate(
@@ -500,7 +508,13 @@ class ModelSearchViewModel(
         currentSource = SearchSource.Experimental
         val generation = ++searchGeneration
         _uiState.update {
-            it.copy(isExperimentalSearchActive = true, isLoading = true, isLoadingMore = false, error = null)
+            it.copy(
+                isExperimentalSearchActive = true,
+                isLoading = true,
+                isLoadingMore = false,
+                error = null,
+                sourceNotices = emptyList(),
+            )
         }
         experimentalJob = viewModelScope.launch {
             try {

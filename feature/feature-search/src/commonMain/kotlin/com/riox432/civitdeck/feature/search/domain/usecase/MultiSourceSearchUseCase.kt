@@ -28,6 +28,7 @@ class MultiSourceSearchUseCase(
      * Fetches the next page of every fetchable source in [selectedSources].
      *
      * @param continuation where each source continues from; null starts every source at its first page.
+     * @param civitaiQuery the Civitai filters to send; its cursor and limit are replaced per page.
      * @throws MultiSourceSearchException when every source fetched by this call failed.
      */
     suspend operator fun invoke(
@@ -35,12 +36,13 @@ class MultiSourceSearchUseCase(
         selectedSources: Set<ModelSource> = setOf(ModelSource.CIVITAI),
         continuation: MultiSourceSearchContinuation? = null,
         limit: Int = 20,
+        civitaiQuery: ModelSearchQuery = ModelSearchQuery(query = query),
     ): MultiSourceSearchResult = supervisorScope {
         val current = continuation ?: MultiSourceSearchContinuation()
         fun shouldFetch(source: ModelSource) = source in selectedSources && current.canFetch(source)
 
         val civitaiDeferred = if (shouldFetch(ModelSource.CIVITAI)) {
-            async { fetchCivitai(query, current.civitaiCursor, limit) }
+            async { fetchCivitai(civitaiQuery, current.civitaiCursor, limit) }
         } else {
             null
         }
@@ -92,12 +94,10 @@ class MultiSourceSearchUseCase(
     }
 
     private suspend fun fetchCivitai(
-        query: String?,
+        query: ModelSearchQuery,
         cursor: String?,
         limit: Int,
-    ): PaginatedResult<Model> = modelRepository.getModels(
-        ModelSearchQuery(query = query, cursor = cursor, limit = limit),
-    )
+    ): PaginatedResult<Model> = modelRepository.getModels(query.copy(cursor = cursor, limit = limit))
 
     private suspend fun fetchHuggingFace(
         query: String?,

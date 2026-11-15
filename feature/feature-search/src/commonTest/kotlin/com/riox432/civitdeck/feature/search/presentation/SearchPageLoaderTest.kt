@@ -1,11 +1,16 @@
 package com.riox432.civitdeck.feature.search.presentation
 
+import com.riox432.civitdeck.domain.model.BaseModel
 import com.riox432.civitdeck.domain.model.Model
 import com.riox432.civitdeck.domain.model.ModelReference
 import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelStats
+import com.riox432.civitdeck.domain.model.ModelType
+import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.NsfwFilterLevel
+import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.domain.model.SortOrder
+import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.domain.repository.HuggingFaceRepository
 import com.riox432.civitdeck.domain.repository.TensorArtRepository
 import com.riox432.civitdeck.domain.usecase.GetViewedModelIdsUseCase
@@ -15,6 +20,7 @@ import com.riox432.civitdeck.feature.search.domain.usecase.MultiSourceSearchUseC
 import com.riox432.civitdeck.testing.FakeBrowsingHistoryRepository
 import com.riox432.civitdeck.testing.FakeModelRepository
 import com.riox432.civitdeck.testing.testModel
+import com.riox432.civitdeck.testing.testModelVersion
 import com.riox432.civitdeck.testing.testPaginatedResult
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -42,6 +48,9 @@ import kotlin.test.assertTrue
  *
  * Multi-source tests cover per-provider continuation, cross-page dedup, and that a reset or
  * cancelled request never commits its session state.
+ *
+ * Provider-policy tests cover the Civitai request in mixed search, the filters applied to external
+ * results, unrated external previews, Civitai-only hidden/viewed IDs, and source notices.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SearchPageLoaderTest {
@@ -74,12 +83,20 @@ class SearchPageLoaderTest {
             if (page == 1) models else emptyList()
     }
 
+    private class FailingHuggingFaceRepo : HuggingFaceRepository {
+        override suspend fun searchModels(query: String?, limit: Int, offset: Int): List<Model> =
+            throw IllegalStateException("HF down")
+    }
+
     private fun loaderWith(
         modelRepo: FakeModelRepository,
         huggingFaceRepo: HuggingFaceRepository = NoOpHuggingFaceRepo(),
         tensorArtRepo: TensorArtRepository = NoOpTensorArtRepo(),
+        hiddenIds: Set<Long> = emptySet(),
+        viewedIds: Set<Long> = emptySet(),
+        onSourceNoticesChanged: (List<SearchSourceNotice>) -> Unit = {},
     ): SearchPageLoader {
-        val browsingRepo = FakeBrowsingHistoryRepository()
+        val browsingRepo = FakeBrowsingHistoryRepository(viewedModelIds = viewedIds)
         return SearchPageLoader(
             getModelsUseCase = GetModelsUseCase(modelRepo),
             multiSourceSearchUseCase = MultiSourceSearchUseCase(
@@ -88,7 +105,8 @@ class SearchPageLoaderTest {
                 tensorArtRepository = tensorArtRepo,
             ),
             getViewedModelIdsUseCase = GetViewedModelIdsUseCase(browsingRepo),
-            hiddenModelIds = MutableStateFlow(emptySet()),
+            hiddenModelIds = MutableStateFlow(hiddenIds),
+            onSourceNoticesChanged = onSourceNoticesChanged,
         )
     }
 
@@ -390,13 +408,276 @@ class SearchPageLoaderTest {
         assertNull(loader.multiSourceContinuation)
     }
 
-    private fun hfModel(id: Long, nativeId: String, tags: List<String> = emptyList()) =
-        testModel(id = id, tags = tags).copy(
-            source = ModelSource.HUGGING_FACE,
-            reference = ModelReference(ModelSource.HUGGING_FACE, nativeId, null),
+    // ---- Provider policies ----
+
+    @Test
+    fun multiSource_civitaiRequest_hasSameExplicitFiltersAsCivitaiOnly() = runTest {
+        val filter = FilterState(
+            query = "cat",
+            selectedType = ModelType.LORA,
+            selectedSort = SortOrder.HighestRated,
+            selectedPeriod = TimePeriod.Month,
+            selectedBaseModels = setOf(BaseModel("SDXL 1.0")),
+            nsfwFilterLevel = NsfwFilterLevel.Soft,
+            includedTags = listOf("anime", "girl"),
+        )
+        val civitaiOnlyRepo = FakeModelRepository()
+        loaderWith(civitaiOnlyRepo).loadPage(filter, cursor = null, limit = PAGE)
+        val mixedRepo = FakeModelRepository()
+        loaderWith(mixedRepo).loadPage(filter.copy(selectedSources = ALL_SOURCES), cursor = null, limit = PAGE)
+
+        val expected = assertNotNull(civitaiOnlyRepo.lastQuery).copy(cursor = null, limit = null)
+        assertEquals("anime", expected.tag)
+        assertEquals(expected, assertNotNull(mixedRepo.lastQuery).copy(cursor = null, limit = null))
+    }
+
+    @Test
+    fun multiSource_externalResults_needEveryIncludedTagAndMatchingType() = runTest {
+        val hfRepo = PagedHuggingFaceRepo { offset ->
+            if (offset > 0) {
+                emptyList()
+            } else {
+                listOf(
+                    hfModel(1L, "o/match", listOf("Anime", "girl"), ModelType.LORA),
+                    hfModel(2L, "o/one-tag", listOf("anime"), ModelType.LORA),
+                    hfModel(3L, "o/wrong-type", listOf("anime", "girl"), ModelType.Checkpoint),
+                    hfModel(4L, "o/excluded", listOf("anime", "girl", "Horror"), ModelType.LORA),
+                )
+            }
+        }
+        val loader = loaderWith(FakeModelRepository(), hfRepo)
+        val filter = FilterState(
+            selectedType = ModelType.LORA,
+            includedTags = listOf("anime", "girl"),
+            excludedTags = listOf("horror"),
+            nsfwFilterLevel = NsfwFilterLevel.All,
+            selectedSources = setOf(ModelSource.HUGGING_FACE),
         )
 
-    private fun taModel(id: Long) = testModel(id = id).copy(
+        val result = loader.loadPage(filter, cursor = null, limit = PAGE)
+
+        assertEquals(listOf("o/match"), result.items.map { it.reference.nativeId })
+    }
+
+    @Test
+    fun multiSource_unratedExternalPreviews_hiddenUnderOffAndSoft_keptUnderAll() = runTest {
+        for (level in NsfwFilterLevel.entries) {
+            val loader = loaderWith(
+                FakeModelRepository(),
+                PagedHuggingFaceRepo { offset -> if (offset > 0) emptyList() else listOf(hfModel(1L, "o/x")) },
+                FixedTensorArtRepo(listOf(taModel(2L))),
+            )
+            val filter = FilterState(
+                nsfwFilterLevel = level,
+                selectedSources = setOf(ModelSource.HUGGING_FACE, ModelSource.TENSOR_ART),
+            )
+
+            val items = loader.loadPage(filter, cursor = null, limit = PAGE).items
+
+            assertEquals(listOf(ModelSource.HUGGING_FACE, ModelSource.TENSOR_ART), items.map { it.source }, "$level")
+            val tensorArtImages = items.last().modelVersions.sumOf { it.images.size }
+            assertEquals(if (level == NsfwFilterLevel.All) 1 else 0, tensorArtImages, "$level")
+        }
+    }
+
+    @Test
+    fun multiSource_civitaiImageRulesStillApply() = runTest {
+        val explicitOnly = testModel(id = 1L, modelVersions = listOf(testModelVersion(nsfwLevel = NsfwLevel.X)))
+        val modelRepo = FakeModelRepository(
+            pages = listOf(testPaginatedResult(items = listOf(explicitOnly, testModel(id = 2L)))),
+        )
+        val loader = loaderWith(modelRepo, tensorArtRepo = FixedTensorArtRepo(listOf(taModel(3L))))
+        val filter = FilterState(
+            nsfwFilterLevel = NsfwFilterLevel.Off,
+            selectedSources = setOf(ModelSource.CIVITAI, ModelSource.TENSOR_ART),
+        )
+
+        val items = loader.loadPage(filter, cursor = null, limit = PAGE).items
+
+        assertEquals(listOf("CIVITAI:2", "TENSOR_ART:3"), items.map { it.reference.stableKey })
+    }
+
+    @Test
+    fun multiSource_civitaiQualitySort_reordersOnlyCivitaiModels() = runTest {
+        val low = modelWith(id = 1L, rating = 2.0)
+        val high = modelWith(id = 2L, rating = 5.0)
+        val modelRepo = FakeModelRepository(pages = listOf(testPaginatedResult(items = listOf(low, high))))
+        val loader = loaderWith(modelRepo, tensorArtRepo = FixedTensorArtRepo(listOf(taModel(3L))))
+        val filter = FilterState(
+            selectedSort = SortOrder.Quality,
+            nsfwFilterLevel = NsfwFilterLevel.All,
+            selectedSources = setOf(ModelSource.CIVITAI, ModelSource.TENSOR_ART),
+        )
+
+        val items = loader.loadPage(filter, cursor = null, limit = PAGE).items
+
+        assertTrue(QualityScoreCalculator.calculate(high.stats) > QualityScoreCalculator.calculate(low.stats))
+        assertEquals(listOf("CIVITAI:2", "CIVITAI:1", "TENSOR_ART:3"), items.map { it.reference.stableKey })
+    }
+
+    @Test
+    fun multiSource_hiddenAndViewedCivitaiIds_neverHideExternalModelsWithSameNumber() = runTest {
+        val modelRepo = FakeModelRepository(pages = listOf(testPaginatedResult(items = modelsWithIds(5L, 6L, 7L))))
+        val loader = loaderWith(
+            modelRepo,
+            PagedHuggingFaceRepo { offset -> if (offset > 0) emptyList() else listOf(hfModel(5L, "o/five")) },
+            FixedTensorArtRepo(listOf(taModel(6L))),
+            hiddenIds = setOf(5L),
+            viewedIds = setOf(6L),
+        )
+        val filter = FilterState(
+            isFreshFindEnabled = true,
+            nsfwFilterLevel = NsfwFilterLevel.All,
+            selectedSources = ALL_SOURCES,
+        )
+
+        val items = loader.loadPage(filter, cursor = null, limit = PAGE).items
+
+        assertEquals(listOf("CIVITAI:7", "HUGGING_FACE:o/five", "TENSOR_ART:6"), items.map { it.reference.stableKey })
+    }
+
+    @Test
+    fun multiSource_baseModel_checkedOnTensorArt_andReportedUnsupportedOnHuggingFace() = runTest {
+        val loader = loaderWith(
+            FakeModelRepository(),
+            PagedHuggingFaceRepo { offset -> if (offset > 0) emptyList() else listOf(hfModel(10L, "o/any")) },
+            FixedTensorArtRepo(listOf(taModel(1L, "sdxl 1.0"), taModel(2L, "SD 1.5"), taModel(3L, null))),
+        )
+        val filter = FilterState(
+            selectedBaseModels = setOf(BaseModel("SDXL 1.0")),
+            nsfwFilterLevel = NsfwFilterLevel.All,
+            selectedSources = setOf(ModelSource.HUGGING_FACE, ModelSource.TENSOR_ART),
+        )
+
+        val items = loader.loadPage(filter, cursor = null, limit = PAGE).items
+
+        assertEquals(listOf("HUGGING_FACE:o/any", "TENSOR_ART:1"), items.map { it.reference.stableKey })
+        assertEquals(
+            listOf(SearchSourceNotice(ModelSource.HUGGING_FACE, SearchSourceNoticeReason.UNSUPPORTED_BASE_MODEL)),
+            loader.sourceNotices,
+        )
+    }
+
+    @Test
+    fun multiSource_everyUnsupportedActiveFilter_producesNoticePerExternalSource() = runTest {
+        val published = mutableListOf<List<SearchSourceNotice>>()
+        val loader = loaderWith(FakeModelRepository(), onSourceNoticesChanged = { published += it })
+        val filter = FilterState(
+            selectedSort = SortOrder.Newest,
+            selectedPeriod = TimePeriod.Week,
+            selectedBaseModels = setOf(BaseModel("SDXL 1.0")),
+            nsfwFilterLevel = NsfwFilterLevel.Soft,
+            isFreshFindEnabled = true,
+            isQualityFilterEnabled = true,
+            qualityThreshold = 50,
+            selectedSources = ALL_SOURCES,
+        )
+
+        loader.loadPage(filter, cursor = null, limit = PAGE)
+
+        val shared = listOf(
+            SearchSourceNoticeReason.UNSUPPORTED_SORT,
+            SearchSourceNoticeReason.UNSUPPORTED_PERIOD,
+            SearchSourceNoticeReason.UNSUPPORTED_FRESH_FIND,
+            SearchSourceNoticeReason.UNSUPPORTED_QUALITY_FILTER,
+            SearchSourceNoticeReason.UNRATED_PREVIEWS_HIDDEN,
+        )
+        val huggingFace = (shared + SearchSourceNoticeReason.UNSUPPORTED_BASE_MODEL).sorted()
+        assertEquals(
+            huggingFace.map { SearchSourceNotice(ModelSource.HUGGING_FACE, it) } +
+                shared.map { SearchSourceNotice(ModelSource.TENSOR_ART, it) },
+            loader.sourceNotices,
+        )
+        assertEquals(listOf(loader.sourceNotices), published)
+    }
+
+    @Test
+    fun multiSource_defaultFiltersUnderAll_produceNoNotices() = runTest {
+        val published = mutableListOf<List<SearchSourceNotice>>()
+        val loader = loaderWith(FakeModelRepository(), onSourceNoticesChanged = { published += it })
+        val filter = FilterState(nsfwFilterLevel = NsfwFilterLevel.All, selectedSources = ALL_SOURCES)
+
+        loader.loadPage(filter, cursor = null, limit = PAGE)
+
+        assertTrue(loader.sourceNotices.isEmpty())
+        assertTrue(published.isEmpty())
+    }
+
+    @Test
+    fun multiSource_failingSource_addsNotice_whileOtherModelsRemain() = runTest {
+        val loader = loaderWith(
+            FakeModelRepository(),
+            FailingHuggingFaceRepo(),
+            FixedTensorArtRepo(listOf(taModel(1L))),
+        )
+        val filter = FilterState(
+            nsfwFilterLevel = NsfwFilterLevel.All,
+            selectedSources = setOf(ModelSource.HUGGING_FACE, ModelSource.TENSOR_ART),
+        )
+
+        val items = loader.loadPage(filter, cursor = null, limit = PAGE).items
+
+        assertEquals(listOf("TENSOR_ART:1"), items.map { it.reference.stableKey })
+        assertEquals(
+            listOf(SearchSourceNotice(ModelSource.HUGGING_FACE, SearchSourceNoticeReason.SOURCE_FAILED)),
+            loader.sourceNotices,
+        )
+    }
+
+    @Test
+    fun sourceNotices_clearedOnReset_andNotSetByCivitaiOnlySearch() = runTest {
+        val published = mutableListOf<List<SearchSourceNotice>>()
+        val loader = loaderWith(
+            FakeModelRepository(),
+            FailingHuggingFaceRepo(),
+            FixedTensorArtRepo(listOf(taModel(1L))),
+            onSourceNoticesChanged = { published += it },
+        )
+        val mixed = FilterState(selectedSources = setOf(ModelSource.HUGGING_FACE, ModelSource.TENSOR_ART))
+        loader.loadPage(mixed, cursor = null, limit = PAGE)
+        assertTrue(loader.sourceNotices.isNotEmpty())
+
+        loader.resetPagination()
+        assertEquals(emptyList<SearchSourceNotice>(), published.last())
+        loader.loadPage(FilterState(selectedSort = SortOrder.Newest), cursor = null, limit = PAGE)
+
+        assertTrue(loader.sourceNotices.isEmpty())
+        assertEquals(2, published.size)
+    }
+
+    @Test
+    fun multiSource_totalFailure_throws_withoutPublishingNotices() = runTest {
+        val published = mutableListOf<List<SearchSourceNotice>>()
+        val loader = loaderWith(
+            FakeModelRepository(),
+            FailingHuggingFaceRepo(),
+            onSourceNoticesChanged = { published += it },
+        )
+        val filter = FilterState(selectedSources = setOf(ModelSource.HUGGING_FACE))
+
+        val outcome = runCatching { loader.loadPage(filter, cursor = null, limit = PAGE) }
+
+        assertTrue(outcome.isFailure)
+        assertTrue(published.isEmpty())
+        assertTrue(loader.sourceNotices.isEmpty())
+    }
+
+    private fun hfModel(
+        id: Long,
+        nativeId: String,
+        tags: List<String> = emptyList(),
+        type: ModelType = ModelType.Checkpoint,
+        versions: List<ModelVersion> = emptyList(),
+    ) = testModel(id = id, tags = tags, type = type, modelVersions = versions).copy(
+        source = ModelSource.HUGGING_FACE,
+        reference = ModelReference(ModelSource.HUGGING_FACE, nativeId, null),
+    )
+
+    // TensorArt's mapper carries the base model on a single synthetic version.
+    private fun taModel(id: Long, baseModel: String? = "SD 1.5") = testModel(
+        id = id,
+        modelVersions = listOf(testModelVersion(modelId = id).copy(baseModel = baseModel)),
+    ).copy(
         source = ModelSource.TENSOR_ART,
         reference = ModelReference(ModelSource.TENSOR_ART, id.toString(), null),
     )
