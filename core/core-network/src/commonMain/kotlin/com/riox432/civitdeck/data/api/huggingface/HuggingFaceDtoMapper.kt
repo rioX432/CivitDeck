@@ -2,9 +2,11 @@ package com.riox432.civitdeck.data.api.huggingface
 
 import com.riox432.civitdeck.domain.model.Creator
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelReference
 import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.ModelStats
 import com.riox432.civitdeck.domain.model.ModelType
+import io.ktor.http.encodeURLPathPart
 import kotlin.math.abs
 
 fun HuggingFaceModelDto.toDomain(): Model = Model(
@@ -32,7 +34,27 @@ fun HuggingFaceModelDto.toDomain(): Model = Model(
     ),
     modelVersions = emptyList(),
     source = ModelSource.HUGGING_FACE,
+    reference = huggingFaceReference(modelId),
 )
+
+/**
+ * Keeps the full `owner/repository` ID. A repository ID without an owner (e.g. `gpt2`) is
+ * still a valid Hugging Face path; dot segments or empty parts are not, so they get no URL.
+ */
+private fun huggingFaceReference(modelId: String): ModelReference {
+    if (modelId.isBlank()) {
+        return ModelReference.legacy(ModelSource.HUGGING_FACE, generateNumericId(modelId))
+    }
+    val segments = modelId.split("/")
+    val urlSafe = segments.size <= MAX_REPO_ID_SEGMENTS &&
+        segments.none { it.isEmpty() || it == "." || it == ".." }
+    val url = if (urlSafe) {
+        "$HF_BASE_URL/" + segments.joinToString("/") { it.encodeURLPathPart() }
+    } else {
+        null
+    }
+    return ModelReference(source = ModelSource.HUGGING_FACE, nativeId = modelId, canonicalUrl = url)
+}
 
 /**
  * Generate a stable numeric ID from the HuggingFace model ID string.
@@ -59,3 +81,4 @@ private fun mapModelType(
 }
 
 private const val HF_BASE_URL = "https://huggingface.co"
+private const val MAX_REPO_ID_SEGMENTS = 2
