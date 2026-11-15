@@ -1,6 +1,7 @@
 package com.riox432.civitdeck.feature.search.presentation
 
 import com.riox432.civitdeck.domain.model.Model
+import com.riox432.civitdeck.domain.model.ModelSearchQuery
 import com.riox432.civitdeck.domain.model.ModelSource
 import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.filterNsfwImages
@@ -18,12 +19,16 @@ import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Handles page loading logic for model search, including CivitAI-only and multi-source search.
+ *
+ * [onSourceNoticesChanged] receives the current session's [SearchSourceNotice]s: empty when a
+ * session starts, then the provider limitations and failures after each committed multi-source page.
  */
 internal class SearchPageLoader(
     private val getModelsUseCase: GetModelsUseCase,
     private val multiSourceSearchUseCase: MultiSourceSearchUseCase,
     private val getViewedModelIdsUseCase: GetViewedModelIdsUseCase,
     private val hiddenModelIds: StateFlow<Set<Long>>,
+    private val onSourceNoticesChanged: (List<SearchSourceNotice>) -> Unit = {},
 ) {
     var sortWatermark: Double? = null
 
@@ -35,6 +40,8 @@ internal class SearchPageLoader(
     private var multiSourceToken: String? = null
     private var multiSourceSeenKeys: Set<String> = emptySet()
     internal var multiSourceContinuation: MultiSourceSearchContinuation? = null
+        private set
+    internal var sourceNotices: List<SearchSourceNotice> = emptyList()
         private set
 
     fun resetPagination() {
@@ -48,6 +55,13 @@ internal class SearchPageLoader(
         multiSourceToken = null
         multiSourceSeenKeys = emptySet()
         multiSourceContinuation = null
+        publishSourceNotices(emptyList())
+    }
+
+    private fun publishSourceNotices(notices: List<SearchSourceNotice>) {
+        if (notices == sourceNotices) return
+        sourceNotices = notices
+        onSourceNoticesChanged(notices)
     }
 
     suspend fun loadPage(
@@ -145,6 +159,7 @@ internal class SearchPageLoader(
                 selectedSources = filter.selectedSources,
                 continuation = multiSourceContinuation,
                 limit = limit.coerceAtLeast(PAGE_SIZE),
+                civitaiQuery = filter.toCivitaiQuery(),
             )
         } catch (e: CancellationException) {
             throw e
@@ -155,8 +170,14 @@ internal class SearchPageLoader(
         ensureCurrentSession(session)
 
         val seenKeys = multiSourceSeenKeys.toMutableSet()
+        // The merged page lists Civitai first, so filtering each part keeps the merged order.
+        val (civitaiModels, externalModels) = result.models.partition { it.source == ModelSource.CIVITAI }
+        val civitaiFiltered = applyClientFilters(civitaiModels, filter, viewedIds).let { models ->
+            clientSortKey(filter.selectedSort)?.let { models.sortedByDescending(it) } ?: models
+        }
+        val filtered = civitaiFiltered + SearchProviderPolicy.applyExternalFilters(externalModels, filter)
         // A model without a stable key has no exact identity, so it can never be proven a duplicate.
-        val items = applyClientFilters(result.models, filter, viewedIds).filter { model ->
+        val items = filtered.filter { model ->
             model.reference.stableKey?.let(seenKeys::add) ?: true
         }
         val nextToken = if (result.hasMore) {
@@ -168,6 +189,7 @@ internal class SearchPageLoader(
         multiSourceContinuation = result.continuation
         multiSourceSeenKeys = seenKeys
         multiSourceToken = nextToken
+        publishSourceNotices(sourceNoticesFor(filter, result.continuation))
 
         return LoadResult(items = items, nextCursor = nextToken)
     }
@@ -209,7 +231,7 @@ internal class SearchPageLoader(
         if (hiddenIds.isNotEmpty()) {
             filtered = filtered.filter { it.id !in hiddenIds }
         }
-        if (filter.isQualityFilterEnabled && filter.qualityThreshold > 0) {
+        if (filter.isQualityFilterActive()) {
             filtered = filtered.filter { model ->
                 QualityScoreCalculator.calculate(model.stats) >= filter.qualityThreshold
             }
@@ -222,6 +244,31 @@ internal class SearchPageLoader(
         private const val MAX_FETCH_ITERATIONS = 5
         private const val MULTI_SOURCE_TOKEN_PREFIX = "multi-source:"
     }
+}
+
+/**
+ * The Civitai request for [FilterState], matching what the Civitai-only branch sends: the first
+ * included tag goes to the API and the rest are filtered client-side.
+ */
+private fun FilterState.toCivitaiQuery(): ModelSearchQuery = ModelSearchQuery(
+    query = query.ifBlank { null },
+    tag = includedTags.firstOrNull(),
+    type = selectedType,
+    sort = selectedSort,
+    period = selectedPeriod,
+    baseModels = selectedBaseModels.toList().ifEmpty { null },
+    nsfw = nsfwFilterLevel.includeNsfwModels(),
+)
+
+/** Provider limitations of [filter] plus every provider that has failed in this session. */
+private fun sourceNoticesFor(
+    filter: FilterState,
+    continuation: MultiSourceSearchContinuation,
+): List<SearchSourceNotice> {
+    val failures = continuation.failedSources
+        .sortedBy { it.ordinal }
+        .map { SearchSourceNotice(it, SearchSourceNoticeReason.SOURCE_FAILED) }
+    return failures + SearchProviderPolicy.capabilityNotices(filter)
 }
 
 /**
