@@ -4,6 +4,7 @@ import com.riox432.civitdeck.domain.download.DownloadScheduler
 import com.riox432.civitdeck.domain.model.DownloadStatus
 import com.riox432.civitdeck.domain.model.ModelDownload
 import com.riox432.civitdeck.domain.repository.ModelDownloadRepository
+import com.riox432.civitdeck.domain.usecase.VerifyDownloadHashUseCase
 import com.riox432.civitdeck.domain.util.ApplicationScope
 import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
@@ -18,6 +19,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
+import java.io.IOException
+import java.nio.file.AtomicMoveNotSupportedException
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
 
 /**
@@ -35,6 +40,7 @@ class DesktopDownloadScheduler(
     private val repository: ModelDownloadRepository,
     private val httpClient: HttpClient,
     private val scope: ApplicationScope,
+    private val verifyDownloadHash: VerifyDownloadHashUseCase,
     private val downloadRoot: () -> File = { defaultDownloadRoot() },
 ) : DownloadScheduler {
 
@@ -77,16 +83,25 @@ class DesktopDownloadScheduler(
         val destDir = File(downloadRoot(), download.modelType)
         destDir.mkdirs()
         val destFile = File(destDir, download.fileName)
+        // Streamed beside the destination so an existing good file survives until the
+        // replacement passes verification, and the final move stays on one filesystem. Unique
+        // per transfer: a cancelled job's cleanup can still run after a resume has started.
+        val partFile = File.createTempFile("${download.fileName}.", ".part", destDir)
 
-        httpClient.prepareGet(download.fileUrl).execute { response ->
-            if (!response.status.isSuccess()) {
-                repository.updateStatus(downloadId, DownloadStatus.Failed, "HTTP ${response.status.value}")
-                return@execute
+        try {
+            httpClient.prepareGet(download.fileUrl).execute { response ->
+                if (!response.status.isSuccess()) {
+                    repository.updateStatus(downloadId, DownloadStatus.Failed, "HTTP ${response.status.value}")
+                    return@execute
+                }
+                streamToFile(downloadId, response, partFile)
+                repository.updateDestinationPath(downloadId, destFile.absolutePath)
+                if (verifyDownloadHash(downloadId, computeSha256(download.expectedSha256, partFile))) {
+                    replaceDestination(partFile, destFile)
+                }
             }
-            streamToFile(downloadId, response, destFile)
-            repository.updateDestinationPath(downloadId, destFile.absolutePath)
-            verifyHash(downloadId, download.expectedSha256, destFile)
-            repository.updateStatus(downloadId, DownloadStatus.Completed)
+        } finally {
+            partFile.delete()
         }
     }
 
@@ -104,19 +119,39 @@ class DesktopDownloadScheduler(
         }
     }
 
-    private suspend fun verifyHash(downloadId: Long, expectedSha256: String?, file: File) {
-        if (expectedSha256.isNullOrEmpty()) return
-        val digest = MessageDigest.getInstance("SHA-256")
-        file.inputStream().use { input ->
-            val buffer = ByteArray(HASH_BUFFER_SIZE)
-            var read: Int
-            while (input.read(buffer).also { read = it } != -1) {
-                digest.update(buffer, 0, read)
-            }
+    /**
+     * A non-atomic REPLACE_EXISTING move deletes the target before moving the source, so it is
+     * only the fallback for filesystems that cannot rename atomically.
+     */
+    private fun replaceDestination(source: File, destination: File) {
+        try {
+            Files.move(source.toPath(), destination.toPath(), StandardCopyOption.ATOMIC_MOVE)
+        } catch (_: AtomicMoveNotSupportedException) {
+            Files.move(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING)
         }
-        @OptIn(ExperimentalStdlibApi::class)
-        val actualHash = digest.digest().toHexString()
-        repository.updateHashVerified(downloadId, actualHash.equals(expectedSha256, ignoreCase = true))
+    }
+
+    /**
+     * Returns the file's SHA-256 as hex, or null when CivitAI published no hash or the file
+     * could not be read; [VerifyDownloadHashUseCase] treats null as unverified, not a mismatch.
+     */
+    private fun computeSha256(expectedSha256: String?, file: File): String? {
+        if (expectedSha256.isNullOrBlank()) return null
+        return try {
+            val digest = MessageDigest.getInstance("SHA-256")
+            file.inputStream().use { input ->
+                val buffer = ByteArray(HASH_BUFFER_SIZE)
+                var read: Int
+                while (input.read(buffer).also { read = it } != -1) {
+                    digest.update(buffer, 0, read)
+                }
+            }
+            @OptIn(ExperimentalStdlibApi::class)
+            digest.digest().toHexString()
+        } catch (e: IOException) {
+            Logger.w(TAG, "Hash computation failed for ${file.name}: ${e.message}")
+            null
+        }
     }
 
     companion object {

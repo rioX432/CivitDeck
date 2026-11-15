@@ -21,6 +21,10 @@ final class DownloadService: NSObject, ObservableObject {
         KoinHelper.shared.getModelDownloadRepository()
     }()
 
+    private lazy var verifyDownloadHash: VerifyDownloadHashUseCase = {
+        KoinHelper.shared.getVerifyDownloadHashUseCase()
+    }()
+
     override private init() {
         super.init()
         downloadDelegate.service = self
@@ -143,51 +147,64 @@ final class DownloadService: NSObject, ObservableObject {
             print("DownloadService: failed to create directory: \(error)")
         }
         let destFile = typeDir.appendingPathComponent(download.fileName)
-        try? FileManager.default.removeItem(at: destFile)
         do {
-            try FileManager.default.moveItem(at: location, to: destFile)
-            do {
-                try await repository.updateDestinationPath(id: downloadId, path: destFile.path)
-            } catch {
-                print("DownloadService: failed to update destination path: \(error)")
-            }
-            await verifyHash(downloadId: downloadId, filePath: destFile, expectedSha256: download.expectedSha256)
-            do {
-                try await repository.updateStatus(
-                    id: downloadId, status: .completed, errorMessage: nil
-                )
-            } catch {
-                print("DownloadService: failed to update completed status: \(error)")
-            }
+            try await repository.updateDestinationPath(id: downloadId, path: destFile.path)
         } catch {
-            do {
-                try await repository.updateStatus(
-                    id: downloadId, status: .failed,
-                    errorMessage: "Failed to move file: \(error.localizedDescription)"
-                )
-            } catch {
-                print("DownloadService: failed to update failed status: \(error)")
-            }
+            print("DownloadService: failed to update destination path: \(error)")
+        }
+        // The shared use case writes the final status; the downloaded file replaces an existing
+        // destination only after it passes, so a rejected download never displaces a good file.
+        let accepted: Bool
+        do {
+            accepted = try await verifyDownloadHash.invoke(
+                downloadId: downloadId,
+                actualSha256: computeSha256(of: location, expectedSha256: download.expectedSha256)
+            ).boolValue
+        } catch {
+            try? FileManager.default.removeItem(at: location)
+            await markFailed(downloadId: downloadId, message: "Failed to verify file: \(error.localizedDescription)")
+            return
+        }
+        guard accepted else {
+            try? FileManager.default.removeItem(at: location)
+            return
+        }
+        do {
+            try replaceItem(at: destFile, with: location)
+        } catch {
+            try? FileManager.default.removeItem(at: location)
+            await markFailed(downloadId: downloadId, message: "Failed to move file: \(error.localizedDescription)")
         }
     }
 
-    private func verifyHash(downloadId: Int64, filePath: URL, expectedSha256: String?) async {
-        guard let expectedHash = expectedSha256, !expectedHash.isEmpty else { return }
+    private func replaceItem(at destination: URL, with source: URL) throws {
+        if FileManager.default.fileExists(atPath: destination.path) {
+            _ = try FileManager.default.replaceItemAt(destination, withItemAt: source)
+        } else {
+            try FileManager.default.moveItem(at: source, to: destination)
+        }
+    }
+
+    private func markFailed(downloadId: Int64, message: String) async {
+        do {
+            try await repository.updateStatus(id: downloadId, status: .failed, errorMessage: message)
+        } catch {
+            print("DownloadService: failed to update failed status: \(error)")
+        }
+    }
+
+    /// Returns nil when CivitAI published no hash or the file could not be read; the shared
+    /// use case treats nil as unverified rather than as a mismatch.
+    private func computeSha256(of filePath: URL, expectedSha256: String?) -> String? {
+        guard let expectedSha256, !expectedSha256.isEmpty else { return nil }
         let fileData: Data
         do {
             fileData = try Data(contentsOf: filePath)
         } catch {
             print("DownloadService: failed to read file for hash verification: \(error)")
-            return
+            return nil
         }
-        let digest = SHA256.hash(data: fileData)
-        let actualHash = digest.map { String(format: "%02x", $0) }.joined()
-        let matched = actualHash.lowercased() == expectedHash.lowercased()
-        do {
-            try await repository.updateHashVerified(id: downloadId, verified: matched)
-        } catch {
-            print("DownloadService: failed to update hash verification: \(error)")
-        }
+        return SHA256.hash(data: fileData).map { String(format: "%02x", $0) }.joined()
     }
 }
 
