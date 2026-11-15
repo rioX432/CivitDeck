@@ -98,6 +98,57 @@ xcodebuild build \
 
 A physical-device build needs your own signing configuration. The simulator build does not verify device sharing, filesystem behavior, or an app's complete user flow.
 
+### Unsigned IPA
+
+The [release workflow](../.github/workflows/release.yml) builds an **unsigned** iOS device IPA for sideloading. It is not an App Store or TestFlight build, and it cannot be installed until you sign it yourself. Installation of this IPA has not been verified on a device; archive validation and a successful build do not show that it installs or launches.
+
+To build and package it locally on the Xcode 26.x toolchain (use a fresh derived-data directory, because the packager refuses to overwrite an existing IPA or checksum):
+
+```bash
+bash -n scripts/package_unsigned_ipa.sh
+python3 -m unittest discover -s scripts/tests -p 'test_unsigned_ipa.py' -v
+(cd iosApp && swiftlint --strict)
+xcodebuild build \
+  -project iosApp/iosApp.xcodeproj \
+  -scheme iosApp \
+  -configuration Release \
+  -destination 'generic/platform=iOS' \
+  -derivedDataPath /tmp/civitdeck-ipa-review \
+  CODE_SIGNING_ALLOWED=NO \
+  CODE_SIGNING_REQUIRED=NO \
+  CODE_SIGN_IDENTITY='' \
+  CODE_SIGN_ENTITLEMENTS='' \
+  DEVELOPMENT_TEAM='' \
+  ONLY_ACTIVE_ARCH=NO
+bash scripts/package_unsigned_ipa.sh \
+  /tmp/civitdeck-ipa-review/Build/Products/Release-iphoneos \
+  /tmp/civitdeck-ipa-review/CivitDeck-0.0.0-ios-unsigned.ipa 0.0.0 1.0.1
+(cd /tmp/civitdeck-ipa-review && shasum -a 256 -c CivitDeck-0.0.0-ios-unsigned.ipa.sha256)
+```
+
+`scripts/package_unsigned_ipa.sh PRODUCTS_DIRECTORY OUTPUT_IPA VERSION BUILD` requires exactly one device-platform `.app` with a non-empty Mach-O executable. It copies the app into a temporary `Payload` directory, removes copied signatures and provisioning profiles, and writes `VERSION` and `BUILD` into the copy's `Info.plist`; the build output is not modified. It validates the archive before it creates the IPA and its `shasum -a 256` sidecar.
+
+**Version numbers.** `CFBundleShortVersionString` and `CFBundleVersion` accept only numbers and dots, so both arguments must be three numeric components without leading zeros.
+
+- A tag push needs a `vMAJOR.MINOR.PATCH` tag and produces `CivitDeck-MAJOR.MINOR.PATCH-ios-unsigned.ipa`. Other tag shapes, such as prereleases, fail the iOS job and therefore block the release.
+- A manual run uses version `0.0.0` and names the file `CivitDeck-0.0.0-run<run number>.<attempt>-ios-unsigned.ipa`.
+- The build number is derived from the workflow run number `n` as `(1 + n/10000).((n/100) % 100).(n % 100)` with integer division, so it increases with every run (run 1 is `1.0.1`).
+
+**Manual artifact run.** Dispatching the workflow builds only the iOS IPA; the Android, Desktop and release jobs are skipped, and no GitHub Release is created or changed. The IPA and checksum are uploaded as the `ios-ipa` Actions artifact:
+
+```bash
+gh workflow run release.yml --ref master
+gh run list --workflow release.yml --event workflow_dispatch --limit 1
+gh run download <run-id> --name ios-ipa
+shasum -a 256 -c CivitDeck-*-ios-unsigned.ipa.sha256
+```
+
+A tag push publishes a release only when the Android, macOS, Windows, Linux and iOS jobs all succeed.
+
+**Signing and installing.** To install the IPA on your own device, re-sign it with your own Apple ID or Apple Developer account, using a sideloading tool such as AltStore or SideStore, or your own certificate and provisioning profile. Before describing an IPA as installation-tested, record the signing tool and version, the device model and iOS version, and a successful install and launch.
+
+The unsigned packaging is adapted from bpawnzZ's fork commits [9530081](https://github.com/bpawnzZ/CivitDeck/commit/9530081948f330023a8d26cf401880f411281eac) and [1d24997](https://github.com/bpawnzZ/CivitDeck/commit/1d249974a610d8146215ae58594f79b4ed0fa6c0).
+
 ## Checks Before a Pull Request
 
 1. Run tests for the modules and platforms you changed. For shared export changes, run both the shared Android host tests and the Desktop ZIP test selection above.
