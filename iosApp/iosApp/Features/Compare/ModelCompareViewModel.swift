@@ -109,7 +109,8 @@ final class ModelCompareViewModel: ObservableObject {
                     mode: model.mode, creator: model.creator,
                     stats: model.stats, modelVersions: updatedVersions,
                     source: model.source,
-                    hasActivePaidAccess: model.hasActivePaidAccess
+                    hasActivePaidAccess: model.hasActivePaidAccess,
+                    reference: model.reference
                 )
                 switch side {
                 case .left: leftModel = updatedModel
