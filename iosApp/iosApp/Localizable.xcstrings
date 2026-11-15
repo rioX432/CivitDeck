@@ -781,6 +781,105 @@
           }
         }
       }
+    },
+    "search_external_link_unavailable" : {
+      "comment" : "Alert when a HuggingFace or TensorArt search result has no web page that can be opened",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This model has no web page to open."
+          }
+        }
+      }
+    },
+    "search_notice_source_failed %@" : {
+      "comment" : "Search notice when one provider's request failed while other results are shown; the argument is the provider name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load %@ results. Pull down to refresh and retry."
+          }
+        }
+      }
+    },
+    "search_notice_unsupported_filters %@ %@" : {
+      "comment" : "Search notice listing active filters a provider cannot apply; the first argument is the provider name, the second a comma-separated list of filter names",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ ignores: %2$@"
+          }
+        }
+      }
+    },
+    "search_notice_previews_hidden %@" : {
+      "comment" : "Search notice when a provider's unrated preview images are hidden by the NSFW level; the argument is the provider name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ previews are unrated, so they're hidden at your NSFW level."
+          }
+        }
+      }
+    },
+    "search_notice_filter_sort" : {
+      "comment" : "Filter name inside the ignored-filters search notice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sort order"
+          }
+        }
+      }
+    },
+    "search_notice_filter_period" : {
+      "comment" : "Filter name inside the ignored-filters search notice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "time period"
+          }
+        }
+      }
+    },
+    "search_notice_filter_base_model" : {
+      "comment" : "Filter name inside the ignored-filters search notice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "base model"
+          }
+        }
+      }
+    },
+    "search_notice_filter_fresh_only" : {
+      "comment" : "Filter name inside the ignored-filters search notice; matches the Fresh Only filter chip",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fresh Only"
+          }
+        }
+      }
+    },
+    "search_notice_filter_quality" : {
+      "comment" : "Filter name inside the ignored-filters search notice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "quality filter"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

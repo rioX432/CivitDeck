@@ -86,6 +86,32 @@ struct ModelCardView: View {
     }
 }
 
+/// Card for a model from a provider other than CivitAI. Its numeric ID is synthetic, so it gets no
+/// favorite/hide/compare action or hero transition and opens the provider's own page instead.
+struct ExternalModelCardView: View {
+    let model: Model
+    @Environment(\.openURL) private var openURL
+    @State private var showLinkUnavailable = false
+
+    var body: some View {
+        ModelCardView(model: model)
+            .contentShape(Rectangle())
+            .onTapGesture(perform: openProviderPage)
+            .accessibilityAddTraits(.isLink)
+            .alert(Text("search_external_link_unavailable"), isPresented: $showLinkUnavailable) {}
+    }
+
+    private func openProviderPage() {
+        guard let url = model.reference.canonicalUrl.flatMap(URL.init(string:)) else {
+            showLinkUnavailable = true
+            return
+        }
+        openURL(url) { accepted in
+            if !accepted { showLinkUnavailable = true }
+        }
+    }
+}
+
 struct NsfwBadgeView: View {
     var body: some View {
         Text("NSFW")

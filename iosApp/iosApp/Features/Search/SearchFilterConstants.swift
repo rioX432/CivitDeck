@@ -44,6 +44,72 @@ extension Core_domainModelSource {
     }
 }
 
+/// Non-blocking provider notices shown above the results: at most one line per kind for each
+/// provider, so a provider with several unsupported filters still takes one line for them.
+struct SearchSourceNoticesView: View {
+    private typealias NoticeReason = Feature_searchSearchSourceNoticeReason
+    let notices: [Feature_searchSearchSourceNotice]
+
+    var body: some View {
+        if !notices.isEmpty {
+            HStack(alignment: .top, spacing: Spacing.sm) {
+                Image(systemName: "info.circle")
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    ForEach(lines, id: \.self) { line in
+                        Text(line).font(.civitBodySmall)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(Spacing.md)
+            .foregroundColor(.civitOnSecondaryContainer)
+            .background(Color.civitSecondaryContainer)
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.card))
+            .padding(.horizontal, Spacing.md)
+            .padding(.bottom, Spacing.sm)
+        }
+    }
+
+    private var lines: [String] {
+        var sources: [Core_domainModelSource] = []
+        for notice in notices where !sources.contains(notice.source) {
+            sources.append(notice.source)
+        }
+        return sources.flatMap { source in
+            Self.lines(source: source, reasons: Set(notices.filter { $0.source == source }.map(\.reason)))
+        }
+    }
+
+    private static func lines(source: Core_domainModelSource, reasons: Set<NoticeReason>) -> [String] {
+        let label = source.displayLabel
+        let unsupported = NoticeReason.allCases.filter { reasons.contains($0) }.compactMap(filterLabel)
+        var result: [String] = []
+        if reasons.contains(.sourceFailed) {
+            result.append(String(localized: "search_notice_source_failed \(label)"))
+        }
+        if !unsupported.isEmpty {
+            let filters = unsupported.joined(separator: ", ")
+            result.append(String(localized: "search_notice_unsupported_filters \(label) \(filters)"))
+        }
+        if reasons.contains(.unratedPreviewsHidden) {
+            result.append(String(localized: "search_notice_previews_hidden \(label)"))
+        }
+        return result
+    }
+
+    private static func filterLabel(_ reason: NoticeReason) -> String? {
+        switch reason {
+        case .unsupportedSort: return String(localized: "search_notice_filter_sort")
+        case .unsupportedPeriod: return String(localized: "search_notice_filter_period")
+        case .unsupportedBaseModel: return String(localized: "search_notice_filter_base_model")
+        case .unsupportedFreshFind: return String(localized: "search_notice_filter_fresh_only")
+        case .unsupportedQualityFilter: return String(localized: "search_notice_filter_quality")
+        case .sourceFailed, .unratedPreviewsHidden: return nil
+        }
+    }
+}
+
 struct HeaderHeightPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
