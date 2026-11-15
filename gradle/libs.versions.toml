@@ -4,6 +4,7 @@ kotlin = "2.3.20"
 compose-multiplatform = "1.11.0"
 ktor = "3.4.3"
 kotlinx-serialization = "1.8.1"
+kmp-socketio = "1.4.4"
 koin = "4.2.1"
 coil = "3.4.0"
 paging = "3.4.2"
@@ -44,6 +45,9 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+
+# Socket.IO
+kmp-socketio = { module = "com.piasy:kmp-socketio", version.ref = "kmp-socketio" }
 
 # Kotlinx Serialization
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
