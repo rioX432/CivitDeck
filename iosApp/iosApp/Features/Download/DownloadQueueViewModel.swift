@@ -52,8 +52,11 @@ final class DownloadQueueViewModelOwner: ObservableObject {
         vm.cancelDownload(downloadId: downloadId)
     }
 
+    /// A failed record is only in `failedDownloads`, and the shared ViewModel's fire-and-forget
+    /// retry could land its status write after the new transfer reports progress, so the service
+    /// owns the whole retry and the UI follows the repository.
     func retryDownload(_ downloadId: Int64) {
-        resumeDownload(downloadId)
+        Task { await DownloadService.shared.retryDownload(downloadId: downloadId) }
     }
 
     func deleteDownload(_ downloadId: Int64) {
