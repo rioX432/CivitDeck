@@ -14,6 +14,38 @@ data class ComfyUIGeneratedImage(
     /** Full URL constructed as: {baseUrl}/view?filename={filename}&subfolder={subfolder}&type={type} */
     val imageUrl: String,
     val meta: ComfyUIGenerationMeta,
+    /**
+     * The server this output was read from, captured before the request. Null for outputs built
+     * without one, which must stay unlinked: [imageUrl] alone does not identify a saved connection.
+     */
+    val jobTarget: ComfyUIJobTarget? = null,
+)
+
+/**
+ * The remote outcome ComfyUI recorded for a history entry. Only an explicit status or event
+ * decides it; output images alone never mean [Completed], and missing output never means
+ * [Interrupted].
+ */
+enum class ComfyUIHistoryOutcome {
+    Completed,
+    Failed,
+    Interrupted,
+
+    /** Missing, still running, or a status this app cannot read. */
+    Unknown,
+}
+
+/**
+ * The history of one bound [job], read from [job]'s own server. [present] is false when that
+ * server has no entry for the prompt. A failed entry may still carry partial [images].
+ * [error] is the server's exception message for a [ComfyUIHistoryOutcome.Failed] entry, if any.
+ */
+data class ComfyUIBoundHistoryItem(
+    val job: ComfyUIJobHandle,
+    val present: Boolean,
+    val outcome: ComfyUIHistoryOutcome,
+    val images: List<ComfyUIGeneratedImage>,
+    val error: String? = null,
 )
 
 /**
