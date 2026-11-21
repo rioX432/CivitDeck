@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!-- Exported so adb can open it for UI captures; it exists only in debug builds. -->
+        <activity
+            android:name=".ui.comfyui.ReferenceReviewFixtureActivity"
+            android:exported="true"
+            android:theme="@style/Theme.CivitDeck" />
+    </application>
+</manifest>
