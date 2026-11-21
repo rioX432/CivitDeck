@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ComfyUIJobTarget` and `ComfyUIJobHandle` freeze the server a ComfyUI job was submitted to; the generation and queue repositories gain bound submit/poll/progress/cancel overloads that fail explicitly until implemented, and `BackgroundMonitorStarter.startMonitoring(job)` hands off the captured target (#1316)
 - CivitAI images keep a versioned source reference: the artwork ID and page, creator, rating, the original generation settings, and the explicitly listed resource versions with their own type and weight. Unrecognised metadata is preserved separately and never fills editable settings; images without a valid ID get no reference (#1341)
 
+### Changed
+
+- Database version 51 adds an empty `sourceReferenceJson` column to saved prompts for the versioned source snapshot; existing prompts and templates upgrade unchanged, and nothing writes the column yet (#1342)
+
 ### Fixed
 
 - ComfyUI submit, poll, progress socket, cancel and result image URLs for a bound job always reach the server the job was submitted to, even after another connection becomes active; a deleted connection or a changed address/TLS setting fails with a connection error instead of reaching another server (#1317)
