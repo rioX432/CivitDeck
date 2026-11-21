@@ -25,4 +25,5 @@ data class SavedPromptEntity(
     val templateMetadata: String? = null,
     @ColumnInfo(defaultValue = "0") val isAppMode: Boolean = false,
     val rawWorkflowJson: String? = null,
+    val sourceReferenceJson: String? = null,
 )
