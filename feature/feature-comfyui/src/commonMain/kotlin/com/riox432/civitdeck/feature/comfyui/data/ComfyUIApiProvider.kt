@@ -74,6 +74,25 @@ class ComfyUIApiProvider(
         return endpoint(active.hostname, active.port, active.useHttps, active.pinnedTrust())
     }
 
+    /**
+     * The active connection's identity, endpoint and TLS settings, read once. Pass it to
+     * [forTarget] and attach it to results so they stay on this server after another is activated.
+     *
+     * @throws DomainException.ConnectionException when no connection is active.
+     */
+    suspend fun captureActiveTarget(): ComfyUIJobTarget {
+        val active = dao.getActive()
+            ?: throw DomainException.ConnectionException("No active ComfyUI connection")
+        return ComfyUIJobTarget(
+            connectionId = active.id,
+            hostname = active.hostname,
+            port = active.port,
+            useHttps = active.useHttps,
+            acceptSelfSigned = active.acceptSelfSigned,
+            tlsCertSha256 = active.tlsCertSha256,
+        )
+    }
+
     fun forConnection(connection: ComfyUIConnection): ComfyUIEndpoint {
         val trust = if (connection.useHttps && connection.acceptSelfSigned) {
             PinnedTrust(connection.tlsCertSha256)
