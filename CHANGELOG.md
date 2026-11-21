@@ -7,10 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-- Database version 51 adds an empty `sourceReferenceJson` column to saved prompts for the versioned source snapshot; existing prompts and templates upgrade unchanged, and nothing writes the column yet (#1342)
-
 ### Added
+
+- `ComfyUIJobTarget` and `ComfyUIJobHandle` freeze the server a ComfyUI job was submitted to; the generation and queue repositories gain bound submit/poll/progress/cancel overloads that fail explicitly until implemented, and `BackgroundMonitorStarter.startMonitoring(job)` hands off the captured target (#1316)
 - CivitAI images keep a versioned source reference: the artwork ID and page, creator, rating, the original generation settings, and the explicitly listed resource versions with their own type and weight. Unrecognised metadata is preserved separately and never fills editable settings; images without a valid ID get no reference (#1341)
 - `SavedReferenceDao` reads and observes one saved prompt by ID, stores its source snapshot only while none is stored, and saves template edits in one transaction that keeps the original snapshot verbatim; `SavedPromptDao` is unchanged (#1343)
 - Saved prompts can keep the artwork they came from: a new `SavedReferenceRepository` saves a source reference as a prompt with a stable ID, starting from the source's generation settings or an empty prompt when it had none, and reads it back after restart. Snapshots that are corrupt or from a newer version are reported as unavailable instead of hiding the prompt, and editing or templating the prompt keeps the original snapshot (#1344)
@@ -18,6 +17,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SavedReferenceViewModel` (Android, iOS and Desktop) saves an artwork's source reference with a guard against duplicate taps, loads a saved reference, and looks up each recorded resource version exactly by its ID, reporting a missing, deleted or unreachable version as unavailable instead of opening another version (#1346)
 - Android: the image viewer opened from the image gallery keeps each artwork's source reference, including artwork shared without generation metadata, so later save actions can use it; model previews, external-server files and ComfyUI outputs stay URL-only (#1347)
 - Android: the image gallery viewer offers "Save locally" for any artwork with a source reference, including artwork without generation metadata, with saving, saved and retry states that stay on the page that was saved. Saved Prompts labels prompt-less saved artwork as "Reference", disables copy, apply and export for an empty prompt, and opens a sheet showing the recorded source, original settings and resource versions, each looked up by its recorded ID; links open only when tapped (#1348)
+
+### Changed
+
+- Database version 51 adds an empty `sourceReferenceJson` column to saved prompts for the versioned source snapshot; existing prompts and templates upgrade unchanged, and nothing writes the column yet (#1342)
+
+### Fixed
+
+- ComfyUI submit, poll, progress socket, cancel and result image URLs for a bound job always reach the server the job was submitted to, even after another connection becomes active; a deleted connection or a changed address/TLS setting fails with a connection error instead of reaching another server (#1317)
+- A ComfyUI generation reads the active connection once at Generate and keeps its progress socket, fallback polling, result images, Stop and background monitoring on that server when another connection is activated mid-run; Stop pressed before the server answers cancels the prompt on that same server, and a late older submission or cancel no longer overrides a newer generation (#1318)
+- The Android background generation monitor receives the job's full target (connection ID, address, HTTPS and self-signed flags, TLS pin) and keeps watching that server with the pin-aware client after another connection is activated and the app is backgrounded; a malformed payload or a deleted/changed connection reports a generation error and stops the service instead of reaching another server (#1319)
+- ComfyUI history outputs carry the server they were read from (`ComfyUIGeneratedImage.jobTarget`), captured before the request so activating another connection mid-fetch cannot relabel them; the new bound `ComfyUIHistoryRepository.fetchHistoryItem(job)` reads only the job's own server and reports whether the entry exists and whether it completed, failed (with the server's message) or was interrupted, without inferring success from output images (#1362)
 
 ## [2.5.0] - 2026-10-13
 
