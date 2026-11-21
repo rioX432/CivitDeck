@@ -73,6 +73,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.ParseConnectionUrlUs
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PopulateGenerationFromModelUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PrepareReferenceGenerationUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.ReviewReferenceResourcesUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveComfyUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveSDWebUIConnectionUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SaveWorkflowTemplateUseCase
@@ -154,6 +155,7 @@ val comfyuiModule = module {
     factory { FetchObjectInfoUseCase(get(), get()) }
     factory { SubmitComfyUIGenerationUseCase(get()) }
     factory { PrepareReferenceGenerationUseCase(get()) }
+    factory { ReviewReferenceResourcesUseCase(get(), get(), get()) }
     factory { PollComfyUIResultUseCase(get()) }
     factory { ObserveGenerationProgressUseCase(get()) }
     factory { ObserveComfyUIQueueUseCase(get()) }
