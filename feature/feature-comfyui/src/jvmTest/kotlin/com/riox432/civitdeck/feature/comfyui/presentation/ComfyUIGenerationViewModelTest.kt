@@ -1043,6 +1043,46 @@ class ComfyUIGenerationViewModelTest {
     }
 
     @Test
+    fun a_route_links_its_reference_once_so_edits_and_unlink_survive_reentry() = runTest {
+        val reference = ReferenceFixture(SOURCE)
+        val vm = createViewModel(loaded("SD15/bar.safetensors", "SDXL/foo.safetensors"), reference = reference)
+        advanceUntilIdle()
+
+        vm.beginRouteReferenceTrial(REFERENCE_ID)
+        advanceUntilIdle()
+        vm.onPromptChanged("edited prompt")
+        vm.beginRouteReferenceTrial(REFERENCE_ID)
+        advanceUntilIdle()
+
+        assertEquals("edited prompt", vm.uiState.value.prompt)
+        assertEquals(REFERENCE_ID, vm.referenceReviewState.value?.referenceId)
+
+        vm.clearReferenceTrial()
+        vm.beginRouteReferenceTrial(REFERENCE_ID)
+        advanceUntilIdle()
+
+        assertNull(vm.referenceReviewState.value)
+        assertEquals("edited prompt", vm.uiState.value.prompt)
+    }
+
+    @Test
+    fun a_route_to_an_unknown_reference_reports_it_without_filling_the_form() = runTest {
+        val reference = ReferenceFixture(SOURCE)
+        val vm = createViewModel(loaded("SD15/bar.safetensors", "SDXL/foo.safetensors"), reference = reference)
+        advanceUntilIdle()
+
+        vm.beginRouteReferenceTrial(REFERENCE_ID + 1)
+        advanceUntilIdle()
+
+        val review = assertNotNull(vm.referenceReviewState.value)
+        assertEquals(REFERENCE_ID + 1, review.referenceId)
+        assertNull(review.source)
+        assertEquals(ReferenceTrialProblem.SOURCE_UNAVAILABLE, review.problem)
+        assertEquals("", vm.uiState.value.prompt)
+        assertEquals(0, reference.prepareCount)
+    }
+
+    @Test
     fun clearing_the_reference_returns_to_manual_generation() = runTest {
         val submitted = mutableListOf<ComfyUIGenerationParams>()
         val reference = ReferenceFixture(SOURCE)

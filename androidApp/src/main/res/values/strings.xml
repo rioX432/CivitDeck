@@ -768,6 +768,7 @@
     <string name="saved_reference_creator">Creator</string>
     <string name="saved_reference_content_rating">Content rating</string>
     <string name="saved_reference_open_artwork">Open artwork page</string>
+    <string name="saved_reference_try">Try reference</string>
     <string name="saved_reference_generation_section">Original generation</string>
     <string name="saved_reference_no_generation">This artwork was shared without generation metadata.</string>
     <string name="saved_reference_prompt">Prompt</string>

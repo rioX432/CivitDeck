@@ -56,6 +56,7 @@ internal fun EntryProviderScope<Any>.collectionsEntry(backStack: MutableList<Any
             promptsViewModel = promptsViewModel,
             onNavigateToDatasets = { backStack.add(DatasetListRoute) },
             referenceViewModel = referenceViewModel,
+            onTryReference = { id -> backStack.add(ComfyUIReferenceTrialRoute(id)) },
         )
     }
 }

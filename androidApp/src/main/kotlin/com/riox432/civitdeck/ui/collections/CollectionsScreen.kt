@@ -73,6 +73,7 @@ fun CollectionsScreen(
     promptsViewModel: SavedPromptsViewModel,
     onNavigateToDatasets: () -> Unit = {},
     referenceViewModel: SavedReferenceViewModel? = null,
+    onTryReference: ((Long) -> Unit)? = null,
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(CollectionsScreenTab.Collections) }
     var showCreateDialog by remember { mutableStateOf(false) }
@@ -106,6 +107,7 @@ fun CollectionsScreen(
                 CollectionsScreenTab.Prompts -> SavedPromptsScreen(
                     viewModel = promptsViewModel,
                     referenceViewModel = referenceViewModel,
+                    onTryReference = onTryReference,
                 )
                 CollectionsScreenTab.Datasets -> DatasetsEntryContent()
             }

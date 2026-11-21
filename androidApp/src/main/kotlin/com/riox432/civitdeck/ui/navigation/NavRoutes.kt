@@ -39,6 +39,9 @@ data object ComfyUIGenerationRoute
 
 data object ComfyUIQueueRoute
 
+/** Opens the generation form linked to the saved reference row [referenceId]. */
+data class ComfyUIReferenceTrialRoute(val referenceId: Long)
+
 data class ComfyUIBridgeRoute(
     val modelId: Long,
     val versionId: Long,

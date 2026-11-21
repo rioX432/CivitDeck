@@ -122,6 +122,8 @@ class ComfyUIGenerationViewModel(
         modelSelector = modelSelector,
     )
 
+    private var routeReferenceId: Long? = null
+
     private val referenceTrial = ReferenceTrialController(
         scope = viewModelScope,
         uiState = _uiState,
@@ -362,6 +364,17 @@ class ComfyUIGenerationViewModel(
      */
     fun beginReferenceTrial(referenceId: Long) =
         referenceTrial.begin(referenceId, ::resetDraftForReference, ::applySourceValues)
+
+    /**
+     * [beginReferenceTrial] for a route that opens this view model on [referenceId]. The route's
+     * content runs again on recomposition, rotation and return from a pushed screen; only the first
+     * call links, so the user's edits and an Unlink survive. A new view model starts from the route.
+     */
+    fun beginRouteReferenceTrial(referenceId: Long) {
+        if (routeReferenceId == referenceId) return
+        routeReferenceId = referenceId
+        beginReferenceTrial(referenceId)
+    }
 
     /** Prepares the exact payload for the active connection and reviews it; Generate calls this while linked. */
     fun prepareReferenceReview() = referenceTrial.prepare()
