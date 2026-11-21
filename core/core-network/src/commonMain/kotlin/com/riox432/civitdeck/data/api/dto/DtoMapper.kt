@@ -16,6 +16,10 @@ import com.riox432.civitdeck.domain.model.ModelVersion
 import com.riox432.civitdeck.domain.model.ModelVersionStats
 import com.riox432.civitdeck.domain.model.NsfwLevel
 import com.riox432.civitdeck.domain.model.PageMetadata
+import com.riox432.civitdeck.domain.model.SourceGenerationSnapshot
+import com.riox432.civitdeck.domain.model.SourceProvider
+import com.riox432.civitdeck.domain.model.SourceReference
+import com.riox432.civitdeck.domain.model.SourceResource
 import com.riox432.civitdeck.domain.model.Tag
 
 fun ModelResponse.toDomain(): Model = Model(
@@ -130,7 +134,51 @@ fun ImageDto.toDomain(): Image = Image(
     stats = stats?.toDomain(),
     meta = meta?.toDomain(),
     contentType = MediaContentType.fromApiType(type) ?: MediaContentType.fromUrl(url),
+    sourceReference = toSourceReference(),
 )
+
+// The DTO defaults a missing ID to 0; no reference is built rather than one keyed by a guess.
+internal fun ImageDto.toSourceReference(): SourceReference? {
+    if (id <= 0) return null
+    return SourceReference(
+        provider = SourceProvider.Civitai,
+        artworkId = id.toString(),
+        artworkUrl = SourceReference.civitaiArtworkUrl(id),
+        mediaUrl = url.ifBlank { null },
+        creator = username?.ifBlank { null },
+        contentRating = nsfwLevel?.ifBlank { null },
+        generation = meta?.toSourceSnapshot(),
+        resources = sourceResources(meta?.civitaiResources.orEmpty(), modelVersionIds),
+    )
+}
+
+private fun ImageMetaDto.toSourceSnapshot(): SourceGenerationSnapshot = SourceGenerationSnapshot(
+    prompt = prompt,
+    negativePrompt = negativePrompt,
+    sampler = sampler,
+    cfgScale = cfgScale,
+    steps = steps,
+    seed = seed,
+    model = model,
+    size = size,
+    parameters = additionalParams,
+    opaqueMetadata = opaqueMetadata,
+)
+
+// The first explicit entry for a version wins. Top-level IDs only add versions the explicit list
+// lacks, without a type or weight, since the source states neither for them.
+private fun sourceResources(explicit: List<CivitaiResourceDto>, versionIds: List<Long>): List<SourceResource> {
+    val byVersion = LinkedHashMap<Long, SourceResource>()
+    for (resource in explicit) {
+        byVersion.getOrPut(resource.modelVersionId) {
+            SourceResource(resource.modelVersionId, resource.type, resource.weight)
+        }
+    }
+    for (versionId in versionIds) {
+        byVersion.getOrPut(versionId) { SourceResource(versionId) }
+    }
+    return byVersion.values.toList()
+}
 
 fun ImageStatsDto.toDomain(): ImageStats = ImageStats(
     cryCount = cryCount,
