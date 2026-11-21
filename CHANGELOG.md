@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- CivitAI images keep a versioned source reference: the artwork ID and page, creator, rating, the original generation settings, and the explicitly listed resource versions with their own type and weight. Unrecognised metadata is preserved separately and never fills editable settings; images without a valid ID get no reference (#1341)
+
 ## [2.5.0] - 2026-10-13
 
 Discovery-engine refocus: sharpen the app around native CivitAI discovery and open the FOSS distribution channel.
