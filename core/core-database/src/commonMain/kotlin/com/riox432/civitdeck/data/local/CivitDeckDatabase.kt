@@ -28,6 +28,7 @@ import com.riox432.civitdeck.data.local.dao.PluginDao
 import com.riox432.civitdeck.data.local.dao.QualityScoreCacheDao
 import com.riox432.civitdeck.data.local.dao.SDWebUIConnectionDao
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
+import com.riox432.civitdeck.data.local.dao.SavedReferenceDao
 import com.riox432.civitdeck.data.local.dao.SavedSearchFilterDao
 import com.riox432.civitdeck.data.local.dao.SearchHistoryDao
 import com.riox432.civitdeck.data.local.dao.ShareHashtagDao
@@ -159,6 +160,7 @@ abstract class CivitDeckDatabase : RoomDatabase() {
     abstract fun cachedApiResponseDao(): CachedApiResponseDao
     abstract fun userPreferencesDao(): UserPreferencesDao
     abstract fun savedPromptDao(): SavedPromptDao
+    abstract fun savedReferenceDao(): SavedReferenceDao
     abstract fun searchHistoryDao(): SearchHistoryDao
     abstract fun browsingHistoryDao(): BrowsingHistoryDao
     abstract fun excludedTagDao(): ExcludedTagDao

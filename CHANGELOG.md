@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Database version 51 adds an empty `sourceReferenceJson` column to saved prompts for the versioned source snapshot; existing prompts and templates upgrade unchanged, and nothing writes the column yet (#1342)
 
+### Added
+- `SavedReferenceDao` reads and observes one saved prompt by ID, stores its source snapshot only while none is stored, and saves template edits in one transaction that keeps the original snapshot verbatim; `SavedPromptDao` is unchanged (#1343)
+
 ## [2.5.0] - 2026-10-13
 
 Discovery-engine refocus: sharpen the app around native CivitAI discovery and open the FOSS distribution channel.
