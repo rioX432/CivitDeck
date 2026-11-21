@@ -6,7 +6,9 @@ import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.ComfyUIJobTarget
+import com.riox432.civitdeck.domain.model.EffectiveGenerationSettings
 import com.riox432.civitdeck.domain.model.GenerationStatus
+import com.riox432.civitdeck.domain.model.PreparedReferenceGeneration
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.service.AppLifecycleTracker
 import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter
@@ -41,6 +43,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -267,6 +270,34 @@ class GenerationExecutionDelegateTest {
         assertTrue(server.posts("/interrupt").isEmpty())
         assertTrue(server.sent.none { it.path.startsWith("/history") })
         assertEquals(listOf("a:8188"), server.hosts())
+    }
+
+    @Test
+    fun prepared_graph_goes_unchanged_to_its_target_and_stop_before_it_answers_cancels_it_there() = runTest {
+        val delegate = delegate(active = rowB.id)
+        val answer = gatePrompt(1)
+        server.queueBody = """{"queue_running":[],"queue_pending":[[0,"p1"]]}"""
+        val graph = """{"3":{"class_type":"KSampler","inputs":{"seed":7}}}"""
+        val prepared = PreparedReferenceGeneration(
+            referenceId = 1,
+            target = rowA.target(),
+            effectiveParams = params,
+            workflowJson = graph,
+            effectiveSettings = EffectiveGenerationSettings.from(params),
+        )
+
+        delegate.onGenerate(prepared)
+        runCurrent()
+        delegate.onInterrupt()
+        runCurrent()
+        answer.complete(Unit)
+        passSeveralPollIntervals()
+
+        assertEquals(GenerationStatus.Idle, uiState.value.generationStatus)
+        assertEquals(json(graph), json(server.posts("/prompt").single().body).jsonObject["prompt"])
+        assertEquals(json("""{"delete":["p1"]}"""), json(server.posts("/queue").single().body))
+        assertEquals(listOf("a:8188"), server.hosts())
+        assertEquals(0, connections.activeReads)
     }
 
     @Test
