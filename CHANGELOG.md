@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - ComfyUI submit, poll, progress socket, cancel and result image URLs for a bound job always reach the server the job was submitted to, even after another connection becomes active; a deleted connection or a changed address/TLS setting fails with a connection error instead of reaching another server (#1317)
+- A ComfyUI generation reads the active connection once at Generate and keeps its progress socket, fallback polling, result images, Stop and background monitoring on that server when another connection is activated mid-run; Stop pressed before the server answers cancels the prompt on that same server, and a late older submission or cancel no longer overrides a newer generation (#1318)
 
 ## [2.5.0] - 2026-10-13
 
