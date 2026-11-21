@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Database version 51 adds an empty `sourceReferenceJson` column to saved prompts for the versioned source snapshot; existing prompts and templates upgrade unchanged, and nothing writes the column yet (#1342)
+
 ## [2.5.0] - 2026-10-13
 
 Discovery-engine refocus: sharpen the app around native CivitAI discovery and open the FOSS distribution channel.
