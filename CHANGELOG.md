@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Saved-prompt backups now include each prompt's source snapshot, copied verbatim so snapshots from newer app versions survive a round trip; older backups without it still restore every prompt field (#1345)
 - `SavedReferenceViewModel` (Android, iOS and Desktop) saves an artwork's source reference with a guard against duplicate taps, loads a saved reference, and looks up each recorded resource version exactly by its ID, reporting a missing, deleted or unreachable version as unavailable instead of opening another version (#1346)
 - Android: the image viewer opened from the image gallery keeps each artwork's source reference, including artwork shared without generation metadata, so later save actions can use it; model previews, external-server files and ComfyUI outputs stay URL-only (#1347)
+- ComfyUI reference generations are prepared once and submitted unchanged: `PrepareReferenceGenerationUseCase` resolves a random seed a single time, fixes the prompt graph and binds it to the server it was prepared for, and submitting sends that stored graph to the same server, failing with a connection error if that connection was deleted or changed. Custom workflows, ControlNet and init or mask images are rejected (#1351)
 
 ### Changed
 
