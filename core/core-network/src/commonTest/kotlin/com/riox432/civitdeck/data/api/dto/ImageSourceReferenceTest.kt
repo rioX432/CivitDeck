@@ -97,7 +97,7 @@ class ImageSourceReferenceTest {
         val meta = assertNotNull(image.meta)
 
         assertEquals(mapOf("clipSkip" to "2"), meta.additionalParams)
-        assertTrue(image.source().generation!!.opaqueMetadata.keys.none { it == "comfy" })
+        assertTrue(assertNotNull(image.source().generation).opaqueMetadata.keys.none { it == "comfy" })
     }
 
     @Test
