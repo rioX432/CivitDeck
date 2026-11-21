@@ -11,8 +11,11 @@ import com.riox432.civitdeck.domain.model.SourceReference
 import com.riox432.civitdeck.domain.model.SourceReferenceDecodeResult
 import com.riox432.civitdeck.domain.model.SourceResource
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
+import com.riox432.civitdeck.domain.repository.ModelRepository
 import com.riox432.civitdeck.domain.repository.SavedReferenceRepository
 import com.riox432.civitdeck.feature.prompts.di.promptsModule
+import com.riox432.civitdeck.feature.prompts.presentation.SavedReferenceViewModel
+import com.riox432.civitdeck.testing.FakeModelRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.koin.dsl.koinApplication
@@ -174,6 +177,23 @@ class SavedReferenceRepositoryTest {
         val stored = requireNotNull(references.getReference(id))
         prompts.saveTemplate(stored.copy(isTemplate = true, sourceReference = null))
         assertEquals(SourceReferenceDecodeResult.Decoded(METADATA_FREE), references.getReference(id)?.sourceReference)
+    }
+
+    @Test
+    fun koin_resolves_the_saved_reference_view_model_from_the_prompts_module() {
+        val database = openDatabase()
+        val koin = koinApplication {
+            modules(
+                module {
+                    single { database }
+                    single { database.savedPromptDao() }
+                    single<ModelRepository> { FakeModelRepository() }
+                },
+                promptsModule,
+            )
+        }.koin
+
+        assertTrue(koin.getOrNull<SavedReferenceViewModel>() != null)
     }
 
     private fun productionRepository(): SavedPromptRepositoryImpl {

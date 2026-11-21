@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SavedReferenceDao` reads and observes one saved prompt by ID, stores its source snapshot only while none is stored, and saves template edits in one transaction that keeps the original snapshot verbatim; `SavedPromptDao` is unchanged (#1343)
 - Saved prompts can keep the artwork they came from: a new `SavedReferenceRepository` saves a source reference as a prompt with a stable ID, starting from the source's generation settings or an empty prompt when it had none, and reads it back after restart. Snapshots that are corrupt or from a newer version are reported as unavailable instead of hiding the prompt, and editing or templating the prompt keeps the original snapshot (#1344)
 - Saved-prompt backups now include each prompt's source snapshot, copied verbatim so snapshots from newer app versions survive a round trip; older backups without it still restore every prompt field (#1345)
+- `SavedReferenceViewModel` (Android, iOS and Desktop) saves an artwork's source reference with a guard against duplicate taps, loads a saved reference, and looks up each recorded resource version exactly by its ID, reporting a missing, deleted or unreachable version as unavailable instead of opening another version (#1346)
 
 ### Changed
 
