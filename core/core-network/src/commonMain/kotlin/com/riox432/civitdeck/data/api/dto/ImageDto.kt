@@ -7,7 +7,10 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -36,6 +39,9 @@ data class ImageDto(
     val stats: ImageStatsDto? = null,
     val meta: ImageMetaDto? = null,
     val type: String? = null,
+    /** Every model version the source references; see [ImageMetaDto.civitaiResources]. */
+    @Serializable(with = LenientVersionIdListSerializer::class)
+    val modelVersionIds: List<Long> = emptyList(),
 )
 
 @Serializable
@@ -60,7 +66,26 @@ data class ImageMetaDto(
     @SerialName("Size")
     val size: String? = null,
     val additionalParams: Map<String, String> = emptyMap(),
+    /** Resources the source mapped to a Civitai model version, in source order. */
+    val civitaiResources: List<CivitaiResourceDto> = emptyList(),
+    /**
+     * Unrecognised object/array values as raw JSON text. Kept apart from [additionalParams],
+     * which the metadata UI renders as rows.
+     */
+    val opaqueMetadata: Map<String, String> = emptyMap(),
 )
+
+/** A `meta.civitaiResources` entry; [type] and [weight] are null when the source omits them. */
+data class CivitaiResourceDto(
+    val modelVersionId: Long,
+    val type: String? = null,
+    val weight: Double? = null,
+)
+
+private const val CIVITAI_RESOURCES_KEY = "civitaiResources"
+private const val RESOURCE_VERSION_ID_KEY = "modelVersionId"
+private const val RESOURCE_TYPE_KEY = "type"
+private const val RESOURCE_WEIGHT_KEY = "weight"
 
 private val KNOWN_KEYS = setOf(
     "prompt",
@@ -71,6 +96,7 @@ private val KNOWN_KEYS = setOf(
     "seed",
     "Model",
     "Size",
+    CIVITAI_RESOURCES_KEY,
 )
 
 // `comfy` is the full ComfyUI workflow graph as a JSON string (often tens of KB); rendering it as
@@ -84,9 +110,13 @@ internal object ImageMetaDtoSerializer : KSerializer<ImageMetaDto> {
         val jsonDecoder = decoder as JsonDecoder
         val obj = jsonDecoder.decodeJsonElement() as JsonObject
         val additional = mutableMapOf<String, String>()
+        val opaque = mutableMapOf<String, String>()
         for ((key, value) in obj) {
-            if (key !in KNOWN_KEYS && key !in EXCLUDED_KEYS && value is JsonPrimitive) {
+            if (key in KNOWN_KEYS || key in EXCLUDED_KEYS) continue
+            if (value is JsonPrimitive) {
                 value.contentOrNull?.let { additional[key] = it }
+            } else {
+                opaque[key] = value.toString()
             }
         }
         return ImageMetaDto(
@@ -99,6 +129,19 @@ internal object ImageMetaDtoSerializer : KSerializer<ImageMetaDto> {
             model = obj.primitive("Model")?.contentOrNull,
             size = obj.primitive("Size")?.contentOrNull,
             additionalParams = additional,
+            civitaiResources = (obj[CIVITAI_RESOURCES_KEY] as? JsonArray)?.mapNotNull { it.toResource() }.orEmpty(),
+            opaqueMetadata = opaque,
+        )
+    }
+
+    // An entry without a positive version ID is skipped rather than failing the page.
+    private fun JsonElement.toResource(): CivitaiResourceDto? {
+        val entry = this as? JsonObject ?: return null
+        val versionId = entry.primitive(RESOURCE_VERSION_ID_KEY)?.positiveLongOrNull() ?: return null
+        return CivitaiResourceDto(
+            modelVersionId = versionId,
+            type = entry.primitive(RESOURCE_TYPE_KEY)?.takeIf { it.isString }?.contentOrNull,
+            weight = entry.primitive(RESOURCE_WEIGHT_KEY)?.takeUnless { it.isString }?.doubleOrNull,
         )
     }
 
@@ -120,7 +163,40 @@ internal object ImageMetaDtoSerializer : KSerializer<ImageMetaDto> {
             for ((k, v) in value.additionalParams) {
                 put(k, JsonPrimitive(v))
             }
+            if (value.civitaiResources.isNotEmpty()) {
+                put(CIVITAI_RESOURCES_KEY, JsonArray(value.civitaiResources.map { it.toJson() }))
+            }
+            // Raw text came from decoding, so it parses back; the response cache relies on it.
+            for ((k, v) in value.opaqueMetadata) {
+                put(k, runCatching { Json.parseToJsonElement(v) }.getOrElse { JsonPrimitive(v) })
+            }
         }
         jsonEncoder.encodeJsonElement(JsonObject(map))
+    }
+}
+
+private fun CivitaiResourceDto.toJson(): JsonObject = JsonObject(
+    buildMap {
+        type?.let { put(RESOURCE_TYPE_KEY, JsonPrimitive(it)) }
+        weight?.let { put(RESOURCE_WEIGHT_KEY, JsonPrimitive(it)) }
+        put(RESOURCE_VERSION_ID_KEY, JsonPrimitive(modelVersionId))
+    },
+)
+
+private fun JsonPrimitive.positiveLongOrNull(): Long? = takeUnless { it.isString }?.longOrNull?.takeIf { it > 0 }
+
+/** Keeps the positive numeric IDs of a source array; anything else yields no ID, not an error. */
+internal object LenientVersionIdListSerializer : KSerializer<List<Long>> {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("LenientVersionIdList")
+
+    override fun deserialize(decoder: Decoder): List<Long> {
+        val element = (decoder as JsonDecoder).decodeJsonElement()
+        return (element as? JsonArray)
+            ?.mapNotNull { (it as? JsonPrimitive)?.positiveLongOrNull() }
+            .orEmpty()
+    }
+
+    override fun serialize(encoder: Encoder, value: List<Long>) {
+        (encoder as JsonEncoder).encodeJsonElement(JsonArray(value.map { JsonPrimitive(it) }))
     }
 }
