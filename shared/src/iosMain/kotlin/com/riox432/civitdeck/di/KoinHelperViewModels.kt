@@ -44,6 +44,7 @@ import com.riox432.civitdeck.feature.gallery.presentation.ModelFileBrowserViewMo
 import com.riox432.civitdeck.feature.gallery.presentation.NotificationCenterViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ShareViewModel
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
+import com.riox432.civitdeck.feature.prompts.presentation.SavedReferenceViewModel
 import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
 import com.riox432.civitdeck.feature.search.presentation.ModelSearchViewModel
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
@@ -67,6 +68,7 @@ fun KoinHelper.createStorageSettingsViewModel(): StorageSettingsViewModel = reso
 fun KoinHelper.createCreatorProfileViewModel(username: String): CreatorProfileViewModel =
     resolve { parametersOf(username) }
 fun KoinHelper.createSavedPromptsViewModel(): SavedPromptsViewModel = resolve()
+fun KoinHelper.createSavedReferenceViewModel(): SavedReferenceViewModel = resolve()
 fun KoinHelper.createCollectionsViewModel(): CollectionsViewModel = resolve()
 fun KoinHelper.createCollectionDetailViewModel(collectionId: Long): CollectionDetailViewModel =
     resolve { parametersOf(collectionId) }
