@@ -1,9 +1,11 @@
 package com.riox432.civitdeck.feature.comfyui.data.repository
 
+import com.riox432.civitdeck.domain.model.ComfyUIJobHandle
 import com.riox432.civitdeck.domain.model.QueueJob
 import com.riox432.civitdeck.domain.model.QueueJobStatus
 import com.riox432.civitdeck.domain.repository.ComfyUIQueueRepository
 import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
+import com.riox432.civitdeck.feature.comfyui.data.ComfyUIEndpoint
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -41,7 +43,15 @@ class ComfyUIQueueRepositoryImpl(
     }
 
     override suspend fun cancelJob(promptId: String) {
-        val api = apiProvider.forActive().api
+        cancel(apiProvider.forActive(), promptId)
+    }
+
+    override suspend fun cancelJob(job: ComfyUIJobHandle) {
+        cancel(apiProvider.forTarget(job.target), job.promptId)
+    }
+
+    private suspend fun cancel(endpoint: ComfyUIEndpoint, promptId: String) {
+        val api = endpoint.api
         // ComfyUI's queue delete only searches pending jobs, so the running job needs an interrupt.
         // The id keeps that interrupt from stopping a different job if this one finished meanwhile.
         if (api.getQueue().running.any { extractPromptId(it) == promptId }) {

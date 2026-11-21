@@ -3,6 +3,8 @@ package com.riox432.civitdeck.feature.comfyui.data.repository
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIOutputImage
 import com.riox432.civitdeck.data.api.comfyui.ComfyUIWebSocketMessage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.ComfyUIJobHandle
+import com.riox432.civitdeck.domain.model.ComfyUIJobTarget
 import com.riox432.civitdeck.domain.model.DiffusionLatentNode
 import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.DomainException
@@ -28,6 +30,9 @@ import kotlinx.serialization.json.put
 import kotlin.concurrent.Volatile
 import kotlin.random.Random
 
+// Each job operation has an active-connection form and a bound-job form, and the private
+// workflow node builders belong to one graph; splitting the class would scatter that graph.
+@Suppress("TooManyFunctions")
 class ComfyUIGenerationRepositoryImpl(
     private val apiProvider: ComfyUIApiProvider,
     private val json: Json,
@@ -57,15 +62,45 @@ class ComfyUIGenerationRepositoryImpl(
         )
     }
 
-    override suspend fun submitGeneration(params: ComfyUIGenerationParams): String {
-        val api = activeEndpoint().api
-        val workflow = buildWorkflow(params)
-        val response = api.submitPrompt(workflow, clientId)
-        return response.promptId
-    }
+    override suspend fun submitGeneration(params: ComfyUIGenerationParams): String =
+        submit(activeEndpoint(), params)
 
-    override suspend fun pollGenerationResult(promptId: String): GenerationResult {
-        val api = activeEndpoint().api
+    override suspend fun submitGeneration(
+        params: ComfyUIGenerationParams,
+        target: ComfyUIJobTarget,
+    ): ComfyUIJobHandle = ComfyUIJobHandle(target, submit(apiProvider.forTarget(target), params))
+
+    override suspend fun pollGenerationResult(promptId: String): GenerationResult =
+        poll(activeEndpoint(), promptId)
+
+    override suspend fun pollGenerationResult(job: ComfyUIJobHandle): GenerationResult =
+        poll(apiProvider.forTarget(job.target), job.promptId)
+
+    override fun observeGenerationProgress(
+        promptId: String,
+        host: String,
+        port: Int,
+    ): Flow<GenerationProgress> = observeGenerationProgress(promptId, "http://$host:$port", "ws")
+
+    /**
+     * [baseUrl] is the URL of the connection the job was submitted on, and its trust is looked
+     * up by host and port. The socket scheme is derived from [baseUrl], which [wsScheme] mirrors.
+     */
+    override fun observeGenerationProgress(
+        promptId: String,
+        baseUrl: String,
+        wsScheme: String,
+    ): Flow<GenerationProgress> = progress(promptId) { apiProvider.forUrl(baseUrl) }
+
+    override fun observeGenerationProgress(job: ComfyUIJobHandle): Flow<GenerationProgress> =
+        progress(job.promptId) { apiProvider.forTarget(job.target) }
+
+    private suspend fun submit(endpoint: ComfyUIEndpoint, params: ComfyUIGenerationParams): String =
+        endpoint.api.submitPrompt(buildWorkflow(params), clientId).promptId
+
+    /** Image URLs point at [endpoint], the server that ran the job. */
+    private suspend fun poll(endpoint: ComfyUIEndpoint, promptId: String): GenerationResult {
+        val api = endpoint.api
         val entry = api.getHistory(promptId)
             ?: return GenerationResult(promptId, GenerationStatus.Running)
 
@@ -91,22 +126,11 @@ class ComfyUIGenerationRepositoryImpl(
         }
     }
 
-    override fun observeGenerationProgress(
+    private fun progress(
         promptId: String,
-        host: String,
-        port: Int,
-    ): Flow<GenerationProgress> = observeGenerationProgress(promptId, "http://$host:$port", "ws")
-
-    /**
-     * [baseUrl] is the URL of the connection the job was submitted on, and its trust is looked
-     * up by host and port. The socket scheme is derived from [baseUrl], which [wsScheme] mirrors.
-     */
-    override fun observeGenerationProgress(
-        promptId: String,
-        baseUrl: String,
-        wsScheme: String,
+        resolve: suspend () -> ComfyUIEndpoint,
     ): Flow<GenerationProgress> {
-        val messages = flow { emitAll(apiProvider.forUrl(baseUrl).observeProgress(clientId, promptId)) }
+        val messages = flow { emitAll(resolve().observeProgress(clientId, promptId)) }
         return messages.mapNotNull { msg ->
             when (msg) {
                 is ComfyUIWebSocketMessage.Progress -> GenerationProgress(
