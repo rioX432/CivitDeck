@@ -40,8 +40,9 @@ import kotlin.test.assertTrue
 
 /**
  * Unit tests for [BackupRepositoryImpl] covering selective category export, metadata
- * category parsing, a MERGE/OVERWRITE restore round-trip for the notes & tags subset, and
- * the settings restore. DAOs for categories not exercised here are stubbed.
+ * category parsing, a MERGE/OVERWRITE restore round-trip for the notes & tags subset, the
+ * saved-prompt source snapshot, and the settings restore. DAOs for categories not exercised
+ * here are stubbed.
  */
 class BackupRepositoryImplTest {
 
@@ -108,7 +109,28 @@ class BackupRepositoryImplTest {
         override suspend fun upsert(entity: UserPreferencesEntity) { row = entity }
     }
 
+    private class FakeSavedPromptDao : SavedPromptDao {
+        val rows = mutableListOf<SavedPromptEntity>()
+        override fun observeAll(): Flow<List<SavedPromptEntity>> = MutableStateFlow(rows.toList())
+        override fun observeTemplates(): Flow<List<SavedPromptEntity>> = MutableStateFlow(emptyList())
+        override fun observeHistory(): Flow<List<SavedPromptEntity>> = MutableStateFlow(emptyList())
+        override fun search(query: String): Flow<List<SavedPromptEntity>> = MutableStateFlow(emptyList())
+        override suspend fun countByPromptAndModel(prompt: String, modelName: String?): Int = 0
+        override suspend fun updateTemplate(id: Long, isTemplate: Boolean, templateName: String?): Int = 0
+        override suspend fun getAllUserCreated(): List<SavedPromptEntity> = rows.filter { it.id > 0 }
+        override suspend fun insert(entity: SavedPromptEntity) { rows.add(entity) }
+        override suspend fun insertAll(entities: List<SavedPromptEntity>) { rows.addAll(entities) }
+        override suspend fun upsert(entity: SavedPromptEntity) { rows.add(entity) }
+        override suspend fun deleteAllUserCreated(): Int {
+            val c = rows.count { it.id > 0 }
+            rows.removeAll { it.id > 0 }
+            return c
+        }
+        override suspend fun deleteById(id: Long): Int = 0
+    }
+
     private fun buildRepo(
+        promptDao: SavedPromptDao = FakeSavedPromptDao(),
         noteDao: FakeModelNoteDao = FakeModelNoteDao(),
         tagDao: FakePersonalTagDao = FakePersonalTagDao(),
         collectionDao: FakeCollectionDao = FakeCollectionDao(),
@@ -116,7 +138,7 @@ class BackupRepositoryImplTest {
     ) = BackupRepositoryImpl(
         collectionDaos = CollectionDaos(collectionDao),
         connectionDaos = ConnectionDaos(StubComfyDao, StubSdDao, StubExternalDao),
-        contentDaos = ContentDaos(StubPromptDao, noteDao, tagDao, StubFilterDao, StubFollowDao),
+        contentDaos = ContentDaos(promptDao, noteDao, tagDao, StubFilterDao, StubFollowDao),
         preferenceDaos = PreferenceDaos(prefsDao, StubHiddenDao, StubExcludedDao),
     )
 
@@ -197,6 +219,84 @@ class BackupRepositoryImplTest {
         }
     }
 
+    @Test
+    fun restoreBackup_round_trip_keeps_source_snapshots_verbatim() = runTest {
+        val source = FakeSavedPromptDao().apply {
+            rows += prompt(id = 1L, text = "current", sourceReferenceJson = SNAPSHOT_V1)
+            rows += prompt(id = 2L, text = "future", sourceReferenceJson = SNAPSHOT_FUTURE)
+            rows += prompt(id = 3L, text = "malformed", sourceReferenceJson = SNAPSHOT_MALFORMED)
+            rows += prompt(id = 4L, text = "legacy", sourceReferenceJson = null)
+        }
+        val backup = buildRepo(promptDao = source).createBackup(setOf(BackupCategory.PROMPTS))
+
+        val exported = json.decodeFromString(BackupDto.serializer(), backup).savedPrompts.orEmpty()
+        assertEquals(
+            listOf(SNAPSHOT_V1, SNAPSHOT_FUTURE, SNAPSHOT_MALFORMED, null),
+            exported.map { it.sourceReferenceJson },
+        )
+        RestoreStrategy.entries.forEach { strategy ->
+            val target = FakeSavedPromptDao().apply { rows += prompt(id = 9L, text = "existing") }
+            buildRepo(promptDao = target).restoreBackup(backup, strategy, setOf(BackupCategory.PROMPTS))
+
+            val restored = target.rows.filter { it.prompt != "existing" }
+            assertEquals(source.rows.map { it.copy(id = 0L) }, restored, "$strategy")
+        }
+    }
+
+    @Test
+    fun restoreBackup_old_prompt_backup_without_source_imports_every_field_with_null_source() = runTest {
+        val target = FakeSavedPromptDao()
+
+        buildRepo(promptDao = target).restoreBackup(OLD_PROMPT_BACKUP, RestoreStrategy.MERGE, setOf(BackupCategory.PROMPTS))
+
+        val expected = prompt(id = 0L, text = "old prompt", sourceReferenceJson = null)
+        assertEquals(listOf(expected), target.rows)
+    }
+
+    private fun prompt(id: Long, text: String, sourceReferenceJson: String? = null) = SavedPromptEntity(
+        id = id,
+        prompt = text,
+        negativePrompt = "lowres",
+        sampler = "Euler a",
+        steps = 28,
+        cfgScale = 6.5,
+        seed = 5_000_000_000L,
+        modelName = "model.safetensors",
+        size = "832x1216",
+        sourceImageUrl = "https://image.civitai.com/x/123.jpeg",
+        savedAt = 1_700_000_000_000L,
+        isTemplate = true,
+        templateName = "Portrait",
+        autoSaved = false,
+        templateVariables = "[\"subject\"]",
+        templateType = "TXT2IMG",
+        templateMetadata = "{\"tags\":[\"a\"]}",
+        sourceReferenceJson = sourceReferenceJson,
+    )
+
+    private companion object {
+        const val SNAPSHOT_V1 = """{"version":1,"provider":"civitai","artworkId":"123"}"""
+
+        // Unknown versions and unreadable text are copied byte for byte, never re-encoded.
+        const val SNAPSHOT_FUTURE = """{"version":99, "provider":"civitai","unknown":{"nested":[1,2]}}"""
+        const val SNAPSHOT_MALFORMED = """{"version":1,"provider":"civitai","""
+
+        // A prompts backup written before saved prompts carried a source snapshot.
+        val OLD_PROMPT_BACKUP = """
+            {
+              "metadata": {"version": 1, "createdAt": 1, "appVersion": "1.0.0", "categories": ["PROMPTS"]},
+              "savedPrompts": [{
+                "prompt": "old prompt", "negativePrompt": "lowres", "sampler": "Euler a", "steps": 28,
+                "cfgScale": 6.5, "seed": 5000000000, "modelName": "model.safetensors", "size": "832x1216",
+                "sourceImageUrl": "https://image.civitai.com/x/123.jpeg", "savedAt": 1700000000000,
+                "isTemplate": true, "templateName": "Portrait", "autoSaved": false,
+                "templateVariables": "[\"subject\"]", "templateType": "TXT2IMG",
+                "templateMetadata": "{\"tags\":[\"a\"]}"
+              }]
+            }
+        """.trimIndent()
+    }
+
     // --- Stub DAOs for categories not exercised in these tests ---
 
     private object StubComfyDao : ComfyUIConnectionDao {
@@ -272,21 +372,6 @@ class BackupRepositoryImplTest {
         override suspend fun insertAll(entities: List<ExcludedTagEntity>) = Unit
         override suspend fun deleteAll(): Int = 0
         override suspend fun delete(tag: String): Int = 0
-    }
-
-    private object StubPromptDao : SavedPromptDao {
-        override fun observeAll(): Flow<List<SavedPromptEntity>> = MutableStateFlow(emptyList())
-        override fun observeTemplates(): Flow<List<SavedPromptEntity>> = MutableStateFlow(emptyList())
-        override fun observeHistory(): Flow<List<SavedPromptEntity>> = MutableStateFlow(emptyList())
-        override fun search(query: String): Flow<List<SavedPromptEntity>> = MutableStateFlow(emptyList())
-        override suspend fun countByPromptAndModel(prompt: String, modelName: String?): Int = 0
-        override suspend fun updateTemplate(id: Long, isTemplate: Boolean, templateName: String?): Int = 0
-        override suspend fun getAllUserCreated(): List<SavedPromptEntity> = emptyList()
-        override suspend fun insert(entity: SavedPromptEntity) = Unit
-        override suspend fun insertAll(entities: List<SavedPromptEntity>) = Unit
-        override suspend fun upsert(entity: SavedPromptEntity) = Unit
-        override suspend fun deleteAllUserCreated(): Int = 0
-        override suspend fun deleteById(id: Long): Int = 0
     }
 
     private object StubFilterDao : SavedSearchFilterDao {

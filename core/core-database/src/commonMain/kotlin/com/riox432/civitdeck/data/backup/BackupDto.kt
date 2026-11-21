@@ -85,6 +85,8 @@ data class SavedPromptDto(
     val templateVariables: String? = null,
     val templateType: String? = null,
     val templateMetadata: String? = null,
+    // Opaque versioned JSON, copied as-is so snapshots from newer app versions survive a round trip.
+    val sourceReferenceJson: String? = null,
 )
 
 @Serializable
