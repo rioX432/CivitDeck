@@ -2,6 +2,7 @@ package com.riox432.civitdeck.feature.comfyui.data
 
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
+import com.riox432.civitdeck.domain.model.ComfyUIJobTarget
 import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.feature.comfyui.data.repository.FakeComfyUIConnectionDao
 import com.riox432.civitdeck.feature.comfyui.data.repository.mockClient
@@ -115,6 +116,72 @@ class ComfyUIApiProviderTest {
         assertEquals("https://pc:9000", endpoint.baseUrl)
         assertSame(pinnedClient, endpoint.httpClient)
         assertEquals(listOf<String?>(pinB), createdPins)
+    }
+
+    private fun ComfyUIConnectionEntity.target() =
+        ComfyUIJobTarget(id, hostname, port, useHttps, acceptSelfSigned, tlsCertSha256)
+
+    @Test
+    fun forTarget_resolves_the_captured_row_while_another_row_is_active() = runTest {
+        val captured = row(id = 1)
+        val endpoint = provider(captured, row(id = 2, hostname = "other", pin = pinB, isActive = true))
+            .forTarget(captured.target())
+
+        endpoint.api.getQueue()
+
+        assertEquals("https://comfy.local:8443", endpoint.baseUrl)
+        assertSame(pinnedClient, endpoint.httpClient)
+        assertEquals(listOf<String?>(pinA), createdPins)
+        assertEquals("https://comfy.local:8443/queue", pinnedRequests.single().toString())
+    }
+
+    @Test
+    fun forTarget_uses_system_trust_for_a_target_that_is_not_self_signed() = runTest {
+        val captured = row(id = 1, useHttps = false, port = 8188, acceptSelfSigned = false, pin = null)
+
+        val endpoint = provider(captured).forTarget(captured.target())
+
+        assertSame(sharedClient, endpoint.httpClient)
+        assertEquals("http://comfy.local:8188", endpoint.baseUrl)
+        assertTrue(createdPins.isEmpty())
+    }
+
+    @Test
+    fun forTarget_throws_for_a_deleted_row_instead_of_using_the_active_one() = runTest {
+        val deleted = row(id = 1)
+
+        assertFailsWith<DomainException.ConnectionException> {
+            provider(row(id = 2, isActive = true)).forTarget(deleted.target())
+        }
+        assertTrue(createdPins.isEmpty())
+    }
+
+    @Test
+    fun forTarget_throws_when_the_rows_address_or_tls_setting_changed() = runTest {
+        val captured = row(id = 1).target()
+
+        listOf(
+            row(id = 1, hostname = "moved.local"),
+            row(id = 1, port = 9443),
+            row(id = 1, useHttps = false),
+            row(id = 1, acceptSelfSigned = false),
+            row(id = 1, pin = pinB),
+            row(id = 1, pin = null),
+        ).forEach { edited ->
+            assertFailsWith<DomainException.ConnectionException>("edited: $edited") {
+                provider(edited).forTarget(captured)
+            }
+        }
+        assertTrue(createdPins.isEmpty())
+    }
+
+    @Test
+    fun forTarget_ignores_the_rows_name_and_active_flag() = runTest {
+        val captured = row(id = 1, isActive = true).target()
+
+        val endpoint = provider(row(id = 1).copy(name = "renamed", lastTestSuccess = false)).forTarget(captured)
+
+        assertEquals("https://comfy.local:8443", endpoint.baseUrl)
     }
 
     @Test
