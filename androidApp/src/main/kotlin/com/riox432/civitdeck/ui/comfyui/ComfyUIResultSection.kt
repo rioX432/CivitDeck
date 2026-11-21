@@ -5,12 +5,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Stop
@@ -24,6 +22,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -144,34 +143,46 @@ private fun PreviewImageView(imageBytes: ByteArray?) {
     }
 }
 
+/**
+ * Not a lazy grid: this sits in an item of the screen's LazyColumn, which measures it with an unbounded height,
+ * and a nested lazy grid throws on that. A generation returns a handful of images, so composing them all is fine.
+ */
 @Composable
 internal fun ResultGrid(imageUrls: List<String>, onSaveImage: (String) -> Unit) {
     val gridColumns = adaptiveGridColumns()
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(gridColumns),
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-        userScrollEnabled = false,
     ) {
-        items(imageUrls, key = { it }) { url ->
-            Card {
-                Column {
-                    CivitAsyncImage(
-                        imageUrl = url,
-                        contentDescription = stringResource(R.string.cd_generated_image),
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f),
-                    )
-                    IconButton(
-                        onClick = { onSaveImage(url) },
-                        modifier = Modifier.align(Alignment.End),
-                    ) {
-                        Icon(Icons.Default.Download, contentDescription = stringResource(R.string.cd_save_to_gallery))
-                    }
+        imageUrls.chunked(gridColumns).forEach { rowUrls ->
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                rowUrls.forEach { url ->
+                    key(url) { ResultCell(url, onSaveImage, Modifier.weight(1f)) }
                 }
+                // Keeps the cells of a short last row as wide as the ones above.
+                repeat(gridColumns - rowUrls.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ResultCell(url: String, onSaveImage: (String) -> Unit, modifier: Modifier) {
+    Card(modifier = modifier) {
+        Column {
+            CivitAsyncImage(
+                imageUrl = url,
+                contentDescription = stringResource(R.string.cd_generated_image),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f),
+            )
+            IconButton(
+                onClick = { onSaveImage(url) },
+                modifier = Modifier.align(Alignment.End),
+            ) {
+                Icon(Icons.Default.Download, contentDescription = stringResource(R.string.cd_save_to_gallery))
             }
         }
     }
