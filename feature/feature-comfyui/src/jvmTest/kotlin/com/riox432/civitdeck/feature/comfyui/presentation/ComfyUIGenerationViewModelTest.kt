@@ -7,6 +7,8 @@ import com.riox432.civitdeck.data.local.dao.CachedApiResponseDao
 import com.riox432.civitdeck.data.local.entity.CachedApiResponseEntity
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.ComfyUIJobHandle
+import com.riox432.civitdeck.domain.model.ComfyUIJobTarget
 import com.riox432.civitdeck.domain.model.DiffusionLatentNode
 import com.riox432.civitdeck.domain.model.DiffusionModelFamily
 import com.riox432.civitdeck.domain.model.DiffusionModelResources
@@ -98,8 +100,15 @@ class ComfyUIGenerationViewModelTest {
             submitted += params
             return "prompt-1"
         }
+        override suspend fun submitGeneration(params: ComfyUIGenerationParams, target: ComfyUIJobTarget): ComfyUIJobHandle {
+            submitted += params
+            return ComfyUIJobHandle(target, "prompt-1")
+        }
         override suspend fun pollGenerationResult(promptId: String): GenerationResult =
             error("not used")
+        override suspend fun pollGenerationResult(job: ComfyUIJobHandle): GenerationResult =
+            error("not used")
+        override fun observeGenerationProgress(job: ComfyUIJobHandle): Flow<GenerationProgress> = emptyFlow()
         override fun observeGenerationProgress(
             promptId: String,
             host: String,
@@ -118,8 +127,10 @@ class ComfyUIGenerationViewModelTest {
 
     private class FakeConnectionRepo : ComfyUIConnectionRepository {
         override fun observeConnections(): Flow<List<ComfyUIConnection>> = flowOf(emptyList())
-        override fun observeActiveConnection(): Flow<ComfyUIConnection?> = flowOf(null)
-        override suspend fun getActiveConnection(): ComfyUIConnection? = null
+        // Generate reads the active connection once to capture the job's target.
+        private val active = ComfyUIConnection(id = 1, name = "A", hostname = "h", isActive = true)
+        override fun observeActiveConnection(): Flow<ComfyUIConnection?> = flowOf(active)
+        override suspend fun getActiveConnection(): ComfyUIConnection? = active
         override suspend fun saveConnection(connection: ComfyUIConnection): Long = 0L
         override suspend fun deleteConnection(id: Long) = Unit
         override suspend fun activateConnection(id: Long) = Unit

@@ -14,6 +14,8 @@ data class Image(
     val stats: ImageStats?,
     val meta: ImageGenerationMeta?,
     val contentType: MediaContentType = MediaContentType.IMAGE,
+    /** Source identity and original metadata; null when the source gave no valid artwork ID. */
+    val sourceReference: SourceReference? = null,
 )
 
 data class ImageStats(

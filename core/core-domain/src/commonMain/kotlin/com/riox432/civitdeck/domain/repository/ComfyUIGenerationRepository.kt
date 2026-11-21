@@ -1,6 +1,8 @@
 package com.riox432.civitdeck.domain.repository
 
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.ComfyUIJobHandle
+import com.riox432.civitdeck.domain.model.ComfyUIJobTarget
 import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
@@ -19,6 +21,22 @@ interface ComfyUIGenerationRepository {
     fun observeGenerationProgress(promptId: String, host: String, port: Int): Flow<GenerationProgress>
     fun observeGenerationProgress(promptId: String, baseUrl: String, wsScheme: String): Flow<GenerationProgress>
     fun getImageUrl(filename: String, subfolder: String = "", type: String = "output"): String
+
+    // Bound overloads run against the job's captured target. The defaults fail instead of
+    // delegating to the active-server methods above, which could reach a different server.
+
+    /** Submit [params] to [target] and return a handle bound to that same server. */
+    suspend fun submitGeneration(params: ComfyUIGenerationParams, target: ComfyUIJobTarget): ComfyUIJobHandle =
+        throw UnsupportedOperationException("Bound submitGeneration is not implemented")
+
+    /** Poll [job] on its own target; result image URLs point at that target. */
+    suspend fun pollGenerationResult(job: ComfyUIJobHandle): GenerationResult =
+        throw UnsupportedOperationException("Bound pollGenerationResult is not implemented")
+
+    /** Observe the progress of [job] over its own target's socket. */
+    fun observeGenerationProgress(job: ComfyUIJobHandle): Flow<GenerationProgress> =
+        throw UnsupportedOperationException("Bound observeGenerationProgress is not implemented")
+
     suspend fun interruptGeneration()
 
     /**

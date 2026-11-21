@@ -8,6 +8,7 @@ import com.riox432.civitdeck.data.api.comfyui.createComfyUIHttpClient
 import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIConnection
+import com.riox432.civitdeck.domain.model.ComfyUIJobTarget
 import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.util.Logger
 import io.ktor.client.HttpClient
@@ -73,6 +74,25 @@ class ComfyUIApiProvider(
         return endpoint(active.hostname, active.port, active.useHttps, active.pinnedTrust())
     }
 
+    /**
+     * The active connection's identity, endpoint and TLS settings, read once. Pass it to
+     * [forTarget] and attach it to results so they stay on this server after another is activated.
+     *
+     * @throws DomainException.ConnectionException when no connection is active.
+     */
+    suspend fun captureActiveTarget(): ComfyUIJobTarget {
+        val active = dao.getActive()
+            ?: throw DomainException.ConnectionException("No active ComfyUI connection")
+        return ComfyUIJobTarget(
+            connectionId = active.id,
+            hostname = active.hostname,
+            port = active.port,
+            useHttps = active.useHttps,
+            acceptSelfSigned = active.acceptSelfSigned,
+            tlsCertSha256 = active.tlsCertSha256,
+        )
+    }
+
     fun forConnection(connection: ComfyUIConnection): ComfyUIEndpoint {
         val trust = if (connection.useHttps && connection.acceptSelfSigned) {
             PinnedTrust(connection.tlsCertSha256)
@@ -80,6 +100,24 @@ class ComfyUIApiProvider(
             null
         }
         return endpoint(connection.hostname, connection.port, connection.useHttps, trust)
+    }
+
+    /**
+     * Endpoint for the server a job was submitted to. Throws when the saved connection is gone
+     * or its URL or TLS settings no longer match [target]; the active connection is never used
+     * in its place, because it may be another server running an unrelated job.
+     *
+     * @throws DomainException.ConnectionException when the target can no longer be reached as captured.
+     */
+    suspend fun forTarget(target: ComfyUIJobTarget): ComfyUIEndpoint {
+        val row = dao.getById(target.connectionId)
+            ?: throw DomainException.ConnectionException("The ComfyUI connection this job was sent to was deleted")
+        if (!row.matches(target)) {
+            throw DomainException.ConnectionException(
+                "The ComfyUI connection this job was sent to has a different address or TLS setting now",
+            )
+        }
+        return endpoint(target.hostname, target.port, target.useHttps, row.pinnedTrust())
     }
 
     /**
@@ -147,6 +185,13 @@ class ComfyUIApiProvider(
 
         fun ComfyUIConnectionEntity.pinnedTrust(): PinnedTrust? =
             if (useHttps && acceptSelfSigned) PinnedTrust(tlsCertSha256) else null
+
+        fun ComfyUIConnectionEntity.matches(target: ComfyUIJobTarget): Boolean =
+            hostname == target.hostname &&
+                port == target.port &&
+                useHttps == target.useHttps &&
+                acceptSelfSigned == target.acceptSelfSigned &&
+                tlsCertSha256 == target.tlsCertSha256
 
         /**
          * Two rows can share a host and port. The active row decides when it matches, even
