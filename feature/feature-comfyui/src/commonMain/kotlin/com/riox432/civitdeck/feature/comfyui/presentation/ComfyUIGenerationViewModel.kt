@@ -3,6 +3,7 @@ package com.riox432.civitdeck.feature.comfyui.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.ComfyUIJobTarget
 import com.riox432.civitdeck.domain.model.DiffusionModelFamily
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
@@ -323,6 +324,13 @@ class ComfyUIGenerationViewModel(
         val state = _uiState.value
         if (!state.canGenerate) return
         generationDelegate.onGenerate(buildParams(state))
+    }
+
+    /** Generates on [target] even while another connection is active; never substitutes another server. */
+    fun onGenerate(target: ComfyUIJobTarget) {
+        val state = _uiState.value
+        if (!state.canGenerate) return
+        generationDelegate.onGenerate(buildParams(state), target)
     }
 
     fun onSaveImage(imageUrl: String) = generationDelegate.onSaveImage(imageUrl)
