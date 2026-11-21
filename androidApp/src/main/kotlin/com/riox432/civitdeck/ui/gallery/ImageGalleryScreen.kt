@@ -94,9 +94,7 @@ fun ImageGalleryScreen(
     val selectedIndex = uiState.selectedImageIndex
     if (selectedIndex != null) {
         ImageViewerOverlay(
-            images = uiState.images.map {
-                ViewerImage(url = it.url, meta = it.meta, contentType = it.contentType)
-            },
+            images = galleryViewerImages(uiState.images),
             initialIndex = selectedIndex,
             onDismiss = viewModel::onDismissViewer,
             onSavePrompt = viewModel::savePrompt,
@@ -107,6 +105,9 @@ fun ImageGalleryScreen(
         )
     }
 }
+
+/** Every gallery Image keeps its source, including ones without generation metadata. */
+internal fun galleryViewerImages(images: List<Image>): List<ViewerImage> = images.map(ViewerImage::fromImage)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
