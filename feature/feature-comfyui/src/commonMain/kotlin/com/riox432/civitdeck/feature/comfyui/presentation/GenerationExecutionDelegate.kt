@@ -1,7 +1,9 @@
 package com.riox432.civitdeck.feature.comfyui.presentation
 
-import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
+import com.riox432.civitdeck.domain.model.ComfyUIJobHandle
+import com.riox432.civitdeck.domain.model.ComfyUIJobTarget
+import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.util.currentTimeMillis
 import com.riox432.civitdeck.util.Logger
@@ -27,10 +29,10 @@ internal class GenerationExecutionDelegate(
 ) {
     /**
      * One press of Generate. Kept per press so a submission still waiting for its id after Stop
-     * cancels its own prompt, even if Generate was pressed again meanwhile.
+     * cancels its own prompt on its own server, even if Generate was pressed again meanwhile.
      */
     private class Submission {
-        var promptId: String? = null
+        var job: ComfyUIJobHandle? = null
         var stopped: Boolean = false
     }
 
@@ -45,7 +47,17 @@ internal class GenerationExecutionDelegate(
             .launchIn(scope)
     }
 
-    fun onGenerate(params: ComfyUIGenerationParams) {
+    /** Submits to the connection active now, read once; later activations do not move the job. */
+    fun onGenerate(params: ComfyUIGenerationParams) = start(params) {
+        val active = useCases.repository.getActiveConnection()
+            ?: throw DomainException.ConnectionException("No active ComfyUI connection")
+        ComfyUIJobTarget.from(active)
+    }
+
+    /** Submits to [target] whichever connection is active, or fails if it cannot be reached as captured. */
+    fun onGenerate(params: ComfyUIGenerationParams, target: ComfyUIJobTarget) = start(params) { target }
+
+    private fun start(params: ComfyUIGenerationParams, resolveTarget: suspend () -> ComfyUIJobTarget) {
         progressJob?.cancel()
         val current = Submission().also { submission = it }
         generationStartTimeMs = currentTimeMs()
@@ -63,21 +75,29 @@ internal class GenerationExecutionDelegate(
         launchWithErrorHandling(
             tag = "Generation submission failed",
             onError = { e ->
-                // After Stop, only a failed cancel matters (the prompt may still run), and only
-                // while no newer Generate owns the screen. A failed submission queued nothing.
-                val report = !current.stopped || (current.promptId != null && submission === current)
+                // A newer Generate owns the screen, so an older failure stays silent. After Stop,
+                // only a failed cancel matters (the prompt may still run); a failed submission
+                // queued nothing.
+                val report = submission === current && (!current.stopped || current.job != null)
                 if (report) {
                     uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
                 }
             },
         ) {
-            val promptId = useCases.submitGeneration(params)
-            current.promptId = promptId
-            if (current.stopped) {
-                useCases.cancelJob(promptId)
-            } else {
-                uiState.update { it.copy(generationStatus = GenerationStatus.Running) }
-                progressJob = trackProgress(promptId)
+            val target = resolveTarget()
+            // Stopped while the target was being read: nothing was queued yet.
+            if (current.stopped) return@launchWithErrorHandling
+            val job = useCases.submitGeneration(params, target)
+            current.job = job
+            when {
+                current.stopped -> useCases.cancelJob(job)
+                // A newer Generate owns the screen; like a superseded running job, this one is
+                // left to finish on the server untracked.
+                submission !== current -> Unit
+                else -> {
+                    uiState.update { it.copy(generationStatus = GenerationStatus.Running) }
+                    progressJob = trackProgress(job)
+                }
             }
         }
     }
@@ -87,8 +107,8 @@ internal class GenerationExecutionDelegate(
         useCases.backgroundMonitorStarter.stopMonitoring()
         val current = submission
         current?.stopped = true
-        val promptId = current?.promptId
-        if (current == null || promptId == null) {
+        val job = current?.job
+        if (current == null || job == null) {
             // Still waiting for /prompt: the submission cancels the prompt once its id arrives.
             resetToIdle()
             return
@@ -98,7 +118,7 @@ internal class GenerationExecutionDelegate(
             tag = "Interrupt failed",
             onError = { e -> if (submission === current) uiState.update { it.copy(error = e.message) } },
         ) {
-            useCases.cancelJob(promptId)
+            useCases.cancelJob(job)
             if (submission === current) resetToIdle()
         }
     }
@@ -126,28 +146,19 @@ internal class GenerationExecutionDelegate(
     }
 
     /** Polling runs in this job too, so Stop and a new Generate end it. */
-    private fun trackProgress(promptId: String): Job = launchWithErrorHandling(
+    private fun trackProgress(job: ComfyUIJobHandle): Job = launchWithErrorHandling(
         tag = "Generation progress failed",
         onError = { e ->
             uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
         },
     ) {
-        val connection = useCases.repository.getActiveConnection()
-        if (connection != null) {
-            useCases.backgroundMonitorStarter.startMonitoring(
-                promptId,
-                connection.baseUrl,
-                connection.wsScheme,
-            )
-            observeWebSocketProgress(promptId, connection)
-        } else {
-            pollForResult(promptId)
-        }
+        useCases.backgroundMonitorStarter.startMonitoring(job)
+        observeWebSocketProgress(job)
     }
 
-    private suspend fun observeWebSocketProgress(promptId: String, connection: ComfyUIConnection) {
-        useCases.observeProgress(promptId, connection.baseUrl, connection.wsScheme)
-            .catch { pollForResult(promptId) }
+    private suspend fun observeWebSocketProgress(job: ComfyUIJobHandle) {
+        useCases.observeProgress(job)
+            .catch { pollForResult(job) }
             .collect { progress ->
                 uiState.update { state ->
                     state.copy(
@@ -170,17 +181,18 @@ internal class GenerationExecutionDelegate(
                 }
             }
         // WebSocket flow completed: fetch final result
-        fetchFinalResult(promptId)
+        fetchFinalResult(job)
     }
 
-    private suspend fun fetchFinalResult(promptId: String) {
+    private suspend fun fetchFinalResult(job: ComfyUIJobHandle) {
+        val promptId = job.promptId
         useCases.backgroundMonitorStarter.stopMonitoring()
         val onError = { e: Exception ->
             notifyErrorIfNeeded(promptId, e.message ?: "Unknown error")
             uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
         }
         runCatchingLogged("Failed to fetch final result", onError) {
-            val result = useCases.pollResult(promptId)
+            val result = useCases.pollResult(job)
             if (result.status == GenerationStatus.Completed) {
                 notifyCompleteIfNeeded(promptId, result.imageUrls.size)
                 uiState.update {
@@ -195,7 +207,8 @@ internal class GenerationExecutionDelegate(
         }
     }
 
-    private suspend fun pollForResult(promptId: String) {
+    private suspend fun pollForResult(job: ComfyUIJobHandle) {
+        val promptId = job.promptId
         val onError = { e: Exception ->
             notifyErrorIfNeeded(promptId, e.message ?: "Unknown error")
             uiState.update { it.copy(generationStatus = GenerationStatus.Error, error = e.message) }
@@ -205,7 +218,7 @@ internal class GenerationExecutionDelegate(
             delay(POLL_INTERVAL_MS)
             var done = false
             val success = runCatchingLogged("Poll for result failed", onError) {
-                val result = useCases.pollResult(promptId)
+                val result = useCases.pollResult(job)
                 when (result.status) {
                     GenerationStatus.Completed -> {
                         notifyCompleteIfNeeded(promptId, result.imageUrls.size)
