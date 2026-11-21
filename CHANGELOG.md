@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ComfyUI submit, poll, progress socket, cancel and result image URLs for a bound job always reach the server the job was submitted to, even after another connection becomes active; a deleted connection or a changed address/TLS setting fails with a connection error instead of reaching another server (#1317)
 - A ComfyUI generation reads the active connection once at Generate and keeps its progress socket, fallback polling, result images, Stop and background monitoring on that server when another connection is activated mid-run; Stop pressed before the server answers cancels the prompt on that same server, and a late older submission or cancel no longer overrides a newer generation (#1318)
+- The Android background generation monitor receives the job's full target (connection ID, address, HTTPS and self-signed flags, TLS pin) and keeps watching that server with the pin-aware client after another connection is activated and the app is backgrounded; a malformed payload or a deleted/changed connection reports a generation error and stops the service instead of reaching another server (#1319)
 
 ## [2.5.0] - 2026-10-13
 
