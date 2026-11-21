@@ -4,6 +4,7 @@ import com.riox432.civitdeck.domain.model.DiffusionModelFamily
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -25,6 +26,7 @@ internal class GenerationResourceLoader(
     private var pendingModel: PendingModel? = null
     private var checkpointsSettled = false
     private var diffusionModelsSettled = false
+    private var parameterExtraction: Job? = null
 
     fun loadCheckpoints() {
         uiState.update { it.copy(isLoadingCheckpoints = true) }
@@ -57,6 +59,16 @@ internal class GenerationResourceLoader(
     fun requestModel(fileName: String, family: DiffusionModelFamily?) {
         pendingModel = PendingModel(fileName, family)
         selectPendingModel()
+    }
+
+    /**
+     * Drops a waiting prefill model request and stops a running workflow parameter extraction, so
+     * neither lands on a form that has since been reset.
+     */
+    fun cancelPendingWork() {
+        pendingModel = null
+        parameterExtraction?.cancel()
+        parameterExtraction = null
     }
 
     private fun selectPendingModel() {
@@ -112,8 +124,9 @@ internal class GenerationResourceLoader(
     }
 
     fun extractWorkflowParameters(workflowJson: String) {
+        parameterExtraction?.cancel()
         uiState.update { it.copy(isLoadingParameters = true) }
-        launchWithErrorHandling(
+        parameterExtraction = launchWithErrorHandling(
             tag = "Failed to extract workflow parameters",
             onError = { uiState.update { it.copy(isLoadingParameters = false) } },
         ) {
@@ -127,7 +140,7 @@ internal class GenerationResourceLoader(
         tag: String,
         crossinline onError: (Exception) -> Unit,
         crossinline block: suspend () -> Unit,
-    ) {
+    ): Job =
         scope.launch {
             try {
                 block()
@@ -138,7 +151,6 @@ internal class GenerationResourceLoader(
                 onError(e)
             }
         }
-    }
 
     private class PendingModel(val fileName: String, val family: DiffusionModelFamily?)
 

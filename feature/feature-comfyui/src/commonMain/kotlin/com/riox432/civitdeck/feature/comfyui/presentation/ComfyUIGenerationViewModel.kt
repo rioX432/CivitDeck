@@ -8,6 +8,7 @@ import com.riox432.civitdeck.domain.model.DiffusionModelFamily
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
+import com.riox432.civitdeck.domain.model.SourceGenerationSnapshot
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
 import com.riox432.civitdeck.feature.comfyui.domain.model.ExtractedParameter
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ApplyWorkflowTemplateUseCase
@@ -100,6 +101,7 @@ class ComfyUIGenerationViewModel(
     private val importWorkflow: ImportWorkflowUseCase,
     private val injectParameters: InjectWorkflowParametersUseCase,
     private val applyTemplate: ApplyWorkflowTemplateUseCase,
+    referenceTrialDependencies: ReferenceTrialDependencies? = null,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GenerationUiState())
@@ -119,6 +121,18 @@ class ComfyUIGenerationViewModel(
         useCases = resourceUseCases,
         modelSelector = modelSelector,
     )
+
+    private val referenceTrial = ReferenceTrialController(
+        scope = viewModelScope,
+        uiState = _uiState,
+        dependencies = referenceTrialDependencies,
+        connections = executionUseCases.repository,
+        generationInputs = ::buildParams,
+        submitPrepared = { generationDelegate.onGenerate(it) },
+    )
+
+    /** Non-null while a saved reference is linked; Generate then goes through its review. */
+    val referenceReviewState: StateFlow<ReferenceReviewState?> = referenceTrial.state
 
     init {
         resourceLoader.loadCheckpoints()
@@ -322,14 +336,14 @@ class ComfyUIGenerationViewModel(
 
     fun onGenerate() {
         val state = _uiState.value
-        if (!state.canGenerate) return
+        if (!state.canGenerate || referenceTrial.isLinked) return
         generationDelegate.onGenerate(buildParams(state))
     }
 
     /** Generates on [target] even while another connection is active; never substitutes another server. */
     fun onGenerate(target: ComfyUIJobTarget) {
         val state = _uiState.value
-        if (!state.canGenerate) return
+        if (!state.canGenerate || referenceTrial.isLinked) return
         generationDelegate.onGenerate(buildParams(state), target)
     }
 
@@ -338,6 +352,64 @@ class ComfyUIGenerationViewModel(
     fun onDismissSaveResult() = generationDelegate.onDismissSaveResult()
 
     fun onInterrupt() = generationDelegate.onInterrupt()
+
+    // -- Reference trial --
+
+    /**
+     * Links saved reference [referenceId] to the form. Everything the previous draft set that a
+     * reference does not carry (custom workflow, inpainting, LoRAs, ControlNet) is cleared, and
+     * only values the source recorded are filled in.
+     */
+    fun beginReferenceTrial(referenceId: Long) =
+        referenceTrial.begin(referenceId, ::resetDraftForReference, ::applySourceValues)
+
+    /** Prepares the exact payload for the active connection and reviews it; Generate calls this while linked. */
+    fun prepareReferenceReview() = referenceTrial.prepare()
+
+    fun onReferenceVariationAcknowledged(acknowledged: Boolean) = referenceTrial.acknowledgeVariation(acknowledged)
+
+    fun confirmReferenceReview() = referenceTrial.confirm()
+
+    /** Closes the review and keeps the reference linked, so Generate still needs a review. */
+    fun dismissReferenceReview() = referenceTrial.dismiss()
+
+    /** Unlinks the reference; the form generates manually again. */
+    fun clearReferenceTrial() = referenceTrial.clear()
+
+    private fun applySourceValues(gen: SourceGenerationSnapshot) {
+        _uiState.update { it.withSourceValues(gen) }
+        gen.model?.takeIf { it.isNotBlank() }?.let { resourceLoader.requestModel(it, family = null) }
+    }
+
+    private fun resetDraftForReference() {
+        resourceLoader.cancelPendingWork()
+        val blank = GenerationUiState()
+        // Server choice lists and the model selection stay; the model selection carries the
+        // family's sampler and scheduler.
+        _uiState.update {
+            it.copy(
+                prompt = blank.prompt,
+                negativePrompt = blank.negativePrompt,
+                steps = blank.steps,
+                cfgScale = blank.cfgScale,
+                width = blank.width,
+                height = blank.height,
+                seed = blank.seed,
+                loraSelections = blank.loraSelections,
+                controlNetEnabled = blank.controlNetEnabled,
+                selectedControlNet = blank.selectedControlNet,
+                controlNetStrength = blank.controlNetStrength,
+                customWorkflowJson = blank.customWorkflowJson,
+                workflowImportError = blank.workflowImportError,
+                extractedParameters = blank.extractedParameters,
+                isLoadingParameters = false,
+                initImageFilename = blank.initImageFilename,
+                maskImageFilename = blank.maskImageFilename,
+                denoiseStrength = blank.denoiseStrength,
+                error = null,
+            )
+        }
+    }
 
     private fun buildParams(state: GenerationUiState): ComfyUIGenerationParams {
         // If custom workflow has extracted parameters, inject modified values before submission
