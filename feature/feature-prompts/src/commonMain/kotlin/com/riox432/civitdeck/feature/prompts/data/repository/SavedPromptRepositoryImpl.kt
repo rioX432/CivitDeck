@@ -2,16 +2,26 @@ package com.riox432.civitdeck.feature.prompts.data.repository
 
 import com.riox432.civitdeck.data.local.currentTimeMillis
 import com.riox432.civitdeck.data.local.dao.SavedPromptDao
+import com.riox432.civitdeck.data.local.dao.SavedReferenceDao
 import com.riox432.civitdeck.data.local.entity.SavedPromptEntity
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.domain.model.SavedPrompt
+import com.riox432.civitdeck.domain.model.SourceReference
+import com.riox432.civitdeck.domain.model.SourceReferenceCodec
 import com.riox432.civitdeck.domain.repository.SavedPromptRepository
+import com.riox432.civitdeck.domain.repository.SavedReferenceRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+/**
+ * [referenceDao] is optional only so existing single-argument callers keep compiling; without it
+ * the reference operations throw and [saveTemplate] falls back to a plain upsert that does not
+ * preserve a stored snapshot. Production wiring always supplies it.
+ */
 class SavedPromptRepositoryImpl(
     private val dao: SavedPromptDao,
-) : SavedPromptRepository {
+    private val referenceDao: SavedReferenceDao? = null,
+) : SavedPromptRepository, SavedReferenceRepository {
 
     override fun observeAll(): Flow<List<SavedPrompt>> =
         dao.observeAll().map { list -> list.map { it.toDomain() } }
@@ -43,9 +53,23 @@ class SavedPromptRepositoryImpl(
     override suspend fun delete(id: Long) { dao.deleteById(id) }
 
     override suspend fun saveTemplate(prompt: SavedPrompt) {
-        dao.upsert(prompt.toEntity())
+        val entity = prompt.toEntity()
+        if (referenceDao != null) referenceDao.upsertPreservingSource(entity) else dao.upsert(entity)
     }
 
+    override suspend fun saveReference(reference: SourceReference): Long =
+        requireReferenceDao().insert(reference.toEntity())
+
+    override suspend fun getReference(id: Long): SavedPrompt? =
+        requireReferenceDao().getById(id)?.toDomain()
+
+    override fun observeReference(id: Long): Flow<SavedPrompt?> =
+        requireReferenceDao().observeById(id).map { it?.toDomain() }
+
+    private fun requireReferenceDao(): SavedReferenceDao =
+        checkNotNull(referenceDao) { "SavedReferenceDao is required for saved reference operations" }
+
+    // The snapshot is left out: only saveReference writes it, and the DAO keeps the stored one.
     private fun SavedPrompt.toEntity() = SavedPromptEntity(
         id = id,
         prompt = prompt,
@@ -66,6 +90,20 @@ class SavedPromptRepositoryImpl(
         templateMetadata = templateMetadata,
         isAppMode = isAppMode,
         rawWorkflowJson = rawWorkflowJson,
+    )
+
+    private fun SourceReference.toEntity() = SavedPromptEntity(
+        prompt = generation?.prompt.orEmpty(),
+        negativePrompt = generation?.negativePrompt,
+        sampler = generation?.sampler,
+        steps = generation?.steps,
+        cfgScale = generation?.cfgScale,
+        seed = generation?.seed,
+        modelName = generation?.model,
+        size = generation?.size,
+        sourceImageUrl = mediaUrl,
+        savedAt = currentTimeMillis(),
+        sourceReferenceJson = SourceReferenceCodec.encode(this),
     )
 
     private fun ImageGenerationMeta.toEntity(
@@ -105,5 +143,6 @@ class SavedPromptRepositoryImpl(
         templateMetadata = templateMetadata,
         isAppMode = isAppMode,
         rawWorkflowJson = rawWorkflowJson,
+        sourceReference = sourceReferenceJson?.let(SourceReferenceCodec::decode),
     )
 }
