@@ -31,6 +31,13 @@ class PromptRowStateTest {
     }
 
     @Test
+    fun a_blank_built_in_template_without_a_source_keeps_its_actions() {
+        val row = promptRowState(prompt(text = "", source = null))
+
+        assertEquals(PromptRowState(isReference = false, promptActionsEnabled = true, hasSource = false), row)
+    }
+
+    @Test
     fun an_unreadable_snapshot_still_offers_source_inspection() {
         val row = promptRowState(prompt(text = "", source = SourceReferenceDecodeResult.Malformed))
 

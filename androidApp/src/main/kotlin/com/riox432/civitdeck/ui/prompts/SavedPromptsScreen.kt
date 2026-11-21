@@ -546,14 +546,15 @@ internal data class PromptRowState(
 
 /**
  * A row saved from a source without a prompt keeps an empty editable prompt, so prompt actions
- * would copy or export nothing; its source snapshot stays inspectable.
+ * would copy or export nothing; its source snapshot stays inspectable. Rows without a source keep
+ * their actions even when blank, since the built-in templates are seeded with an empty prompt.
  */
 internal fun promptRowState(prompt: SavedPrompt): PromptRowState {
     val hasSource = prompt.sourceReference != null
-    val blank = prompt.prompt.isBlank()
+    val isReference = hasSource && prompt.prompt.isBlank()
     return PromptRowState(
-        isReference = hasSource && blank,
-        promptActionsEnabled = !blank,
+        isReference = isReference,
+        promptActionsEnabled = !isReference,
         hasSource = hasSource,
     )
 }
