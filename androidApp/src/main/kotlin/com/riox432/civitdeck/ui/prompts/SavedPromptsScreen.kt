@@ -57,6 +57,7 @@ import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.domain.model.SavedPrompt
 import com.riox432.civitdeck.feature.prompts.presentation.PromptTab
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
+import com.riox432.civitdeck.feature.prompts.presentation.SavedReferenceViewModel
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
 import com.riox432.civitdeck.ui.theme.CornerRadius
@@ -66,12 +67,14 @@ import com.riox432.civitdeck.ui.theme.Spacing
 fun SavedPromptsScreen(
     viewModel: SavedPromptsViewModel,
     scrollToTopTrigger: Int = 0,
+    referenceViewModel: SavedReferenceViewModel? = null,
 ) {
     val prompts by viewModel.prompts.collectAsStateWithLifecycle()
     val templates by viewModel.templates.collectAsStateWithLifecycle()
     val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+    var openReferenceId by rememberSaveable { mutableStateOf<Long?>(null) }
 
     var lastHandledTrigger by rememberSaveable { mutableIntStateOf(scrollToTopTrigger) }
     LaunchedEffect(scrollToTopTrigger) {
@@ -106,9 +109,18 @@ fun SavedPromptsScreen(
                 prompts = displayedPrompts,
                 onDelete = viewModel::delete,
                 onToggleTemplate = viewModel::toggleTemplate,
+                onOpenSource = referenceViewModel?.let { { id: Long -> openReferenceId = id } },
                 listState = listState,
             )
         }
+    }
+    val referenceId = openReferenceId
+    if (referenceViewModel != null && referenceId != null) {
+        SavedReferenceSheet(
+            viewModel = referenceViewModel,
+            referenceId = referenceId,
+            onDismiss = { openReferenceId = null },
+        )
     }
 }
 
@@ -149,6 +161,7 @@ private fun PromptList(
     prompts: List<SavedPrompt>,
     onDelete: (Long) -> Unit,
     onToggleTemplate: (Long, Boolean, String?) -> Unit,
+    onOpenSource: ((Long) -> Unit)?,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
 ) {
@@ -172,6 +185,7 @@ private fun PromptList(
             }
         },
         onRequestApply = { applyTemplatePrompt = it },
+        onOpenSource = onOpenSource,
     )
 
     templateDialogPromptId?.let { promptId ->
@@ -206,6 +220,7 @@ private fun PromptLazyColumn(
     onDelete: (Long) -> Unit,
     onToggleTemplate: (Long, Boolean) -> Unit,
     onRequestApply: (SavedPrompt) -> Unit,
+    onOpenSource: ((Long) -> Unit)?,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
 ) {
@@ -249,6 +264,7 @@ private fun PromptLazyColumn(
                 } else {
                     null
                 },
+                onOpenSource = onOpenSource?.let { open -> { open(prompt.id) } },
                 modifier = Modifier.animateItem(),
             )
         }
@@ -291,14 +307,21 @@ private fun PromptCard(
     onToggleTemplate: () -> Unit,
     onExport: () -> Unit,
     onApply: (() -> Unit)? = null,
+    onOpenSource: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
+    val row = promptRowState(prompt)
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(CornerRadius.card),
     ) {
         Column(modifier = Modifier.padding(Spacing.lg)) {
-            PromptHeader(prompt = prompt, onToggleTemplate = onToggleTemplate)
+            PromptHeader(
+                prompt = prompt,
+                isReference = row.isReference,
+                onToggleTemplate = onToggleTemplate,
+                onOpenSource = onOpenSource.takeIf { row.hasSource },
+            )
             Text(
                 text = prompt.prompt,
                 style = MaterialTheme.typography.bodySmall,
@@ -313,6 +336,7 @@ private fun PromptCard(
             PromptParams(prompt)
             Spacer(modifier = Modifier.height(Spacing.sm))
             PromptActions(
+                promptActionsEnabled = row.promptActionsEnabled,
                 onCopy = onCopy,
                 onExport = onExport,
                 onDelete = onDelete,
@@ -323,13 +347,26 @@ private fun PromptCard(
 }
 
 @Composable
-private fun PromptHeader(prompt: SavedPrompt, onToggleTemplate: () -> Unit) {
+private fun PromptHeader(
+    prompt: SavedPrompt,
+    isReference: Boolean,
+    onToggleTemplate: () -> Unit,
+    onOpenSource: (() -> Unit)?,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
+            if (isReference) {
+                Text(
+                    text = stringResource(R.string.saved_reference_row_label),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
+                Spacer(modifier = Modifier.height(Spacing.xs))
+            }
             prompt.templateName?.let {
                 Text(
                     text = it,
@@ -345,6 +382,11 @@ private fun PromptHeader(prompt: SavedPrompt, onToggleTemplate: () -> Unit) {
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(modifier = Modifier.height(Spacing.xs))
+            }
+        }
+        if (onOpenSource != null) {
+            TextButton(onClick = onOpenSource) {
+                Text(stringResource(R.string.saved_reference_open_source))
             }
         }
         IconButton(onClick = onToggleTemplate) {
@@ -374,6 +416,7 @@ private fun NegativePromptText(text: String) {
 
 @Composable
 private fun PromptActions(
+    promptActionsEnabled: Boolean,
     onCopy: () -> Unit,
     onExport: () -> Unit,
     onDelete: () -> Unit,
@@ -384,14 +427,14 @@ private fun PromptActions(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (onApply != null) {
-            OutlinedButton(onClick = onApply) {
+            OutlinedButton(onClick = onApply, enabled = promptActionsEnabled) {
                 Text(stringResource(R.string.action_apply))
             }
         }
-        OutlinedButton(onClick = onCopy) {
+        OutlinedButton(onClick = onCopy, enabled = promptActionsEnabled) {
             Text(stringResource(R.string.action_copy))
         }
-        OutlinedButton(onClick = onExport) {
+        OutlinedButton(onClick = onExport, enabled = promptActionsEnabled) {
             Text(stringResource(R.string.action_export))
         }
         Spacer(modifier = Modifier.weight(1f))
@@ -493,4 +536,25 @@ private fun copyToClipboard(context: Context, text: String) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     clipboard.setPrimaryClip(ClipData.newPlainText("Prompt", text))
     Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+}
+
+internal data class PromptRowState(
+    val isReference: Boolean,
+    val promptActionsEnabled: Boolean,
+    val hasSource: Boolean,
+)
+
+/**
+ * A row saved from a source without a prompt keeps an empty editable prompt, so prompt actions
+ * would copy or export nothing; its source snapshot stays inspectable. Rows without a source keep
+ * their actions even when blank, since the built-in templates are seeded with an empty prompt.
+ */
+internal fun promptRowState(prompt: SavedPrompt): PromptRowState {
+    val hasSource = prompt.sourceReference != null
+    val isReference = hasSource && prompt.prompt.isBlank()
+    return PromptRowState(
+        isReference = isReference,
+        promptActionsEnabled = !isReference,
+        hasSource = hasSource,
+    )
 }

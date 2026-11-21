@@ -96,6 +96,7 @@ fun ImageViewerOverlay(
     onToggleShareHashtag: (String, Boolean) -> Unit = { _, _ -> },
     onAddShareHashtag: (String) -> Unit = {},
     onRemoveShareHashtag: (String) -> Unit = {},
+    referenceSaving: ReferenceSaving? = null,
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -111,6 +112,7 @@ fun ImageViewerOverlay(
             onToggleShareHashtag,
             onAddShareHashtag,
             onRemoveShareHashtag,
+            referenceSaving,
         )
     }
 }
@@ -126,6 +128,7 @@ private fun ImageViewerContent(
     onToggleShareHashtag: (String, Boolean) -> Unit,
     onAddShareHashtag: (String) -> Unit,
     onRemoveShareHashtag: (String) -> Unit,
+    referenceSaving: ReferenceSaving?,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -165,6 +168,7 @@ private fun ImageViewerContent(
             pagerState,
             controlsVisible && currentDragY == 0f,
             onDismiss,
+            referenceSaving = referenceSaving,
             onInfoClick = { showMetadata = true },
             onShareClick = { showShareSheet = true },
             onDownloadClick = { image ->
@@ -312,14 +316,22 @@ private fun OverlayControls(
     pagerState: PagerState,
     visible: Boolean,
     onDismiss: () -> Unit,
+    referenceSaving: ReferenceSaving?,
     onInfoClick: () -> Unit,
     onShareClick: (ViewerImage) -> Unit,
     onDownloadClick: (ViewerImage) -> Unit,
 ) {
+    // Outside AnimatedVisibility so hiding the controls keeps which pages were saved.
+    val saveTracker = rememberReferenceSaveTracker(referenceSaving)
     AnimatedVisibility(visible = visible, enter = fadeIn(), exit = fadeOut()) {
         val currentImage = images.getOrNull(pagerState.currentPage)
+        val source = currentImage?.originalImage
         ViewerControls(
             onDismiss = onDismiss,
+            saveButton = saveTracker.buttonFor(source, referenceSaving),
+            onSaveClick = {
+                if (source != null && referenceSaving != null) saveTracker.save(source, referenceSaving)
+            },
             onInfoClick = onInfoClick,
             onShareClick = { currentImage?.let(onShareClick) },
             onDownloadClick = { currentImage?.let(onDownloadClick) },
@@ -354,6 +366,8 @@ private fun ViewerMetadataSheet(
 @Composable
 private fun ViewerControls(
     onDismiss: () -> Unit,
+    saveButton: ReferenceSaveButton,
+    onSaveClick: () -> Unit,
     onInfoClick: () -> Unit,
     onShareClick: () -> Unit,
     onDownloadClick: () -> Unit,
@@ -368,7 +382,14 @@ private fun ViewerControls(
             Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_close))
         }
 
-        Row(modifier = Modifier.align(Alignment.BottomEnd).padding(Spacing.lg)) {
+        Row(
+            modifier = Modifier.align(Alignment.BottomEnd).padding(Spacing.lg),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (saveButton != ReferenceSaveButton.Hidden) {
+                SaveReferenceButton(button = saveButton, onClick = onSaveClick)
+                Spacer(modifier = Modifier.width(Spacing.sm))
+            }
             ControlButton(onClick = onDownloadClick, icon = Icons.Outlined.Download, label = "Download")
             Spacer(modifier = Modifier.width(Spacing.sm))
             ControlButton(onClick = onShareClick, icon = Icons.Default.Share, label = "Share")
