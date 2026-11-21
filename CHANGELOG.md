@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `ComfyUIJobTarget` and `ComfyUIJobHandle` freeze the server a ComfyUI job was submitted to; the generation and queue repositories gain bound submit/poll/progress/cancel overloads that fail explicitly until implemented, and `BackgroundMonitorStarter.startMonitoring(job)` hands off the captured target (#1316)
+
 ## [2.5.0] - 2026-10-13
 
 Discovery-engine refocus: sharpen the app around native CivitAI discovery and open the FOSS distribution channel.
