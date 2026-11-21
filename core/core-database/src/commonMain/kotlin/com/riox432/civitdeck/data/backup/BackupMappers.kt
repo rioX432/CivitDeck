@@ -31,6 +31,7 @@ internal fun SavedPromptEntity.toDto() = SavedPromptDto(
     prompt, negativePrompt, sampler, steps, cfgScale, seed,
     modelName, size, sourceImageUrl, savedAt, isTemplate,
     templateName, autoSaved, templateVariables, templateType, templateMetadata,
+    sourceReferenceJson,
 )
 
 internal fun UserPreferencesEntity.toDto() = UserPreferencesDto(
@@ -110,7 +111,7 @@ internal fun SavedPromptDto.toEntity() = SavedPromptEntity(
     size = size, sourceImageUrl = sourceImageUrl, savedAt = savedAt,
     isTemplate = isTemplate, templateName = templateName, autoSaved = autoSaved,
     templateVariables = templateVariables, templateType = templateType,
-    templateMetadata = templateMetadata,
+    templateMetadata = templateMetadata, sourceReferenceJson = sourceReferenceJson,
 )
 
 /**
