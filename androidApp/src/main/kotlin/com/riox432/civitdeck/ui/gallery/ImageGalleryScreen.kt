@@ -50,6 +50,7 @@ import com.riox432.civitdeck.domain.model.SortOrder
 import com.riox432.civitdeck.domain.model.TimePeriod
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryUiState
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
+import com.riox432.civitdeck.feature.prompts.presentation.SavedReferenceViewModel
 import com.riox432.civitdeck.ui.adaptive.adaptiveGridColumns
 import com.riox432.civitdeck.ui.components.CivitAsyncImage
 import com.riox432.civitdeck.ui.components.ErrorStateView
@@ -71,6 +72,7 @@ fun ImageGalleryScreen(
     onToggleShareHashtag: (String, Boolean) -> Unit = { _, _ -> },
     onAddShareHashtag: (String) -> Unit = {},
     onRemoveShareHashtag: (String) -> Unit = {},
+    savedReferenceViewModel: SavedReferenceViewModel? = null,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -93,6 +95,7 @@ fun ImageGalleryScreen(
 
     val selectedIndex = uiState.selectedImageIndex
     if (selectedIndex != null) {
+        val referenceSaving = savedReferenceViewModel?.let { referenceSavingOf(it) }
         ImageViewerOverlay(
             images = galleryViewerImages(uiState.images),
             initialIndex = selectedIndex,
@@ -102,6 +105,7 @@ fun ImageGalleryScreen(
             onToggleShareHashtag = onToggleShareHashtag,
             onAddShareHashtag = onAddShareHashtag,
             onRemoveShareHashtag = onRemoveShareHashtag,
+            referenceSaving = referenceSaving,
         )
     }
 }
