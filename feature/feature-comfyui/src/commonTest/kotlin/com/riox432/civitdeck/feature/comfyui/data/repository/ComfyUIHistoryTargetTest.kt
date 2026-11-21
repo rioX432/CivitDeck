@@ -1,5 +1,6 @@
 package com.riox432.civitdeck.feature.comfyui.data.repository
 
+import com.riox432.civitdeck.data.local.dao.ComfyUIConnectionDao
 import com.riox432.civitdeck.data.local.entity.ComfyUIConnectionEntity
 import com.riox432.civitdeck.domain.model.ComfyUIBoundHistoryItem
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
@@ -264,6 +265,29 @@ class ComfyUIHistoryTargetTest {
             }
             assertTrue(recorder.hosts.isEmpty())
         }
+    }
+
+    @Test
+    fun connection_edited_between_capture_and_request_fails_instead_of_using_the_new_address() = runTest {
+        val fake = twoServers(active = 1)
+        // Edits the active row right after the repository has read it.
+        val dao = object : ComfyUIConnectionDao by fake {
+            override suspend fun getActive() = fake.getActive().also { fake.rows[0] = fake.rows[0].copy(port = 9999) }
+        }
+        val recorder = Recorder()
+        val repo = ComfyUIHistoryRepositoryImpl(
+            ComfyUIApiProvider(
+                dao,
+                mockClient { request ->
+                    recorder.hosts += request.url.host
+                    okJson(historyEntry(PROMPT, status = SUCCESS))
+                },
+                testJson,
+            ),
+        )
+
+        assertFailsWith<DomainException.ConnectionException> { repo.fetchHistory(PAGE_SIZE).first() }
+        assertTrue(recorder.hosts.isEmpty())
     }
 
     @Test
