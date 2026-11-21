@@ -17,6 +17,7 @@ import com.riox432.civitdeck.domain.service.BackgroundMonitorStarterImpl.Compani
 import com.riox432.civitdeck.domain.service.BackgroundMonitorStarterImpl.Companion.EXTRA_BASE_URL
 import com.riox432.civitdeck.domain.service.BackgroundMonitorStarterImpl.Companion.EXTRA_PROMPT_ID
 import com.riox432.civitdeck.domain.service.GenerationNotificationService
+import com.riox432.civitdeck.domain.service.MonitorJobExtras
 import com.riox432.civitdeck.domain.util.currentTimeMillis
 import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import com.riox432.civitdeck.feature.comfyui.data.ComfyUIEndpoint
@@ -71,9 +72,32 @@ class GenerationMonitorService : Service() {
     }
 
     private fun handleStart(intent: Intent) {
-        val promptId = intent.getStringExtra(EXTRA_PROMPT_ID) ?: return stopSelfCleanly()
-        val baseUrl = intent.getStringExtra(EXTRA_BASE_URL) ?: return stopSelfCleanly()
+        val extras = MonitorJobExtras.read(intent::getStringExtra)
+        when (val decoded = MonitorJobExtras.decode(extras)) {
+            is MonitorJobExtras.Decoded.Bound -> {
+                val job = decoded.job
+                startMonitor(job.promptId) { apiProvider.forTarget(job.target) }
+            }
+            MonitorJobExtras.Decoded.Legacy -> {
+                val promptId = intent.getStringExtra(EXTRA_PROMPT_ID) ?: return stopSelfCleanly()
+                val baseUrl = intent.getStringExtra(EXTRA_BASE_URL) ?: return stopSelfCleanly()
+                startMonitor(promptId) { apiProvider.forUrl(baseUrl) }
+            }
+            is MonitorJobExtras.Decoded.Malformed -> {
+                Logger.e(TAG, "Invalid monitor target: ${decoded.reason}")
+                // startForegroundService() obliges this start to enter the foreground before it
+                // stops, so the failure is reported from a started foreground service.
+                startForegroundNotification()
+                notificationService.notifyGenerationError(
+                    extras[EXTRA_PROMPT_ID].orEmpty(),
+                    "Invalid monitor target: ${decoded.reason}",
+                )
+                stopSelfCleanly()
+            }
+        }
+    }
 
+    private fun startMonitor(promptId: String, endpoint: suspend () -> ComfyUIEndpoint) {
         startTimeMs = currentTimeMillis()
 
         // Cancel any existing monitor before starting a new one
@@ -81,7 +105,7 @@ class GenerationMonitorService : Service() {
 
         startForegroundNotification()
         monitorJob = serviceScope.launch {
-            collectWebSocket(promptId, baseUrl)
+            collectWebSocket(promptId, endpoint)
         }
     }
 
@@ -108,11 +132,12 @@ class GenerationMonitorService : Service() {
         }
     }
 
-    private suspend fun collectWebSocket(promptId: String, baseUrl: String) {
+    private suspend fun collectWebSocket(promptId: String, endpoint: suspend () -> ComfyUIEndpoint) {
         val clientId = "civitdeck-monitor-${currentTimeMillis()}"
         try {
-            // The socket scheme follows baseUrl, so the starter's ws-scheme extra is not read.
-            apiProvider.forUrl(baseUrl).observeProgress(clientId, promptId)
+            // The socket scheme follows the endpoint's scheme, so the starter's ws-scheme extra is
+            // not read. A deleted or edited bound target throws here and is reported below.
+            endpoint().observeProgress(clientId, promptId)
                 .collect { message -> handleMessage(message, promptId) }
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Logger.e(TAG, "WebSocket monitor failed: ${e.message}")
