@@ -4,6 +4,8 @@ import com.riox432.civitdeck.domain.model.ComfyUIConnection
 import com.riox432.civitdeck.domain.model.ComfyUIGeneratedImage
 import com.riox432.civitdeck.domain.model.ComfyUIGenerationParams
 import com.riox432.civitdeck.domain.model.ComfyUIHistoryPage
+import com.riox432.civitdeck.domain.model.ComfyUIJobHandle
+import com.riox432.civitdeck.domain.model.ComfyUIJobTarget
 import com.riox432.civitdeck.domain.model.DiffusionModelFamily
 import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.GenerationResult
@@ -102,11 +104,18 @@ class ImportWorkflowUseCase {
 class SubmitComfyUIGenerationUseCase(private val repository: ComfyUIGenerationRepository) {
     suspend operator fun invoke(params: ComfyUIGenerationParams): String =
         repository.submitGeneration(params)
+
+    /** Submits to [target] only; never falls back to the active connection. */
+    suspend operator fun invoke(params: ComfyUIGenerationParams, target: ComfyUIJobTarget): ComfyUIJobHandle =
+        repository.submitGeneration(params, target)
 }
 
 class PollComfyUIResultUseCase(private val repository: ComfyUIGenerationRepository) {
     suspend operator fun invoke(promptId: String): GenerationResult =
         repository.pollGenerationResult(promptId)
+
+    suspend operator fun invoke(job: ComfyUIJobHandle): GenerationResult =
+        repository.pollGenerationResult(job)
 }
 
 class InterruptComfyUIGenerationUseCase(private val repository: ComfyUIGenerationRepository) {
@@ -138,6 +147,8 @@ class ObserveComfyUIQueueUseCase(private val repository: ComfyUIQueueRepository)
 
 class CancelComfyUIJobUseCase(private val repository: ComfyUIQueueRepository) {
     suspend operator fun invoke(promptId: String) = repository.cancelJob(promptId)
+
+    suspend operator fun invoke(job: ComfyUIJobHandle) = repository.cancelJob(job)
 }
 
 // -- CivitAI model bridge --
