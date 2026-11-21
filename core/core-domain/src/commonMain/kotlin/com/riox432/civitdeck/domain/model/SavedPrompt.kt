@@ -20,4 +20,10 @@ data class SavedPrompt(
     val templateMetadata: String? = null,
     val isAppMode: Boolean = false,
     val rawWorkflowJson: String? = null,
+    /**
+     * The source snapshot captured when this prompt was saved from an artwork, or null when none
+     * was. Malformed or newer-version snapshots are reported as such instead of being dropped.
+     * Saving a template never writes this field.
+     */
+    val sourceReference: SourceReferenceDecodeResult? = null,
 )

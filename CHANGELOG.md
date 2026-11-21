@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `ComfyUIJobTarget` and `ComfyUIJobHandle` freeze the server a ComfyUI job was submitted to; the generation and queue repositories gain bound submit/poll/progress/cancel overloads that fail explicitly until implemented, and `BackgroundMonitorStarter.startMonitoring(job)` hands off the captured target (#1316)
+- CivitAI images keep a versioned source reference: the artwork ID and page, creator, rating, the original generation settings, and the explicitly listed resource versions with their own type and weight. Unrecognised metadata is preserved separately and never fills editable settings; images without a valid ID get no reference (#1341)
+- `SavedReferenceDao` reads and observes one saved prompt by ID, stores its source snapshot only while none is stored, and saves template edits in one transaction that keeps the original snapshot verbatim; `SavedPromptDao` is unchanged (#1343)
+- Saved prompts can keep the artwork they came from: a new `SavedReferenceRepository` saves a source reference as a prompt with a stable ID, starting from the source's generation settings or an empty prompt when it had none, and reads it back after restart. Snapshots that are corrupt or from a newer version are reported as unavailable instead of hiding the prompt, and editing or templating the prompt keeps the original snapshot (#1344)
+- Saved-prompt backups now include each prompt's source snapshot, copied verbatim so snapshots from newer app versions survive a round trip; older backups without it still restore every prompt field (#1345)
+- `SavedReferenceViewModel` (Android, iOS and Desktop) saves an artwork's source reference with a guard against duplicate taps, loads a saved reference, and looks up each recorded resource version exactly by its ID, reporting a missing, deleted or unreachable version as unavailable instead of opening another version (#1346)
+- Android: the image viewer opened from the image gallery keeps each artwork's source reference, including artwork shared without generation metadata, so later save actions can use it; model previews, external-server files and ComfyUI outputs stay URL-only (#1347)
+
+### Changed
+
+- Database version 51 adds an empty `sourceReferenceJson` column to saved prompts for the versioned source snapshot; existing prompts and templates upgrade unchanged, and nothing writes the column yet (#1342)
 
 ### Fixed
 

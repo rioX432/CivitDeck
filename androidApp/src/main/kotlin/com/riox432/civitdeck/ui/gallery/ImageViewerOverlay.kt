@@ -54,6 +54,7 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.riox432.civitdeck.R
+import com.riox432.civitdeck.domain.model.Image
 import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.domain.model.MediaContentType
 import com.riox432.civitdeck.ui.components.ImageErrorPlaceholder
@@ -67,7 +68,22 @@ data class ViewerImage(
     val url: String,
     val meta: ImageGenerationMeta? = null,
     val contentType: MediaContentType = MediaContentType.IMAGE,
-)
+    /**
+     * The source artwork this preview came from, or null for URL-only media (model previews,
+     * external-server files, ComfyUI outputs), whose identity must not be guessed from the URL.
+     */
+    val originalImage: Image? = null,
+) {
+    companion object {
+        /** Keeps [image] itself, so its source reference survives even when it has no metadata. */
+        fun fromImage(image: Image): ViewerImage = ViewerImage(
+            url = image.url,
+            meta = image.meta,
+            contentType = image.contentType,
+            originalImage = image,
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
