@@ -9,6 +9,7 @@ import com.riox432.civitdeck.domain.model.ComfyUIJobTarget
 import com.riox432.civitdeck.domain.model.DiffusionModelFamily
 import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.GenerationResult
+import com.riox432.civitdeck.domain.model.PreparedReferenceGeneration
 import com.riox432.civitdeck.domain.model.QueueJob
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
@@ -108,6 +109,19 @@ class SubmitComfyUIGenerationUseCase(private val repository: ComfyUIGenerationRe
     /** Submits to [target] only; never falls back to the active connection. */
     suspend operator fun invoke(params: ComfyUIGenerationParams, target: ComfyUIJobTarget): ComfyUIJobHandle =
         repository.submitGeneration(params, target)
+
+    /** Sends the graph [prepared] holds, unchanged, to [PreparedReferenceGeneration.target]. */
+    suspend operator fun invoke(prepared: PreparedReferenceGeneration): ComfyUIJobHandle =
+        repository.submitPreparedReference(prepared)
+}
+
+/** Fixes a saved reference's graph and seed for [target] so the reviewed payload is the one sent. */
+class PrepareReferenceGenerationUseCase(private val repository: ComfyUIGenerationRepository) {
+    suspend operator fun invoke(
+        referenceId: Long,
+        target: ComfyUIJobTarget,
+        params: ComfyUIGenerationParams,
+    ): PreparedReferenceGeneration = repository.prepareReferenceGeneration(referenceId, target, params)
 }
 
 class PollComfyUIResultUseCase(private val repository: ComfyUIGenerationRepository) {

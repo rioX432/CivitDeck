@@ -8,10 +8,12 @@ import com.riox432.civitdeck.domain.model.ComfyUIJobTarget
 import com.riox432.civitdeck.domain.model.DiffusionLatentNode
 import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.DomainException
+import com.riox432.civitdeck.domain.model.EffectiveGenerationSettings
 import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
 import com.riox432.civitdeck.domain.model.GenerationStatus
 import com.riox432.civitdeck.domain.model.LoraSelection
+import com.riox432.civitdeck.domain.model.PreparedReferenceGeneration
 import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
 import com.riox432.civitdeck.feature.comfyui.data.ComfyUIApiProvider
 import com.riox432.civitdeck.feature.comfyui.data.ComfyUIEndpoint
@@ -36,6 +38,7 @@ import kotlin.random.Random
 class ComfyUIGenerationRepositoryImpl(
     private val apiProvider: ComfyUIApiProvider,
     private val json: Json,
+    private val random: Random = Random.Default,
 ) : ComfyUIGenerationRepository {
 
     // ComfyUI sends a job's completion events only to the socket whose clientId matches the
@@ -69,6 +72,30 @@ class ComfyUIGenerationRepositoryImpl(
         params: ComfyUIGenerationParams,
         target: ComfyUIJobTarget,
     ): ComfyUIJobHandle = ComfyUIJobHandle(target, submit(apiProvider.forTarget(target), params))
+
+    override suspend fun prepareReferenceGeneration(
+        referenceId: Long,
+        target: ComfyUIJobTarget,
+        params: ComfyUIGenerationParams,
+    ): PreparedReferenceGeneration {
+        requireBuiltInTextToImage(params)
+        // A deleted or edited connection fails here, before the user reviews a graph for it.
+        apiProvider.forTarget(target)
+        val effective = params.copy(seed = resolveSeed(params.seed), loraSelections = params.loraSelections.toList())
+        return PreparedReferenceGeneration(
+            referenceId = referenceId,
+            target = target,
+            effectiveParams = effective,
+            workflowJson = json.encodeToString(JsonObject.serializer(), buildWorkflow(effective)),
+            effectiveSettings = EffectiveGenerationSettings.from(effective),
+        )
+    }
+
+    override suspend fun submitPreparedReference(prepared: PreparedReferenceGeneration): ComfyUIJobHandle {
+        val endpoint = apiProvider.forTarget(prepared.target)
+        val graph = json.decodeFromString(JsonObject.serializer(), prepared.workflowJson)
+        return ComfyUIJobHandle(prepared.target, endpoint.api.submitPrompt(graph, clientId).promptId)
+    }
 
     override suspend fun pollGenerationResult(promptId: String): GenerationResult =
         poll(activeEndpoint(), promptId)
@@ -401,8 +428,7 @@ class ComfyUIGenerationRepositoryImpl(
             "inputs",
             buildJsonObject {
                 // ComfyUI's KSampler requires seed >= 0; the app's "random" sentinel is -1.
-                val seed = if (params.seed < 0) Random.nextLong(0, Long.MAX_VALUE) else params.seed
-                put("seed", seed)
+                put("seed", resolveSeed(params.seed))
                 put("steps", params.steps)
                 put("cfg", params.cfgScale)
                 put("sampler_name", params.samplerName)
@@ -466,6 +492,8 @@ class ComfyUIGenerationRepositoryImpl(
         return entries
     }
 
+    private fun resolveSeed(seed: Long): Long = if (seed < 0) random.nextLong(0, Long.MAX_VALUE) else seed
+
     private fun nodeLink(nodeId: String, outputIndex: Int) = buildJsonArray {
         add(JsonPrimitive(nodeId))
         add(JsonPrimitive(outputIndex))
@@ -478,4 +506,14 @@ private fun requireCheckpointOnlyInputsUnset(params: ComfyUIGenerationParams, ha
     // without its nodes would submit a different generation than the user asked for.
     require(!hasControlNet) { "ControlNet cannot be combined with a diffusion model" }
     require(params.maskImageFilename == null) { "Inpainting cannot be combined with a diffusion model" }
+}
+
+private fun requireBuiltInTextToImage(params: ComfyUIGenerationParams) {
+    // Each of these switches the built-in graph to another one, or replaces it, so the reviewed
+    // text-to-image settings would not be what runs.
+    require(params.customWorkflowJson == null) { "A reference generation cannot use a custom workflow" }
+    require(!params.controlNetEnabled) { "A reference generation cannot use ControlNet" }
+    require(params.initImageFilename == null && params.maskImageFilename == null) {
+        "A reference generation cannot use inpainting images"
+    }
 }
