@@ -113,6 +113,7 @@ internal fun EntryProviderScope<Any>.comfyUIEntries(backStack: MutableList<Any>)
         val viewModel: ComfyUIQueueViewModel = koinViewModel()
         ComfyUIQueueScreen(viewModel = viewModel, onBack = { backStack.removeLastOrNull() })
     }
+    referenceTrialEntry(backStack)
     entry<ComfyUIBridgeRoute> { key ->
         val viewModel: ComfyUIGenerationViewModel = koinViewModel(
             key = "bridge_${key.modelId}_${key.versionId}",
@@ -202,6 +203,20 @@ private fun WorkflowTemplatePickerDialog(
             onCreateTemplate = {},
             onEditTemplate = {},
             onSelectTemplate = onSelectTemplate,
+        )
+    }
+}
+
+private fun EntryProviderScope<Any>.referenceTrialEntry(backStack: MutableList<Any>) {
+    entry<ComfyUIReferenceTrialRoute> { key ->
+        val viewModel: ComfyUIGenerationViewModel = koinViewModel(key = "reference_${key.referenceId}")
+        LaunchedEffect(key.referenceId) { viewModel.beginRouteReferenceTrial(key.referenceId) }
+        ComfyUIGenerationWithTemplatePicker(
+            viewModel = viewModel,
+            onBack = { backStack.removeLastOrNull() },
+            onNavigateToMaskEditor = { url, w, h ->
+                backStack.add(MaskEditorRoute(url, w, h))
+            },
         )
     }
 }

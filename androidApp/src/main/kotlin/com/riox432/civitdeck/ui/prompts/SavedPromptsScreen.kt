@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,6 +58,7 @@ import com.riox432.civitdeck.domain.model.ImageGenerationMeta
 import com.riox432.civitdeck.domain.model.SavedPrompt
 import com.riox432.civitdeck.feature.prompts.presentation.PromptTab
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
+import com.riox432.civitdeck.feature.prompts.presentation.SavedReferenceDetailState
 import com.riox432.civitdeck.feature.prompts.presentation.SavedReferenceViewModel
 import com.riox432.civitdeck.ui.components.EmptyStateMessage
 import com.riox432.civitdeck.ui.components.rememberHapticFeedback
@@ -68,6 +70,7 @@ fun SavedPromptsScreen(
     viewModel: SavedPromptsViewModel,
     scrollToTopTrigger: Int = 0,
     referenceViewModel: SavedReferenceViewModel? = null,
+    onTryReference: ((Long) -> Unit)? = null,
 ) {
     val prompts by viewModel.prompts.collectAsStateWithLifecycle()
     val templates by viewModel.templates.collectAsStateWithLifecycle()
@@ -116,11 +119,44 @@ fun SavedPromptsScreen(
     }
     val referenceId = openReferenceId
     if (referenceViewModel != null && referenceId != null) {
-        SavedReferenceSheet(
-            viewModel = referenceViewModel,
-            referenceId = referenceId,
-            onDismiss = { openReferenceId = null },
-        )
+        SavedReferenceDetail(referenceViewModel, referenceId, onTryReference) { openReferenceId = null }
+    }
+}
+
+@Composable
+private fun SavedReferenceDetail(
+    viewModel: SavedReferenceViewModel,
+    referenceId: Long,
+    onTryReference: ((Long) -> Unit)?,
+    onClose: () -> Unit,
+) {
+    SavedReferenceSheet(
+        viewModel = viewModel,
+        referenceId = referenceId,
+        onDismiss = onClose,
+        footer = {
+            if (onTryReference != null) {
+                TryReferenceButton(viewModel, referenceId) {
+                    onClose()
+                    onTryReference(referenceId)
+                }
+            }
+        },
+    )
+}
+
+// Only a snapshot that decoded for this row can be tried; a missing or unreadable one has nothing
+// to link, and the sheet already says why.
+@Composable
+private fun TryReferenceButton(viewModel: SavedReferenceViewModel, referenceId: Long, onTry: () -> Unit) {
+    val detail by viewModel.detailState.collectAsStateWithLifecycle()
+    val loaded = detail as? SavedReferenceDetailState.Loaded
+    Button(
+        onClick = onTry,
+        enabled = loaded?.prompt?.id == referenceId && loaded.reference != null,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(stringResource(R.string.saved_reference_try))
     }
 }
 
