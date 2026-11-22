@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Saved-prompt backups now include each prompt's source snapshot, copied verbatim so snapshots from newer app versions survive a round trip; older backups without it still restore every prompt field (#1345)
 - `SavedReferenceViewModel` (Android, iOS and Desktop) saves an artwork's source reference with a guard against duplicate taps, loads a saved reference, and looks up each recorded resource version exactly by its ID, reporting a missing, deleted or unreachable version as unavailable instead of opening another version (#1346)
 - Android: the image viewer opened from the image gallery keeps each artwork's source reference, including artwork shared without generation metadata, so later save actions can use it; model previews, external-server files and ComfyUI outputs stay URL-only (#1347)
+- Android: the image gallery viewer offers "Save locally" for any artwork with a source reference, including artwork without generation metadata, with saving, saved and retry states that stay on the page that was saved. Saved Prompts labels prompt-less saved artwork as "Reference", disables copy, apply and export for an empty prompt, and opens a sheet showing the recorded source, original settings and resource versions, each looked up by its recorded ID; links open only when tapped (#1348)
 
 ### Changed
 
