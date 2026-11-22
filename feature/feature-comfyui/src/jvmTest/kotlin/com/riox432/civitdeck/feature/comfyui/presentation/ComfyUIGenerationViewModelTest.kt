@@ -13,14 +13,26 @@ import com.riox432.civitdeck.domain.model.DiffusionLatentNode
 import com.riox432.civitdeck.domain.model.DiffusionModelFamily
 import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.DiffusionModelSelection
+import com.riox432.civitdeck.domain.model.EffectiveGenerationSettings
 import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
+import com.riox432.civitdeck.domain.model.PreparedReferenceGeneration
+import com.riox432.civitdeck.domain.model.ReferenceResourceReview
+import com.riox432.civitdeck.domain.model.ResourceConfidence
+import com.riox432.civitdeck.domain.model.ResourceReview
+import com.riox432.civitdeck.domain.model.SavedPrompt
+import com.riox432.civitdeck.domain.model.SourceGenerationSnapshot
+import com.riox432.civitdeck.domain.model.SourceProvider
+import com.riox432.civitdeck.domain.model.SourceReference
+import com.riox432.civitdeck.domain.model.SourceReferenceDecodeResult
+import com.riox432.civitdeck.domain.model.TargetCapability
 import com.riox432.civitdeck.domain.model.TemplateVariable
 import com.riox432.civitdeck.domain.model.TemplateVariableType
 import com.riox432.civitdeck.domain.model.WorkflowTemplate
 import com.riox432.civitdeck.domain.model.WorkflowTemplateType
 import com.riox432.civitdeck.domain.repository.ComfyUIConnectionRepository
 import com.riox432.civitdeck.domain.repository.ComfyUIGenerationRepository
+import com.riox432.civitdeck.domain.repository.SavedReferenceRepository
 import com.riox432.civitdeck.domain.service.AppLifecycleTracker
 import com.riox432.civitdeck.domain.service.BackgroundMonitorStarter
 import com.riox432.civitdeck.domain.usecase.ObserveGenerationNotificationsEnabledUseCase
@@ -41,6 +53,7 @@ import com.riox432.civitdeck.feature.comfyui.domain.usecase.ObserveGenerationPro
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.ParseAppModeMetadataUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PollComfyUIResultUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.PopulateGenerationFromModelUseCase
+import com.riox432.civitdeck.feature.comfyui.domain.usecase.PrepareReferenceGenerationUseCase
 import com.riox432.civitdeck.feature.comfyui.domain.usecase.SubmitComfyUIGenerationUseCase
 import com.riox432.civitdeck.testing.FakeAppBehaviorPreferencesRepository
 import com.riox432.civitdeck.testing.FakeGenerationNotificationService
@@ -91,7 +104,30 @@ class ComfyUIGenerationViewModelTest {
         private val checkpoints: CompletableDeferred<List<String>>,
         private val diffusionModelResources: suspend () -> DiffusionModelResources,
         private val submitted: MutableList<ComfyUIGenerationParams>,
+        private val reference: ReferenceFixture,
     ) : ComfyUIGenerationRepository {
+        override suspend fun prepareReferenceGeneration(
+            referenceId: Long,
+            target: ComfyUIJobTarget,
+            params: ComfyUIGenerationParams,
+        ): PreparedReferenceGeneration {
+            reference.prepareGate.await()
+            reference.prepareCount++
+            val resolved = params.copy(seed = PREPARED_SEED)
+            return PreparedReferenceGeneration(
+                referenceId = referenceId,
+                target = target,
+                effectiveParams = resolved,
+                workflowJson = """{"graph":${reference.prepareCount}}""",
+                effectiveSettings = EffectiveGenerationSettings.from(resolved),
+            )
+        }
+
+        override suspend fun submitPreparedReference(prepared: PreparedReferenceGeneration): ComfyUIJobHandle {
+            reference.submittedPrepared += prepared
+            return ComfyUIJobHandle(prepared.target, "prompt-ref")
+        }
+
         override suspend fun fetchCheckpoints(): List<String> = checkpoints.await()
         override suspend fun fetchLoras(): List<String> = emptyList()
         override suspend fun fetchControlNets(): List<String> = emptyList()
@@ -150,6 +186,39 @@ class ComfyUIGenerationViewModelTest {
         override suspend fun deleteOldestUnpinned(count: Int): Int = 0
     }
 
+    /** A saved reference [source] behind [REFERENCE_ID], and what the fake repository saw of it. */
+    private class ReferenceFixture(
+        val source: SourceReference? = null,
+        val review: (PreparedReferenceGeneration) -> ReferenceResourceReview = { reviewOf(it) },
+    ) {
+        var prepareGate: CompletableDeferred<Unit> = CompletableDeferred(Unit)
+        var prepareCount = 0
+        val submittedPrepared = mutableListOf<PreparedReferenceGeneration>()
+
+        val savedReferences = object : SavedReferenceRepository {
+            override suspend fun saveReference(reference: SourceReference): Long = error("not used")
+
+            override suspend fun getReference(id: Long): SavedPrompt? = source?.takeIf { id == REFERENCE_ID }?.let {
+                SavedPrompt(
+                    id = id,
+                    prompt = "",
+                    negativePrompt = null,
+                    sampler = null,
+                    steps = null,
+                    cfgScale = null,
+                    seed = null,
+                    modelName = null,
+                    size = null,
+                    sourceImageUrl = null,
+                    savedAt = 0L,
+                    sourceReference = SourceReferenceDecodeResult.Decoded(it),
+                )
+            }
+
+            override fun observeReference(id: Long): Flow<SavedPrompt?> = error("not used")
+        }
+    }
+
     private object NoOpImageSaver : ImageSaver {
         override suspend fun saveToGallery(imageBytes: ByteArray, filename: String): Boolean = false
     }
@@ -167,9 +236,10 @@ class ComfyUIGenerationViewModelTest {
         checkpoints: CompletableDeferred<List<String>>,
         diffusionModelResources: suspend () -> DiffusionModelResources = { DiffusionModelResources() },
         submitted: MutableList<ComfyUIGenerationParams> = mutableListOf(),
+        reference: ReferenceFixture? = null,
     ): ComfyUIGenerationViewModel {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
-        val repo = FakeGenerationRepo(checkpoints, diffusionModelResources, submitted)
+        val repo = FakeGenerationRepo(checkpoints, diffusionModelResources, submitted, reference ?: ReferenceFixture())
         val httpClient = HttpClient(MockEngine { respondError(HttpStatusCode.NotFound) })
         return ComfyUIGenerationViewModel(
             executionUseCases = GenerationExecutionUseCases(
@@ -202,6 +272,13 @@ class ComfyUIGenerationViewModelTest {
             importWorkflow = ImportWorkflowUseCase(),
             injectParameters = InjectWorkflowParametersUseCase(),
             applyTemplate = ApplyWorkflowTemplateUseCase(),
+            referenceTrialDependencies = reference?.let {
+                ReferenceTrialDependencies(
+                    savedReferences = it.savedReferences,
+                    prepare = PrepareReferenceGenerationUseCase(repo),
+                    review = { prepared, _ -> it.review(prepared) },
+                )
+            },
         )
     }
 
@@ -842,7 +919,301 @@ class ComfyUIGenerationViewModelTest {
         assertEquals(DiffusionModelFamily.KREA_2, state.selectedFamily)
     }
 
+    // -- Reference trial --
+
+    private fun TestScope.linkedViewModel(
+        reference: ReferenceFixture = ReferenceFixture(SOURCE),
+        submitted: MutableList<ComfyUIGenerationParams> = mutableListOf(),
+    ): ComfyUIGenerationViewModel {
+        val vm = createViewModel(
+            loaded("SD15/bar.safetensors", "SDXL/foo.safetensors"),
+            submitted = submitted,
+            reference = reference,
+        )
+        advanceUntilIdle()
+        vm.beginReferenceTrial(REFERENCE_ID)
+        advanceUntilIdle()
+        return vm
+    }
+
+    @Test
+    fun linking_a_reference_clears_the_previous_draft_and_fills_only_recorded_values() = runTest {
+        val reference = ReferenceFixture(SOURCE)
+        val vm = createViewModel(loaded("SD15/bar.safetensors", "SDXL/foo.safetensors"), reference = reference)
+        advanceUntilIdle()
+        vm.onImportWorkflow(RAW_WORKFLOW)
+        vm.onInitImageUploaded("init.png")
+        vm.onMaskUploaded("mask.png")
+        vm.onLoraAdded("detail.safetensors")
+        vm.onControlNetToggled(true)
+        vm.onNegativePromptChanged("old negative")
+        vm.onStepsChanged(50)
+
+        vm.beginReferenceTrial(REFERENCE_ID)
+        advanceUntilIdle()
+
+        val blank = GenerationUiState()
+        val state = vm.uiState.value
+        assertNull(state.customWorkflowJson)
+        assertTrue(state.extractedParameters.isEmpty())
+        assertNull(state.initImageFilename)
+        assertNull(state.maskImageFilename)
+        assertTrue(state.loraSelections.isEmpty())
+        assertFalse(state.controlNetEnabled)
+        assertEquals("a cat", state.prompt)
+        // Not recorded by the source, so the defaults stand in rather than the old draft.
+        assertEquals(blank.negativePrompt, state.negativePrompt)
+        assertEquals(blank.steps, state.steps)
+        assertEquals(6.0, state.cfgScale)
+        assertEquals(42L, state.seed)
+        assertEquals(832, state.width)
+        assertEquals(1216, state.height)
+        assertEquals("SDXL/foo.safetensors", state.selectedCheckpoint)
+        val review = assertNotNull(vm.referenceReviewState.value)
+        assertEquals(SOURCE, review.source)
+        assertFalse(review.isLoadingSource)
+        assertNull(review.problem)
+    }
+
+    @Test
+    fun missing_source_is_reported_and_cannot_be_prepared() = runTest {
+        val reference = ReferenceFixture(source = null)
+        val vm = linkedViewModel(reference)
+
+        vm.prepareReferenceReview()
+        advanceUntilIdle()
+
+        val review = assertNotNull(vm.referenceReviewState.value)
+        assertEquals(ReferenceTrialProblem.SOURCE_UNAVAILABLE, review.problem)
+        assertEquals(ReferenceTrialStatus.DRAFT, review.status)
+        assertEquals(0, reference.prepareCount)
+    }
+
+    @Test
+    fun a_metadata_free_reference_stays_an_incomplete_draft() = runTest {
+        val reference = ReferenceFixture(SOURCE.copy(generation = null))
+        val vm = createViewModel(loaded("a.safetensors"), reference = reference)
+        advanceUntilIdle()
+        vm.onPromptChanged("old prompt")
+        vm.onSeedChanged(99L)
+
+        vm.beginReferenceTrial(REFERENCE_ID)
+        advanceUntilIdle()
+        vm.prepareReferenceReview()
+        advanceUntilIdle()
+
+        assertEquals("", vm.uiState.value.prompt)
+        assertEquals(GenerationUiState().seed, vm.uiState.value.seed)
+        val review = assertNotNull(vm.referenceReviewState.value)
+        assertNull(review.source?.generation)
+        assertEquals(ReferenceTrialProblem.INCOMPLETE_DRAFT, review.problem)
+        assertFalse(review.canConfirm)
+        assertEquals(0, reference.prepareCount)
+    }
+
+    @Test
+    fun ordinary_generate_is_blocked_while_linked_and_dismiss_keeps_the_link() = runTest {
+        val submitted = mutableListOf<ComfyUIGenerationParams>()
+        val reference = ReferenceFixture(SOURCE)
+        val vm = linkedViewModel(reference, submitted)
+
+        vm.onGenerate()
+        vm.onGenerate(
+            ComfyUIJobTarget(
+                connectionId = 1,
+                hostname = "h",
+                port = 8188,
+                useHttps = false,
+                acceptSelfSigned = false,
+                tlsCertSha256 = null,
+            ),
+        )
+        vm.prepareReferenceReview()
+        advanceUntilIdle()
+        vm.dismissReferenceReview()
+        vm.onGenerate()
+        advanceUntilIdle()
+
+        assertTrue(submitted.isEmpty())
+        assertTrue(reference.submittedPrepared.isEmpty())
+        val review = assertNotNull(vm.referenceReviewState.value)
+        assertEquals(ReferenceTrialStatus.DRAFT, review.status)
+        assertFalse(review.isReviewVisible)
+        assertNull(review.review)
+    }
+
+    @Test
+    fun clearing_the_reference_returns_to_manual_generation() = runTest {
+        val submitted = mutableListOf<ComfyUIGenerationParams>()
+        val reference = ReferenceFixture(SOURCE)
+        val vm = linkedViewModel(reference, submitted)
+
+        vm.clearReferenceTrial()
+        vm.onGenerate()
+        advanceUntilIdle()
+
+        assertNull(vm.referenceReviewState.value)
+        assertEquals("a cat", submitted.single().prompt)
+        assertTrue(reference.submittedPrepared.isEmpty())
+    }
+
+    @Test
+    fun confirm_sends_the_reviewed_graph_once_to_its_prepared_target() = runTest {
+        val submitted = mutableListOf<ComfyUIGenerationParams>()
+        val reference = ReferenceFixture(SOURCE)
+        val vm = linkedViewModel(reference, submitted)
+
+        vm.prepareReferenceReview()
+        advanceUntilIdle()
+        val reviewed = assertNotNull(vm.referenceReviewState.value)
+        assertEquals(ReferenceTrialStatus.REVIEWED, reviewed.status)
+        assertTrue(reviewed.isReviewVisible)
+        assertEquals(PREPARED_SEED, reviewed.effectiveSettings?.seed)
+        // A filename-only resource is a variation, so confirming needs an acknowledgement first.
+        assertFalse(reviewed.canConfirm)
+        vm.confirmReferenceReview()
+        advanceUntilIdle()
+        assertTrue(reference.submittedPrepared.isEmpty())
+
+        vm.onReferenceVariationAcknowledged(true)
+        vm.confirmReferenceReview()
+        vm.confirmReferenceReview()
+        advanceUntilIdle()
+
+        val sent = reference.submittedPrepared.single()
+        assertEquals("""{"graph":1}""", sent.workflowJson)
+        assertEquals(PREPARED_SEED, sent.effectiveParams.seed)
+        assertEquals(1L, sent.target.connectionId)
+        assertEquals("h", sent.target.hostname)
+        assertEquals(reviewed.target, sent.target)
+        assertTrue(submitted.isEmpty())
+        assertEquals(ReferenceTrialStatus.SUBMITTED, vm.referenceReviewState.value?.status)
+    }
+
+    @Test
+    fun blocked_capability_cannot_be_confirmed_even_when_acknowledged() = runTest {
+        val reference = ReferenceFixture(SOURCE) {
+            reviewOf(it, TargetCapability.Blocked(emptyList()))
+        }
+        val vm = linkedViewModel(reference)
+
+        vm.prepareReferenceReview()
+        advanceUntilIdle()
+        vm.onReferenceVariationAcknowledged(true)
+        vm.confirmReferenceReview()
+        advanceUntilIdle()
+
+        assertFalse(assertNotNull(vm.referenceReviewState.value).canConfirm)
+        assertTrue(reference.submittedPrepared.isEmpty())
+    }
+
+    @Test
+    fun editing_an_input_after_review_discards_the_review_and_acknowledgement() = runTest {
+        val reference = ReferenceFixture(SOURCE)
+        val vm = linkedViewModel(reference)
+        vm.prepareReferenceReview()
+        advanceUntilIdle()
+        vm.onReferenceVariationAcknowledged(true)
+
+        vm.onStepsChanged(31)
+        advanceUntilIdle()
+        vm.confirmReferenceReview()
+        advanceUntilIdle()
+
+        val review = assertNotNull(vm.referenceReviewState.value)
+        assertEquals(ReferenceTrialStatus.DRAFT, review.status)
+        assertNull(review.review)
+        assertFalse(review.variationAcknowledged)
+        assertTrue(reference.submittedPrepared.isEmpty())
+
+        vm.prepareReferenceReview()
+        advanceUntilIdle()
+        val reprepared = assertNotNull(vm.referenceReviewState.value)
+        assertFalse(reprepared.variationAcknowledged)
+        assertEquals(31, reprepared.effectiveSettings?.steps)
+        assertEquals(2, reference.prepareCount)
+    }
+
+    @Test
+    fun non_input_changes_keep_the_review() = runTest {
+        val vm = linkedViewModel()
+        vm.prepareReferenceReview()
+        advanceUntilIdle()
+
+        vm.onSaveImage("http://h:8188/view?filename=x.png")
+        advanceUntilIdle()
+        vm.onDismissSaveResult()
+        advanceUntilIdle()
+
+        assertEquals(ReferenceTrialStatus.REVIEWED, vm.referenceReviewState.value?.status)
+    }
+
+    @Test
+    fun a_preparation_finishing_after_an_edit_is_discarded() = runTest {
+        val reference = ReferenceFixture(SOURCE)
+        val vm = linkedViewModel(reference)
+        reference.prepareGate = CompletableDeferred()
+
+        vm.prepareReferenceReview()
+        advanceUntilIdle()
+        assertEquals(ReferenceTrialStatus.PREPARING, vm.referenceReviewState.value?.status)
+        vm.onPromptChanged("a dog")
+        advanceUntilIdle()
+        reference.prepareGate.complete(Unit)
+        advanceUntilIdle()
+
+        val review = assertNotNull(vm.referenceReviewState.value)
+        assertEquals(ReferenceTrialStatus.DRAFT, review.status)
+        assertNull(review.review)
+        vm.onReferenceVariationAcknowledged(true)
+        vm.confirmReferenceReview()
+        advanceUntilIdle()
+        assertTrue(reference.submittedPrepared.isEmpty())
+    }
+
+    @Test
+    fun a_source_load_finishing_after_clear_does_not_touch_the_form() = runTest {
+        val vm = createViewModel(loaded("a.safetensors"), reference = ReferenceFixture(SOURCE))
+        advanceUntilIdle()
+
+        vm.beginReferenceTrial(REFERENCE_ID)
+        vm.clearReferenceTrial()
+        vm.onPromptChanged("manual")
+        advanceUntilIdle()
+
+        assertNull(vm.referenceReviewState.value)
+        assertEquals("manual", vm.uiState.value.prompt)
+        assertEquals(GenerationUiState().seed, vm.uiState.value.seed)
+    }
+
     private companion object {
+        const val REFERENCE_ID = 1L
+        const val PREPARED_SEED = 7L
+        val SOURCE = SourceReference(
+            provider = SourceProvider.Civitai,
+            artworkId = "123",
+            artworkUrl = "https://civitai.com/images/123",
+            generation = SourceGenerationSnapshot(
+                prompt = "a cat",
+                cfgScale = 6.0,
+                seed = 42L,
+                model = "foo.safetensors",
+                size = "832 x 1216",
+            ),
+        )
+
+        fun reviewOf(
+            prepared: PreparedReferenceGeneration,
+            capability: TargetCapability = TargetCapability.Supported,
+        ) = ReferenceResourceReview(
+            target = prepared.target,
+            capability = capability,
+            resources = listOf(
+                ResourceReview(1L, "Checkpoint", ResourceConfidence.FILENAME_ONLY, "name", selected = true),
+            ),
+            settings = emptyList(),
+        )
+
         const val KREA_BASE_MODEL = "Krea 2"
         const val SDXL_BASE_MODEL = "SDXL 1.0"
         const val KREA_MODEL = "krea2_turbo_fp8_scaled.safetensors"

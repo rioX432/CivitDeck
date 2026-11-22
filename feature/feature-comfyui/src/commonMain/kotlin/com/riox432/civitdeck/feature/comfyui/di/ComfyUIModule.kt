@@ -95,9 +95,11 @@ import com.riox432.civitdeck.feature.comfyui.presentation.ConnectionOnboardingVi
 import com.riox432.civitdeck.feature.comfyui.presentation.GenerationExecutionUseCases
 import com.riox432.civitdeck.feature.comfyui.presentation.GenerationResourceUseCases
 import com.riox432.civitdeck.feature.comfyui.presentation.MaskEditorViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.ReferenceTrialDependencies
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.SDWebUISettingsViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.WorkflowTemplateViewModel
+import com.riox432.civitdeck.feature.comfyui.presentation.asReviewer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -264,6 +266,11 @@ val comfyuiModule = module {
             importWorkflow = get(),
             injectParameters = get(),
             applyTemplate = get(),
+            referenceTrialDependencies = ReferenceTrialDependencies(
+                savedReferences = get(),
+                prepare = get(),
+                review = get<ReviewReferenceResourcesUseCase>().asReviewer(),
+            ),
         )
     }
     viewModel { ComfyUIHistoryViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }

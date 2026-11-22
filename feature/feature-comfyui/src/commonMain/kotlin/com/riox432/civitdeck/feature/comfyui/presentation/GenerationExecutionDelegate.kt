@@ -5,6 +5,7 @@ import com.riox432.civitdeck.domain.model.ComfyUIJobHandle
 import com.riox432.civitdeck.domain.model.ComfyUIJobTarget
 import com.riox432.civitdeck.domain.model.DomainException
 import com.riox432.civitdeck.domain.model.GenerationStatus
+import com.riox432.civitdeck.domain.model.PreparedReferenceGeneration
 import com.riox432.civitdeck.domain.util.currentTimeMillis
 import com.riox432.civitdeck.util.Logger
 import kotlinx.coroutines.CancellationException
@@ -48,16 +49,27 @@ internal class GenerationExecutionDelegate(
     }
 
     /** Submits to the connection active now, read once; later activations do not move the job. */
-    fun onGenerate(params: ComfyUIGenerationParams) = start(params) {
-        val active = useCases.repository.getActiveConnection()
-            ?: throw DomainException.ConnectionException("No active ComfyUI connection")
-        ComfyUIJobTarget.from(active)
-    }
+    fun onGenerate(params: ComfyUIGenerationParams) = start(
+        resolveTarget = {
+            val active = useCases.repository.getActiveConnection()
+                ?: throw DomainException.ConnectionException("No active ComfyUI connection")
+            ComfyUIJobTarget.from(active)
+        },
+        submit = { useCases.submitGeneration(params, it) },
+    )
 
     /** Submits to [target] whichever connection is active, or fails if it cannot be reached as captured. */
-    fun onGenerate(params: ComfyUIGenerationParams, target: ComfyUIJobTarget) = start(params) { target }
+    fun onGenerate(params: ComfyUIGenerationParams, target: ComfyUIJobTarget) =
+        start(resolveTarget = { target }, submit = { useCases.submitGeneration(params, it) })
 
-    private fun start(params: ComfyUIGenerationParams, resolveTarget: suspend () -> ComfyUIJobTarget) {
+    /** Submits the reviewed graph unchanged to the target it was prepared for. */
+    fun onGenerate(prepared: PreparedReferenceGeneration) =
+        start(resolveTarget = { prepared.target }, submit = { useCases.submitGeneration(prepared) })
+
+    private fun start(
+        resolveTarget: suspend () -> ComfyUIJobTarget,
+        submit: suspend (ComfyUIJobTarget) -> ComfyUIJobHandle,
+    ) {
         progressJob?.cancel()
         val current = Submission().also { submission = it }
         generationStartTimeMs = currentTimeMs()
@@ -87,7 +99,7 @@ internal class GenerationExecutionDelegate(
             val target = resolveTarget()
             // Stopped while the target was being read: nothing was queued yet.
             if (current.stopped) return@launchWithErrorHandling
-            val job = useCases.submitGeneration(params, target)
+            val job = submit(target)
             current.job = job
             when {
                 current.stopped -> useCases.cancelJob(job)
