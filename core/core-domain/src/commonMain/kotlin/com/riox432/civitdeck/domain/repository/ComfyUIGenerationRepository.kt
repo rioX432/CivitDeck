@@ -68,4 +68,8 @@ interface ComfyUIGenerationRepository {
      * Returns the raw JSON string containing schema definitions for all node types.
      */
     suspend fun fetchObjectInfo(): String
+
+    /** Fetch [target]'s /object_info fresh, without any cache, failing if [target] is stale. */
+    suspend fun fetchObjectInfo(target: ComfyUIJobTarget): String =
+        throw UnsupportedOperationException("Bound fetchObjectInfo is not implemented")
 }

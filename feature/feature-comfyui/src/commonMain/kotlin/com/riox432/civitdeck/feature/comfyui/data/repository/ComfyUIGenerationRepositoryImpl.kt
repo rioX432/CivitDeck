@@ -201,6 +201,9 @@ class ComfyUIGenerationRepositoryImpl(
 
     override suspend fun fetchObjectInfo(): String = activeEndpoint().api.getFullObjectInfo()
 
+    override suspend fun fetchObjectInfo(target: ComfyUIJobTarget): String =
+        apiProvider.forTarget(target).api.getFullObjectInfo()
+
     private suspend fun activeEndpoint(): ComfyUIEndpoint =
         apiProvider.forActive().also { lastEndpoint = it }
 
