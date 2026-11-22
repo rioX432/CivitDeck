@@ -30,6 +30,7 @@ jobs:
               - 'shared/**'
               - 'core/**'
               - 'feature/**'
+              - 'build-logic/**'
               - 'build.gradle.kts'
               - 'settings.gradle.kts'
               - 'gradle.properties'
