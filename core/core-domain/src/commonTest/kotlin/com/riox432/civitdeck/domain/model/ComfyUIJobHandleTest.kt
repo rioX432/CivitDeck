@@ -84,6 +84,12 @@ class ComfyUIJobHandleTest {
         }
         assertFailsWith<UnsupportedOperationException> { repository.pollGenerationResult(job) }
         assertFailsWith<UnsupportedOperationException> { repository.observeGenerationProgress(job) }
+        val params = ComfyUIGenerationParams(checkpoint = "c", prompt = "p", seed = 1)
+        assertFailsWith<UnsupportedOperationException> {
+            repository.prepareReferenceGeneration(referenceId = 1, target = job.target, params = params)
+        }
+        val prepared = PreparedReferenceGeneration(1, job.target, params, "{}", EffectiveGenerationSettings.from(params))
+        assertFailsWith<UnsupportedOperationException> { repository.submitPreparedReference(prepared) }
 
         assertTrue(repository.legacyCalls.isEmpty(), "legacy calls: ${repository.legacyCalls}")
     }

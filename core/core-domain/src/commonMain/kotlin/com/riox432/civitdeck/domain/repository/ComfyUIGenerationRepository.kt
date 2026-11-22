@@ -6,6 +6,7 @@ import com.riox432.civitdeck.domain.model.ComfyUIJobTarget
 import com.riox432.civitdeck.domain.model.DiffusionModelResources
 import com.riox432.civitdeck.domain.model.GenerationProgress
 import com.riox432.civitdeck.domain.model.GenerationResult
+import com.riox432.civitdeck.domain.model.PreparedReferenceGeneration
 import kotlinx.coroutines.flow.Flow
 
 interface ComfyUIGenerationRepository {
@@ -36,6 +37,22 @@ interface ComfyUIGenerationRepository {
     /** Observe the progress of [job] over its own target's socket. */
     fun observeGenerationProgress(job: ComfyUIJobHandle): Flow<GenerationProgress> =
         throw UnsupportedOperationException("Bound observeGenerationProgress is not implemented")
+
+    /**
+     * Build the built-in text-to-image graph for saved reference [referenceId] once, with a
+     * concrete seed, and bind it to [target]. Custom workflows, ControlNet and inpainting inputs
+     * are rejected; [target] must still match its saved connection.
+     */
+    suspend fun prepareReferenceGeneration(
+        referenceId: Long,
+        target: ComfyUIJobTarget,
+        params: ComfyUIGenerationParams,
+    ): PreparedReferenceGeneration =
+        throw UnsupportedOperationException("prepareReferenceGeneration is not implemented")
+
+    /** Send [prepared]'s stored graph, unchanged, to its own target. */
+    suspend fun submitPreparedReference(prepared: PreparedReferenceGeneration): ComfyUIJobHandle =
+        throw UnsupportedOperationException("submitPreparedReference is not implemented")
 
     suspend fun interruptGeneration()
 
