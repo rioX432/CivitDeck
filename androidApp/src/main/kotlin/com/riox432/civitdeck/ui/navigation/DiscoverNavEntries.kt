@@ -5,6 +5,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ShareViewModel
+import com.riox432.civitdeck.feature.prompts.presentation.SavedReferenceViewModel
 import com.riox432.civitdeck.feature.search.presentation.SwipeDiscoveryViewModel
 import com.riox432.civitdeck.ui.discovery.SwipeDiscoveryScreen
 import com.riox432.civitdeck.ui.gallery.ImageGalleryScreen
@@ -28,6 +29,7 @@ internal fun EntryProviderScope<Any>.discoveryEntry(backStack: MutableList<Any>)
 internal fun EntryProviderScope<Any>.browseImagesEntry(backStack: MutableList<Any>) {
     entry<BrowseImagesRoute> {
         val viewModel: ImageGalleryViewModel = koinViewModel(key = "browse_images") { parametersOf(0L) }
+        val savedReferenceVm: SavedReferenceViewModel = koinViewModel(key = "browse_images_save_reference")
         val shareVm: ShareViewModel = koinViewModel()
         val shareHashtags by shareVm.hashtags.collectAsStateWithLifecycle()
         ImageGalleryScreen(
@@ -37,6 +39,7 @@ internal fun EntryProviderScope<Any>.browseImagesEntry(backStack: MutableList<An
             onToggleShareHashtag = shareVm::onToggle,
             onAddShareHashtag = shareVm::onAdd,
             onRemoveShareHashtag = shareVm::onRemove,
+            savedReferenceViewModel = savedReferenceVm,
         )
     }
 }
