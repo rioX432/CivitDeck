@@ -38,6 +38,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,6 +53,7 @@ import com.riox432.civitdeck.domain.model.LoraSelection
 import com.riox432.civitdeck.feature.comfyui.presentation.ComfyUIGenerationViewModel
 import com.riox432.civitdeck.feature.comfyui.presentation.GenerationModelSource
 import com.riox432.civitdeck.feature.comfyui.presentation.GenerationUiState
+import com.riox432.civitdeck.feature.comfyui.presentation.ReferenceReviewState
 import com.riox432.civitdeck.ui.components.comfyui.ParameterSliderRow
 import com.riox432.civitdeck.ui.theme.Spacing
 
@@ -65,15 +67,38 @@ fun ComfyUIGenerationScreen(
     onNavigateToMaskEditor: ((String, Int, Int) -> Unit)? = null,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val reference by viewModel.referenceReviewState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     SaveResultSnackbar(state.imageSaveSuccess, snackbarHostState, viewModel::onDismissSaveResult)
-    val onGenerate = rememberGenerateWithNotificationPrompt(generationNotificationsEnabled) {
+    val afterSubmitting = rememberNotificationPromptAfterSubmit(generationNotificationsEnabled)
+    val dropHidden = {
         dropHiddenCheckpointSettings(
             state = viewModel.uiState.value,
             turnOffControlNet = { viewModel.onControlNetToggled(false) },
             clearMask = viewModel::onClearMask,
         )
-        viewModel.onGenerate()
+    }
+    val onGenerate = {
+        afterSubmitting {
+            dropHidden()
+            viewModel.onGenerate()
+        }
+    }
+    // Hidden settings are dropped before Review, never at Confirm: any input change after the review
+    // discards it, so Confirm must send the form exactly as it was reviewed.
+    val latestAfterSubmitting by rememberUpdatedState(afterSubmitting)
+    val referenceActions = remember(viewModel) {
+        ReferenceReviewActions(
+            onReview = {
+                dropHidden()
+                viewModel.prepareReferenceReview()
+            },
+            onAcknowledge = viewModel::onReferenceVariationAcknowledged,
+            onConfirm = { latestAfterSubmitting(viewModel::confirmReferenceReview) },
+            onDismiss = viewModel::dismissReferenceReview,
+            onUnlink = viewModel::clearReferenceTrial,
+            onInterrupt = viewModel::onInterrupt,
+        )
     }
 
     val isGenerating = state.generationStatus == GenerationStatus.Submitting ||
@@ -81,28 +106,29 @@ fun ComfyUIGenerationScreen(
 
     Scaffold(
         topBar = {
-            GenerationTopBar(onBack, onLoadTemplate, isGenerating, state)
+            GenerationTopBar(onBack, onLoadTemplate.takeIf { reference == null }, isGenerating, state)
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        GenerationContent(padding, state, viewModel, onGenerate, onNavigateToMaskEditor)
+        GenerationContent(padding, state, viewModel, onGenerate, onNavigateToMaskEditor, reference, referenceActions)
     }
+    reference?.takeIf { it.isReviewVisible }?.let { ReferenceReviewSheet(it, referenceActions) }
 }
 
 // Generation alerts are on by default, so most users never flip the settings switch that requests
 // POST_NOTIFICATIONS and the completion alert is silently dropped on Android 13+. Starting a job is
 // the in-context moment Android recommends for the prompt; the result never gates the generation.
 // Asking at most once per screen avoids nagging, since the system makes a second denial final.
+// A linked reference submits at Confirm, so the prompt follows Confirm there, not Review.
 @Composable
-private fun rememberGenerateWithNotificationPrompt(
+private fun rememberNotificationPromptAfterSubmit(
     generationNotificationsEnabled: Boolean,
-    onGenerate: () -> Unit,
-): () -> Unit {
+): (submit: () -> Unit) -> Unit {
     val context = LocalContext.current
     var permissionPrompted by rememberSaveable { mutableStateOf(false) }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
-    return {
-        onGenerate()
+    return { submit ->
+        submit()
         val shouldPrompt = shouldPromptForGenerationNotifications(
             generationNotificationsEnabled = generationNotificationsEnabled,
             alreadyPrompted = permissionPrompted,
@@ -193,6 +219,8 @@ private fun GenerationContent(
     viewModel: ComfyUIGenerationViewModel,
     onGenerate: () -> Unit,
     onNavigateToMaskEditor: ((String, Int, Int) -> Unit)?,
+    reference: ReferenceReviewState?,
+    referenceActions: ReferenceReviewActions,
 ) {
     LazyColumn(
         modifier = Modifier.padding(padding),
@@ -217,13 +245,19 @@ private fun GenerationContent(
         item(key = "lora") { LoraSection(state, viewModel) }
         // ControlNet stays hidden: the form has no control image input, and the workflow builder
         // rejects ControlNet without one.
-        if (!isDiffusionModel) {
-            item(key = "inpainting") {
-                InpaintingSection(state, viewModel, onNavigateToMaskEditor)
+        // A linked reference prepares only the built-in graph, so the manual-only tools stay hidden
+        // until it is unlinked; the action row says so.
+        if (reference != null) {
+            item(key = "reference") { ReferenceActionRow(reference, state.generationStatus, referenceActions) }
+        } else {
+            if (!isDiffusionModel) {
+                item(key = "inpainting") {
+                    InpaintingSection(state, viewModel, onNavigateToMaskEditor)
+                }
             }
+            item(key = "customWorkflow") { CustomWorkflowSection(state, viewModel) }
+            item(key = "generate") { GenerateButton(state, onGenerate, viewModel::onInterrupt) }
         }
-        item(key = "customWorkflow") { CustomWorkflowSection(state, viewModel) }
-        item(key = "generate") { GenerateButton(state, onGenerate, viewModel::onInterrupt) }
         item(key = "status") { GenerationStatusSection(state) }
         val result = state.result
         if (result?.imageUrls?.isNotEmpty() == true) {
