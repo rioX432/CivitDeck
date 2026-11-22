@@ -18,6 +18,7 @@ import com.riox432.civitdeck.feature.gallery.presentation.ImageGalleryViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.NotificationCenterViewModel
 import com.riox432.civitdeck.feature.gallery.presentation.ShareViewModel
 import com.riox432.civitdeck.feature.prompts.presentation.SavedPromptsViewModel
+import com.riox432.civitdeck.feature.prompts.presentation.SavedReferenceViewModel
 import com.riox432.civitdeck.feature.search.presentation.BrowsingHistoryViewModel
 import com.riox432.civitdeck.ui.analytics.AnalyticsScreen
 import com.riox432.civitdeck.ui.collections.CollectionDetailScreen
@@ -42,6 +43,7 @@ internal fun EntryProviderScope<Any>.collectionsEntry(backStack: MutableList<Any
     entry<CollectionsRoute> {
         val viewModel: CollectionsViewModel = koinViewModel()
         val promptsViewModel: SavedPromptsViewModel = koinViewModel()
+        val referenceViewModel: SavedReferenceViewModel = koinViewModel(key = "saved_prompts_reference")
         val collections by viewModel.collections.collectAsStateWithLifecycle()
         CollectionsScreen(
             collections = collections,
@@ -53,6 +55,7 @@ internal fun EntryProviderScope<Any>.collectionsEntry(backStack: MutableList<Any
             onDeleteCollection = viewModel::deleteCollection,
             promptsViewModel = promptsViewModel,
             onNavigateToDatasets = { backStack.add(DatasetListRoute) },
+            referenceViewModel = referenceViewModel,
         )
     }
 }
@@ -237,6 +240,8 @@ internal fun EntryProviderScope<Any>.galleryEntry(backStack: MutableList<Any>) {
             key = "gallery_${key.modelVersionId}",
         ) { parametersOf(key.modelVersionId) }
         val shareVm: ShareViewModel = koinViewModel()
+        val savedReferenceVm: SavedReferenceViewModel =
+            koinViewModel(key = "gallery_${key.modelVersionId}_save_reference")
         val shareHashtags by shareVm.hashtags.collectAsStateWithLifecycle()
         ImageGalleryScreen(
             viewModel = viewModel,
@@ -245,6 +250,7 @@ internal fun EntryProviderScope<Any>.galleryEntry(backStack: MutableList<Any>) {
             onToggleShareHashtag = shareVm::onToggle,
             onAddShareHashtag = shareVm::onAdd,
             onRemoveShareHashtag = shareVm::onRemove,
+            savedReferenceViewModel = savedReferenceVm,
         )
     }
 }
